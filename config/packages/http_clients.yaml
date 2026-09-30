@@ -6,3 +6,10 @@ framework:
                 headers:
                     Content-Type: 'application/json'
                     Authorization: 'Bearer %env(OPEN_AI_KEY)%'
+            # City suggestions for every location field, proxied so a visitor's address never reaches
+            # komoot and answers can be cached.
+            photon.client:
+                base_uri: 'https://photon.komoot.io/'
+                timeout: 5
+                headers:
+                    User-Agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'

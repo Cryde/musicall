@@ -95,7 +95,6 @@
             <li><strong>Sentry</strong> : détection des erreurs applicatives</li>
             <li><strong>Google Ireland Limited</strong> : connexion via compte Google, si vous l'utilisez, Irlande (UE)</li>
             <li><strong>OpenAI</strong> : interprétation du texte libre de la recherche assistée de musiciens, États-Unis</li>
-            <li><strong>Komoot GmbH</strong> : suggestion de villes lorsque vous saisissez une localisation, Allemagne (UE)</li>
             <li><strong>Google / YouTube</strong>, <strong>Spotify</strong> et <strong>SoundCloud</strong> : lecture des vidéos et des morceaux intégrés dans certaines pages</li>
             <li><strong>Google Fonts</strong> : fourniture des polices de caractères du site</li>
           </ul>
@@ -227,5 +226,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '27 septembre 2026'
+const lastUpdate = '30 septembre 2026'
 </script>

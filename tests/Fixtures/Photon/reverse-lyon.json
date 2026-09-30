@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [4.8357, 45.7640]},
+      "properties": {"name": "Place Bellecour", "city": "Lyon", "county": "Lyon", "state": "Auvergne-Rhône-Alpes", "country": "France"}
+    }
+  ]
+}

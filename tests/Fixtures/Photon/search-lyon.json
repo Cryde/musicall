@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [4.8320114, 45.7578137]},
+      "properties": {"name": "Lyon", "county": "Rhône", "state": "Auvergne-Rhône-Alpes", "country": "France", "osm_value": "city"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [1.4714, 49.3997]},
+      "properties": {"name": "Lyons-la-Forêt", "county": "Eure", "state": "Normandie", "country": "France", "osm_value": "village"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.6389, 37.2099]},
+      "properties": {"name": "Lyon", "state": "Virginia", "country": "États-Unis", "osm_value": "town"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point"},
+      "properties": {"name": "Sans coordonnées", "country": "France"}
+    }
+  ]
+}

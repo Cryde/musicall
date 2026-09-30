@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command\User;
 
 use App\Entity\User\UserProfile;
+use App\Service\Geocoding\PhotonGeocoder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -12,7 +13,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * One shot, best effort backfill of the coordinates of the profile locations typed as free text
@@ -25,15 +25,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 )]
 class GeocodeProfileLocationsCommand extends Command
 {
-    private const string PHOTON_URL = 'https://photon.komoot.io/api/';
-    // The places the city picker offers, so a backfilled location matches what a member could pick.
-    private const array CITY_TAGS = ['place:city', 'place:town', 'place:village', 'place:municipality'];
     // Photon is a shared public service: one request a second keeps the backfill a polite client.
     private const int DELAY_MICROSECONDS = 1_000_000;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly HttpClientInterface $httpClient,
+        private readonly PhotonGeocoder $geocoder,
     ) {
         parent::__construct();
     }
@@ -64,20 +61,21 @@ class GeocodeProfileLocationsCommand extends Command
                 if ($resolved !== []) {
                     usleep(self::DELAY_MICROSECONDS);
                 }
-                $resolved[$key] = $this->findCoordinates($location);
+                // The picker's own lookup, so a backfilled location is one a member could have picked.
+                $resolved[$key] = $this->geocoder->searchCities($location, 1)[0] ?? null;
             }
 
-            $coordinates = $resolved[$key];
-            if ($coordinates === null) {
+            $city = $resolved[$key];
+            if ($city === null) {
                 $io->writeln(sprintf('<comment>Not found</comment> "%s"', $location));
                 continue;
             }
 
-            $io->writeln(sprintf('"%s" -> %s (%F, %F)', $location, $coordinates['name'], $coordinates['latitude'], $coordinates['longitude']));
+            $io->writeln(sprintf('"%s" -> %s (%F, %F)', $location, $city->name, $city->latitude, $city->longitude));
             ++$geocoded;
             if (!$isDryRun) {
-                $profile->latitude = $coordinates['latitude'];
-                $profile->longitude = $coordinates['longitude'];
+                $profile->latitude = $city->latitude;
+                $profile->longitude = $city->longitude;
             }
         }
 
@@ -91,30 +89,5 @@ class GeocodeProfileLocationsCommand extends Command
         ));
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @return array{name: string, latitude: float, longitude: float}|null
-     */
-    private function findCoordinates(string $location): ?array
-    {
-        // Photon wants osm_tag repeated, which an array in `query` would send as osm_tag[0].
-        $tags = implode('&', array_map(static fn (string $tag): string => 'osm_tag=' . urlencode($tag), self::CITY_TAGS));
-        $url = self::PHOTON_URL . '?' . http_build_query(['q' => $location, 'limit' => 1, 'lang' => 'fr']) . '&' . $tags;
-
-        try {
-            $data = $this->httpClient->request('GET', $url, ['timeout' => 5])->toArray();
-        } catch (\Throwable) {
-            return null;
-        }
-
-        $feature = $data['features'][0] ?? null;
-        $name = $feature['properties']['name'] ?? null;
-        $point = $feature['geometry']['coordinates'] ?? null;
-        if (!is_string($name) || !is_array($point) || !is_numeric($point[0] ?? null) || !is_numeric($point[1] ?? null)) {
-            return null;
-        }
-
-        return ['name' => $name, 'latitude' => (float) $point[1], 'longitude' => (float) $point[0]];
     }
 }

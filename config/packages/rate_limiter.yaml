@@ -23,6 +23,12 @@ framework:
             limit: 60
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # The city pickers' suggestions: one call a pause in typing, so a few per field filled in.
+        geocoding:
+            policy: sliding_window
+            limit: 120
+            interval: '10 minutes'
+            cache_pool: "rate_limiter.cache"
         registration:
             policy: fixed_window
             limit: 3

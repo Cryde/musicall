@@ -176,6 +176,14 @@ when@test:
             arguments:
                 $inner: '@.inner'
 
+        # The suite never calls komoot: city suggestions come from recorded responses. Public so a
+        # test can take Photon down or count what reached it.
+        App\Tests\Double\FakePhotonClient:
+            public: true
+            decorates: 'photon.client'
+            arguments:
+                $inner: '@.inner'
+
         # Don't fire UserActivityListener on every test request - it would
         # write to fos_user.last_activity_datetime ~1600 times per suite.
         # The listener's own behavior is covered directly by
