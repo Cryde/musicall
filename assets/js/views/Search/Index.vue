@@ -143,7 +143,7 @@
             :loading="isCityLoading"
             label="Rechercher"
             size="small"
-            @click="search"
+            @click="handleSearchClick"
         />
     </div>
 
@@ -187,7 +187,7 @@
                     :disabled="isSearching || isFilterGenerating || isCityLoading"
                     :loading="isCityLoading"
                     label="Rechercher"
-                    @click="search"
+                    @click="handleSearchClick"
                 />
                 <Button
                     text
@@ -212,7 +212,7 @@
     </div>
 
     <!-- Active filters summary -->
-    <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 mt-4">
+    <div v-if="hasActiveFilters" ref="filtersSummary" class="flex flex-wrap items-center gap-2 mt-4 scroll-mt-4">
         <span class="text-sm text-surface-500 dark:text-surface-400">Filtres actifs :</span>
         <Chip
             v-if="selectSearchType"
@@ -405,7 +405,7 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import searchApi from '../../api/search/musician.js'
@@ -415,6 +415,7 @@ import GuidedNoResults from '../../components/Search/Guided/GuidedNoResults.vue'
 import GuidedSearch from '../../components/Search/Guided/GuidedSearch.vue'
 import GuidedSignupCard from '../../components/Search/Guided/GuidedSignupCard.vue'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
+import { lastNavigationRestoredScroll } from '../../router/scrollPosition.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
@@ -426,6 +427,7 @@ import {
   soughtLabel
 } from '../../utils/guidedSearch.js'
 import { profileCity } from '../../utils/profileLocation.js'
+import { needsReveal } from '../../utils/revealTarget.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
@@ -460,6 +462,7 @@ const selectedInstrument = ref(null)
 const selectedStyles = ref([])
 const selectedLocation = ref(null)
 const cityField = ref(null)
+const filtersSummary = ref(null)
 const isCityLoading = ref(false)
 // Only the guided search bounds the distance (#1084); the filters sort by it and keep every one.
 const selectedRadius = ref(null)
@@ -540,8 +543,11 @@ onMounted(async () => {
     await attributesLoaded
     initializeFiltersFromUrl()
     applyPrefilledInstrument()
-    // A page such as « Rechercher un batteur » opened as is: its list is not a search anybody ran.
+    // A page such as « Rechercher un batteur » opened as is: its list is not a search anybody ran,
+    // and its intro is the point, so it is not scrolled past either. Back or Forward to a search
+    // restores where the visitor was, which must not be undone.
     await loadInitialResults({ landing: !hasUrlFilters() })
+    if (hasUrlFilters() && !lastNavigationRestoredScroll()) await revealSearchResults()
   } else {
     // Plain landing: the initial search is unscoped and needs neither list,
     // so run it alongside the attribute loads.
@@ -980,6 +986,7 @@ async function generateQuickSearchFilters() {
     scheduleAutoFilledClear()
 
     await search()
+    await revealSearchResults()
   } catch (e) {
     if (e?.response?.status === 429) {
       quickSearchErrors.value = [
@@ -994,6 +1001,24 @@ async function generateQuickSearchFilters() {
     }
   }
   isFilterGenerating.value = false
+}
+
+/**
+ * On a phone the search forms push what a search found below the fold. Lands on the active filters
+ * rather than the list: they show what was understood, the results follow.
+ */
+async function revealSearchResults() {
+  await nextTick()
+  const target = filtersSummary.value
+  if (!target || !needsReveal(target.getBoundingClientRect().top, window.innerHeight)) return
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+}
+
+async function handleSearchClick() {
+  await search()
+  await revealSearchResults()
 }
 
 function clearAllFilters(skipTracking = false) {

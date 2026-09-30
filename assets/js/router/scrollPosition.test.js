@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { keepsScrollPosition } from './scrollPosition.js'
+import {
+  keepsScrollPosition,
+  lastNavigationRestoredScroll,
+  rememberScrollRestore
+} from './scrollPosition.js'
 
 /**
  * Changing a search filter rewrites the query string, and the router scrolled to the top on each
@@ -35,5 +39,26 @@ describe('keepsScrollPosition', () => {
 
   it('lets a hash change scroll to its anchor', () => {
     assert.equal(keepsScrollPosition(location('/cgu', {}, '#article-3'), location('/cgu')), false)
+  })
+})
+
+describe('lastNavigationRestoredScroll', () => {
+  it('is true after Back or Forward restored a position', () => {
+    rememberScrollRestore({ left: 0, top: 1200 })
+
+    assert.equal(lastNavigationRestoredScroll(), true)
+  })
+
+  it('is false again after a fresh navigation', () => {
+    rememberScrollRestore({ left: 0, top: 1200 })
+    rememberScrollRestore(null)
+
+    assert.equal(lastNavigationRestoredScroll(), false)
+  })
+
+  it('treats a restored position at the very top as a restore', () => {
+    rememberScrollRestore({ left: 0, top: 0 })
+
+    assert.equal(lastNavigationRestoredScroll(), true)
   })
 })

@@ -4,7 +4,7 @@ import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
 import publication from './publication'
-import { keepsScrollPosition } from './scrollPosition.js'
+import { keepsScrollPosition, rememberScrollRestore } from './scrollPosition.js'
 import search from './search.js'
 import user from './user.js'
 
@@ -142,6 +142,7 @@ export default createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
+    rememberScrollRestore(savedPosition)
     // Restore scroll position on back/forward navigation
     if (savedPosition) {
       return savedPosition
