@@ -251,7 +251,7 @@ export function describeBalance(cents) {
   return `${cents > 0 ? 'reçoit' : 'doit'} ${formatEuros(Math.abs(cents) / 100)}`
 }
 
-// Shared by the preview and the module grid on the page, so a module keeps one colour throughout.
+// One colour per module, used across the preview.
 export const MODULE_ACCENTS = Object.freeze({
   agenda: { text: 'text-primary', dot: 'bg-primary' },
   taches: { text: 'text-teal-700 dark:text-teal-300', dot: 'bg-teal-500' },
@@ -260,3 +260,8 @@ export const MODULE_ACCENTS = Object.freeze({
   files: { text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-500' },
   finances: { text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-500' }
 })
+
+/** The tab a footer link asked for (`?module=finances`), or null when it names no tab. */
+export function requestedDemoTab(tabs, requested) {
+  return tabs.some((tab) => tab.key === requested) ? requested : null
+}

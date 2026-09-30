@@ -107,6 +107,11 @@ const socialLinks = [
 
 const bandSpacePresentation = { name: 'app_band_space_presentation' }
 
+// Opens the demo on /band-space on that module's tab.
+function bandSpaceModule(module) {
+  return { ...bandSpacePresentation, query: { module } }
+}
+
 function publicationCategory(slug) {
   return { name: 'app_publications_by_category', params: { slug } }
 }
@@ -131,8 +136,9 @@ const columns = [
     title: 'Band Space',
     links: [
       { label: 'Présentation', to: bandSpacePresentation },
-      { label: 'Agenda & setlists', to: bandSpacePresentation },
-      { label: 'Finances du groupe', to: bandSpacePresentation },
+      { label: 'Agenda', to: bandSpaceModule('agenda') },
+      { label: 'Setlists', to: bandSpaceModule('setlists') },
+      { label: 'Finances du groupe', to: bandSpaceModule('finances') },
       // app_band_index sends a visitor to the presentation and a member to their space.
       { label: 'Créer un Band Space', to: { name: 'app_band_index' }, isAction: true }
     ]

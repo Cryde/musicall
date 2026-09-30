@@ -1,5 +1,6 @@
 <template>
   <section
+    id="band-space-demo"
     aria-label="Aperçu de votre Band Space"
     class="flex flex-col overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-2xl"
   >
@@ -305,7 +306,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { BAND_SPACE_MODULES } from '../../../constants/bandSpace.js'
 import {
   canAddMore,
@@ -325,6 +326,7 @@ import {
   INITIAL_SETLIST_ORDER,
   MODULE_ACCENTS,
   moveSong,
+  requestedDemoTab,
   setlistMinutes
 } from '../../../utils/bandSpaceDemo.js'
 import { adjacentTabKey } from '../../../utils/tabNavigation.js'
@@ -332,7 +334,9 @@ import { adjacentTabKey } from '../../../utils/tabNavigation.js'
 const props = defineProps({
   name: { type: String, default: '' },
   size: { type: Number, required: true },
-  pickedPains: { type: Array, default: () => [] }
+  pickedPains: { type: Array, default: () => [] },
+  // A footer link can land on one module, e.g. /band-space?module=finances.
+  requestedTab: { type: [String, Array], default: null }
 })
 
 const TABS = [
@@ -358,6 +362,14 @@ const ADD_BUTTON =
   'inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-surface-300 dark:border-surface-600 text-sm font-semibold text-surface-900 dark:text-surface-0 hover:border-primary cursor-pointer aria-disabled:opacity-50 aria-disabled:cursor-default aria-disabled:hover:border-surface-300 dark:aria-disabled:hover:border-surface-600'
 
 const activeTab = ref('dashboard')
+
+watch(
+  () => props.requestedTab,
+  (requested) => {
+    activeTab.value = requestedDemoTab(TABS, requested) ?? activeTab.value
+  },
+  { immediate: true }
+)
 const doneTaskIds = ref([...INITIAL_DONE_TASK_IDS])
 const setlistOrder = ref([...INITIAL_SETLIST_ORDER])
 const deletedFileIds = ref([])

@@ -19,6 +19,7 @@ import {
   INITIAL_SETLIST_ORDER,
   memberAt,
   moveSong,
+  requestedDemoTab,
   setlistMinutes,
   sizeLabel
 } from './bandSpaceDemo.js'
@@ -221,5 +222,19 @@ describe('formatEuros and describeBalance', () => {
     assert.equal(describeBalance(13500), 'reçoit 135 €')
     assert.equal(describeBalance(-1125), 'doit 11,25 €')
     assert.equal(describeBalance(0), "à l'équilibre")
+  })
+})
+
+describe('requestedDemoTab', () => {
+  const tabs = [{ key: 'dashboard' }, { key: 'finances' }]
+
+  it('opens the tab a link names', () => {
+    assert.equal(requestedDemoTab(tabs, 'finances'), 'finances')
+  })
+
+  it('ignores a missing, unknown or repeated parameter', () => {
+    assert.equal(requestedDemoTab(tabs, undefined), null)
+    assert.equal(requestedDemoTab(tabs, 'chat'), null)
+    assert.equal(requestedDemoTab(tabs, ['finances', 'agenda']), null)
   })
 })

@@ -74,24 +74,12 @@
           </div>
         </form>
 
-        <BandSpaceDemoPreview :name="bandName" :size="bandSize" :picked-pains="pickedPains" />
-      </div>
-    </section>
-
-    <section class="flex flex-col gap-7">
-      <h2 class="m-0 text-3xl font-extrabold text-surface-900 dark:text-surface-0">Six outils, un seul endroit</h2>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div
-          v-for="module in BAND_SPACE_MODULES"
-          :key="module.key"
-          class="flex flex-col gap-2 p-6 rounded-2xl bg-surface-0 dark:bg-surface-900"
-        >
-          <span :class="['flex items-center gap-2 font-bold', MODULE_ACCENTS[module.key].text]">
-            <i :class="module.icon" aria-hidden="true" />
-            {{ module.label }}
-          </span>
-          <p class="m-0 leading-relaxed text-surface-600 dark:text-surface-300">{{ module.description }}</p>
-        </div>
+        <BandSpaceDemoPreview
+          :name="bandName"
+          :size="bandSize"
+          :picked-pains="pickedPains"
+          :requested-tab="route.query.module"
+        />
       </div>
     </section>
 
@@ -119,18 +107,11 @@
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import BandSpaceDemoPreview from '../../components/BandSpace/Presentation/BandSpaceDemoPreview.vue'
-import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import {
-  ctaLabel,
-  DEMO_PAINS,
-  DEMO_SIZES,
-  MODULE_ACCENTS,
-  sizeLabel
-} from '../../utils/bandSpaceDemo.js'
+import { ctaLabel, DEMO_PAINS, DEMO_SIZES, sizeLabel } from '../../utils/bandSpaceDemo.js'
 import { openDraftNameStorage, saveDraftName } from '../../utils/bandSpaceDraftName.js'
 
 const QUESTION = 'text-sm font-bold tracking-wider uppercase text-primary'
@@ -161,6 +142,7 @@ const REASONS = [
   }
 ]
 
+const route = useRoute()
 const router = useRouter()
 const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()

@@ -140,10 +140,14 @@ const routes = [
 export default createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(_to, _from, savedPosition) {
+  scrollBehavior(to, _from, savedPosition) {
     // Restore scroll position on back/forward navigation
     if (savedPosition) {
       return savedPosition
+    }
+    // A footer link to one Band Space module lands on the demo, already on that tab
+    if (to.name === 'app_band_space_presentation' && to.query.module) {
+      return { el: '#band-space-demo', top: 24 }
     }
     // Scroll to top for new navigations
     return { top: 0 }
