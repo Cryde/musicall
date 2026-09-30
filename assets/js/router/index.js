@@ -4,6 +4,7 @@ import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
 import publication from './publication'
+import { keepsScrollPosition } from './scrollPosition.js'
 import search from './search.js'
 import user from './user.js'
 
@@ -140,7 +141,7 @@ const routes = [
 export default createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, _from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     // Restore scroll position on back/forward navigation
     if (savedPosition) {
       return savedPosition
@@ -148,6 +149,9 @@ export default createRouter({
     // A footer link to one Band Space module lands on the demo, already on that tab
     if (to.name === 'app_band_space_presentation' && to.query.module) {
       return { el: '#band-space-demo', top: 24 }
+    }
+    if (keepsScrollPosition(to, from)) {
+      return false
     }
     // Scroll to top for new navigations
     return { top: 0 }
