@@ -207,9 +207,8 @@ function resolveInitialRider() {
 }
 
 /**
- * Switching rider destroys the open editors, so unsaved grid edits are asked about here as well
- * as on route leave. Losing 24 typed rows to a click in the switcher is the worst outcome this
- * module has, and the switcher is the easiest way to do it by accident.
+ * Switching rider destroys the open editors. Each one flushes its pending save on the way out, so
+ * this only asks about edits the server refused, which no save would ever carry.
  */
 function selectRider(riderId) {
   if (!riderId || riderId === selectedRiderId.value) return
@@ -349,12 +348,15 @@ onBeforeRouteUpdate(() => techRidersStore.confirmDiscardingEdits())
  * wording here; returnValue is what makes it show anything at all.
  */
 function warnOnUnload(event) {
-  if (techRidersStore.dirtyItemIds.length === 0) return
+  if (!techRidersStore.hasUnconfirmedEdits) return
   event.preventDefault()
   event.returnValue = ''
 }
 
 onMounted(() => {
+  // A save that failed after the last visit left, with nobody to report to, would otherwise make
+  // this visit warn about edits that are not on screen.
+  techRidersStore.forgetSaveStates()
   window.addEventListener('beforeunload', warnOnUnload)
   load()
 })

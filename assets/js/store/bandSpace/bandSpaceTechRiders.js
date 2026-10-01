@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { readonly, ref } from 'vue'
+import { computed, readonly, ref } from 'vue'
 import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
 
 export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
@@ -9,7 +9,9 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   const liveRiders = ref([])
   const archivedRiders = ref([])
   const activeTechRider = ref(null)
-  const dirtyItemIds = ref([])
+  // Per item: 'pending' (edited, waiting on the debounce), 'saving', 'saved', or 'error' with the
+  // server's message. Every editor reports here, autosaving or not, so the page can show one status.
+  const itemSaveStates = ref({})
   const isLoading = ref(false)
   const isLoadingActive = ref(false)
   const loadError = ref(null)
@@ -198,12 +200,10 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
 
   async function savePatchList(bandSpaceId, riderId, itemId, grid) {
     replaceItem(await bandSpaceTechRidersApi.savePatchList(bandSpaceId, riderId, itemId, grid))
-    setItemDirty(itemId, false)
   }
 
   async function saveStagePlot(bandSpaceId, riderId, itemId, plot) {
     replaceItem(await bandSpaceTechRidersApi.saveStagePlot(bandSpaceId, riderId, itemId, plot))
-    setItemDirty(itemId, false)
   }
 
   /**
@@ -284,30 +284,53 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     }
   }
 
-  /**
-   * Items that hold edits the server has not seen.
-   *
-   * Kept here rather than inside the editor because the thing that has to react to it is two
-   * levels up: leaving the route, and switching rider, both destroy the editor without asking.
-   * Losing a 24 row patch list to a mistaken click is the worst outcome this module has.
-   */
-  function setItemDirty(itemId, isDirty) {
-    const without = dirtyItemIds.value.filter((id) => id !== itemId)
-    dirtyItemIds.value = isDirty ? [...without, itemId] : without
+  function setItemSaveState(itemId, state, message = null) {
+    itemSaveStates.value = { ...itemSaveStates.value, [itemId]: { state, message } }
   }
+
+  function clearItemSaveState(itemId) {
+    if (!(itemId in itemSaveStates.value)) return
+    const { [itemId]: _cleared, ...rest } = itemSaveStates.value
+    itemSaveStates.value = rest
+  }
+
+  /** Every editor starts from the server's state, so states left by a previous visit mean nothing. */
+  function forgetSaveStates() {
+    itemSaveStates.value = {}
+  }
+
+  function saveStateFor(itemId) {
+    return itemSaveStates.value[itemId] ?? null
+  }
+
+  /** Anything the server has not confirmed yet: what a closed tab or an F5 would take with it. */
+  const hasUnconfirmedEdits = computed(() =>
+    Object.values(itemSaveStates.value).some(({ state }) => state !== 'saved')
+  )
+
+  /**
+   * Edits no save will ever carry: refused by the server, or failing a check the editor runs first.
+   * Leaving the page, or switching rider, unmounts every editor, and each one flushes what is still
+   * waiting on its debounce on the way out. These are the only edits that are actually lost.
+   */
+  const refusedItemIds = computed(() =>
+    Object.entries(itemSaveStates.value)
+      .filter(([, { state }]) => state === 'error')
+      .map(([itemId]) => itemId)
+  )
 
   /**
    * Asks once, and only when there is something to lose. Returns true when it is safe to carry
    * on, so callers read as `if (!confirmDiscardingEdits()) return`.
    */
   function confirmDiscardingEdits() {
-    if (dirtyItemIds.value.length === 0) return true
+    if (refusedItemIds.value.length === 0) return true
 
     const confirmed = window.confirm(
-      'Des modifications ne sont pas enregistrées et seront perdues. Continuer ?'
+      "Des modifications n'ont pas pu être enregistrées et seront perdues. Continuer ?"
     )
     if (confirmed) {
-      dirtyItemIds.value = []
+      itemSaveStates.value = {}
     }
 
     return confirmed
@@ -325,9 +348,9 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   function clearActive() {
     activeTechRider.value = null
     contentRequestIds.clear()
-    // The editors holding these edits are about to be destroyed, so keeping the ids would leave
-    // the guard warning about changes that no longer exist anywhere.
-    dirtyItemIds.value = []
+    // The editors holding these edits are about to be destroyed, so keeping their states would
+    // leave the guard warning about changes that no longer exist anywhere.
+    itemSaveStates.value = {}
     activeRequestId++
   }
 
@@ -344,7 +367,8 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     liveRiders: readonly(liveRiders),
     archivedRiders: readonly(archivedRiders),
     activeTechRider: readonly(activeTechRider),
-    dirtyItemIds: readonly(dirtyItemIds),
+    hasUnconfirmedEdits,
+    refusedItemIds,
     stagePlotIcons: readonly(stagePlotIcons),
     isLoading: readonly(isLoading),
     isLoadingActive: readonly(isLoadingActive),
@@ -364,7 +388,10 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     loadStagePlotIcons,
     setItemFile,
     setItemIncluded,
-    setItemDirty,
+    setItemSaveState,
+    clearItemSaveState,
+    forgetSaveStates,
+    saveStateFor,
     confirmDiscardingEdits,
     deleteItem,
     reorderItems,

@@ -7,48 +7,31 @@
          ellipsis. Outputs are only ever a handful of rows, so the vertical cost is small. -->
     <div class="flex flex-col gap-8">
       <RiderPatchGrid
-        label="Entrées"
+        :label="PATCH_LIST_DIRECTIONS.inputs"
         :rows="inputs"
         :max-rows="MAX_ROWS_PER_DIRECTION"
         :errors="errors.inputs"
         :read-only="readOnly"
       />
       <RiderPatchGrid
-        label="Retours"
+        :label="PATCH_LIST_DIRECTIONS.outputs"
         :rows="outputs"
         :max-rows="MAX_ROWS_PER_DIRECTION"
         :errors="errors.outputs"
         :read-only="readOnly"
       />
     </div>
-
-    <!-- Explicit save, never autosave: a half typed row is a normal state in a grid, and the
-         endpoint replaces the whole list, so saving mid-edit would write nonsense. -->
-    <div
-      v-if="!readOnly && isDirty"
-      class="sticky bottom-0 flex flex-wrap items-center gap-3 p-3 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950"
-    >
-      <i class="pi pi-exclamation-circle text-primary" aria-hidden="true" />
-      <span class="text-sm">Modifications non enregistrées.</span>
-      <span class="flex-1" />
-      <Button
-        label="Annuler les modifications"
-        severity="secondary"
-        text
-        size="small"
-        :disabled="isSaving"
-        @click="reset"
-      />
-      <Button label="Sauvegarder" icon="pi pi-check" size="small" :loading="isSaving" @click="save" />
-    </div>
   </div>
 </template>
 
 <script setup>
-import Button from 'primevue/button'
 import Message from 'primevue/message'
-import { useToast } from 'primevue/usetoast'
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import { useSnapshotAutosave } from '../../../composables/useSnapshotAutosave.js'
+import {
+  PATCH_LIST_DIRECTIONS,
+  PATCH_LIST_LABELS
+} from '../../../constants/techRiderPatchColumns.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import RiderPatchGrid from './RiderPatchGrid.vue'
 
@@ -65,7 +48,6 @@ const props = defineProps({
 const MAX_ROWS_PER_DIRECTION = 64
 
 const techRidersStore = useBandTechRidersStore()
-const toast = useToast()
 
 const inputs = reactive([])
 const outputs = reactive([])
@@ -74,17 +56,7 @@ const errors = reactive({
   outputs: { list: [], rows: {} }
 })
 const globalError = ref(null)
-const isSaving = ref(false)
-
-/**
- * The last state the server confirmed, as a string. Comparing serialised payloads rather than
- * tracking every field means no edit can be missed because somebody forgot to flag it, and a
- * change that cancels itself out correctly reads as clean again.
- */
-const savedSnapshot = ref('')
 let keyCounter = 0
-
-const isDirty = computed(() => serialise() !== savedSnapshot.value)
 
 function toLocalRows(apiRows) {
   return (apiRows ?? []).map((row) => ({
@@ -116,29 +88,24 @@ function serialise() {
   return JSON.stringify({ inputs: toPayloadRows(inputs), outputs: toPayloadRows(outputs) })
 }
 
-function seed() {
+/** The server's grid in the shape `serialise` produces, to compare without reseeding. */
+function serialiseServerGrid() {
+  return JSON.stringify({
+    inputs: toPayloadRows(toLocalRows(props.patchList?.inputs)),
+    outputs: toPayloadRows(toLocalRows(props.patchList?.outputs))
+  })
+}
+
+function seedRows() {
   inputs.splice(0, inputs.length, ...toLocalRows(props.patchList?.inputs))
   outputs.splice(0, outputs.length, ...toLocalRows(props.patchList?.outputs))
   clearErrors()
-  savedSnapshot.value = serialise()
-}
-
-function reset() {
-  seed()
 }
 
 function clearErrors() {
   errors.inputs = { list: [], rows: {} }
   errors.outputs = { list: [], rows: {} }
   globalError.value = null
-}
-
-const FIELD_LABELS = {
-  channel: 'Canal',
-  name: 'Nom',
-  microphone: 'Micro',
-  routing: 'Routage',
-  colour: 'Couleur'
 }
 
 /**
@@ -166,7 +133,7 @@ function applyViolations(violations) {
     const existing = errors[direction].rows[rowIndex] ?? []
     errors[direction].rows[rowIndex] = [
       ...existing,
-      field ? `${FIELD_LABELS[field] ?? field} : ${violation.message}` : violation.message
+      field ? `${PATCH_LIST_LABELS[field] ?? field} : ${violation.message}` : violation.message
     ]
   }
 }
@@ -188,47 +155,43 @@ function findBlankChannel() {
   return null
 }
 
-async function save() {
-  clearErrors()
-
+/** Holds a save the server would refuse with a message about the row's shape, and says why. */
+function validate() {
   const blank = findBlankChannel()
-  if (blank) {
-    errors[blank.direction].rows[blank.index] = ['Canal : ce champ est requis']
-    return
-  }
+  if (!blank) return null
 
-  // Both captured before the request goes out, and the snapshot is the one applied afterwards.
-  // Nothing stops the user typing while the PUT is in flight, and re-serialising after the await
-  // would fold those keystrokes into the saved baseline as though the server had confirmed them.
-  // The grid would then read as clean, every guard would stand down, and the edit would be lost
-  // on the next navigation without a prompt.
-  const payload = { inputs: toPayloadRows(inputs), outputs: toPayloadRows(outputs) }
-  const sentSnapshot = JSON.stringify(payload)
+  const message = `${PATCH_LIST_LABELS.channel} : ce champ est requis`
+  errors[blank.direction].rows[blank.index] = [message]
 
-  isSaving.value = true
-  try {
-    await techRidersStore.savePatchList(props.bandSpaceId, props.riderId, props.itemId, payload)
-    savedSnapshot.value = sentSnapshot
-    toast.add({ severity: 'success', summary: 'Patch list enregistrée', life: 2500 })
-  } catch (e) {
-    if (e.isValidationError) {
-      applyViolations(e.violations ?? [])
-    } else {
-      globalError.value = e.message
-    }
-  } finally {
-    isSaving.value = false
-  }
+  return message
 }
 
-// Seeded before the watchers exist, not after. An empty savedSnapshot compares unequal to an
-// empty grid, so a watcher created first would report a brand new editor as dirty and the page
-// would ask about unsaved changes the moment it loaded.
-seed()
+// Seeded before autosave takes its first snapshot, so a freshly opened grid reads as saved.
+seedRows()
 
-// The guard that protects these edits lives two levels up, on the route and on the rider
-// switcher, because both destroy this component without asking.
-watch(isDirty, (dirty) => techRidersStore.setItemDirty(props.itemId, dirty))
+const { markSaved, shouldReseed } = useSnapshotAutosave({
+  itemId: () => props.itemId,
+  isReadOnly: () => props.readOnly,
+  serialise,
+  validate,
+  save: async (payload) => {
+    clearErrors()
+    await techRidersStore.savePatchList(props.bandSpaceId, props.riderId, props.itemId, payload)
+  },
+  onError: (e) => {
+    if (e.isValidationError) {
+      applyViolations(e.violations ?? [])
+      return e.violations?.[0]?.message ?? e.message
+    }
+    globalError.value = e.message
+    return e.message
+  }
+})
+
+function seed() {
+  seedRows()
+  markSaved()
+}
 
 // Server violations are addressed by array index, so adding, deleting or moving a row leaves
 // them pointing at whichever row now sits at that index: the red border would move to an
@@ -240,18 +203,15 @@ watch(
   clearErrors
 )
 
-// Reseeds when the item is swapped, and when a save elsewhere replaces the rider. Guarded on
-// dirtiness so an in-flight edit is never overwritten by a refresh.
+// Reseeds when the item is swapped, and when a save elsewhere replaces the rider. Never over an
+// edit still on its way, and never for the answer to our own save, which would rebuild every row
+// and take the cursor away mid-word.
 watch(
   () => props.patchList,
   () => {
-    if (!isDirty.value) seed()
+    if (shouldReseed(serialiseServerGrid())) seed()
   }
 )
 
 watch(() => props.itemId, seed)
-
-// An unmounted editor holds no edits, so leaving the flag set would make the guard warn about
-// changes that no longer exist anywhere.
-onBeforeUnmount(() => techRidersStore.setItemDirty(props.itemId, false))
 </script>

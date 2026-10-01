@@ -108,7 +108,11 @@ const membersLink = computed(() => ({
  * so sending only the changed half would drop the other one.
  */
 function handleToggleEmails(value) {
-  emit('save', { itemId: props.itemId, content: { showEmails: value === true, note: note.value } })
+  emit('save', {
+    itemId: props.itemId,
+    content: { showEmails: value === true, note: note.value },
+    isSideWrite: true
+  })
 }
 
 function handleSaveNote({ content }) {

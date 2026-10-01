@@ -78,9 +78,9 @@ readonly class TechRiderStagePlotUpdateProcessor implements ProcessorInterface
         $item->content = $data->plot;
         $item->updateDatetime = new DateTime();
 
-        // An explicit save of a whole document, so no coalescing: the editor saves on a button,
-        // not on a debounce.
-        $this->activityRecorder->record(
+        // Autosaved on a debounce since #1089, so coalesced like rich text: one entry per member and
+        // plot inside the window, or every drag would become a line in the feed.
+        $this->activityRecorder->recordCoalesced(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Rider,
             type: BandSpaceRiderActivityType::RiderStagePlotUpdated,
