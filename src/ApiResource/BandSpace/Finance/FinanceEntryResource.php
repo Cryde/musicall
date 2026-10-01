@@ -15,6 +15,7 @@ use App\State\Processor\BandSpace\FinanceEntryDeleteProcessor;
 use App\State\Processor\BandSpace\FinanceEntryUpdateProcessor;
 use App\State\Provider\BandSpace\FinanceEntryCollectionProvider;
 use App\State\Provider\BandSpace\FinanceEntryItemProvider;
+use App\Validator\BandSpace\FinanceAmountLimit;
 use App\Validator\BandSpace\FinanceAmountRange;
 use App\Validator\BandSpace\PersonalScopeWithoutSplits;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -110,12 +111,15 @@ class FinanceEntryResource
     public string $status;
 
     #[Assert\PositiveOrZero(message: 'Le montant doit être positif ou zéro')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amount = null;
 
     #[Assert\PositiveOrZero(message: 'Le montant minimum doit être positif ou zéro')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amountMin = null;
 
     #[Assert\PositiveOrZero(message: 'Le montant maximum doit être positif ou zéro')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amountMax = null;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier une date')]

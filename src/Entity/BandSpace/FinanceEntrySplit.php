@@ -33,7 +33,7 @@ class FinanceEntrySplit
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     public ?BandSpaceMembership $member = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(type: Types::BIGINT)]
     public int $amount;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

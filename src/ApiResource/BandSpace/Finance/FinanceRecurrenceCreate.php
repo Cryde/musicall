@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\FinanceRecurrenceCreateProcessor;
+use App\Validator\BandSpace\FinanceAmountLimit;
 use App\Validator\BandSpace\RecurrenceEndDate;
 use App\Validator\BandSpace\RecurrenceNoOverlap;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -40,6 +41,7 @@ class FinanceRecurrenceCreate
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un montant')]
     #[Assert\Positive(message: 'Le montant doit être positif')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public int $amount;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un périmètre')]

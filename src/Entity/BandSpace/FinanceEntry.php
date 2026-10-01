@@ -43,13 +43,13 @@ class FinanceEntry
     #[ORM\Column(type: Types::STRING, nullable: false, enumType: FinanceEntryStatus::class)]
     public FinanceEntryStatus $status;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
     public ?int $amount = null;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
     public ?int $amountMin = null;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
     public ?int $amountMax = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]

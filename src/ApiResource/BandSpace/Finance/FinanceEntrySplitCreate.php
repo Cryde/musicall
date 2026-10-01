@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\FinanceEntrySplitCreateProcessor;
 use App\Validator\BandSpace\EntryNotPaid;
+use App\Validator\BandSpace\FinanceAmountLimit;
 use App\Validator\BandSpace\SplitNotPersonal;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -33,5 +34,6 @@ class FinanceEntrySplitCreate
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un montant')]
     #[Assert\Positive(message: 'Le montant doit être positif')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public int $amount;
 }

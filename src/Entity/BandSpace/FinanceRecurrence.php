@@ -39,7 +39,7 @@ class FinanceRecurrence
     #[ORM\Column(type: Types::STRING, nullable: false, enumType: FinanceEntryType::class)]
     public FinanceEntryType $type;
 
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(type: Types::BIGINT)]
     public int $amount;
 
     #[ORM\Column(type: Types::STRING, nullable: false, enumType: FinanceEntryScope::class)]

@@ -40,6 +40,7 @@
         <InputNumber
           id="recurrence-amount"
           v-model="form.amountEuros"
+          :max="MAX_AMOUNT_EUROS"
           :minFractionDigits="2"
           :maxFractionDigits="2"
           suffix=" €"
@@ -138,7 +139,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, reactive, watch } from 'vue'
 import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
-import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
+import { centsToCurrency, currencyToCents, MAX_AMOUNT_EUROS } from '../../../utils/currency.js'
 import { RECURRENCE_DELETE_MESSAGE } from '../../../utils/financeConfirmations.js'
 
 const props = defineProps({
