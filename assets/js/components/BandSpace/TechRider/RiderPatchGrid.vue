@@ -66,11 +66,7 @@
         :style="{ gridTemplateColumns: GRID_COLUMNS }"
         aria-hidden="true"
       >
-        <span>Canal</span>
-        <span>Nom</span>
-        <span>Micro</span>
-        <span>Routage</span>
-        <span>Couleur</span>
+        <span v-for="column in PATCH_LIST_COLUMNS" :key="column.field">{{ column.label }}</span>
         <span />
       </div>
 
@@ -103,7 +99,7 @@
               aria-hidden="true"
             />
             <span class="sm:hidden text-xs text-surface-600 dark:text-surface-300 w-16 shrink-0">
-              Canal
+              {{ LABELS.channel }}
             </span>
             <InputNumber
               v-model="row.channel"
@@ -116,54 +112,54 @@
                 isDuplicate(row) ? 'border-red-400 dark:border-red-500' : ''
               ]"
               class="w-full"
-              :aria-label="`Canal, ligne ${index + 1}`"
+              :aria-label="`${LABELS.channel}, ligne ${index + 1}`"
               :input-props="{ inputmode: 'numeric' }"
             />
           </div>
 
           <div class="flex items-center gap-1 min-w-0">
             <span class="sm:hidden text-xs text-surface-600 dark:text-surface-300 w-16 shrink-0">
-              Nom
+              {{ LABELS.name }}
             </span>
             <InputText
               v-model="row.name"
               :disabled="readOnly"
               :maxlength="FIELD_LIMITS.name"
-              class="w-full"
-              placeholder="KICK IN"
-              :aria-label="`Nom, ligne ${index + 1}`"
+              :class="['w-full', PLACEHOLDER_STYLE]"
+              :placeholder="placeholderFor(row, 'name')"
+              :aria-label="`${LABELS.name}, ligne ${index + 1}`"
             />
           </div>
           <div class="flex items-center gap-1 min-w-0">
             <span class="sm:hidden text-xs text-surface-600 dark:text-surface-300 w-16 shrink-0">
-              Micro
+              {{ LABELS.microphone }}
             </span>
             <InputText
               v-model="row.microphone"
               :disabled="readOnly"
               :maxlength="FIELD_LIMITS.microphone"
-              class="w-full"
-              placeholder="Beta 91 ou équivalent"
-              :aria-label="`Micro, ligne ${index + 1}`"
+              :class="['w-full', PLACEHOLDER_STYLE]"
+              :placeholder="placeholderFor(row, 'microphone')"
+              :aria-label="`${LABELS.microphone}, ligne ${index + 1}`"
             />
           </div>
           <div class="flex items-center gap-1 min-w-0">
             <span class="sm:hidden text-xs text-surface-600 dark:text-surface-300 w-16 shrink-0">
-              Routage
+              {{ LABELS.routing }}
             </span>
             <InputText
               v-model="row.routing"
               :disabled="readOnly"
               :maxlength="FIELD_LIMITS.routing"
-              class="w-full"
-              placeholder="Vers split micro A1"
-              :aria-label="`Routage, ligne ${index + 1}`"
+              :class="['w-full', PLACEHOLDER_STYLE]"
+              :placeholder="placeholderFor(row, 'routing')"
+              :aria-label="`${LABELS.routing}, ligne ${index + 1}`"
             />
           </div>
 
           <div class="flex items-center gap-1 min-w-0">
             <span class="sm:hidden text-xs text-surface-600 dark:text-surface-300 w-16 shrink-0">
-              Couleur
+              {{ LABELS.colour }}
             </span>
             <Select
               v-model="row.colour"
@@ -172,7 +168,7 @@
               option-value="value"
               :disabled="readOnly"
               class="w-full"
-              :aria-label="`Couleur, ligne ${index + 1}`"
+              :aria-label="`${LABELS.colour}, ligne ${index + 1}`"
             >
               <!-- The name travels with the swatch in both the closed state and the list, so
                    the grouping is never conveyed by colour alone. -->
@@ -320,6 +316,10 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { computed, ref, useId } from 'vue'
 import { TECH_RIDER_COLOURS } from '../../../constants/techRiderColours.js'
+import {
+  PATCH_LIST_LABELS as LABELS,
+  PATCH_LIST_COLUMNS
+} from '../../../constants/techRiderPatchColumns.js'
 
 const props = defineProps({
   label: { type: String, required: true },
@@ -396,6 +396,25 @@ const rowChoices = computed(() =>
     }
   })
 )
+
+const PLACEHOLDERS = Object.fromEntries(
+  PATCH_LIST_COLUMNS.map(({ field, placeholder }) => [field, placeholder])
+)
+
+// Italic and lighter than a value, so an example is never read as one, yet still at a readable
+// contrast: surface-500 on white, surface-400 on the dark background.
+const PLACEHOLDER_STYLE =
+  'placeholder:italic placeholder:text-surface-500 dark:placeholder:text-surface-400'
+
+/**
+ * Examples only on a row nobody has typed into yet. On a filled row a placeholder in a blank field
+ * looked like data, and the PDF then printed a dash where the band thought it had said something.
+ */
+function placeholderFor(row, field) {
+  const isUntouched = !row.name?.trim() && !row.microphone?.trim() && !row.routing?.trim()
+
+  return isUntouched ? PLACEHOLDERS[field] : undefined
+}
 
 function isDuplicate(row) {
   return duplicateChannels.value.has(row.channel)

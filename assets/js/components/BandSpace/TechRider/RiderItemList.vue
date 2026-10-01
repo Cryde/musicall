@@ -217,7 +217,7 @@ import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { reactive, ref } from 'vue'
+import { onBeforeUnmount, reactive, ref } from 'vue'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import RiderContactsItemEditor from './RiderContactsItemEditor.vue'
 import RiderDocumentItemEditor from './RiderDocumentItemEditor.vue'
@@ -237,9 +237,13 @@ const confirm = useConfirm()
 const toast = useToast()
 
 // Per item, because items autosave independently and each needs its own answer.
-const saveStatus = reactive({})
-const saveError = reactive({})
 const collapsed = reactive({})
+// Not reactive: only read to decide when the last save of an item is back.
+const savesInFlight = {}
+let isMounted = true
+onBeforeUnmount(() => {
+  isMounted = false
+})
 
 const addDialogOpen = ref(false)
 const ITEM_TYPES = [
@@ -291,11 +295,11 @@ async function setIncluded(item, isIncluded) {
 }
 
 function statusFor(itemId) {
-  return saveStatus[itemId] ?? null
+  return techRidersStore.saveStateFor(itemId)?.state ?? null
 }
 
 function errorFor(itemId) {
-  return saveError[itemId] ?? 'Erreur'
+  return techRidersStore.saveStateFor(itemId)?.message ?? 'Erreur'
 }
 
 function isCollapsed(itemId) {
@@ -311,16 +315,35 @@ function toggleCollapsed(itemId) {
  * ceasing to say "Sauvegardé". The server's own message is used, which is how the content
  * size cap reaches the user.
  */
-async function handleSave({ itemId, content }) {
-  saveStatus[itemId] = 'saving'
-  saveError[itemId] = null
+async function handleSave({ itemId, content, isSideWrite = false }) {
+  // The contacts e-mails switch saves while a note may still be waiting on its debounce. Its save
+  // must not report the item as saved over that note, so it leaves a pending state as it is.
+  const reportsProgress = !(
+    isSideWrite && techRidersStore.saveStateFor(itemId)?.state === 'pending'
+  )
+  if (reportsProgress) report(itemId, 'saving')
+  savesInFlight[itemId] = (savesInFlight[itemId] ?? 0) + 1
   try {
     await techRidersStore.saveItemContent(props.bandSpaceId, props.riderId, itemId, content)
-    saveStatus[itemId] = 'saved'
+    savesInFlight[itemId] -= 1
+    // Saved only once the last save of this item is back and nothing was typed meanwhile: the text
+    // editor marks new typing as pending, and a contacts item has two writers whose saves overlap.
+    if (savesInFlight[itemId] === 0 && techRidersStore.saveStateFor(itemId)?.state === 'saving') {
+      report(itemId, 'saved')
+    }
   } catch (e) {
-    saveStatus[itemId] = 'error'
-    saveError[itemId] = e.violationsByField?.content?.[0]?.message ?? e.message ?? 'Erreur'
+    savesInFlight[itemId] -= 1
+    report(itemId, 'error', e.violationsByField?.content?.[0]?.message ?? e.message ?? 'Erreur')
   }
+}
+
+/**
+ * Editors flush their last edit when the page or the rider changes, which unmounts this list too.
+ * A state written after that describes nothing on screen, and an error left behind would make the
+ * next navigation ask about edits that are no longer anywhere.
+ */
+function report(itemId, state, message = null) {
+  if (isMounted) techRidersStore.setItemSaveState(itemId, state, message)
 }
 
 async function handleAdd() {

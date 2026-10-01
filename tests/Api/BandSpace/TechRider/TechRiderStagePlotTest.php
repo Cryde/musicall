@@ -12,6 +12,9 @@ use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TechRiderItemRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use DateTime;
+use Ramsey\Uuid\Uuid;
+use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\TechRiderFactory;
@@ -620,6 +623,30 @@ class TechRiderStagePlotTest extends ApiTestCase
             'title' => 'Plan de scène',
             'element_count' => 2,
         ], $activities[0]->payload);
+    }
+
+    /**
+     * The plot autosaves on a debounce since #1089, so a save inside the window is folded into the
+     * member's existing entry: every drag would otherwise become a line in the feed. The earlier
+     * entry is seeded, because loginUser() only survives one request.
+     */
+    public function test_a_save_inside_the_window_is_coalesced_into_the_existing_entry(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+        BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Rider,
+            'type' => 'rider_stage_plot_updated',
+            'resourceId' => Uuid::fromString((string) $item->id),
+            'actor' => $user,
+            'creationDatetime' => new DateTime('-1 minute'),
+        ])->create();
+
+        $this->put($user, $bandSpace, $rider, $item, ['plot' => ['version' => 1, 'elements' => []]]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertCount(1, self::getContainer()->get(BandSpaceActivityRepository::class)
+            ->findForResource($bandSpace, BandSpaceModule::Rider, $item->id));
     }
 
     public function test_saving_a_plot_as_a_non_member_is_forbidden(): void

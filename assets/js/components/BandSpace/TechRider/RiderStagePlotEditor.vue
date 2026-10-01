@@ -87,26 +87,6 @@
         />
       </div>
     </div>
-
-    <!-- Explicit save. A drag crosses dozens of pixels, and autosaving would be a request per
-         one of them; the sections tab autosaves because typing has natural pauses. -->
-    <div
-      v-if="!readOnly && isDirty"
-      class="sticky bottom-0 flex flex-wrap items-center gap-3 p-3 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950"
-    >
-      <i class="pi pi-exclamation-circle text-primary" aria-hidden="true" />
-      <span class="text-sm">Modifications non enregistrées.</span>
-      <span class="flex-1" />
-      <Button
-        label="Annuler les modifications"
-        severity="secondary"
-        text
-        size="small"
-        :disabled="isSaving"
-        @click="seed"
-      />
-      <Button label="Sauvegarder" icon="pi pi-check" size="small" :loading="isSaving" @click="save" />
-    </div>
   </div>
 </template>
 
@@ -115,8 +95,8 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
-import { useToast } from 'primevue/usetoast'
-import { computed, onBeforeUnmount, reactive, ref, useId, watch } from 'vue'
+import { computed, reactive, ref, useId, watch } from 'vue'
+import { useSnapshotAutosave } from '../../../composables/useSnapshotAutosave.js'
 import {
   DEFAULT_ASPECT_RATIO,
   describePosition,
@@ -147,7 +127,6 @@ const ASPECT_RATIO_OPTIONS = [
 ]
 
 const techRidersStore = useBandTechRidersStore()
-const toast = useToast()
 
 const uid = useId()
 const canvasRef = ref(null)
@@ -157,20 +136,13 @@ const legend = reactive([])
 const aspectRatio = ref(DEFAULT_ASPECT_RATIO)
 const selectedId = ref(null)
 
-const isSaving = ref(false)
 const isLoadingIcons = ref(true)
 const globalError = ref(null)
 const loadError = ref(null)
 
-/**
- * The last state the server confirmed, serialised. Comparing whole documents means no edit can be
- * missed because somebody forgot to flag it, and a change that cancels itself out reads as clean.
- */
-const savedSnapshot = ref('')
 let elementCounter = 0
 
 const icons = computed(() => techRidersStore.stagePlotIcons)
-const isDirty = computed(() => serialise() !== savedSnapshot.value)
 const selectedElement = computed(
   () => elements.find((element) => element.id === selectedId.value) ?? null
 )
@@ -180,10 +152,15 @@ const selectedElement = computed(
  * what the validator accepts; `undefined` never appears because JSON would drop it silently.
  */
 function toPlot() {
+  return plotDocument(elements, legend, aspectRatio.value)
+}
+
+/** Shared by the editor's own state and the server's, so the two compare as equal when they are. */
+function plotDocument(plotElements, plotLegend, plotAspectRatio) {
   return {
     version: STAGE_PLOT_SCHEMA_VERSION,
-    stage: { aspect_ratio: aspectRatio.value },
-    elements: elements.map((element) => ({
+    stage: { aspect_ratio: plotAspectRatio },
+    elements: plotElements.map((element) => ({
       id: element.id,
       icon: element.icon,
       x: element.x,
@@ -193,7 +170,7 @@ function toPlot() {
       label: element.label?.trim() ? element.label.trim() : null,
       colour: element.colour ?? null
     })),
-    legend: legend.map((entry) => ({
+    legend: plotLegend.map((entry) => ({
       icon: entry.icon,
       label: entry.label?.trim() ? entry.label.trim() : null
     }))
@@ -204,7 +181,7 @@ function serialise() {
   return JSON.stringify(toPlot())
 }
 
-function seed() {
+function seedPlot() {
   const plot = props.content ?? {}
   elements.splice(
     0,
@@ -232,7 +209,6 @@ function seed() {
     ? selectedId.value
     : null
   globalError.value = null
-  savedSnapshot.value = serialise()
 }
 
 function describeElement(element) {
@@ -350,30 +326,6 @@ function removeLegendEntry(index) {
   legend.splice(index, 1)
 }
 
-async function save() {
-  globalError.value = null
-
-  // Captured before the request, and applied unchanged afterwards. Re-serialising after the await
-  // would fold anything dragged during the round trip into the saved baseline as though the server
-  // had confirmed it, and every unsaved-changes guard would then stand down.
-  const plot = toPlot()
-  const sentSnapshot = JSON.stringify(plot)
-
-  isSaving.value = true
-  try {
-    await techRidersStore.saveStagePlot(props.bandSpaceId, props.riderId, props.itemId, plot)
-    savedSnapshot.value = sentSnapshot
-    toast.add({ severity: 'success', summary: 'Plan de scène enregistré', life: 2500 })
-  } catch (e) {
-    // The server's own message, so a rule the editor does not mirror still reaches the user.
-    globalError.value = e.isValidationError
-      ? (e.violations ?? []).map((violation) => violation.message).join('. ')
-      : e.message
-  } finally {
-    isSaving.value = false
-  }
-}
-
 async function loadIcons() {
   isLoadingIcons.value = true
   loadError.value = null
@@ -386,27 +338,55 @@ async function loadIcons() {
   }
 }
 
-// Seeded before the watchers exist: an empty snapshot compares unequal to an empty document, so a
-// watcher created first would report a brand new editor as dirty and the page would ask about
-// unsaved changes the moment it loaded.
-seed()
+// Seeded before autosave takes its first snapshot, so a freshly opened plot reads as saved.
+seedPlot()
 
-watch(isDirty, (dirty) => techRidersStore.setItemDirty(props.itemId, dirty))
+// Debounced like every other section: a drag moves an element dozens of times, and only the
+// position it settles on is sent, once the pointer has been still for the delay.
+const { markSaved, shouldReseed } = useSnapshotAutosave({
+  itemId: () => props.itemId,
+  isReadOnly: () => props.readOnly,
+  serialise,
+  save: async (plot) => {
+    globalError.value = null
+    await techRidersStore.saveStagePlot(props.bandSpaceId, props.riderId, props.itemId, plot)
+  },
+  // The server's own message, so a rule the editor does not mirror still reaches the user.
+  onError: (e) => {
+    globalError.value = e.isValidationError
+      ? (e.violations ?? []).map((violation) => violation.message).join('. ')
+      : e.message
+    return globalError.value
+  }
+})
 
-// Reseeds when a save elsewhere replaces the rider, guarded on dirtiness so an in-flight edit is
-// never overwritten by a refresh.
+function seed() {
+  seedPlot()
+  markSaved()
+}
+
+/** The server's plot in the shape `serialise` produces, to compare without reseeding. */
+function serialiseServerPlot() {
+  const plot = props.content ?? {}
+  return JSON.stringify(
+    plotDocument(
+      plot.elements ?? [],
+      plot.legend ?? [],
+      plot.stage?.aspect_ratio ?? DEFAULT_ASPECT_RATIO
+    )
+  )
+}
+
+// Reseeds when a save elsewhere replaces the rider. Never over an edit still on its way, and never
+// for the answer to our own save, which would reset the selection and the inspector mid-edit.
 watch(
   () => props.content,
   () => {
-    if (!isDirty.value) seed()
+    if (shouldReseed(serialiseServerPlot())) seed()
   }
 )
 
 watch(() => props.itemId, seed)
-
-// An unmounted editor holds no edits, so leaving the flag set would make the guard warn about
-// changes that no longer exist anywhere.
-onBeforeUnmount(() => techRidersStore.setItemDirty(props.itemId, false))
 
 loadIcons()
 </script>

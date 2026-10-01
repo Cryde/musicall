@@ -527,23 +527,28 @@ class TechRiderPatchListTest extends ApiTestCase
     }
 
     /**
-     * Every save is recorded, unlike the text editor's autosave, which is coalesced because a
-     * debounce would otherwise turn an afternoon of writing into forty feed entries. A grid is
-     * saved deliberately, so a second entry a minute after the first is correct rather than noise.
+     * The grid autosaves on a debounce since #1089, so a save inside the window is folded into the
+     * member's existing entry, like rich text. Without it a session of typing would fill the feed.
      *
      * The earlier entry is seeded, again because loginUser() only survives one request.
      */
-    public function test_a_save_soon_after_another_is_recorded_separately_rather_than_coalesced(): void
+    public function test_a_save_inside_the_window_is_coalesced_into_the_existing_entry(): void
     {
         [$user, $bandSpace, $rider, $item] = $this->seed();
-        BandSpaceActivityFactory::new([
-            'bandSpace' => $bandSpace,
-            'module' => BandSpaceModule::Rider,
-            'type' => 'rider_patch_list_updated',
-            'resourceId' => Uuid::fromString((string) $item->id),
-            'actor' => $user,
-            'creationDatetime' => new DateTime('-1 minute'),
-        ])->create();
+        $this->seedPatchListActivity($bandSpace, $item, $user, new DateTime('-1 minute'));
+
+        $this->put($user, $bandSpace, $rider, $item, ['inputs' => [['channel' => 2]], 'outputs' => []]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertCount(1, self::getContainer()->get(BandSpaceActivityRepository::class)
+            ->findForResource($bandSpace, BandSpaceModule::Rider, $item->id));
+    }
+
+    /** Past the window the trail resumes, or a grid revisited every week would show one entry forever. */
+    public function test_a_save_after_the_window_records_a_new_entry(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+        $this->seedPatchListActivity($bandSpace, $item, $user, new DateTime('-1 hour'));
 
         $this->put($user, $bandSpace, $rider, $item, ['inputs' => [['channel' => 2]], 'outputs' => []]);
 
@@ -675,6 +680,18 @@ class TechRiderPatchListTest extends ApiTestCase
             ->setParameter('itemId', $itemId)
             ->getQuery()
             ->getResult());
+    }
+
+    private function seedPatchListActivity(BandSpace $bandSpace, TechRiderItem $item, User $actor, DateTime $when): void
+    {
+        BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Rider,
+            'type' => 'rider_patch_list_updated',
+            'resourceId' => Uuid::fromString((string) $item->id),
+            'actor' => $actor,
+            'creationDatetime' => $when,
+        ])->create();
     }
 
     /**

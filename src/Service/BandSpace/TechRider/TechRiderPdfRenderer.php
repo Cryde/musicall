@@ -6,6 +6,7 @@ use App\Entity\BandSpace\TechRider;
 use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\BandSpace\TechRiderPatchRow;
 use App\Enum\BandSpace\TechRiderItemType;
+use App\Enum\BandSpace\TechRiderPatchColumn;
 use App\Enum\BandSpace\TechRiderPatchDirection;
 use App\Enum\BandSpace\TechRiderStagePlotIcon;
 use Sensiolabs\GotenbergBundle\Builder\BuilderFileInterface;
@@ -324,6 +325,9 @@ readonly class TechRiderPdfRenderer
         return [
             'inputs' => $partition(TechRiderPatchDirection::Input),
             'outputs' => $partition(TechRiderPatchDirection::Output),
+            'inputs_label' => TechRiderPatchDirection::Input->label(),
+            'outputs_label' => TechRiderPatchDirection::Output->label(),
+            'columns' => array_map(static fn (TechRiderPatchColumn $column): string => $column->label(), TechRiderPatchColumn::cases()),
         ];
     }
 

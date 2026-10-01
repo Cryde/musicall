@@ -128,6 +128,7 @@ import Button from 'primevue/button'
 import { watch } from 'vue'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
 import { TECH_RIDER_COLOUR_HEXES, TECH_RIDER_COLOURS } from '../../../constants/techRiderColours.js'
+import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 
 const props = defineProps({
   itemId: { type: String, required: true },
@@ -142,12 +143,20 @@ const colours = TECH_RIDER_COLOURS
 
 // Color is restricted to the palette so the exported document only ever carries values the
 // renderer knows. Without the allowlist a paste from Word would smuggle in arbitrary CSS.
-const { editor } = useRichTextEditor({
+const techRidersStore = useBandTechRidersStore()
+
+const { editor, hasPendingEdits } = useRichTextEditor({
   content: props.content,
   placeholder: 'Décrivez vos besoins pour cet élément...',
   editable: !props.readOnly,
   extensions: [TextStyle, Color.configure({ types: ['textStyle'] })],
   onSave: (json) => emit('save', { itemId: props.itemId, content: sanitiseColours(json) })
+})
+
+// Typing the debounce has not handed to a save yet is reported as pending, so a closed tab or an F5
+// warns about it like any other unconfirmed edit.
+watch(hasPendingEdits, (pending) => {
+  if (pending) techRidersStore.setItemSaveState(props.itemId, 'pending')
 })
 
 watch(

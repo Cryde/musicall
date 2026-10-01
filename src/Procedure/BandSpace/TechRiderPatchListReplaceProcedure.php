@@ -64,9 +64,10 @@ readonly class TechRiderPatchListReplaceProcedure
             $item->updateDatetime = new DateTime();
 
             $techRider = $item->techRider;
-            // An explicit save of a whole grid, not an autosave, so no coalescing: every one of
-            // these is a deliberate act somebody may need to trace.
-            $this->activityRecorder->record(
+            // Autosaved on a debounce since #1089, so coalesced like rich text: one entry per member
+            // and grid inside the window, or a session of typing would fill the feed. The entry
+            // keeps the counts of the first save in that window.
+            $this->activityRecorder->recordCoalesced(
                 bandSpace: $techRider->bandSpace,
                 module: BandSpaceModule::Rider,
                 type: BandSpaceRiderActivityType::RiderPatchListUpdated,

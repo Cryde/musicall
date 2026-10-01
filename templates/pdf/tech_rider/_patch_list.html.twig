@@ -1,67 +1,41 @@
+{% macro patch_table(caption, columns, rows) %}
+    <p class="patch-caption">{{ caption }}</p>
+    <table class="patch">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                    <th{% if loop.first %} class="num"{% endif %}>{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td class="num">{{ row.channel }}</td>
+                    <td>{{ row.name ?: '—' }}</td>
+                    <td>{{ row.microphone ?: '—' }}</td>
+                    <td>{{ row.routing ?: '—' }}</td>
+                    <td>
+                        {% if row.colour %}
+                            <span class="chip" style="background:{{ row.colour.hex }}"></span>{{ row.colour.label }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
+
 {% if item.inputs is empty and item.outputs is empty %}
     <p class="attachment-reason">Aucune ligne dans cette patch list.</p>
 {% endif %}
 
 {% if item.inputs is not empty %}
-    <p class="patch-caption">Entrées</p>
-    <table class="patch">
-        <thead>
-            <tr>
-                <th class="num">Ch.</th>
-                <th>Source</th>
-                <th>Micro ou boîtier</th>
-                <th>Routing</th>
-                <th>Couleur</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in item.inputs %}
-                <tr>
-                    <td class="num">{{ row.channel }}</td>
-                    <td>{{ row.name ?: '—' }}</td>
-                    <td>{{ row.microphone ?: '—' }}</td>
-                    <td>{{ row.routing ?: '—' }}</td>
-                    <td>
-                        {% if row.colour %}
-                            <span class="chip" style="background:{{ row.colour.hex }}"></span>{{ row.colour.label }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {{ _self.patch_table(item.inputs_label, item.columns, item.inputs) }}
 {% endif %}
 
 {% if item.outputs is not empty %}
-    <p class="patch-caption">Sorties</p>
-    <table class="patch">
-        <thead>
-            <tr>
-                <th class="num">Ch.</th>
-                <th>Destination</th>
-                <th>Type</th>
-                <th>Routing</th>
-                <th>Couleur</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in item.outputs %}
-                <tr>
-                    <td class="num">{{ row.channel }}</td>
-                    <td>{{ row.name ?: '—' }}</td>
-                    <td>{{ row.microphone ?: '—' }}</td>
-                    <td>{{ row.routing ?: '—' }}</td>
-                    <td>
-                        {% if row.colour %}
-                            <span class="chip" style="background:{{ row.colour.hex }}"></span>{{ row.colour.label }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {{ _self.patch_table(item.outputs_label, item.columns, item.outputs) }}
 {% endif %}

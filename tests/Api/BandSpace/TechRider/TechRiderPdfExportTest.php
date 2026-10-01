@@ -272,6 +272,35 @@ class TechRiderPdfExportTest extends ApiTestCase
     }
 
     /**
+     * The editor and the PDF name the patch list the same way (#1089). The PDF used to print
+     * « Sorties » and « Destination / Type » for columns the editor called « Retours » and « Micro ».
+     */
+    public function test_both_patch_tables_use_the_editor_column_names(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        $item = TechRiderItemFactory::new([
+            'techRider' => $rider,
+            'type' => TechRiderItemType::PatchList,
+            'title' => 'Patch list',
+            'position' => 0,
+        ])->create();
+        foreach ([TechRiderPatchDirection::Input, TechRiderPatchDirection::Output] as $direction) {
+            TechRiderPatchRowFactory::new(['item' => $item, 'direction' => $direction, 'channel' => 1, 'position' => 0])->create();
+        }
+
+        $html = $this->render($bandSpace, $rider)->lastCall()['documents']['index.html'];
+
+        $this->assertStringContainsString('<p class="patch-caption">Entrées</p>', $html);
+        $this->assertStringContainsString('<p class="patch-caption">Retours</p>', $html);
+        $this->assertSame(2, preg_match_all(
+            '#<th class="num">Canal</th>\s*<th>Nom</th>\s*<th>Micro</th>\s*<th>Routage</th>\s*<th>Couleur</th>#',
+            $html,
+        ));
+        $this->assertStringNotContainsString('Sorties', $html);
+        $this->assertStringNotContainsString('Destination', $html);
+    }
+
+    /**
      * The rider goes to a venue, so an address that was not opted in must not be on it. The flag is
      * stored per item and the roster is read live, which makes this the one place the two meet.
      */
