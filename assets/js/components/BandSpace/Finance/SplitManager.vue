@@ -38,6 +38,7 @@
           <span class="text-sm flex-1 truncate">{{ member.username }}</span>
           <InputNumber
             v-model="splitAmounts[member.id]"
+            :max="MAX_AMOUNT_EUROS"
             :minFractionDigits="2"
             :maxFractionDigits="2"
             suffix=" €"
@@ -86,7 +87,12 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { computed, reactive, ref, watch } from 'vue'
 import bandSpaceFinanceApi from '../../../api/bandSpace/band-space-finance.js'
 import bandSpaceSettingsApi from '../../../api/bandSpace/band-space-settings.js'
-import { centsToCurrency, currencyToCents, formatAmount } from '../../../utils/currency.js'
+import {
+  centsToCurrency,
+  currencyToCents,
+  formatAmount,
+  MAX_AMOUNT_EUROS
+} from '../../../utils/currency.js'
 import { planSplitSync } from '../../../utils/splitReconciliation.js'
 
 const props = defineProps({

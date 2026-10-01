@@ -14,6 +14,7 @@ use App\State\Processor\BandSpace\FinanceRecurrenceDeleteProcessor;
 use App\State\Processor\BandSpace\FinanceRecurrenceUpdateProcessor;
 use App\State\Provider\BandSpace\FinanceRecurrenceCollectionProvider;
 use App\State\Provider\BandSpace\FinanceRecurrenceItemProvider;
+use App\Validator\BandSpace\FinanceAmountLimit;
 use App\Validator\BandSpace\PersonalScopeWithoutSplits;
 use App\Validator\BandSpace\RecurrenceEndDate;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -95,6 +96,7 @@ class FinanceRecurrenceResource
     public string $type;
 
     #[Assert\Positive(message: 'Le montant doit être positif')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public int $amount;
 
     #[Assert\Choice(choices: ['band', 'personal'], message: 'Périmètre invalide')]

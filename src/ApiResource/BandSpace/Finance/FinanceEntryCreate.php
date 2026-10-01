@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\FinanceEntryCreateProcessor;
+use App\Validator\BandSpace\FinanceAmountLimit;
 use App\Validator\BandSpace\FinanceAmountRange;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -41,12 +42,15 @@ class FinanceEntryCreate
     public string $status;
 
     #[Assert\PositiveOrZero(message: 'Le montant doit être positif ou zéro')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amount = null;
 
     #[Assert\PositiveOrZero(message: 'Le montant minimum doit être positif ou zéro')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amountMin = null;
 
     #[Assert\PositiveOrZero(message: 'Le montant maximum doit être positif ou zéro')]
+    #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amountMax = null;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier une date')]

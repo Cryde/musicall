@@ -1,3 +1,7 @@
+// The API's ceiling on every finance amount (FinanceAmountLimit, #1045), in euros: the inputs stop
+// there rather than letting someone type a figure the save would refuse.
+export const MAX_AMOUNT_EUROS = 100_000_000
+
 export function formatAmount(cents) {
   const value = cents ?? 0
   return `${(value / 100).toFixed(2).replace('.', ',')} \u20AC`

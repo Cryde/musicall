@@ -95,6 +95,7 @@
             id="finance-amount"
             aria-label="Montant"
             v-model="form.amountEuros"
+            :max="MAX_AMOUNT_EUROS"
             :minFractionDigits="2"
             :maxFractionDigits="2"
             suffix=" €"
@@ -105,6 +106,7 @@
         <div v-else class="flex flex-col sm:flex-row gap-2">
           <InputNumber
             v-model="form.amountMinEuros"
+            :max="MAX_AMOUNT_EUROS"
             aria-label="Montant minimum"
             :minFractionDigits="2"
             :maxFractionDigits="2"
@@ -115,6 +117,7 @@
           />
           <InputNumber
             v-model="form.amountMaxEuros"
+            :max="MAX_AMOUNT_EUROS"
             aria-label="Montant maximum"
             :minFractionDigits="2"
             :maxFractionDigits="2"
@@ -215,7 +218,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { ERROR_CODES } from '../../../constants/errorCodes.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
-import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
+import { centsToCurrency, currencyToCents, MAX_AMOUNT_EUROS } from '../../../utils/currency.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import SplitManager from './SplitManager.vue'
 
