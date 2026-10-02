@@ -118,6 +118,7 @@ class TechRiderPatchListTest extends ApiTestCase
                     [
                         'id' => (string) $rows[0]->id,
                         'channel' => 3,
+                        'stereo' => false,
                         'name' => 'SNARE',
                         'microphone' => 'SM57',
                         'routing' => 'A3',
@@ -315,6 +316,115 @@ class TechRiderPatchListTest extends ApiTestCase
             'type' => '/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
             'title' => 'An error occurred',
             'description' => 'inputs: Une liste ne peut pas dépasser 64 lignes',
+        ]);
+    }
+
+    /** A stereo pair is one source on two channels (#1099): stored as its first channel and a flag. */
+    public function test_a_stereo_row_is_saved_and_returned(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+
+        $this->put($user, $bandSpace, $rider, $item, [
+            'inputs' => [
+                ['channel' => 8, 'stereo' => true, 'name' => 'CLAVIER L/R', 'microphone' => 'DI stéréo'],
+                ['channel' => 10, 'name' => 'CHANT'],
+            ],
+            'outputs' => [],
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $rows = self::getContainer()->get(TechRiderPatchRowRepository::class)->findByItem($item);
+        $this->assertSame(
+            [[8, true, 'CLAVIER L/R'], [10, false, 'CHANT']],
+            array_map(static fn ($row): array => [$row->channel, $row->stereo, $row->name], $rows),
+        );
+    }
+
+    /** 8 stereo takes 9 as well, so a mono 9 is the same mistake as two rows on 9. */
+    public function test_a_stereo_row_colliding_with_the_next_channel_is_refused(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+
+        $this->put($user, $bandSpace, $rider, $item, [
+            'inputs' => [['channel' => 8, 'stereo' => true, 'name' => 'CLAVIER'], ['channel' => 9, 'name' => 'CHANT']],
+            'outputs' => [],
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'inputs',
+                    'message' => 'Le numéro de canal 9 apparaît plusieurs fois',
+                    'code' => TechRiderPatchRows::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'inputs: Le numéro de canal 9 apparaît plusieurs fois',
+            'type' => '/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
+            'title' => 'An error occurred',
+            'description' => 'inputs: Le numéro de canal 9 apparaît plusieurs fois',
+        ]);
+    }
+
+    public function test_a_stereo_row_on_the_last_channel_is_refused(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+
+        $this->put($user, $bandSpace, $rider, $item, [
+            'inputs' => [['channel' => TechRiderPatchRows::MAX_CHANNEL, 'stereo' => true]],
+            'outputs' => [],
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'inputs[0].channel',
+                    'message' => 'Une paire stéréo occupe deux canaux : elle doit commencer au plus au canal 998',
+                    'code' => TechRiderPatchRows::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'inputs[0].channel: Une paire stéréo occupe deux canaux : elle doit commencer au plus au canal 998',
+            'type' => '/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
+            'title' => 'An error occurred',
+            'description' => 'inputs[0].channel: Une paire stéréo occupe deux canaux : elle doit commencer au plus au canal 998',
+        ]);
+    }
+
+    public function test_a_stereo_flag_that_is_not_a_boolean_is_refused(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+
+        $this->put($user, $bandSpace, $rider, $item, [
+            'inputs' => [['channel' => 1, 'stereo' => 'yes']],
+            'outputs' => [],
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'inputs[0].stereo',
+                    'message' => 'Ce champ doit valoir vrai ou faux',
+                    'code' => TechRiderPatchRows::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'inputs[0].stereo: Ce champ doit valoir vrai ou faux',
+            'type' => '/validation_errors/' . TechRiderPatchRows::ERROR_CODE,
+            'title' => 'An error occurred',
+            'description' => 'inputs[0].stereo: Ce champ doit valoir vrai ou faux',
         ]);
     }
 

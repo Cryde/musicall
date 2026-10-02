@@ -16,7 +16,7 @@ class TechRiderPatchRowsValidator extends ConstraintValidator
      * the `id` or `position` it read would believe it controls values that a full replace
      * regenerates.
      */
-    private const array ALLOWED_FIELDS = ['channel', 'name', 'microphone', 'routing', 'colour'];
+    private const array ALLOWED_FIELDS = ['channel', 'stereo', 'name', 'microphone', 'routing', 'colour'];
 
     private const array TEXT_FIELD_LIMITS = [
         'name' => TechRiderPatchRows::MAX_NAME_LENGTH,
@@ -78,6 +78,18 @@ class TechRiderPatchRowsValidator extends ConstraintValidator
                 // Still comparable for uniqueness, so the duplicate check keeps running.
             }
 
+            if (array_key_exists('stereo', $row) && !is_bool($row['stereo'])) {
+                $this->addViolation($constraint->invalidStereoMessage, "{$path}[{$index}].stereo", $constraint)->addViolation();
+                $channelsUsable = false;
+                continue;
+            }
+
+            if (($row['stereo'] ?? false) === true && $row['channel'] >= TechRiderPatchRows::MAX_CHANNEL) {
+                $this->addViolation($constraint->stereoOutOfRangeMessage, "{$path}[{$index}].channel", $constraint)
+                    ->setParameter('{{ max }}', (string) (TechRiderPatchRows::MAX_CHANNEL - 1))
+                    ->addViolation();
+            }
+
             $this->validateTextFields($row, "{$path}[{$index}]", $constraint);
             $this->validateColour($row, "{$path}[{$index}]", $constraint);
         }
@@ -88,8 +100,15 @@ class TechRiderPatchRowsValidator extends ConstraintValidator
 
         // Reported per direction: the same number in inputs and outputs is normal, a bass DI on
         // input 10 and a wedge on output 10 are different things.
-        /** @var list<int> $channels */
-        $channels = array_column($rows, 'channel');
+        // A stereo row takes its channel and the next, so 8 stereo and 9 mono collide on 9.
+        $channels = [];
+        foreach ($rows as $row) {
+            /** @var array{channel: int, stereo?: bool} $row */
+            $channels[] = $row['channel'];
+            if ($row['stereo'] ?? false) {
+                $channels[] = $row['channel'] + 1;
+            }
+        }
         $duplicates = array_keys(array_filter(
             array_count_values($channels),
             static fn (int $occurrences): bool => $occurrences > 1,

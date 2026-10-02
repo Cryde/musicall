@@ -150,6 +150,7 @@ readonly class TechRiderItemBuilder
         return [
             'id' => (string) $row->id,
             'channel' => $row->channel,
+            'stereo' => $row->stereo,
             'name' => $row->name,
             'microphone' => $row->microphone,
             'routing' => $row->routing,

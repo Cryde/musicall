@@ -160,6 +160,14 @@ export default {
       .catch(handleApiError)
   },
 
+  /** `{ used: [{ name, usage_count }], catalogue: [name] }`, for the patch list's Micro / DI cells. */
+  getMicrophoneSuggestions(bandSpaceId) {
+    return axios
+      .get(Routing.generate('api_band_space_tech_rider_microphones', { bandSpaceId }))
+      .then((resp) => ({ used: resp.data.used ?? [], catalogue: resp.data.catalogue ?? [] }))
+      .catch(handleApiError)
+  },
+
   /** Static application data, so it is fetched once and kept for the session. */
   getStagePlotIcons() {
     return axios

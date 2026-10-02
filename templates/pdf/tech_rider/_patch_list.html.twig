@@ -11,7 +11,7 @@
         <tbody>
             {% for row in rows %}
                 <tr>
-                    <td class="num">{{ row.channel }}</td>
+                    <td class="num">{{ row.channel }}{% if row.stereo %}-{{ row.channel + 1 }}{% endif %}</td>
                     <td>{{ row.name ?: '—' }}</td>
                     <td>{{ row.microphone ?: '—' }}</td>
                     <td>{{ row.routing ?: '—' }}</td>

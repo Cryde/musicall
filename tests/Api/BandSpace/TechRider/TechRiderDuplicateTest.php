@@ -115,9 +115,9 @@ class TechRiderDuplicateTest extends ApiTestCase
             static fn ($a, $b): int => [$a->direction->value, $a->position] <=> [$b->direction->value, $b->position],
         );
         $this->assertSame(
-            [['input', 1, 'KICK IN'], ['input', 2, 'SNARE'], ['output', 1, 'WEDGE']],
+            [['input', 1, true, 'KICK IN'], ['input', 2, false, 'SNARE'], ['output', 1, false, 'WEDGE']],
             array_map(
-                static fn ($row): array => [$row->direction->value, $row->channel, $row->name],
+                static fn ($row): array => [$row->direction->value, $row->channel, $row->stereo, $row->name],
                 $patchRows,
             ),
         );
@@ -555,7 +555,7 @@ class TechRiderDuplicateTest extends ApiTestCase
             'title' => 'Patch',
             'position' => 1,
         ])->create();
-        TechRiderPatchRowFactory::new(['item' => $patchItem, 'direction' => TechRiderPatchDirection::Input, 'channel' => 1, 'name' => 'KICK IN', 'position' => 0])->create();
+        TechRiderPatchRowFactory::new(['item' => $patchItem, 'direction' => TechRiderPatchDirection::Input, 'channel' => 1, 'stereo' => true, 'name' => 'KICK IN', 'position' => 0])->create();
         TechRiderPatchRowFactory::new(['item' => $patchItem, 'direction' => TechRiderPatchDirection::Input, 'channel' => 2, 'name' => 'SNARE', 'position' => 1])->create();
         TechRiderPatchRowFactory::new(['item' => $patchItem, 'direction' => TechRiderPatchDirection::Output, 'channel' => 1, 'name' => 'WEDGE', 'position' => 0])->create();
 

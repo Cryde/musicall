@@ -2,37 +2,58 @@
   <div class="flex flex-col gap-4">
     <Message v-if="globalError" severity="error" :closable="false">{{ globalError }}</Message>
 
-    <!-- Stacked, not side by side. Two grids sharing the width leaves 65px for a name and 85px
-         for a routing note that may run to 180 characters, which is not a column, it is an
-         ellipsis. Outputs are only ever a handful of rows, so the vertical cost is small. -->
-    <div class="flex flex-col gap-8">
-      <RiderPatchGrid
-        :label="PATCH_LIST_DIRECTIONS.inputs"
-        :rows="inputs"
-        :max-rows="MAX_ROWS_PER_DIRECTION"
-        :errors="errors.inputs"
-        :read-only="readOnly"
-      />
-      <RiderPatchGrid
-        :label="PATCH_LIST_DIRECTIONS.outputs"
-        :rows="outputs"
-        :max-rows="MAX_ROWS_PER_DIRECTION"
-        :errors="errors.outputs"
-        :read-only="readOnly"
-      />
-    </div>
+    <!-- Tabs, not stacked: a full input list put the outputs 64 rows down. Both panels stay
+         mounted, PrimeVue's default, so a hidden grid keeps its edits and its errors. -->
+    <Tabs v-model:value="activeDirection">
+      <TabList>
+        <Tab v-for="direction in PATCH_DIRECTIONS" :key="direction" :value="direction">
+          <span class="flex items-center gap-2">
+            <span>{{ PATCH_LIST_DIRECTIONS[direction] }} · {{ rowsOf(direction).length }}</span>
+            <template v-if="errorCounts[direction] > 0">
+              <i class="pi pi-exclamation-circle text-red-600 dark:text-red-400" aria-hidden="true" />
+              <span class="sr-only">, {{ errorLabel(errorCounts[direction]) }}</span>
+            </template>
+          </span>
+        </Tab>
+      </TabList>
+      <TabPanels class="!px-0">
+        <TabPanel v-for="direction in PATCH_DIRECTIONS" :key="direction" :value="direction">
+          <RiderPatchGrid
+            :label="PATCH_LIST_DIRECTIONS[direction]"
+            :rows="rowsOf(direction)"
+            :max-rows="MAX_ROWS_PER_DIRECTION"
+            :errors="errors[direction]"
+            :read-only="readOnly"
+            :microphone-suggestions="microphoneSuggestions"
+            @cell-left="flush"
+          />
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
   </div>
 </template>
 
 <script setup>
 import Message from 'primevue/message'
-import { reactive, ref, watch } from 'vue'
+import Tab from 'primevue/tab'
+import TabList from 'primevue/tablist'
+import TabPanel from 'primevue/tabpanel'
+import TabPanels from 'primevue/tabpanels'
+import Tabs from 'primevue/tabs'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import bandSpaceTechRidersApi from '../../../api/bandSpace/band-space-tech-riders.js'
 import { useSnapshotAutosave } from '../../../composables/useSnapshotAutosave.js'
 import {
   PATCH_LIST_DIRECTIONS,
   PATCH_LIST_LABELS
 } from '../../../constants/techRiderPatchColumns.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
+import {
+  directionToReveal,
+  firstDirectionInError,
+  PATCH_DIRECTIONS,
+  patchErrorCount
+} from '../../../utils/patchListTabs.js'
 import RiderPatchGrid from './RiderPatchGrid.vue'
 
 const props = defineProps({
@@ -56,13 +77,40 @@ const errors = reactive({
   outputs: { list: [], rows: {} }
 })
 const globalError = ref(null)
+const activeDirection = ref('inputs')
+const microphoneSuggestions = ref({ used: [], catalogue: [] })
 let keyCounter = 0
+
+function rowsOf(direction) {
+  return direction === 'inputs' ? inputs : outputs
+}
+
+const errorCounts = computed(() => ({
+  inputs: patchErrorCount(errors.inputs),
+  outputs: patchErrorCount(errors.outputs)
+}))
+
+function errorLabel(count) {
+  return count > 1 ? `${count} erreurs` : `${count} erreur`
+}
+
+// A held or refused save must not leave its message on the hidden tab. Only when a new direction
+// goes wrong, so somebody who opens the other tab on purpose, or edits there while the autosave
+// keeps refusing, is not pulled back on every attempt.
+watch(
+  () => firstDirectionInError(errors),
+  () => {
+    activeDirection.value =
+      directionToReveal(errors, activeDirection.value) ?? activeDirection.value
+  }
+)
 
 function toLocalRows(apiRows) {
   return (apiRows ?? []).map((row) => ({
     // Server ids are regenerated on every save, so they cannot key a list that survives one.
     key: `row-${props.itemId}-${keyCounter++}`,
     channel: row.channel,
+    stereo: row.stereo ?? false,
     name: row.name ?? '',
     microphone: row.microphone ?? '',
     routing: row.routing ?? '',
@@ -77,6 +125,7 @@ function toLocalRows(apiRows) {
 function toPayloadRows(rows) {
   return rows.map((row) => ({
     channel: row.channel,
+    stereo: row.stereo,
     name: row.name?.trim() ? row.name.trim() : null,
     microphone: row.microphone?.trim() ? row.microphone.trim() : null,
     routing: row.routing?.trim() ? row.routing.trim() : null,
@@ -169,14 +218,16 @@ function validate() {
 // Seeded before autosave takes its first snapshot, so a freshly opened grid reads as saved.
 seedRows()
 
-const { markSaved, shouldReseed } = useSnapshotAutosave({
+const { markSaved, shouldReseed, flush } = useSnapshotAutosave({
   itemId: () => props.itemId,
   isReadOnly: () => props.readOnly,
   serialise,
   validate,
+  // Cleared once the save is taken, not before it is sent: clearing first would make every refusal
+  // look like a new error and drag the editor back to its tab each time.
   save: async (payload) => {
-    clearErrors()
     await techRidersStore.savePatchList(props.bandSpaceId, props.riderId, props.itemId, payload)
+    clearErrors()
   },
   onError: (e) => {
     if (e.isValidationError) {
@@ -213,5 +264,23 @@ watch(
   }
 )
 
-watch(() => props.itemId, seed)
+watch(
+  () => props.itemId,
+  () => {
+    seed()
+    activeDirection.value = 'inputs'
+  }
+)
+
+// Suggestions only help: without them the cell is a plain text field, so a failure stays quiet.
+onMounted(async () => {
+  if (props.readOnly) return
+  try {
+    microphoneSuggestions.value = await bandSpaceTechRidersApi.getMicrophoneSuggestions(
+      props.bandSpaceId
+    )
+  } catch {
+    // Typed freely instead.
+  }
+})
 </script>
