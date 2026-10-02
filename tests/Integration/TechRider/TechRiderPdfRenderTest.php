@@ -91,9 +91,9 @@ class TechRiderPdfRenderTest extends ApiTestCase
 
         $sizes = $this->pageSizes($this->render($bandSpace, $rider));
 
-        $this->assertCount(4, $sizes, 'Cover, the first run, the attachment, then the last run');
+        $this->assertCount(3, $sizes, 'The first run under its header, the attachment, then the last run');
         $this->assertSame(
-            ['portrait-a4', 'portrait-a4', 'attachment-a5', 'portrait-a4'],
+            ['portrait-a4', 'attachment-a5', 'portrait-a4'],
             $sizes,
             'The attachment must land where it was composed, not first: Gotenberg merges in '
             . 'alphabetical order of filename, so only the ordinal naming keeps this right',
@@ -123,7 +123,7 @@ class TechRiderPdfRenderTest extends ApiTestCase
         $pdf = $this->render($bandSpace, $rider);
 
         $this->assertStringStartsWith('%PDF-', $pdf);
-        $this->assertCount(2, $this->pageSizes($pdf), 'A cover and the plot');
+        $this->assertCount(1, $this->pageSizes($pdf), 'The plot under the compact header, no cover page (#1090)');
     }
 
     /**

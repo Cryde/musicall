@@ -7,6 +7,7 @@ use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\BandSpace\TechRiderPatchRow;
 use App\Enum\BandSpace\TechRiderPatchDirection;
 use App\Service\BandSpace\TechRider\TechRiderContactsRenderer;
+use App\Service\BandSpace\TechRider\TechRiderItemEmptiness;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class TechRiderItemBuilder
@@ -14,6 +15,7 @@ readonly class TechRiderItemBuilder
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private TechRiderContactsRenderer $contactsRenderer,
+        private TechRiderItemEmptiness $emptiness,
     ) {
     }
 
@@ -43,6 +45,7 @@ readonly class TechRiderItemBuilder
         $dto->file = $this->buildFile($entity);
         $dto->patchList = $this->buildPatchList($entity);
         $dto->contacts = $this->buildContacts($entity);
+        $dto->isEmpty = $this->emptiness->isEmpty($entity, $dto->contacts['lines'] ?? null);
         $dto->position = $entity->position;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;

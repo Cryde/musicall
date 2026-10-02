@@ -157,6 +157,7 @@ class TechRiderDuplicateTest extends ApiTestCase
             'rider_id' => $copyId,
             'type' => $type,
             'is_included' => true,
+            'is_empty' => false,
             'title' => $title,
             'content' => null,
             'file' => null,

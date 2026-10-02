@@ -93,6 +93,10 @@ class TechRiderItemResource
     #[Groups([self::READ])]
     public bool $isIncluded = true;
 
+    /** Nothing to print: the PDF leaves it out, and the editor marks it (#1090). Read only. */
+    #[Groups([self::READ])]
+    public bool $isEmpty = false;
+
     #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
     #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
     #[Groups([self::READ])]

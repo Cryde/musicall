@@ -1,0 +1,26 @@
+{#
+    Gotenberg renders this as its own document in the bottom margin of every page, filling the
+    pageNumber and totalPages spans. It cannot load the rider's font, so it uses the system sans
+    serif with inline styles. It is one line on purpose: this context ignores width, so flexbox, a
+    table or a float to push the page number to the right all collapse onto the text.
+
+    The band and the rider are named here rather than in a running header: page 1 already opens on
+    them, and a header cannot be left off the first page. Numbers are only printed when the rider is
+    one render: Gotenberg numbers each render on its own, so after a merged attachment they would
+    restart at 1.
+#}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0 14mm; font-family: sans-serif; font-size: 7.5pt; color: #6b7280; }
+        .line { padding-bottom: 5mm; }
+    </style>
+</head>
+<body>
+<div class="line">
+    {{ band_name }} · {{ rider_name }} · édité le {{ generated_at }}{% if numbered %} · page <span class="pageNumber"></span> / <span class="totalPages"></span>{% endif %}
+</div>
+</body>
+</html>

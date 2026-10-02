@@ -85,6 +85,7 @@ class TechRiderContactsItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'contacts',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Membres et contacts',
             'content' => null,
             'file' => null,

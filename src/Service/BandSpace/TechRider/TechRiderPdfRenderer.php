@@ -50,6 +50,9 @@ readonly class TechRiderPdfRenderer
     private const float MARGIN_BOTTOM_MM = 14.0;
     private const float MARGIN_SIDE_MM = 14.0;
 
+    /** Characters per name in the footer, which holds band, rider, date and page on one line. */
+    private const int FOOTER_NAME_WIDTH = 50;
+
     /**
      * These three mirror assets/js/constants/stagePlot.js so a plot prints as it looks, and are
      * public so TechRiderStagePlotLimitsTest can pin the two files together.
@@ -79,6 +82,7 @@ readonly class TechRiderPdfRenderer
         private TipTapHtmlRenderer $tipTapRenderer,
         private TechRiderContactsRenderer $contactsRenderer,
         private TechRiderAttachmentReader $attachmentReader,
+        private TechRiderItemEmptiness $emptiness,
         #[Autowire('%kernel.project_dir%')]
         private string $projectDir,
     ) {
@@ -111,15 +115,19 @@ readonly class TechRiderPdfRenderer
         /** @var list<string> $pendingAssets */
         $pendingAssets = [];
         $isFirstHtmlSegment = true;
+        $generatedAt = (new \DateTimeImmutable())->format('d/m/Y');
 
-        $flush = function () use ($rider, &$segments, &$pending, &$pendingAssets, &$isFirstHtmlSegment): void {
-            // A cover with nothing after it is still a document; an empty trailing run is not.
-            if ($pending === [] && !$isFirstHtmlSegment) {
+        // The first run of rider content opens with the compact header (#1090), so an ordinary rider
+        // has no cover page. A run with nothing in it renders nothing, with one exception: page 1 must
+        // say whose document it is. A rider opening on an attached PDF, or holding nothing to print,
+        // gets the header on a page of its own in front, the only case where that page remains.
+        $flush = function (bool $headerFirst = false) use ($rider, $generatedAt, &$segments, &$pending, &$pendingAssets, &$isFirstHtmlSegment): void {
+            if ($pending === [] && !($headerFirst && $segments === [])) {
                 return;
             }
 
             $segments[] = [
-                'html' => $this->renderHtml($rider, $pending, $isFirstHtmlSegment),
+                'html' => $this->renderHtml($rider, $pending, $isFirstHtmlSegment, $generatedAt),
                 'assets' => array_values(array_unique($pendingAssets)),
             ];
             $isFirstHtmlSegment = false;
@@ -127,12 +135,12 @@ readonly class TechRiderPdfRenderer
             $pendingAssets = [];
         };
 
-        foreach ($this->includedItems($rider) as $item) {
+        foreach ($this->printedItems($rider) as $item) {
             if ($item->type === TechRiderItemType::Document) {
                 $attachment = $this->attachmentReader->prepare($item, $workspace, self::MAX_ATTACHMENT_BYTES);
 
                 if ($attachment['kind'] === 'merge') {
-                    $flush();
+                    $flush(headerFirst: true);
                     $segments[] = ['pdf' => $attachment['path']];
 
                     continue;
@@ -150,26 +158,27 @@ readonly class TechRiderPdfRenderer
             $pending[] = $this->viewModel($item, $pendingAssets);
         }
 
-        $flush();
+        $flush(headerFirst: true);
 
-        return $this->produce($segments, $workspace);
+        return $this->produce($rider, $segments, $workspace, $generatedAt);
     }
 
     /**
      * @param list<array{html: string, assets: list<string>}|array{pdf: string}> $segments
      */
-    private function produce(array $segments, string $workspace): string
+    private function produce(TechRider $rider, array $segments, string $workspace, string $generatedAt): string
     {
-        // The ordinary rider: one render, no temp file, no merge.
+        // The ordinary rider: one render, no temp file, no merge, and the only case where Gotenberg's
+        // page numbers are the document's.
         if (count($segments) === 1 && isset($segments[0]['html'])) {
-            return $this->generate($this->htmlBuilder($segments[0]['html'], $segments[0]['assets']));
+            return $this->generate($this->htmlBuilder($rider, $segments[0]['html'], $segments[0]['assets'], $generatedAt, numbered: true));
         }
 
         $filesystem = new Filesystem();
         $paths = [];
         // Gotenberg merges in **alphabetical order of filename**, not in the order the files are
         // sent, so the ordinal is what preserves the composed order of the rider. Named any other
-        // way, an attachment called "Plan de salle.pdf" sorts before the cover page.
+        // way, an attachment called "Plan de salle.pdf" sorts before the page that opens the rider.
         //
         // The width is derived rather than fixed, because alphabetical is not numeric: with two
         // digits, "100.pdf" sorts ahead of "20.pdf" and a rider with enough attachments comes out
@@ -187,7 +196,7 @@ readonly class TechRiderPdfRenderer
             }
 
             // Merging takes paths, never bytes, and insists on a .pdf extension.
-            $filesystem->dumpFile($path, $this->generate($this->htmlBuilder($segment['html'], $segment['assets'])));
+            $filesystem->dumpFile($path, $this->generate($this->htmlBuilder($rider, $segment['html'], $segment['assets'], $generatedAt, numbered: false)));
             $paths[] = $path;
         }
 
@@ -200,10 +209,12 @@ readonly class TechRiderPdfRenderer
      * call. The docblock is what keeps the chain statically checked.
      *
      * @param list<string> $assets
+     * @param bool          $numbered whether the footer prints page numbers: Gotenberg numbers each
+     *                                render on its own, so they are only right for a single render
      *
      * @return HtmlPdfBuilder
      */
-    private function htmlBuilder(string $html, array $assets): BuilderFileInterface
+    private function htmlBuilder(TechRider $rider, string $html, array $assets, string $generatedAt, bool $numbered): BuilderFileInterface
     {
         $fontDirectory = $this->projectDir . '/' . self::FONT_DIRECTORY;
 
@@ -222,6 +233,13 @@ readonly class TechRiderPdfRenderer
                 self::MARGIN_SIDE_MM,
                 Unit::Millimeters,
             )
+            // Shortened, so a long name cannot wrap onto a second line the bottom margin would clip.
+            ->footer('pdf/tech_rider/_page_footer.html.twig', [
+                'band_name' => mb_strimwidth($rider->bandSpace->name, 0, self::FOOTER_NAME_WIDTH, '…'),
+                'rider_name' => mb_strimwidth($rider->name, 0, self::FOOTER_NAME_WIDTH, '…'),
+                'generated_at' => $generatedAt,
+                'numbered' => $numbered,
+            ])
             ->printBackground()
             ->processor(new InMemoryProcessor());
     }
@@ -254,17 +272,18 @@ readonly class TechRiderPdfRenderer
     /**
      * The items that belong in the document, in the order they were composed.
      *
-     * Both halves matter. isIncluded is filtered nowhere else on the server, so this is the first and
-     * only place it is honoured. And the sort is not optional: the repository's fetch join carries no
-     * ORDER BY, and an entity OrderBy does not apply to a fetch-joined collection.
+     * isIncluded is filtered nowhere else on the server, so this is where it is honoured. An empty
+     * item is left out too (#1090): a heading over « nothing here » told the venue less than no
+     * heading at all. And the sort is not optional: the repository's fetch join carries no ORDER BY,
+     * and an entity OrderBy does not apply to a fetch-joined collection.
      *
      * @return list<TechRiderItem>
      */
-    private function includedItems(TechRider $rider): array
+    private function printedItems(TechRider $rider): array
     {
         $items = array_values(array_filter(
             $rider->items->toArray(),
-            static fn (TechRiderItem $item): bool => $item->isIncluded,
+            fn (TechRiderItem $item): bool => $item->isIncluded && !$this->emptiness->isEmpty($item),
         ));
 
         usort($items, static fn (TechRiderItem $a, TechRiderItem $b): int => $a->position <=> $b->position);
@@ -464,13 +483,13 @@ readonly class TechRiderPdfRenderer
     /**
      * @param list<array<string, mixed>> $items
      */
-    private function renderHtml(TechRider $rider, array $items, bool $withCover): string
+    private function renderHtml(TechRider $rider, array $items, bool $withHeader, string $generatedAt): string
     {
         return $this->twig->render('pdf/tech_rider/rider.html.twig', [
             'rider' => $rider,
             'items' => $items,
-            'with_cover' => $withCover,
-            'generated_at' => (new \DateTimeImmutable())->format('d/m/Y'),
+            'with_header' => $withHeader,
+            'generated_at' => $generatedAt,
             'font_family' => self::FONT_FAMILY,
             'font_regular_file' => self::FONT_REGULAR_FILE,
             'font_bold_file' => self::FONT_BOLD_FILE,
