@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
+import { aggregateSaveStatus } from '../../utils/riderWorkspace.js'
 
 export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   // Two lists rather than one filtered list, because the rider switcher shows live riders
@@ -238,6 +239,9 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
 
   async function deleteItem(bandSpaceId, riderId, itemId) {
     await bandSpaceTechRidersApi.deleteItem(bandSpaceId, riderId, itemId)
+    // Whatever it was waiting on or refused is gone with it, and would otherwise hold the header on
+    // « Erreur » and keep the leave-page prompt firing for a section that no longer exists.
+    clearItemSaveState(itemId)
     if (activeTechRider.value?.id !== riderId) return
     activeTechRider.value = {
       ...activeTechRider.value,
@@ -284,8 +288,24 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     }
   }
 
-  function setItemSaveState(itemId, state, message = null) {
-    itemSaveStates.value = { ...itemSaveStates.value, [itemId]: { state, message } }
+  /**
+   * `retry` is what the header's « Réessayer » runs for an item in error: the editor that failed
+   * knows what to send again, the page does not.
+   */
+  function setItemSaveState(itemId, state, message = null, retry = null) {
+    itemSaveStates.value = { ...itemSaveStates.value, [itemId]: { state, message, retry } }
+  }
+
+  /** One status for the whole rider, as the header shows it. */
+  const saveStatus = computed(() =>
+    aggregateSaveStatus(Object.values(itemSaveStates.value).map(({ state }) => state))
+  )
+
+  /** Sends again every refused save that can be sent again. */
+  function retryRefusedSaves() {
+    for (const { state, retry } of Object.values(itemSaveStates.value)) {
+      if (state === 'error' && retry) retry()
+    }
   }
 
   function clearItemSaveState(itemId) {
@@ -368,6 +388,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     archivedRiders: readonly(archivedRiders),
     activeTechRider: readonly(activeTechRider),
     hasUnconfirmedEdits,
+    saveStatus,
     refusedItemIds,
     stagePlotIcons: readonly(stagePlotIcons),
     isLoading: readonly(isLoading),
@@ -389,6 +410,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     setItemFile,
     setItemIncluded,
     setItemSaveState,
+    retryRefusedSaves,
     clearItemSaveState,
     forgetSaveStates,
     saveStateFor,

@@ -35,7 +35,11 @@ export function useSnapshotAutosave({ itemId, isReadOnly, serialise, delayMs = 1
     // An unmounted editor still finishes its last save, but has nobody left to report to: a state
     // written then would make the page warn about edits that are no longer anywhere.
     onState: (state, message = null) => {
-      if (isMounted) techRidersStore.setItemSaveState(itemId(), state, message)
+      if (!isMounted) return
+      // Retrying a refused save is sending what is on screen again, which `changed` does once the
+      // state differs from the confirmed one; a save the editor holds is refused again, with its reason.
+      const retry = state === 'error' ? () => autosave.changed() : null
+      techRidersStore.setItemSaveState(itemId(), state, message, retry)
     }
   })
 
