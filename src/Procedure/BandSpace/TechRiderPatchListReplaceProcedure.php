@@ -94,11 +94,12 @@ readonly class TechRiderPatchListReplaceProcedure
         // with numeric keys deserialises into this property just as an array does, and reading
         // the keys would let a client set positions it is not supposed to control.
         foreach (array_values($payloadRows) as $position => $payloadRow) {
-            /** @var array{channel: int, name?: string|null, microphone?: string|null, routing?: string|null, colour?: string|null} $payloadRow */
+            /** @var array{channel: int, stereo?: bool, name?: string|null, microphone?: string|null, routing?: string|null, colour?: string|null} $payloadRow */
             $row = new TechRiderPatchRow();
             $row->item = $item;
             $row->direction = $direction;
             $row->channel = $payloadRow['channel'];
+            $row->stereo = $payloadRow['stereo'] ?? false;
             $row->name = $this->trimToNull($payloadRow['name'] ?? null);
             $row->microphone = $this->trimToNull($payloadRow['microphone'] ?? null);
             $row->routing = $this->trimToNull($payloadRow['routing'] ?? null);

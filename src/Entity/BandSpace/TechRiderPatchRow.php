@@ -48,6 +48,10 @@ class TechRiderPatchRow
     #[ORM\Column(type: Types::SMALLINT)]
     public int $channel = 1;
 
+    /** Takes `channel` and the one after it, as a stereo pair on a console: one source, two channels. */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    public bool $stereo = false;
+
     #[ORM\Column(type: Types::STRING, length: 120, nullable: true)]
     public ?string $name = null;
 

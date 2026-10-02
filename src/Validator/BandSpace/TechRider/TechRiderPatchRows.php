@@ -38,6 +38,8 @@ class TechRiderPatchRows extends Constraint
     public string $invalidRowMessage = 'Chaque ligne doit être un objet avec un numéro de canal entier';
     public string $channelOutOfRangeMessage = 'Le numéro de canal doit être compris entre {{ min }} et {{ max }}';
     public string $duplicateChannelMessage = 'Le numéro de canal {{ channel }} apparaît plusieurs fois';
+    public string $stereoOutOfRangeMessage = 'Une paire stéréo occupe deux canaux : elle doit commencer au plus au canal {{ max }}';
+    public string $invalidStereoMessage = 'Ce champ doit valoir vrai ou faux';
     public string $tooLongMessage = 'Ce champ ne peut pas dépasser {{ limit }} caractères';
     public string $invalidTextMessage = 'Ce champ doit être du texte';
     public string $unknownColourMessage = 'Couleur inconnue';

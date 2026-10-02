@@ -107,6 +107,7 @@ readonly class TechRiderDuplicateProcedure
             $rowCopy->name = $sourceRow->name;
             $rowCopy->microphone = $sourceRow->microphone;
             $rowCopy->routing = $sourceRow->routing;
+            $rowCopy->stereo = $sourceRow->stereo;
             $rowCopy->colour = $sourceRow->colour;
             $rowCopy->position = $sourceRow->position;
 

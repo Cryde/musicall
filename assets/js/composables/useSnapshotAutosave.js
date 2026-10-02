@@ -57,6 +57,8 @@ export function useSnapshotAutosave({ itemId, isReadOnly, serialise, delayMs = 1
 
   return {
     markSaved: autosave.markSaved,
+    /** Sends now what is still waiting on the debounce, when leaving a cell says the edit is done. */
+    flush: autosave.flush,
     /**
      * Whether a refresh from the server may be applied. Never over an edit still on screen, never
      * while a save is out (the refresh may be its own answer), and never when it only confirms what

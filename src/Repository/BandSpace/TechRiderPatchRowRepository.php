@@ -2,8 +2,10 @@
 
 namespace App\Repository\BandSpace;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\BandSpace\TechRiderPatchRow;
+use App\Enum\BandSpace\TechRiderPatchDirection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -29,6 +31,37 @@ class TechRiderPatchRowRepository extends ServiceEntityRepository
             ->addOrderBy('r.position', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * The microphones a band already writes in its patch lists, most used first, across every
+     * rider of the space, archived ones included: last year's rider is still the band's habit.
+     *
+     * @return list<array{microphone: string, usage_count: int}>
+     */
+    public function findMicrophoneUsageByBandSpace(BandSpace $bandSpace, int $limit): array
+    {
+        /** @var list<array{microphone: string, usage_count: int|string}> $rows */
+        $rows = $this->createQueryBuilder('r')
+            ->select('r.microphone AS microphone', 'COUNT(r.id) AS usage_count')
+            ->join('r.item', 'i')
+            ->join('i.techRider', 't')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('r.direction = :direction')
+            ->andWhere('r.microphone IS NOT NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('direction', TechRiderPatchDirection::Input)
+            ->groupBy('r.microphone')
+            ->orderBy('usage_count', 'DESC')
+            ->addOrderBy('r.microphone', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => ['microphone' => $row['microphone'], 'usage_count' => (int) $row['usage_count']],
+            $rows,
+        );
     }
 
     /**

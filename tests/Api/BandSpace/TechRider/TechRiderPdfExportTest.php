@@ -304,6 +304,25 @@ class TechRiderPdfExportTest extends ApiTestCase
         $this->assertStringNotContainsString('Destination', $html);
     }
 
+    /** A stereo pair prints both of its channels, as a console labels it (#1099). */
+    public function test_a_stereo_row_prints_both_channels(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        $item = TechRiderItemFactory::new([
+            'techRider' => $rider,
+            'type' => TechRiderItemType::PatchList,
+            'title' => 'Patch list',
+            'position' => 0,
+        ])->create();
+        TechRiderPatchRowFactory::new(['item' => $item, 'direction' => TechRiderPatchDirection::Input, 'channel' => 8, 'stereo' => true, 'name' => 'CLAVIER', 'position' => 0])->create();
+        TechRiderPatchRowFactory::new(['item' => $item, 'direction' => TechRiderPatchDirection::Input, 'channel' => 10, 'name' => 'CHANT', 'position' => 1])->create();
+
+        $html = $this->render($bandSpace, $rider)->lastCall()['documents']['index.html'];
+
+        $this->assertStringContainsString('<td class="num">8-9</td>', $html);
+        $this->assertStringContainsString('<td class="num">10</td>', $html);
+    }
+
     /**
      * The rider goes to a venue, so an address that was not opted in must not be on it. The flag is
      * stored per item and the roster is read live, which makes this the one place the two meet.
