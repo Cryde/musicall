@@ -176,12 +176,13 @@ export default {
    * of seconds to render when it has attachments to merge, and an expired token has to send the user
    * to log in rather than look like a broken export.
    */
-  downloadPdf(bandSpaceId, riderId) {
+  downloadPdf(bandSpaceId, riderId, { signal } = {}) {
     return axios
       .get(
         Routing.generate('api_band_space_tech_riders_pdf_export', { bandSpaceId, id: riderId }),
         {
-          responseType: 'blob'
+          responseType: 'blob',
+          signal
         }
       )
       .then((resp) => ({
