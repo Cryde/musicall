@@ -298,7 +298,7 @@ readonly class TechRiderPdfRenderer
      */
     private function viewModel(TechRiderItem $item, array &$assets): array
     {
-        $base = ['type' => $item->type->value, 'title' => $item->title];
+        $base = ['type' => $item->type->value, 'title' => $item->title, 'anchor' => self::anchor($item)];
 
         return match ($item->type) {
             TechRiderItemType::Text => $base + ['html' => $this->tipTapRenderer->render($item->content)],
@@ -310,13 +310,27 @@ readonly class TechRiderPdfRenderer
     }
 
     /**
+     * The named destination the editor's preview jumps to. Chromium only writes a destination for an
+     * anchor that a link points at, hence the title linking to itself in the template.
+     */
+    private static function anchor(TechRiderItem $item): string
+    {
+        return 'item-' . $item->id;
+    }
+
+    /**
      * @param array{kind: string, path?: string, name: string, reason?: string} $attachment
      *
      * @return array<string, mixed>
      */
     private function documentViewModel(TechRiderItem $item, array $attachment): array
     {
-        $base = ['type' => $item->type->value, 'title' => $item->title, 'name' => $attachment['name']];
+        $base = [
+            'type' => $item->type->value,
+            'title' => $item->title,
+            'anchor' => self::anchor($item),
+            'name' => $attachment['name'],
+        ];
 
         if ($attachment['kind'] === 'image') {
             return $base + ['image' => basename($attachment['path'] ?? '')];

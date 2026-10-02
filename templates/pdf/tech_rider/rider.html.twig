@@ -85,6 +85,7 @@
                one, which reads as a section with nothing in it. */
             break-after: avoid;
         }
+        .item-title a { color: inherit; text-decoration: none; }
 
         {# Rich text coming out of TipTapHtmlRenderer. Only the tags it can emit are styled. #}
         .prose { orphans: 3; widows: 3; }
@@ -227,7 +228,7 @@
 
 {% for item in items %}
     <section class="item">
-        <h1 class="item-title">{{ item.title }}</h1>
+        <h1 class="item-title" id="{{ item.anchor }}"><a href="#{{ item.anchor }}">{{ item.title }}</a></h1>
         {% if item.type == 'text' %}
             {% include 'pdf/tech_rider/_text.html.twig' %}
         {% elseif item.type == 'patch_list' %}

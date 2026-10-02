@@ -72,6 +72,30 @@ class TechRiderPdfRenderTest extends ApiTestCase
     }
 
     /**
+     * The editor's preview jumps to the selected section through a named destination, and Chromium
+     * only writes one for an anchor that a link points at. Read from the raw bytes, which holds as long
+     * as Chromium leaves its destinations outside compressed object streams.
+     */
+    public function test_each_section_is_a_named_destination(): void
+    {
+        [$bandSpace, $rider] = $this->seed();
+        $item = TechRiderItemFactory::new([
+            'techRider' => $rider,
+            'type' => TechRiderItemType::Text,
+            'title' => 'Accueil',
+            'position' => 0,
+            'content' => ['type' => 'doc', 'content' => [
+                ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Le plateau doit être dégagé.']]],
+            ]],
+        ])->create();
+
+        $pdf = $this->render($bandSpace, $rider);
+
+        $this->assertStringContainsString('/Dests', $pdf);
+        $this->assertStringContainsString('item-' . $item->id, $pdf);
+    }
+
+    /**
      * The merge, and specifically its **order**.
      *
      * Gotenberg merges in alphabetical order of filename rather than in the order the files are sent.

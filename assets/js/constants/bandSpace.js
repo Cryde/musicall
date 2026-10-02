@@ -18,6 +18,9 @@ export const BAND_SPACE_ROUTES = {
 /** Per band space, so each band comes back to the rider it was last looking at. */
 export const LAST_TECH_RIDER_KEY = 'lastTechRiderId'
 
+/** Whether the tech rider PDF preview stays docked open on a wide screen. */
+export const TECH_RIDER_PREVIEW_KEY = 'techRiderPreview'
+
 /**
  * Tech riders are merged but not yet announced, so the module is hidden from everyone except
  * accounts carrying ROLE_TESTER.

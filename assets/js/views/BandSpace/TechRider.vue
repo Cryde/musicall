@@ -71,6 +71,15 @@
               <span>Enregistré</span>
             </template>
           </span>
+          <Button
+            ref="previewToggleRef"
+            label="Aperçu"
+            icon="pi pi-eye"
+            severity="secondary"
+            outlined
+            :aria-expanded="isPreviewShown"
+            @click="togglePreview"
+          />
           <!-- Offered on an archived rider too, like Dupliquer: last year's rider is exactly the
                thing you send when a venue asks what you used. -->
           <Button
@@ -98,32 +107,76 @@
         </div>
       </Message>
 
-      <div
-        class="bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-4"
-      >
-        <div v-if="techRidersStore.isLoadingActive" class="p-8 flex justify-center">
-          <ProgressSpinner style="width: 2.5rem; height: 2.5rem" />
+      <div class="flex gap-4 items-start">
+        <div
+          class="flex-1 min-w-0 bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-4"
+        >
+          <div v-if="techRidersStore.isLoadingActive" class="p-8 flex justify-center">
+            <ProgressSpinner style="width: 2.5rem; height: 2.5rem" />
+          </div>
+
+          <template v-else-if="rider">
+            <p class="text-surface-600 dark:text-surface-300 text-sm mb-3">
+              Créé le {{ formatDate(rider.creation_datetime) }}
+              {{ rider.created_by_username ? `par ${rider.created_by_username}` : '' }}
+            </p>
+
+            <!-- Keyed per rider: switching rider remounts it, so a section's last save is sent with
+                 the rider it belongs to. The items are passed as the store holds them, never copied
+                 here, or every status change would hand the outline a new array mid-drag. -->
+            <RiderWorkspace
+              :key="rider.id"
+              :band-space-id="bandSpaceId"
+              :rider-id="rider.id"
+              :items="rider.items"
+              :read-only="isArchived"
+            />
+          </template>
         </div>
 
-        <template v-else-if="rider">
-          <p class="text-surface-600 dark:text-surface-300 text-sm mb-3">
-            Créé le {{ formatDate(rider.creation_datetime) }}
-            {{ rider.created_by_username ? `par ${rider.created_by_username}` : '' }}
-          </p>
-
-          <!-- Keyed per rider: switching rider remounts it, so a section's last save is sent with
-               the rider it belongs to. The items are passed as the store holds them, never copied
-               here, or every status change would hand the outline a new array mid-drag. -->
-          <RiderWorkspace
+        <!-- Docked beside the editor where there is room for both, a drawer otherwise. -->
+        <aside
+          v-if="isWide && isPreviewDocked && rider"
+          aria-label="Aperçu du PDF"
+          class="w-[450px] shrink-0 sticky top-4 h-[calc(100vh-2rem)] flex flex-col gap-2 bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-4"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold">Aperçu du PDF</h2>
+            <Button
+              icon="pi pi-times"
+              severity="secondary"
+              text
+              rounded
+              aria-label="Fermer l’aperçu"
+              @click="closeDockedPreview"
+            />
+          </div>
+          <RiderPdfPreview
             :key="rider.id"
+            class="flex-1"
             :band-space-id="bandSpaceId"
             :rider-id="rider.id"
-            :items="rider.items"
-            :read-only="isArchived"
+            :selected-item-id="selectedItemId"
           />
-        </template>
+        </aside>
       </div>
     </div>
+
+    <Drawer
+      v-if="!isWide"
+      v-model:visible="isDrawerOpen"
+      position="right"
+      header="Aperçu du PDF"
+      class="!w-full md:!w-[450px]"
+    >
+      <RiderPdfPreview
+        v-if="rider"
+        :key="rider.id"
+        :band-space-id="bandSpaceId"
+        :rider-id="rider.id"
+        :selected-item-id="selectedItemId"
+      />
+    </Drawer>
 
     <TechRiderFormDialog
       v-model:visible="formDialogOpen"
@@ -137,22 +190,26 @@
 </template>
 
 <script setup>
+import { useMediaQuery } from '@vueuse/core'
 import Button from 'primevue/button'
+import Drawer from 'primevue/drawer'
 import Menu from 'primevue/menu'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
+import RiderPdfPreview from '../../components/BandSpace/TechRider/RiderPdfPreview.vue'
 import RiderWorkspace from '../../components/BandSpace/TechRider/RiderWorkspace.vue'
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
-import { LAST_TECH_RIDER_KEY } from '../../constants/bandSpace.js'
+import { LAST_TECH_RIDER_KEY, TECH_RIDER_PREVIEW_KEY } from '../../constants/bandSpace.js'
 import { COPY_SUFFIX, MAX_NAME_LENGTH } from '../../constants/techRider.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
 import { downloadBlob } from '../../utils/downloadBlob.js'
+import { selectableItemId } from '../../utils/riderWorkspace.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -170,6 +227,51 @@ const hasAnyRider = computed(
 const selectedRiderId = ref(null)
 const isExporting = ref(false)
 const riderMenuRef = ref(null)
+
+const isWide = useMediaQuery('(min-width: 1280px)')
+const isPreviewDocked = ref(readPreviewDocked())
+const isDrawerOpen = ref(false)
+const previewToggleRef = ref(null)
+const isPreviewShown = computed(() => (isWide.value ? isPreviewDocked.value : isDrawerOpen.value))
+
+// The section the workspace shows, resolved the same way, so the preview opens on its page.
+const selectedItemId = computed(() =>
+  selectableItemId(rider.value?.items.map((item) => item.id) ?? [], route.query.item)
+)
+
+/** Closed until asked for: docked, it leaves the section editor little room below a wide screen. */
+function readPreviewDocked() {
+  try {
+    return localStorage.getItem(TECH_RIDER_PREVIEW_KEY) === 'open'
+  } catch {
+    return false
+  }
+}
+
+// Left open, the drawer would come back by itself on the way down past the breakpoint again.
+watch(isWide, (wide) => {
+  if (wide) isDrawerOpen.value = false
+})
+
+/** The close button goes with the panel, so focus moves back to the toggle that reopens it. */
+async function closeDockedPreview() {
+  togglePreview()
+  await nextTick()
+  previewToggleRef.value?.$el.focus()
+}
+
+function togglePreview() {
+  if (!isWide.value) {
+    isDrawerOpen.value = !isDrawerOpen.value
+    return
+  }
+  isPreviewDocked.value = !isPreviewDocked.value
+  try {
+    localStorage.setItem(TECH_RIDER_PREVIEW_KEY, isPreviewDocked.value ? 'open' : 'closed')
+  } catch {
+    // Only the preference is lost.
+  }
+}
 
 const refusedLabel = computed(() => {
   const count = techRidersStore.refusedItemIds.length
