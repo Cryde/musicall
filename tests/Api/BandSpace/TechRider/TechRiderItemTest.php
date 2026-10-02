@@ -76,6 +76,7 @@ class TechRiderItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'text',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Sonorisation',
             'content' => self::SAMPLE_CONTENT,
             // Appended after the existing section rather than inserted at the front.
@@ -259,6 +260,7 @@ class TechRiderItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'text',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Sonorisation et retours',
             'content' => self::SAMPLE_CONTENT,
             'position' => 0,
@@ -301,6 +303,7 @@ class TechRiderItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'text',
             'is_included' => true,
+            'is_empty' => true,
             'title' => 'Divers',
             'content' => null,
             'position' => 0,

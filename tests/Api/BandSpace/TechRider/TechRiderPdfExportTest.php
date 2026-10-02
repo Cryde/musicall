@@ -184,11 +184,15 @@ class TechRiderPdfExportTest extends ApiTestCase
         $this->assertSame(self::HTML_ENDPOINT, $calls[1]['endpoint']);
         $this->assertSame(self::MERGE_ENDPOINT, $calls[2]['endpoint']);
 
-        // The cover belongs to the first segment only, and the split really is around the attachment.
+        // The header belongs to the first segment only, and the split really is around the attachment.
         $this->assertStringContainsString('Avant', $calls[0]['documents']['index.html']);
         $this->assertStringNotContainsString('Après', $calls[0]['documents']['index.html']);
         $this->assertStringContainsString('Après', $calls[1]['documents']['index.html']);
         $this->assertStringNotContainsString('Avant', $calls[1]['documents']['index.html']);
+        $this->assertStringContainsString('class="rider-header"', $calls[0]['documents']['index.html']);
+        $this->assertStringNotContainsString('class="rider-header"', $calls[1]['documents']['index.html']);
+        // Gotenberg numbers each render on its own, so numbers would restart after the attachment.
+        $this->assertStringNotContainsString('pageNumber', $calls[0]['documents']['footer.html']);
 
         /**
          * Gotenberg merges in alphabetical order of filename rather than in the order the files are
@@ -396,7 +400,8 @@ class TechRiderPdfExportTest extends ApiTestCase
     }
 
     /** Reachable before a file is picked, and again after the referenced file is deleted (SET NULL). */
-    public function test_a_document_item_with_no_file_says_so(): void
+    /** A document with no file has nothing to print, so it is left out like any empty item (#1090). */
+    public function test_a_document_item_with_no_file_is_left_out(): void
     {
         [, $bandSpace, $rider] = $this->seed();
         TechRiderItemFactory::new([
@@ -409,10 +414,108 @@ class TechRiderPdfExportTest extends ApiTestCase
         $gotenberg = $this->render($bandSpace, $rider);
 
         $this->assertCount(1, $gotenberg->calls());
-        $this->assertStringContainsString(
-            'Aucun fichier',
-            $gotenberg->lastCall()['documents']['index.html'],
+        $this->assertStringNotContainsString('Plan de salle', $gotenberg->lastCall()['documents']['index.html']);
+    }
+
+    /** Page 1 opens on a compact header rather than a cover that filled a page with two lines (#1090). */
+    public function test_page_one_opens_on_a_compact_header_rather_than_a_cover(): void
+    {
+        [, $bandSpace, $rider] = $this->seed('Rider été 2026');
+        $this->addTextItem($rider, 'Catering', 0);
+
+        $html = $this->render($bandSpace, $rider)->lastCall()['documents']['index.html'];
+
+        $this->assertMatchesRegularExpression(
+            '#<header class="rider-header">.*' . preg_quote($bandSpace->name, '#') . '.*Rider été 2026.*Édité le \d{2}/\d{2}/\d{4}.*</header>\s*<section class="item">#s',
+            $html,
         );
+        $this->assertStringNotContainsString('class="cover"', $html);
+    }
+
+    /** Every page names the band and the rider in its footer, and a rider in one render numbers its pages. */
+    public function test_every_page_carries_a_footer_naming_the_rider_and_numbering_the_page(): void
+    {
+        [, $bandSpace, $rider] = $this->seed('Rider été 2026');
+        $this->addTextItem($rider, 'Catering', 0);
+
+        $documents = $this->render($bandSpace, $rider)->lastCall()['documents'];
+
+        $this->assertMatchesRegularExpression(
+            '#' . preg_quote($bandSpace->name, '#') . ' · Rider été 2026 · édité le \d{2}/\d{2}/\d{4}#',
+            $documents['footer.html'],
+        );
+        $this->assertStringContainsString('<span class="pageNumber"></span> / <span class="totalPages"></span>', $documents['footer.html']);
+        // Page 1 already opens on the band and the rider, and a header cannot be left off it.
+        $this->assertArrayNotHasKey('header.html', $documents);
+    }
+
+    /** A heading over « nothing here » told the venue less than no heading, so empty sections are left out (#1090). */
+    public function test_empty_sections_are_left_out(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        $this->addTextItem($rider, 'Catering', 0);
+        TechRiderItemFactory::new(['techRider' => $rider, 'type' => TechRiderItemType::Text, 'title' => 'Éclairage', 'position' => 1, 'content' => [
+            'type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => '   ']]]],
+        ]])->create();
+        TechRiderItemFactory::new(['techRider' => $rider, 'type' => TechRiderItemType::StagePlot, 'title' => 'Plan de scène', 'position' => 2, 'content' => [
+            'version' => 1, 'elements' => [],
+        ]])->create();
+        TechRiderItemFactory::new(['techRider' => $rider, 'type' => TechRiderItemType::PatchList, 'title' => 'Patch list', 'position' => 3])->create();
+
+        $html = $this->render($bandSpace, $rider)->lastCall()['documents']['index.html'];
+
+        $this->assertStringContainsString('Catering', $html);
+        $this->assertStringNotContainsString('Éclairage', $html);
+        $this->assertStringNotContainsString('Plan de scène', $html);
+        $this->assertStringNotContainsString('Patch list', $html);
+    }
+
+    /**
+     * Page 1 must say whose document it is. A rider opening on an attached PDF would otherwise open
+     * on a page carrying neither the band nor the rider, so it keeps the header on a page of its own
+     * in front: the one case where that page remains.
+     */
+    public function test_a_rider_opening_on_an_attachment_opens_on_its_header(): void
+    {
+        [$user, $bandSpace, $rider] = $this->seed();
+        $this->addPdfAttachment($user, $bandSpace, $rider, position: 0);
+        $this->addTextItem($rider, 'Catering', 1);
+
+        $calls = $this->render($bandSpace, $rider)->calls();
+
+        $this->assertCount(3, $calls, 'The header page, the content after the attachment, then the merge');
+        $this->assertStringContainsString('class="rider-header"', $calls[0]['documents']['index.html']);
+        $this->assertStringNotContainsString('class="item"', $calls[0]['documents']['index.html']);
+        $this->assertStringContainsString('Catering', $calls[1]['documents']['index.html']);
+        $this->assertStringNotContainsString('class="rider-header"', $calls[1]['documents']['index.html']);
+        // The header page is 00, so it comes first in the merge, ahead of the attachment.
+        $this->assertSame(['00.pdf', '01.pdf', '02.pdf'], array_keys($calls[2]['assets']));
+    }
+
+    public function test_a_rider_made_only_of_an_attachment_still_opens_on_its_header(): void
+    {
+        [$user, $bandSpace, $rider] = $this->seed();
+        $this->addPdfAttachment($user, $bandSpace, $rider, position: 0);
+
+        $calls = $this->render($bandSpace, $rider)->calls();
+
+        $this->assertCount(2, $calls, 'The header page, then the merge');
+        $this->assertStringContainsString('class="rider-header"', $calls[0]['documents']['index.html']);
+        $this->assertSame(['00.pdf', '01.pdf'], array_keys($calls[1]['assets']));
+    }
+
+    /** A rider with nothing to print is still a document: its header, on one page. */
+    public function test_a_rider_with_nothing_to_print_still_renders_its_header(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        TechRiderItemFactory::new(['techRider' => $rider, 'type' => TechRiderItemType::PatchList, 'title' => 'Patch list', 'position' => 0])->create();
+
+        $gotenberg = $this->render($bandSpace, $rider);
+
+        $this->assertCount(1, $gotenberg->calls());
+        $html = $gotenberg->lastCall()['documents']['index.html'];
+        $this->assertStringContainsString('class="rider-header"', $html);
+        $this->assertStringNotContainsString('class="item"', $html);
     }
 
     /** The flag is honoured nowhere else on the server, so the export is the only thing enforcing it. */
@@ -471,7 +574,10 @@ class TechRiderPdfExportTest extends ApiTestCase
             'title' => $title,
             'position' => $position,
             'isIncluded' => $included,
-            'content' => ['type' => 'doc', 'content' => []],
+            // Some text, or the item is empty and left out of the document (#1090).
+            'content' => ['type' => 'doc', 'content' => [
+                ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Contenu de la section ' . $title]]],
+            ]],
         ])->create();
     }
 

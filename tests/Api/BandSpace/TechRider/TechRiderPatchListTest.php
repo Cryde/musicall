@@ -109,6 +109,7 @@ class TechRiderPatchListTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'patch_list',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Patch list',
             'content' => null,
             'file' => null,

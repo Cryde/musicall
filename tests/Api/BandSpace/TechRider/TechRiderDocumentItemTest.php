@@ -57,6 +57,7 @@ class TechRiderDocumentItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'document',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Schéma de câblage',
             'content' => null,
             'file' => [
@@ -91,6 +92,7 @@ class TechRiderDocumentItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'document',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Schéma de câblage',
             'content' => null,
             'file' => [
@@ -127,6 +129,7 @@ class TechRiderDocumentItemTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'document',
             'is_included' => true,
+            'is_empty' => true,
             'title' => 'Schéma de câblage',
             'content' => null,
             'file' => null,

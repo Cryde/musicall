@@ -3,34 +3,39 @@
 namespace App\Enum\BandSpace;
 
 /**
- * The items a new rider starts with, in order. All of them text items.
+ * The items a new rider starts with, in order (#1090).
  *
- * A seed, not a schema: these are ordinary rows once created, free to be renamed, reordered
- * or deleted. They exist so a new rider is a prompt rather than a blank page.
- *
- * The patch list and the stage plot are deliberately absent: they arrive as their own item
- * types, added by the user where they want them in the document.
+ * A seed, not a schema: these are ordinary rows once created, free to be renamed, reordered or
+ * deleted. They exist so a new rider is a prompt rather than a blank page, and each one uses the type
+ * built for it: the contacts come from the roster, the plot and the patch list have their editors.
+ * Riders created before this change keep the seven text items they were given.
  */
 enum TechRiderDefaultItem: string
 {
     case MembersAndContacts = 'members_and_contacts';
+    case StagePlot = 'stage_plot';
+    case PatchList = 'patch_list';
     case Backline = 'backline';
-    case SoundSystem = 'sound_system';
-    case Monitoring = 'monitoring';
-    case Lighting = 'lighting';
     case Catering = 'catering';
-    case Misc = 'misc';
 
     public function title(): string
     {
         return match ($this) {
             self::MembersAndContacts => 'Membres et contacts',
+            self::StagePlot => 'Plan de scène',
+            self::PatchList => 'Patch list',
             self::Backline => 'Backline et instruments',
-            self::SoundSystem => 'Sonorisation',
-            self::Monitoring => 'Retours et in-ears',
-            self::Lighting => 'Éclairage',
             self::Catering => 'Catering',
-            self::Misc => 'Divers',
+        };
+    }
+
+    public function type(): TechRiderItemType
+    {
+        return match ($this) {
+            self::MembersAndContacts => TechRiderItemType::Contacts,
+            self::StagePlot => TechRiderItemType::StagePlot,
+            self::PatchList => TechRiderItemType::PatchList,
+            self::Backline, self::Catering => TechRiderItemType::Text,
         };
     }
 }

@@ -85,6 +85,7 @@ class TechRiderStagePlotTest extends ApiTestCase
             'rider_id' => (string) $rider->id,
             'type' => 'stage_plot',
             'is_included' => true,
+            'is_empty' => false,
             'title' => 'Plan de scène',
             // The plot comes back as the item's content, byte for byte what was sent.
             'content' => $plot,

@@ -70,7 +70,7 @@ readonly class TechRiderCreateProcessor implements ProcessorInterface
     /**
      * A new rider opens on a prompt rather than a blank page. These are ordinary rows from
      * the moment they exist: rename, reorder or delete them freely. No activity is recorded
-     * for them, they are part of creating the rider rather than seven separate edits.
+     * for them, they are part of creating the rider rather than separate edits.
      */
     private function seedDefaultItems(TechRider $techRider): void
     {
@@ -78,6 +78,7 @@ readonly class TechRiderCreateProcessor implements ProcessorInterface
             $item = new TechRiderItem();
             $item->techRider = $techRider;
             $item->title = $default->title();
+            $item->type = $default->type();
             $item->position = $position;
 
             $techRider->items->add($item);

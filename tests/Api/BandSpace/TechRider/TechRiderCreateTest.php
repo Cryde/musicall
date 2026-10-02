@@ -25,7 +25,7 @@ class TechRiderCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -44,11 +44,20 @@ class TechRiderCreateTest extends ApiTestCase
 
         $items = self::getContainer()->get(TechRiderItemRepository::class)->findByRider($rider);
 
-        // Ids and timestamps are generated, so the expected items are built from the rows;
-        // the titles and the order are pinned separately below, which is the part that is a
-        // product decision rather than an implementation detail.
+        // Ids and timestamps are generated, so the expected items are built from the rows; what
+        // each default is, its type and the block that comes with it, is spelled out per row
+        // because that is the product decision (#1090).
+        $expectedByType = [
+            'contacts' => [
+                'is_empty' => false,
+                'contacts' => ['show_emails' => false, 'lines' => [$membership->displayName()], 'emails' => []],
+            ],
+            'stage_plot' => ['is_empty' => true],
+            'patch_list' => ['is_empty' => true, 'patch_list' => ['inputs' => [], 'outputs' => []]],
+            'text' => ['is_empty' => true],
+        ];
         $expectedItems = array_map(
-            static fn (TechRiderItem $item): array => [
+            static fn (TechRiderItem $item): array => array_replace([
                 '@id' => '/api/band_spaces/' . $item->techRider->bandSpace->id
                     . '/tech_riders/' . $item->techRider->id
                     . '/items/' . $item->id,
@@ -56,7 +65,7 @@ class TechRiderCreateTest extends ApiTestCase
                 'id' => (string) $item->id,
                 'band_space_id' => (string) $bandSpace->id,
                 'rider_id' => (string) $rider->id,
-                'type' => 'text',
+                'type' => $item->type->value,
                 'is_included' => true,
                 'title' => $item->title,
                 'content' => null,
@@ -66,7 +75,7 @@ class TechRiderCreateTest extends ApiTestCase
                 'file' => null,
                 'patch_list' => null,
                 'contacts' => null,
-            ],
+            ], $expectedByType[$item->type->value]),
             $items,
         );
 
@@ -82,24 +91,23 @@ class TechRiderCreateTest extends ApiTestCase
             'creation_datetime' => $rider->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
             'items' => $expectedItems,
-            'item_count' => 7,
+            'item_count' => 5,
         ]);
 
-        // A new rider opens on a prompt, not a blank page. The set and its order are the
-        // product decision, so they are asserted literally rather than derived from the enum.
+        // A new rider opens on a prompt, not a blank page, each default with the type built for it.
+        // The set and its order are the product decision, so they are asserted literally rather
+        // than derived from the enum.
         $this->assertSame(
             [
-                'Membres et contacts',
-                'Backline et instruments',
-                'Sonorisation',
-                'Retours et in-ears',
-                'Éclairage',
-                'Catering',
-                'Divers',
+                ['Membres et contacts', 'contacts'],
+                ['Plan de scène', 'stage_plot'],
+                ['Patch list', 'patch_list'],
+                ['Backline et instruments', 'text'],
+                ['Catering', 'text'],
             ],
-            array_map(static fn (TechRiderItem $item): string => $item->title, $items),
+            array_map(static fn (TechRiderItem $item): array => [$item->title, $item->type->value], $items),
         );
-        $this->assertSame([0, 1, 2, 3, 4, 5, 6], array_map(
+        $this->assertSame([0, 1, 2, 3, 4], array_map(
             static fn (TechRiderItem $item): int => $item->position,
             $items,
         ));

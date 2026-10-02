@@ -44,39 +44,33 @@
 
         body { margin: 0; }
 
-        {% if with_cover %}
-        {# Height in mm rather than vh: the page box is known here and vh in print is not worth betting on. #}
-        .cover {
+        {% if with_header %}
+        {# A compact header on page 1, not a cover: the cover used to fill a whole page with two lines (#1090). #}
+        .rider-header {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            min-height: 250mm;
-            break-after: page;
+            align-items: flex-end;
+            gap: 6mm;
+            margin-bottom: 8mm;
+            padding-bottom: 3mm;
+            border-bottom: 3px solid var(--accent);
         }
-        .cover-band {
-            font-size: 11pt;
+        .rider-header-band {
+            font-size: 9pt;
             text-transform: uppercase;
-            letter-spacing: 0.35em;
+            letter-spacing: 0.3em;
             color: var(--muted);
         }
-        .cover-name {
-            margin-top: 3mm;
-            font-size: 34pt;
+        .rider-header-name {
+            margin: 1mm 0 0;
+            font-size: 20pt;
             font-weight: bold;
-            line-height: 1.1;
+            line-height: 1.15;
         }
-        .cover-rule {
-            height: 0;
-            border: 0;
-            border-top: 3px solid var(--accent);
-            margin: 6mm 0 0;
-            width: 40mm;
-        }
-        .cover-meta {
+        .rider-header-date {
             font-size: 9pt;
             color: var(--muted);
-            border-top: 1px solid var(--rule);
-            padding-top: 4mm;
+            white-space: nowrap;
         }
         {% endif %}
 
@@ -221,15 +215,14 @@
     </style>
 </head>
 <body>
-{% if with_cover %}
-    <section class="cover">
+{% if with_header %}
+    <header class="rider-header">
         <div>
-            <div class="cover-band">{{ rider.bandSpace.name }}</div>
-            <div class="cover-name">{{ rider.name }}</div>
-            <hr class="cover-rule">
+            <div class="rider-header-band">{{ rider.bandSpace.name }}</div>
+            <p class="rider-header-name">{{ rider.name }}</p>
         </div>
-        <div class="cover-meta">Fiche technique éditée le {{ generated_at }}</div>
-    </section>
+        <div class="rider-header-date">Édité le {{ generated_at }}</div>
+    </header>
 {% endif %}
 
 {% for item in items %}
