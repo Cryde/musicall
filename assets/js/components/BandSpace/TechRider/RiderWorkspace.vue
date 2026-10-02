@@ -18,6 +18,7 @@
         :adding="isAdding"
         @add="handleAdd"
       />
+      <RiderReadinessCard :items="items" @select="selectItem" />
     </div>
 
     <!-- The column carries the separator at full height, the outline sticks inside it. -->
@@ -34,6 +35,7 @@
           @toggle-included="handleToggleIncluded"
           @add="handleAdd"
         />
+        <RiderReadinessCard class="mt-4" :items="items" @select="selectItem" />
       </div>
     </div>
 
@@ -66,6 +68,7 @@ import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRi
 import { movedIds, neighbourAfterRemoval, selectableItemId } from '../../../utils/riderWorkspace.js'
 import RiderAddSectionButton from './RiderAddSectionButton.vue'
 import RiderOutline from './RiderOutline.vue'
+import RiderReadinessCard from './RiderReadinessCard.vue'
 import RiderSectionPanel from './RiderSectionPanel.vue'
 
 /**
