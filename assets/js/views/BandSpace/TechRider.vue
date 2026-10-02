@@ -51,7 +51,26 @@
             @create="openCreateDialog"
           />
         </div>
-        <div v-if="rider" class="flex items-center gap-2">
+        <div v-if="rider" class="flex flex-wrap items-center gap-3">
+          <span
+            v-if="!isArchived"
+            class="text-sm text-surface-600 dark:text-surface-300 flex items-center gap-2"
+            aria-live="polite"
+          >
+            <template v-if="techRidersStore.saveStatus === 'error'">
+              <i class="pi pi-times text-red-600 dark:text-red-400" aria-hidden="true" />
+              <span>{{ refusedLabel }}</span>
+              <Button label="Réessayer" size="small" severity="secondary" text @click="techRidersStore.retryRefusedSaves()" />
+            </template>
+            <template v-else-if="techRidersStore.saveStatus === 'saving'">
+              <i class="pi pi-spin pi-spinner" aria-hidden="true" />
+              <span>Enregistrement…</span>
+            </template>
+            <template v-else>
+              <i class="pi pi-check text-teal-700 dark:text-teal-300" aria-hidden="true" />
+              <span>Enregistré</span>
+            </template>
+          </span>
           <!-- Offered on an archived rider too, like Dupliquer: last year's rider is exactly the
                thing you send when a venue asks what you used. -->
           <Button
@@ -61,28 +80,14 @@
             @click="handleExport"
           />
           <Button
-            label="Dupliquer"
-            icon="pi pi-copy"
+            icon="pi pi-ellipsis-v"
             severity="secondary"
             outlined
-            @click="openDuplicateDialog"
+            aria-haspopup="menu"
+            aria-label="Plus d'actions sur ce tech rider"
+            @click="(event) => riderMenuRef.toggle(event)"
           />
-          <template v-if="!isArchived">
-            <Button
-              label="Renommer"
-              icon="pi pi-pencil"
-              severity="secondary"
-              outlined
-              @click="openRenameDialog"
-            />
-            <Button
-              label="Archiver"
-              icon="pi pi-inbox"
-              severity="secondary"
-              outlined
-              @click="confirmArchive"
-            />
-          </template>
+          <Menu ref="riderMenuRef" :model="riderMenuItems" :popup="true" />
         </div>
       </div>
 
@@ -106,10 +111,14 @@
             {{ rider.created_by_username ? `par ${rider.created_by_username}` : '' }}
           </p>
 
-          <RiderItemList
+          <!-- Keyed per rider: switching rider remounts it, so a section's last save is sent with
+               the rider it belongs to. The items are passed as the store holds them, never copied
+               here, or every status change would hand the outline a new array mid-drag. -->
+          <RiderWorkspace
+            :key="rider.id"
             :band-space-id="bandSpaceId"
             :rider-id="rider.id"
-            :items="[...rider.items]"
+            :items="rider.items"
             :read-only="isArchived"
           />
         </template>
@@ -129,6 +138,7 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Menu from 'primevue/menu'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
@@ -136,7 +146,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
-import RiderItemList from '../../components/BandSpace/TechRider/RiderItemList.vue'
+import RiderWorkspace from '../../components/BandSpace/TechRider/RiderWorkspace.vue'
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
 import { LAST_TECH_RIDER_KEY } from '../../constants/bandSpace.js'
@@ -159,6 +169,24 @@ const hasAnyRider = computed(
 
 const selectedRiderId = ref(null)
 const isExporting = ref(false)
+const riderMenuRef = ref(null)
+
+const refusedLabel = computed(() => {
+  const count = techRidersStore.refusedItemIds.length
+  return count > 1 ? `Erreur sur ${count} sections` : 'Erreur'
+})
+
+// Secondary actions, out of the header's way. Restaurer stays in the archived banner as well,
+// where it explains why the rider cannot be edited.
+const riderMenuItems = computed(() => [
+  { label: 'Dupliquer', icon: 'pi pi-copy', command: openDuplicateDialog },
+  ...(isArchived.value
+    ? [{ label: 'Restaurer', icon: 'pi pi-replay', command: handleUnarchive }]
+    : [
+        { label: 'Renommer', icon: 'pi pi-pencil', command: openRenameDialog },
+        { label: 'Archiver', icon: 'pi pi-inbox', command: confirmArchive }
+      ])
+])
 const formDialogOpen = ref(false)
 const formDialogMode = ref('create')
 
@@ -223,6 +251,8 @@ function selectRider(riderId) {
 function syncQuery() {
   const next = { ...route.query, rider: selectedRiderId.value ?? undefined }
   if (route.query.rider !== next.rider) {
+    // The open section belongs to the rider being left.
+    delete next.item
     router.replace({ query: next })
   }
 }
