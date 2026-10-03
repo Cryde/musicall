@@ -1572,6 +1572,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         filter_action?: scalar|Param|null, // Default: "Liip\\ImagineBundle\\Controller\\ImagineController::filterAction"
  *         filter_runtime_action?: scalar|Param|null, // Default: "Liip\\ImagineBundle\\Controller\\ImagineController::filterRuntimeAction"
  *         redirect_response_code?: int|Param, // Default: 302
+ *         debug?: bool|Param|null, // Whether to report images that can not be generated as an error. Defaults to the kernel debug mode. When disabled, the default image is served instead, if one is configured. // Default: null
  *     },
  *     filter_sets?: array<string, array{ // Default: []
  *         quality?: scalar|Param|null,
