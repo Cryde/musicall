@@ -74,7 +74,7 @@
     },
     "require-dev": {
         "dama/doctrine-test-bundle": "^8.4",
-        "deployer/deployer": "^7.5.12",
+        "deployer/deployer": "^8.0",
         "league/flysystem-memory": "^3.29",
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^2.1.32",
