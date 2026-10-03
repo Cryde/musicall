@@ -16,6 +16,7 @@ import router from './router/index.js'
 import { useUserSecurityStore } from './store/user/security.js'
 import MusicAllPreset from './theme/musicAllPreset.js'
 import { hasLiveToken, isAuthEndpoint, refreshSession } from './utils/sessionRefresh.js'
+import { isChunkLoadError, reloadOnceForStaleBuild } from './utils/staleBuild.js'
 
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()
@@ -166,5 +167,38 @@ app.use(ConfirmationService)
 app.use(pinia)
 app.use(router)
 app.mount('#app')
+
+// After a deploy, a tab opened before it asks for chunks that no longer exist (#1105). The reload
+// goes where the user was heading: a failed route chunk means that navigation never happened.
+let pendingNavigation = null
+router.beforeEach((to) => {
+  pendingNavigation = to.fullPath
+})
+// Only the navigation that finished: one cancelled by a newer one must not forget the newer target.
+router.afterEach((to) => {
+  if (to.fullPath === pendingNavigation) pendingNavigation = null
+})
+
+function reloadForStaleBuild() {
+  return reloadOnceForStaleBuild({
+    storage: window.sessionStorage,
+    now: Date.now,
+    load: (target) => (target ? window.location.assign(target) : window.location.reload()),
+    url: pendingNavigation
+  })
+}
+
+// Vite's signal, fired first, for a chunk or one of its dependencies that failed to load. Kept
+// quiet only when it reloads.
+window.addEventListener('vite:preloadError', (event) => {
+  if (reloadForStaleBuild()) event.preventDefault()
+})
+
+// The same failure as the router sees it, for an import Vite did not wrap.
+router.onError((error) => {
+  if (isChunkLoadError(error)) reloadForStaleBuild()
+  // A navigation that threw never reaches afterEach, and its target is dead either way.
+  pendingNavigation = null
+})
 
 import.meta.glob(['../image/**'])
