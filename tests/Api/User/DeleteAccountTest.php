@@ -6,10 +6,12 @@ namespace App\Tests\Api\User;
 
 use App\Entity\Publication;
 use App\Entity\User;
+use App\Repository\User\DeviceTokenRepository;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationFactory;
+use App\Tests\Factory\User\DeviceTokenFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -76,6 +78,8 @@ class DeleteAccountTest extends ApiTestCase
             'status' => 1,
             'type' => 1,
         ]);
+        DeviceTokenFactory::new()->create(['user' => $user]);
+        $someoneElsesDevice = DeviceTokenFactory::new()->create();
 
         $realUser = $user;
         $userId = $realUser->id;
@@ -110,6 +114,11 @@ class DeleteAccountTest extends ApiTestCase
         $realPublication = $publication;
         $this->assertSame('My publication', $realPublication->title);
         $this->assertSame($userId, $realPublication->author->id);
+        // Their phones stop receiving pushes, nobody else's do
+        $deviceTokens = static::getContainer()->get(DeviceTokenRepository::class);
+        $this->assertSame([], $deviceTokens->findTokensForUser($deletedUser));
+        $this->assertSame(1, $deviceTokens->count());
+        $this->assertSame([$someoneElsesDevice->token], $deviceTokens->findTokensForUser($someoneElsesDevice->user));
     }
 
     public function test_delete_account_oauth_user_no_password(): void

@@ -155,3 +155,10 @@ framework:
             limit: 5
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # The mobile app registers its push token on every launch and after each sign in, so a
+        # handful an hour is normal; past that something is looping.
+        device_token_register:
+            policy: sliding_window
+            limit: 20
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
