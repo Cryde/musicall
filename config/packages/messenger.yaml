@@ -1,0 +1,26 @@
+framework:
+    messenger:
+        failure_transport: failed
+
+        transports:
+            # Doctrine rather than Valkey: the Redis transport needs ext-redis or Relay, and neither
+            # image ships one (sessions and cache go through predis). Written in full rather than read
+            # from an env var because the DSN holds no secret, and Deployer shares .env instead of
+            # deploying it, so a new variable would never reach the server on its own.
+            async:
+                dsn: 'doctrine://default?auto_setup=0'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 30000
+                    multiplier: 4
+            failed: 'doctrine://default?queue_name=failed&auto_setup=0'
+
+        routing:
+            App\Messenger\SendPushNotification: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+                failed: 'in-memory://'

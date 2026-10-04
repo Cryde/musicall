@@ -135,8 +135,23 @@ services:
             $frontendUrl: '%env(DEFAULT_URI)%'
             $refreshTokenTtl: '%gesdinet_jwt_refresh_token.ttl%'
 
+    # Lazy so a server without credentials only fails when a push is actually sent, inside the worker
+    # where PushNotifier logs it, never at boot or on an unrelated request.
+    Kreait\Firebase\Factory:
+        calls:
+            - [withServiceAccount, ['%env(FIREBASE_CREDENTIALS)%'], true]
+
+    Kreait\Firebase\Contract\Messaging:
+        lazy: true
+        factory: ['@Kreait\Firebase\Factory', 'createMessaging']
+
 when@test:
     services:
+        # The suite never reaches FCM. Public so a test can seed failures and read what was sent.
+        App\Tests\Double\RecordingFirebaseMessaging:
+            public: true
+        Kreait\Firebase\Contract\Messaging: '@App\Tests\Double\RecordingFirebaseMessaging'
+
         App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
 
         # NotificationCreator publishes a Mercure signal on every notification and fifteen source
