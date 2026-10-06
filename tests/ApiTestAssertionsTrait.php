@@ -41,6 +41,25 @@ trait ApiTestAssertionsTrait
         static::assertThat($array, $constraint, $message);
     }
 
+    /**
+     * Fails if the last request ran a query of its own on $table. The way to prove a list loads a
+     * relation with its rows rather than one row at a time; needs enableProfiler() before the request.
+     */
+    public function assertNoQueryReadsTable(string $table, string $message = ''): void
+    {
+        $profile = $this->client->getProfile();
+        static::assertNotFalse($profile, 'The profiler must be enabled to inspect the queries.');
+
+        $reads = array_values(array_filter(
+            array_merge(...array_values(array_map(
+                static fn (array $connection): array => array_column($connection, 'sql'),
+                $profile->getCollector('db')->getQueries(),
+            ))),
+            static fn (string $sql): bool => str_starts_with($sql, 'SELECT') && preg_match('/\bFROM ' . preg_quote($table, '/') . '\b/', $sql) === 1,
+        ));
+        static::assertSame([], $reads, $message);
+    }
+
     private function getResponseAsArray(): mixed
     {
         return json_decode($this->getHttpResponse()->getContent(), true);

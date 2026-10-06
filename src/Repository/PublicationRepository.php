@@ -23,9 +23,11 @@ class PublicationRepository extends ServiceEntityRepository
     public function createCollectionQueryBuilder(?string $subCategorySlug, ?int $subCategoryType, string $orderDirection, ?string $tagSlug = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('publication')
-            ->select('publication, sub_category, author, cover, vote_cache')
+            ->select('publication, sub_category, author, author_profile, cover, vote_cache')
             ->join('publication.subCategory', 'sub_category')
             ->join('publication.author', 'author')
+            // The author's name is read from the profile (#1118), which is lazy otherwise.
+            ->join('author.profile', 'author_profile')
             ->leftJoin('publication.cover', 'cover')
             ->leftJoin('publication.voteCache', 'vote_cache')
             ->where('publication.status = :status')
@@ -82,6 +84,9 @@ class PublicationRepository extends ServiceEntityRepository
     public function getBySearchTerm(string $term, int $limit = 10): array
     {
         return $this->createQueryBuilder('publication')
+            ->select('publication, author, author_profile')
+            ->join('publication.author', 'author')
+            ->join('author.profile', 'author_profile')
             ->where('publication.status = :status')
             ->andWhere('MATCH_AGAINST(publication.title, publication.shortDescription, publication.content) AGAINST(:term) > 0')
             ->andWhere('publication.cover IS NOT NULL')
@@ -99,9 +104,11 @@ class PublicationRepository extends ServiceEntityRepository
     public function findLastPublications(int $limit = 4): array
     {
         return $this->createQueryBuilder('publication')
-            ->select('publication, sub_category, cover')
+            ->select('publication, sub_category, cover, author, author_profile')
             ->join('publication.subCategory', 'sub_category')
             ->leftJoin('publication.cover', 'cover')
+            ->join('publication.author', 'author')
+            ->join('author.profile', 'author_profile')
             ->where('publication.status = :status')
             ->setParameter('status', Publication::STATUS_ONLINE)
             ->orderBy('publication.publicationDatetime', 'DESC')
@@ -116,9 +123,10 @@ class PublicationRepository extends ServiceEntityRepository
     public function findRelatedPublications(Publication $publication, int $limit = 4): array
     {
         return $this->createQueryBuilder('publication')
-            ->select('publication, sub_category, cover, author')
+            ->select('publication, sub_category, cover, author, author_profile')
             ->join('publication.subCategory', 'sub_category')
             ->join('publication.author', 'author')
+            ->join('author.profile', 'author_profile')
             ->leftJoin('publication.cover', 'cover')
             ->where('publication.status = :status')
             ->andWhere('publication.id != :currentId')
@@ -210,9 +218,10 @@ class PublicationRepository extends ServiceEntityRepository
         }
 
         $entities = $this->createQueryBuilder('publication')
-            ->select('publication, sub_category, cover, author, vote_cache')
+            ->select('publication, sub_category, cover, author, author_profile, vote_cache')
             ->join('publication.subCategory', 'sub_category')
             ->join('publication.author', 'author')
+            ->join('author.profile', 'author_profile')
             ->leftJoin('publication.cover', 'cover')
             ->leftJoin('publication.voteCache', 'vote_cache')
             ->where('publication.status = :status')
@@ -458,5 +467,24 @@ class PublicationRepository extends ServiceEntityRepository
                 'type' => $row['type'] === Publication::TYPE_VIDEO ? 'video' : 'text',
             ];
         }, $results);
+    }
+
+    /**
+     * What the moderation queue lists, with each author and their profile, since every row is named
+     * after its author (#1118).
+     *
+     * @return Publication[]
+     */
+    public function findPendingWithAuthors(): array
+    {
+        return $this->createQueryBuilder('publication')
+            ->innerJoin('publication.author', 'author')
+            ->innerJoin('author.profile', 'author_profile')
+            ->addSelect('author', 'author_profile')
+            ->where('publication.status = :status')
+            ->setParameter('status', Publication::STATUS_PENDING)
+            ->orderBy('publication.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

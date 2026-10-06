@@ -53,8 +53,12 @@ class PublicationPendingListTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
         $this->client->request('GET', '/api/admin/publications/pending');
         $this->assertResponseIsSuccessful();
+        $this->assertNoQueryReadsTable('user_profile', 'An author profile must come with the queue, never in a query of its own');
         $this->assertJsonEquals([
             '@context'   => '/api/contexts/Publication',
             '@id'        => '/api/admin/publications/pending',
@@ -76,6 +80,7 @@ class PublicationPendingListTest extends ApiTestCase
                     'author'               => [
                         '@type'             => 'Author',
                         'username'          => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication',

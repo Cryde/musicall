@@ -56,7 +56,7 @@
           :class="{ 'flex-row-reverse': isMine(block.messages[0]) }"
         >
           <span class="font-semibold text-surface-700 dark:text-surface-200 truncate">
-            <MemberName
+            <UserName
               :username="block.messages[0].author_username"
               :display-name="block.messages[0].author_display_name"
               variant="tooltip"
@@ -310,7 +310,7 @@ import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
-import MemberName from '../Member/MemberName.vue'
+import UserName from '../../User/UserName.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageImage from './ChatMessageImage.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'

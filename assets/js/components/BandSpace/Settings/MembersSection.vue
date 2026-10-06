@@ -90,7 +90,7 @@
               <!-- Shown only when it differs, so the row says who this is without repeating
                    itself for the members who never set a stage name. -->
               <span
-                v-if="memberHandle(member.username, member.display_name)"
+                v-if="userHandle(member.username, member.display_name)"
                 class="text-xs text-surface-500 dark:text-surface-400 ml-1"
               >
                 ({{ member.username }})
@@ -210,7 +210,7 @@ import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { memberHandle } from '../../../utils/memberHandle.js'
+import { userHandle } from '../../../utils/userHandle.js'
 import MemberProfileDialog from './MemberProfileDialog.vue'
 
 const route = useRoute()

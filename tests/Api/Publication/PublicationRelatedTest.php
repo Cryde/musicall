@@ -105,6 +105,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'related-1',
@@ -132,6 +133,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'related-2',
@@ -250,6 +252,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'two-shared',
@@ -277,6 +280,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'one-shared',
@@ -304,6 +308,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'category-fallback',

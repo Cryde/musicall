@@ -342,6 +342,7 @@ class PublicationTagTest extends ApiTestCase
                     'author' => [
                         '@type' => 'Author',
                         'username' => 'author_filter',
+                        'display_name' => 'author_filter',
                         'deletion_datetime' => null,
                     ],
                     'slug' => 'tagged-article',

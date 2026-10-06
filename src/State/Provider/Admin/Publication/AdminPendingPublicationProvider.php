@@ -7,7 +7,6 @@ namespace App\State\Provider\Admin\Publication;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Publication\PublicationListItem;
-use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
 use App\Service\Metric\PublicationUserVoteResolver;
@@ -29,7 +28,7 @@ readonly class AdminPendingPublicationProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $publications = $this->publicationRepository->findBy(['status' => Publication::STATUS_PENDING]);
+        $publications = $this->publicationRepository->findPendingWithAuthors();
 
         return $this->publicationListItemBuilder->buildList(
             $publications,

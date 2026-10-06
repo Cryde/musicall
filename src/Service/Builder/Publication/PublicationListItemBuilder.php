@@ -85,6 +85,7 @@ readonly class PublicationListItemBuilder
     {
         $dto = new Author();
         $dto->username = $user->username;
+        $dto->displayName = $user->publicName();
         $dto->deletionDatetime = $user->deletionDatetime;
 
         return $dto;

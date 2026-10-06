@@ -55,7 +55,7 @@
                 size="sm"
               />
               <span class="font-medium text-surface-700 dark:text-surface-200">
-                <MemberName v-if="version.created_by" :username="version.created_by.username" :display-name="version.created_by.display_name" :picture-url="version.created_by.profile_picture_url" /><template v-else>—</template>
+                <UserName v-if="version.created_by" :username="version.created_by.username" :display-name="version.created_by.display_name" :picture-url="version.created_by.profile_picture_url" /><template v-else>—</template>
               </span>
               <span>·</span>
               <span class="tabular-nums">{{ formatSize(version.size) }}</span>
@@ -109,7 +109,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import Avatar from '../../User/Avatar.vue'
-import MemberName from '../Member/MemberName.vue'
+import UserName from '../../User/UserName.vue'
 import FileNewVersionDialog from './FileNewVersionDialog.vue'
 
 const props = defineProps({

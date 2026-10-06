@@ -147,6 +147,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'publication-5',
@@ -174,6 +175,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'publication-4',
@@ -201,6 +203,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'publication-3',
@@ -228,6 +231,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'author'               => [
                         '@type'    => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'publication-2',

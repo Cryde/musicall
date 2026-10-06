@@ -22,7 +22,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { memberHandle } from '../../utils/memberHandle.js'
+import { userHandle } from '../../utils/userHandle.js'
 
 const props = defineProps({
   username: { type: String, required: true },
@@ -34,7 +34,7 @@ const props = defineProps({
 
 const shownName = computed(() => props.displayName || props.username)
 const label = computed(() => {
-  const handle = memberHandle(props.username, props.displayName)
+  const handle = userHandle(props.username, props.displayName)
   return handle ? `${props.displayName} (${handle})` : shownName.value
 })
 const sizeClass = computed(() => (props.size === 'md' ? 'w-7 h-7' : 'w-6 h-6'))

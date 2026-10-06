@@ -118,6 +118,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'author'               => [
                         '@type' => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication-2',
@@ -145,6 +146,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'author'               => [
                         '@type' => 'Author',
                         'username' => 'user_admin',
+                        'display_name' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication-1',
@@ -200,5 +202,147 @@ class PublicationGetCollectionTest extends ApiTestCase
                 ],
             ],
         ]);
+    }
+
+    /**
+     * One author per naming case. The profile is joined into the list query, so naming them costs no
+     * query per author (#1118).
+     */
+    public function test_authors_are_named_by_their_public_profile_name_next_to_their_username(): void
+    {
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $named = UserFactory::new()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $named->profile->displayName = 'Alexandre Martin';
+        $private = UserFactory::new()->create(['username' => 'crydetest', 'email' => 'crydetest@test.com']);
+        $private->profile->displayName = 'Samuel Dupont';
+        $private->profile->isPublic = false;
+        $departed = UserFactory::new()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2024-06-01 09:00:00'),
+        ]);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        $publications = [];
+        foreach ([[$named, 'alex'], [$private, 'sam'], [$departed, 'orphan']] as $index => [$author, $slug]) {
+            $publications[] = PublicationFactory::new([
+                'author' => $author,
+                'publicationDatetime' => new \DateTime(sprintf('2022-01-0%d 10:00:00', $index + 1)),
+                'shortDescription' => 'Description ' . $slug,
+                'slug' => $slug,
+                'status' => Publication::STATUS_ONLINE,
+                'subCategory' => $sub,
+                'title' => 'Titre ' . $slug,
+                'type' => Publication::TYPE_TEXT,
+            ])->create();
+        }
+
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->request('GET', '/api/publications', [
+            'order' => ['publication_datetime' => 'asc'],
+            'sub_category.slug' => 'chroniques',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications',
+            '@type' => 'Collection',
+            'member' => [
+                $this->expectedListItem($publications[0], $sub, 'androidtest_123', 'Alexandre Martin', null),
+                // A private profile keeps its name to itself.
+                $this->expectedListItem($publications[1], $sub, 'crydetest', 'crydetest', null),
+                $this->expectedListItem($publications[2], $sub, 'deleted_c7c9f2e1', 'Utilisateur supprimé', '2024-06-01T09:00:00+00:00'),
+            ],
+            'totalItems' => 3,
+            'view' => [
+                '@id' => '/api/publications?order%5Bpublication_datetime%5D=asc&sub_category.slug=chroniques',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => $this->expectedSearch(),
+        ]);
+
+        $this->assertNoQueryReadsTable('user_profile', 'An author profile must come with the list, never in a query of its own');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function expectedListItem(Publication $publication, object $sub, string $username, string $displayName, ?string $deletionDatetime): array
+    {
+        return [
+            '@id' => '/api/publications/' . $publication->slug,
+            '@type' => 'Publication',
+            'id' => $publication->id,
+            'title' => $publication->title,
+            'sub_category' => [
+                '@type' => 'SubCategory',
+                'id' => $sub->id,
+                'title' => 'Chroniques',
+                'slug' => 'chroniques',
+                'type_label' => 'publication',
+                'is_course' => false,
+            ],
+            'author' => [
+                '@type' => 'Author',
+                'username' => $username,
+                'display_name' => $displayName,
+                'deletion_datetime' => $deletionDatetime,
+            ],
+            'slug' => $publication->slug,
+            'publication_datetime' => \DateTimeImmutable::createFromInterface($publication->publicationDatetime)->format(\DateTimeInterface::ATOM),
+            'cover' => null,
+            'type_label' => 'text',
+            'description' => $publication->shortDescription,
+            'upvotes' => 0,
+            'downvotes' => 0,
+            'user_vote' => null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function expectedSearch(): array
+    {
+        return [
+            '@type'                  => 'IriTemplate',
+            'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,page}',
+            'variableRepresentation' => 'BasicRepresentation',
+            'mapping'                => [
+                [
+                    '@type'    => 'IriTemplateMapping',
+                    'variable' => 'sub_category.slug',
+                    'property' => 'sub_category.slug',
+                    'required' => false,
+                ],
+                [
+                    '@type'    => 'IriTemplateMapping',
+                    'variable' => 'sub_category.type',
+                    'property' => 'sub_category.type',
+                    'required' => false,
+                ],
+                [
+                    '@type'    => 'IriTemplateMapping',
+                    'variable' => 'order[publication_datetime]',
+                    'property' => 'publication_datetime',
+                    'required' => false,
+                ],
+                [
+                    '@type'    => 'IriTemplateMapping',
+                    'variable' => 'tag.slug',
+                    'property' => 'tag.slug',
+                    'required' => false,
+                ],
+                [
+                    '@type'    => 'IriTemplateMapping',
+                    'variable' => 'page',
+                    'property' => 'page',
+                    'required' => false,
+                ],
+            ],
+        ];
     }
 }

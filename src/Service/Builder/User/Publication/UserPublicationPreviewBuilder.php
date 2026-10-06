@@ -43,6 +43,7 @@ readonly class UserPublicationPreviewBuilder
         $author = $publication->author;
         $authorDto = new UserPublicationPreviewAuthor();
         $authorDto->username = $author->username;
+        $authorDto->displayName = $author->publicName();
         $dto->author = $authorDto;
 
         return $dto;

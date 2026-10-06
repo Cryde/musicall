@@ -16,7 +16,7 @@
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
           <span class="text-sm font-medium text-surface-800 dark:text-surface-100">
-            <MemberName :username="comment.author_username" :display-name="comment.author_display_name" :picture-url="comment.author_profile_picture_url" />
+            <UserName :username="comment.author_username" :display-name="comment.author_display_name" :picture-url="comment.author_profile_picture_url" />
           </span>
           <span class="text-xs text-surface-400">
             {{ formatRelative(comment.creation_datetime) }}
@@ -106,7 +106,7 @@ import { useMentionParser } from '../../../composables/useMentionParser.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import Avatar from '../../User/Avatar.vue'
-import MemberName from '../Member/MemberName.vue'
+import UserName from '../../User/UserName.vue'
 
 const props = defineProps({
   comments: { type: Array, default: () => [] },
