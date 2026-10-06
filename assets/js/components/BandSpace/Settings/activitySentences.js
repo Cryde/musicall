@@ -20,6 +20,13 @@ function financeStatus(value) {
   return FINANCE_STATUS_LABELS[value] ?? value
 }
 
+// What the inviter typed: an address, or a username for an invitation made by username (#1119).
+function invitee(payload) {
+  if (payload?.email) return payload.email
+  if (payload?.invited_username) return `@${payload.invited_username}`
+  return 'un utilisateur'
+}
+
 function formatAmount(cents) {
   if (cents === null || cents === undefined) {
     return '—'
@@ -198,13 +205,12 @@ const SENTENCES = {
     `a mis à jour le nom de scène et les instruments de ${a.payload?.target_username ?? 'un membre'}`,
 
   // Settings — invitations
-  'settings.invitation_sent': (a) => `a invité ${a.payload?.email ?? 'un utilisateur'}`,
+  'settings.invitation_sent': (a) => `a invité ${invitee(a.payload)}`,
   'settings.invitation_accepted': (a) =>
-    `a rejoint le Band Space (invitation à ${a.payload?.email})`,
-  'settings.invitation_declined': (a) => `a refusé l'invitation pour ${a.payload?.email}`,
-  'settings.invitation_revoked': (a) => `a annulé l'invitation pour ${a.payload?.email}`,
-  'settings.invitation_expired': (a) =>
-    `l'invitation pour ${a.payload?.email ?? 'un utilisateur'} a expiré`,
+    `a rejoint le Band Space (invitation à ${invitee(a.payload)})`,
+  'settings.invitation_declined': (a) => `a refusé l'invitation pour ${invitee(a.payload)}`,
+  'settings.invitation_revoked': (a) => `a annulé l'invitation pour ${invitee(a.payload)}`,
+  'settings.invitation_expired': (a) => `l'invitation pour ${invitee(a.payload)} a expiré`,
 
   // Settings — suppression de l'espace
   'settings.deletion_scheduled': (a) =>

@@ -61,7 +61,12 @@ class BandSpaceInvitationResource
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    public string $email;
+    /** The address the inviter typed; null when they invited a username (#1119). */
+    public ?string $email = null;
+
+    /** The username the inviter typed; null when they invited an address. */
+    public ?string $invitedUsername = null;
+
     public string $status;
     public \DateTimeInterface $creationDatetime;
     public \DateTimeInterface $expirationDatetime;

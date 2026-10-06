@@ -41,6 +41,13 @@ class BandSpaceInvitation
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     public ?User $existingUser = null;
 
+    /**
+     * Invited by typing a username. The email is then the account's, which the inviter never saw,
+     * so it must not reach them or the band (#1119).
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    public bool $invitedByUsername = false;
+
     #[ORM\Column(type: Types::STRING, length: 64, unique: true)]
     public string $token;
 
@@ -57,6 +64,18 @@ class BandSpaceInvitation
     {
         $this->creationDatetime = new DateTime();
         $this->expirationDatetime = (new DateTime())->modify('+7 days');
+    }
+
+    /**
+     * Who an activity names as the invitee: what the inviter typed, never the account's address.
+     *
+     * @return array<string, ?string>
+     */
+    public function inviteeActivityPayload(): array
+    {
+        return $this->invitedByUsername
+            ? ['invited_username' => $this->existingUser?->username]
+            : ['email' => $this->email];
     }
 
     public function isExpired(): bool

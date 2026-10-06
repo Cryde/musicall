@@ -18,6 +18,7 @@ namespace App\Privacy;
 final class ActivityPayloadMask
 {
     private const string EMAIL_KEY = 'email';
+    private const string USERNAME_KEY = 'invited_username';
 
     /**
      * @param array<string, mixed>|null $payload
@@ -26,6 +27,14 @@ final class ActivityPayloadMask
     public static function mask(?array $payload): ?array
     {
         if ($payload === null || !isset($payload[self::EMAIL_KEY]) || !is_string($payload[self::EMAIL_KEY])) {
+            return $payload;
+        }
+
+        // Rows written before #1119 carry both. Next to a username even a masked address gives away a
+        // member's domain, and the username already names them.
+        if (isset($payload[self::USERNAME_KEY])) {
+            unset($payload[self::EMAIL_KEY]);
+
             return $payload;
         }
 

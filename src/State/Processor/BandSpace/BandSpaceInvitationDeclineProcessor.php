@@ -57,7 +57,7 @@ readonly class BandSpaceInvitationDeclineProcessor implements ProcessorInterface
             type: BandSpaceSettingsActivityType::InvitationDeclined,
             resourceId: $invitation->id,
             actor: $user,
-            payload: ['email' => $invitation->email],
+            payload: $invitation->inviteeActivityPayload(),
         );
 
         $this->entityManager->flush();

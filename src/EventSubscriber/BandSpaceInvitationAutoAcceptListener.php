@@ -79,11 +79,7 @@ readonly class BandSpaceInvitationAutoAcceptListener
                 type: BandSpaceSettingsActivityType::InvitationAccepted,
                 resourceId: $invitation->id,
                 actor: $user,
-                payload: [
-                    'email' => $invitation->email,
-                    'invited_user_id' => $user->id,
-                    'invited_username' => $user->username,
-                ],
+                payload: $invitation->inviteeActivityPayload(),
             );
 
             $acceptedInvitations[] = $invitation;

@@ -92,6 +92,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         $invitation->email = $email;
         $invitation->token = bin2hex(random_bytes(32));
         $invitation->existingUser = $existingUser;
+        $invitation->invitedByUsername = !$isEmail;
 
         $this->entityManager->persist($invitation);
         $this->entityManager->flush();
@@ -102,11 +103,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
             type: BandSpaceSettingsActivityType::InvitationSent,
             resourceId: $invitation->id,
             actor: $currentUser,
-            payload: [
-                'email' => $email,
-                'invited_user_id' => $existingUser?->id,
-                'invited_username' => $existingUser?->username,
-            ],
+            payload: $invitation->inviteeActivityPayload(),
         );
         $this->entityManager->flush();
 

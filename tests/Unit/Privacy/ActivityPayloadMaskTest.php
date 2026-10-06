@@ -10,7 +10,16 @@ class ActivityPayloadMaskTest extends TestCase
     public function test_it_masks_the_email_and_leaves_the_rest_alone(): void
     {
         self::assertSame(
-            ['email' => 'j***@gmail.com', 'invited_username' => 'johnny', 'invited_user_id' => null],
+            ['email' => 'j***@gmail.com', 'label' => 'Studio'],
+            ActivityPayloadMask::mask(['email' => 'john.doe@gmail.com', 'label' => 'Studio']),
+        );
+    }
+
+    /** Rows written before #1119: next to a username even a masked address gives away the domain. */
+    public function test_an_email_next_to_a_username_is_dropped(): void
+    {
+        self::assertSame(
+            ['invited_username' => 'johnny', 'invited_user_id' => null],
             ActivityPayloadMask::mask([
                 'email' => 'john.doe@gmail.com',
                 'invited_username' => 'johnny',

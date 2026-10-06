@@ -19,6 +19,48 @@ class BandSpaceInvitationGetCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
+    /** The account's email stays with the server: the admin typed a username, not an address (#1119). */
+    public function test_an_invitation_made_by_username_never_lists_the_email(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $invitee = UserFactory::new()->create(['username' => 'guitarist42', 'email' => 'guitarist@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $invitation = BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace,
+            'invitedBy' => $admin,
+            'email' => 'guitarist@example.com',
+            'existingUser' => $invitee,
+            'invitedByUsername' => true,
+            'creationDatetime' => new \DateTime('2026-06-01 12:00:00'),
+            'expirationDatetime' => new \DateTime('2027-06-08 12:00:00'),
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/invitations');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceInvitation',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
+                    '@type' => 'BandSpaceInvitation',
+                    'id' => $invitation->id,
+                    'band_space_id' => $bandSpace->id,
+                    'email' => null,
+                    'invited_username' => 'guitarist42',
+                    'status' => 'pending',
+                    'creation_datetime' => '2026-06-01T12:00:00+00:00',
+                    'expiration_datetime' => '2027-06-08T12:00:00+00:00',
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
     public function test_list_pending_invitations(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();
@@ -65,6 +107,7 @@ class BandSpaceInvitationGetCollectionTest extends ApiTestCase
                     'id' => $invitation->id,
                     'band_space_id' => $bandSpace->id,
                     'email' => 'pending@example.com',
+                    'invited_username' => null,
                     'status' => 'pending',
                     'creation_datetime' => '2026-06-01T12:00:00+00:00',
                     'expiration_datetime' => '2027-06-08T12:00:00+00:00',
