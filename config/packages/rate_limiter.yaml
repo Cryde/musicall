@@ -34,6 +34,13 @@ framework:
             limit: 3
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # Every registration attempt, refused ones included, since a refusal says whether an email
+        # already has an account (#1119). Generous enough for someone fixing typos.
+        registration_attempt:
+            policy: sliding_window
+            limit: 20
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
         message_send:
             policy: fixed_window
             limit: 20
