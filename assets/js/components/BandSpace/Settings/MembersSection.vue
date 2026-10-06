@@ -169,6 +169,7 @@
       v-model:visible="profileDialogOpen"
       :band-space-id="bandSpaceId"
       :member="profileTarget"
+      :is-self="!!profileTarget && isMe(profileTarget)"
     />
 
     <!-- Leave -->

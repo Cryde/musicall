@@ -333,7 +333,7 @@ class TechRiderPdfExportTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create(['email' => 'regie@musicall.test']);
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new([
-            'bandSpace' => $bandSpace, 'user' => $user, 'stageName' => 'Jérémy',
+            'bandSpace' => $bandSpace, 'user' => $user, 'stageName' => 'Jérémy', 'showEmailOnRiders' => true,
         ])->create();
         $rider = TechRiderFactory::new(['bandSpace' => $bandSpace, 'name' => 'Fiche technique'])->create();
 

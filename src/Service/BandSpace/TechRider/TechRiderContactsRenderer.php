@@ -44,7 +44,8 @@ readonly class TechRiderContactsRenderer
         $emails = [];
         foreach ($memberships as $membership) {
             $lines[] = $this->line($membership);
-            if ($showEmails) {
+            // The rider's switch alone is not consent: each member opts in for their own address.
+            if ($showEmails && $membership->showEmailOnRiders) {
                 $emails[] = $membership->user->email;
             }
         }

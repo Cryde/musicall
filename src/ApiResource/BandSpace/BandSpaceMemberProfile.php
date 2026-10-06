@@ -60,4 +60,7 @@ class BandSpaceMemberProfile
      */
     #[Assert\Count(max: 6, maxMessage: 'Un membre ne peut pas avoir plus de {{ limit }} instruments')]
     public array $instrumentIds = [];
+
+    /** Only the member themselves may set it; the processor refuses it from anyone else. */
+    public ?bool $showEmailOnRiders = null;
 }

@@ -39,6 +39,20 @@
         </small>
       </div>
 
+      <!-- Only on one's own profile: an email is personal, so no admin can publish it (#1119). -->
+      <div v-if="isSelf" class="flex items-start gap-2">
+        <Checkbox v-model="showEmailOnRiders" :input-id="`${uid}-show-email`" binary />
+        <div>
+          <label :for="`${uid}-show-email`" class="text-sm font-medium">
+            Afficher mon adresse e-mail sur les tech riders
+          </label>
+          <small class="block text-surface-600 dark:text-surface-300">
+            Elle n'apparaît que sur les tech riders où les contacts affichent les adresses, visibles par
+            toute personne recevant le document.
+          </small>
+        </div>
+      </div>
+
       <Message v-if="error" severity="error" :closable="false" size="small">{{ error }}</Message>
 
       <div class="flex justify-end gap-2">
@@ -51,6 +65,7 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
@@ -61,7 +76,9 @@ import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSet
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  member: { type: Object, default: null }
+  member: { type: Object, default: null },
+  // Whether the member edited is the viewer: only they choose to show their own email
+  isSelf: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['saved'])
@@ -74,6 +91,7 @@ const settingsStore = useBandSpaceSettingsStore()
 
 const stageName = ref('')
 const instrumentIds = ref([])
+const showEmailOnRiders = ref(false)
 const instruments = ref([])
 const isLoadingInstruments = ref(false)
 const isSaving = ref(false)
@@ -100,6 +118,7 @@ watch(visible, (open) => {
   error.value = null
   stageName.value = props.member?.stage_name ?? ''
   instrumentIds.value = (props.member?.instruments ?? []).map((instrument) => instrument.id)
+  showEmailOnRiders.value = props.member?.show_email_on_riders ?? false
   loadInstruments()
 })
 
@@ -113,7 +132,9 @@ async function handleSave() {
   try {
     await settingsStore.updateMemberProfile(props.bandSpaceId, props.member.id, {
       stageName: stageName.value.trim() === '' ? null : stageName.value.trim(),
-      instrumentIds: instrumentIds.value
+      instrumentIds: instrumentIds.value,
+      // Left out for anyone else: the server refuses it from an admin editing a member.
+      showEmailOnRiders: props.isSelf ? showEmailOnRiders.value : undefined
     })
     emit('saved')
     visible.value = false

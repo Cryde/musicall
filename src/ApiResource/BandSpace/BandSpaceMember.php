@@ -88,6 +88,9 @@ class BandSpaceMember
     /** Null when the member has not chosen one; display_name is what a document should print. */
     public ?string $stageName = null;
 
+    /** Whether this member lets tech riders print their email. */
+    public bool $showEmailOnRiders = false;
+
     /** stageName when set, the username otherwise. Resolved server side so nobody repeats it. */
     public string $displayName;
 

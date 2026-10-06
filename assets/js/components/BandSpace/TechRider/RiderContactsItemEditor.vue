@@ -42,7 +42,8 @@
     <!-- Stated rather than assumed. A rider goes to people outside the band, so publishing four
          addresses should be a decision somebody took on purpose. -->
     <Message v-if="showEmails" severity="warn" :closable="false" size="small">
-      Les adresses seront visibles par toute personne recevant ce document.
+      Seules les adresses des membres qui l'ont accepté dans leur profil apparaissent, et elles seront
+      visibles par toute personne recevant ce document.
     </Message>
 
     <ul v-if="emails.length > 0" class="flex flex-col gap-1">

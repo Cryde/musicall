@@ -534,7 +534,7 @@ class TechRiderDuplicateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user, 'showEmailOnRiders' => true])->create();
         $source = TechRiderFactory::new([
             'bandSpace' => $bandSpace,
             'name' => 'Rider 2026',

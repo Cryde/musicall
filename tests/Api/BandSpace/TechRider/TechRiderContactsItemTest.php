@@ -265,11 +265,13 @@ class TechRiderContactsItemTest extends ApiTestCase
         $jeremy = $this->membershipRepository()->findMembership($bandSpace, $actingUser);
         self::assertInstanceOf(BandSpaceMembership::class, $jeremy);
         $jeremy->instruments->add($drums);
+        $jeremy->showEmailOnRiders = true;
 
         BandSpaceMembershipFactory::new([
             'bandSpace' => $bandSpace,
             'user' => UserFactory::new()->create(['username' => 'kenny_login', 'email' => 'kenny@test.com']),
             'stageName' => 'Kenny',
+            'showEmailOnRiders' => true,
             'instruments' => new ArrayCollection([$bass, $vocals]),
         ])->create();
 
@@ -277,6 +279,7 @@ class TechRiderContactsItemTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'user' => UserFactory::new()->create(['username' => 'geoffrey_login', 'email' => 'geoffrey@test.com']),
             'stageName' => 'Geoffrey',
+            'showEmailOnRiders' => true,
             'instruments' => new ArrayCollection([$lead]),
         ])->create();
 
@@ -285,6 +288,7 @@ class TechRiderContactsItemTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'user' => UserFactory::new()->create(['username' => 'roadie_login', 'email' => 'roadie@test.com']),
             'stageName' => 'Roadie',
+            'showEmailOnRiders' => true,
         ])->create();
 
         $entityManager->flush();
