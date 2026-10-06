@@ -60,7 +60,7 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
             type: BandSpaceSettingsActivityType::InvitationRevoked,
             resourceId: $invitation->id,
             actor: $user,
-            payload: ['email' => $invitation->email],
+            payload: $invitation->inviteeActivityPayload(),
         );
 
         $this->entityManager->flush();

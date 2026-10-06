@@ -12,7 +12,9 @@ readonly class BandSpaceInvitationBuilder
         $dto = new BandSpaceInvitationResource();
         $dto->id = (string) $invitation->id;
         $dto->bandSpaceId = (string) $invitation->bandSpace->id;
-        $dto->email = $invitation->email;
+        // Only what the inviter typed: an invitation by username never discloses the account's email.
+        $dto->email = $invitation->invitedByUsername ? null : $invitation->email;
+        $dto->invitedUsername = $invitation->invitedByUsername ? $invitation->existingUser?->username : null;
         $dto->status = $invitation->status->value;
         $dto->creationDatetime = $invitation->creationDatetime;
         $dto->expirationDatetime = $invitation->expirationDatetime;

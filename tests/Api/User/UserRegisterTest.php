@@ -9,6 +9,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -190,6 +191,36 @@ password: Le mot de passe doit au moins contenir 8 caractères',
             ]
         ]);
         $this->assertEmailCount(0);
+    }
+
+    /**
+     * « Cet email est déjà utilisé » tells whether an address has an account, so once the attempts
+     * are spent the answer is a 429 and never that verdict (#1119).
+     */
+    public function test_an_exhausted_attempt_budget_answers_before_saying_an_email_is_taken(): void
+    {
+        UserFactory::new()->create(['username' => 'existing', 'email' => 'taken@mail.com']);
+        /** @var RateLimiterFactoryInterface $limiter */
+        $limiter = self::getContainer()->get('limiter.registration_attempt');
+        $limiter->create('127.0.0.1')->consume(20);
+
+        $this->client->jsonRequest('POST', '/api/users/register', [
+            'username' => 'curious_user',
+            'password' => 'password',
+            'email' => 'taken@mail.com',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
     }
 
     public function test_register_with_logged_user(): void

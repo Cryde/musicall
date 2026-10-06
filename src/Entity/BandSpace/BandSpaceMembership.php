@@ -57,6 +57,13 @@ class BandSpaceMembership
     public ?string $stageName = null;
 
     /**
+     * Whether the member's account email may be printed in a tech rider's contacts. Their own choice
+     * only: no admin can turn it on for them (#1119).
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    public bool $showEmailOnRiders = false;
+
+    /**
      * What this member plays in this band. Many to many because one person routinely holds more
      * than one line on a rider: bass plus backing vocals is a single member, two instruments.
      *

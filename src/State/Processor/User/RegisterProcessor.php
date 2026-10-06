@@ -4,6 +4,7 @@ namespace App\State\Processor\User;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use ApiPlatform\Validator\ValidatorInterface;
 use App\ApiResource\User\Register;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
@@ -29,6 +30,9 @@ readonly class RegisterProcessor implements ProcessorInterface
         private EventDispatcherInterface $eventDispatcher,
         #[Target('registration')]
         private RateLimiterFactoryInterface $registrationLimiter,
+        #[Target('registration_attempt')]
+        private RateLimiterFactoryInterface $registrationAttemptLimiter,
+        private ValidatorInterface $validator,
         private RequestStack $requestStack,
     ) {
     }
@@ -45,6 +49,9 @@ readonly class RegisterProcessor implements ProcessorInterface
         }
 
         $ip = $this->requestStack->getCurrentRequest()?->getClientIp() ?? 'unknown';
+        // Every attempt, valid or not, before validation can answer whether an email is taken.
+        $this->registrationAttemptLimiter->create($ip)->consume()->ensureAccepted();
+        $this->validator->validate($data, $operation->getValidationContext() ?? []);
         $this->registrationLimiter->create($ip)->consume()->ensureAccepted();
 
         $user = new User();

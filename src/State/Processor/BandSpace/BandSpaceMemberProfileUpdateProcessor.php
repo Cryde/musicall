@@ -83,6 +83,20 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
             }
         }
 
+        if (
+            array_key_exists('show_email_on_riders', $payload)
+            && $data->showEmailOnRiders !== null
+            && $membership->showEmailOnRiders !== $data->showEmailOnRiders
+        ) {
+            // An email is personal: even an admin cannot change someone else's choice (#1119). An
+            // unchanged value sent back by a client that round trips the profile is not a change.
+            if (!$isSelf) {
+                throw new AccessDeniedHttpException('Seul le membre peut choisir d\'afficher son email sur les fiches techniques');
+            }
+            $membership->showEmailOnRiders = $data->showEmailOnRiders;
+            $changed = true;
+        }
+
         if (array_key_exists('instrument_ids', $payload)) {
             $changed = $this->applyInstruments($membership, $data->instrumentIds) || $changed;
         }

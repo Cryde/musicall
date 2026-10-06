@@ -417,6 +417,7 @@ class DeleteAccountBandSpaceTest extends ApiTestCase
             'username' => 'third_member',
             'role' => 'admin',
             'stage_name' => null,
+            'show_email_on_riders' => false,
             'display_name' => 'third_member',
             'instruments' => [],
             'profile_picture_url' => null,

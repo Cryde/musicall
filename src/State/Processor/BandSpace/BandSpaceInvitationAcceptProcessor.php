@@ -108,11 +108,8 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
             type: BandSpaceSettingsActivityType::InvitationAccepted,
             resourceId: $invitation->id,
             actor: $user,
-            payload: [
-                'email' => $invitation->email,
-                'invited_user_id' => $user->id,
-                'invited_username' => $user->username,
-            ],
+            // The joiner is the actor already; the payload only says how they were invited.
+            payload: $invitation->inviteeActivityPayload(),
         );
         $this->entityManager->flush();
 

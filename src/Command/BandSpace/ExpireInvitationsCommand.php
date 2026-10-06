@@ -43,7 +43,7 @@ class ExpireInvitationsCommand extends Command
                 type: BandSpaceSettingsActivityType::InvitationExpired,
                 resourceId: $invitation->id,
                 actor: null,
-                payload: ['email' => $invitation->email],
+                payload: $invitation->inviteeActivityPayload(),
             );
         }
 

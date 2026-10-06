@@ -63,7 +63,7 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_sent', $activities[0]->type);
         $this->assertSame(
-            ['email' => 'newuser@example.com', 'invited_user_id' => null, 'invited_username' => null],
+            ['email' => 'newuser@example.com'],
             $activities[0]->payload,
         );
         $this->assertSame($admin->id, $activities[0]->actor?->id);
@@ -133,11 +133,17 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             '@type' => 'BandSpaceInvitation',
             'id' => $invitation->id,
             'band_space_id' => $bandSpace->id,
-            'email' => 'guitarist@example.com',
+            // The account's email is never disclosed to whoever typed the username (#1119).
+            'invited_username' => 'guitarist42',
             'status' => 'pending',
             'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
             'expiration_datetime' => $invitation->expirationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+        $this->assertTrue($invitation->invitedByUsername);
+
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
+            ->findForResource($bandSpace, BandSpaceModule::Settings, $invitation->id);
+        $this->assertSame(['invited_username' => 'guitarist42'], $activities[0]->payload);
     }
 
     public function test_invite_by_username_not_found(): void

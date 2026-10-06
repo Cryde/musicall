@@ -89,6 +89,8 @@ class TechRiderContactsRendererTest extends KernelTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         $this->member($bandSpace, 'zoe', 'Zoé', []);
         $this->member($bandSpace, 'alice', 'Alice', []);
+        // Never opted in: the rider's switch alone does not publish their address (#1119).
+        $this->member($bandSpace, 'carl', 'Carl', [], showsEmail: false);
 
         $this->assertSame([], $this->render($bandSpace)['emails']);
         $this->assertSame(
@@ -114,6 +116,7 @@ class TechRiderContactsRendererTest extends KernelTestCase
         ?string $stageName,
         array $instrumentNames,
         MembershipStatus $status = MembershipStatus::Active,
+        bool $showsEmail = true,
     ): void {
         $instruments = array_map(
             static fn (string $name): object => InstrumentFactory::new()->create([
@@ -131,6 +134,7 @@ class TechRiderContactsRendererTest extends KernelTestCase
                 'email' => $username . '@test.com',
             ]),
             'stageName' => $stageName,
+            'showEmailOnRiders' => $showsEmail,
             'status' => $status,
             'leftDatetime' => $status === MembershipStatus::Active ? null : new DateTime('-1 day'),
             'instruments' => new ArrayCollection($instruments),

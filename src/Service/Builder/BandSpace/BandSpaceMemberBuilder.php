@@ -23,6 +23,7 @@ readonly class BandSpaceMemberBuilder
         $dto->username = $membership->user->username;
         $dto->role = $membership->role->value;
         $dto->stageName = $membership->stageName;
+        $dto->showEmailOnRiders = $membership->showEmailOnRiders;
         // The name a document should use, resolved here so no caller has to repeat the fallback.
         $dto->displayName = $membership->displayName();
         $dto->instruments = array_map(

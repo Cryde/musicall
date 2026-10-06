@@ -14,6 +14,9 @@ use Symfony\Component\Validator\Constraints as Assert;
     openapi: new Operation(tags: ['Users']),
     name: 'api_users_register',
     processor: RegisterProcessor::class,
+    // Validated in the processor, after a rate limit: « Cet email est déjà utilisé » says whether an
+    // address has an account, so trying addresses must cost something (#1119).
+    validate: false,
 )]
 #[UniqueEntity(fields: ['username'], message: 'Ce nom d\'utilisateur est déjà pris', entityClass: User::class)]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé', entityClass: User::class)]

@@ -59,6 +59,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             'username' => 'jeremy_login',
             'role' => 'user',
             'stage_name' => 'Jérémy',
+            'show_email_on_riders' => false,
             'display_name' => 'Jérémy',
             // Ordered by name, which is the mapping's OrderBy, so a document does not reshuffle.
             'instruments' => [
@@ -124,6 +125,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             'username' => 'other_user',
             'role' => 'user',
             'stage_name' => 'Kenny',
+            'show_email_on_riders' => false,
             'display_name' => 'Kenny',
             'instruments' => [],
             'profile_picture_url' => null,
@@ -168,6 +170,101 @@ class BandSpaceMemberProfileTest extends ApiTestCase
         $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
             ->findOneByIdAndBandSpace((string) $target->id, $bandSpace);
         $this->assertNull($reloaded?->stageName);
+    }
+
+    public function test_a_member_opts_in_to_showing_their_email_on_riders(): void
+    {
+        [$user, $bandSpace, $membership] = $this->seedSelf();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['show_email_on_riders' => true],
+            self::HEADERS,
+        );
+
+        $this->assertResponseIsSuccessful();
+        $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
+            ->findOneByIdAndBandSpace((string) $membership->id, $bandSpace);
+        $this->assertTrue($reloaded?->showEmailOnRiders);
+    }
+
+    /** An email is personal: even an admin cannot publish another member's on a rider (#1119). */
+    public function test_an_admin_cannot_opt_a_member_in_to_showing_their_email(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $member = UserFactory::new()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['show_email_on_riders' => true],
+            self::HEADERS,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Seul le membre peut choisir d'afficher son email sur les fiches techniques",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Seul le membre peut choisir d'afficher son email sur les fiches techniques",
+        ]);
+        $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
+            ->findOneByIdAndBandSpace((string) $membership->id, $bandSpace);
+        $this->assertFalse($reloaded?->showEmailOnRiders);
+    }
+
+    public function test_a_member_withdraws_their_consent(): void
+    {
+        [$user, $bandSpace, $membership] = $this->seedSelf();
+        $membership->showEmailOnRiders = true;
+        \Zenstruck\Foundry\Persistence\save($membership);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['show_email_on_riders' => false],
+            self::HEADERS,
+        );
+
+        $this->assertResponseIsSuccessful();
+        $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
+            ->findOneByIdAndBandSpace((string) $membership->id, $bandSpace);
+        $this->assertFalse($reloaded?->showEmailOnRiders);
+    }
+
+    /** A client sending the whole profile back unchanged is not trying to change the member's choice. */
+    public function test_an_admin_sending_the_choice_back_unchanged_still_saves_the_rest(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $member = UserFactory::new()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['stage_name' => 'Kenny', 'show_email_on_riders' => false],
+            self::HEADERS,
+        );
+
+        $this->assertResponseIsSuccessful();
+        $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
+            ->findOneByIdAndBandSpace((string) $membership->id, $bandSpace);
+        $this->assertSame('Kenny', $reloaded?->stageName);
+        $this->assertFalse($reloaded?->showEmailOnRiders);
     }
 
     /** Another space's membership is 404: the caller has no standing to learn that it exists. */

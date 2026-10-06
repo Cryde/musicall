@@ -27,11 +27,15 @@ export default {
    * Separate from updateMemberRole because the server enforces a different rule: a member may
    * edit their own profile, an admin anyone's, whereas roles are admin only.
    */
-  updateMemberProfile(bandSpaceId, memberId, { stageName, instrumentIds }) {
+  updateMemberProfile(bandSpaceId, memberId, { stageName, instrumentIds, showEmailOnRiders }) {
     return axios
       .patch(
         Routing.generate('api_band_space_member_profile_patch', { bandSpaceId, id: memberId }),
-        { stage_name: stageName, instrument_ids: instrumentIds },
+        {
+          stage_name: stageName,
+          instrument_ids: instrumentIds,
+          show_email_on_riders: showEmailOnRiders
+        },
         { headers: { 'Content-Type': 'application/merge-patch+json' } }
       )
       .then((resp) => resp.data)

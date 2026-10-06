@@ -88,12 +88,17 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     }
   }
 
-  async function updateMemberProfile(bandSpaceId, memberId, { stageName, instrumentIds }) {
+  async function updateMemberProfile(
+    bandSpaceId,
+    memberId,
+    { stageName, instrumentIds, showEmailOnRiders }
+  ) {
     isUpdatingProfile.value = true
     try {
       const updated = await bandSpaceSettingsApi.updateMemberProfile(bandSpaceId, memberId, {
         stageName,
-        instrumentIds
+        instrumentIds,
+        showEmailOnRiders
       })
       const index = members.value.findIndex((m) => m.id === memberId)
       if (index !== -1) {

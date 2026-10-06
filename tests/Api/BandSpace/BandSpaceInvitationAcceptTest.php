@@ -69,7 +69,8 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_accepted', $activities[0]->type);
         $this->assertSame(
-            ['email' => 'invitee@example.com', 'invited_user_id' => $invitee->id, 'invited_username' => 'invitee'],
+            // How they were invited, nothing more: the joiner is already the actor (#1119).
+            ['email' => 'invitee@example.com'],
             $activities[0]->payload,
         );
         $this->assertSame($invitee->id, $activities[0]->actor?->id);

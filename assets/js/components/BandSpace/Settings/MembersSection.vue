@@ -37,7 +37,7 @@
         >
           <div>
             <span class="text-sm font-medium text-surface-800 dark:text-surface-100">
-              {{ invitation.email }}
+              {{ invitationTarget(invitation) }}
             </span>
             <span class="text-xs text-surface-500 dark:text-surface-400 ml-2">
               Expire le {{ formatDate(invitation.expiration_datetime) }}
@@ -169,6 +169,7 @@
       v-model:visible="profileDialogOpen"
       :band-space-id="bandSpaceId"
       :member="profileTarget"
+      :is-self="!!profileTarget && isMe(profileTarget)"
     />
 
     <!-- Leave -->
@@ -273,9 +274,16 @@ async function handleInvite() {
   }
 }
 
+// An invitation made by username carries no email (#1119): it is named by that username instead.
+function invitationTarget(invitation) {
+  if (invitation.email) return invitation.email
+  // The account behind an invitation by username can be gone, leaving neither
+  return invitation.invited_username ? `@${invitation.invited_username}` : 'un utilisateur'
+}
+
 function handleCancelInvitation(invitation) {
   confirm.require({
-    message: `Annuler l'invitation envoyée à ${invitation.email} ?`,
+    message: `Annuler l'invitation envoyée à ${invitationTarget(invitation)} ?`,
     header: "Confirmer l'annulation",
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Non',
