@@ -20,11 +20,13 @@
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
           <span>
             Par
-            <router-link
+            <UserName
               v-if="!publication.author.deletion_datetime"
+              :username="publication.author.username"
+              :display-name="authorName"
               :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
               class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-            >{{ authorName }}</router-link>
+            />
             <span v-else class="font-semibold text-surface-600 dark:text-surface-300">{{ authorName }}</span>
           </span>
           <span class="flex items-center gap-1">
@@ -147,6 +149,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import Breadcrumb from '../../views/Global/Breadcrumb.vue'
 import CommentThread from '../Comment/CommentThread.vue'
+import UserName from '../User/UserName.vue'
 import PublicationShareBar from './PublicationShareBar.vue'
 import LatestPublicationsWidget from './Sidebar/LatestPublicationsWidget.vue'
 import PopularTagsWidget from './Sidebar/PopularTagsWidget.vue'

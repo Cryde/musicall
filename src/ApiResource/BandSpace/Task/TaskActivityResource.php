@@ -53,6 +53,7 @@ class TaskActivityResource
 
     public string $actorId;
     public string $actorUsername;
+    public string $actorDisplayName;
     public ?string $actorProfilePictureUrl = null;
     public string $type;
 

@@ -74,14 +74,14 @@
             <img
               v-if="member.profile_picture_url"
               :src="member.profile_picture_url"
-              :alt="member.username"
+              :alt="member.display_name"
               class="w-8 h-8 rounded-full object-cover"
             />
             <div
               v-else
               class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-contrast text-sm font-semibold"
             >
-              {{ member.username.charAt(0).toUpperCase() }}
+              {{ member.display_name.charAt(0).toUpperCase() }}
             </div>
             <div class="min-w-0">
               <span class="text-sm font-medium text-surface-800 dark:text-surface-100">
@@ -90,7 +90,7 @@
               <!-- Shown only when it differs, so the row says who this is without repeating
                    itself for the members who never set a stage name. -->
               <span
-                v-if="member.stage_name && member.stage_name !== member.username"
+                v-if="userHandle(member.username, member.display_name)"
                 class="text-xs text-surface-500 dark:text-surface-400 ml-1"
               >
                 ({{ member.username }})
@@ -210,6 +210,7 @@ import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { userHandle } from '../../../utils/userHandle.js'
 import MemberProfileDialog from './MemberProfileDialog.vue'
 
 const route = useRoute()

@@ -58,6 +58,7 @@ class MessagePostInThreadTest extends ApiTestCase
                 '@type' => 'User',
                 'id'       => $user1->id,
                 'username' => 'base_user_1',
+                'display_name' => 'base_user_1',
             ],
             'thread'            => [
                 '@id' => '/api/message_threads/' . $thread->id,

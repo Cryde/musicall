@@ -159,7 +159,11 @@ export const useMessageStore = defineStore('message', () => {
       content: chatMessage.content,
       creation_datetime: chatMessage.creation_datetime,
       is_deleted: chatMessage.is_deleted ?? false,
-      author: { id: chatMessage.author_id, username: chatMessage.author_username }
+      author: {
+        id: chatMessage.author_id,
+        username: chatMessage.author_username,
+        display_name: chatMessage.author_display_name
+      }
     }
   }
 

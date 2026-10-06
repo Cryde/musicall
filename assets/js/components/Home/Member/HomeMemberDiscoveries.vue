@@ -21,7 +21,7 @@
           />
           <span class="flex flex-col min-w-0 flex-1">
             <span class="text-sm font-semibold line-clamp-2 text-surface-900 dark:text-surface-0">{{ discovery.title }}</span>
-            <span class="text-sm text-surface-600 dark:text-surface-300">par {{ displayName(discovery.author) }}</span>
+            <span class="text-sm text-surface-600 dark:text-surface-300">par <UserName :username="discovery.author.username" :display-name="displayName(discovery.author)" variant="tooltip" /></span>
           </span>
           <span class="shrink-0 pr-1 text-sm font-bold text-teal-700 dark:text-teal-300" :aria-label="`${discovery.upvotes ?? 0} votes positifs`">
             ▲ {{ discovery.upvotes ?? 0 }}
@@ -37,6 +37,7 @@
 import { onMounted, ref } from 'vue'
 import publicationsApi from '../../../api/publication/publications.js'
 import { displayName } from '../../../helper/user/displayName.js'
+import UserName from '../../User/UserName.vue'
 import HomeMemberPanel from './HomeMemberPanel.vue'
 
 /** The videos the community shared last (#1078). */

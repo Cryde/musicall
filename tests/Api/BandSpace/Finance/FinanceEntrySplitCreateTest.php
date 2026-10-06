@@ -78,6 +78,7 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'entry_id' => $entry->id,
             'member_id' => (string) $membership->id,
             'member_name' => $user->username,
+            'member_username' => $user->username,
             'is_former_member' => false,
             'amount' => 25000,
             'creation_datetime' => $split->creationDatetime->format(\DateTimeInterface::ATOM),

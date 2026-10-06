@@ -174,6 +174,7 @@
                       v-for="a in item.metadata.assignees.slice(0, 3)"
                       :key="a.id"
                       :username="a.username"
+                      :display-name="a.display_name"
                       :picture-url="a.profile_picture_url"
                       size="sm"
                     />

@@ -41,7 +41,7 @@ readonly class CommentCollectionProvider implements ProviderInterface
             return [];
         }
 
-        $comments = $this->commentRepository->findBy(['thread' => (int) $threadId]);
+        $comments = $this->commentRepository->findByThreadIdWithAuthors((int) $threadId);
 
         $voteCacheIds = [];
         foreach ($comments as $comment) {

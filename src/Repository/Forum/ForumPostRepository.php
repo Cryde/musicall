@@ -22,8 +22,9 @@ class ForumPostRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->join('p.topic', 't')
             ->join('p.creator', 'c')
+            ->join('c.profile', 'cp')
             ->leftJoin('c.profilePicture', 'pp')
-            ->addSelect('c', 'pp')
+            ->addSelect('c', 'cp', 'pp')
             ->where('t.slug = :slug')
             ->setParameter('slug', $topicSlug)
             ->orderBy('p.creationDatetime', 'ASC');

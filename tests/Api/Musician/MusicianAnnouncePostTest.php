@@ -87,6 +87,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
                 '@type' => 'Author',
                 'id' => $user1->id,
                 'username' => $user1->username,
+                'display_name' => $user1->username,
                 'has_musician_profile' => false,
             ],
         ]);

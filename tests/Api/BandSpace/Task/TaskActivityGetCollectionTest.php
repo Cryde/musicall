@@ -61,6 +61,7 @@ class TaskActivityGetCollectionTest extends ApiTestCase
                     'task_id' => (string) $task->id,
                     'actor_id' => $user->id,
                     'actor_username' => $user->username,
+                    'actor_display_name' => $user->username,
                     'actor_profile_picture_url' => null,
                     'type' => 'status_changed',
                     'payload' => ['from' => 'todo', 'to' => 'in_progress'],

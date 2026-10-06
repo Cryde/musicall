@@ -86,6 +86,7 @@ class AnnounceSearchTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $author2->id,
                         'username' => 'olivia',
+                        'display_name' => 'olivia',
                         'has_musician_profile' => false,
                     ],
                     'instrument' => [
@@ -107,6 +108,7 @@ class AnnounceSearchTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $author1->id,
                         'username' => 'philip',
+                        'display_name' => 'philip',
                         'has_musician_profile' => false,
                     ],
                     'instrument' => [

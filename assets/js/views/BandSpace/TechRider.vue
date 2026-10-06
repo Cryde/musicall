@@ -118,7 +118,7 @@
           <template v-else-if="rider">
             <p class="text-surface-600 dark:text-surface-300 text-sm mb-3">
               Créé le {{ formatDate(rider.creation_datetime) }}
-              {{ rider.created_by_username ? `par ${rider.created_by_username}` : '' }}
+              {{ rider.created_by_username ? `par ${rider.created_by_display_name ?? rider.created_by_username}` : '' }}
             </p>
 
             <!-- Keyed per rider: switching rider remounts it, so a section's last save is sent with

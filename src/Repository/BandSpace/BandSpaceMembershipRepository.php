@@ -76,11 +76,13 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
      */
     public function findByBandSpace(BandSpace $bandSpace, bool $includeInactive = false): array
     {
-        // Instruments come along because every caller that lists members now prints them, so
-        // leaving them lazy would cost one query per member on a roster.
+        // Instruments and the profile come along because every caller that lists members prints them
+        // and names them (#1118), so leaving them lazy would cost one query per member on a roster.
         $qb = $this->createQueryBuilder('m')
             ->innerJoin('m.user', 'u')
             ->addSelect('u')
+            ->innerJoin('u.profile', 'up')
+            ->addSelect('up')
             ->leftJoin('m.instruments', 'i')
             ->addSelect('i')
             ->where('m.bandSpace = :bandSpace')
@@ -262,10 +264,60 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('m')
             ->innerJoin('m.user', 'u')
             ->addSelect('u')
+            ->innerJoin('u.profile', 'up')
+            ->addSelect('up')
             ->where('m.bandSpace = :bandSpace')
             ->andWhere('u.id IN (:userIds)')
             ->setParameter('bandSpace', $bandSpaceId)
             ->setParameter('userIds', $userIds)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * What every member the space ever had is called there, keyed by user id. Former members are
+     * included so a task or a file keeps naming its author after they leave. Scalars only: a User
+     * drags three profile tables along when hydrated (#730).
+     *
+     * @return array<string, string>
+     */
+    public function findDisplayNamesByUserId(string $bandSpaceId): array
+    {
+        $rows = $this->createQueryBuilder('m')
+            ->select('u.id AS userId', 'u.username', 'u.deletionDatetime', 'm.stageName', 'p.displayName AS profileName', 'p.isPublic AS profileIsPublic')
+            ->innerJoin('m.user', 'u')
+            ->innerJoin('u.profile', 'p')
+            ->where('m.bandSpace = :bandSpace')
+            ->setParameter('bandSpace', $bandSpaceId)
+            ->getQuery()
+            ->getArrayResult();
+
+        $names = [];
+        foreach ($rows as $row) {
+            $names[(string) $row['userId']] = BandSpaceMembership::nameFor(
+                $row['stageName'],
+                $row['username'],
+                $row['deletionDatetime'] !== null,
+                $row['profileName'],
+                (bool) $row['profileIsPublic'],
+            );
+        }
+
+        return $names;
+    }
+
+    /**
+     * Every membership that chose a stage name, with its user, for the display name audit.
+     *
+     * @return BandSpaceMembership[]
+     */
+    public function findWithStageName(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.user', 'u')
+            ->addSelect('u')
+            ->where('m.stageName IS NOT NULL')
+            ->orderBy('u.username', 'ASC')
             ->getQuery()
             ->getResult();
     }

@@ -37,7 +37,7 @@
 
           <div
               class="text-surface-500 dark:text-surface-300 text-xs md:text-sm leading-normal">
-              par {{ authorName }} {{ relativeDateFilter(date) }}
+              par <UserName :username="author.username" :display-name="authorName" variant="tooltip" /> {{ relativeDateFilter(date) }}
 
           <Tag
               severity="secondary"
@@ -55,6 +55,7 @@
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
 import VoteButtonsList from '../../components/Publication/VoteButtonsList.vue'
+import UserName from '../../components/User/UserName.vue'
 import relativeDateFilter from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 

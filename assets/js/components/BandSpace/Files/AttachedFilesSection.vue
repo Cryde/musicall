@@ -42,6 +42,7 @@
       <Avatar
         v-if="file.created_by"
         :username="file.created_by.username"
+        :display-name="file.created_by.display_name"
         :picture-url="file.created_by.profile_picture_url"
         size="sm"
       />

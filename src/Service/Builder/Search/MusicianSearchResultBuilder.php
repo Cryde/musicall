@@ -62,6 +62,7 @@ class MusicianSearchResultBuilder
         $user = new User();
         $user->id = $userEntity->id;
         $user->username = $userEntity->username;
+        $user->displayName = $userEntity->publicName();
         $user->deletionDatetime = $userEntity->deletionDatetime;
         $user->hasMusicianProfile = $userEntity->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
         if ($userEntity->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {

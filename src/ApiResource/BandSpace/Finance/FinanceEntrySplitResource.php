@@ -69,6 +69,7 @@ class FinanceEntrySplitResource
 
     public ?string $memberId = null;
     public ?string $memberName = null;
+    public ?string $memberUsername = null;
     public bool $isFormerMember = false;
     public int $amount;
     public \DateTimeInterface $creationDatetime;

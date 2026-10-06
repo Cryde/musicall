@@ -40,6 +40,7 @@ class BandSpaceFileActivityResource
 
     public string $actorId;
     public string $actorUsername;
+    public string $actorDisplayName;
     public ?string $actorProfilePictureUrl = null;
     public string $type;
 

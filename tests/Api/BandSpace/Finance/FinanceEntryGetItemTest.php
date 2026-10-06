@@ -69,6 +69,56 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'scope' => 'band',
             'member_id' => null,
             'member_name' => null,
+            'member_username' => null,
+            'recurrence_id' => null,
+            'is_former_member' => false,
+            'split_warning' => false,
+            'creation_datetime' => '2024-01-15T10:00:00+00:00',
+            'update_datetime' => null,
+        ]);
+    }
+
+    public function test_get_item_names_a_personal_entry_owner_by_their_stage_name(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user, 'stageName' => 'Alex'])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Matériel', 'position' => 0])->create();
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cordes',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $membership,
+            'amount' => 2500,
+            'date' => new \DateTime('2024-01-15'),
+            'creationDatetime' => new \DateTime('2024-01-15 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            '@type' => 'FinanceEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'category_id' => $category->id,
+            'category_name' => 'Matériel',
+            'label' => 'Cordes',
+            'type' => 'expense',
+            'status' => 'paid',
+            'amount' => 2500,
+            'amount_min' => null,
+            'amount_max' => null,
+            'date' => '2024-01-15',
+            'scope' => 'personal',
+            'member_id' => $membership->id,
+            'member_name' => 'Alex',
+            'member_username' => 'androidtest_123',
             'recurrence_id' => null,
             'is_former_member' => false,
             'split_warning' => false,

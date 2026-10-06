@@ -37,6 +37,7 @@ class UserGalleryPreview
     public \DateTimeInterface $creationDatetime;
 
     public string $authorUsername;
+    public string $authorDisplayName;
 
     /** @var array<int, array{small?: string, medium?: string, full?: string}> */
     public array $images = [];

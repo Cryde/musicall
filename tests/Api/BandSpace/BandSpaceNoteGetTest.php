@@ -52,7 +52,43 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'content' => $content,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => ['id' => $user->id, 'username' => 'base_admin'],
+            'created_by' => ['id' => $user->id, 'username' => 'base_admin', 'display_name' => 'base_admin'],
+            'emoji' => null,
+            'creation_datetime' => '2024-01-01T10:00:00+00:00',
+            'update_datetime' => null,
+        ]);
+    }
+
+    public function test_get_item_names_the_author_by_their_stage_name(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user, 'stageName' => 'Alex'])->create();
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Plan de scène',
+            'position' => 0,
+            'createdBy' => $user,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => $note->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Plan de scène',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'content_version' => 1,
+            'has_children' => false,
+            'created_by' => ['id' => $user->id, 'username' => 'androidtest_123', 'display_name' => 'Alex'],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
@@ -76,6 +112,14 @@ class BandSpaceNoteGetTest extends ApiTestCase
         ]);
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $reader])->create();
+        // Closing the account leaves the stage name on the membership; the label must still win (#1115).
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $departed,
+            'stageName' => 'Sam',
+            'status' => MembershipStatus::Left,
+            'leftDatetime' => new \DateTime('2024-06-01 09:00:00'),
+        ])->create();
 
         $note = BandSpaceNoteFactory::new([
             'bandSpace' => $bandSpace,
@@ -104,6 +148,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'created_by' => [
                 'id' => $departed->id,
                 'username' => 'Utilisateur supprimé',
+                'display_name' => 'Utilisateur supprimé',
             ],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -167,7 +212,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'content' => $content,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => ['id' => $user->id, 'username' => $user->username],
+            'created_by' => ['id' => $user->id, 'username' => $user->username, 'display_name' => $user->username],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
@@ -231,7 +276,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             ],
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => ['id' => $user->id, 'username' => $user->username],
+            'created_by' => ['id' => $user->id, 'username' => $user->username, 'display_name' => $user->username],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,

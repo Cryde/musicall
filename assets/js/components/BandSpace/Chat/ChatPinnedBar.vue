@@ -41,14 +41,14 @@
             v-html="autoLink(message.content)"
           />
           <p class="mt-0.5 text-xs text-surface-600 dark:text-surface-300">
-            {{ message.author_username }}, épinglé par {{ message.pinned_by_username }}
+            {{ message.author_display_name }}, épinglé par {{ message.pinned_by_display_name }}
           </p>
         </div>
 
         <button
           type="button"
           class="shrink-0 rounded-full px-2 py-1 text-surface-600 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-700"
-          :aria-label="`Aller au message de ${message.author_username}`"
+          :aria-label="`Aller au message de ${message.author_display_name}`"
           :aria-busy="chatStore.jumpingTo === message.id"
           :disabled="chatStore.jumpingTo === message.id"
           @click="goTo(message)"
@@ -63,7 +63,7 @@
           type="button"
           class="shrink-0 rounded-full px-2 py-1 text-surface-600 hover:bg-surface-200 disabled:opacity-50 dark:text-surface-300 dark:hover:bg-surface-700"
           :disabled="chatPin.isPending(message)"
-          :aria-label="`Détacher le message de ${message.author_username}`"
+          :aria-label="`Détacher le message de ${message.author_display_name}`"
           @click="chatPin.togglePin(message)"
         >
           <i class="pi pi-times text-xs" aria-hidden="true" />

@@ -64,6 +64,7 @@ class MessageUserPostTest extends ApiTestCase
                 '@type' => 'User',
                 'id'       => $user1->id,
                 'username' => 'base_user_1',
+                'display_name' => 'base_user_1',
             ],
             'thread'            => [
                 '@id' => '/api/message_threads/' . $resultUser1[0]->thread->id,
@@ -116,6 +117,7 @@ class MessageUserPostTest extends ApiTestCase
             'author'            => [
                 'id'       => $user1->id,
                 'username' => 'base_user_1',
+                'display_name' => 'base_user_1',
                 '@id' => '/api/users/' . $user1->id,
                 '@type' => 'User',
             ],

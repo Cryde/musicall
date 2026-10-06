@@ -36,6 +36,11 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
         $user3 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_3', 'email' => 'base_user3@email.com']);
+        // The inbox names people by their public profile name (#1118); a private one stays hidden.
+        $user2->profile->displayName = 'Samuel Dupont';
+        $user1->profile->displayName = 'Alexandre Martin';
+        $user1->profile->isPublic = false;
+        self::getContainer()->get('doctrine')->getManager()->flush();
 
         $thread = MessageThreadFactory::new()->create();
         $mp1 = MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
@@ -68,8 +73,11 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $otherThread])->create();
 
         $this->client->loginUser($user1);
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
         $this->client->request('GET', '/api/message_thread_metas', );
         $this->assertResponseIsSuccessful();
+        $this->assertNoQueryReadsTable('user_profile', 'A participant profile must come with the inbox, never in a query of its own');
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/MessageThreadMeta',
             '@id'              => '/api/message_thread_metas',
@@ -92,6 +100,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     '@id' => '/api/users/' . $user1->id,
                                     '@type' => 'User',
                                     'username' => 'base_user_1',
+                                    'display_name' => 'base_user_1',
                                     'id'       => $user1->id,
                                 ],
                             ], [
@@ -101,6 +110,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     '@id' => '/api/users/' . $user2->id,
                                     '@type' => 'User',
                                     'username' => 'base_user_2',
+                                    'display_name' => 'Samuel Dupont',
                                     'id'       => $user2->id,
                                 ],
                             ],
@@ -113,6 +123,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@id' => '/api/users/' . $user1->id,
                                 '@type' => 'User',
                                 'username' => 'base_user_1',
+                                'display_name' => 'base_user_1',
                                 'id'       => $user1->id,
                             ],
                             'content'           => 'basic_content with  in it',
@@ -175,6 +186,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@type' => 'User',
                                 'id'    => (string) $user->id,
                                 'username' => 'base_user_1',
+                                'display_name' => 'base_user_1',
                             ],
                             'content' => 'dans le groupe',
                             'content_preview' => 'dans le groupe',
@@ -238,6 +250,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@type' => 'User',
                                 'id'    => (string) $user->id,
                                 'username' => 'base_user_1',
+                                'display_name' => 'base_user_1',
                             ],
                             // Empty, because the delete really emptied it. Only the preview carries
                             // the label, which is the one place the inbox reads.
@@ -308,6 +321,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@type' => 'User',
                                 'id'    => (string) $user->id,
                                 'username' => 'base_user_1',
+                                'display_name' => 'base_user_1',
                             ],
                             'content' => '',
                             'content_preview' => 'Pièce jointe',
@@ -373,6 +387,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@type' => 'User',
                                 'id'    => (string) $writer->id,
                                 'username' => 'base_user_2',
+                                'display_name' => 'base_user_2',
                             ],
                             // The same span the chat renders, so a row opened from here and the same
                             // message read in the band space tab cannot style a mention differently.
@@ -438,6 +453,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     '@type' => 'User',
                                     'id'    => (string) $user->id,
                                     'username' => 'base_user_1',
+                                    'display_name' => 'base_user_1',
                                 ],
                             ],
                             [
@@ -448,6 +464,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     '@type' => 'User',
                                     'id'    => (string) $other->id,
                                     'username' => 'base_user_2',
+                                    'display_name' => 'base_user_2',
                                 ],
                             ],
                         ],
@@ -460,6 +477,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@type' => 'User',
                                 'id'    => (string) $other->id,
                                 'username' => 'base_user_2',
+                                'display_name' => 'base_user_2',
                             ],
                             'content' => 'regarde &#64;[' . $user->id . ']',
                             'content_preview' => 'regarde @[' . $user->id . ']',
@@ -579,6 +597,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     '@type' => 'User',
                                     'id' => $reader->id,
                                     'username' => 'reader',
+                                    'display_name' => 'reader',
                                 ],
                             ], [
                                 '@id' => '/api/message_participants/' . $mp2->id,
@@ -588,6 +607,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     '@type' => 'User',
                                     'id' => $writer->id,
                                     'username' => 'writer',
+                                    'display_name' => 'writer',
                                 ],
                             ],
                         ],
@@ -600,6 +620,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@type' => 'User',
                                 'id' => $writer->id,
                                 'username' => 'writer',
+                                'display_name' => 'writer',
                             ],
                             // What the thread renders with v-html.
                             'content' => "Bonjour Harry,<br />\n<br />\nJ&#039;ai vu  retour, on commence &lt; 20h",

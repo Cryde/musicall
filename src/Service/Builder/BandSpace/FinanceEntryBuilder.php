@@ -40,7 +40,8 @@ readonly class FinanceEntryBuilder
         $dto->date = $entity->date->format('Y-m-d');
         $dto->scope = $entity->scope->value;
         $dto->memberId = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership ? (string) $entity->member->id : null;
-        $dto->memberName = $entity->member?->user->username;
+        $dto->memberName = $entity->member?->displayName();
+        $dto->memberUsername = $entity->member?->user->username;
         $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
         $dto->recurrenceId = $entity->recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence ? (string) $entity->recurrence->id : null;
         $dto->splitWarning = $splitWarning;

@@ -65,6 +65,7 @@ class UserGalleryPreviewTest extends ApiTestCase
             'status_label' => 'Brouillon',
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'author_username' => 'base_admin',
+            'author_display_name' => 'base_admin',
             'images' => [
                 [
                     'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->id . '/image1.jpg',
@@ -108,6 +109,7 @@ class UserGalleryPreviewTest extends ApiTestCase
             'status_label' => 'En validation',
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'author_username' => 'base_admin',
+            'author_display_name' => 'base_admin',
             'images' => [],
         ]);
     }

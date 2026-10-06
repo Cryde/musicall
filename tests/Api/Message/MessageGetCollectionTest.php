@@ -71,7 +71,11 @@ class MessageGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user2])->create();
 
         $this->client->loginUser($user1);
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
         $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]=desc');
+        $this->assertNoQueryReadsTable('user_profile', 'An author profile must come with the page, never in a query of its own');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Message',
@@ -87,6 +91,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id'       => $user1->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                     ],
                     'content'           => 'first message from user 1',
                 ],
@@ -99,6 +104,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id'       => $user2->id,
                         'username' => 'base_user_2',
+                        'display_name' => 'base_user_2',
                     ],
                     'content'           => 'second message from user 2',
                 ],
@@ -111,6 +117,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id'       => $user1->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                     ],
                     'content'           => 'third message from user 1',
                 ],
@@ -123,6 +130,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id'       => $user1->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                     ],
                     'content'           => 'last message from user 1',
                 ],
@@ -187,6 +195,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $user2->id,
                         'username' => 'base_user_2',
+                        'display_name' => 'base_user_2',
                     ],
                     'content' => '',
                 ],
@@ -398,6 +407,7 @@ class MessageGetCollectionTest extends ApiTestCase
             '@type' => 'User',
             'id' => $writer->id,
             'username' => 'writer',
+            'display_name' => 'writer',
         ];
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Message',

@@ -71,6 +71,7 @@ readonly class UserGalleryBuilder
         $dto->statusLabel = self::STATUS_LABELS[$gallery->status] ?? 'Inconnu';
         $dto->creationDatetime = $creationDatetime;
         $dto->authorUsername = $author->username;
+        $dto->authorDisplayName = $author->publicName();
         $dto->images = array_map(
             fn (GalleryImage $image): array => $this->getImageSizes($image),
             $gallery->images->toArray()

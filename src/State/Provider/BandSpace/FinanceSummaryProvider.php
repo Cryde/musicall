@@ -66,7 +66,8 @@ readonly class FinanceSummaryProvider implements ProviderInterface
 
         $summary->memberContributions = array_map(fn (array $c): array => [
             'member_id' => $c['member_id'],
-            'name' => $c['username'],
+            'name' => $c['display_name'],
+            'username' => $c['username'],
             'total' => $c['total'],
         ], $contributions);
 

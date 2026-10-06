@@ -166,6 +166,7 @@ class MusicianSearchRecordingTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => (string) $author->id,
                         'username' => 'batteuse',
+                        'display_name' => 'batteuse',
                         'has_musician_profile' => false,
                     ],
                     'instrument' => ['@type' => 'Instrument', 'name' => 'Batteur'],

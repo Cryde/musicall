@@ -52,6 +52,7 @@
         >
           <Avatar
             :username="assignee.username"
+            :display-name="assignee.display_name"
             :picture-url="assignee.profile_picture_url"
             size="sm"
           />

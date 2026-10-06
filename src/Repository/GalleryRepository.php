@@ -15,4 +15,23 @@ class GalleryRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Gallery::class);
     }
+
+    /**
+     * What the moderation queue lists, with each author and their profile, since every row is named
+     * after its author (#1118).
+     *
+     * @return Gallery[]
+     */
+    public function findPendingWithAuthors(): array
+    {
+        return $this->createQueryBuilder('gallery')
+            ->innerJoin('gallery.author', 'author')
+            ->innerJoin('author.profile', 'author_profile')
+            ->addSelect('author', 'author_profile')
+            ->where('gallery.status = :status')
+            ->setParameter('status', Gallery::STATUS_PENDING)
+            ->orderBy('gallery.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

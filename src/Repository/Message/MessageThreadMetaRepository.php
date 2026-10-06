@@ -154,18 +154,21 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
     public function findByUserAndNotDeleted(User $user): mixed
     {
         return $this->createQueryBuilder('message_thread_meta')
-            ->select('message_thread_meta, thread, band_space, last_message, author, message_participants, participant')
+            ->select('message_thread_meta, thread, band_space, last_message, author, author_profile, message_participants, participant, participant_profile')
             ->join('message_thread_meta.thread', 'thread')
             // Left, because a Band Space channel has no participant rows at all: its members are
             // derived from the space (#959). These two joins being inner is what kept channels out of
             // this listing even before the filter below existed.
             ->leftJoin('thread.messageParticipants', 'message_participants')
             ->leftJoin('message_participants.participant', 'participant')
+            // Both profiles because the inbox names the other participant and the last author (#1118).
+            ->leftJoin('participant.profile', 'participant_profile')
             ->leftJoin('thread.bandSpace', 'band_space')
             // Still inner, deliberately: a conversation with nothing said in it has nothing to show
             // and nothing to sort by, so an empty channel stays out until somebody writes in it.
             ->join('thread.lastMessage', 'last_message')
             ->join('last_message.author', 'author')
+            ->join('author.profile', 'author_profile')
             // A channel only belongs to somebody still in the band. The read-state row survives a
             // leave or a kick (#948 concerns 1 and 3), so without this a former member keeps the
             // channel in their inbox, unread count and last message preview included.

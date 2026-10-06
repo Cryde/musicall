@@ -45,6 +45,7 @@ class GalleryGetTest extends ApiTestCase
             'author' => [
                 '@type' => 'Author',
                 'username' => 'user_admin',
+                'display_name' => 'user_admin',
             ],
             'slug' => 'titre-de-la-gallery',
             'publication_datetime' => '2022-01-02T02:03:04+00:00',

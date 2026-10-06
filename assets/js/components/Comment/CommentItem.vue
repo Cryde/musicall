@@ -13,7 +13,7 @@
       <Avatar
         v-else
         :label="authorName.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(authorName)"
+        :style="getAvatarStyle(comment.author.username)"
         shape="circle"
         :size="isReply ? 'normal' : 'large'"
         role="img"
@@ -23,15 +23,18 @@
     <div class="flex-1 min-w-0">
       <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-4">
         <div class="flex items-center flex-wrap gap-x-2 mb-2">
-          <span class="font-semibold text-surface-900 dark:text-surface-0">
-            {{ authorName }}
-          </span>
+          <UserName
+            :username="comment.author.username"
+            :display-name="authorName"
+            :picture-url="comment.author.profile_picture_url"
+            class="font-semibold text-surface-900 dark:text-surface-0"
+          />
           <span
             v-if="isReply && parentAuthorName"
             class="text-sm text-surface-500 dark:text-surface-400"
           >
             en réponse à
-            <span class="font-medium text-surface-700 dark:text-surface-300">@{{ parentAuthorName }}</span>
+            <span class="font-medium text-surface-700 dark:text-surface-300">{{ parentAuthorName }}</span>
           </span>
           <span class="text-sm text-surface-500 dark:text-surface-400">
             {{ relativeDate(comment.creation_datetime) }}
@@ -132,6 +135,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
+import UserName from '../User/UserName.vue'
 import CommentForm from './CommentForm.vue'
 
 const REPLIES_INLINE_THRESHOLD = 3

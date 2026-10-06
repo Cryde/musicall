@@ -35,7 +35,7 @@
             <Avatar
               v-else
               :label="getTitle(threadMeta).charAt(0).toUpperCase()"
-              :style="getAvatarStyle(getTitle(threadMeta))"
+              :style="getAvatarStyle(getParticipant(threadMeta)?.username ?? getTitle(threadMeta))"
               shape="circle"
               size="large"
               role="img"
@@ -52,12 +52,14 @@
                     #{{ threadMeta.thread.channel_name }}
                   </span>
                 </template>
-                <router-link
+                <UserName
                   v-else-if="getParticipant(threadMeta)?.username && !getParticipant(threadMeta)?.deletion_datetime"
+                  :username="getParticipant(threadMeta).username"
+                  :display-name="getTitle(threadMeta)"
                   :to="{ name: 'app_user_public_profile', params: { username: getParticipant(threadMeta).username } }"
                   class="font-semibold text-surface-900 dark:text-surface-0 truncate hover:text-primary transition-colors"
                   @click.stop
-                >{{ getTitle(threadMeta) }}</router-link>
+                />
                 <span v-else class="font-semibold text-surface-500 truncate">
                   {{ getTitle(threadMeta) }}
                 </span>
@@ -102,6 +104,7 @@ import { displayName } from '../../helper/user/displayName.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
+import UserName from '../User/UserName.vue'
 
 const messageStore = useMessageStore()
 

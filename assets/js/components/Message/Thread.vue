@@ -29,7 +29,7 @@
       <Avatar
         v-else
         :label="title.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(title)"
+        :style="getAvatarStyle(otherParticipant?.username ?? title)"
         shape="circle"
         role="img"
         :aria-label="`Avatar de ${title}`"
@@ -41,11 +41,13 @@
         :to="{ name: BAND_SPACE_ROUTES.CHAT, params: { id: currentThread.thread.band_space_id } }"
         class="font-semibold text-surface-900 dark:text-surface-0 hover:text-primary transition-colors truncate"
       >{{ title }}</router-link>
-      <router-link
+      <UserName
         v-else-if="otherParticipant?.username && !otherParticipant?.deletion_datetime"
+        :username="otherParticipant.username"
+        :display-name="title"
         :to="{ name: 'app_user_public_profile', params: { username: otherParticipant.username } }"
         class="font-semibold text-surface-900 dark:text-surface-0 hover:text-primary transition-colors"
-      >{{ title }}</router-link>
+      />
       <span v-else class="font-semibold text-surface-500">
         {{ title }}
       </span>
@@ -130,7 +132,7 @@
                   v-if="isCurrentChannel && !isSender(message) && index === 0"
                   class="text-xs font-semibold mb-1 opacity-80"
                 >
-                  {{ message.author?.username }}
+                  {{ message.author?.display_name ?? message.author?.username }}
                 </div>
                 <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
                      inbox has to say so too rather than draw an empty bubble. A direct message carries no
@@ -234,6 +236,7 @@ import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
+import UserName from '../User/UserName.vue'
 import MusicLinkPreview from './MusicLinkPreview.vue'
 
 const emit = defineEmits(['back'])

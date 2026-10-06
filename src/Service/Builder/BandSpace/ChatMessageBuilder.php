@@ -12,6 +12,7 @@ use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageReactionRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use App\Service\Message\MessageAttachmentResolver;
@@ -30,6 +31,7 @@ readonly class ChatMessageBuilder
         private MessageThreadMetaRepository $messageThreadMetaRepository,
         private MessageAttachmentResolver $messageAttachmentResolver,
         private BandSpaceFileRepository $bandSpaceFileRepository,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -40,7 +42,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param BandSpaceMembership $viewer who is reading: it decides the reaction tallies marked as theirs,
      *                                   the attachment titles they may see (#1048), and which rows
      *                                   carry their editable content.
@@ -96,6 +98,7 @@ readonly class ChatMessageBuilder
                 $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content'], $row['deletionDatetime'] !== null),
                 $row['deletionDatetime'] !== null,
                 $row['pinnedDatetime'],
+                $row['pinnedById'] !== null ? (string) $row['pinnedById'] : null,
                 $row['pinnedByUsername'],
                 $row['pinnedByDeletionDatetime'] !== null,
                 $this->readersOf($readPositions, $row['creationDatetime'], (string) $row['authorId'], $row['deletionDatetime'] !== null),
@@ -140,6 +143,7 @@ readonly class ChatMessageBuilder
             $this->editableContentFor((string) $entity->author->id, (string) $viewer->user->id, $entity->content, $entity->isDeleted()),
             $entity->isDeleted(),
             $entity->pinnedDatetime,
+            $entity->pinnedBy?->id,
             $entity->pinnedBy?->username,
             $entity->pinnedBy?->isDeleted() ?? false,
             $this->readersOf(
@@ -209,7 +213,7 @@ readonly class ChatMessageBuilder
      *
      * @param list<array{userId: string, username: string, lastReadDatetime: \DateTimeImmutable}> $positions
      *
-     * @return list<string>
+     * @return list<array{userId: string, username: string}>
      */
     private function readersOf(array $positions, \DateTimeInterface $creationDatetime, string $authorId, bool $isDeleted): array
     {
@@ -217,14 +221,14 @@ readonly class ChatMessageBuilder
             return [];
         }
 
-        $usernames = [];
+        $readers = [];
         foreach ($positions as $position) {
             if ($position['userId'] !== $authorId && $position['lastReadDatetime'] >= $creationDatetime) {
-                $usernames[] = $position['username'];
+                $readers[] = ['userId' => $position['userId'], 'username' => $position['username']];
             }
         }
 
-        return $usernames;
+        return $readers;
     }
 
     /**
@@ -241,7 +245,7 @@ readonly class ChatMessageBuilder
      * @param array<string, string> $usernamesById user id => username, for the mentions this message carries
      * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
      * @param list<array{type: string, target_id: string, label: string, is_available: bool}> $attachments
-     * @param list<string> $readByUsernames
+     * @param list<array{userId: string, username: string}> $readers
      * @param array{file_id: string, is_available: bool}|null $image
      * @param array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool}|null $voiceNote
      */
@@ -261,9 +265,10 @@ readonly class ChatMessageBuilder
         ?string $editableContent = null,
         bool $isDeleted = false,
         ?\DateTimeInterface $pinnedDatetime = null,
+        ?string $pinnedById = null,
         ?string $pinnedByUsername = null,
         bool $pinnedByIsDeleted = false,
-        array $readByUsernames = [],
+        array $readers = [],
         ?array $image = null,
         ?array $voiceNote = null,
     ): ChatMessageResource {
@@ -272,6 +277,7 @@ readonly class ChatMessageBuilder
         $dto->bandSpaceId = $bandSpaceId;
         $dto->authorId = $authorId;
         $dto->authorUsername = $authorIsDeleted ? User::DELETED_DISPLAY_NAME : $authorUsername;
+        $dto->authorDisplayName = $this->memberNames->nameById($bandSpaceId, $authorId, $authorUsername, $authorIsDeleted);
         $dto->authorProfilePictureUrl = $authorProfilePictureUrl;
         // Sanitized at read time, exactly like the direct message thread: what the sender typed stays
         // stored, so changing how a message renders stays possible (#956 was closed on that point).
@@ -297,9 +303,17 @@ readonly class ChatMessageBuilder
         $dto->pinnedByUsername = $pinnedByUsername === null
             ? null
             : ($pinnedByIsDeleted ? User::DELETED_DISPLAY_NAME : $pinnedByUsername);
-        $dto->readByUsernames = $readByUsernames;
+        $dto->pinnedByDisplayName = $pinnedById === null || $pinnedByUsername === null
+            ? null
+            : $this->memberNames->nameById($bandSpaceId, $pinnedById, $pinnedByUsername, $pinnedByIsDeleted);
+        $dto->readByUsernames = array_column($readers, 'username');
+        // Same order as the usernames, so the client can pair them by index.
+        $dto->readByDisplayNames = array_map(
+            fn (array $reader): string => $this->memberNames->nameById($bandSpaceId, $reader['userId'], $reader['username'], false),
+            $readers,
+        );
         // Counted from the list rather than queried, so the two cannot disagree.
-        $dto->readCount = count($readByUsernames);
+        $dto->readCount = count($readers);
         $dto->image = $image;
         $dto->voiceNote = $voiceNote;
 

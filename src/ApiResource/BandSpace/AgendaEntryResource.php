@@ -157,5 +157,6 @@ class AgendaEntryResource
 
     public string $creatorId;
     public string $creatorUsername;
+    public string $creatorDisplayName;
     public \DateTimeInterface $creationDatetime;
 }

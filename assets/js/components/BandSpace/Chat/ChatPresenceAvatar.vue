@@ -1,6 +1,6 @@
 <template>
   <span class="relative inline-flex shrink-0 self-start">
-    <Avatar :username="username" :picture-url="pictureUrl" size="md" />
+    <Avatar :username="username" :display-name="displayName" :picture-url="pictureUrl" size="md" />
     <!-- The ring cuts the dot out of the picture, so it reads on a photo as well as on the initial. -->
     <span
       v-if="online"
@@ -16,6 +16,7 @@ import Avatar from '../../User/Avatar.vue'
 /** A member's picture, marked when they have the chat open (#1040). */
 defineProps({
   username: { type: String, required: true },
+  displayName: { type: String, default: null },
   pictureUrl: { type: String, default: null },
   online: { type: Boolean, default: false }
 })

@@ -87,6 +87,22 @@ class BandSpaceMembership
     /** What a document should call this member. */
     public function displayName(): string
     {
-        return $this->stageName ?? $this->user->username;
+        $user = $this->user;
+
+        return self::nameFor($this->stageName, $user->username, $user->isDeleted(), $user->profile->displayName, $user->profile->isPublic);
+    }
+
+    /**
+     * The one naming rule inside a band: the stage name, then the site wide name (#1118). Shared with the
+     * scalar projections that never hydrate a membership. A deleted account wins over the stage name,
+     * which DeleteAccountProcedure leaves in place.
+     */
+    public static function nameFor(?string $stageName, string $username, bool $isDeleted, ?string $profileName, bool $profileIsPublic): string
+    {
+        if ($isDeleted) {
+            return User::DELETED_DISPLAY_NAME;
+        }
+
+        return $stageName ?? User::publicNameFor($username, false, $profileName, $profileIsPublic);
     }
 }

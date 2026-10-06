@@ -13,6 +13,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\BandSpace\FinanceEntrySplitFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Enum\BandSpace\MembershipStatus;
 use Symfony\Component\HttpFoundation\Response;
@@ -132,6 +133,59 @@ class FinanceSummaryTest extends ApiTestCase
                 ],
             ],
             'member_contributions' => [],
+            'upcoming_entries' => [],
+        ]);
+    }
+
+    public function test_member_contributions_carry_the_stage_name_and_the_username(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $other = UserFactory::new()->asBaseUser()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user, 'stageName' => 'Alex'])->create();
+        $otherMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording session',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-03-10'),
+        ])->create();
+        FinanceEntrySplitFactory::new(['entry' => $entry, 'member' => $membership, 'amount' => 30000])->create();
+        FinanceEntrySplitFactory::new(['entry' => $entry, 'member' => $otherMembership, 'amount' => 20000])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/summary', [], [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceSummary',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            '@type' => 'FinanceSummary',
+            'band_space_id' => $bandSpace->id,
+            'current_membership_id' => $membership->id,
+            'total_income' => 0,
+            'total_expense' => 50000,
+            'total_income_all' => 0,
+            'total_expense_all' => 50000,
+            'total_planned' => 0,
+            'total_committed' => 0,
+            'total_paid' => 50000,
+            'total_personal' => 0,
+            'has_estimates' => false,
+            'min_date' => '2024-03-10T00:00:00+00:00',
+            'max_date' => '2024-03-10T00:00:00+00:00',
+            'by_category' => [
+                ['id' => $category->id, 'name' => 'Studio', 'paid' => 50000, 'committed' => 0, 'planned' => 0],
+            ],
+            // A label, so the band's name for the member; the username stays next to it.
+            'member_contributions' => [
+                ['member_id' => $membership->id, 'name' => 'Alex', 'username' => 'androidtest_123', 'total' => 30000],
+                ['member_id' => $otherMembership->id, 'name' => 'bassiste', 'username' => 'bassiste', 'total' => 20000],
+            ],
             'upcoming_entries' => [],
         ]);
     }

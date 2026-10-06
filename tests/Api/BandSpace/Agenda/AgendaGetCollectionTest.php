@@ -202,6 +202,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                             [
                                 'id' => $assignee->id,
                                 'username' => 'drummer_42',
+                                'display_name' => 'drummer_42',
                                 'profile_picture_url' => null,
                             ],
                         ],

@@ -7,5 +7,7 @@ namespace App\ApiResource\Publication\PublicationListItem;
 class Author
 {
     public string $username;
+    /** The name the site shows, next to the username mentions and links use (#1118). */
+    public string $displayName;
     public ?\DateTimeImmutable $deletionDatetime = null;
 }

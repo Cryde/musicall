@@ -5,4 +5,5 @@ namespace App\ApiResource\User\Publication;
 class UserPublicationPreviewAuthor
 {
     public string $username;
+    public string $displayName;
 }

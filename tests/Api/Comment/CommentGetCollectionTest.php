@@ -108,6 +108,7 @@ class CommentGetCollectionTest extends ApiTestCase
                     'author' => [
                         'id' => $author->id,
                         'username' => 'author',
+                        'display_name' => 'author',
                         'profile_picture_url' => null,
                         'deletion_datetime' => null,
                     ],
@@ -126,6 +127,7 @@ class CommentGetCollectionTest extends ApiTestCase
                     'author' => [
                         'id' => $replier->id,
                         'username' => 'replier',
+                        'display_name' => 'replier',
                         'profile_picture_url' => null,
                         'deletion_datetime' => null,
                     ],
@@ -142,6 +144,81 @@ class CommentGetCollectionTest extends ApiTestCase
                 '@type' => 'PartialCollectionView',
             ],
         ]);
+    }
+
+    /** One author per naming case, each named without a query of their own (#1118). */
+    public function test_authors_are_named_by_their_public_profile_name_next_to_their_username(): void
+    {
+        $thread = CommentThreadFactory::new()->create();
+        $named = UserFactory::new()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $named->profile->displayName = 'Alexandre Martin';
+        $private = UserFactory::new()->create(['username' => 'crydetest', 'email' => 'crydetest@test.com']);
+        $private->profile->displayName = 'Samuel Dupont';
+        $private->profile->isPublic = false;
+        $departed = UserFactory::new()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2024-06-01 09:00:00'),
+        ]);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+        $comments = [];
+        foreach ([$named, $private, $departed] as $index => $author) {
+            $comments[] = CommentFactory::new(['thread' => $thread, 'author' => $author, 'content' => 'Commentaire ' . $index])->create();
+        }
+
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->jsonRequest('GET', '/api/comments?thread=' . $thread->id, [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertNoQueryReadsTable('user_profile', 'An author profile must come with the thread, never in a query of its own');
+        $refreshed = array_map(
+            fn (object $comment): object => self::getContainer()->get(CommentRepository::class)->find($comment->id),
+            $comments,
+        );
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Comment',
+            '@id' => '/api/comments',
+            '@type' => 'Collection',
+            'totalItems' => 3,
+            'member' => [
+                $this->expectedComment($thread, $refreshed[0], $named, 'Alexandre Martin', null),
+                // A private profile keeps its name to itself.
+                $this->expectedComment($thread, $refreshed[1], $private, 'crydetest', null),
+                $this->expectedComment($thread, $refreshed[2], $departed, 'Utilisateur supprimé', '2024-06-01T09:00:00+00:00'),
+            ],
+            'view' => [
+                '@id' => '/api/comments?thread=' . $thread->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function expectedComment(object $thread, object $comment, object $author, string $displayName, ?string $deletionDatetime): array
+    {
+        return [
+            '@id' => '/api/comments/' . $comment->id,
+            '@type' => 'Comment',
+            'id' => $comment->id,
+            'thread_id' => $thread->id,
+            'author' => [
+                'id' => $author->id,
+                'username' => $author->username,
+                'display_name' => $displayName,
+                'profile_picture_url' => null,
+                'deletion_datetime' => $deletionDatetime,
+            ],
+            'content' => $comment->content,
+            'creation_datetime' => $comment->creationDatetime->format(\DateTimeInterface::ATOM),
+            'upvotes' => 0,
+            'downvotes' => 0,
+            'user_vote' => null,
+            'parent_id' => null,
+        ];
     }
 
     public function test_get_comments_user_vote_null_for_anonymous(): void
@@ -185,6 +262,7 @@ class CommentGetCollectionTest extends ApiTestCase
                     'author' => [
                         'id' => $author->id,
                         'username' => 'author',
+                        'display_name' => 'author',
                         'profile_picture_url' => null,
                         'deletion_datetime' => null,
                     ],

@@ -6,12 +6,14 @@ use App\ApiResource\BandSpace\Task\TaskActivityResource;
 use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\Task;
 use App\Privacy\ActivityPayloadMask;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class TaskActivityBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -45,6 +47,7 @@ readonly class TaskActivityBuilder
         $dto->taskId = (string) $task->id;
         $dto->actorId = (string) $entity->actor->id;
         $dto->actorUsername = $entity->actor->username;
+        $dto->actorDisplayName = $this->memberNames->nameOf($entity->actor, $dto->bandSpaceId);
         $dto->actorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->actor);
         $dto->type = $entity->type;
         $dto->payload = ActivityPayloadMask::mask($entity->payload);

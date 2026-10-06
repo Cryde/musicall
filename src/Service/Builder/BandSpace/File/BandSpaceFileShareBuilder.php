@@ -4,9 +4,15 @@ namespace App\Service\Builder\BandSpace\File;
 
 use App\ApiResource\BandSpace\File\BandSpaceFileShareResource;
 use App\Entity\BandSpace\BandSpaceFileShare;
+use App\Service\BandSpace\BandSpaceMemberNames;
 
 readonly class BandSpaceFileShareBuilder
 {
+    public function __construct(
+        private BandSpaceMemberNames $memberNames,
+    ) {
+    }
+
     public function buildItem(BandSpaceFileShare $entity, \DateTimeImmutable $now): BandSpaceFileShareResource
     {
         $file = $entity->bandSpaceFile;
@@ -28,6 +34,7 @@ readonly class BandSpaceFileShareBuilder
         $dto->createdBy = [
             'id' => (string) $entity->createdBy->id,
             'username' => $entity->createdBy->username,
+            'display_name' => $this->memberNames->nameOf($entity->createdBy, $dto->bandSpaceId),
         ];
 
         return $dto;

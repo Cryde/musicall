@@ -44,7 +44,7 @@
         </span>
       </div>
       <p class="mt-1 ml-10 pl-2 text-xs text-surface-500 dark:text-surface-400">
-        Créée par {{ note.created_by.username }}
+        Créée par <UserName :username="note.created_by.username" :display-name="note.created_by.display_name" />
       </p>
     </div>
 
@@ -326,6 +326,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
+import UserName from '../../User/UserName.vue'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'

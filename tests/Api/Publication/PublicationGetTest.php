@@ -56,6 +56,7 @@ class PublicationGetTest extends ApiTestCase
             'author'               => [
                 '@type'    => 'Author',
                 'username' => 'user_admin',
+                'display_name' => 'user_admin',
                 'deletion_datetime' => null,
             ],
             'slug'                 => 'titre-de-la-publication',

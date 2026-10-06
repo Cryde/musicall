@@ -6,12 +6,14 @@ use App\ApiResource\BandSpace\File\BandSpaceFileActivityResource;
 use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Privacy\ActivityPayloadMask;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class BandSpaceFileActivityBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -44,6 +46,7 @@ readonly class BandSpaceFileActivityBuilder
         $dto->fileId = (string) $file->id;
         $dto->actorId = (string) $entity->actor->id;
         $dto->actorUsername = $entity->actor->username;
+        $dto->actorDisplayName = $this->memberNames->nameOf($entity->actor, $dto->bandSpaceId);
         $dto->actorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->actor);
         $dto->type = $entity->type;
         $dto->payload = ActivityPayloadMask::mask($entity->payload);

@@ -90,11 +90,12 @@
               ? 'ring-2 ring-primary'
               : 'hover:ring-1 hover:ring-surface-400'
           "
-          :title="member.username"
+          :title="member.display_name"
           @click="toggleFilter('assigneeId', member.user_id)"
         >
           <Avatar
             :username="member.username"
+            :display-name="member.display_name"
             :picture-url="member.profile_picture_url"
             size="md"
           />

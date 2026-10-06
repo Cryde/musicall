@@ -85,6 +85,7 @@ class TaskCommentResource
 
     public string $authorId;
     public string $authorUsername;
+    public string $authorDisplayName;
     public ?string $authorProfilePictureUrl = null;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un commentaire')]

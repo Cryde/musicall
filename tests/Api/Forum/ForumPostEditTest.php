@@ -120,6 +120,7 @@ class ForumPostEditTest extends ApiTestCase
                 '@type' => 'User',
                 'id' => $post->creator->id,
                 'username' => 'post_author',
+                'display_name' => 'post_author',
             ],
             'upvotes' => 0,
             'downvotes' => 0,

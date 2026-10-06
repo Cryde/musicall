@@ -15,18 +15,20 @@
           <Avatar
             v-else
             :label="creatorName.charAt(0).toUpperCase()"
-            :style="getAvatarStyle(creatorName)"
+            :style="getAvatarStyle(post.creator.username)"
             size="large"
             shape="circle"
             role="img"
             :aria-label="`Avatar de ${creatorName}`"
           />
-          <router-link
+          <UserName
             v-if="!post.creator.deletion_datetime"
+            :username="post.creator.username"
+            :display-name="creatorName"
             :to="{ name: 'app_user_public_profile', params: { username: post.creator.username } }"
             class="font-medium text-sm hover:text-primary transition-colors"
-            :aria-label="`Voir le profil de ${creatorName}`"
-          >{{ creatorName }}</router-link>
+            :aria-label="`Voir le profil de ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`"
+          />
           <span v-else class="font-medium text-sm text-surface-500">{{ creatorName }}</span>
           <Button
             v-if="canContact && !post.creator.deletion_datetime"
@@ -139,8 +141,10 @@ import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatDate } from '../../utils/date.js'
+import { userHandle } from '../../utils/userHandle.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../Message/SendMessageModal.vue'
+import UserName from '../User/UserName.vue'
 import MessageEditor from './MessageEditor.vue'
 
 const props = defineProps({
@@ -161,6 +165,7 @@ const forumStore = useForumStore()
 const toast = useToast()
 
 const creatorName = computed(() => displayName(props.post.creator))
+const creatorHandle = computed(() => userHandle(props.post.creator.username, creatorName.value))
 
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)

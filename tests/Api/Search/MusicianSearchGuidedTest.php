@@ -39,7 +39,11 @@ class MusicianSearchGuidedTest extends ApiTestCase
         // About 90 km away.
         $this->announce('loin', $drum, [$rock], 'Liège', self::LIEGE);
 
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
         $this->client->request('GET', '/api/musicians/search', ['type' => '2', 'radius' => '25'] + self::BRUSSELS);
+        $this->assertNoQueryReadsTable('user_profile', 'An author profile must come with the results, never in a query of its own');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -242,7 +246,7 @@ class MusicianSearchGuidedTest extends ApiTestCase
             'id' => (string) $announce->id,
             'location_name' => $city,
             'note' => 'Annonce de ' . $username,
-            'user' => ['@type' => 'User', 'id' => (string) $author->id, 'username' => $username, 'has_musician_profile' => false],
+            'user' => ['@type' => 'User', 'id' => (string) $author->id, 'username' => $username, 'display_name' => $username, 'has_musician_profile' => false],
             'instrument' => ['@type' => 'Instrument', 'name' => 'Batteur'],
             'type' => MusicianAnnounce::TYPE_BAND,
             'styles' => $styles,

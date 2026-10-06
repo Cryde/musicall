@@ -49,6 +49,7 @@ readonly class CommentBuilder
         $dto->author = [
             'id' => $entity->author->id,
             'username' => $entity->author->username,
+            'display_name' => $entity->author->publicName(),
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->author),
             'deletion_datetime' => $entity->author->deletionDatetime?->format(\DateTimeInterface::ATOM),
         ];

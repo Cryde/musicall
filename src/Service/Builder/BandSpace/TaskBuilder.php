@@ -5,12 +5,14 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class TaskBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -54,12 +56,14 @@ readonly class TaskBuilder
         $dto->dueDate = $entity->dueDate?->format('Y-m-d');
         $dto->createdById = (string) $entity->createdBy->id;
         $dto->createdByUsername = $entity->createdBy->username;
+        $dto->createdByDisplayName = $this->memberNames->nameOf($entity->createdBy, $dto->bandSpaceId);
         $dto->categoryId = $entity->category instanceof \App\Entity\BandSpace\TaskCategory ? (string) $entity->category->id : null;
         $dto->categoryName = $entity->category?->name;
         $dto->assignees = $entity->assignees->map(
             fn(User $user): array => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $this->memberNames->nameOf($user, $dto->bandSpaceId),
                 'profile_picture_url' => $this->profilePictureUrlBuilder->build($user),
             ]
         )->toArray();

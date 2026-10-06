@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\BandSpaceSearchResultType;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Tests\ApiTestAssertionsTrait;
@@ -18,6 +19,7 @@ use App\Tests\Factory\Message\MessageAttachmentFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\Common\Collections\ArrayCollection;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Date;
@@ -339,14 +341,136 @@ class TaskGetCollectionTest extends ApiTestCase
 
         $profile = $this->client->getProfile();
         $this->assertNotFalse($profile, 'The profiler must be enabled to count the queries.');
-        // Measured at 9: what the board already costs, plus the one query that reads the links for
-        // every task at once. The margin is for a change to the firewall, not for a lookup per task,
-        // which would put a real board in the hundreds.
+        // Measured at 10: what the board already costs, plus the one query that reads the links for
+        // every task at once and the one that reads every member's name in the band (#1115). The
+        // margin is for a change to the firewall, not for a lookup per task, which would put a real
+        // board in the hundreds.
         $this->assertLessThanOrEqual(
-            10,
+            11,
             $profile->getCollector('db')->getQueryCount(),
             'The conversation behind a card must be read once for the whole board, never once per task',
         );
+    }
+
+    public function test_members_are_named_by_their_stage_name_next_to_their_username(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $former = UserFactory::new()->asBaseUser()->create(['username' => 'crydetest', 'email' => 'crydetest@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator, 'stageName' => 'Alex'])->create();
+        // A former member keeps the last name they had in the band.
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $former,
+            'stageName' => 'Sam',
+            'status' => MembershipStatus::Left,
+            'leftDatetime' => new \DateTime('2026-02-01 10:00:00'),
+        ])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $creator,
+            'title' => 'Imprimer les setlists',
+            'assignees' => new ArrayCollection([$former]),
+        ])->create();
+
+        $this->client->loginUser($creator);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/tasks', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->buildTaskShape($bandSpace, $creator, $task, [
+                    'created_by_display_name' => 'Alex',
+                    'assignees' => [
+                        ['id' => $former->id, 'username' => 'crydetest', 'display_name' => 'Sam', 'profile_picture_url' => null],
+                    ],
+                ]),
+            ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+        ]);
+    }
+
+    /**
+     * The username stays the raw handle on a task, which the client must not reveal: it pairs it with
+     * the deleted label and shows no handle (memberHandle.js). The stage name must not survive either.
+     */
+    public function test_a_closed_account_is_labelled_even_with_a_stage_name(): void
+    {
+        $viewer = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $departed = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2026-06-01 09:00:00'),
+        ]);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $viewer])->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $departed,
+            'stageName' => 'Sam',
+            'status' => MembershipStatus::Left,
+            'leftDatetime' => new \DateTime('2026-06-01 09:00:00'),
+        ])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $departed, 'title' => 'Réserver la salle'])->create();
+
+        $this->client->loginUser($viewer);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/tasks', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->buildTaskShape($bandSpace, $departed, $task, ['created_by_display_name' => 'Utilisateur supprimé']),
+            ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+        ]);
+    }
+
+    public function test_without_a_stage_name_a_member_falls_back_to_their_public_profile_name(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $creator->profile->displayName = 'Alexandre Martin';
+        $private = UserFactory::new()->asBaseUser()->create(['username' => 'crydetest', 'email' => 'crydetest@test.com']);
+        $private->profile->displayName = 'Samuel Dupont';
+        $private->profile->isPublic = false;
+        self::getContainer()->get('doctrine')->getManager()->flush();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $private])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $creator,
+            'title' => 'Imprimer les setlists',
+            'assignees' => new ArrayCollection([$private]),
+        ])->create();
+
+        $this->client->loginUser($creator);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/tasks', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->buildTaskShape($bandSpace, $creator, $task, [
+                    'created_by_display_name' => 'Alexandre Martin',
+                    // A private profile keeps its name to itself (#1118).
+                    'assignees' => [
+                        ['id' => $private->id, 'username' => 'crydetest', 'display_name' => 'crydetest', 'profile_picture_url' => null],
+                    ],
+                ]),
+            ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+        ]);
     }
 
     public function test_get_tasks_search_matches_title(): void
@@ -682,6 +806,7 @@ class TaskGetCollectionTest extends ApiTestCase
             'due_date' => $task->dueDate?->format('Y-m-d'),
             'created_by_id' => (string) $user->id,
             'created_by_username' => $user->username,
+            'created_by_display_name' => $user->username,
             'category_id' => $task->category?->id,
             'category_name' => $task->category?->name,
             'assignees' => [],

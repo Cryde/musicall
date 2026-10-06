@@ -4,6 +4,7 @@ namespace App\Service\Builder\BandSpace\File;
 
 use App\ApiResource\BandSpace\File\BandSpaceFileVersionResource;
 use App\Entity\BandSpace\BandSpaceFileVersion;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -11,6 +12,7 @@ readonly class BandSpaceFileVersionBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
         private UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -40,6 +42,7 @@ readonly class BandSpaceFileVersionBuilder
         $dto->createdBy = [
             'id' => (string) $entity->createdBy->id,
             'username' => $entity->createdBy->username,
+            'display_name' => $this->memberNames->nameOf($entity->createdBy, $dto->bandSpaceId),
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->createdBy),
         ];
 

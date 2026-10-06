@@ -7,10 +7,12 @@ use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Entity\User\UserProfile;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Service\Builder\BandSpace\BandSpaceActivityBuilder;
 use App\Service\Builder\BandSpace\File\BandSpaceFileActivityBuilder;
 use App\Service\Builder\BandSpace\TaskActivityBuilder;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -34,6 +36,7 @@ class ActivityPayloadMaskingTest extends KernelTestCase
         // Built by hand rather than fetched: each of the three has a single consumer, so the container
         // is free to inline it. The masking guarantee belongs to the classes, not to the wiring.
         $profilePictureUrlBuilder = self::getContainer()->get(UserProfilePictureUrlBuilder::class);
+        $memberNames = self::getContainer()->get(BandSpaceMemberNames::class);
 
         $bandSpace = new BandSpace();
         $bandSpace->name = 'The Rockers';
@@ -41,6 +44,7 @@ class ActivityPayloadMaskingTest extends KernelTestCase
         $actor = new User();
         $actor->id = '3f8b4a1e-0000-4000-8000-000000000001';
         $actor->username = 'admin_user';
+        $actor->profile = new UserProfile();
 
         $activity = new BandSpaceActivity();
         $activity->bandSpace = $bandSpace;
@@ -58,15 +62,15 @@ class ActivityPayloadMaskingTest extends KernelTestCase
 
         self::assertSame(
             self::MASKED_PAYLOAD,
-            (new BandSpaceActivityBuilder($profilePictureUrlBuilder))->buildItem($activity)->payload,
+            (new BandSpaceActivityBuilder($profilePictureUrlBuilder, $memberNames))->buildItem($activity)->payload,
         );
         self::assertSame(
             self::MASKED_PAYLOAD,
-            (new TaskActivityBuilder($profilePictureUrlBuilder))->buildItem($task, $activity)->payload,
+            (new TaskActivityBuilder($profilePictureUrlBuilder, $memberNames))->buildItem($task, $activity)->payload,
         );
         self::assertSame(
             self::MASKED_PAYLOAD,
-            (new BandSpaceFileActivityBuilder($profilePictureUrlBuilder))->buildItem($file, $activity)->payload,
+            (new BandSpaceFileActivityBuilder($profilePictureUrlBuilder, $memberNames))->buildItem($file, $activity)->payload,
         );
     }
 }
