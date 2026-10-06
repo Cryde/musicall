@@ -53,6 +53,33 @@ export function reportOutcomeLabel(outcome) {
   return OUTCOME_LABELS[outcome] ?? null
 }
 
+/**
+ * What a reporter is told their report was about (#1125), from the type and the label the server kept
+ * of it. A private conversation never has a label.
+ */
+export function reportSubject(type, label) {
+  switch (type) {
+    case 'user':
+      return label ? `le profil de ${label}` : 'un profil'
+    case 'announce':
+      return label ? `l'annonce de ${label}` : 'une annonce'
+    case 'profile_media':
+      return label ? `un média de ${label}` : 'un média'
+    case 'forum_post':
+      return label ? `un message du sujet « ${label} »` : 'un message du forum'
+    case 'comment':
+      return label ? `un commentaire sur « ${label} »` : 'un commentaire'
+    case 'publication':
+      return label ? `la publication « ${label} »` : 'une publication'
+    case 'band_chat_message':
+      return label ? `un message de la discussion du groupe ${label}` : 'un message de groupe'
+    case 'message':
+      return 'un message privé'
+    default:
+      return 'un contenu'
+  }
+}
+
 export function reportExcerpt(text, maxLength = 120) {
   const flattened = (text ?? '').replace(/\s+/g, ' ').trim()
 

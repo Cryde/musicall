@@ -73,6 +73,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
 import { withoutAllDayPin } from '../../utils/agendaDate.js'
 import { formatDateLong } from '../../utils/date.js'
+import { reportSubject } from '../../utils/reportTarget.js'
 
 const props = defineProps({
   notification: { type: Object, required: true }
@@ -294,7 +295,33 @@ const TYPE_CONFIG = {
     preview: `a annulé la suppression de « ${payload.band_space_name} »`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
-  })
+  }),
+  report_received: (payload) => ({
+    icon: 'pi pi-flag',
+    avatarClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300',
+    title: 'Signalement reçu',
+    preview: `Votre signalement sur ${reportSubject(payload.target_type, payload.target_label)} a été transmis à la modération.`,
+    actions: null,
+    target: null
+  }),
+  // The decision a reporter is owed (#1125). It leads to §7.4 of the terms, which says how to contest it.
+  report_resolved: (payload) => {
+    const subject = reportSubject(payload.target_type, payload.target_label)
+    const dismissed = payload.outcome === 'dismissed'
+
+    return {
+      icon: dismissed ? 'pi pi-check-circle' : 'pi pi-shield',
+      avatarClass: dismissed
+        ? 'bg-surface-200 text-surface-600 dark:bg-surface-700 dark:text-surface-300'
+        : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+      title: dismissed ? 'Signalement classé sans suite' : 'Signalement traité : compte suspendu',
+      preview: dismissed
+        ? `Votre signalement sur ${subject} n'a pas donné lieu à une mesure. Vous pouvez contester cette décision.`
+        : `Votre signalement sur ${subject} a conduit à la suspension du compte. Vous pouvez contester cette décision.`,
+      actions: null,
+      target: { name: 'app_terms', hash: '#recours' }
+    }
+  }
 }
 
 const config = computed(() => {

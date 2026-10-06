@@ -145,7 +145,7 @@
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>7.3 Décision motivée.</strong> Lorsqu'un contenu est retiré ou rendu inaccessible, ou lorsqu'un compte est suspendu ou supprimé pour un motif de modération, l'utilisateur concerné est informé du motif de la décision, du fondement invoqué (disposition légale ou clause des présentes conditions), des faits pris en compte et des voies de recours à sa disposition.
           </p>
-          <p class="text-surface-600 dark:text-surface-300 mt-4">
+          <p id="recours" class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>7.4 Recours.</strong> Vous pouvez contester une décision de modération en écrivant à
             <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a>. Vous conservez la possibilité de saisir les juridictions compétentes.
           </p>
