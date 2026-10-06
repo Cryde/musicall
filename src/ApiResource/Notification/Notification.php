@@ -30,4 +30,7 @@ class Notification
 
     /** Untriaged feedback. Null for anyone but an admin, like the two counts above. */
     public ?int $newFeedbacks = null;
+
+    /** Reports waiting for a moderator (#1116). Admins only. */
+    public ?int $pendingReports = null;
 }

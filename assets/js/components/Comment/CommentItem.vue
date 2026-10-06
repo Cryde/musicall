@@ -76,6 +76,13 @@
             class="ml-2"
             @click="toggleReplyForm"
           />
+          <ReportButton
+            target-type="comment"
+            :target-id="String(comment.id)"
+            :author-username="comment.author.username"
+            :aria-label="`Signaler le commentaire de ${authorName}`"
+            class="ml-auto"
+          />
         </div>
       </div>
 
@@ -135,6 +142,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
+import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
 import CommentForm from './CommentForm.vue'
 

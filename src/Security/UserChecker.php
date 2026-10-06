@@ -10,6 +10,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserChecker implements UserCheckerInterface
 {
+    public function __construct(private readonly SuspensionChecker $suspensionChecker)
+    {
+    }
+
     public function checkPreAuth(UserInterface $user): void
     {
     }
@@ -28,6 +32,8 @@ class UserChecker implements UserCheckerInterface
         if (!$user instanceof User) {
             return;
         }
+
+        $this->suspensionChecker->checkPostAuth($user, $token);
 
         if (!$user->confirmationDatetime instanceof \DateTimeInterface) {
             throw new CustomUserMessageAccountStatusException('account_not_verified', ['{{ email }}' => $user->email]);

@@ -33,6 +33,11 @@
           severity="warn"
         />
         <Badge
+          v-if="module.key === 'reports' && notificationStore.pendingReports > 0"
+          :value="notificationStore.pendingReports"
+          severity="warn"
+        />
+        <Badge
           v-if="module.key === 'feedback' && notificationStore.newFeedbacks > 0"
           :value="notificationStore.newFeedbacks"
           severity="warn"
@@ -70,6 +75,9 @@ function isActive(routeName) {
 function isModuleActive(module) {
   if (module.key === 'publications') {
     return PUBLICATIONS_ROUTES.has(route.name)
+  }
+  if (module.key === 'reports') {
+    return route.name === 'admin_reports_index' || route.name === 'admin_reports_show'
   }
   return route.name === module.route
 }

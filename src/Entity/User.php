@@ -123,6 +123,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, GalleryResource::LIST])]
     public ?\DateTimeImmutable $deletionDatetime = null;
 
+    /** Set by a moderator: the account can no longer sign in and disappears from search (#1116). */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $suspensionDatetime = null;
+
+    /** Why, as the moderator wrote it; never shown to other users. */
+    #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
+    public ?string $suspensionReason = null;
+
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMetaResource::LIST, User::ITEM])]
     public ?UserProfilePicture $profilePicture = null;
@@ -275,6 +283,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isDeleted(): bool
     {
         return $this->deletionDatetime instanceof \DateTimeImmutable;
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspensionDatetime instanceof \DateTimeImmutable;
+    }
+
+    /** Whether others may find this account: not closed, not suspended (#1116). */
+    public function isPubliclyVisible(): bool
+    {
+        return !$this->isDeleted() && !$this->isSuspended();
     }
 
     /** Serialized as `display_name` wherever a payload embeds the User itself rather than a DTO. */

@@ -317,6 +317,7 @@
             v-if="isOwnProfile || profile.media?.length"
             :is-own-profile="isOwnProfile"
             :media-items="isOwnProfile ? null : profile.media"
+            :owner-username="profile.username"
           />
 
           <!-- Social Links (moved from sidebar) -->

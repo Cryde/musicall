@@ -9,6 +9,7 @@ use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Http\ReturnUrl;
 use App\Mercure\MercureSubscriberCookie;
+use App\Security\SuspensionChecker;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
@@ -92,6 +93,11 @@ abstract class AbstractOAuthController extends AbstractController
                 $this->getProviderName(),
                 $currentUser
             );
+
+            // Minted here by hand, so no user checker runs: the suspension is checked explicitly.
+            if ($result->user->isSuspended()) {
+                return $this->redirectWithError(SuspensionChecker::MESSAGE_KEY);
+            }
 
             return $this->createAuthenticatedRedirect($result->user, $request);
         } catch (OAuthEmailExistsException) {

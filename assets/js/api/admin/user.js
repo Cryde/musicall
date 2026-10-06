@@ -21,5 +21,17 @@ export default {
       { roles },
       { headers: { 'Content-Type': 'application/ld+json' } }
     )
+  },
+
+  suspend(id, reason) {
+    return axios.post(
+      Routing.generate('api_admin_users_suspend', { id }),
+      { reason },
+      { headers: { 'Content-Type': 'application/ld+json' } }
+    )
+  },
+
+  liftSuspension(id) {
+    return axios.post(Routing.generate('api_admin_users_lift_suspension', { id }))
   }
 }

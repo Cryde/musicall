@@ -37,7 +37,7 @@ readonly class PublicProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Profil non trouvé');
         }
 
-        if ($user->isDeleted()) {
+        if (!$user->isPubliclyVisible()) {
             throw new NotFoundHttpException('Profil non trouvé');
         }
 

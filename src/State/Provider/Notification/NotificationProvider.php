@@ -12,6 +12,7 @@ use App\Repository\Feedback\FeedbackRepository;
 use App\Repository\GalleryRepository;
 use App\Repository\Message\MessageRepository;
 use App\Repository\PublicationRepository;
+use App\Repository\Report\ReportRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -25,7 +26,8 @@ readonly class NotificationProvider implements ProviderInterface
         private MessageRepository           $messageRepository,
         private GalleryRepository           $galleryRepository,
         private PublicationRepository       $publicationRepository,
-        private FeedbackRepository          $feedbackRepository
+        private FeedbackRepository          $feedbackRepository,
+        private ReportRepository            $reportRepository,
     ) {
     }
 
@@ -44,6 +46,7 @@ readonly class NotificationProvider implements ProviderInterface
             $notification->pendingGalleries = $this->galleryRepository->count(['status' => Gallery::STATUS_PENDING]);
             $notification->pendingPublications = $this->publicationRepository->count(['status' => Publication::STATUS_PENDING]);
             $notification->newFeedbacks = $this->feedbackRepository->countNew();
+            $notification->pendingReports = $this->reportRepository->countPending();
 
             return $notification;
         }

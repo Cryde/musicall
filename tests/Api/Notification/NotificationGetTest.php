@@ -173,6 +173,7 @@ class NotificationGetTest extends ApiTestCase
             'pending_galleries'    => 1,
             'pending_publications' => 1,
             'new_feedbacks'        => 1,
+            'pending_reports'      => 0,
             'band_space_chat_unread' => [],
         ]);
     }
@@ -196,6 +197,7 @@ class NotificationGetTest extends ApiTestCase
             'pending_galleries'    => 0,
             'pending_publications' => 0,
             'new_feedbacks'        => 0,
+            'pending_reports'      => 0,
             'band_space_chat_unread' => [],
         ]);
     }

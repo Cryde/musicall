@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository\Teacher;
 
 use App\Entity\Teacher\TeacherProfile;
+use App\Repository\UserRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -56,6 +57,7 @@ class TeacherProfileRepository extends ServiceEntityRepository
             ->addSelect('i')
             ->leftJoin('i.instrument', 'instr')
             ->addSelect('instr')
+            ->where(UserRepository::publiclyVisible('u'))
             ->orderBy('tp.creationDatetime', 'ASC')
             ->getQuery()
             ->getResult();

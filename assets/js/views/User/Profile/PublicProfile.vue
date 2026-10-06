@@ -143,6 +143,12 @@
               severity="info"
               @click="handleContact"
             />
+            <ReportButton
+              target-type="user"
+              :target-id="profile.user_id"
+              :author-id="profile.user_id"
+              :aria-label="`Signaler le profil de ${profile.username}`"
+            />
           </div>
 
           <!-- Musician profile button -->
@@ -363,6 +369,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
+import ReportButton from '../../../components/Report/ReportButton.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'

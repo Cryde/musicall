@@ -19,6 +19,15 @@ class AuthenticationFailureHandler
             ? $exception
             : ($exception->getPrevious() instanceof CustomUserMessageAccountStatusException ? $exception->getPrevious() : null);
 
+        if ($target instanceof CustomUserMessageAccountStatusException && $target->getMessageKey() === SuspensionChecker::MESSAGE_KEY) {
+            $event->setResponse(new JsonResponse([
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => SuspensionChecker::MESSAGE_KEY,
+            ], Response::HTTP_UNAUTHORIZED));
+
+            return;
+        }
+
         if ($target instanceof CustomUserMessageAccountStatusException && $target->getMessageKey() === 'account_not_verified') {
             $messageData = $target->getMessageData();
 

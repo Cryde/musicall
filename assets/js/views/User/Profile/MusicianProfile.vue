@@ -170,6 +170,7 @@
           <MediaShowcase
             :is-own-profile="isOwnProfile"
             :media-items="isOwnProfile ? null : profile.media"
+            :owner-username="profile.username"
           />
 
           <!-- Musician Announces -->

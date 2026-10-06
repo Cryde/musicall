@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Security;
 
 use App\Entity\User;
+use App\Security\SuspensionChecker;
 use App\Security\UserChecker;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
@@ -15,7 +16,7 @@ class UserCheckerTest extends TestCase
         // The verification check moved to checkPostAuth (so account_not_verified is
         // only disclosed after the password is verified), leaving checkPreAuth a
         // no-op for every user - including an unverified one.
-        $checker = new UserChecker();
+        $checker = new UserChecker(new SuspensionChecker());
 
         $checker->checkPreAuth($this->buildNonInternalUser());
 
@@ -33,7 +34,7 @@ class UserCheckerTest extends TestCase
 
     public function test_check_post_auth_throws_for_unverified_user(): void
     {
-        $checker = new UserChecker();
+        $checker = new UserChecker(new SuspensionChecker());
 
         // non-App user: ignored
         $checker->checkPostAuth($this->buildNonInternalUser());
@@ -77,5 +78,20 @@ class UserCheckerTest extends TestCase
                 return $this->confirmationDatetime;
             }
         };
+    }
+
+    /** Suspension is checked before the confirmation, so a suspended account never learns more. */
+    public function test_check_post_auth_refuses_a_suspended_user(): void
+    {
+        $user = new User();
+        $user->confirmationDatetime = new \DateTime('2026-01-01');
+        $user->suspensionDatetime = new \DateTimeImmutable('2026-09-01');
+
+        try {
+            (new UserChecker(new SuspensionChecker()))->checkPostAuth($user);
+            $this->fail('A suspended user must be refused');
+        } catch (CustomUserMessageAccountStatusException $exception) {
+            $this->assertSame('account_suspended', $exception->getMessageKey());
+        }
     }
 }

@@ -351,6 +351,7 @@
             <MusicianAnnounceBlockItem
                 v-for="announce in musicianSearchStore.announces"
                 :key="announce.id"
+                :announce-id="announce.id"
                 :type="announce.type"
                 :user="announce.user"
                 :styles="announce.styles"

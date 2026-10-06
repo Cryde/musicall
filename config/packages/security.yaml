@@ -81,6 +81,8 @@ security:
             entry_point: jwt
             stateless: true
             provider: app_user_provider
+            # A token issued before a suspension must stop working at once, not when it expires (#1116).
+            user_checker: App\Security\SuspensionChecker
             jwt: ~
             refresh_jwt:
                 check_path: /api/token/refresh

@@ -91,6 +91,15 @@
                 >
                     <i class="pi pi-envelope mr-2" />Contacter
                 </button>
+                <ReportButton
+                    v-if="announceId && !user.deletion_datetime"
+                    target-type="announce"
+                    :target-id="announceId"
+                    :author-id="user.id"
+                    :aria-label="`Signaler l'annonce de ${userName}`"
+                    icon-only
+                    class="self-center"
+                />
             </div>
         </div>
 
@@ -105,12 +114,15 @@ import Avatar from 'primevue/avatar'
 import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
+import ReportButton from '../../components/Report/ReportButton.vue'
 import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { hasMoreStyles, MAX_VISIBLE_STYLES } from '../../utils/styles.js'
 
 const props = defineProps({
+  /** The announce itself, for « Signaler ». */
+  announceId: { type: String, default: null },
   type: { type: Number, required: true },
   user: { type: Object, required: true },
   instrument: { type: String, required: true },

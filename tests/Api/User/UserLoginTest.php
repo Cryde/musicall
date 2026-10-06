@@ -67,6 +67,38 @@ class UserLoginTest extends ApiTestCase
         ]);
     }
 
+    public function test_login_of_a_suspended_account_is_refused(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['suspensionDatetime' => new \DateTimeImmutable('2026-09-01')]);
+
+        $this->client->jsonRequest('POST', '/api/login_check', [
+            'username' => $user1->username,
+            'password' => 'password',
+        ]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertResponseNotHasCookie('refresh_token');
+        $this->assertJsonEquals([
+            'code' => 401,
+            'message' => 'account_suspended',
+        ]);
+    }
+
+    /** A suspended account with a wrong password learns nothing more than anyone else. */
+    public function test_login_of_a_suspended_account_with_a_bad_password_is_the_generic_error(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['suspensionDatetime' => new \DateTimeImmutable('2026-09-01')]);
+
+        $this->client->jsonRequest('POST', '/api/login_check', [
+            'username' => $user1->username,
+            'password' => 'bad',
+        ]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertJsonEquals([
+            'code' => 401,
+            'message' => 'Identifiants invalides.',
+        ]);
+    }
+
     public function test_login_with_bad_password(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create();

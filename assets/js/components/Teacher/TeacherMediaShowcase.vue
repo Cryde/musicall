@@ -75,6 +75,15 @@
             :loading="deletingId === item.id"
             @click.stop="handleDelete(item)"
           />
+          <ReportButton
+            v-else
+            target-type="profile_media"
+            :target-id="item.id"
+            :author-username="ownerUsername"
+            :aria-label="`Signaler ${item.title || 'ce média'}`"
+            icon-only
+            class="shrink-0"
+          />
         </div>
       </div>
     </div>
@@ -212,6 +221,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref, watch } from 'vue'
 import { getMediaPlatformLabel } from '../../constants/teacherProfile.js'
 import { useTeacherProfileMediaStore } from '../../store/user/teacherProfileMedia.js'
+import ReportButton from '../Report/ReportButton.vue'
 
 const MAX_MEDIA = 6
 
@@ -222,6 +232,11 @@ const props = defineProps({
   },
   mediaItems: {
     type: Array,
+    default: null
+  },
+  /** Whose media these are, so « Signaler » never shows to the owner while their profile loads. */
+  ownerUsername: {
+    type: String,
     default: null
   }
 })

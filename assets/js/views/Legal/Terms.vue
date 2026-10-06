@@ -129,8 +129,8 @@
             7. Modération, signalement et recours
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
-            <strong>7.1 Signalement.</strong> Conformément au règlement (UE) 2022/2065, vous pouvez signaler tout contenu que vous estimez illicite en écrivant à
-            <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a>, en indiquant l'URL concernée, la nature du problème et les motifs du signalement. Vous recevrez un accusé de réception et serez informé de la suite donnée.
+            <strong>7.1 Signalement.</strong> Conformément au règlement (UE) 2022/2065, vous pouvez signaler tout contenu ou tout compte que vous estimez illicite ou contraire aux présentes conditions, avec le bouton « Signaler » présent sur ce contenu ou sur le profil concerné, ou en écrivant à
+            <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a> en indiquant l'URL concernée, la nature du problème et les motifs du signalement. Vous recevrez un accusé de réception et serez informé de la suite donnée.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>7.2 Moyens de modération.</strong> La modération est assurée humainement, après signalement ou lors de l'examen des publications et galeries soumises à validation. Le site applique par ailleurs des mesures techniques automatiques qui limitent le nombre de contenus pouvant être créés sur une période donnée, et un filtrage du code HTML des contenus publiés afin d'écarter les éléments dangereux. Ces mesures techniques n'entraînent ni la suppression d'un contenu, ni la restriction d'un compte : aucune décision de modération n'est prise sur une base purement automatisée.

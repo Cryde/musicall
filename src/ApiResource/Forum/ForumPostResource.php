@@ -26,7 +26,7 @@ use DateTimeInterface;
             ],
             openapi: new Operation(tags: ['Forum']),
             paginationEnabled: true,
-            paginationItemsPerPage: 10,
+            paginationItemsPerPage: self::POSTS_PER_PAGE,
             name: 'api_forum_topic_posts_list',
             provider: ForumPostCollectionProvider::class,
         ),
@@ -41,6 +41,9 @@ use DateTimeInterface;
 )]
 class ForumPostResource
 {
+    /** Shared with every link that has to land on a post's page (admin activity, reports). */
+    final public const int POSTS_PER_PAGE = 10;
+
     #[ApiProperty(identifier: true)]
     public string $id;
     public DateTimeInterface $creationDatetime;
