@@ -5,6 +5,7 @@ namespace App\State\Provider\Admin\Forum;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Admin\Forum\RecentActivity;
+use App\ApiResource\Forum\ForumPostResource;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
 use App\Repository\Forum\ForumPostRepository;
@@ -17,7 +18,6 @@ readonly class RecentActivityProvider implements ProviderInterface
 {
     private const LIMIT = 10;
     private const EXCERPT_MAX_LENGTH = 120;
-    private const POSTS_PER_PAGE = 10;
 
     public function __construct(
         private ForumTopicRepository $forumTopicRepository,
@@ -45,7 +45,7 @@ readonly class RecentActivityProvider implements ProviderInterface
                 'id' => (string) $post->id,
                 'topic_slug' => $post->topic->slug,
                 'topic_title' => $post->topic->title,
-                'topic_page' => (int) ceil($this->forumPostRepository->findPositionInTopic($post) / self::POSTS_PER_PAGE),
+                'topic_page' => (int) ceil($this->forumPostRepository->findPositionInTopic($post) / ForumPostResource::POSTS_PER_PAGE),
                 'content_excerpt' => $this->buildExcerpt($post->content),
                 'creation_datetime' => $post->creationDatetime->format(\DateTimeInterface::ATOM),
                 'creator_username' => $post->creator->username,
