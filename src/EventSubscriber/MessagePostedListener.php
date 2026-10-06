@@ -6,9 +6,16 @@ namespace App\EventSubscriber;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\Message;
+use App\Entity\User;
+use App\Enum\Notification\PushCategory;
 use App\Event\MessagePostedEvent;
 use App\Mercure\MercureTopic;
+use App\Service\BandSpace\BandSpaceMemberNames;
+use App\Service\BandSpace\ChatMentionResolver;
 use App\Service\Message\ThreadMemberResolver;
+use App\Service\Notification\Push\PushContentBuilder;
+use App\Service\Notification\Push\PushQueue;
+use App\Service\User\UserNotificationPreferenceChecker;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Mercure\HubInterface;
@@ -35,6 +42,11 @@ readonly class MessagePostedListener
         private HubInterface $hub,
         private LoggerInterface $logger,
         private ThreadMemberResolver $threadMemberResolver,
+        private ChatMentionResolver $chatMentionResolver,
+        private BandSpaceMemberNames $memberNames,
+        private PushContentBuilder $pushContentBuilder,
+        private PushQueue $pushQueue,
+        private UserNotificationPreferenceChecker $preferenceChecker,
     ) {
     }
 
@@ -42,6 +54,7 @@ readonly class MessagePostedListener
     {
         $message = $event->message;
         $topics = [];
+        $members = [];
         // The resolver, not the thread's participant rows: a channel has none, so iterating them
         // published nothing at all for a band (#959). It answers both shapes, and for a direct
         // message it answers with those same rows.
@@ -49,11 +62,14 @@ readonly class MessagePostedListener
             // The sender included, so a send from their laptop still updates their phone. Their own
             // tab pays one idempotent refetch for that.
             $topics[] = MercureTopic::userNotifications((string) $member->id);
+            $members[] = $member;
         }
 
         if ($topics === []) {
             return;
         }
+
+        $this->push($message, $members);
 
         try {
             // A tag, not the message. The browser refetches through the API it already uses, so no
@@ -67,6 +83,67 @@ readonly class MessagePostedListener
                 'thread_id' => (string) $message->thread->id,
             ]);
         }
+    }
+
+    /**
+     * Every other member's phones (#1110), each message, with a preview of it. In a channel, somebody
+     * the message mentions is left out when the mention push reaches them: two pushes for one message
+     * is one too many. Never throws, for the same reason as the signal below.
+     *
+     * The mentions are resolved here rather than read back: this runs before the chat processor
+     * records them.
+     *
+     * @param list<User> $members
+     */
+    private function push(Message $message, array $members): void
+    {
+        try {
+            $bandSpace = $message->thread->bandSpace;
+            $mentioned = $bandSpace instanceof BandSpace ? $this->chatMentionResolver->resolve($bandSpace, $message->content) : [];
+            $mentionUsernamesById = [];
+            foreach ($mentioned as $user) {
+                $mentionUsernamesById[(string) $user->id] = $user->username;
+            }
+
+            // A mentioned member whose mention pushes are on gets that push instead; one who turned
+            // them off still gets the message as a chat push.
+            $coveredByMention = [];
+            foreach ($mentioned as $user) {
+                if ($this->preferenceChecker->canReceivePush($user, PushCategory::BandMention)) {
+                    $coveredByMention[(string) $user->id] = true;
+                }
+            }
+
+            $authorId = (string) $message->author->id;
+            $recipientIds = [];
+            foreach ($members as $member) {
+                $memberId = (string) $member->id;
+                if ($memberId !== $authorId && !isset($coveredByMention[$memberId])) {
+                    $recipientIds[] = $memberId;
+                }
+            }
+
+            $this->pushQueue->queue(
+                $recipientIds,
+                $this->pushContentBuilder->forMessage($message, $this->authorName($message), $mentionUsernamesById),
+                $bandSpace instanceof BandSpace ? PushCategory::BandChat : PushCategory::MessageReceived,
+            );
+        } catch (\Throwable $throwable) {
+            $this->logger->error('Could not queue the pushes for a message', [
+                'exception' => $throwable,
+                'message_id' => (string) $message->id,
+            ]);
+        }
+    }
+
+    /** The name the conversation shows: the stage name inside a band (#1115), the public one elsewhere. */
+    private function authorName(Message $message): string
+    {
+        $bandSpace = $message->thread->bandSpace;
+
+        return $bandSpace instanceof BandSpace
+            ? $this->memberNames->nameOf($message->author, (string) $bandSpace->id)
+            : $message->author->publicName();
     }
 
     /**
