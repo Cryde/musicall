@@ -45,6 +45,16 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => true,
             'activity_reminder' => true,
             'show_online_presence' => true,
+            'push_message_received' => true,
+            'push_publication_comment' => true,
+            'push_forum_reply' => true,
+            'push_moderation' => true,
+            'push_band_chat' => true,
+            'push_band_mention' => true,
+            'push_band_tasks' => true,
+            'push_band_agenda' => true,
+            'push_band_finance' => true,
+            'push_band_membership' => true,
         ]);
 
         $reloaded = self::getContainer()->get(\App\Repository\UserRepository::class)->find($user->id);
@@ -89,6 +99,16 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => false,
             'activity_reminder' => true,
             'show_online_presence' => true,
+            'push_message_received' => true,
+            'push_publication_comment' => true,
+            'push_forum_reply' => true,
+            'push_moderation' => true,
+            'push_band_chat' => true,
+            'push_band_mention' => true,
+            'push_band_tasks' => true,
+            'push_band_agenda' => true,
+            'push_band_finance' => true,
+            'push_band_membership' => true,
         ]);
     }
 
@@ -109,6 +129,16 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => true,
             'activity_reminder' => false,
             'show_online_presence' => false,
+            'push_message_received' => true,
+            'push_publication_comment' => true,
+            'push_forum_reply' => true,
+            'push_moderation' => false,
+            'push_band_chat' => false,
+            'push_band_mention' => true,
+            'push_band_tasks' => true,
+            'push_band_agenda' => true,
+            'push_band_finance' => true,
+            'push_band_membership' => true,
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
@@ -124,12 +154,25 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => true,
             'activity_reminder' => false,
             'show_online_presence' => false,
+            'push_message_received' => true,
+            'push_publication_comment' => true,
+            'push_forum_reply' => true,
+            'push_moderation' => false,
+            'push_band_chat' => false,
+            'push_band_mention' => true,
+            'push_band_tasks' => true,
+            'push_band_agenda' => true,
+            'push_band_finance' => true,
+            'push_band_membership' => true,
         ]);
         $stored = self::getContainer()->get(EntityManagerInterface::class)
             ->getRepository(UserNotificationPreference::class)
             ->findOneBy(['user' => $user->id]);
         $this->assertInstanceOf(UserNotificationPreference::class, $stored);
         $this->assertFalse($stored->showOnlinePresence);
+        $this->assertFalse($stored->pushBandChat);
+        $this->assertFalse($stored->pushModeration);
+        $this->assertTrue($stored->pushBandMention);
     }
 
     public function test_patch_notification_preferences_requires_authentication(): void

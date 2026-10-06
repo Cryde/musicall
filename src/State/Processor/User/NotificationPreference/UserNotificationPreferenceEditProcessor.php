@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\NotificationPreference\UserNotificationPreferenceEdit;
 use App\Entity\User;
 use App\Entity\User\UserNotificationPreference;
+use App\Service\Builder\User\NotificationPreference\UserNotificationPreferenceMapper;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -38,28 +39,11 @@ readonly class UserNotificationPreferenceEditProcessor implements ProcessorInter
             $this->entityManager->persist($preference);
         }
 
-        $preference->siteNews = $data->siteNews;
-        $preference->weeklyRecap = $data->weeklyRecap;
-        $preference->messageReceived = $data->messageReceived;
-        $preference->publicationComment = $data->publicationComment;
-        $preference->forumReply = $data->forumReply;
-        $preference->marketing = $data->marketing;
-        $preference->activityReminder = $data->activityReminder;
-        $preference->showOnlinePresence = $data->showOnlinePresence;
+        UserNotificationPreferenceMapper::apply($data, $preference);
         $preference->updateDatetime = new DateTimeImmutable();
 
         $this->entityManager->flush();
 
-        $dto = new UserNotificationPreferenceEdit();
-        $dto->siteNews = $preference->siteNews;
-        $dto->weeklyRecap = $preference->weeklyRecap;
-        $dto->messageReceived = $preference->messageReceived;
-        $dto->publicationComment = $preference->publicationComment;
-        $dto->forumReply = $preference->forumReply;
-        $dto->marketing = $preference->marketing;
-        $dto->activityReminder = $preference->activityReminder;
-        $dto->showOnlinePresence = $preference->showOnlinePresence;
-
-        return $dto;
+        return UserNotificationPreferenceMapper::toResource($preference);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Notification\Push;
 
+use App\Entity\User\UserNotificationPreference;
+use App\Enum\Notification\PushCategory;
 use App\Messenger\SendPushNotification;
 use App\Messenger\SendPushNotificationHandler;
 use App\Tests\Double\RecordingFirebaseMessaging;
@@ -43,6 +45,70 @@ class SendPushNotificationHandlerTest extends KernelTestCase
         $this->handler()(new SendPushNotification((string) $user->id, 'Titre', 'Corps'));
 
         $this->assertSame([], self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts);
+    }
+
+    /** Read when sent, so a category switched off also drops the pushes already queued (#1110). */
+    public function test_a_category_switched_off_sends_nothing(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'mute_chat', 'email' => 'mute.chat@example.com']);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+        $preference = new UserNotificationPreference();
+        $preference->user = $user;
+        $preference->pushBandChat = false;
+        $user->notificationPreference = $preference;
+        \Zenstruck\Foundry\Persistence\save($preference);
+
+        $this->handler()(new SendPushNotification((string) $user->id, 'Titre', 'Corps', [], PushCategory::BandChat));
+        $this->assertSame([], self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts);
+
+        $this->handler()(new SendPushNotification((string) $user->id, 'Titre', 'Corps', [], PushCategory::BandMention));
+        $this->assertCount(1, self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts);
+    }
+
+    public function test_without_preferences_every_category_is_on(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'no_prefs', 'email' => 'no.prefs@example.com']);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+
+        $this->handler()(new SendPushNotification((string) $user->id, 'Titre', 'Corps', [], PushCategory::BandChat));
+
+        $this->assertCount(1, self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts);
+    }
+
+    public function test_a_suspended_account_gets_nothing(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'suspended_user',
+            'email' => 'suspended.user@example.com',
+            'suspensionDatetime' => new \DateTimeImmutable('2026-10-01'),
+        ]);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+
+        $this->handler()(new SendPushNotification((string) $user->id, 'Titre', 'Corps'));
+
+        $this->assertSame([], self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts);
+    }
+
+    /** A band deletion is pushed whatever the switches say. */
+    public function test_an_always_push_ignores_every_switch(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'all_off', 'email' => 'all.off@example.com']);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+        $preference = new UserNotificationPreference();
+        $preference->user = $user;
+        foreach (PushCategory::cases() as $category) {
+            $property = 'push' . str_replace('_', '', ucwords($category->value, '_'));
+            if (property_exists($preference, $property)) {
+                $preference->{$property} = false;
+            }
+        }
+        $user->notificationPreference = $preference;
+        \Zenstruck\Foundry\Persistence\save($preference);
+
+        $this->handler()(new SendPushNotification((string) $user->id, 'Titre', 'Corps', [], PushCategory::Always));
+
+        $this->assertCount(1, self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts);
+        $this->assertFalse($preference->pushBandMembership);
     }
 
     public function test_fcm_unavailable_is_handed_back_to_messenger_for_a_retry(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\User;
 
 use App\Entity\User;
+use App\Enum\Notification\PushCategory;
 
 readonly class UserNotificationPreferenceChecker
 {
@@ -63,5 +64,13 @@ readonly class UserNotificationPreferenceChecker
         $preference = $user->notificationPreference;
 
         return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->activityReminder;
+    }
+
+    /** Absent preferences mean the defaults, under which every category is on. */
+    public function canReceivePush(User $user, PushCategory $category): bool
+    {
+        $preference = $user->notificationPreference;
+
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $category->isEnabledIn($preference);
     }
 }

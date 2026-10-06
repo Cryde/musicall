@@ -49,6 +49,37 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $showOnlinePresence = true;
 
+    // Push categories (#1110), all on by default: a token only exists once the phone allowed notifications.
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushMessageReceived = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushPublicationComment = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushForumReply = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushModeration = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandChat = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandMention = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandTasks = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandAgenda = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandFinance = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandMembership = true;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $creationDatetime;
 
