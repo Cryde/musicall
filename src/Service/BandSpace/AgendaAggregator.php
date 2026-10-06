@@ -36,6 +36,7 @@ readonly class AgendaAggregator
         private FinanceEntryRepository $financeEntryRepository,
         private MemberAbsenceRepository $memberAbsenceRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -406,6 +407,7 @@ readonly class AgendaAggregator
                 fn(User $user): array => [
                     'id' => $user->id,
                     'username' => $user->username,
+                    'display_name' => $this->memberNames->nameOf($user, $item->bandSpaceId),
                     'profile_picture_url' => $this->profilePictureUrlBuilder->build($user),
                 ]
             )->toArray()),

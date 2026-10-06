@@ -98,7 +98,7 @@ class BandSpaceActivityResource
     /** @var array<string, mixed>|null */
     public ?array $payload = null;
 
-    /** @var array{id: string, username: string, profile_picture_url: ?string}|null */
+    /** @var array{id: string, username: string, display_name: string, profile_picture_url: ?string}|null */
     public ?array $actor = null;
 
     public \DateTimeInterface $creationDatetime;

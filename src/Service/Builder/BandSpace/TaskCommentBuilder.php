@@ -4,12 +4,14 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\BandSpace\TaskComment;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class TaskCommentBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -33,6 +35,7 @@ readonly class TaskCommentBuilder
         $dto->taskId = (string) $entity->task->id;
         $dto->authorId = $entity->author->id;
         $dto->authorUsername = $entity->author->username;
+        $dto->authorDisplayName = $this->memberNames->nameOf($entity->author, $dto->bandSpaceId);
         $dto->authorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->author);
         $dto->content = $entity->content;
         $dto->creationDatetime = $entity->creationDatetime;

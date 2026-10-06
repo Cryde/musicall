@@ -88,6 +88,7 @@ class BandSpaceFileShareCollectionTest extends ApiTestCase
                     'created_by' => [
                         'id' => (string) $user->id,
                         'username' => $user->username,
+                        'display_name' => $user->username,
                     ],
                 ],
             ],

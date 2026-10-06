@@ -5,6 +5,7 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
 use App\Entity\BandSpace\BandSpaceNote as BandSpaceNoteEntity;
 use App\Entity\User;
+use App\Service\BandSpace\BandSpaceMemberNames;
 
 readonly class BandSpaceNoteBuilder
 {
@@ -29,6 +30,11 @@ readonly class BandSpaceNoteBuilder
      * internal path. Both have to go, or a member could point a note image at any host they like.
      */
     private const string SAFE_URI_PATTERN = '#^(?:https?://|mailto:|/(?![\\\\/]))[^\s<>"\'\\\\]*$#i';
+
+    public function __construct(
+        private BandSpaceMemberNames $memberNames,
+    ) {
+    }
 
     /**
      * @param BandSpaceNoteEntity[] $entities
@@ -64,6 +70,7 @@ readonly class BandSpaceNoteBuilder
             'username' => $entity->createdBy->isDeleted()
                 ? User::DELETED_DISPLAY_NAME
                 : $entity->createdBy->username,
+            'display_name' => $this->memberNames->nameOf($entity->createdBy, $dto->bandSpaceId),
         ];
 
         $dto->creationDatetime = $entity->creationDatetime;

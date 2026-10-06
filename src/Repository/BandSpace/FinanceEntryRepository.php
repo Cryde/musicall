@@ -300,7 +300,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array<int, array{member_id: string, username: string, total: int}>
+     * @return array<int, array{member_id: string, username: string, display_name: string, total: int}>
      */
     public function getMemberContributions(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
     {
@@ -311,6 +311,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
             SELECT
                 m.id AS member_id,
                 u.username,
+                m.stage_name,
+                u.deletion_datetime,
                 COALESCE(SUM(s.amount), 0) AS total
             FROM finance_entry_split s
             JOIN finance_entry e ON s.entry_id = e.id
@@ -318,7 +320,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
             JOIN band_space_membership m ON s.member_id = m.id
             JOIN fos_user u ON m.user_id = u.id
             WHERE c.band_space_id = :bandSpaceId{$dateFilter}
-            GROUP BY m.id, u.username
+            GROUP BY m.id, u.username, m.stage_name, u.deletion_datetime
             ORDER BY total DESC
             SQL;
 
@@ -327,6 +329,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
         return array_map(fn (array $row): array => [
             'member_id' => $row['member_id'],
             'username' => $row['username'],
+            'display_name' => BandSpaceMembership::nameFor($row['stage_name'], $row['username'], $row['deletion_datetime'] !== null),
             'total' => (int) $row['total'],
         ], $rows);
     }

@@ -21,7 +21,7 @@
         <i :class="['pi mt-0.5 text-surface-400', moduleIcon(activity.module)]" aria-hidden="true" />
         <div class="flex-1 min-w-0">
           <p class="text-surface-700 dark:text-surface-200 leading-snug">
-            <span class="font-medium">{{ activity.actor?.username || 'Système' }}</span>
+            <span class="font-medium"><MemberName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template></span>
             {{ activitySentence(activity) }}
           </p>
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">{{ formatRelative(activity.creation_datetime) }}</p>
@@ -37,6 +37,7 @@ import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceActivityApi from '../../../api/bandSpace/band-space-activity.js'
+import MemberName from '../Member/MemberName.vue'
 import { activitySentence as buildSentence } from '../Settings/activitySentences.js'
 import DashboardWidget from './DashboardWidget.vue'
 

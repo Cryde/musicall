@@ -6,12 +6,14 @@ use App\ApiResource\BandSpace\TechRider\TechRiderResource;
 use App\Entity\BandSpace\TechRider;
 use App\Entity\BandSpace\TechRiderItem;
 use App\Repository\BandSpace\TechRiderItemRepository;
+use App\Service\BandSpace\BandSpaceMemberNames;
 
 readonly class TechRiderBuilder
 {
     public function __construct(
         private TechRiderItemBuilder $itemBuilder,
         private TechRiderItemRepository $itemRepository,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -67,6 +69,7 @@ readonly class TechRiderBuilder
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->name = $entity->name;
         $dto->createdByUsername = $entity->createdBy->username;
+        $dto->createdByDisplayName = $this->memberNames->nameOf($entity->createdBy, $dto->bandSpaceId);
         $dto->archiveDatetime = $entity->archiveDatetime;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;

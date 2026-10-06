@@ -86,6 +86,33 @@ class ChatMessageReadReceiptTest extends ApiTestCase
         ]);
     }
 
+    public function test_the_author_and_the_readers_carry_their_stage_names(): void
+    {
+        $space = BandSpaceFactory::new()->create();
+        $channel = $this->channelOf($space);
+        $author = $this->member($space, 'androidtest_123', stageName: 'Alex');
+        $viewer = $this->member($space, 'crydetest', stageName: 'Sam');
+        $message = $this->messageFrom($channel, $author, 'on répète mardi');
+        $this->readPosition($channel, $viewer, '2026-09-10 20:01:00');
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', $this->url($space));
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => $this->url($space),
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                array_merge(
+                    $this->expectedMessage($message, $space, $author, 'on répète mardi', ['crydetest'], 1),
+                    ['author_display_name' => 'Alex', 'read_by_display_names' => ['Sam']],
+                ),
+            ],
+        ]);
+    }
+
     public function test_every_other_member_having_read_it_names_them_all(): void
     {
         $space = BandSpaceFactory::new()->create();
@@ -345,7 +372,7 @@ class ChatMessageReadReceiptTest extends ApiTestCase
         return MessageThreadFactory::new()->forBandSpace($space)->create();
     }
 
-    private function member(BandSpace $space, string $username, MembershipStatus $status = MembershipStatus::Active): User
+    private function member(BandSpace $space, string $username, MembershipStatus $status = MembershipStatus::Active, ?string $stageName = null): User
     {
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => $username,
@@ -355,6 +382,7 @@ class ChatMessageReadReceiptTest extends ApiTestCase
             'bandSpace' => $space,
             'user' => $user,
             'status' => $status,
+            'stageName' => $stageName,
             'creationDatetime' => new \DateTime('2026-09-01 09:00:00'),
         ])->create();
 
@@ -402,6 +430,7 @@ class ChatMessageReadReceiptTest extends ApiTestCase
             'band_space_id' => (string) $space->id,
             'author_id' => (string) $author->id,
             'author_username' => $author->username,
+            'author_display_name' => $author->username,
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => self::SENT_AT_ISO,
@@ -413,7 +442,9 @@ class ChatMessageReadReceiptTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'pinned_by_display_name' => null,
             'read_by_usernames' => $readByUsernames,
+            'read_by_display_names' => $readByUsernames,
             'read_count' => $readCount,
             'image' => null,
             'voice_note' => null,

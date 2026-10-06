@@ -48,7 +48,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['title' => 'Tournée 2026', 'created_by' => ['id' => $member->id, 'username' => 'base_admin']],
+            ['title' => 'Tournée 2026', 'created_by' => ['id' => $member->id, 'username' => 'base_admin', 'display_name' => 'base_admin']],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -68,7 +68,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => ['id' => $author->id, 'username' => 'author'],
+            'created_by' => ['id' => $author->id, 'username' => 'author', 'display_name' => 'author'],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -118,6 +118,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -174,6 +175,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -227,6 +229,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -278,6 +281,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => '🎵',
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -334,6 +338,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -385,6 +390,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -548,6 +554,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -612,6 +619,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -677,6 +685,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -732,6 +741,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -809,6 +819,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -875,6 +886,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -951,6 +963,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -1015,6 +1028,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -1089,6 +1103,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -1382,6 +1397,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -1431,6 +1447,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -1482,6 +1499,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'created_by' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'display_name' => $user->username,
             ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),

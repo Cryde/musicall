@@ -130,7 +130,7 @@
                   v-if="isCurrentChannel && !isSender(message) && index === 0"
                   class="text-xs font-semibold mb-1 opacity-80"
                 >
-                  {{ message.author?.username }}
+                  {{ message.author?.display_name ?? message.author?.username }}
                 </div>
                 <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
                      inbox has to say so too rather than draw an empty bubble. A direct message carries no

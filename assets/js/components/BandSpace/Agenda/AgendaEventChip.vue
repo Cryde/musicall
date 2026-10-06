@@ -24,6 +24,7 @@
         v-for="a in visibleAssignees"
         :key="a.id"
         :username="a.username"
+        :display-name="a.display_name"
         :picture-url="a.profile_picture_url"
         size="sm"
       />

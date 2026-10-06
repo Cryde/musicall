@@ -4,9 +4,15 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
+use App\Service\BandSpace\BandSpaceMemberNames;
 
 readonly class AgendaEntryBuilder
 {
+    public function __construct(
+        private BandSpaceMemberNames $memberNames,
+    ) {
+    }
+
     /**
      * @param AgendaEntry[] $entities
      * @return AgendaEntryResource[]
@@ -35,6 +41,7 @@ readonly class AgendaEntryBuilder
         $dto->recurrenceMonthlyMode = $entity->recurrenceMonthlyMode?->value;
         $dto->creatorId = (string) $entity->creator->id;
         $dto->creatorUsername = $entity->creator->username;
+        $dto->creatorDisplayName = $this->memberNames->nameOf($entity->creator, $dto->bandSpaceId);
         $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;

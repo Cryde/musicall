@@ -64,7 +64,7 @@
         <MultiSelect
           v-model="assigneeDraft"
           :options="members"
-          optionLabel="username"
+          optionLabel="display_name"
           optionValue="user_id"
           placeholder="Aucun"
           display="chip"

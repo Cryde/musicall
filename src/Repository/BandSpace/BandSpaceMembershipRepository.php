@@ -269,4 +269,33 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * What every member the space ever had is called there, keyed by user id. Former members are
+     * included so a task or a file keeps naming its author after they leave. Scalars only: a User
+     * drags three profile tables along when hydrated (#730).
+     *
+     * @return array<string, string>
+     */
+    public function findDisplayNamesByUserId(string $bandSpaceId): array
+    {
+        $rows = $this->createQueryBuilder('m')
+            ->select('u.id AS userId', 'u.username', 'u.deletionDatetime', 'm.stageName')
+            ->innerJoin('m.user', 'u')
+            ->where('m.bandSpace = :bandSpace')
+            ->setParameter('bandSpace', $bandSpaceId)
+            ->getQuery()
+            ->getArrayResult();
+
+        $names = [];
+        foreach ($rows as $row) {
+            $names[(string) $row['userId']] = BandSpaceMembership::nameFor(
+                $row['stageName'],
+                $row['username'],
+                $row['deletionDatetime'] !== null,
+            );
+        }
+
+        return $names;
+    }
 }

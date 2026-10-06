@@ -52,7 +52,7 @@
         <MultiSelect
           v-model="form.assigneeIds"
           :options="members"
-          optionLabel="username"
+          optionLabel="display_name"
           optionValue="user_id"
           placeholder="Sélectionner des membres"
           display="chip"

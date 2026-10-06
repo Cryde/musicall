@@ -60,6 +60,7 @@ class FinanceEntrySplitGetItemTest extends ApiTestCase
             'entry_id' => $entry->id,
             'member_id' => $membership->id,
             'member_name' => $user->username,
+            'member_username' => $user->username,
             'is_former_member' => false,
             'amount' => 25000,
             'creation_datetime' => '2024-02-01T10:00:00+00:00',

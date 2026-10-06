@@ -90,10 +90,11 @@
             <Avatar
               v-if="file.created_by"
               :username="file.created_by.username"
+              :display-name="file.created_by.display_name"
               :picture-url="file.created_by.profile_picture_url"
               size="sm"
             />
-            <span>{{ file.created_by?.username || '—' }}</span>
+            <span><MemberName v-if="file.created_by" :username="file.created_by.username" :display-name="file.created_by.display_name" :picture-url="file.created_by.profile_picture_url" /><template v-else>—</template></span>
           </div>
         </div>
         <div>
@@ -240,6 +241,7 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { rootDestinationRefusal } from '../../../utils/fileListing.js'
 import Avatar from '../../User/Avatar.vue'
+import MemberName from '../Member/MemberName.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
 
 const props = defineProps({

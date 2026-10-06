@@ -9,12 +9,13 @@
       >
         <Avatar
           :username="activity.actor_username"
+          :display-name="activity.actor_display_name"
           :picture-url="activity.actor_profile_picture_url"
           size="sm"
         />
         <div class="flex-1 min-w-0">
           <span class="font-medium text-surface-700 dark:text-surface-200">
-            {{ activity.actor_username }}
+            <MemberName :username="activity.actor_username" :display-name="activity.actor_display_name" :picture-url="activity.actor_profile_picture_url" />
           </span>
           {{ activityLabel(activity) }}
           <span class="text-surface-400 ml-1">{{ formatRelative(activity.creation_datetime) }}</span>
@@ -30,6 +31,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { fileSourceDefiniteNoun } from '../../../constants/fileSources.js'
 import Avatar from '../../User/Avatar.vue'
+import MemberName from '../Member/MemberName.vue'
 
 defineProps({
   activities: { type: Array, default: () => [] }

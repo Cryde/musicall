@@ -5,12 +5,14 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\BandSpaceActivityResource;
 use App\Entity\BandSpace\BandSpaceActivity;
 use App\Privacy\ActivityPayloadMask;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class BandSpaceActivityBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
     ) {
     }
 
@@ -35,6 +37,7 @@ readonly class BandSpaceActivityBuilder
         $dto->actor = $entity->actor instanceof \App\Entity\User ? [
             'id' => (string) $entity->actor->id,
             'username' => $entity->actor->username,
+            'display_name' => $this->memberNames->nameOf($entity->actor, $dto->bandSpaceId),
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->actor),
         ] : null;
         $dto->creationDatetime = $entity->creationDatetime;

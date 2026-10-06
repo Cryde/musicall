@@ -82,6 +82,9 @@ class ChatMessageResource
     /** `Utilisateur supprimé` once the account is gone, so the renderer never prints `deleted_<uuid>`. */
     public string $authorUsername;
 
+    /** The author's name in this band (#1115), next to the username mentions keep using. */
+    public string $authorDisplayName;
+
     public ?string $authorProfilePictureUrl = null;
 
     /** Sanitized to text plus `<br>`, like the direct message thread. Rendered with v-html. */
@@ -165,6 +168,8 @@ class ChatMessageResource
     /** `Utilisateur supprimé` once the account is gone, exactly like the author field above. */
     public ?string $pinnedByUsername = null;
 
+    public ?string $pinnedByDisplayName = null;
+
     /**
      * Who has read this message: every active member whose read position has reached it, by username
      * and never the author, since writing something is not reading it (#977).
@@ -176,6 +181,13 @@ class ChatMessageResource
      * @var list<string>
      */
     public array $readByUsernames = [];
+
+    /**
+     * The same readers by their name in the band, index for index with the list above.
+     *
+     * @var list<string>
+     */
+    public array $readByDisplayNames = [];
 
     /** How many the list above holds, so the client can say « et 3 autres » without counting. */
     public int $readCount = 0;

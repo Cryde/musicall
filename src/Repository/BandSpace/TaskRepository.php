@@ -307,9 +307,11 @@ class TaskRepository extends ServiceEntityRepository
      */
     public function findUpcomingForBand(BandSpace $bandSpace, DateTimeInterface $from, DateTimeInterface $to): array
     {
+        // Assignees joined because every agenda task row lists them; lazy, they cost a query per task.
         return $this->createQueryBuilder('t')
-            ->addSelect('c')
+            ->addSelect('c', 'a')
             ->leftJoin('t.category', 'c')
+            ->leftJoin('t.assignees', 'a')
             ->where('t.bandSpace = :bandSpace')
             ->andWhere('t.dueDate IS NOT NULL')
             ->andWhere('t.dueDate >= :from')

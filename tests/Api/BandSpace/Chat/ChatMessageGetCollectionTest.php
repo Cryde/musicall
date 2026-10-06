@@ -361,16 +361,16 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             );
         }
 
-        // And the whole request does not grow with the number of distinct authors: measured at 12 for
+        // And the whole request does not grow with the number of distinct authors: measured at 13 for
         // this page of ten, which is the viewer, the space with its memberships, the channel, the
-        // list, the count, the reaction aggregate (#968), the attachment rows (#970) and the channel's
-        // read positions (#977). The margin is there for a change to the firewall, not for a per-author
+        // list, the count, the reaction aggregate (#968), the attachment rows (#970), the channel's
+        // read positions (#977) and the members' names in the band (#1115). The margin is there for a change to the firewall, not for a per-author
         // query: hydrating ten authors would put this near fifty.
         //
         // Raise this deliberately, with a fresh measurement, when a feature adds a query for the whole
         // page. Never raise it to make a per-message query fit, which is the thing it exists to catch.
         $this->assertLessThanOrEqual(
-            13,
+            14,
             $this->client->getProfile()->getCollector('db')->getQueryCount(),
             'The message list must cost a fixed number of queries whatever the author count',
         );
@@ -401,6 +401,7 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'band_space_id' => (string) $space->id,
             'author_id' => (string) $author->id,
             'author_username' => $expectedUsername,
+            'author_display_name' => $expectedUsername,
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => $creationDatetime,
@@ -414,7 +415,9 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'is_pinned' => $pinnedDatetime !== null,
             'pinned_datetime' => $pinnedDatetime,
             'pinned_by_username' => $pinnedByUsername,
+            'pinned_by_display_name' => $pinnedByUsername,
             'read_by_usernames' => [],
+            'read_by_display_names' => [],
             'read_count' => 0,
             'image' => null,
             'voice_note' => null,

@@ -16,6 +16,7 @@ use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
+use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -34,6 +35,7 @@ readonly class BandSpaceFileBuilder
         private SongRepository $songRepository,
         private SetlistRepository $setlistRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private BandSpaceMemberNames $memberNames,
         private UrlGeneratorInterface $urlGenerator,
         #[Autowire('%band_space.file_retention_days%')]
         private int $retentionDays,
@@ -104,6 +106,7 @@ readonly class BandSpaceFileBuilder
         $dto->createdBy = [
             'id' => (string) $entity->createdBy->id,
             'username' => $entity->createdBy->username,
+            'display_name' => $this->memberNames->nameOf($entity->createdBy, (string) $entity->bandSpace->id),
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->createdBy),
         ];
 

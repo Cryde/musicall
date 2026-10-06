@@ -33,9 +33,9 @@
           <div
             class="w-7 h-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-semibold flex-shrink-0"
           >
-            {{ memberInitial(member.username) }}
+            {{ memberInitial(member.display_name) }}
           </div>
-          <span class="text-sm flex-1 truncate">{{ member.username }}</span>
+          <span class="text-sm flex-1 truncate">{{ member.display_name }}</span>
           <InputNumber
             v-model="splitAmounts[member.id]"
             :max="MAX_AMOUNT_EUROS"

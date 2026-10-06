@@ -69,6 +69,7 @@ class AgendaEntryNotificationTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $creator->id,
             'creator_username' => $creatorUsername,
+            'creator_display_name' => $creatorUsername,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -133,6 +134,7 @@ class AgendaEntryNotificationTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $creator->id,
             'creator_username' => $creatorUsername,
+            'creator_display_name' => $creatorUsername,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 

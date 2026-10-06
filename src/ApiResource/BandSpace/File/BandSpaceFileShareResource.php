@@ -59,6 +59,6 @@ class BandSpaceFileShareResource
     public bool $isActive = true;
     public \DateTimeInterface $creationDatetime;
 
-    /** @var array{id: string, username: string} */
+    /** @var array{id: string, username: string, display_name: string} */
     public array $createdBy;
 }

@@ -103,7 +103,7 @@ class BandSpaceNote
     public ?int $expectedContentVersion = null;
     public bool $hasChildren = false;
 
-    /** @var array{id: string, username: string} */
+    /** @var array{id: string, username: string, display_name: string} */
     #[ApiProperty(writable: false)]
     public array $createdBy;
 

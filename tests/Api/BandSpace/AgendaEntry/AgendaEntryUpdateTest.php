@@ -73,6 +73,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -133,6 +134,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -184,6 +186,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -232,6 +235,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -276,6 +280,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -326,6 +331,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -380,6 +386,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -473,6 +480,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -635,6 +643,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -747,6 +756,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -794,6 +804,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => 'by_weekday',
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -840,6 +851,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -897,6 +909,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -961,6 +974,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
@@ -1023,6 +1037,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 

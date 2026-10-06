@@ -55,6 +55,7 @@ class TaskCreateTest extends ApiTestCase
             'due_date' => null,
             'created_by_id' => $user->id,
             'created_by_username' => $user->username,
+            'created_by_display_name' => $user->username,
             'category_id' => null,
             'category_name' => null,
             'assignees' => [],
@@ -112,12 +113,14 @@ class TaskCreateTest extends ApiTestCase
             'due_date' => '2026-04-15',
             'created_by_id' => $user->id,
             'created_by_username' => $user->username,
+            'created_by_display_name' => $user->username,
             'category_id' => $category->id,
             'category_name' => 'Logistique',
             'assignees' => [
                 [
                     'id' => $assignee->id,
                     'username' => 'assignee_user',
+                    'display_name' => 'assignee_user',
                     'profile_picture_url' => null,
                 ],
             ],

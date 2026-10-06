@@ -146,6 +146,7 @@ class FinanceAmountLimitTest extends ApiTestCase
             'scope' => 'band',
             'member_id' => null,
             'member_name' => null,
+            'member_username' => null,
             'recurrence_id' => null,
             'is_former_member' => false,
             'split_warning' => false,
@@ -451,6 +452,7 @@ class FinanceAmountLimitTest extends ApiTestCase
             'entry_id' => $entry->id,
             'member_id' => (string) $membership->id,
             'member_name' => $membership->user->username,
+            'member_username' => $membership->user->username,
             'is_former_member' => false,
             'amount' => self::CAP,
             'creation_datetime' => $split->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -520,6 +522,7 @@ class FinanceAmountLimitTest extends ApiTestCase
                 [
                     'member_id' => (string) $membership->id,
                     'name' => $membership->user->username,
+                    'username' => $membership->user->username,
                     'total' => 2 * self::CAP,
                 ],
             ],

@@ -393,6 +393,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
                     'actor' => [
                         'id' => $admin->id,
                         'username' => $admin->username,
+                        'display_name' => $admin->username,
                         'profile_picture_url' => null,
                     ],
                     'creation_datetime' => '2026-04-01T10:00:00+00:00',

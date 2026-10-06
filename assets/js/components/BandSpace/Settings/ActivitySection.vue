@@ -76,13 +76,14 @@
         >
           <Avatar
             :username="activity.actor?.username || 'Système'"
+            :display-name="activity.actor?.display_name"
             :picture-url="activity.actor?.profile_picture_url"
             size="sm"
           />
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="font-medium text-sm text-surface-700 dark:text-surface-200">
-                {{ activity.actor?.username || 'Système' }}
+                <MemberName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template>
               </span>
               <Tag
                 :value="moduleLabel(activity.module)"
@@ -127,6 +128,7 @@ import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigat
 import { useBandSpaceActivityStore } from '../../../store/bandSpace/bandSpaceActivity.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import Avatar from '../../User/Avatar.vue'
+import MemberName from '../Member/MemberName.vue'
 import { activitySentence as buildSentence } from './activitySentences.js'
 
 const route = useRoute()
@@ -163,7 +165,7 @@ const localFilters = reactive({
 const memberOptions = computed(() =>
   (settingsStore.members ?? []).map((m) => ({
     value: m.user_id,
-    label: m.username
+    label: m.display_name
   }))
 )
 

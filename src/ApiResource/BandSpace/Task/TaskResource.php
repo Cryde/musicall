@@ -103,10 +103,11 @@ class TaskResource
     public ?string $dueDate = null;
     public string $createdById;
     public string $createdByUsername;
+    public string $createdByDisplayName;
     public ?string $categoryId = null;
     public ?string $categoryName = null;
 
-    /** @var array<int, array{id: string, username: string, profile_picture_url: string|null}> */
+    /** @var array<int, array{id: string, username: string, display_name: string, profile_picture_url: string|null}> */
     public array $assignees = [];
 
     public ?\DateTimeInterface $archiveDatetime = null;
