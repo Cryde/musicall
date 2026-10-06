@@ -6,6 +6,7 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Repository\User\Relation\UserBlockRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Ramsey\Uuid\Uuid;
@@ -111,12 +112,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
      * @return int|mixed|string
      */
 
-    public function searchByUserName(string $username, int $limit = 15): mixed
+    public function searchByUserName(string $username, User $viewer, int $limit = 15): mixed
     {
         return $this->createQueryBuilder('user')
             ->where('user.username LIKE :search')
             ->andWhere(self::publiclyVisible('user'))
+            ->andWhere(UserBlockRepository::notBlockedEitherWay('user', 'viewer'))
             ->setParameter('search', $username . '%')
+            ->setParameter('viewer', $viewer)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

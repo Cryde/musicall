@@ -9,8 +9,10 @@ use App\ApiResource\Message\MessageUser;
 use App\Entity\User;
 use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Procedure\Message\MessageSenderProcedure;
+use App\Service\User\Relation\UserContactPolicy;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -23,6 +25,7 @@ class MessagePostToUserProcessor implements ProcessorInterface
         private readonly Security               $security,
         private readonly MessageSenderProcedure $messageSenderProcedure,
         private readonly MessageBuilder         $messageBuilder,
+        private readonly UserContactPolicy      $contactPolicy,
         #[Target('thread_creation')]
         private readonly RateLimiterFactoryInterface $threadCreationLimiter,
         #[Target('message_send')]
@@ -41,6 +44,10 @@ class MessagePostToUserProcessor implements ProcessorInterface
         $userIdentifier = $currentUser->getUserIdentifier();
         $this->threadCreationLimiter->create($userIdentifier)->consume()->ensureAccepted();
         $this->messageSendLimiter->create($userIdentifier)->consume()->ensureAccepted();
+
+        if (!$this->contactPolicy->canContact($currentUser, $data->recipient)) {
+            throw new AccessDeniedHttpException(UserContactPolicy::BLOCKED_MESSAGE);
+        }
 
         $message = $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content);
 

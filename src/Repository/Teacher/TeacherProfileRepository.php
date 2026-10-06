@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repository\Teacher;
 
 use App\Entity\Teacher\TeacherProfile;
+use App\Entity\User;
+use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -48,9 +50,9 @@ class TeacherProfileRepository extends ServiceEntityRepository
     /**
      * @return list<TeacherProfile>
      */
-    public function findAllWithInstruments(): array
+    public function findAllWithInstruments(?User $viewer = null): array
     {
-        return $this->createQueryBuilder('tp')
+        $queryBuilder = $this->createQueryBuilder('tp')
             ->innerJoin('tp.user', 'u')
             ->addSelect('u')
             ->leftJoin('tp.instruments', 'i')
@@ -58,9 +60,13 @@ class TeacherProfileRepository extends ServiceEntityRepository
             ->leftJoin('i.instrument', 'instr')
             ->addSelect('instr')
             ->where(UserRepository::publiclyVisible('u'))
-            ->orderBy('tp.creationDatetime', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('tp.creationDatetime', 'ASC');
+        if ($viewer instanceof User) {
+            $queryBuilder->andWhere(UserBlockRepository::notBlockedEitherWay('u', 'viewer'))
+                ->setParameter('viewer', $viewer);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function findByUsername(string $username): ?TeacherProfile

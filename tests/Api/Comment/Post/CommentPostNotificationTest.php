@@ -16,6 +16,7 @@ use App\Tests\Factory\Comment\CommentFactory;
 use App\Tests\Factory\Comment\CommentThreadFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -177,6 +178,33 @@ class CommentPostNotificationTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findAll());
+    }
+
+    public function test_a_comment_notifies_nobody_blocked_with_the_commenter_either_way(): void
+    {
+        $author = UserFactory::new()->create(['username' => 'pub_author', 'email' => 'pa@test.com']);
+        $blockedByPoster = UserFactory::new()->create(['username' => 'blocked_one', 'email' => 'blocked@test.com']);
+        $blockerOfPoster = UserFactory::new()->create(['username' => 'blocker_one', 'email' => 'blocker@test.com']);
+        $poster = UserFactory::new()->asBaseUser()->create(['username' => 'poster', 'email' => 'poster@test.com']);
+
+        $thread = CommentThreadFactory::new()->create();
+        $this->createPublicationWithThread($author, $thread);
+        CommentFactory::new(['thread' => $thread, 'author' => $blockedByPoster, 'content' => 'Premier commentaire'])->create();
+        CommentFactory::new(['thread' => $thread, 'author' => $blockerOfPoster, 'content' => 'Deuxième commentaire'])->create();
+        UserBlockFactory::new()->create(['blocker' => $poster, 'blocked' => $blockedByPoster]);
+        UserBlockFactory::new()->create(['blocker' => $blockerOfPoster, 'blocked' => $poster]);
+
+        $this->client->loginUser($poster);
+        $this->client->jsonRequest('POST', '/api/comments', [
+            'thread'  => '/api/comment_threads/' . $thread->id,
+            'content' => 'Super publication, merci !',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+        $this->assertCount(1, $notificationRepository->findForRecipient($author, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($blockedByPoster, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($blockerOfPoster, 10, 0));
     }
 
     private function createPublicationWithThread(User $author, CommentThread $thread, bool $isCourse = false): Publication

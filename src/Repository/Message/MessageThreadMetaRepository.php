@@ -8,6 +8,7 @@ use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Repository\User\Relation\UserBlockRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
@@ -181,6 +182,9 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
             ->where('message_thread_meta.user = :user')
             ->andWhere('message_thread_meta.isDeleted = 0')
             ->andWhere('thread.bandSpace IS NULL OR membership.id IS NOT NULL')
+            // A conversation with somebody this user blocked is hidden, not deleted: unblocking
+            // brings it back, and a report can still point at it (#1117).
+            ->andWhere(UserBlockRepository::threadNotHiddenBy('thread', 'user'))
             ->orderBy('last_message.creationDatetime', 'DESC')
             // The tiebreak, and it has to be something every conversation has: `participant.username`
             // alone is null for a channel, which leaves the database to order those rows however it

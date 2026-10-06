@@ -12,6 +12,7 @@ use App\Event\PublicationCommentedEvent;
 use App\Repository\Comment\CommentRepository;
 use App\Repository\PublicationRepository;
 use App\Service\Notification\NotificationCreator;
+use App\Service\User\Relation\UserContactPolicy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
@@ -30,6 +31,7 @@ readonly class PublicationCommentedListener
         private NotificationCreator $notificationCreator,
         private PublicationRepository $publicationRepository,
         private CommentRepository $commentRepository,
+        private UserContactPolicy $contactPolicy,
         private LoggerInterface $logger,
     ) {
     }
@@ -56,7 +58,10 @@ readonly class PublicationCommentedListener
                 $candidates[] = $comment->parent->author;
             }
 
-            $recipients = array_filter($candidates, static fn (User $user): bool => (string) $user->id !== $actorId);
+            $recipients = $this->contactPolicy->withoutBlocked(
+                $actor,
+                array_filter($candidates, static fn (User $user): bool => (string) $user->id !== $actorId),
+            );
             if ($recipients === []) {
                 return;
             }

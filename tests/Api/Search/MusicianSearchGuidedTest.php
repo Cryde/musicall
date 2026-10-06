@@ -13,6 +13,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Range;
@@ -215,6 +216,36 @@ class MusicianSearchGuidedTest extends ApiTestCase
      * @param list<Style> $styles
      * @param array{latitude: string, longitude: string} $point
      */
+    public function test_users_blocked_either_way_are_left_out(): void
+    {
+        // #1117: whoever placed the block, neither finds the other.
+        $drum = InstrumentFactory::new()->asDrum()->create();
+        $rock = StyleFactory::new()->asRock()->create();
+        $visible = $this->announce('visible', $drum, [$rock], 'Bruxelles', self::BRUSSELS);
+        $blockedByViewer = $this->announce('bloque', $drum, [$rock], 'Bruxelles', self::BRUSSELS);
+        $blockingViewer = $this->announce('bloqueur', $drum, [$rock], 'Bruxelles', self::BRUSSELS);
+        $viewer = UserFactory::new()->asBaseUser()->create(['username' => 'viewer', 'email' => 'viewer@test.com']);
+        UserBlockFactory::new()->create(['blocker' => $viewer, 'blocked' => $blockedByViewer->author]);
+        UserBlockFactory::new()->create(['blocker' => $blockingViewer->author, 'blocked' => $viewer]);
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/musicians/search', ['type' => '2', 'radius' => '25'] + self::BRUSSELS);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AnnounceMusician',
+            '@id' => '/api/musicians/search',
+            '@type' => 'Collection',
+            'totalItems' => 12,
+            'member' => [$this->member($visible, 'visible', 'Bruxelles', [['@type' => 'Style', 'name' => 'Rock']], 0.0)],
+            'view' => [
+                '@id' => '/api/musicians/search?latitude=50.8503&longitude=4.3517&radius=25&type=2',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => $this->searchTemplate(),
+        ]);
+    }
+
     private function announce(string $username, Instrument $instrument, array $styles, string $city, array $point): MusicianAnnounce
     {
         return MusicianAnnounceFactory::new()

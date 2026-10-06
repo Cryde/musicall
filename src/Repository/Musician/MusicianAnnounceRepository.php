@@ -5,6 +5,7 @@ namespace App\Repository\Musician;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
 use App\Model\Search\MusicianSearch;
+use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -38,7 +39,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
      *
      * @return MusicianAnnounce[]
      */
-    public function findLastAnnounces(int $limit, ?int $type = null): array
+    public function findLastAnnounces(int $limit, ?int $type = null, ?User $viewer = null): array
     {
         $queryBuilder = $this->createQueryBuilder('announce')
             ->addSelect('instrument')
@@ -49,6 +50,10 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             ->setMaxResults($limit);
         if ($type !== null) {
             $queryBuilder->andWhere('announce.type = :type')->setParameter('type', $type);
+        }
+        if ($viewer instanceof User) {
+            $queryBuilder->andWhere(UserBlockRepository::notBlockedEitherWay('announce_author', 'viewer'))
+                ->setParameter('viewer', $viewer);
         }
         $announces = $queryBuilder->getQuery()->getResult();
 
@@ -297,6 +302,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
 
         if ($currentUser instanceof \App\Entity\User) {
             $qb->andWhere('musician_announce.author != :current_user')
+                ->andWhere(UserBlockRepository::notBlockedEitherWay('author', 'current_user'))
                 ->setParameter('current_user', $currentUser);
         }
 

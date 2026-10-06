@@ -7,11 +7,13 @@ namespace App\Tests\Api\User;
 use App\Entity\Publication;
 use App\Entity\User;
 use App\Repository\User\DeviceTokenRepository;
+use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\User\DeviceTokenFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -80,6 +82,9 @@ class DeleteAccountTest extends ApiTestCase
         ]);
         DeviceTokenFactory::new()->create(['user' => $user]);
         $someoneElsesDevice = DeviceTokenFactory::new()->create();
+        UserBlockFactory::new()->create(['blocker' => $user]);
+        UserBlockFactory::new()->create(['blocked' => $user]);
+        $someoneElsesBlock = UserBlockFactory::new()->create();
 
         $realUser = $user;
         $userId = $realUser->id;
@@ -119,6 +124,9 @@ class DeleteAccountTest extends ApiTestCase
         $this->assertSame([], $deviceTokens->findTokensForUser($deletedUser));
         $this->assertSame(1, $deviceTokens->count());
         $this->assertSame([$someoneElsesDevice->token], $deviceTokens->findTokensForUser($someoneElsesDevice->user));
+        // Their blocks go, both ways; other people's stay
+        $blocks = static::getContainer()->get(UserBlockRepository::class)->findAll();
+        $this->assertSame([$someoneElsesBlock->id], array_map(static fn ($block) => $block->id, $blocks));
     }
 
     public function test_delete_account_oauth_user_no_password(): void

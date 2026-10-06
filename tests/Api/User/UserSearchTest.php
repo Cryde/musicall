@@ -4,6 +4,7 @@ namespace App\Tests\Api\User;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -58,6 +59,37 @@ class UserSearchTest extends ApiTestCase
             'email' => 'deleted@email.com',
             'deletionDatetime' => new \DateTimeImmutable(),
         ]);
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/users/search?search=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSearch',
+            '@id' => '/api/users/search',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user_searches/' . $user1->id,
+                    '@type' => 'UserSearch',
+                    'id' => $user1->id,
+                    'username' => 'test1',
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/users/search?search=test',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_users_search_leaves_out_users_blocked_either_way(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'test1', 'email' => 'base_user1@email.com']);
+        $blockedByMe = UserFactory::new()->asBaseUser()->create(['username' => 'test_blocked', 'email' => 'blocked@email.com']);
+        $blockingMe = UserFactory::new()->asBaseUser()->create(['username' => 'test_blocker', 'email' => 'blocker@email.com']);
+        UserBlockFactory::new()->create(['blocker' => $user1, 'blocked' => $blockedByMe]);
+        UserBlockFactory::new()->create(['blocker' => $blockingMe, 'blocked' => $user1]);
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/users/search?search=test');
