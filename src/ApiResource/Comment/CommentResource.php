@@ -42,7 +42,7 @@ class CommentResource
 
     public ?int $parentId = null;
 
-    /** @var array{id: string, username: string, profile_picture_url: string|null, deletion_datetime: string|null} */
+    /** @var array{id: string, username: string, display_name: string, profile_picture_url: string|null, deletion_datetime: string|null} */
     public array $author;
 
     public string $content;

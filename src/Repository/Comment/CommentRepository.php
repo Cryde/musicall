@@ -19,6 +19,26 @@ class CommentRepository extends ServiceEntityRepository
     }
 
     /**
+     * A thread's comments with what each row renders: the author, their profile (#1118, for the name)
+     * and their picture. Left lazy, a thread of fifty comments costs over a hundred queries.
+     *
+     * @return Comment[]
+     */
+    public function findByThreadIdWithAuthors(int $threadId): array
+    {
+        return $this->createQueryBuilder('comment')
+            ->innerJoin('comment.author', 'author')
+            ->innerJoin('author.profile', 'author_profile')
+            ->leftJoin('author.profilePicture', 'author_picture')
+            ->addSelect('author', 'author_profile', 'author_picture')
+            ->where('comment.thread = :thread')
+            ->setParameter('thread', $threadId)
+            ->orderBy('comment.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Distinct authors of every comment in a thread, as User entities (single query).
      *
      * ORM 3 forbids selecting a joined alias alone (`SELECT author ... JOIN comment.author author`),
