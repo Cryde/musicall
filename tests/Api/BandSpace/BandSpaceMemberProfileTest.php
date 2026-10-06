@@ -13,6 +13,7 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Validator\User\DisplayNameValidator;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -230,6 +231,130 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             'type' => '/validation_errors/d94b19cc-114f-4f44-9cc4-4138e80a87b9',
             'title' => 'An error occurred',
             'description' => 'stage_name: Le nom de scène ne peut pas dépasser 60 caractères',
+        ]);
+    }
+
+    public function test_a_stage_name_cannot_be_another_users_username(): void
+    {
+        [$user, $bandSpace, $membership] = $this->seedSelf();
+        UserFactory::new()->asAdminUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['stage_name' => 'user_admin'],
+            self::HEADERS,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . DisplayNameValidator::USERNAME_TAKEN_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'stage_name',
+                    'message' => "Ce nom est le nom d'utilisateur d'un autre membre",
+                    'code' => DisplayNameValidator::USERNAME_TAKEN_ERROR,
+                ],
+            ],
+            'detail' => "stage_name: Ce nom est le nom d'utilisateur d'un autre membre",
+            'type' => '/validation_errors/' . DisplayNameValidator::USERNAME_TAKEN_ERROR,
+            'title' => 'An error occurred',
+            'description' => "stage_name: Ce nom est le nom d'utilisateur d'un autre membre",
+        ]);
+    }
+
+    /** The name belongs to the member, not to the admin editing it. */
+    public function test_an_admin_may_not_give_a_member_the_admins_username(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $member = UserFactory::new()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['stage_name' => 'user_admin'],
+            self::HEADERS,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . DisplayNameValidator::USERNAME_TAKEN_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'stage_name',
+                    'message' => "Ce nom est le nom d'utilisateur d'un autre membre",
+                    'code' => DisplayNameValidator::USERNAME_TAKEN_ERROR,
+                ],
+            ],
+            'detail' => "stage_name: Ce nom est le nom d'utilisateur d'un autre membre",
+            'type' => '/validation_errors/' . DisplayNameValidator::USERNAME_TAKEN_ERROR,
+            'title' => 'An error occurred',
+            'description' => "stage_name: Ce nom est le nom d'utilisateur d'un autre membre",
+        ]);
+    }
+
+    public function test_an_admin_may_give_a_member_their_own_username_as_stage_name(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $member = UserFactory::new()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['stage_name' => 'Bassiste'],
+            self::HEADERS,
+        );
+
+        $this->assertResponseIsSuccessful();
+        $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
+            ->findOneByIdAndBandSpace((string) $membership->id, $bandSpace);
+        $this->assertSame('Bassiste', $reloaded?->stageName);
+    }
+
+    public function test_a_stage_name_with_invisible_characters_is_refused(): void
+    {
+        [$user, $bandSpace, $membership] = $this->seedSelf();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['stage_name' => "Sam\u{202E}"],
+            self::HEADERS,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . DisplayNameValidator::FORBIDDEN_CHARACTER_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'stage_name',
+                    'message' => 'Ce nom contient des caractères non autorisés',
+                    'code' => DisplayNameValidator::FORBIDDEN_CHARACTER_ERROR,
+                ],
+            ],
+            'detail' => 'stage_name: Ce nom contient des caractères non autorisés',
+            'type' => '/validation_errors/' . DisplayNameValidator::FORBIDDEN_CHARACTER_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'stage_name: Ce nom contient des caractères non autorisés',
         ]);
     }
 

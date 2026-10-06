@@ -69,6 +69,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
+     * Whether $name is the username of somebody other than $owner, case insensitive as the column's
+     * collation compares. A chosen name equal to another user's handle passes for that user (#1118).
+     */
+    public function isUsernameOfAnotherUser(string $name, ?User $owner): bool
+    {
+        $namesake = $this->findOneBy(['username' => $name]);
+
+        return $namesake instanceof User && $namesake->id !== $owner?->id;
+    }
+
+    /**
      * @throws NonUniqueResultException
      */
     public function loadUserByIdentifier(string $identifier): ?User
@@ -479,5 +490,21 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             'total' => $total,
             'levels' => $levels,
         ];
+    }
+
+    /**
+     * Every account that chose a profile name, with the profile, for the display name audit.
+     *
+     * @return User[]
+     */
+    public function findWithProfileName(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->innerJoin('u.profile', 'p')
+            ->addSelect('p')
+            ->where('p.displayName IS NOT NULL')
+            ->orderBy('u.username', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

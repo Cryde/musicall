@@ -5,7 +5,9 @@ namespace App\ApiResource\BandSpace;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Service\User\DisplayNameRules;
 use App\State\Processor\BandSpace\BandSpaceMemberProfileUpdateProcessor;
+use App\Validator\User\DisplayName;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -38,11 +40,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 class BandSpaceMemberProfile
 {
     /**
-     * Capped at the column length. Blank is not "no name", it is the username fallback, which the
-     * processor stores as null so there is one representation of "nothing chosen".
+     * Capped at the column length. Normalized on the way in: blank is not "no name", it is the
+     * fallback, so it becomes null and "nothing chosen" has one representation.
      */
     #[Assert\Length(max: 60, maxMessage: 'Le nom de scène ne peut pas dépasser {{ limit }} caractères')]
-    public ?string $stageName = null;
+    #[DisplayName(owner: DisplayName::OWNER_MEMBERSHIP)]
+    public ?string $stageName = null {
+        set(?string $value) {
+            $this->stageName = DisplayNameRules::normalize($value);
+        }
+    }
 
     /**
      * Six is well past a real line-up entry and stops a rider line growing without limit. The ids

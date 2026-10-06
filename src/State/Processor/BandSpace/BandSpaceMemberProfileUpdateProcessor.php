@@ -76,13 +76,9 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
         $changed = false;
 
         if (array_key_exists('stage_name', $payload)) {
-            // Blank collapses to null, so "no stage name chosen" has one representation and
-            // displayName() has one thing to test.
-            $stageName = $data->stageName === null ? null : trim($data->stageName);
-            $stageName = $stageName === '' ? null : $stageName;
-
-            if ($membership->stageName !== $stageName) {
-                $membership->stageName = $stageName;
+            // Already normalized by the input, blank included (see BandSpaceMemberProfile).
+            if ($membership->stageName !== $data->stageName) {
+                $membership->stageName = $data->stageName;
                 $changed = true;
             }
         }

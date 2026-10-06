@@ -8,8 +8,10 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Service\User\DisplayNameRules;
 use App\State\Processor\User\Profile\UserProfileEditProcessor;
 use App\State\Provider\User\Profile\UserProfileEditProvider;
+use App\Validator\User\DisplayName;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
@@ -36,8 +38,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class UserProfileEdit
 {
+    /** Normalized on the way in, so the rules check what will be stored (#1118). */
     #[Assert\Length(max: 100, maxMessage: 'Le nom d\'affichage ne doit pas dépasser {{ limit }} caractères')]
-    public ?string $displayName = null;
+    #[DisplayName]
+    public ?string $displayName = null {
+        set(?string $value) {
+            $this->displayName = DisplayNameRules::normalize($value);
+        }
+    }
 
     #[Assert\Length(max: 2000, maxMessage: 'La bio ne doit pas dépasser {{ limit }} caractères')]
     public ?string $bio = null;

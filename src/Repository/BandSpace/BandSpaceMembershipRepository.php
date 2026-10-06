@@ -305,4 +305,20 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
 
         return $names;
     }
+
+    /**
+     * Every membership that chose a stage name, with its user, for the display name audit.
+     *
+     * @return BandSpaceMembership[]
+     */
+    public function findWithStageName(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.user', 'u')
+            ->addSelect('u')
+            ->where('m.stageName IS NOT NULL')
+            ->orderBy('u.username', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
