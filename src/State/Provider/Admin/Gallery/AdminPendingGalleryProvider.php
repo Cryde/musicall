@@ -29,7 +29,7 @@ readonly class AdminPendingGalleryProvider implements ProviderInterface
     {
         return array_map(
             fn (Gallery $entity): GalleryResource => $this->galleryBuilder->buildResource($entity),
-            $this->galleryRepository->findBy(['status' => Gallery::STATUS_PENDING]),
+            $this->galleryRepository->findPendingWithAuthors(),
         );
     }
 }

@@ -277,6 +277,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->deletionDatetime instanceof \DateTimeImmutable;
     }
 
+    /** Serialized as `display_name` wherever a payload embeds the User itself rather than a DTO. */
+    #[Groups([GalleryResource::LIST])]
+    public function getDisplayName(): string
+    {
+        return $this->publicName();
+    }
+
     /** What the site calls this user next to their username (#1118). Reads the profile, which is lazy. */
     public function publicName(): string
     {

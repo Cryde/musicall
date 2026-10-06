@@ -89,7 +89,7 @@
           {{ gallery.title }}
         </h1>
         <div class="text-sm text-surface-500 dark:text-surface-400">
-          Photo de <strong>{{ gallery.author_username }}</strong>
+          Photo de <strong>{{ gallery.author_display_name ?? gallery.author_username }}</strong>
         </div>
         <p v-if="gallery.description" class="text-surface-600 dark:text-surface-300 mt-2">
           {{ gallery.description }}

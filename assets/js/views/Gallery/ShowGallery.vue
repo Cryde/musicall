@@ -16,11 +16,13 @@
           </h1>
           <div class="text-sm text-surface-500 dark:text-surface-400">
             Photo de
-            <router-link
+            <UserName
               v-if="galleryStore.gallery.author?.username && !galleryStore.gallery.author.deletion_datetime"
+              :username="galleryStore.gallery.author.username"
+              :display-name="galleryAuthorName"
               :to="{ name: 'app_user_public_profile', params: { username: galleryStore.gallery.author.username } }"
               class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-            >{{ galleryAuthorName }}</router-link>
+            />
             <span v-else-if="galleryStore.gallery.author" class="font-semibold text-surface-500">{{ galleryAuthorName }}</span>
             <span v-if="galleryStore.gallery.publicationDatetime">
               le {{ formatDate(galleryStore.gallery.publicationDatetime) }}
@@ -111,6 +113,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ShareButton from '../../components/ShareButton.vue'
+import UserName from '../../components/User/UserName.vue'
 import { displayName } from '../../helper/user/displayName.js'
 import { useGalleryStore } from '../../store/gallery/gallery.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
