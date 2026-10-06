@@ -278,7 +278,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /** Serialized as `display_name` wherever a payload embeds the User itself rather than a DTO. */
-    #[Groups([GalleryResource::LIST])]
+    #[Groups([GalleryResource::LIST, MessageResource::LIST, MessageResource::ITEM, MessageThreadMetaResource::LIST])]
     public function getDisplayName(): string
     {
         return $this->publicName();

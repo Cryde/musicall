@@ -15,7 +15,7 @@
           :to="{ name: 'app_messages', params: { threadId: threadMeta.thread.id } }"
           class="flex items-center gap-3 py-2.5 rounded-md hover:bg-surface-50 dark:hover:bg-surface-800/60"
         >
-          <Avatar :label="initialOf(threadMeta)" :style="getAvatarStyle(nameOf(threadMeta))" shape="circle" aria-hidden="true" />
+          <Avatar :label="initialOf(threadMeta)" :style="getAvatarStyle(colourKeyOf(threadMeta))" shape="circle" aria-hidden="true" />
           <span class="flex flex-col min-w-0 flex-1">
             <span class="text-sm truncate text-surface-900 dark:text-surface-0" :class="threadMeta.unread_count > 0 ? 'font-bold' : 'font-medium'">
               {{ nameOf(threadMeta) }}
@@ -34,6 +34,7 @@
 <script setup>
 import Avatar from 'primevue/avatar'
 import { computed, onMounted } from 'vue'
+import { displayName } from '../../../helper/user/displayName.js'
 import { useMessageStore } from '../../../store/message/message.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
@@ -54,7 +55,17 @@ onMounted(() => {
 // A Band Space channel is named after its band, a conversation after the other person.
 function nameOf(threadMeta) {
   if (threadMeta.thread.band_space_name) return threadMeta.thread.band_space_name
-  return messageStore.getOtherParticipant(threadMeta)?.username ?? 'Conversation'
+  const participant = messageStore.getOtherParticipant(threadMeta)
+  return participant ? displayName(participant) : 'Conversation'
+}
+
+// Keyed on the username rather than the shown name, so a colour survives a change of name (#1118).
+function colourKeyOf(threadMeta) {
+  return (
+    threadMeta.thread.band_space_name ??
+    messageStore.getOtherParticipant(threadMeta)?.username ??
+    'Conversation'
+  )
 }
 
 function initialOf(threadMeta) {
