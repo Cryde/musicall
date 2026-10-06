@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\User;
 
+use App\Entity\RefreshToken;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
+use App\Tests\JwtPayload;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -36,6 +38,54 @@ class UserChangeUsernameTest extends ApiTestCase
         $this->assertSame('new_username', $updatedUser->username);
         $this->assertNotSame($oldUsername, $updatedUser->username);
         $this->assertNotNull($updatedUser->usernameChangedDatetime);
+    }
+
+    /**
+     * The member's other sessions follow the rename (#1025): the phone and the second browser hold
+     * refresh tokens stored under the old username, which nothing resolves any more after it.
+     */
+    public function test_every_session_follows_the_rename(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'old_name', 'email' => 'old.name@example.com']);
+        $someoneElse = UserFactory::new()->asBaseUser()->create(['username' => 'someone_else', 'email' => 'someone@example.com']);
+        $this->seedRefreshToken('laptop-token', $user);
+        $this->seedRefreshToken('phone-token', $user);
+        $this->seedRefreshToken('other-member-token', $someoneElse);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'new_name'], self::SERVER_PARAMS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('new_name', $this->findRefreshToken('laptop-token')?->getUsername());
+        $this->assertSame('new_name', $this->findRefreshToken('phone-token')?->getUsername());
+        $this->assertSame('someone_else', $this->findRefreshToken('other-member-token')?->getUsername());
+        $this->assertSame(0, $this->getEntityManager()->getRepository(RefreshToken::class)->count(['username' => 'old_name']));
+        // The browser keeps its refresh token, now under the new name: only the JWT is reissued.
+        $cookieNames = array_map(static fn ($cookie): string => $cookie->getName(), $this->client->getResponse()->headers->getCookies());
+        sort($cookieNames);
+        $this->assertSame(['jwt_hp', 'jwt_s'], $cookieNames);
+    }
+
+    /** A device that sends no cookie, the app, still refreshes after a rename made elsewhere. */
+    public function test_another_device_still_refreshes_after_the_rename(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'old_name', 'email' => 'old.name@example.com']);
+        $this->seedRefreshToken('phone-token', $user);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'new_name'], self::SERVER_PARAMS);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        // The phone, unauthenticated, with only its refresh token.
+        $this->client->getCookieJar()->clear();
+        $this->client->jsonRequest('POST', '/api/native/token/refresh', ['refresh_token' => 'phone-token']);
+
+        $this->assertResponseIsSuccessful();
+        $body = json_decode((string) $this->client->getResponse()->getContent(), true);
+        $keys = array_keys($body);
+        sort($keys);
+        $this->assertSame(['mercure_authorization', 'refresh_token', 'token'], $keys);
+        $this->assertSame('new_name', JwtPayload::of($body['token'])['username']);
     }
 
     public function test_change_username_not_logged(): void
@@ -215,5 +265,18 @@ class UserChangeUsernameTest extends ApiTestCase
     private function getEntityManager(): EntityManagerInterface
     {
         return self::getContainer()->get(EntityManagerInterface::class);
+    }
+
+    private function seedRefreshToken(string $value, object $user): void
+    {
+        $this->getEntityManager()->persist(RefreshToken::createForUserWithTtl($value, $user, 3600));
+        $this->getEntityManager()->flush();
+    }
+
+    private function findRefreshToken(string $value): ?RefreshToken
+    {
+        $this->getEntityManager()->clear();
+
+        return $this->getEntityManager()->getRepository(RefreshToken::class)->findOneBy(['refreshToken' => $value]);
     }
 }
