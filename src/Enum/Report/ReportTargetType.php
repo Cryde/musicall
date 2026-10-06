@@ -29,6 +29,21 @@ enum ReportTargetType: string
         return ctype_digit($id) && strlen(ltrim($id, '0')) <= 18 ? (string) (int) $id : $id;
     }
 
+    /**
+     * The snapshot key that names the target to its reporter (#1125): whose profile, which topic. A
+     * private conversation has none, so nothing of it travels further than the report itself.
+     */
+    public function labelKey(): ?string
+    {
+        return match ($this) {
+            self::User, self::Announce, self::ProfileMedia => 'username',
+            self::ForumPost => 'topic_title',
+            self::Comment, self::Publication => 'publication_title',
+            self::BandChatMessage => 'band_space_name',
+            self::Message => null,
+        };
+    }
+
     /** @return list<string> for Assert\Choice */
     public static function values(): array
     {

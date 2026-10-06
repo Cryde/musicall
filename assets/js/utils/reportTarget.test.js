@@ -8,6 +8,7 @@ import {
   reportLiveState,
   reportOutcomeLabel,
   reportReasonLabel,
+  reportSubject,
   reportTargetTypeLabel
 } from './reportTarget.js'
 
@@ -29,6 +30,27 @@ describe('labels', () => {
     assert.equal(reportLiveState(null), null)
     assert.equal(reportOutcomeLabel('account_suspended'), 'Compte suspendu')
     assert.equal(reportOutcomeLabel(null), null)
+  })
+})
+
+describe('reportSubject', () => {
+  it('names the target with the label the server kept', () => {
+    assert.equal(reportSubject('user', 'bob'), 'le profil de bob')
+    assert.equal(
+      reportSubject('forum_post', 'Ampli à lampes'),
+      'un message du sujet « Ampli à lampes »'
+    )
+    assert.equal(reportSubject('publication', 'Ma chronique'), 'la publication « Ma chronique »')
+    assert.equal(
+      reportSubject('band_chat_message', 'Les Cactus'),
+      'un message de la discussion du groupe Les Cactus'
+    )
+  })
+
+  it('stays general without a label, and never names a private conversation', () => {
+    assert.equal(reportSubject('comment', null), 'un commentaire')
+    assert.equal(reportSubject('message', 'ignored'), 'un message privé')
+    assert.equal(reportSubject('new_type', 'x'), 'un contenu')
   })
 })
 

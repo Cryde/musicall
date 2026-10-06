@@ -6,6 +6,7 @@ use App\Entity\Report\Report;
 use App\Entity\User;
 use App\Enum\Report\ReportOutcome;
 use App\Enum\Report\ReportTargetType;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
@@ -103,23 +104,50 @@ class ReportRepository extends ServiceEntityRepository
     }
 
     /**
-     * Closes every pending report on one target at once, since a moderator decides about the content,
-     * not about one report of it. DQL rather than loading each: a report has no lifecycle listener and
-     * only these columns change. Reports already in memory are not refreshed by it.
+     * Every pending report on one target, with its reporter, since a moderator decides about the
+     * content, not about one report of it.
+     *
+     * @return list<Report>
      */
-    public function resolvePendingForTarget(ReportTargetType $targetType, string $targetId, User $moderator, ReportOutcome $outcome): void
+    public function findPendingForTarget(ReportTargetType $targetType, string $targetId): array
     {
+        return $this->createQueryBuilder('r')
+            ->addSelect('reporter')
+            ->join('r.reporter', 'reporter')
+            ->where('r.targetType = :targetType AND r.targetId = :targetId AND r.resolutionDatetime IS NULL')
+            ->setParameter('targetType', $targetType->value)
+            ->setParameter('targetId', $targetId)
+            ->orderBy('r.creationDatetime', 'ASC')
+            ->getQuery()
+            // Locked until the decision commits, so a second moderator deciding at the same moment
+            // waits, then finds nothing pending and tells nobody a second time. Needs a transaction.
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->getResult();
+    }
+
+    /**
+     * Closes exactly these reports, so the ones whose reporters are told are the ones closed: a report
+     * filed while the moderator was deciding stays pending. DQL rather than flushing each: a report has
+     * no lifecycle listener and only these columns change. The entities in memory are not refreshed.
+     *
+     * @param list<Report> $reports
+     */
+    public function resolve(array $reports, User $moderator, ReportOutcome $outcome): void
+    {
+        if ($reports === []) {
+            return;
+        }
+
         $this->getEntityManager()
             ->createQuery(<<<'DQL'
                 UPDATE App\Entity\Report\Report r
                 SET r.resolutionDatetime = :now, r.resolvedBy = :moderator, r.outcome = :outcome
-                WHERE r.targetType = :targetType AND r.targetId = :targetId AND r.resolutionDatetime IS NULL
+                WHERE r.id IN (:ids) AND r.resolutionDatetime IS NULL
                 DQL)
             ->setParameter('now', new \DateTimeImmutable(), 'datetime_immutable')
             ->setParameter('moderator', $moderator)
             ->setParameter('outcome', $outcome->value)
-            ->setParameter('targetType', $targetType->value)
-            ->setParameter('targetId', $targetId)
+            ->setParameter('ids', array_map(static fn (Report $report): string => (string) $report->id, $reports))
             ->execute();
     }
 }

@@ -87,4 +87,13 @@ class Report
     {
         return !$this->resolutionDatetime instanceof DateTimeImmutable;
     }
+
+    /** What the reporter is told the report was about (#1125), read from the snapshot taken then. */
+    public function targetLabel(): ?string
+    {
+        $key = $this->targetType->labelKey();
+        $label = $key === null ? null : ($this->snapshotContext[$key] ?? null);
+
+        return is_string($label) && $label !== '' ? $label : null;
+    }
 }

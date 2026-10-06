@@ -151,6 +151,10 @@ export default createRouter({
     if (to.name === 'app_band_space_presentation' && to.query.module) {
       return { el: '#band-space-demo', top: 24 }
     }
+    // A report decision in the bell leads to how to contest it (#1125)
+    if (to.name === 'app_terms' && to.hash) {
+      return { el: to.hash, top: 24 }
+    }
     if (keepsScrollPosition(to, from)) {
       return false
     }
