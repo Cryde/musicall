@@ -41,8 +41,16 @@
             <i class="pi pi-eye text-xs" />
             {{ publication.view_count }} vues
           </span>
-          <div class="ml-auto">
+          <div class="ml-auto flex items-center gap-1">
             <VoteButtons :slug="publication.slug" />
+            <ReportButton
+              v-if="publication.id"
+              target-type="publication"
+              :target-id="String(publication.id)"
+              :author-username="publication.author.username"
+              aria-label="Signaler cette publication"
+              icon-only
+            />
           </div>
         </div>
       </header>
@@ -149,6 +157,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import Breadcrumb from '../../views/Global/Breadcrumb.vue'
 import CommentThread from '../Comment/CommentThread.vue'
+import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
 import PublicationShareBar from './PublicationShareBar.vue'
 import LatestPublicationsWidget from './Sidebar/LatestPublicationsWidget.vue'

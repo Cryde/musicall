@@ -158,6 +158,16 @@
               >
                 {{ absoluteDate(message.creation_datetime) }}
               </time>
+              <!-- Revealed on hover from `lg` up only, so a touch screen can still reach it. -->
+              <button
+                v-if="!isSender(message) && !message.is_deleted"
+                type="button"
+                class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
+                aria-label="Signaler ce message"
+                @click="openReport(message)"
+              >
+                <i class="pi pi-flag text-xs" aria-hidden="true" />
+              </button>
             </div>
             <!-- A sibling of the bubble, never markup injected into its `v-html`: the preview is
                  built by the client from the link, not sent by the server (#975). -->
@@ -207,6 +217,12 @@
         </div>
       </template>
     </div>
+
+    <ReportDialog
+      v-model:visible="isReportVisible"
+      :target-type="isCurrentChannel ? 'band_chat_message' : 'message'"
+      :target-id="reportedMessageId"
+    />
   </div>
 
   <div v-else class="hidden md:flex h-full items-center justify-center text-surface-500 dark:text-surface-400 p-4 text-center">
@@ -236,6 +252,8 @@ import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
+import { idFromIri } from '../../utils/reportTarget.js'
+import ReportDialog from '../Report/ReportDialog.vue'
 import UserName from '../User/UserName.vue'
 import MusicLinkPreview from './MusicLinkPreview.vue'
 
@@ -251,6 +269,8 @@ const content = ref('')
 const messagesContainer = ref(null)
 const messageInput = ref(null)
 const sendError = ref('')
+const isReportVisible = ref(false)
+const reportedMessageId = ref(null)
 
 const currentThread = computed(() => messageStore.currentThread)
 const isCurrentChannel = computed(() => isChannel(currentThread.value))
@@ -273,6 +293,12 @@ const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_dat
 
 function isSender(message) {
   return message.author?.username === securityStore.user?.username
+}
+
+// The list serializes a message by its IRI only, so the id is read off it.
+function openReport(message) {
+  reportedMessageId.value = message.id ?? idFromIri(message['@id'])
+  isReportVisible.value = true
 }
 
 function sendToChannel(content) {

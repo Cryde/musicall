@@ -48,6 +48,14 @@ export const ADMIN_MODULES = [
     color: '#f97316'
   },
   {
+    key: 'reports',
+    label: 'Signalements',
+    icon: 'pi-flag',
+    route: 'admin_reports_index',
+    description: 'Contenus et comptes signalés par les membres',
+    color: '#ef4444'
+  },
+  {
     key: 'users',
     label: 'Utilisateurs',
     icon: 'pi-users',

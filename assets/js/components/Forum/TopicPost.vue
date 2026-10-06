@@ -111,6 +111,13 @@
                 :aria-label="`Citer le message de ${creatorName}`"
                 @click="handleQuote"
               />
+              <ReportButton
+                target-type="forum_post"
+                :target-id="String(post.id)"
+                :author-id="post.creator.id"
+                :aria-label="`Signaler le message de ${creatorName}`"
+                class="ml-auto"
+              />
             </div>
           </template>
         </div>
@@ -144,6 +151,7 @@ import { formatDate } from '../../utils/date.js'
 import { userHandle } from '../../utils/userHandle.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../Message/SendMessageModal.vue'
+import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
 import MessageEditor from './MessageEditor.vue'
 

@@ -206,6 +206,15 @@
                   >
                     <i class="pi pi-check-square text-xs" aria-hidden="true" />
                   </button>
+                  <button
+                    v-if="!isMine(message) && !message.is_deleted"
+                    type="button"
+                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
+                    aria-label="Signaler ce message"
+                    @click="openReport(message)"
+                  >
+                    <i class="pi pi-flag text-xs" aria-hidden="true" />
+                  </button>
                   <!-- Hidden until hover only from `lg` up, the treatment the task thread already uses
                        for its own row controls: a touch screen has no hover, so a pencil that only
                        appears on one would be unreachable. Opacity rather than display, so revealing it
@@ -288,6 +297,8 @@
         />
       </div>
     </template>
+
+    <ReportDialog v-model:visible="isReportVisible" target-type="band_chat_message" :target-id="reportedMessageId" />
   </div>
 </template>
 
@@ -310,6 +321,7 @@ import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
+import ReportDialog from '../../Report/ReportDialog.vue'
 import UserName from '../../User/UserName.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageImage from './ChatMessageImage.vue'
@@ -330,6 +342,8 @@ const confirm = useConfirm()
 const toast = useToast()
 const { isAdmin } = useBandSpaceNavigation()
 const messagesContainer = ref(null)
+const isReportVisible = ref(false)
+const reportedMessageId = ref(null)
 
 const messageBlocks = computed(() =>
   groupMessages(chatStore.messages, (message) => message.author_id)
@@ -358,6 +372,11 @@ const editingId = ref(null)
 const editContent = ref('')
 const isSaving = ref(false)
 const saveError = ref('')
+
+function openReport(message) {
+  reportedMessageId.value = message.id
+  isReportVisible.value = true
+}
 
 function canDelete(message) {
   return canDeleteChatMessage(message, isMine(message), isAdmin.value)

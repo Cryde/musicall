@@ -49,6 +49,13 @@ const items = computed(() => [
     icon: 'pi-images',
     route: 'admin_galleries_pending',
     count: notificationStore.pendingGalleries
+  },
+  {
+    key: 'pending-reports',
+    label: 'Signalements en attente',
+    icon: 'pi-flag',
+    route: 'admin_reports_index',
+    count: notificationStore.pendingReports
   }
 ])
 

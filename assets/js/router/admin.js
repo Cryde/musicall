@@ -64,6 +64,16 @@ export default {
       component: () => import('../views/Admin/Feedback/Index.vue')
     },
     {
+      name: 'admin_reports_index',
+      path: 'signalements',
+      component: () => import('../views/Admin/Report/Index.vue')
+    },
+    {
+      name: 'admin_reports_show',
+      path: 'signalements/:id',
+      component: () => import('../views/Admin/Report/Show.vue')
+    },
+    {
       name: 'admin_band_space_coming_soon',
       path: 'band-spaces',
       component: () => import('../views/Admin/ComingSoonPage.vue'),

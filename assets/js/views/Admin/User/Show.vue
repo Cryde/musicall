@@ -25,10 +25,7 @@
       <TabList>
         <Tab value="summary">Résumé</Tab>
         <Tab value="roles">Rôles</Tab>
-        <Tab value="moderation">
-          Modération
-          <ComingSoonBadge class="ml-2" />
-        </Tab>
+        <Tab value="moderation">Modération</Tab>
       </TabList>
 
       <TabPanels>
@@ -92,16 +89,57 @@
         </TabPanel>
 
         <TabPanel value="moderation">
-          <Panel header="Modération">
-            <div class="text-center py-10 flex flex-col items-center gap-3">
-              <i class="pi pi-shield text-4xl text-surface-400" aria-hidden="true" />
-              <p class="text-surface-600 dark:text-surface-400 max-w-lg">
-                Suspendre un compte ou restreindre ses actions arrivera ici. Rien n'est encore
-                décidé sur ce que « suspendu » veut dire, ni sur ce qu'il advient des contenus déjà
-                publiés, donc rien n'est encore construit.
-              </p>
+          <Panel header="Suspension">
+            <div class="flex flex-col gap-4">
+              <template v-if="user.is_suspended">
+                <div class="flex items-center gap-2">
+                  <Tag value="Compte suspendu" severity="danger" />
+                  <span v-if="user.suspension_datetime" class="text-sm text-surface-600 dark:text-surface-400">
+                    depuis le {{ formatDate(user.suspension_datetime) }}
+                  </span>
+                </div>
+                <div v-if="user.suspension_reason">
+                  <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">Motif</p>
+                  <p class="whitespace-pre-line break-words text-sm">{{ user.suspension_reason }}</p>
+                </div>
+                <div>
+                  <Button
+                    label="Lever la suspension"
+                    icon="pi pi-replay"
+                    severity="secondary"
+                    outlined
+                    :loading="isLiftingSuspension"
+                    @click="confirmLiftSuspension"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <p class="text-sm text-surface-600 dark:text-surface-400">
+                  Ce compte n'est pas suspendu. Une suspension l'empêche de se connecter et le retire
+                  des recherches, jusqu'à ce qu'elle soit levée.
+                </p>
+                <Message v-if="suspensionBlocker" severity="warn" :closable="false">
+                  {{ suspensionBlocker }}
+                </Message>
+                <div>
+                  <Button
+                    label="Suspendre le compte"
+                    icon="pi pi-ban"
+                    severity="danger"
+                    :disabled="!!suspensionBlocker"
+                    @click="showSuspendDialog = true"
+                  />
+                </div>
+              </template>
             </div>
           </Panel>
+
+          <SuspendAccountDialog
+            v-model:visible="showSuspendDialog"
+            :username="user.username"
+            :submit="(reason) => adminUserApi.suspend(user.id, reason)"
+            @suspended="handleSuspensionChanged('Compte suspendu')"
+          />
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -129,10 +167,11 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import adminUserApi from '../../../api/admin/user.js'
-import ComingSoonBadge from '../../../components/Admin/ComingSoonBadge.vue'
+import SuspendAccountDialog from '../../../components/Admin/SuspendAccountDialog.vue'
 import { GRANTABLE_ROLES } from '../../../constants/adminUser.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { formatDate } from '../../../utils/date.js'
+import { grantsAdmin } from '../../../utils/roles.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,6 +185,8 @@ const errorMessage = ref('')
 const roleError = ref('')
 const isSavingRoles = ref(false)
 const activeTab = ref('summary')
+const showSuspendDialog = ref(false)
+const isLiftingSuspension = ref(false)
 
 /**
  * The switch positions, held here rather than read straight off `user.roles`.
@@ -168,6 +209,21 @@ useTitle(() => `${user.value?.username ?? 'Utilisateur'} - Admin - MusicAll`)
 
 // The API refuses it anyway; the UI disables the switches so the refusal is not a surprise.
 const isSelf = computed(() => user.value?.username === userSecurityStore.user?.username)
+
+// The server refuses these too; saying so up front beats a refusal after typing a reason.
+const suspensionBlocker = computed(() => {
+  if (isSelf.value) {
+    return 'Vous ne pouvez pas suspendre votre propre compte.'
+  }
+  if (grantsAdmin(user.value?.roles)) {
+    return 'Un administrateur ne peut pas être suspendu.'
+  }
+  if (user.value?.is_deleted) {
+    return 'Ce compte est fermé.'
+  }
+
+  return null
+})
 
 const identityRows = computed(() => [
   { label: "Nom d'utilisateur", value: user.value.username },
@@ -264,6 +320,48 @@ async function saveRoles(roles) {
       "Les rôles ont bien été enregistrés, mais l'affichage n'a pas pu être actualisé. Rechargez la page."
   } finally {
     isSavingRoles.value = false
+  }
+}
+
+function confirmLiftSuspension() {
+  confirm.require({
+    group: 'admin-user-role',
+    header: 'Lever la suspension',
+    message: `Lever la suspension de ${user.value.username} ? Le compte pourra de nouveau se connecter.`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Annuler',
+    acceptLabel: 'Lever la suspension',
+    accept: liftSuspension
+  })
+}
+
+async function liftSuspension() {
+  isLiftingSuspension.value = true
+  try {
+    await adminUserApi.liftSuspension(user.value.id)
+    await handleSuspensionChanged('Suspension levée')
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Action impossible',
+      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      life: 4000
+    })
+  } finally {
+    isLiftingSuspension.value = false
+  }
+}
+
+async function handleSuspensionChanged(summary) {
+  toast.add({ severity: 'success', summary, life: 3000 })
+  try {
+    user.value = await adminUserApi.get(user.value.id)
+  } catch {
+    toast.add({
+      severity: 'warn',
+      summary: "L'action a bien été enregistrée, mais l'affichage n'a pas pu être actualisé.",
+      life: 5000
+    })
   }
 }
 

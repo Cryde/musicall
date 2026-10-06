@@ -76,16 +76,26 @@
         <i class="pi pi-map-marker text-xs" aria-hidden="true" />
         <span class="truncate">{{ announce.location_name }}</span>
       </span>
-      <Button
-        v-if="canContact"
-        size="small"
-        icon="pi pi-envelope"
-        label="Contacter"
-        severity="secondary"
-        text
-        :aria-label="`Contacter ${authorName}`"
-        @click="$emit('contact', announce.author)"
-      />
+      <div class="flex shrink-0 items-center gap-1">
+        <Button
+          v-if="canContact"
+          size="small"
+          icon="pi pi-envelope"
+          label="Contacter"
+          severity="secondary"
+          text
+          :aria-label="`Contacter ${authorName}`"
+          @click="$emit('contact', announce.author)"
+        />
+        <ReportButton
+          v-if="!isDeleted"
+          target-type="announce"
+          :target-id="announce.id"
+          :author-id="announce.author.id"
+          :aria-label="`Signaler l'annonce de ${authorName}`"
+          icon-only
+        />
+      </div>
     </div>
   </article>
 </template>
@@ -100,6 +110,7 @@ import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { announceHeadline, announceKindLabel, announceStyleTags } from '../../utils/homeSearch.js'
+import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
 
 /** One musician announce as the homepage shows it (#1074); `compact` is the hero's preview. */

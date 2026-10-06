@@ -31,6 +31,9 @@ function badgeCountFor(module) {
   if (module.key === 'publications') {
     return notificationStore.pendingPublications + notificationStore.pendingGalleries
   }
+  if (module.key === 'reports') {
+    return notificationStore.pendingReports
+  }
   return 0
 }
 </script>
