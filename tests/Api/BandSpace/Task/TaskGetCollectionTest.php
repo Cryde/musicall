@@ -433,6 +433,46 @@ class TaskGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_without_a_stage_name_a_member_falls_back_to_their_public_profile_name(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $creator->profile->displayName = 'Alexandre Martin';
+        $private = UserFactory::new()->asBaseUser()->create(['username' => 'crydetest', 'email' => 'crydetest@test.com']);
+        $private->profile->displayName = 'Samuel Dupont';
+        $private->profile->isPublic = false;
+        self::getContainer()->get('doctrine')->getManager()->flush();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $private])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $creator,
+            'title' => 'Imprimer les setlists',
+            'assignees' => new ArrayCollection([$private]),
+        ])->create();
+
+        $this->client->loginUser($creator);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/tasks', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->buildTaskShape($bandSpace, $creator, $task, [
+                    'created_by_display_name' => 'Alexandre Martin',
+                    // A private profile keeps its name to itself (#1118).
+                    'assignees' => [
+                        ['id' => $private->id, 'username' => 'crydetest', 'display_name' => 'crydetest', 'profile_picture_url' => null],
+                    ],
+                ]),
+            ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+        ]);
+    }
+
     public function test_get_tasks_search_matches_title(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

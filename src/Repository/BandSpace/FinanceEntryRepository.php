@@ -97,6 +97,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->join('c.bandSpace', 'bs')->addSelect('bs')
             ->leftJoin('e.member', 'm')->addSelect('m')
             ->leftJoin('m.user', 'u')->addSelect('u')
+            ->leftJoin('u.profile', 'up')->addSelect('up')
             ->where('c.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace)
             ->orderBy('e.date', 'DESC');
@@ -120,6 +121,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->join('c.bandSpace', 'bs')->addSelect('bs')
             ->leftJoin('e.member', 'm')->addSelect('m')
             ->leftJoin('m.user', 'u')->addSelect('u')
+            ->leftJoin('u.profile', 'up')->addSelect('up')
             ->where('e.id = :id')
             ->andWhere('c.bandSpace = :bandSpace')
             ->setParameter('id', $id)
@@ -313,14 +315,17 @@ class FinanceEntryRepository extends ServiceEntityRepository
                 u.username,
                 m.stage_name,
                 u.deletion_datetime,
+                p.display_name AS profile_name,
+                p.is_public AS profile_is_public,
                 COALESCE(SUM(s.amount), 0) AS total
             FROM finance_entry_split s
             JOIN finance_entry e ON s.entry_id = e.id
             JOIN finance_category c ON e.category_id = c.id
             JOIN band_space_membership m ON s.member_id = m.id
             JOIN fos_user u ON m.user_id = u.id
+            JOIN user_profile p ON u.profile_id = p.id
             WHERE c.band_space_id = :bandSpaceId{$dateFilter}
-            GROUP BY m.id, u.username, m.stage_name, u.deletion_datetime
+            GROUP BY m.id, u.username, m.stage_name, u.deletion_datetime, p.display_name, p.is_public
             ORDER BY total DESC
             SQL;
 
@@ -329,7 +334,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
         return array_map(fn (array $row): array => [
             'member_id' => $row['member_id'],
             'username' => $row['username'],
-            'display_name' => BandSpaceMembership::nameFor($row['stage_name'], $row['username'], $row['deletion_datetime'] !== null),
+            'display_name' => BandSpaceMembership::nameFor($row['stage_name'], $row['username'], $row['deletion_datetime'] !== null, $row['profile_name'], (bool) $row['profile_is_public']),
             'total' => (int) $row['total'],
         ], $rows);
     }

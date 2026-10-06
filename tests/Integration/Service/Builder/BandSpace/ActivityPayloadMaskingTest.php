@@ -7,6 +7,7 @@ use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Entity\User\UserProfile;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Service\Builder\BandSpace\BandSpaceActivityBuilder;
 use App\Service\Builder\BandSpace\File\BandSpaceFileActivityBuilder;
@@ -43,6 +44,7 @@ class ActivityPayloadMaskingTest extends KernelTestCase
         $actor = new User();
         $actor->id = '3f8b4a1e-0000-4000-8000-000000000001';
         $actor->username = 'admin_user';
+        $actor->profile = new UserProfile();
 
         $activity = new BandSpaceActivity();
         $activity->bandSpace = $bandSpace;

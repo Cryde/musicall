@@ -24,7 +24,11 @@ class BandSpaceMemberNames implements ResetInterface
 
     public function nameOf(User $user, string $bandSpaceId): string
     {
-        return $this->nameById($bandSpaceId, $user->id, $user->username, $user->isDeleted());
+        $this->namesByBandSpace[$bandSpaceId] ??= $this->membershipRepository->findDisplayNamesByUserId($bandSpaceId);
+
+        // No membership row is not expected (memberships are never hard deleted), so fall back to the
+        // site wide name, which reads the profile only in that unexpected case.
+        return $this->namesByBandSpace[$bandSpaceId][$user->id] ?? $user->publicName();
     }
 
     /** For the scalar projections that never hydrate a User, such as the chat page. */
@@ -32,9 +36,9 @@ class BandSpaceMemberNames implements ResetInterface
     {
         $this->namesByBandSpace[$bandSpaceId] ??= $this->membershipRepository->findDisplayNamesByUserId($bandSpaceId);
 
-        // No membership row is not expected (memberships are never hard deleted), so fall back to the handle.
+        // Same unexpected case, without a User to read a profile from: the handle is all there is.
         return $this->namesByBandSpace[$bandSpaceId][$userId]
-            ?? BandSpaceMembership::nameFor(null, $username, $isDeleted);
+            ?? User::publicNameFor($username, $isDeleted, null, false);
     }
 
     public function reset(): void

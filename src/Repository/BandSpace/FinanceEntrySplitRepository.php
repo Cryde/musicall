@@ -29,6 +29,7 @@ class FinanceEntrySplitRepository extends ServiceEntityRepository
             ->join('c.bandSpace', 'bs')->addSelect('bs')
             ->leftJoin('s.member', 'm')->addSelect('m')
             ->leftJoin('m.user', 'u')->addSelect('u')
+            ->leftJoin('u.profile', 'up')->addSelect('up')
             ->where('s.entry = :entry')
             ->setParameter('entry', $entry)
             ->orderBy('s.creationDatetime', 'ASC')

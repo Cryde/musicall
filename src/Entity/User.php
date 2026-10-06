@@ -276,4 +276,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->deletionDatetime instanceof \DateTimeImmutable;
     }
+
+    /** What the site calls this user next to their username (#1118). Reads the profile, which is lazy. */
+    public function publicName(): string
+    {
+        return self::publicNameFor($this->username, $this->isDeleted(), $this->profile->displayName, $this->profile->isPublic);
+    }
+
+    /**
+     * The naming rule outside a band space, shared with the scalar projections. A private profile keeps
+     * its name to itself, and a closed account is labelled whatever it held.
+     */
+    public static function publicNameFor(string $username, bool $isDeleted, ?string $profileName, bool $profileIsPublic): string
+    {
+        if ($isDeleted) {
+            return self::DELETED_DISPLAY_NAME;
+        }
+
+        return $profileIsPublic && $profileName !== null && trim($profileName) !== '' ? $profileName : $username;
+    }
 }

@@ -47,9 +47,10 @@ class MemberAbsenceRepository extends ServiceEntityRepository
     private function withMember(): QueryBuilder
     {
         return $this->createQueryBuilder('a')
-            ->addSelect('m', 'u')
+            ->addSelect('m', 'u', 'up')
             ->innerJoin('a.member', 'm')
-            ->innerJoin('m.user', 'u');
+            ->innerJoin('m.user', 'u')
+            ->innerJoin('u.profile', 'up');
     }
 
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?MemberAbsence
