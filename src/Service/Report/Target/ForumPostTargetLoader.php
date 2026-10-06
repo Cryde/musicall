@@ -24,6 +24,11 @@ readonly class ForumPostTargetLoader implements ReportTargetLoaderInterface
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
+        return $this->current($id);
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
         $post = Uuid::isValid($id) ? $this->postRepository->find($id) : null;
         if (!$post instanceof ForumPost) {
             return null;

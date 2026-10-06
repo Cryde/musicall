@@ -26,6 +26,11 @@ readonly class CommentTargetLoader implements ReportTargetLoaderInterface
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
+        return $this->current($id);
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
         $comment = ctype_digit($id) ? $this->commentRepository->find((int) $id) : null;
         if (!$comment instanceof Comment) {
             return null;

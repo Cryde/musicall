@@ -22,6 +22,11 @@ readonly class AnnounceTargetLoader implements ReportTargetLoaderInterface
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
+        return $this->current($id);
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
         $announce = Uuid::isValid($id) ? $this->announceRepository->find($id) : null;
         if (!$announce instanceof MusicianAnnounce || $announce->author->isDeleted()) {
             return null;
@@ -30,7 +35,7 @@ readonly class AnnounceTargetLoader implements ReportTargetLoaderInterface
         return new ReportTarget(
             $announce->author,
             ReportTarget::text((string) $announce->note),
-            ['instrument' => $announce->instrument->musicianName, 'location' => $announce->locationName],
+            ['instrument' => $announce->instrument->musicianName, 'location' => $announce->locationName, 'username' => $announce->author->username],
         );
     }
 }

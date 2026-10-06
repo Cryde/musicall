@@ -22,6 +22,7 @@ readonly class AccountSuspensionProcedure
 
     public function suspend(User $account, string $reason, User $moderator, ?Report $report = null): void
     {
+        // Nested transactions are fine with Doctrine: inside ReportResolutionProcedure this joins it.
         $this->entityManager->wrapInTransaction(function () use ($account, $reason, $moderator, $report): void {
             $account->suspensionDatetime = new \DateTimeImmutable();
             $account->suspensionReason = $reason;

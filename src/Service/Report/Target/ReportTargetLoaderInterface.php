@@ -17,4 +17,10 @@ interface ReportTargetLoaderInterface
     public function type(): ReportTargetType;
 
     public function load(string $id, User $reporter): ?ReportTarget;
+
+    /**
+     * The target as it stands now, whoever looks: what a moderator compares the snapshot with. Null
+     * once it is gone, deleted or taken offline.
+     */
+    public function current(string $id): ?ReportTarget;
 }

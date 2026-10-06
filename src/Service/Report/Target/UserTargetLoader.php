@@ -20,6 +20,11 @@ readonly class UserTargetLoader implements ReportTargetLoaderInterface
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
+        return $this->current($id);
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
         $user = $this->userRepository->findOneById($id);
         if (!$user instanceof User || $user->isDeleted()) {
             return null;

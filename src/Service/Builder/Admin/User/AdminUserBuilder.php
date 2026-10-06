@@ -51,6 +51,9 @@ readonly class AdminUserBuilder
         $resource->usernameChangedDatetime = $user->usernameChangedDatetime;
         $resource->deletionDatetime = $user->deletionDatetime;
         $resource->isDeleted = $user->isDeleted();
+        $resource->suspensionDatetime = $user->suspensionDatetime;
+        $resource->suspensionReason = $user->suspensionReason;
+        $resource->isSuspended = $user->isSuspended();
         $resource->isEmailConfirmed = $user->confirmationDatetime instanceof \DateTimeInterface;
         $resource->hasMusicianProfile = $user->musicianProfile !== null;
         $resource->hasTeacherProfile = $user->teacherProfile !== null;

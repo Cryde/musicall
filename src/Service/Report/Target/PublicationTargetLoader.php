@@ -22,6 +22,11 @@ readonly class PublicationTargetLoader implements ReportTargetLoaderInterface
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
+        return $this->current($id);
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
         $publication = ctype_digit($id) ? $this->publicationRepository->find((int) $id) : null;
         if (!$publication instanceof Publication || $publication->status !== Publication::STATUS_ONLINE) {
             return null;

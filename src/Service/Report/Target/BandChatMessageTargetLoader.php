@@ -28,17 +28,33 @@ readonly class BandChatMessageTargetLoader implements ReportTargetLoaderInterfac
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
-        $message = Uuid::isValid($id) ? $this->messageRepository->find($id) : null;
+        $message = $this->find($id);
         $bandSpace = $message?->thread->bandSpace;
-        if (
-            !$message instanceof Message
-            || !$bandSpace instanceof BandSpace
-            || $message->isDeleted()
-            || !$this->membershipRepository->findMembership($bandSpace, $reporter) instanceof BandSpaceMembership
-        ) {
-            return null;
-        }
 
+        return $message instanceof Message
+            && $bandSpace instanceof BandSpace
+            && $this->membershipRepository->findMembership($bandSpace, $reporter) instanceof BandSpaceMembership
+            ? $this->snapshot($message, $bandSpace)
+            : null;
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
+        $message = $this->find($id);
+        $bandSpace = $message?->thread->bandSpace;
+
+        return $message instanceof Message && $bandSpace instanceof BandSpace ? $this->snapshot($message, $bandSpace) : null;
+    }
+
+    private function find(string $id): ?Message
+    {
+        $message = Uuid::isValid($id) ? $this->messageRepository->find($id) : null;
+
+        return $message instanceof Message && !$message->isDeleted() && $message->thread->isChannel() ? $message : null;
+    }
+
+    private function snapshot(Message $message, BandSpace $bandSpace): ReportTarget
+    {
         return new ReportTarget(
             $message->author,
             ReportTarget::text($message->content),

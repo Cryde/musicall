@@ -26,16 +26,29 @@ readonly class MessageTargetLoader implements ReportTargetLoaderInterface
 
     public function load(string $id, User $reporter): ?ReportTarget
     {
-        $message = Uuid::isValid($id) ? $this->messageRepository->find($id) : null;
-        if (
-            !$message instanceof Message
-            || $message->isDeleted()
-            || $message->thread->isChannel()
-            || !$this->threadAccess->isOneOfParticipant($message->thread, $reporter)
-        ) {
-            return null;
-        }
+        $message = $this->find($id);
 
+        return $message instanceof Message && $this->threadAccess->isOneOfParticipant($message->thread, $reporter)
+            ? $this->snapshot($message)
+            : null;
+    }
+
+    public function current(string $id): ?ReportTarget
+    {
+        $message = $this->find($id);
+
+        return $message instanceof Message ? $this->snapshot($message) : null;
+    }
+
+    private function find(string $id): ?Message
+    {
+        $message = Uuid::isValid($id) ? $this->messageRepository->find($id) : null;
+
+        return $message instanceof Message && !$message->isDeleted() && !$message->thread->isChannel() ? $message : null;
+    }
+
+    private function snapshot(Message $message): ReportTarget
+    {
         return new ReportTarget($message->author, ReportTarget::text($message->content), ['thread_id' => (string) $message->thread->id]);
     }
 }

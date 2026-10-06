@@ -77,6 +77,9 @@ class AdminUser
     public ?DateTimeInterface $deletionDatetime = null;
 
     public bool $isDeleted = false;
+    public ?DateTimeInterface $suspensionDatetime = null;
+    public ?string $suspensionReason = null;
+    public bool $isSuspended = false;
     public bool $isEmailConfirmed = false;
     public bool $hasMusicianProfile = false;
     public bool $hasTeacherProfile = false;
