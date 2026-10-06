@@ -75,7 +75,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
      *
      * @param MusicianAnnounce[] $announces
      *
-     * @return array<string, array{id: string, username: string, deletionDatetime: ?\DateTimeImmutable, hasMusicianProfile: bool, profilePictureName: ?string}>
+     * @return array<string, array{id: string, username: string, deletionDatetime: ?\DateTimeImmutable, hasMusicianProfile: bool, profilePictureName: ?string, displayName: string}>
      */
     public function findAuthorsDataForAnnounces(array $announces): array
     {
@@ -91,8 +91,11 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
                 'author.deletionDatetime AS deletionDatetime',
                 'musicianProfile.id AS musicianProfileId',
                 'picture.imageName AS profilePictureName',
+                'profile.displayName AS profileName',
+                'profile.isPublic AS profileIsPublic',
             )
             ->join('announce.author', 'author')
+            ->join('author.profile', 'profile')
             ->leftJoin('author.profilePicture', 'picture')
             ->leftJoin('author.musicianProfile', 'musicianProfile')
             ->where('announce IN (:announces)')
@@ -108,6 +111,12 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
                 'deletionDatetime' => $row['deletionDatetime'],
                 'hasMusicianProfile' => $row['musicianProfileId'] !== null,
                 'profilePictureName' => $row['profilePictureName'],
+                'displayName' => User::publicNameFor(
+                    (string) $row['username'],
+                    $row['deletionDatetime'] !== null,
+                    $row['profileName'],
+                    (bool) $row['profileIsPublic'],
+                ),
             ];
         }
 
@@ -217,8 +226,11 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             ->select('musician_announce')
             ->addSelect('instrument')
             ->addSelect('author')
+            ->addSelect('author_profile')
             ->join('musician_announce.instrument', 'instrument')
             ->join('musician_announce.author', 'author')
+            // Each result names its author (#1118); the profile is lazy otherwise.
+            ->join('author.profile', 'author_profile')
             ->orderBy('musician_announce.creationDatetime', 'DESC')
             ->setMaxResults($limit);
 

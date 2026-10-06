@@ -14,7 +14,7 @@
                     <Avatar
                         v-else
                         :label="userName.charAt(0).toUpperCase()"
-                        :style="getAvatarStyle(userName)"
+                        :style="getAvatarStyle(user.username)"
                         class="!w-16 !h-16"
                         shape="circle"
                     />
@@ -22,7 +22,7 @@
                 <div v-else class="flex-shrink-0">
                     <Avatar
                         :label="userName.charAt(0).toUpperCase()"
-                        :style="getAvatarStyle(userName)"
+                        :style="getAvatarStyle(user.username)"
                         class="!w-16 !h-16"
                         shape="circle"
                     />
@@ -30,9 +30,13 @@
 
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
-                    <router-link v-if="!user.deletion_datetime" :to="profileRoute" class="font-medium text-surface-900 dark:text-surface-0 text-lg leading-tight hover:text-primary transition-colors block truncate">
-                        {{ userName }}
-                    </router-link>
+                    <UserName
+                        v-if="!user.deletion_datetime"
+                        :username="user.username"
+                        :display-name="userName"
+                        :to="profileRoute"
+                        class="font-medium text-surface-900 dark:text-surface-0 text-lg leading-tight hover:text-primary transition-colors block truncate"
+                    />
                     <span v-else class="font-medium text-surface-500 text-lg leading-tight block truncate">
                         {{ userName }}
                     </span>

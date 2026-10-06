@@ -85,6 +85,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $user1->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
                 ],
@@ -112,6 +113,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $user1->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
                 ],
@@ -141,6 +143,11 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
         MusicianProfileFactory::new()->create(['user' => $authorWithProfile]);
         $author2 = UserFactory::new()->asBaseUser()->create(['username' => 'author_two', 'email' => 'author_two@email.com']);
         $author3 = UserFactory::new()->asBaseUser()->create(['username' => 'author_three', 'email' => 'author_three@email.com']);
+        // The projection reads the profile too (#1118): a public name is shown, a private one is not.
+        $author3->profile->displayName = 'Alexandre Martin';
+        $author2->profile->displayName = 'Samuel Dupont';
+        $author2->profile->isPublic = false;
+        self::getContainer()->get('doctrine')->getManager()->flush();
 
         $rock = StyleFactory::new()->asRock()->create();
         $pop = StyleFactory::new()->asPop()->create();
@@ -212,6 +219,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $author3->id,
                         'username' => 'author_three',
+                        'display_name' => 'Alexandre Martin',
                         'has_musician_profile' => false,
                     ],
                 ],
@@ -233,6 +241,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $author2->id,
                         'username' => 'author_two',
+                        'display_name' => 'author_two',
                         'has_musician_profile' => false,
                     ],
                 ],
@@ -256,6 +265,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $authorWithProfile->id,
                         'username' => 'author_musician',
+                        'display_name' => 'author_musician',
                         'has_musician_profile' => true,
                     ],
                 ],
@@ -332,6 +342,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $author->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
                 ],
@@ -406,6 +417,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                         '@type' => 'Author',
                         'id' => $author->id,
                         'username' => 'base_user_1',
+                        'display_name' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
                 ],

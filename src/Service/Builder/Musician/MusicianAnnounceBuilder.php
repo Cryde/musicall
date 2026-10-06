@@ -41,7 +41,7 @@ readonly class MusicianAnnounceBuilder
      * (keyed by announce id) to avoid hydrating a full User per row.
      *
      * @param MusicianAnnounceEntity[] $entities
-     * @param array<string, array{id: string, username: string, deletionDatetime: ?\DateTimeImmutable, hasMusicianProfile: bool, profilePictureName: ?string}> $authorsByAnnounceId
+     * @param array<string, array{id: string, username: string, deletionDatetime: ?\DateTimeImmutable, hasMusicianProfile: bool, profilePictureName: ?string, displayName: string}> $authorsByAnnounceId
      *
      * @return MusicianAnnounceDTO[]
      */
@@ -53,6 +53,7 @@ readonly class MusicianAnnounceBuilder
             return $this->buildDto($entity, $this->createAuthor(
                 $author['id'],
                 $author['username'],
+                $author['displayName'],
                 $author['deletionDatetime'],
                 $author['hasMusicianProfile'],
                 $author['profilePictureName'],
@@ -104,6 +105,7 @@ readonly class MusicianAnnounceBuilder
         return $this->createAuthor(
             $user->id,
             $user->username,
+            $user->publicName(),
             $user->deletionDatetime,
             $user->musicianProfile instanceof MusicianProfile,
             $user->profilePicture?->imageName,
@@ -113,6 +115,7 @@ readonly class MusicianAnnounceBuilder
     private function createAuthor(
         string $id,
         string $username,
+        string $displayName,
         ?\DateTimeImmutable $deletionDatetime,
         bool $hasMusicianProfile,
         ?string $profilePictureName,
@@ -120,6 +123,7 @@ readonly class MusicianAnnounceBuilder
         $dto = new Author();
         $dto->id = $id;
         $dto->username = $username;
+        $dto->displayName = $displayName;
         $dto->deletionDatetime = $deletionDatetime;
         $dto->hasMusicianProfile = $hasMusicianProfile;
 

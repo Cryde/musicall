@@ -14,20 +14,20 @@
       <Avatar
         v-else
         :label="authorName.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(authorName)"
+        :style="getAvatarStyle(announce.author.username)"
         shape="circle"
         size="large"
         class="shrink-0"
         aria-hidden="true"
       />
       <div class="flex flex-col min-w-0 flex-1">
-        <router-link
+        <UserName
           v-if="!isDeleted"
+          :username="announce.author.username"
+          :display-name="authorName"
           :to="profileRoute"
           class="font-semibold truncate text-surface-900 dark:text-surface-0 hover:text-primary"
-        >
-          {{ authorName }}
-        </router-link>
+        />
         <span v-else class="font-semibold truncate text-surface-600 dark:text-surface-300">{{ authorName }}</span>
         <span v-if="announce.creation_datetime" class="text-sm text-surface-600 dark:text-surface-300">
           {{ relativeDate(announce.creation_datetime, { showHours: false }) }}
@@ -100,6 +100,7 @@ import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { announceHeadline, announceKindLabel, announceStyleTags } from '../../utils/homeSearch.js'
+import UserName from '../User/UserName.vue'
 
 /** One musician announce as the homepage shows it (#1074); `compact` is the hero's preview. */
 const props = defineProps({
