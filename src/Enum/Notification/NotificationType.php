@@ -29,4 +29,27 @@ enum NotificationType: string
     case BandSpaceDeletionCancelled = 'band_space_deletion_cancelled';
     case ReportReceived = 'report_received';
     case ReportResolved = 'report_resolved';
+
+    /**
+     * Where a push of this type sits (#1110), or null when it stays in the bell. A match on purpose: a
+     * new type fails static analysis until somebody decides.
+     */
+    public function pushCategory(): ?PushCategory
+    {
+        return match ($this) {
+            self::ForumTopicReply => PushCategory::ForumReply,
+            self::PublicationComment, self::CommentReply => PushCategory::PublicationComment,
+            self::PublicationApproved, self::PublicationRejected,
+            self::GalleryApproved, self::GalleryRejected => PushCategory::Moderation,
+            self::BandSpaceChatMention, self::TaskMention => PushCategory::BandMention,
+            self::BandSpaceTaskAssignment, self::TaskComment => PushCategory::BandTasks,
+            self::BandSpaceAgendaEntryCreated => PushCategory::BandAgenda,
+            self::BandSpaceFinanceSplitAssigned => PushCategory::BandFinance,
+            self::BandSpaceInvitation, self::BandSpaceInvitationAccepted, self::BandSpaceInvitationDeclined,
+            self::BandSpaceRoleChanged, self::BandSpaceMemberRemoved, self::BandSpaceMemberLeft => PushCategory::BandMembership,
+            self::BandSpaceDeletionScheduled, self::BandSpaceDeletionCancelled => PushCategory::Always,
+            // A report and its decision are not urgent; the bell is enough.
+            self::ReportReceived, self::ReportResolved => null,
+        };
+    }
 }

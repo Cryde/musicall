@@ -8,6 +8,8 @@ use App\Enum\Notification\NotificationType;
 use App\Mercure\MercureTopic;
 use App\Repository\Notification\NotificationRepository;
 use App\Service\Notification\NotificationCreator;
+use App\Service\Notification\Push\PushContentBuilder;
+use App\Service\Notification\Push\PushQueue;
 use App\Tests\Double\RecordingHub;
 use App\Tests\Double\ThrowingHub;
 use App\Tests\Factory\User\UserFactory;
@@ -83,6 +85,8 @@ class NotificationCreatorSignalTest extends KernelTestCase
             self::getContainer()->get(EntityManagerInterface::class),
             new ThrowingHub(),
             new NullLogger(),
+            self::getContainer()->get(PushContentBuilder::class),
+            self::getContainer()->get(PushQueue::class),
         );
 
         $recipient = UserFactory::new()->asBaseUser()->create();

@@ -47,4 +47,25 @@ class UserNotificationPreferenceEdit
     public bool $activityReminder = true;
 
     public bool $showOnlinePresence = true;
+
+    // Push categories (#1110), see PushCategory.
+    public bool $pushMessageReceived = true;
+
+    public bool $pushPublicationComment = true;
+
+    public bool $pushForumReply = true;
+
+    public bool $pushModeration = true;
+
+    public bool $pushBandChat = true;
+
+    public bool $pushBandMention = true;
+
+    public bool $pushBandTasks = true;
+
+    public bool $pushBandAgenda = true;
+
+    public bool $pushBandFinance = true;
+
+    public bool $pushBandMembership = true;
 }

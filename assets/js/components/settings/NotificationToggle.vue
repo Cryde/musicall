@@ -9,7 +9,7 @@
       </p>
     </div>
     <div class="md:w-2/3 flex items-center gap-3">
-      <ToggleSwitch :aria-label="label" :modelValue="modelValue" :disabled="disabled" @update:modelValue="$emit('update:modelValue', $event)" />
+      <ToggleSwitch :aria-label="ariaLabel || label" :modelValue="modelValue" :disabled="disabled" @update:modelValue="$emit('update:modelValue', $event)" />
       <span class="text-surface-700 dark:text-surface-300">
         {{ modelValue ? 'Activé' : 'Désactivé' }}
       </span>
@@ -36,6 +36,11 @@ defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  /** For when the visible label repeats one in another section, the email and the push ones. */
+  ariaLabel: {
+    type: String,
+    default: null
   }
 })
 

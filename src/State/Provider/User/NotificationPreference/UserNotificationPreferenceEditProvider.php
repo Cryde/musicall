@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\User\NotificationPreference\UserNotificationPreferenceEdit;
 use App\Entity\User;
-use App\Entity\User\UserNotificationPreference;
+use App\Service\Builder\User\NotificationPreference\UserNotificationPreferenceMapper;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
@@ -31,22 +31,6 @@ readonly class UserNotificationPreferenceEditProvider implements ProviderInterfa
             return new UserNotificationPreferenceEdit();
         }
 
-        return $this->buildFromEntity($preference);
-    }
-
-    private function buildFromEntity(UserNotificationPreference $preference): UserNotificationPreferenceEdit
-    {
-        $dto = new UserNotificationPreferenceEdit();
-
-        $dto->siteNews = $preference->siteNews;
-        $dto->weeklyRecap = $preference->weeklyRecap;
-        $dto->messageReceived = $preference->messageReceived;
-        $dto->publicationComment = $preference->publicationComment;
-        $dto->forumReply = $preference->forumReply;
-        $dto->marketing = $preference->marketing;
-        $dto->activityReminder = $preference->activityReminder;
-        $dto->showOnlinePresence = $preference->showOnlinePresence;
-
-        return $dto;
+        return UserNotificationPreferenceMapper::toResource($preference);
     }
 }

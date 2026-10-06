@@ -6,6 +6,8 @@ use App\Entity\Notification\Notification;
 use App\Entity\User;
 use App\Enum\Notification\NotificationType;
 use App\Mercure\MercureTopic;
+use App\Service\Notification\Push\PushContentBuilder;
+use App\Service\Notification\Push\PushQueue;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
@@ -29,6 +31,8 @@ readonly class NotificationCreator
         private EntityManagerInterface $entityManager,
         private HubInterface $hub,
         private LoggerInterface $logger,
+        private PushContentBuilder $pushContentBuilder,
+        private PushQueue $pushQueue,
     ) {
     }
 
@@ -47,6 +51,7 @@ readonly class NotificationCreator
         $this->entityManager->flush();
 
         $this->signal([$recipient->id]);
+        $this->push([$recipient->id], $type, $payload);
     }
 
     /**
@@ -81,6 +86,24 @@ readonly class NotificationCreator
 
         // The de-duplicated set, so a recipient named twice is still signalled once.
         $this->signal(array_values($seen));
+        $this->push(array_values($seen), $type, $payload);
+    }
+
+    /**
+     * The same notification on the recipients' phones (#1110), for a closed or backgrounded app: an
+     * open one already heard the signal above. Queued, so FCM never slows the request.
+     *
+     * @param list<string>         $recipientIds
+     * @param array<string, mixed> $payload
+     */
+    private function push(array $recipientIds, NotificationType $type, array $payload): void
+    {
+        $category = $type->pushCategory();
+        if ($category === null) {
+            return;
+        }
+
+        $this->pushQueue->queue($recipientIds, $this->pushContentBuilder->forNotification($type, $payload), $category);
     }
 
     /**
