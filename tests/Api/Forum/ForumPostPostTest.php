@@ -14,6 +14,7 @@ use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumSourceFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\Forum\ForumTopicParticipationFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -324,5 +325,39 @@ class ForumPostPostTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findForRecipient($author, 10, 0));
+    }
+
+    public function test_a_reply_notifies_nobody_blocked_with_the_poster_either_way(): void
+    {
+        $author = UserFactory::new()->create(['username' => 'topic_author', 'email' => 'author@test.com']);
+        $blockedByPoster = UserFactory::new()->create(['username' => 'blocked_one', 'email' => 'blocked@test.com']);
+        $blockerOfPoster = UserFactory::new()->create(['username' => 'blocker_one', 'email' => 'blocker@test.com']);
+        $poster = UserFactory::new()->asBaseUser()->create(['username' => 'poster', 'email' => 'poster@test.com']);
+
+        $forumSource = ForumSourceFactory::new()->asRoot()->create();
+        $forumCategory = ForumCategoryFactory::new(['title' => 'Forum category', 'forumSource' => $forumSource])->create();
+        $forum = ForumFactory::new(['forumCategory' => $forumCategory])->create();
+        $topic = ForumTopicFactory::new([
+            'author' => $author,
+            'forum' => $forum,
+            'slug' => 'topic-title-slug',
+            'title' => 'Topic title',
+        ])->create();
+        ForumTopicParticipationFactory::new(['user' => $blockedByPoster, 'topic' => $topic])->create();
+        ForumTopicParticipationFactory::new(['user' => $blockerOfPoster, 'topic' => $topic])->create();
+        UserBlockFactory::new()->create(['blocker' => $poster, 'blocked' => $blockedByPoster]);
+        UserBlockFactory::new()->create(['blocker' => $blockerOfPoster, 'blocked' => $poster]);
+
+        $this->client->loginUser($poster);
+        $this->client->jsonRequest('POST', '/api/forum/posts', [
+            'content' => 'Voici ma réponse au sujet',
+            'topic' => '/api/forums/topics/' . $topic->slug,
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+        $this->assertCount(1, $notificationRepository->findForRecipient($author, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($blockedByPoster, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($blockerOfPoster, 10, 0));
     }
 }

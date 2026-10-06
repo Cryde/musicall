@@ -7,6 +7,7 @@ namespace App\Service\Procedure\User;
 use App\Entity\User;
 use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Repository\User\DeviceTokenRepository;
+use App\Repository\User\Relation\UserBlockRepository;
 use App\Service\Procedure\BandSpace\WithdrawUserFromBandSpacesProcedure;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,7 @@ readonly class DeleteAccountProcedure
         private WithdrawUserFromBandSpacesProcedure $withdrawUserFromBandSpacesProcedure,
         private EventDispatcherInterface $eventDispatcher,
         private DeviceTokenRepository $deviceTokenRepository,
+        private UserBlockRepository $userBlockRepository,
     ) {
     }
 
@@ -98,6 +100,7 @@ readonly class DeleteAccountProcedure
 
         // Stop pushing to the phones of an account that no longer exists
         $this->deviceTokenRepository->deleteForUser($user);
+        $this->userBlockRepository->deleteForUser($user);
 
         // wrapInTransaction() flushes before it commits, so the caller gets one atomic unit.
         return $promotions;

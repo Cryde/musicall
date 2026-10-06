@@ -12,6 +12,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -63,6 +64,53 @@ class ChatMessagePostTest extends ApiTestCase
             // The stored text, which the sender's own edit box is seeded from (#966). Unescaped,
             // unlike `content` above, because nothing renders it as HTML.
             'editable_content' => "on répète mardi, j'apporte la basse",
+            'is_deleted' => false,
+            'is_pinned' => false,
+            'pinned_datetime' => null,
+            'pinned_by_username' => null,
+            'pinned_by_display_name' => null,
+            'read_by_usernames' => [],
+            'read_by_display_names' => [],
+            'read_count' => 0,
+            'image' => null,
+            'voice_note' => null,
+        ]);
+    }
+
+    public function test_a_block_between_two_members_leaves_the_band_chat_open(): void
+    {
+        // A band is managed by its admin, not by its members' blocks (#1117).
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $bandmate = UserFactory::new()->asBaseUser()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        UserBlockFactory::new()->create(['blocker' => $bandmate, 'blocked' => $member]);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $bandmate])->create();
+        $channel = $this->channelOf($space);
+
+        $this->client->loginUser($member);
+        $this->post($space, 'on répète mardi');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $message = self::getContainer()->get(MessageRepository::class)->findOneBy(['thread' => $channel->id]);
+        $this->assertNotNull($message);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/chat_messages/id=' . $message->id . ';bandSpaceId=' . $space->id,
+            '@type' => 'ChatMessage',
+            'id' => (string) $message->id,
+            'band_space_id' => (string) $space->id,
+            'author_id' => (string) $member->id,
+            'author_username' => 'batteur',
+            'author_display_name' => 'batteur',
+            'author_profile_picture_url' => null,
+            'content' => 'on répète mardi',
+            'creation_datetime' => $message->creationDatetime->format('c'),
+            'reactions' => [],
+            'attachments' => [],
+            'update_datetime' => null,
+            'editable_content' => 'on répète mardi',
             'is_deleted' => false,
             'is_pinned' => false,
             'pinned_datetime' => null,

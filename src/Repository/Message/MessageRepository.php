@@ -9,6 +9,7 @@ use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Repository\User\Relation\UserBlockRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
@@ -298,6 +299,8 @@ class MessageRepository extends ServiceEntityRepository
             ->andWhere('meta.isDeleted = false')
             ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
             ->andWhere($this->channelMembershipRule())
+            // Whatever the inbox hides must not keep the badge above it lit (#1117).
+            ->andWhere(UserBlockRepository::threadNotHiddenBy('thread', 'user'))
             ->setParameter('user', $user)
             ->setParameter('active', MembershipStatus::Active)
             ->getQuery()

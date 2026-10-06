@@ -176,3 +176,10 @@ framework:
             limit: 20
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # Blocking and unblocking (#1117), shared by both: a person toggling a block back and forth
+        # has no use for more than this.
+        user_block:
+            policy: sliding_window
+            limit: 30
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"

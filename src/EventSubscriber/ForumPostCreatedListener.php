@@ -9,6 +9,7 @@ use App\Enum\Notification\NotificationType;
 use App\Event\ForumPostCreatedEvent;
 use App\Repository\Forum\ForumTopicParticipationRepository;
 use App\Service\Notification\NotificationCreator;
+use App\Service\User\Relation\UserContactPolicy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
@@ -25,6 +26,7 @@ readonly class ForumPostCreatedListener
     public function __construct(
         private NotificationCreator $notificationCreator,
         private ForumTopicParticipationRepository $participationRepository,
+        private UserContactPolicy $contactPolicy,
         private LoggerInterface $logger,
     ) {
     }
@@ -41,7 +43,10 @@ readonly class ForumPostCreatedListener
             $posterId = (string) $poster->id;
 
             $candidates = [$topic->author, ...$this->participationRepository->findActiveParticipantUsersByTopic($topic)];
-            $recipients = array_filter($candidates, static fn (User $user): bool => (string) $user->id !== $posterId);
+            $recipients = $this->contactPolicy->withoutBlocked(
+                $poster,
+                array_filter($candidates, static fn (User $user): bool => (string) $user->id !== $posterId),
+            );
             if ($recipients === []) {
                 return;
             }

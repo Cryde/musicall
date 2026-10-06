@@ -1,6 +1,12 @@
 <template>
     <router-view/>
-    <ConfirmDialog />
+    <!-- Without a width the dialog grows to fit its message, so a long one spans the whole screen.
+         The message is plain text, so line breaks are how it splits into paragraphs. -->
+    <ConfirmDialog
+      :style="{ width: '32rem' }"
+      :breakpoints="{ '575px': '95vw' }"
+      :pt="{ icon: { class: 'self-start mt-1' }, message: { class: 'whitespace-pre-line' } }"
+    />
     <!-- Mounted here rather than in a layout so the trigger works from every route, the layout-less
          live setlist view included. -->
     <FeedbackDrawer />

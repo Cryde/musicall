@@ -12,8 +12,10 @@ use App\Repository\Message\MessageThreadRepository;
 use App\Service\Access\ThreadAccess;
 use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Procedure\Message\MessageSenderProcedure;
+use App\Service\User\Relation\UserContactPolicy;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -29,6 +31,7 @@ class MessagePostProcessor implements ProcessorInterface
         private readonly MessageSenderProcedure  $messageSenderProcedure,
         private readonly MessageBuilder          $messageBuilder,
         private readonly MessageThreadRepository $messageThreadRepository,
+        private readonly UserContactPolicy       $contactPolicy,
         #[Target('message_send')]
         private readonly RateLimiterFactoryInterface $messageSendLimiter,
     ) {
@@ -52,6 +55,10 @@ class MessagePostProcessor implements ProcessorInterface
 
         if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
             throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
+        }
+
+        if (!$this->contactPolicy->canPostInThread($thread, $user)) {
+            throw new AccessDeniedHttpException(UserContactPolicy::BLOCKED_MESSAGE);
         }
 
         $message = $this->messageSenderProcedure->processByThread($thread, $user, $data->content);

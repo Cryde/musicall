@@ -54,6 +54,14 @@
       <span v-if="isCurrentChannel" class="text-sm text-surface-600 dark:text-surface-400 shrink-0">
         #{{ currentThread.thread.channel_name }}
       </span>
+      <BlockUserButton
+        v-if="!isCurrentChannel && otherParticipant?.id && !isRecipientDeleted"
+        :user-id="otherParticipant.id"
+        :username="otherParticipant.username"
+        icon-only
+        class="ml-auto"
+        @blocked="handleBlocked"
+      />
     </div>
 
     <!-- Messages area -->
@@ -246,6 +254,7 @@ import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 import { useMessageStore } from '../../store/message/message.js'
+import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { autoLink } from '../../utils/autoLink.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
@@ -254,6 +263,7 @@ import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
 import { idFromIri } from '../../utils/reportTarget.js'
 import ReportDialog from '../Report/ReportDialog.vue'
+import BlockUserButton from '../User/Block/BlockUserButton.vue'
 import UserName from '../User/UserName.vue'
 import MusicLinkPreview from './MusicLinkPreview.vue'
 
@@ -261,6 +271,7 @@ const emit = defineEmits(['back'])
 
 const messageStore = useMessageStore()
 const securityStore = useUserSecurityStore()
+const notificationStore = useNotificationStore()
 // The roster the `@` dropdown filters, from the store the band space tab already fills. It is loaded
 // per conversation below rather than once, because switching channel here means switching band.
 const settingsStore = useBandSpaceSettingsStore()
@@ -290,6 +301,14 @@ const otherParticipant = computed(() => {
 const title = computed(() => conversationTitle(currentThread.value, otherParticipant.value))
 
 const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_datetime)
+
+// The conversation leaves the inbox and its badge once blocked (#1117), so both are reloaded and the
+// pane closes with it. « Débloquer » stays on the profile and in the privacy settings.
+function handleBlocked() {
+  messageStore.loadThreads({ silent: true }).catch(() => {})
+  notificationStore.loadNotifications().catch(() => {})
+  emit('back')
+}
 
 function isSender(message) {
   return message.author?.username === securityStore.user?.username
@@ -321,6 +340,9 @@ async function send() {
   } catch (e) {
     if (e.response?.status === 429) {
       sendError.value = 'Trop de messages envoyés. Veuillez patienter un instant.'
+    } else if (e.response?.status === 403 && e.response.data?.detail) {
+      // A block, from either side: the server says which conversation is closed, never by whom.
+      sendError.value = e.response.data.detail
     } else {
       console.error('Failed to send message:', e)
     }

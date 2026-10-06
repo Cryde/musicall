@@ -15,7 +15,9 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -178,6 +180,56 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'type' => '/validation_errors/music_all_c2d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f',
             'title' => 'An error occurred',
         ]);
+    }
+
+    /**
+     * Blocked either way reads exactly like an unknown username, so the inviter cannot learn about
+     * the block from the answer (#1117).
+     */
+    #[DataProvider('blockDirections')]
+    public function test_invite_by_username_blocked_either_way_reads_as_not_found(bool $inviterPlacedTheBlock): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $invitee = UserFactory::new()->create(['username' => 'blocked_drummer', 'email' => 'blocked.drummer@example.com']);
+        UserBlockFactory::new()->create($inviterPlacedTheBlock
+            ? ['blocker' => $admin, 'blocked' => $invitee]
+            : ['blocker' => $invitee, 'blocked' => $admin]);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'blocked_drummer'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_c2d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'identifier',
+                    'message' => 'Aucun utilisateur trouvé avec ce nom d\'utilisateur',
+                    'code' => 'music_all_c2d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f',
+                ],
+            ],
+            'detail' => 'identifier: Aucun utilisateur trouvé avec ce nom d\'utilisateur',
+            'description' => 'identifier: Aucun utilisateur trouvé avec ce nom d\'utilisateur',
+            'type' => '/validation_errors/music_all_c2d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f',
+            'title' => 'An error occurred',
+        ]);
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function blockDirections(): iterable
+    {
+        yield 'the inviter blocked them' => [true];
+        yield 'they blocked the inviter' => [false];
     }
 
     public function test_invite_by_username_already_member(): void

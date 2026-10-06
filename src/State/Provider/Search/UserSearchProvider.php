@@ -4,6 +4,7 @@ namespace App\State\Provider\Search;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Builder\Search\UserSearchBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -26,7 +27,9 @@ readonly class UserSearchProvider implements ProviderInterface
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous devez être connecté pour accéder à ceci');
         }
-        $users = $this->userRepository->searchByUserName($context['filters']['search']);
+        /** @var User $user */
+        $user = $this->security->getUser();
+        $users = $this->userRepository->searchByUserName($context['filters']['search'], $user);
 
         return $this->userSearchBuilder->buildList($users);
     }

@@ -149,6 +149,7 @@
               :author-id="profile.user_id"
               :aria-label="`Signaler le profil de ${profile.username}`"
             />
+            <BlockUserButton :user-id="profile.user_id" :username="profile.username" />
           </div>
 
           <!-- Musician profile button -->
@@ -371,10 +372,12 @@ import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ReportButton from '../../../components/Report/ReportButton.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
+import BlockUserButton from '../../../components/User/Block/BlockUserButton.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
+import { useUserBlockStore } from '../../../store/user/block.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -388,6 +391,7 @@ const router = useRouter()
 const toast = useToast()
 const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
+const userBlockStore = useUserBlockStore()
 const musicianProfileStore = useMusicianProfileStore()
 const teacherProfileStore = useTeacherProfileStore()
 
@@ -435,7 +439,11 @@ const messageRecipient = computed(() => {
 
 const canContact = computed(() => {
   if (!profile.value || !userSecurityStore.userProfile) return true
-  return userSecurityStore.userProfile.id !== profile.value.user_id
+  // A block closes the conversation both ways; the « Débloquer » next to it is the way back.
+  return (
+    userSecurityStore.userProfile.id !== profile.value.user_id &&
+    !userBlockStore.isBlocked(profile.value.user_id)
+  )
 })
 
 const pageTitle = computed(() => {
