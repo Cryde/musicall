@@ -6,10 +6,14 @@ namespace App\Tests\Api\Report;
 
 use App\Entity\Publication;
 use App\Entity\Report\Report;
+use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Enum\Notification\NotificationType;
 use App\Enum\Report\ReportReason;
 use App\Enum\Report\ReportTargetType;
+use App\Repository\Notification\NotificationRepository;
 use App\Repository\Report\ReportRepository;
+use App\Service\Notification\NotificationCreator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -77,6 +81,9 @@ class ReportPostTest extends ApiTestCase
         $this->assertSame('Il spamme tout le monde', $report->details);
         $this->assertSame('Promo Followers Achetez mes followers', $report->snapshotText);
         $this->assertSame(['username' => 'spammer'], $report->snapshotContext);
+        // The receipt the reporter is owed (#1125), naming the profile and nothing else of it.
+        $this->assertNotifiedOnce($reporter, ['target_type' => 'user', 'target_label' => 'spammer']);
+        $this->assertNotNotified($target);
     }
 
     public function test_reports_an_announce(): void
@@ -107,6 +114,8 @@ class ReportPostTest extends ApiTestCase
         $report = $this->onlyReport();
         $this->assertSame('Message insultant', $report->snapshotText);
         $this->assertSame(['thread_id' => (string) $thread->id], $report->snapshotContext);
+        // A private conversation is never named, not even to the person who reported it.
+        $this->assertNotifiedOnce($reporter, ['target_type' => 'message', 'target_label' => null]);
     }
 
     public function test_a_direct_message_of_someone_elses_conversation_is_not_found(): void
@@ -209,7 +218,13 @@ class ReportPostTest extends ApiTestCase
         $this->report($reporter, 'publication', (string) $publication->id, 'inappropriate');
 
         $this->assertNoContent();
-        $this->assertSame('Vidéo douteuse Contenu choquant', $this->onlyReport()->snapshotText);
+        $report = $this->onlyReport();
+        $this->assertSame('Vidéo douteuse Contenu choquant', $report->snapshotText);
+        $this->assertSame(
+            ['publication_slug' => 'video-douteuse', 'publication_title' => 'Vidéo douteuse', 'is_course' => false],
+            $report->snapshotContext,
+        );
+        $this->assertNotifiedOnce($reporter, ['target_type' => 'publication', 'target_label' => 'Vidéo douteuse']);
     }
 
     public function test_a_publication_that_is_not_online_is_not_found(): void
@@ -281,6 +296,7 @@ class ReportPostTest extends ApiTestCase
 
         $this->assertNoContent();
         $this->assertSame(1, self::getContainer()->get(ReportRepository::class)->count());
+        $this->assertNotNotified($reporter);
     }
 
     /** Another spelling of the same target is still the same target. */
@@ -334,6 +350,29 @@ class ReportPostTest extends ApiTestCase
 
         $this->assertNoContent();
         $this->assertSame(0, self::getContainer()->get(ReportRepository::class)->count());
+        $this->assertNotNotified($reporter);
+    }
+
+    /** A notification failure never loses the report (epic #689 contract item 1). */
+    public function test_a_notification_failure_does_not_lose_the_report(): void
+    {
+        $reporter = $this->reporter();
+        $target = UserFactory::new()->create(['username' => 'spammer', 'email' => 'spammer@test.com']);
+        self::getContainer()->set(NotificationCreator::class, new readonly class extends NotificationCreator {
+            public function __construct()
+            {
+            }
+
+            public function create(User $recipient, NotificationType $type, array $payload): void
+            {
+                throw new \RuntimeException('Notification creation failed');
+            }
+        });
+
+        $this->report($reporter, 'user', (string) $target->id, 'spam');
+
+        $this->assertNoContent();
+        $this->assertSame(ReportTargetType::User, $this->onlyReport()->targetType);
     }
 
     public function test_reporting_is_rate_limited(): void
@@ -395,5 +434,19 @@ class ReportPostTest extends ApiTestCase
             'status' => Publication::STATUS_ONLINE,
             'subCategory' => PublicationSubCategoryFactory::new()->asChronique(),
         ], $attributes))->create();
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function assertNotifiedOnce(User $recipient, array $payload): void
+    {
+        $notifications = self::getContainer()->get(NotificationRepository::class)->findForRecipient($recipient, 10, 0);
+        $this->assertCount(1, $notifications);
+        $this->assertSame(NotificationType::ReportReceived, $notifications[0]->type);
+        $this->assertSame($payload, $notifications[0]->payload);
+    }
+
+    private function assertNotNotified(User $recipient): void
+    {
+        $this->assertSame([], self::getContainer()->get(NotificationRepository::class)->findForRecipient($recipient, 10, 0));
     }
 }

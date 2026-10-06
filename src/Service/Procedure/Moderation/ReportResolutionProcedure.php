@@ -7,11 +7,13 @@ use App\Entity\Report\Report;
 use App\Entity\User;
 use App\Enum\Moderation\ModerationActionType;
 use App\Enum\Report\ReportOutcome;
+use App\Event\ReportsResolvedEvent;
 use App\Repository\Report\ReportRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * A moderator's decision on reported content. It closes every pending report on that content at once,
@@ -23,6 +25,7 @@ readonly class ReportResolutionProcedure
         private EntityManagerInterface $entityManager,
         private ReportRepository $reportRepository,
         private AccountSuspensionProcedure $accountSuspension,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -33,8 +36,8 @@ readonly class ReportResolutionProcedure
             throw new ConflictHttpException('Ce signalement est déjà traité');
         }
 
-        $this->entityManager->wrapInTransaction(function () use ($report, $moderator): void {
-            $this->reportRepository->resolvePendingForTarget($report->targetType, $report->targetId, $moderator, ReportOutcome::Dismissed);
+        $resolved = $this->entityManager->wrapInTransaction(function () use ($report, $moderator): array {
+            $resolved = $this->resolveTarget($report, $moderator, ReportOutcome::Dismissed);
 
             $action = new ModerationAction();
             $action->type = ModerationActionType::ReportDismissed;
@@ -42,7 +45,11 @@ readonly class ReportResolutionProcedure
             $action->targetUser = $report->targetAuthor;
             $action->report = $report;
             $this->entityManager->persist($action);
+
+            return $resolved;
         });
+
+        $this->eventDispatcher->dispatch(new ReportsResolvedEvent($resolved, ReportOutcome::Dismissed, $moderator));
     }
 
     public function suspendAuthor(Report $report, string $reason, User $moderator): void
@@ -53,12 +60,29 @@ readonly class ReportResolutionProcedure
         }
         self::assertSuspendable($author, $moderator);
 
-        $this->entityManager->wrapInTransaction(function () use ($report, $reason, $moderator, $author): void {
+        $resolved = $this->entityManager->wrapInTransaction(function () use ($report, $reason, $moderator, $author): array {
             if (!$author->isSuspended()) {
                 $this->accountSuspension->suspend($author, $reason, $moderator, $report);
             }
-            $this->reportRepository->resolvePendingForTarget($report->targetType, $report->targetId, $moderator, ReportOutcome::AccountSuspended);
+
+            return $this->resolveTarget($report, $moderator, ReportOutcome::AccountSuspended);
         });
+
+        $this->eventDispatcher->dispatch(new ReportsResolvedEvent($resolved, ReportOutcome::AccountSuspended, $moderator));
+    }
+
+    /**
+     * Closes every report pending on the same target as this one and returns them, so their reporters
+     * can be told once the decision is committed.
+     *
+     * @return list<Report>
+     */
+    private function resolveTarget(Report $report, User $moderator, ReportOutcome $outcome): array
+    {
+        $pending = $this->reportRepository->findPendingForTarget($report->targetType, $report->targetId);
+        $this->reportRepository->resolve($pending, $moderator, $outcome);
+
+        return $pending;
     }
 
     /** No moderator suspends themselves or another administrator. */

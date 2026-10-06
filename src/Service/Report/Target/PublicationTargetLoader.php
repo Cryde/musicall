@@ -35,7 +35,7 @@ readonly class PublicationTargetLoader implements ReportTargetLoaderInterface
         return new ReportTarget(
             $publication->author,
             ReportTarget::text($publication->title, (string) $publication->shortDescription),
-            ['publication_slug' => $publication->slug, 'is_course' => $publication->subCategory->getIsCourse()],
+            ['publication_slug' => $publication->slug, 'publication_title' => $publication->title, 'is_course' => $publication->subCategory->getIsCourse()],
         );
     }
 }

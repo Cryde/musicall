@@ -9,6 +9,7 @@ use App\Entity\Report\Report;
 use App\Entity\User;
 use App\Enum\Report\ReportReason;
 use App\Enum\Report\ReportTargetType;
+use App\Event\ReportCreatedEvent;
 use App\Repository\Report\ReportRepository;
 use App\Service\Report\ReportTarget;
 use App\Service\Report\Target\ReportTargetLoaderInterface;
@@ -19,6 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<ReportCreate, void>
@@ -39,6 +41,7 @@ readonly class ReportCreateProcessor implements ProcessorInterface
         private Security $security,
         #[Target('report_create')]
         private RateLimiterFactoryInterface $reportCreateLimiter,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
         $byType = [];
         foreach ($loaders as $loader) {
@@ -84,5 +87,7 @@ readonly class ReportCreateProcessor implements ProcessorInterface
 
         $this->entityManager->persist($report);
         $this->entityManager->flush();
+
+        $this->eventDispatcher->dispatch(new ReportCreatedEvent($report));
     }
 }

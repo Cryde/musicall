@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Api\Admin\Report;
 
 use App\Entity\Report\Report;
+use App\Entity\User;
 use App\Enum\Moderation\ModerationActionType;
+use App\Enum\Notification\NotificationType;
 use App\Enum\Report\ReportOutcome;
 use App\Enum\Report\ReportTargetType;
 use App\Repository\Moderation\ModerationActionRepository;
+use App\Repository\Notification\NotificationRepository;
 use App\Repository\Report\ReportRepository;
 use App\Repository\UserRepository;
+use App\Service\Notification\NotificationCreator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumPostFactory;
@@ -154,6 +158,41 @@ class AdminReportTest extends ApiTestCase
         $this->assertSame(ModerationActionType::ReportDismissed, $actions[0]->type);
     }
 
+    /** DSA art. 16(5) (#1125): each reporter of the content learns the decision, and only them. */
+    public function test_dismissing_tells_each_reporter_of_that_content(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $target = ['targetId' => 'b6f1a6a0-0000-4000-8000-000000000001', 'snapshotContext' => ['username' => 'spammer']];
+        $firstReporter = UserFactory::new()->create(['username' => 'first_reporter', 'email' => 'first@test.com']);
+        $secondReporter = UserFactory::new()->create(['username' => 'second_reporter', 'email' => 'second@test.com']);
+        $suspendedReporter = UserFactory::new()->create(['username' => 'suspended_reporter', 'email' => 'suspended@test.com', 'suspensionDatetime' => new \DateTimeImmutable()]);
+        $earlierReporter = UserFactory::new()->create(['username' => 'earlier_reporter', 'email' => 'earlier@test.com']);
+        $otherReporter = UserFactory::new()->create(['username' => 'other_reporter', 'email' => 'other@test.com']);
+        $first = ReportFactory::new(['reporter' => $firstReporter] + $target)->create();
+        ReportFactory::new(['reporter' => $secondReporter] + $target)->create();
+        ReportFactory::new(['reporter' => $suspendedReporter] + $target)->create();
+        // The moderator reported it too: they need no word of their own decision.
+        ReportFactory::new(['reporter' => $admin] + $target)->create();
+        // Already decided on before: told then, not again.
+        ReportFactory::new([
+            'reporter' => $earlierReporter,
+            'resolutionDatetime' => new \DateTimeImmutable('2026-09-01'),
+            'outcome' => ReportOutcome::Dismissed,
+        ] + $target)->create();
+        ReportFactory::new(['reporter' => $otherReporter, 'targetId' => 'b6f1a6a0-0000-4000-8000-000000000002'])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('POST', '/api/admin/reports/' . $first->id . '/dismiss');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $expected = ['target_type' => 'user', 'target_label' => 'spammer', 'outcome' => 'dismissed'];
+        $this->assertDecisionNotified($firstReporter, $expected);
+        $this->assertDecisionNotified($secondReporter, $expected);
+        foreach ([$suspendedReporter, $admin, $earlierReporter, $otherReporter] as $untold) {
+            $this->assertSame([], self::getContainer()->get(NotificationRepository::class)->findForRecipient($untold, 10, 0));
+        }
+    }
+
     public function test_a_report_already_handled_cannot_be_dismissed_again(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create();
@@ -183,17 +222,47 @@ class AdminReportTest extends ApiTestCase
     {
         $admin = UserFactory::new()->asAdminUser()->create();
         $author = UserFactory::new()->create(['username' => 'spammer', 'email' => 'spammer@test.com']);
-        $report = ReportFactory::new(['targetAuthor' => $author, 'targetId' => (string) $author->id])->create();
+        $target = ['targetAuthor' => $author, 'targetId' => (string) $author->id, 'snapshotContext' => ['username' => 'spammer']];
+        $firstReporter = UserFactory::new()->create(['username' => 'first_reporter', 'email' => 'first@test.com']);
+        $secondReporter = UserFactory::new()->create(['username' => 'second_reporter', 'email' => 'second@test.com']);
+        $report = ReportFactory::new(['reporter' => $firstReporter] + $target)->create();
+        ReportFactory::new(['reporter' => $secondReporter] + $target)->create();
+        $suspendedReporter = UserFactory::new()->create(['username' => 'suspended_reporter', 'email' => 'suspended@test.com', 'suspensionDatetime' => new \DateTimeImmutable()]);
+        ReportFactory::new(['reporter' => $suspendedReporter] + $target)->create();
+        ReportFactory::new(['reporter' => $admin] + $target)->create();
 
         $this->client->loginUser($admin);
         $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam répété'], self::HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $expected = ['target_type' => 'user', 'target_label' => 'spammer', 'outcome' => 'account_suspended'];
+        $this->assertDecisionNotified($firstReporter, $expected);
+        $this->assertDecisionNotified($secondReporter, $expected);
+        foreach ([$suspendedReporter, $admin, $author] as $untold) {
+            $this->assertSame([], self::getContainer()->get(NotificationRepository::class)->findForRecipient($untold, 10, 0));
+        }
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $suspended = self::getContainer()->get(UserRepository::class)->find($author->id);
         $this->assertTrue($suspended?->isSuspended());
         $this->assertSame('Spam répété', $suspended?->suspensionReason);
-        $this->assertSame(ReportOutcome::AccountSuspended, self::getContainer()->get(ReportRepository::class)->find($report->id)?->outcome);
+        $reports = self::getContainer()->get(ReportRepository::class);
+        $this->assertSame(ReportOutcome::AccountSuspended, $reports->find($report->id)?->outcome);
+        $this->assertSame(0, $reports->countPending());
+    }
+
+    /** A notification failure never undoes the decision (epic #689 contract item 1). */
+    public function test_a_notification_failure_does_not_undo_the_dismissal(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $report = ReportFactory::new()->create();
+        self::getContainer()->set(NotificationCreator::class, $this->throwingNotificationCreator());
+
+        $this->client->loginUser($admin);
+        $this->client->request('POST', '/api/admin/reports/' . $report->id . '/dismiss');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertSame(ReportOutcome::Dismissed, self::getContainer()->get(ReportRepository::class)->find($report->id)?->outcome);
     }
 
     public function test_suspending_needs_a_reason(): void
@@ -313,5 +382,33 @@ class AdminReportTest extends ApiTestCase
             'resolved_by_username' => null,
             'outcome' => null,
         ];
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function assertDecisionNotified(User $reporter, array $payload): void
+    {
+        $notifications = self::getContainer()->get(NotificationRepository::class)->findForRecipient($reporter, 10, 0);
+        $this->assertCount(1, $notifications);
+        $this->assertSame(NotificationType::ReportResolved, $notifications[0]->type);
+        $this->assertSame($payload, $notifications[0]->payload);
+    }
+
+    private function throwingNotificationCreator(): NotificationCreator
+    {
+        return new readonly class extends NotificationCreator {
+            public function __construct()
+            {
+            }
+
+            public function create(User $recipient, NotificationType $type, array $payload): void
+            {
+                throw new \RuntimeException('Notification creation failed');
+            }
+
+            public function createForRecipients(iterable $recipients, NotificationType $type, array $payload): void
+            {
+                throw new \RuntimeException('Notification creation failed');
+            }
+        };
     }
 }

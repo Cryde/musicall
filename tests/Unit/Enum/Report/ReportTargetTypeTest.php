@@ -30,4 +30,11 @@ class ReportTargetTypeTest extends TestCase
     {
         $this->assertSame('abc', ReportTargetType::Comment->canonicalId('abc'));
     }
+
+    public function test_a_private_conversation_has_no_label_and_every_other_type_has_one(): void
+    {
+        foreach (ReportTargetType::cases() as $type) {
+            $this->assertSame($type === ReportTargetType::Message, $type->labelKey() === null, $type->value);
+        }
+    }
 }
