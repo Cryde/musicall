@@ -100,15 +100,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getOneOrNullResult();
     }
 
+    /** The DQL twin of User::isPubliclyVisible(), for queries that list other users' content. */
+    public static function publiclyVisible(string $alias): string
+    {
+        return sprintf('%1$s.deletionDatetime IS NULL AND %1$s.suspensionDatetime IS NULL', $alias);
+    }
+
     /**
      *
      * @return int|mixed|string
      */
+
     public function searchByUserName(string $username, int $limit = 15): mixed
     {
         return $this->createQueryBuilder('user')
             ->where('user.username LIKE :search')
-            ->andWhere('user.deletionDatetime IS NULL')
+            ->andWhere(self::publiclyVisible('user'))
             ->setParameter('search', $username . '%')
             ->setMaxResults($limit)
             ->getQuery()

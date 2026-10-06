@@ -58,7 +58,11 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
           await router.replace({ name: 'app_verify_email', query: { email: data.email } })
           return
         }
-        loginErrors.value = [data.message]
+        loginErrors.value = [
+          data.message === 'account_suspended'
+            ? 'Votre compte a été suspendu par la modération.'
+            : data.message
+        ]
       }
     }
   }

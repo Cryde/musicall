@@ -5,6 +5,7 @@ namespace App\Repository\Musician;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
 use App\Model\Search\MusicianSearch;
+use App\Repository\UserRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -42,6 +43,8 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('announce')
             ->addSelect('instrument')
             ->leftJoin('announce.instrument', 'instrument')
+            ->innerJoin('announce.author', 'announce_author')
+            ->andWhere(UserRepository::publiclyVisible('announce_author'))
             ->orderBy('announce.creationDatetime', 'DESC')
             ->setMaxResults($limit);
         if ($type !== null) {
@@ -259,6 +262,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('musician_announce')
             ->select('musician_announce.id')
+            ->join('musician_announce.author', 'author')
             ->setMaxResults(1);
         $this->applyCriteria($qb, $musician, $currentUser);
 
@@ -275,8 +279,12 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
         return 'POINT(' . $musician->longitude . ' ' . $musician->latitude . ')';
     }
 
+    /** Expects the author joined as `author`. */
     private function applyCriteria(QueryBuilder $qb, MusicianSearch $musician, ?User $currentUser): void
     {
+        // Closed and suspended accounts are not found (#1116).
+        $qb->andWhere(UserRepository::publiclyVisible('author'));
+
         if ($musician->type !== null) {
             $qb->andWhere('musician_announce.type = :type')
                 ->setParameter('type', $musician->type);
