@@ -87,6 +87,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $poster1Id,
                         'username' => 'poster1',
+                        'display_name' => 'poster1',
                         'deletion_datetime' => null,
                         'profile_picture' => null,
                     ],
@@ -105,6 +106,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $poster2Id,
                         'username' => 'poster2',
+                        'display_name' => 'poster2',
                         'deletion_datetime' => null,
                         'profile_picture' => null,
                     ],
@@ -123,6 +125,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $poster1Id,
                         'username' => 'poster1',
+                        'display_name' => 'poster1',
                         'deletion_datetime' => null,
                         'profile_picture' => null,
                     ],
@@ -206,6 +209,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                     '@type' => 'User',
                     'id' => $poster->id,
                     'username' => 'poster',
+                    'display_name' => 'poster',
                     'deletion_datetime' => null,
                     'profile_picture' => null,
                 ],
@@ -278,6 +282,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $poster->id,
                         'username' => 'poster',
+                        'display_name' => 'poster',
                         'deletion_datetime' => null,
                         'profile_picture' => null,
                     ],
@@ -344,6 +349,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $poster->id,
                         'username' => 'poster',
+                        'display_name' => 'poster',
                         'deletion_datetime' => null,
                         'profile_picture' => null,
                     ],
@@ -400,6 +406,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                         '@type' => 'User',
                         'id' => $poster->id,
                         'username' => 'poster',
+                        'display_name' => 'poster',
                         'deletion_datetime' => null,
                         'profile_picture' => null,
                     ],
@@ -455,6 +462,7 @@ class TopicPostGetCollectionTest extends ApiTestCase
                     '@type' => 'User',
                     'id' => $poster->id,
                     'username' => 'poster',
+                    'display_name' => 'poster',
                     'deletion_datetime' => null,
                     'profile_picture' => null,
                 ],
@@ -480,5 +488,83 @@ class TopicPostGetCollectionTest extends ApiTestCase
                 'previous' => '/api/forums/topics/test-topic/posts?page=1',
             ],
         ]);
+    }
+
+    /** One poster per naming case, each named without a query of their own (#1118). */
+    public function test_posters_are_named_by_their_public_profile_name_next_to_their_username(): void
+    {
+        $forum = ForumFactory::new([
+            'forumCategory' => ForumCategoryFactory::new(['position' => 1]),
+            'slug' => 'test-forum',
+        ])->create();
+        $named = UserFactory::new()->create(['username' => 'androidtest_123', 'email' => 'androidtest@test.com']);
+        $named->profile->displayName = 'Alexandre Martin';
+        $private = UserFactory::new()->create(['username' => 'crydetest', 'email' => 'crydetest@test.com']);
+        $private->profile->displayName = 'Samuel Dupont';
+        $private->profile->isPublic = false;
+        $departed = UserFactory::new()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2024-06-01 09:00:00'),
+        ]);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+        $topic = ForumTopicFactory::new(['forum' => $forum, 'title' => 'Test Topic', 'slug' => 'test-topic', 'author' => $named])->create();
+
+        $posts = [];
+        foreach ([$named, $private, $departed] as $index => $poster) {
+            $posts[] = ForumPostFactory::new([
+                'topic' => $topic,
+                'creator' => $poster,
+                'content' => 'Post ' . $index,
+                'creationDatetime' => new \DateTime(sprintf('2024-01-0%d 10:00:00', $index + 1)),
+                'updateDatetime' => null,
+            ])->create();
+        }
+
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->request('GET', '/api/forums/topics/test-topic/posts');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/forums/topics/test-topic/posts',
+            '@type' => 'Collection',
+            'member' => [
+                $this->expectedPost($posts[0], $named, 'Alexandre Martin', null),
+                // A private profile keeps its name to itself.
+                $this->expectedPost($posts[1], $private, 'crydetest', null),
+                $this->expectedPost($posts[2], $departed, 'Utilisateur supprimé', '2024-06-01T09:00:00+00:00'),
+            ],
+            'totalItems' => 3,
+        ]);
+        $this->assertNoQueryReadsTable('user_profile', 'A poster profile must come with the page, never in a query of its own');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function expectedPost(object $post, object $poster, string $displayName, ?string $deletionDatetime): array
+    {
+        return [
+            '@id' => '/api/topic_posts/' . $post->id,
+            '@type' => 'TopicPost',
+            'id' => $post->id,
+            'creation_datetime' => \DateTimeImmutable::createFromInterface($post->creationDatetime)->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+            'content' => $post->content,
+            'creator' => [
+                '@type' => 'User',
+                'id' => $poster->id,
+                'username' => $poster->username,
+                'display_name' => $displayName,
+                'deletion_datetime' => $deletionDatetime,
+                'profile_picture' => null,
+            ],
+            'upvotes' => 0,
+            'downvotes' => 0,
+            'user_vote' => null,
+        ];
     }
 }

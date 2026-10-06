@@ -14,11 +14,13 @@
       </router-link>
       <div class="text-sm text-surface-500 dark:text-surface-400 mt-1">
         Par
-        <router-link
+        <UserName
           v-if="!topic.author.deletion_datetime"
+          :username="topic.author.username"
+          :display-name="authorName"
           :to="{ name: 'app_user_public_profile', params: { username: topic.author.username } }"
           class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-        >{{ authorName }}</router-link>
+        />
         <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
         le {{ formatDate(topic.creation_datetime) }}
       </div>
@@ -35,12 +37,14 @@
     >
       <div>
         Dernier message par
-        <router-link
+        <UserName
           v-if="!topic.last_post.creator.deletion_datetime"
+          :username="topic.last_post.creator.username"
+          :display-name="lastPostCreatorName"
           :to="{ name: 'app_user_public_profile', params: { username: topic.last_post.creator.username } }"
           class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
           @click.stop
-        >{{ lastPostCreatorName }}</router-link>
+        />
         <span v-else class="font-semibold text-surface-500">{{ lastPostCreatorName }}</span>
       </div>
       <router-link :to="lastPostRoute" class="hover:text-primary transition-colors">
@@ -58,6 +62,7 @@ import Tag from 'primevue/tag'
 import { computed } from 'vue'
 import { displayName } from '../../helper/user/displayName.js'
 import { formatDate } from '../../utils/date.js'
+import UserName from '../User/UserName.vue'
 
 const POSTS_PER_PAGE = 10
 

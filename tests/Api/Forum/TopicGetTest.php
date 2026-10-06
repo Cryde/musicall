@@ -64,6 +64,7 @@ class TopicGetTest extends ApiTestCase
                 '@type' => 'User',
                 'id' => $authorId,
                 'username' => 'topic_author',
+                'display_name' => 'topic_author',
             ],
         ]);
     }

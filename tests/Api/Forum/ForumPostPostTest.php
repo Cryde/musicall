@@ -77,6 +77,7 @@ class ForumPostPostTest extends ApiTestCase
                 '@type' => 'User',
                 'id'              => $userId,
                 'username'        => 'base_admin',
+                'display_name' => 'base_admin',
             ],
             'upvotes' => 0,
             'downvotes' => 0,

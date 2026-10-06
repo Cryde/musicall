@@ -76,6 +76,7 @@ class ForumTopicPostPostTest extends ApiTestCase
                     '@type' => 'User',
                     'id' => $userId,
                     'username' => 'base_admin',
+                    'display_name' => 'base_admin',
                 ],
             ],
             'creation_datetime' => $results[0]->creationDatetime->format('c'),
@@ -83,6 +84,7 @@ class ForumTopicPostPostTest extends ApiTestCase
                 '@type' => 'User',
                 'id' => $userId,
                 'username' => 'base_admin',
+                'display_name' => 'base_admin',
             ],
             'post_number' => 1,
         ]);

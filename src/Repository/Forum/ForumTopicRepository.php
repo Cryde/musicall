@@ -23,8 +23,11 @@ class ForumTopicRepository extends ServiceEntityRepository
             ->innerJoin('ft.forum', 'f')
             ->leftJoin('ft.lastPost', 'lp')
             ->leftJoin('lp.creator', 'lpc')
+            ->leftJoin('lpc.profile', 'lpcp')
             ->innerJoin('ft.author', 'a')
-            ->addSelect('lp', 'lpc', 'a')
+            ->innerJoin('a.profile', 'ap')
+            // Both profiles because each row names its author and its last poster (#1118).
+            ->addSelect('lp', 'lpc', 'lpcp', 'a', 'ap')
             ->where('f.slug = :forumSlug')
             ->setParameter('forumSlug', $forumSlug)
             ->orderBy('ft.type', 'DESC')
