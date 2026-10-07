@@ -145,6 +145,25 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Ids only: the caller runs after the request's flush and must not hydrate a User (#985).
+     *
+     * @return list<string>
+     */
+    public function findActiveUserIdsByBandSpaceId(string $bandSpaceId): array
+    {
+        $rows = $this->createQueryBuilder('m')
+            ->select('IDENTITY(m.user) AS user_id')
+            ->where('m.bandSpace = :bandSpaceId')
+            ->andWhere('m.status = :status')
+            ->setParameter('bandSpaceId', $bandSpaceId)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_values(array_map(static fn (array $row): string => (string) $row['user_id'], $rows));
+    }
+
     public function countActiveMembers(BandSpace $bandSpace): int
     {
         return (int) $this->createQueryBuilder('m')

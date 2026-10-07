@@ -7,9 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\MemberAbsenceResource;
 use App\Entity\BandSpace\MemberAbsence;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\MemberAbsenceChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\MemberAbsenceBuilder;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +31,7 @@ readonly class MemberAbsenceUpdateProcessor implements ProcessorInterface
         private MemberAbsenceRepository $memberAbsenceRepository,
         private MemberAbsenceBuilder $memberAbsenceBuilder,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -63,6 +66,8 @@ readonly class MemberAbsenceUpdateProcessor implements ProcessorInterface
 
         // An identical string is ===, which Doctrine's change set computation skips on its own.
         $absence->reason = $data->reason;
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Agenda);
 
         $this->entityManager->flush();
 

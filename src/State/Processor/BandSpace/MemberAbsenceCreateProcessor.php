@@ -10,10 +10,12 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\MemberAbsence;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\MemberAbsenceChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\MemberAbsenceBuilder;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +36,7 @@ readonly class MemberAbsenceCreateProcessor implements ProcessorInterface
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private MemberAbsenceBuilder $memberAbsenceBuilder,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -61,6 +64,8 @@ readonly class MemberAbsenceCreateProcessor implements ProcessorInterface
         $absence->reason = $data->reason;
 
         $this->entityManager->persist($absence);
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Agenda);
+
         $this->entityManager->flush();
 
         return $this->memberAbsenceBuilder->buildItem($absence, $actor);

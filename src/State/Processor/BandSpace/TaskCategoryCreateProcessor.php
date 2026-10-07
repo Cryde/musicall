@@ -8,8 +8,10 @@ use App\ApiResource\BandSpace\Task\TaskCategoryCreate;
 use App\ApiResource\BandSpace\Task\TaskCategoryResource;
 use App\Entity\BandSpace\TaskCategory;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\ColorAssignmentService;
 use App\Service\Builder\BandSpace\TaskCategoryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +30,7 @@ readonly class TaskCategoryCreateProcessor implements ProcessorInterface
         private ColorAssignmentService $colorAssignmentService,
         private TaskCategoryBuilder $taskCategoryBuilder,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -51,6 +54,8 @@ readonly class TaskCategoryCreateProcessor implements ProcessorInterface
         $category->color = $this->colorAssignmentService->assignColor($usedColors);
 
         $this->entityManager->persist($category);
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
+
         $this->entityManager->flush();
 
         return $this->taskCategoryBuilder->buildItem($category);

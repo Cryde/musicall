@@ -6,9 +6,11 @@ namespace App\Command\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Repository\Message\MessageThreadRepository;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\File\BandSpaceFilePurger;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -58,6 +60,7 @@ class PurgeBandSpaceStorageCommand extends Command
         private readonly BandSpaceFilePurger $filePurger,
         private readonly MessageThreadRepository $messageThreadRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly BandSpaceChangeSignal $changeSignal,
         #[Target('musicallFilesystem')]
         private readonly FilesystemOperator $musicallFilesystem,
         private readonly LoggerInterface $logger,
@@ -137,6 +140,8 @@ class PurgeBandSpaceStorageCommand extends Command
                     continue;
                 }
                 ++$purged;
+                // The trash lists it until now.
+                $this->changeSignal->changed($file->bandSpace, BandSpaceModule::File);
             } catch (\Throwable $e) {
                 ++$failures;
                 $this->logger->error('Failed to purge archived band space file', [

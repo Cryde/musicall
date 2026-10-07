@@ -13,6 +13,7 @@ use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\SetlistBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,7 @@ readonly class SetlistUpdateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $activityRecorder,
         private SetlistBuilder $setlistBuilder,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -75,6 +77,8 @@ readonly class SetlistUpdateProcessor implements ProcessorInterface
                 payload: ['name' => $setlist->name],
             );
         }
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Setlist);
 
         $this->entityManager->flush();
 

@@ -14,6 +14,7 @@ use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -35,6 +36,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -95,6 +97,11 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
                 actor: $user,
                 payload: ['original_name' => $file->originalName],
             );
+        }
+
+        // A personal entry stays between its owner and the server, so the band hears nothing.
+        if ($entry->scope !== FinanceEntryScope::Personal) {
+            $this->changeSignal->changed($bandSpace, BandSpaceModule::Finance);
         }
 
         $this->entityManager->flush();

@@ -19,6 +19,7 @@ use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\TaskWriteGuard;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
@@ -49,6 +50,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
         private BandSpaceFileBuilder $fileBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -161,6 +163,8 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
                 'source_label' => $task->title,
             ],
         );
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
         $this->entityManager->flush();
 

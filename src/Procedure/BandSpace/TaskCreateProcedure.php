@@ -16,6 +16,7 @@ use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -38,6 +39,7 @@ readonly class TaskCreateProcedure
         private UserRepository $userRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private EventDispatcherInterface $eventDispatcher,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -69,6 +71,8 @@ readonly class TaskCreateProcedure
         $this->entityManager->persist($task);
 
         $addedAssignees = $this->addAssignees($task, $input->assigneeIds ?? [], $bandSpace, $author);
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
         $this->entityManager->flush();
 

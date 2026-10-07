@@ -6,8 +6,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskCategoryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\TaskCategoryBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +30,7 @@ readonly class TaskCategoryUpdateProcessor implements ProcessorInterface
         private TaskCategoryBuilder $taskCategoryBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -59,6 +62,8 @@ readonly class TaskCategoryUpdateProcessor implements ProcessorInterface
         }
 
         $category->updateDatetime = new DateTime();
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
         $this->entityManager->flush();
 

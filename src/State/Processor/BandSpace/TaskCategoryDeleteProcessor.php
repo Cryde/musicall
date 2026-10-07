@@ -6,8 +6,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskCategoryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -23,6 +25,7 @@ readonly class TaskCategoryDeleteProcessor implements ProcessorInterface
         private BandSpaceAdminChecker $adminChecker,
         private TaskCategoryRepository $taskCategoryRepository,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -44,6 +47,8 @@ readonly class TaskCategoryDeleteProcessor implements ProcessorInterface
         }
 
         $this->entityManager->remove($category);
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
+
         $this->entityManager->flush();
     }
 }

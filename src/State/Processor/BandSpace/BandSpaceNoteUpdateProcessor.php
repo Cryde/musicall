@@ -12,6 +12,7 @@ use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\BandSpaceNoteBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +35,7 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -123,6 +125,8 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
                 actor: $user,
             );
         }
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Notes);
 
         $this->entityManager->flush();
 

@@ -18,6 +18,7 @@ use App\Repository\BandSpace\TechRiderItemRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\TechRiderWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\Builder\BandSpace\TechRider\TechRiderItemBuilder;
 use DateTime;
@@ -44,6 +45,7 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
         private TechRiderItemBuilder $itemBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -150,6 +152,8 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
                 payload: ['rider_name' => $techRider->name, 'title' => $item->title],
             );
         }
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Rider);
 
         $this->entityManager->flush();
 
