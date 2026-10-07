@@ -9,3 +9,6 @@ services:
             - [setClientSecret, ['%env(GOOGLE_CLIENT_SECRET)%']]
             # Authentication with "OAuth 2.0" or "Service account" using JSON
             #- [setAuthConfig, ['%env(resolve:GOOGLE_AUTH_CONFIG)%']]
+            # Google's signing certificates for ID tokens (#1133), shared by every worker instead of
+            # fetched again on each native Google sign-in.
+            - [setCache, ['@cache.google_client']]

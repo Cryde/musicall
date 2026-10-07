@@ -34,6 +34,13 @@ framework:
             limit: 3
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # Google sign-in from the app, per IP (#1133). Each attempt checks a token against Google, and
+        # a person signs in a handful of times at most.
+        native_oauth:
+            policy: sliding_window
+            limit: 10
+            interval: '10 minutes'
+            cache_pool: "rate_limiter.cache"
         # Every registration attempt, refused ones included, since a refusal says whether an email
         # already has an account (#1119). Generous enough for someone fixing typos.
         registration_attempt:

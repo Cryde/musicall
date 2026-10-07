@@ -75,6 +75,17 @@ security:
                 check_path: /api/native/token/refresh
                 success_handler: app.security.native.refresh_success_handler
 
+        # Google sign-in for the app (#1133). Its own firewall for the reason the two above are: the
+        # login firewall's throttling charges any passport, and this one has no password to guess, so
+        # GoogleIdTokenAuthenticator limits per IP itself. Under the native prefix, so blinded to
+        # cookies like the rest.
+        native_oauth:
+            pattern: ^/api/native/oauth/
+            stateless: true
+            user_checker: App\Security\UserChecker
+            custom_authenticators:
+                - App\Security\Native\GoogleIdTokenAuthenticator
+
         api:
             pattern: ^/api/
             lazy: true
@@ -113,6 +124,7 @@ security:
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/native/login_check, roles: PUBLIC_ACCESS }
         - { path: ^/api/native/token/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/native/oauth/, roles: PUBLIC_ACCESS }
         - { path: ^/api/shares/, role: PUBLIC_ACCESS }
 
 when@test:
