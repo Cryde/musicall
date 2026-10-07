@@ -176,7 +176,8 @@ const columns = [
 const legalLinks = [
   { label: 'Confidentialité', to: { name: 'app_privacy' } },
   { label: 'CGU', to: { name: 'app_terms' } },
-  { label: 'Mentions légales', to: { name: 'app_mentions_legales' } }
+  { label: 'Mentions légales', to: { name: 'app_mentions_legales' } },
+  { label: 'Supprimer mon compte', to: { name: 'app_account_deletion' } }
 ]
 
 const userSecurityStore = useUserSecurityStore()

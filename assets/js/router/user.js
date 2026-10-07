@@ -34,6 +34,12 @@ export default [
     component: () => import('../views/Legal/Terms.vue')
   },
   {
+    // Public on purpose: Google Play's Data safety form links here as the account deletion URL (#1130).
+    name: 'app_account_deletion',
+    path: '/supprimer-mon-compte',
+    component: () => import('../views/Legal/AccountDeletion.vue')
+  },
+  {
     name: 'app_mentions_legales',
     path: '/mentions-legales',
     component: () => import('../views/Legal/MentionsLegales.vue')

@@ -81,7 +81,7 @@
             <strong>5.3 Contenus déposés.</strong> Vous restez propriétaire des contenus que vous déposez et garantissez détenir les droits nécessaires sur les fichiers que vous téléversez.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            <strong>5.4 Départ d'un espace et suppression de compte.</strong> Lorsque vous quittez un espace, les contenus que vous y avez déposés y restent disponibles pour les autres membres, afin que le travail du groupe reste cohérent. Vos entrées financières personnelles récurrentes sont désactivées et leurs échéances futures encore prévues sont supprimées. Si vous supprimez votre compte, ces contenus restent également en place et votre appartenance à l'espace est conservée, mais votre nom d'utilisateur est remplacé par un identifiant anonyme.
+            <strong>5.4 Départ d'un espace et suppression de compte.</strong> Lorsque vous quittez un espace, les contenus que vous y avez déposés y restent disponibles pour les autres membres, afin que le travail du groupe reste cohérent. Vos entrées financières personnelles récurrentes sont désactivées et leurs échéances futures encore prévues sont supprimées. Si vous supprimez votre compte, vous quittez chacun de vos espaces : ces contenus restent également en place, rattachés à un identifiant anonyme. Si vous étiez le seul administrateur d'un espace, son membre le plus ancien le devient ; si vous en étiez le seul membre, l'espace est programmé pour suppression dans les conditions de l'article 5.5.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>5.5 Suppression d'un espace.</strong> Seul un administrateur de l'espace peut le supprimer. La suppression est programmée et non immédiate : l'espace reste accessible pendant 30 jours, de sorte que chaque membre puisse récupérer ses fichiers, et tout administrateur peut annuler la suppression pendant ce délai. Les membres sont informés dès qu'une suppression est programmée ou annulée. À l'issue des 30 jours, l'espace et l'ensemble de ses contenus, fichiers compris, sont définitivement supprimés et ne peuvent plus être récupérés. Un fichier supprimé individuellement suit le même délai de 30 jours avant son effacement définitif.
@@ -254,5 +254,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle("Conditions générales d'utilisation - MusicAll")
 
-const lastUpdate = '31 juillet 2026'
+const lastUpdate = '7 octobre 2026'
 </script>

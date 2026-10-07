@@ -81,7 +81,7 @@
             <li>Les entrées financières marquées comme personnelles sont visibles par tous les membres de l'espace. Elles sont seulement exclues des totaux et des graphiques du groupe, et ne peuvent être modifiées que par leur auteur. Ne saisissez donc pas dans ce module une information que vous ne souhaitez pas partager avec les autres membres.</li>
             <li>Les données déposées dans un Band Space ne sont ni revendues, ni exploitées à des fins publicitaires, ni utilisées pour du profilage. Elles ne sont consultées par l'éditeur que lorsque c'est strictement nécessaire au fonctionnement ou à la sécurité du service, ou pour répondre à une obligation légale.</li>
             <li>Lorsque vous quittez un espace, les contenus que vous y avez déposés y restent, afin que le travail du groupe reste cohérent. Vos entrées financières personnelles récurrentes sont désactivées et leurs échéances futures encore prévues sont supprimées.</li>
-            <li>Lorsque vous supprimez votre compte, vos contenus Band Space restent également en place et votre appartenance à l'espace est conservée, mais votre nom d'utilisateur est remplacé par un identifiant anonyme.</li>
+            <li>Lorsque vous supprimez votre compte, vous quittez chacun de vos espaces : vos contenus Band Space restent en place, rattachés à un identifiant anonyme. Si vous étiez le seul administrateur d'un espace, son membre le plus ancien le devient ; si vous en étiez le seul membre, l'espace est programmé pour suppression, avec le même délai de 30 jours.</li>
             <li>Un administrateur peut supprimer un Band Space. La suppression n'est pas immédiate : l'espace reste accessible pendant 30 jours, afin que chaque membre puisse récupérer ses fichiers, et un administrateur peut l'annuler pendant ce délai. Passé les 30 jours, l'espace et l'ensemble de ses contenus, fichiers compris, sont définitivement supprimés. Les membres sont informés dès qu'une suppression est programmée ou annulée.</li>
             <li>Un fichier supprimé depuis un Band Space est immédiatement retiré de l'espace et n'est plus accessible à ses membres. Il est définitivement effacé de nos serveurs 30 jours plus tard.</li>
           </ul>
@@ -151,7 +151,9 @@
             Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, ainsi que du droit de retirer votre consentement à tout moment pour les traitements qui en dépendent.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            Vous pouvez supprimer votre compte directement depuis les paramètres de votre profil, sur le site comme dans l'application. Pour tout autre droit, y compris pour obtenir une copie de vos données, écrivez à
+            Vous pouvez supprimer votre compte directement depuis les paramètres de votre profil, sur le site comme dans l'application : la page
+            <router-link :to="{ name: 'app_account_deletion' }" class="text-primary hover:text-primary-emphasis">Supprimer votre compte</router-link>
+            décrit la marche à suivre, y compris si vous ne pouvez plus vous connecter, et ce qui est supprimé ou conservé. Pour tout autre droit, y compris pour obtenir une copie de vos données, écrivez à
             <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a> : ces demandes sont traitées manuellement, aucun export automatique n'étant disponible à ce jour. Nous répondons dans un délai d'un mois.
           </p>
         </section>
