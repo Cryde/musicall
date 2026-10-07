@@ -15,7 +15,7 @@
             1. Responsable du traitement
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
-            Le responsable du traitement de vos données personnelles est Jérémy Tonneau, éditeur du site MusicAll.
+            Le responsable du traitement de vos données personnelles est Jérémy Tonneau, éditeur du site MusicAll et de l'application mobile MusicAll. Le site et l'application donnent accès au même service et au même compte : cette politique s'applique aux deux, et vos droits sont les mêmes quel que soit le support utilisé.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Contact : <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a>
@@ -35,8 +35,10 @@
             <li><strong>Profil</strong> : photo de profil, image de couverture, biographie, instruments, styles musicaux, localisation, liens vers vos réseaux, fiches annuaire musicien et professeur</li>
             <li><strong>Contenus publics</strong> : publications, cours, galeries, commentaires, messages du forum, annonces, votes et compteurs de vues</li>
             <li><strong>Messages privés</strong> échangés avec d'autres utilisateurs</li>
-            <li><strong>Band Space</strong> : notes, tâches et leurs commentaires, entrées d'agenda, setlists, fichiers déposés, entrées financières (libellés, montants, catégories, échéances, répartitions), invitations, appartenances et journal d'activité de l'espace</li>
-            <li><strong>Notifications</strong> et préférences d'envoi d'emails</li>
+            <li><strong>Band Space</strong> : notes, tâches et leurs commentaires, entrées d'agenda, setlists, fichiers déposés, messages de la discussion du groupe (y compris les photos et notes vocales qui y sont envoyées), entrées financières (libellés, montants, catégories, échéances, répartitions), invitations, appartenances et journal d'activité de l'espace</li>
+            <li><strong>Notifications</strong> et préférences d'envoi d'emails et de notifications push</li>
+            <li><strong>Application mobile, notifications push</strong> (si vous les autorisez sur votre téléphone) : un identifiant d'appareil fourni par Firebase Cloud Messaging, le système de votre téléphone (Android), la date à laquelle il a été enregistré et la dernière fois qu'il a été vu. Il sert uniquement à acheminer les notifications vers votre téléphone</li>
+            <li><strong>Application mobile, microphone et photos</strong> : le microphone n'est utilisé que pendant l'enregistrement d'une note vocale ou une dictée, à votre demande. Une dictée passe par le service de reconnaissance vocale de votre téléphone (sur Android, en général celui de Google), selon ses propres conditions : MusicAll n'en reçoit que le texte. Les photos ne sont lues que lorsque vous en choisissez une à envoyer</li>
             <li><strong>Recherche de musiciens et de groupes</strong> : les critères de vos recherches (type, instrument, styles, ville), le nombre de résultats obtenus et, pour la recherche assistée, le texte libre que vous saisissez. Ces recherches sont enregistrées sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer le service</li>
             <li><strong>Données techniques</strong> : adresse IP, journaux du serveur, rapports d'erreur applicative</li>
             <li><strong>Mesure d'audience</strong> : statistiques de visite agrégées, sans cookie</li>
@@ -61,6 +63,7 @@
             <li>Vous envoyer les emails nécessaires au fonctionnement de votre compte (validation d'adresse, réinitialisation de mot de passe, invitations) : <strong>exécution du contrat</strong></li>
             <li>Vous envoyer les emails de suivi de votre activité (réponses, commentaires, messages reçus, récapitulatifs, actualités du site), que vous pouvez désactiver à tout moment depuis vos paramètres : <strong>intérêt légitime</strong></li>
             <li>Vous envoyer des emails à caractère promotionnel : <strong>consentement</strong> (art. 6.1.a), désactivé par défaut et retirable à tout moment</li>
+            <li>Vous envoyer des notifications push sur l'application mobile (messages, discussion du groupe, mentions, tâches, agenda, etc.) : <strong>consentement</strong> (art. 6.1.a), donné lorsque vous autorisez les notifications sur votre téléphone. Vous pouvez les désactiver catégorie par catégorie dans vos paramètres de notification, ou entièrement dans les réglages de votre téléphone</li>
             <li>Traiter les signalements de contenu et documenter les décisions de modération : <strong>obligation légale</strong></li>
           </ul>
         </section>
@@ -94,9 +97,10 @@
             <li><strong>Brevo</strong> : envoi des emails transactionnels, France (UE)</li>
             <li><strong>Sentry</strong> : détection des erreurs applicatives</li>
             <li><strong>Google Ireland Limited</strong> : connexion via compte Google, si vous l'utilisez, Irlande (UE)</li>
+            <li><strong>Google (Firebase Cloud Messaging)</strong> : acheminement des notifications push vers votre téléphone, si vous les avez autorisées. Google Ireland Limited, avec des serveurs pouvant être situés hors de l'Union européenne, notamment aux États-Unis. Une notification push contient son titre et son texte : pour un message privé ou un message de la discussion d'un groupe, il s'agit du nom de l'expéditeur et d'un extrait du message, au plus 140 caractères, qui transite donc par les serveurs de Google jusqu'à votre téléphone</li>
             <li><strong>OpenAI</strong> : interprétation du texte libre de la recherche assistée de musiciens, États-Unis</li>
             <li><strong>Google / YouTube</strong>, <strong>Spotify</strong> et <strong>SoundCloud</strong> : lecture des vidéos et des morceaux intégrés dans certaines pages</li>
-            <li><strong>Google Fonts</strong> : fourniture des polices de caractères du site</li>
+            <li><strong>Google Fonts</strong> : fourniture des polices de caractères du site et de l'application</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Les lecteurs Spotify et SoundCloud, ainsi que les vidéos YouTube affichées sur les profils de musiciens et de professeurs, ne sont chargés qu'au moment où vous cliquez pour les lancer. En revanche, les vidéos des publications de type vidéo et celles insérées dans le corps d'un article sont chargées dès l'ouverture de la page, comme les polices Google Fonts : votre navigateur transmet alors votre adresse IP à ces plateformes sans action de votre part.
@@ -114,7 +118,7 @@
             Vos données de compte, vos contenus et vos fichiers sont hébergés et sauvegardés dans l'Union européenne : les serveurs et les fichiers chez Scaleway en France, les sauvegardes chez Amazon Web Services en région Europe (Paris). Les sauvegardes sont chiffrées avant leur transmission : l'hébergeur n'a accès qu'à des données illisibles.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            Deux traitements sortent de ce cadre. Le texte que vous saisissez dans la recherche assistée de musiciens est transmis à OpenAI, dont les serveurs sont situés aux États-Unis, afin d'être converti en filtres de recherche. Et lorsqu'une vidéo, un lecteur audio ou une police de caractères externe est chargé, votre navigateur communique directement avec Google, Spotify ou SoundCloud, dont les serveurs peuvent être situés en dehors de l'Union européenne.
+            Trois traitements sortent de ce cadre. Le texte que vous saisissez dans la recherche assistée de musiciens est transmis à OpenAI, dont les serveurs sont situés aux États-Unis, afin d'être converti en filtres de recherche. Les notifications push de l'application mobile, et l'extrait de message qu'elles peuvent contenir, transitent par Firebase Cloud Messaging, dont les serveurs peuvent être situés aux États-Unis : Google encadre ces transferts par le cadre de protection des données UE-États-Unis (Data Privacy Framework), auquel Google LLC a adhéré, et par les clauses contractuelles types de la Commission européenne. Et lorsqu'une vidéo, un lecteur audio ou une police de caractères externe est chargé, votre navigateur ou l'application communique directement avec Google, Spotify ou SoundCloud, dont les serveurs peuvent être situés en dehors de l'Union européenne.
           </p>
         </section>
 
@@ -133,6 +137,8 @@
             <li><strong>Fichiers Band Space supprimés :</strong> 30 jours, puis effacement définitif</li>
             <li><strong>Band Space supprimé :</strong> 30 jours, puis effacement définitif de l'espace et de tous ses contenus</li>
             <li><strong>Recherches de musiciens et de groupes :</strong> 6 mois, puis effacement définitif</li>
+            <li><strong>Identifiant d'appareil pour les notifications push :</strong> supprimé lorsque vous vous déconnectez de l'application sur cet appareil, lorsque votre compte est supprimé ou suspendu, ou dès que Firebase nous signale qu'il n'est plus valide (application désinstallée, notifications révoquées)</li>
+            <li><strong>Données conservées sur votre téléphone par l'application :</strong> effacées lorsque vous vous déconnectez, voir la section 11</li>
             <li><strong>Statistiques d'audience :</strong> conservées sous forme agrégée et non nominative</li>
           </ul>
         </section>
@@ -145,7 +151,7 @@
             Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, ainsi que du droit de retirer votre consentement à tout moment pour les traitements qui en dépendent.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            Vous pouvez supprimer votre compte directement depuis les paramètres de votre profil. Pour tout autre droit, y compris pour obtenir une copie de vos données, écrivez à
+            Vous pouvez supprimer votre compte directement depuis les paramètres de votre profil, sur le site comme dans l'application. Pour tout autre droit, y compris pour obtenir une copie de vos données, écrivez à
             <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a> : ces demandes sont traitées manuellement, aucun export automatique n'étant disponible à ce jour. Nous répondons dans un délai d'un mois.
           </p>
         </section>
@@ -167,6 +173,9 @@
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Aucun cookie publicitaire, de profilage ou de suivi entre sites n'est déposé par MusicAll, et la mesure d'audience fonctionne sans cookie. Les contenus externes décrits à la section 5 peuvent en revanche déposer leurs propres cookies lorsqu'ils sont chargés.
           </p>
+          <p class="text-surface-600 dark:text-surface-300 mt-4">
+            L'application mobile ne dépose pas de cookie et ne contient aucun outil de mesure d'audience ou de publicité : votre session y est conservée dans le stockage sécurisé de votre téléphone (voir la section 11).
+          </p>
         </section>
 
         <section>
@@ -184,6 +193,9 @@
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
             Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont stockés sous forme hachée. L'accès aux contenus d'un Band Space est restreint à ses membres. La base de données fait l'objet de sauvegardes quotidiennes chiffrées, et les fichiers déposés bénéficient d'un mécanisme de versionnement.
+          </p>
+          <p class="text-surface-600 dark:text-surface-300 mt-4">
+            Sur votre téléphone, l'application conserve votre session dans le stockage sécurisé du système. Pour que vous puissiez consulter certains contenus de vos Band Spaces sans connexion, elle garde aussi sur le téléphone les derniers contenus affichés, les fichiers que vous choisissez de rendre disponibles hors ligne et les messages écrits hors ligne en attente d'envoi. Tout cela est effacé lorsque vous vous déconnectez de l'application, de même que l'identifiant d'appareil utilisé pour les notifications push.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Aucun système n'étant infaillible, nous vous recommandons d'utiliser un mot de passe unique pour votre compte MusicAll.
@@ -226,5 +238,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '30 septembre 2026'
+const lastUpdate = '7 octobre 2026'
 </script>
