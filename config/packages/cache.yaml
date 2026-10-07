@@ -30,6 +30,11 @@ framework:
             auth.consumed_tokens:
                 adapter: cache.app
                 default_lifetime: 600
+            # Google's ID token signing certificates (#1133), and the Google client's own token cache.
+            # A day, so a key Google has retired stops being accepted; a new key id refetches anyway.
+            cache.google_client:
+                adapter: cache.app
+                default_lifetime: 86400
 
 when@test:
     framework:

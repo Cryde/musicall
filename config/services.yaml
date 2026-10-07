@@ -130,6 +130,8 @@ services:
         calls:
             - setFirewallName: ['native_api_token_refresh']
 
+    App\Service\OAuth\Google\GoogleIdTokenVerifierInterface: '@App\Service\OAuth\Google\GoogleIdTokenVerifier'
+
     App\Controller\OAuth\GoogleController:
         arguments:
             $frontendUrl: '%env(DEFAULT_URI)%'
@@ -153,6 +155,12 @@ when@test:
         Kreait\Firebase\Contract\Messaging: '@App\Tests\Double\RecordingFirebaseMessaging'
 
         App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
+
+        # The suite never asks Google whether an ID token is genuine (#1133). Public so a test can
+        # say which tokens are.
+        App\Tests\Double\FakeGoogleIdTokenVerifier:
+            public: true
+        App\Service\OAuth\Google\GoogleIdTokenVerifierInterface: '@App\Tests\Double\FakeGoogleIdTokenVerifier'
 
         # NotificationCreator publishes a Mercure signal on every notification and fifteen source
         # files call it, so without this a large part of the suite would attempt an HTTP POST to a

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\OAuth;
 
+use App\Service\OAuth\Google\GoogleUserDataMapper;
 use App\Service\OAuth\OAuthUserData;
 use League\OAuth2\Client\Provider\GoogleUser;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -30,26 +31,7 @@ class GoogleController extends AbstractOAuthController
     protected function extractUserData(object $resourceOwner): OAuthUserData
     {
         /** @var GoogleUser $resourceOwner */
-        if (!$email = $resourceOwner->getEmail()) {
-            throw new \LogicException('No email address');
-        }
-        return new OAuthUserData(
-            id: $resourceOwner->getId(),
-            email: $email,
-            username: $resourceOwner->getName() ?: $email,
-            pictureUrl: $this->getHighResolutionPictureUrl($resourceOwner->getAvatar()),
-            // Default to false (untrusted) if Google omits the claim.
-            emailVerified: (bool) ($resourceOwner->toArray()['email_verified'] ?? false),
-        );
-    }
-
-    private function getHighResolutionPictureUrl(?string $pictureUrl): ?string
-    {
-        if ($pictureUrl === null) {
-            return null;
-        }
-
-        return preg_replace('/=s\d+-c$/', '=s500-c', $pictureUrl);
+        return GoogleUserDataMapper::fromClaims($resourceOwner->toArray());
     }
 
     #[Route('/oauth/google', name: 'oauth_google_start', options: ['expose' => true])]
