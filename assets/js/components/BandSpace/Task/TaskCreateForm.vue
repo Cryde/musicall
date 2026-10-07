@@ -1,5 +1,5 @@
 <template>
-  <Drawer v-model:visible="visibleModel" position="right" header="Nouvelle tâche" class="w-full md:w-[28rem]">
+  <Drawer v-model:visible="visibleModel" position="right" header="Nouvelle tâche" class="w-full! md:w-[28rem]!">
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium">Titre</label>

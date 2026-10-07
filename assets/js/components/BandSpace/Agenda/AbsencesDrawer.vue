@@ -3,7 +3,7 @@
     v-model:visible="isVisible"
     position="right"
     header="Indisponibilités"
-    class="w-full md:w-[32rem]"
+    class="w-full! md:w-[32rem]!"
   >
     <div class="flex flex-col gap-4">
       <p class="text-sm text-surface-500 dark:text-surface-400">

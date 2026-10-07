@@ -3,7 +3,7 @@
     v-model:visible="isVisible"
     position="right"
     :header="isEditMode ? 'Modifier un événement' : 'Nouvel événement'"
-    class="w-full md:w-[28rem]"
+    class="w-full! md:w-[28rem]!"
   >
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <Message

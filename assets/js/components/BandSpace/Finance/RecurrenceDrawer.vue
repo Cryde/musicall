@@ -3,7 +3,7 @@
     v-model:visible="visibleModel"
     position="right"
     :header="isEditMode ? 'Modifier la récurrence' : 'Nouvelle récurrence'"
-    class="w-full md:w-[28rem]"
+    class="w-full! md:w-[28rem]!"
   >
     <form class="flex flex-col gap-4" @submit.prevent="handleSave">
       <div v-if="!isEditMode" class="flex flex-col gap-1">

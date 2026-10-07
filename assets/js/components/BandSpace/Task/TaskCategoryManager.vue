@@ -1,5 +1,5 @@
 <template>
-  <Drawer v-model:visible="visibleModel" position="right" header="Gérer les catégories" class="w-full md:w-[24rem]">
+  <Drawer v-model:visible="visibleModel" position="right" header="Gérer les catégories" class="w-full! md:w-[24rem]!">
     <div class="flex flex-col gap-4">
       <!-- Existing categories -->
       <div class="flex flex-col gap-2">

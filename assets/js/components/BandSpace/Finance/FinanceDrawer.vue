@@ -3,7 +3,7 @@
     v-model:visible="visibleModel"
     position="right"
     :header="isEditMode ? 'Modifier l\u2019entrée' : 'Nouvelle entrée'"
-    class="w-full md:w-[28rem]"
+    class="w-full! md:w-[28rem]!"
   >
     <form class="flex flex-col gap-4" @submit.prevent="handleSave">
       <Message v-if="formError" severity="error" :closable="true" @close="formError = null" class="text-sm">
