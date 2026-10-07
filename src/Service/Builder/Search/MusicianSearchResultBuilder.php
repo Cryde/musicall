@@ -11,15 +11,11 @@ use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User as UserEntity;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Component\DependencyInjection\Attribute\Target;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class MusicianSearchResultBuilder
 {
     public function __construct(
-        #[Target('app.onlybr_sanitizer')]
-        private readonly HtmlSanitizerInterface $sanitizer,
         private readonly UploaderHelper         $uploaderHelper,
         private readonly CacheManager           $cacheManager
     ) {
@@ -47,7 +43,8 @@ class MusicianSearchResultBuilder
         $announceMusician->user = $this->buildUser($musicianAnnounce->author);
         $announceMusician->instrument = $this->buildInstrument($musicianAnnounce->instrument);
         $announceMusician->styles = $this->buildStyles($musicianAnnounce->styles->toArray());
-        $announceMusician->note = $this->sanitizer->sanitize((string) $musicianAnnounce->note);
+        // Plain text, as stored and as every other announce endpoint returns it: the clients escape it (#1139).
+        $announceMusician->note = (string) $musicianAnnounce->note;
         $announceMusician->locationName = $musicianAnnounce->locationName;
         $announceMusician->type = $musicianAnnounce->type;
         if ($distance !== null) {

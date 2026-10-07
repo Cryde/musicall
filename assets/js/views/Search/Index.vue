@@ -357,6 +357,7 @@
                 :styles="announce.styles"
                 :location_name="announce.location_name"
                 :distance="announce.distance"
+                :note="announce.note"
                 :instrument="announce.instrument.name"
                 :highlighted-styles="isGuided ? selectedStyles.map((style) => style.name) : []"
                 from="search"

@@ -98,9 +98,7 @@
               <!-- Note (if present) -->
               <div v-if="announce.note" class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
                 <p class="text-xs text-surface-500 dark:text-surface-400 mb-1">Note</p>
-                <p class="text-sm text-surface-700 dark:text-surface-300">
-                  {{ announce.note }}
-                </p>
+                <p class="text-sm text-surface-700 dark:text-surface-300 whitespace-pre-line break-words">{{ announce.note }}</p>
               </div>
             </div>
           </div>
