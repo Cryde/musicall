@@ -7,10 +7,10 @@ namespace App\ApiResource\Search\Widening;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\State\ParameterProvider\ReadLinkParameterProvider;
 use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce;
+use App\State\ParameterProvider\UuidLinkParameterProvider;
 use App\State\Provider\Search\SearchWideningProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -32,14 +32,23 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         'instrument' => new QueryParameter(
             key: 'instrument',
-            provider: ReadLinkParameterProvider::class,
+            provider: UuidLinkParameterProvider::class,
             required: false,
-            extraProperties: ['resource_class' => InstrumentEntity::class],
+            extraProperties: [
+                'resource_class' => InstrumentEntity::class,
+                'invalid_message' => "L'instrument n'est pas valide",
+                'not_found_message' => 'Instrument introuvable',
+            ],
         ),
         'styles' => new QueryParameter(
             key: 'styles',
-            provider: ReadLinkParameterProvider::class,
-            extraProperties: ['resource_class' => StyleEntity::class],
+            provider: UuidLinkParameterProvider::class,
+            extraProperties: [
+                'resource_class' => StyleEntity::class,
+                'list' => true,
+                'invalid_message' => "Le style n'est pas valide",
+                'not_found_message' => 'Style introuvable',
+            ],
         ),
         'latitude' => new QueryParameter(key: 'latitude', schema: ['type' => 'number', 'format' => 'float']),
         'longitude' => new QueryParameter(key: 'longitude', schema: ['type' => 'number', 'format' => 'float']),
