@@ -12,6 +12,7 @@ use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +35,7 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -94,6 +96,8 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
                 payload: ['from' => $oldName, 'to' => $category->name],
             );
         }
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Finance);
 
         $this->entityManager->flush();
 

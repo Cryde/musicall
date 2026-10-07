@@ -19,6 +19,7 @@ use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
@@ -48,6 +49,7 @@ readonly class BandSpaceFinanceEntryFileAttachProcessor implements ProcessorInte
         private BandSpaceFileBuilder $fileBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -160,6 +162,11 @@ readonly class BandSpaceFinanceEntryFileAttachProcessor implements ProcessorInte
                 'source_label' => $entry->label,
             ],
         );
+
+        // A personal entry stays between its owner and the server, so the band hears nothing.
+        if ($entry->scope !== FinanceEntryScope::Personal) {
+            $this->changeSignal->changed($bandSpace, BandSpaceModule::Finance);
+        }
 
         $this->entityManager->flush();
 

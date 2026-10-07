@@ -31,6 +31,7 @@ readonly class BandSpaceActivityRecorder
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceActivityRepository $activityRepository,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -54,6 +55,7 @@ readonly class BandSpaceActivityRecorder
         $activity->payload = $payload;
 
         $this->entityManager->persist($activity);
+        $this->changeSignal->changed($bandSpace, $module);
 
         return $activity;
     }
@@ -95,6 +97,9 @@ readonly class BandSpaceActivityRecorder
 
         $window = new DateTime(sprintf('-%d minutes', self::COALESCE_WINDOW_MINUTES));
         if ($latest instanceof BandSpaceActivity && $latest->creationDatetime >= $window) {
+            // Folded out of the feed, but the resource did change, so the other members still hear it.
+            $this->changeSignal->changed($bandSpace, $module);
+
             return null;
         }
 

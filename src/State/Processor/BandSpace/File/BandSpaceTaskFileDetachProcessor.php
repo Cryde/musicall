@@ -13,6 +13,7 @@ use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -34,6 +35,7 @@ readonly class BandSpaceTaskFileDetachProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -91,6 +93,8 @@ readonly class BandSpaceTaskFileDetachProcessor implements ProcessorInterface
                 payload: ['original_name' => $file->originalName],
             );
         }
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
         $this->entityManager->flush();
     }

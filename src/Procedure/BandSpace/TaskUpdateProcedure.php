@@ -16,6 +16,7 @@ use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +35,7 @@ readonly class TaskUpdateProcedure
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private EventDispatcherInterface $eventDispatcher,
         private TaskWriteGuard $taskWriteGuard,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -83,6 +85,8 @@ readonly class TaskUpdateProcedure
         }
 
         $task->updateDatetime = new DateTime();
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
         $this->entityManager->flush();
 

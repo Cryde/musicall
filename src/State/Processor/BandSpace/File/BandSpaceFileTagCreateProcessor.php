@@ -8,7 +8,9 @@ use App\ApiResource\BandSpace\File\BandSpaceFileTagCreate;
 use App\ApiResource\BandSpace\File\BandSpaceFileTagResource;
 use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\File\BandSpaceFileTagBuilder;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +29,7 @@ readonly class BandSpaceFileTagCreateProcessor implements ProcessorInterface
         private BandSpaceFileTagRepository $tagRepository,
         private BandSpaceFileTagBuilder $tagBuilder,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -51,6 +54,8 @@ readonly class BandSpaceFileTagCreateProcessor implements ProcessorInterface
         $tag->colorHex = $data->colorHex;
 
         $this->entityManager->persist($tag);
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::File);
+
         $this->entityManager->flush();
 
         return $this->tagBuilder->buildItem($tag, 0);

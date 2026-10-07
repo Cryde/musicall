@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
@@ -44,6 +45,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -65,6 +67,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
             throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
         }
+        $wasBandEntry = $entry->scope !== FinanceEntryScope::Personal;
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
@@ -158,6 +161,11 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
             $oldCategoryId,
             $oldCategoryName,
         );
+
+        // The band list changes when a band entry is edited, made personal or made a band one.
+        if ($wasBandEntry || $entry->scope !== FinanceEntryScope::Personal) {
+            $this->changeSignal->changed($bandSpace, BandSpaceModule::Finance);
+        }
 
         $this->entityManager->flush();
 

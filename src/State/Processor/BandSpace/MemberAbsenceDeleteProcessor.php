@@ -7,9 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\MemberAbsenceResource;
 use App\Entity\BandSpace\MemberAbsence;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\MemberAbsenceChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -26,6 +28,7 @@ readonly class MemberAbsenceDeleteProcessor implements ProcessorInterface
         private MemberAbsenceChecker $memberAbsenceChecker,
         private MemberAbsenceRepository $memberAbsenceRepository,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -49,6 +52,8 @@ readonly class MemberAbsenceDeleteProcessor implements ProcessorInterface
         $this->memberAbsenceChecker->assertCanManage($absence->member, $actor);
 
         $this->entityManager->remove($absence);
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Agenda);
+
         $this->entityManager->flush();
     }
 }

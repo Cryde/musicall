@@ -11,6 +11,7 @@ use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\TaskColumnPositionsGuard;
 use DateTime;
 use DateTimeImmutable;
@@ -25,6 +26,7 @@ readonly class TaskMoveProcedure
         private TaskColumnPositionsGuard $columnPositionsGuard,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskWriteGuard $taskWriteGuard,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -101,6 +103,8 @@ readonly class TaskMoveProcedure
                 }
 
                 $task->updateDatetime = new DateTime();
+
+                $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
                 $this->entityManager->flush();
 

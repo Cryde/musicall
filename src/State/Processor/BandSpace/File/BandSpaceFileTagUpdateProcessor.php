@@ -6,9 +6,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFileTagResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\File\BandSpaceFileTagBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -33,6 +35,7 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
         private BandSpaceFileTagBuilder $tagBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -77,6 +80,8 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
                 $tag->colorHex = $rawColor;
             }
         }
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::File);
 
         $this->entityManager->flush();
 

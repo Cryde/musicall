@@ -7,8 +7,10 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskReorder;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\TaskColumnPositionsGuard;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -25,6 +27,7 @@ readonly class TaskReorderProcessor implements ProcessorInterface
         private TaskRepository $taskRepository,
         private TaskColumnPositionsGuard $columnPositionsGuard,
         private Security $security,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -62,6 +65,8 @@ readonly class TaskReorderProcessor implements ProcessorInterface
         }
 
         $this->columnPositionsGuard->assertCoversColumn($bandSpace, $firstTask->status, $requestedIds);
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
 
         $this->taskRepository->bulkUpdatePositions($data->positions);
     }

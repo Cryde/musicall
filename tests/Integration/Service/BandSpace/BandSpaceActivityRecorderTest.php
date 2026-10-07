@@ -9,9 +9,13 @@ use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Mercure\MercureTopic;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
+use App\Tests\Double\RecordingHub;
 use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -200,6 +204,43 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
         $this->assertCount(1, $this->getRepository()->findForResource($bandSpace, BandSpaceModule::Notes, $resourceId));
     }
 
+    public function test_record_queues_a_change_signal(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+
+        $this->getRecorder()->record(bandSpace: $bandSpace, module: BandSpaceModule::Task, type: 'status_changed');
+        $this->getEntityManager()->flush();
+
+        $this->assertSame([], $this->getHub()->updates, 'nothing is published before the request ends');
+        self::getContainer()->get(BandSpaceChangeSignal::class)->publish();
+        $this->assertSignalled($bandSpace, $member, 'task');
+    }
+
+    /**
+     * Out of the feed, but the note did change, so the other members still have to hear it.
+     */
+    public function test_record_coalesced_still_queues_a_change_signal_inside_the_window(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $resourceId = Uuid::uuid4();
+        $this->seedActivity($bandSpace, $resourceId, $user, new DateTime('-2 minutes'));
+
+        $this->getRecorder()->recordCoalesced(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Notes,
+            type: 'note_content_updated',
+            resourceId: $resourceId,
+            actor: $user,
+        );
+        self::getContainer()->get(BandSpaceChangeSignal::class)->publish();
+
+        $this->assertSignalled($bandSpace, $user, 'notes');
+    }
+
     /**
      * Past the window the trail resumes, otherwise a resource picked up every week would show a
      * single entry forever.
@@ -301,7 +342,28 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     private function getRecorder(): BandSpaceActivityRecorder
     {
-        return new BandSpaceActivityRecorder($this->getEntityManager(), $this->getRepository());
+        return new BandSpaceActivityRecorder(
+            $this->getEntityManager(),
+            $this->getRepository(),
+            self::getContainer()->get(BandSpaceChangeSignal::class),
+        );
+    }
+
+    private function getHub(): RecordingHub
+    {
+        return self::getContainer()->get(RecordingHub::class);
+    }
+
+    private function assertSignalled(BandSpace $bandSpace, User $member, string $module): void
+    {
+        $updates = $this->getHub()->updates;
+        $this->assertCount(1, $updates);
+        $this->assertSame([MercureTopic::userNotifications((string) $member->id)], $updates[0]->getTopics());
+        $this->assertTrue($updates[0]->isPrivate());
+        $this->assertSame(
+            json_encode(['type' => 'band_space_changed', 'band_space_id' => (string) $bandSpace->id, 'module' => $module]),
+            $updates[0]->getData(),
+        );
     }
 
     private function getRepository(): BandSpaceActivityRepository

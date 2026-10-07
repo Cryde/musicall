@@ -15,6 +15,7 @@ use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\AgendaSeriesReconciler;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Builder\BandSpace\AgendaEntryBuilder;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -39,6 +40,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -157,6 +159,8 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $oldEndDatetime,
             $oldIsAllDay,
         );
+
+        $this->changeSignal->changed($bandSpace, BandSpaceModule::Agenda);
 
         $this->entityManager->flush();
 
