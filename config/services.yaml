@@ -26,6 +26,15 @@ parameters:
     app.auth_observability.default: true
     app.auth_observability.enabled: '%env(bool:default:app.auth_observability.default:AUTH_OBSERVABILITY_ENABLED)%'
 
+    # The Android builds the API still supports (#1132), exposed at GET /api/app/config. Raised by
+    # setting APP_ANDROID_MIN_SUPPORTED_BUILD / APP_ANDROID_LATEST_BUILD in the server's shared
+    # `.env.local` (a variable in the committed `.env` never reaches production), then restarting
+    # FrankenPHP, whose worker reads the environment once at boot. Read as strings on purpose:
+    # AppConfigProvider falls back to 1 on anything unreadable rather than failing.
+    app.android.build.default: '1'
+    app.android.min_supported_build: '%env(default:app.android.build.default:APP_ANDROID_MIN_SUPPORTED_BUILD)%'
+    app.android.latest_build: '%env(default:app.android.build.default:APP_ANDROID_LATEST_BUILD)%'
+
 services:
     # default configuration for services in *this* file
     _defaults:

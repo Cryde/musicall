@@ -75,6 +75,13 @@ security:
                 check_path: /api/native/token/refresh
                 success_handler: app.security.native.refresh_success_handler
 
+        # The app's update check (#1132) must answer whatever credentials come with it: a phone launching
+        # with an expired JWT would otherwise get a 401 from the lazy api firewall below, and the one
+        # request meant to tell it to update would silently stop working. So no firewall reads them.
+        app_config:
+            pattern: ^/api/app/config$
+            security: false
+
         # Google sign-in for the app (#1133). Its own firewall for the reason the two above are: the
         # login firewall's throttling charges any passport, and this one has no password to guess, so
         # GoogleIdTokenAuthenticator limits per IP itself. Under the native prefix, so blinded to
