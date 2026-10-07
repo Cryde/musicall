@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\ChangeUsername;
 use App\Entity\User;
 use App\Event\UsernameChangedEvent;
+use App\Repository\RefreshTokenRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -24,6 +25,7 @@ readonly class ChangeUsernameProcessor implements ProcessorInterface
         private Security $security,
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
+        private RefreshTokenRepository $refreshTokenRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -48,9 +50,13 @@ readonly class ChangeUsernameProcessor implements ProcessorInterface
         }
 
         $changedAt = new \DateTimeImmutable();
-        $user->username = $newUsername;
-        $user->usernameChangedDatetime = $changedAt;
-        $this->entityManager->flush();
+        // One transaction, so the sessions never point at a username that no longer exists.
+        $this->entityManager->wrapInTransaction(function () use ($user, $oldUsername, $newUsername, $changedAt): void {
+            $user->username = $newUsername;
+            $user->usernameChangedDatetime = $changedAt;
+            $this->entityManager->flush();
+            $this->refreshTokenRepository->renameUsername($oldUsername, $newUsername);
+        });
 
         $this->eventDispatcher->dispatch(new UsernameChangedEvent(
             $user,

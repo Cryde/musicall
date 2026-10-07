@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Entity\User;
-use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
-use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -20,10 +17,6 @@ class UsernameChangeJwtSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly Security $security,
         private readonly JWTTokenManagerInterface $jwtManager,
-        private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
-        private readonly RefreshTokenManagerInterface $refreshTokenManager,
-        #[Autowire('%gesdinet_jwt_refresh_token.ttl%')]
-        private readonly int $refreshTokenTtl,
     ) {
     }
 
@@ -78,26 +71,7 @@ class UsernameChangeJwtSubscriber implements EventSubscriberInterface
                 ->withSameSite('strict')
         );
 
-        // Delete old refresh token (associated with old username) and create new one
-        $oldRefreshTokenString = $request->cookies->get('refresh_token');
-        if ($oldRefreshTokenString) {
-            $oldRefreshToken = $this->refreshTokenManager->get($oldRefreshTokenString);
-            if ($oldRefreshToken instanceof \Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenInterface) {
-                $this->refreshTokenManager->delete($oldRefreshToken);
-            }
-        }
-
-        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, $this->refreshTokenTtl);
-        $this->refreshTokenManager->save($refreshToken);
-
-        $response->headers->setCookie(
-            Cookie::create('refresh_token')
-                ->withValue($refreshToken->getRefreshToken())
-                ->withExpires(time() + $this->refreshTokenTtl)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('lax')
-        );
+        // No new refresh token: ChangeUsernameProcessor moved the existing ones to the new username,
+        // the one in this browser's cookie included (#1025).
     }
 }
