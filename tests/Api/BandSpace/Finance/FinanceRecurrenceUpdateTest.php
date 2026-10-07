@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\BandSpace\Finance;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\FinanceCategory;
 use App\Entity\BandSpace\FinanceEntry;
@@ -20,6 +21,7 @@ use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Double\RecordingHub;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
@@ -30,6 +32,7 @@ use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\PersonalScopeWithoutSplitsValidator;
 use App\Validator\BandSpace\RecurrenceEndDateValidator;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\GreaterThan;
@@ -810,11 +813,77 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
         $this->createEntry($category, $recurrence, self::monthStart(2), FinanceEntryStatus::Planned);
         $recurrenceId = (string) $recurrence->id;
 
+        $hub = self::getContainer()->get(RecordingHub::class);
+
         $this->patchRecurrence($owner, $bandSpace, $recurrenceId, ['scope' => 'personal']);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(FinanceEntryScope::Personal, $this->reloadRecurrence($recurrenceId)->scope);
         $this->assertSame(FinanceEntryScope::Personal, $this->remainingEntries($recurrenceId)[0]->scope);
+        // No trace in the band feed, like an entry made personal, but the band's list did lose it.
+        $this->assertSame([], $this->activitiesOf($bandSpace, $recurrenceId));
+        $this->assertSame([$this->financeChangedTag($bandSpace)], $this->changeSignalsData($hub));
+    }
+
+    /**
+     * @return iterable<string, array{0: array<string, mixed>}>
+     */
+    public static function personalRecurrenceEditProvider(): iterable
+    {
+        yield 'paused' => [['is_active' => false]];
+        yield 'end date moved' => [['end_date' => self::monthStart(5)->format('Y-m-d')]];
+        yield 'relabelled and repriced' => [['label' => 'Cours de chant', 'amount' => 32000, 'type' => 'income']];
+    }
+
+    /**
+     * Create and delete already kept a personal recurrence out of the band wide journal; an edit wrote
+     * its pauses, end dates and changed fields there for every member to read (#1144).
+     *
+     * @param array<string, mixed> $payload
+     */
+    #[DataProvider('personalRecurrenceEditProvider')]
+    public function test_editing_a_personal_recurrence_leaves_no_trace_for_the_band(array $payload): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3), FinanceEntryScope::Personal);
+        foreach (range(-1, 3) as $offset) {
+            $this->createEntry($category, $recurrence, self::monthStart($offset), FinanceEntryStatus::Planned, $ownerMembership);
+        }
+        $recurrenceId = (string) $recurrence->id;
+        $hub = self::getContainer()->get(RecordingHub::class);
+
+        $this->patchRecurrence($owner, $bandSpace, $recurrenceId, $payload);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame([], $this->activitiesOf($bandSpace, $recurrenceId));
+        $this->assertSame([], $this->changeSignalsData($hub));
+    }
+
+    /** The other way round, the series becomes the band's, so the band hears of it. */
+    public function test_making_a_personal_recurrence_a_band_one_is_recorded(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3), FinanceEntryScope::Personal);
+        $this->createEntry($category, $recurrence, self::monthStart(2), FinanceEntryStatus::Planned, $ownerMembership);
+        $recurrenceId = (string) $recurrence->id;
+        $hub = self::getContainer()->get(RecordingHub::class);
+
+        $this->patchRecurrence($owner, $bandSpace, $recurrenceId, ['scope' => 'band']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(
+            [['type' => 'recurrence_updated', 'payload' => ['changed_fields' => ['scope']]]],
+            $this->activitiesOf($bandSpace, $recurrenceId),
+        );
+        $this->assertSame([$this->financeChangedTag($bandSpace)], $this->changeSignalsData($hub));
     }
 
     /** The PATCH carried no constraint on the amount, so a recurrence could be repriced to a debt. */
@@ -922,6 +991,38 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
             $payload,
             ['CONTENT_TYPE' => self::MERGE_PATCH_CONTENT_TYPE, 'HTTP_ACCEPT' => 'application/ld+json']
         );
+    }
+
+    /**
+     * Plain arrays, not entities: a failing assertSame on an entity makes PHPUnit export its whole
+     * Doctrine graph, which never finishes.
+     *
+     * @return list<array{type: string, payload: array<string, mixed>|null}>
+     */
+    private function activitiesOf(BandSpace $bandSpace, string $recurrenceId): array
+    {
+        // Reloaded: after the request the factory's instance is not managed by this entity manager.
+        $managedSpace = self::getContainer()->get(EntityManagerInterface::class)->find(BandSpace::class, (string) $bandSpace->id);
+
+        return array_values(array_map(
+            static fn (BandSpaceActivity $activity): array => ['type' => $activity->type, 'payload' => $activity->payload],
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findForResource($managedSpace, BandSpaceModule::Finance, $recurrenceId),
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function changeSignalsData(RecordingHub $hub): array
+    {
+        $data = array_map(static fn ($update): string => $update->getData(), $hub->updates);
+
+        return array_values(array_filter($data, static fn (string $tag): bool => str_contains($tag, '"band_space_changed"')));
+    }
+
+    private function financeChangedTag(BandSpace $bandSpace): string
+    {
+        return json_encode(['type' => 'band_space_changed', 'band_space_id' => (string) $bandSpace->id, 'module' => 'finance'], JSON_THROW_ON_ERROR);
     }
 
     private function recurrenceIri(BandSpace $bandSpace, string $recurrenceId): string

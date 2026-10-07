@@ -20,6 +20,7 @@ use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\FinanceRecurrenceOwnerChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use App\Service\BandSpace\RecurrenceEntryGenerator;
 use App\Service\Builder\BandSpace\FinanceRecurrenceBuilder;
@@ -61,6 +62,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         private BandSpaceFileSourceDetacher $fileSourceDetacher,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceChangeSignal $changeSignal,
     ) {
     }
 
@@ -367,6 +369,16 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         string $newEndDateString,
     ): void {
         $bandSpace = $recurrence->category->bandSpace;
+
+        // Nothing personal in the band wide journal, the new scope deciding as in FinanceEntryUpdateProcessor.
+        // One made personal still left the band's list, so the band hears that finance changed.
+        if ($recurrence->scope === FinanceEntryScope::Personal) {
+            if ($oldScope !== FinanceEntryScope::Personal) {
+                $this->changeSignal->changed($bandSpace, BandSpaceModule::Finance);
+            }
+
+            return;
+        }
 
         if ($oldIsActive !== $recurrence->isActive) {
             $this->bandSpaceActivityRecorder->record(
