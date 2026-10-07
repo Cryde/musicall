@@ -69,9 +69,12 @@
             </div>
 
             <!-- Location -->
-            <div class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-                <i class="pi pi-map-marker mr-1" />{{ location_name }}
-                <span v-if="distance" class="opacity-70"> · {{ formattedDistance }}</span>
+            <div class="flex items-center justify-between gap-2 text-sm text-surface-500 dark:text-surface-400 mt-1">
+                <span class="min-w-0">
+                    <i class="pi pi-map-marker mr-1" />{{ location_name }}
+                    <span v-if="distance" class="opacity-70"> · {{ formattedDistance }}</span>
+                </span>
+                <AnnounceNoteButton :note="note" :author-name="userName" class="shrink-0" />
             </div>
 
             <!-- Buttons -->
@@ -112,6 +115,7 @@
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Avatar from 'primevue/avatar'
 import { computed, ref } from 'vue'
+import AnnounceNoteButton from '../../components/Announce/AnnounceNoteButton.vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import ReportButton from '../../components/Report/ReportButton.vue'
@@ -130,6 +134,8 @@ const props = defineProps({
   styles: { type: Array, required: true },
   location_name: { type: String, required: true },
   distance: { type: [Number, String], default: null },
+  /** What the author wrote on the announce, plain text (#1139). */
+  note: { type: String, default: null },
   from: { type: String, default: null },
   /** Style names the search asked for (#1084): shown first and highlighted. */
   highlightedStyles: { type: Array, default: () => [] }

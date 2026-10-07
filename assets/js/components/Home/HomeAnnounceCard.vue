@@ -87,6 +87,7 @@
           :aria-label="`Contacter ${authorName}`"
           @click="$emit('contact', announce.author)"
         />
+        <AnnounceNoteButton :note="announce.note" :author-name="authorName" />
         <ReportButton
           v-if="!isDeleted"
           target-type="announce"
@@ -110,6 +111,7 @@ import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { announceHeadline, announceKindLabel, announceStyleTags } from '../../utils/homeSearch.js'
+import AnnounceNoteButton from '../Announce/AnnounceNoteButton.vue'
 import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
 
