@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.musicall.app",
+      "sha256_cert_fingerprints": [
+        "C8:51:C0:58:A4:74:7B:99:2B:71:F7:08:1B:9C:9B:B2:F1:6D:BC:67:E1:57:81:F0:16:0E:37:F4:BD:E0:0A:31",
+        "F2:7A:44:11:90:DB:30:AB:76:A4:22:40:4B:EB:7E:83:6D:75:F0:4C:87:BF:B3:56:2F:84:F9:34:AC:8A:11:D9"
+      ]
+    }
+  }
+]
