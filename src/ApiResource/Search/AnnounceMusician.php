@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\State\ParameterProvider\ReadLinkParameterProvider;
 use App\ApiResource\Search\Result\Instrument;
 use App\ApiResource\Search\Result\Style;
 use App\ApiResource\Search\Result\User;
 use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce;
+use App\State\ParameterProvider\UuidLinkParameterProvider;
 use App\State\Provider\Search\MusicianSearchProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -31,16 +31,25 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         'instrument' => new QueryParameter(
             key: 'instrument',
-            provider: ReadLinkParameterProvider::class,
+            provider: UuidLinkParameterProvider::class,
             description: 'The instrument you want to search (optional)',
             required: false,
-            extraProperties: ['resource_class' => InstrumentEntity::class],
+            extraProperties: [
+                'resource_class' => InstrumentEntity::class,
+                'invalid_message' => "L'instrument n'est pas valide",
+                'not_found_message' => 'Instrument introuvable',
+            ],
         ),
         'styles' => new QueryParameter(
             key: 'styles',
-            provider: ReadLinkParameterProvider::class,
+            provider: UuidLinkParameterProvider::class,
             description: 'The style you want to search',
-            extraProperties: ['resource_class' => StyleEntity::class],
+            extraProperties: [
+                'resource_class' => StyleEntity::class,
+                'list' => true,
+                'invalid_message' => "Le style n'est pas valide",
+                'not_found_message' => 'Style introuvable',
+            ],
         ),
         'latitude' => new QueryParameter(
             key: 'latitude',
