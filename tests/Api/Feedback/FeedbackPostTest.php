@@ -320,6 +320,64 @@ class FeedbackPostTest extends ApiTestCase
         $this->assertSame(0, $this->feedbackCount());
     }
 
+    /** Testers report whatever they find while walking through a module (#1138). */
+    public function test_a_tester_is_not_rate_limited(): void
+    {
+        $tester = UserFactory::new()->asBaseUser()->create(['roles' => ['ROLE_TESTER']]);
+        /** @var RateLimiterFactoryInterface $limiter */
+        $limiter = self::getContainer()->get('limiter.feedback_submit');
+        $limiter->create('127.0.0.1')->consume(5);
+
+        $this->client->loginUser($tester);
+        $this->client->jsonRequest('POST', '/api/feedbacks', [
+            'type' => 'bug',
+            'module' => 'file',
+            'message' => 'Un sixième retour de test dans la même heure.',
+            'page_url' => '/band/abc/fichiers',
+        ], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Feedback',
+            '@id' => '/api/feedback',
+            '@type' => 'Feedback',
+            'type' => 'bug',
+            'module' => 'file',
+            'message' => 'Un sixième retour de test dans la même heure.',
+            'page_url' => '/band/abc/fichiers',
+        ]);
+        $this->assertSame(1, $this->feedbackCount());
+    }
+
+    public function test_a_signed_in_user_who_is_not_a_tester_is_still_limited(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        /** @var RateLimiterFactoryInterface $limiter */
+        $limiter = self::getContainer()->get('limiter.feedback_submit');
+        $limiter->create('127.0.0.1')->consume(5);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/feedbacks', [
+            'type' => 'bug',
+            'module' => 'file',
+            'message' => 'Un message parfaitement valide, mais un de trop.',
+            'page_url' => '/band/abc/fichiers',
+        ], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
+        $this->assertSame(0, $this->feedbackCount());
+    }
+
     public function test_a_malformed_band_space_id_is_refused(): void
     {
         $this->client->jsonRequest('POST', '/api/feedbacks', [

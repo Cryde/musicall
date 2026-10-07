@@ -36,8 +36,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 class AdminUserRoleUpdate
 {
     /**
-     * ROLE_TESTER reveals modules that are merged but not yet announced and grants no permission of
-     * its own, so it is the low stakes one. ROLE_ADMIN is the one worth a confirmation in the UI.
+     * ROLE_TESTER reveals modules that are merged but not yet announced and lifts the feedback rate
+     * limit (#1138), nothing more, so it is the low stakes one. ROLE_ADMIN is the one worth a confirmation in the UI.
      *
      * @var list<string>
      */

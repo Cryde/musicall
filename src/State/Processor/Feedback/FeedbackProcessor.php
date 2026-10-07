@@ -40,9 +40,12 @@ readonly class FeedbackProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): FeedbackResource
     {
         $request = $this->requestStack->getCurrentRequest();
-        $this->feedbackSubmitLimiter->create($request?->getClientIp() ?? 'unknown')->consume()->ensureAccepted();
-
         $user = $this->security->getUser();
+
+        // Testers report whatever they find while walking through a module, past any hourly budget (#1138).
+        if (!$this->security->isGranted('ROLE_TESTER')) {
+            $this->feedbackSubmitLimiter->create($request?->getClientIp() ?? 'unknown')->consume()->ensureAccepted();
+        }
 
         $feedback = new Feedback();
         $feedback->type = FeedbackType::from($data->type);
