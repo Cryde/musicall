@@ -112,7 +112,8 @@
             :maxFractionDigits="2"
             suffix=" €"
             placeholder="Min"
-            class="flex-1"
+            fluid
+            class="flex-1 min-w-0"
             :disabled="isLocked"
           />
           <InputNumber
@@ -123,7 +124,8 @@
             :maxFractionDigits="2"
             suffix=" €"
             placeholder="Max"
-            class="flex-1"
+            fluid
+            class="flex-1 min-w-0"
             :disabled="isLocked"
           />
         </div>
