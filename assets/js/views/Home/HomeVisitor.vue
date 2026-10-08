@@ -63,7 +63,7 @@
 
     <!-- Modals -->
     <AddDiscoverModal @published="handleDiscoverPublished" />
-    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" />
+    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" :contact-origin="selectedContactOrigin" />
     <AuthRequiredModal v-if="showAuthModal" v-model:visible="showAuthModal" :message="authModalMessage" />
     <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="handleAnnounceCreated" />
   </div>
@@ -112,6 +112,7 @@ const showAuthModal = ref(false)
 const showMessageModal = ref(false)
 const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
+const selectedContactOrigin = ref(null)
 const authModalMessage = ref('')
 const announceFilter = ref(ANNOUNCE_FILTER_ALL)
 // Taken from the first, unfiltered answer, so the hero keeps its glimpse while the list below is filtered.
@@ -196,13 +197,14 @@ async function handleAnnounceCreated() {
   await loadAnnounces()
 }
 
-function handleContactAnnounce(author) {
+function handleContactAnnounce(announce) {
   if (!userSecurityStore.isAuthenticated) {
     authModalMessage.value = 'Vous devez vous connecter pour envoyer un message à cet utilisateur.'
     showAuthModal.value = true
     return
   }
-  selectedRecipient.value = author
+  selectedRecipient.value = announce.author
+  selectedContactOrigin.value = { musicianAnnounceId: announce.id }
   showMessageModal.value = true
 }
 

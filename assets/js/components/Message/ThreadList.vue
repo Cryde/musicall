@@ -76,6 +76,13 @@
                 {{ relativeDate(threadMeta.thread.last_message?.creation_datetime) }}
               </div>
 
+              <ContactOrigin
+                v-if="threadMeta.thread.latest_contact_origin"
+                :origin="threadMeta.thread.latest_contact_origin"
+                compact
+                class="mb-1"
+              />
+
               <p class="text-sm text-surface-600 dark:text-surface-300 truncate">
                 <!-- Who wrote it, for a channel only: a direct message has one possible other author
                      and the row is already named after them. -->
@@ -105,6 +112,7 @@ import { useMessageStore } from '../../store/message/message.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import UserName from '../User/UserName.vue'
+import ContactOrigin from './ContactOrigin.vue'
 
 const messageStore = useMessageStore()
 

@@ -7,7 +7,9 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Message\MessageResource;
 use App\ApiResource\Message\MessageUser;
 use App\Entity\User;
+use App\Repository\Message\MessageContactOriginRepository;
 use App\Service\Builder\Message\MessageBuilder;
+use App\Service\Message\ContactOriginResolver;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use App\Service\User\Relation\UserContactPolicy;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -26,6 +28,8 @@ class MessagePostToUserProcessor implements ProcessorInterface
         private readonly MessageSenderProcedure $messageSenderProcedure,
         private readonly MessageBuilder         $messageBuilder,
         private readonly UserContactPolicy      $contactPolicy,
+        private readonly ContactOriginResolver  $contactOriginResolver,
+        private readonly MessageContactOriginRepository $messageContactOriginRepository,
         #[Target('thread_creation')]
         private readonly RateLimiterFactoryInterface $threadCreationLimiter,
         #[Target('message_send')]
@@ -49,8 +53,16 @@ class MessagePostToUserProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException(UserContactPolicy::BLOCKED_MESSAGE);
         }
 
-        $message = $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content);
+        // ValidContactOrigin has already checked both ids against the recipient.
+        $contactOrigin = $data->musicianAnnounceId !== null
+            ? $this->contactOriginResolver->musicianAnnounceOf($data->musicianAnnounceId, $data->recipient)
+            : ($data->fromTeacherProfile ? $this->contactOriginResolver->teacherProfileOf($data->recipient) : null);
 
-        return $this->messageBuilder->buildItem($message);
+        $message = $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content, $contactOrigin);
+
+        return $this->messageBuilder->buildItem(
+            $message,
+            contactOrigin: $this->messageContactOriginRepository->findByMessageIds([(string) $message->id])[(string) $message->id] ?? null,
+        );
     }
 }

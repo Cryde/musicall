@@ -32,9 +32,10 @@
           <ThreadList v-else />
         </div>
 
-        <!-- Conversation - hidden on mobile when no thread selected -->
+        <!-- Conversation - hidden on mobile when no thread selected. min-w-0 so a long one-line
+             header (the announce a conversation came from, #998) truncates instead of widening it. -->
         <div
-          class="flex-1"
+          class="flex-1 min-w-0"
           :class="{ 'hidden md:block': !messageStore.currentThreadId }"
         >
           <Thread @back="handleBack" />

@@ -85,7 +85,7 @@
           severity="secondary"
           text
           :aria-label="`Contacter ${authorName}`"
-          @click="$emit('contact', announce.author)"
+          @click="$emit('contact', announce)"
         />
         <AnnounceNoteButton :note="announce.note" :author-name="authorName" />
         <ReportButton

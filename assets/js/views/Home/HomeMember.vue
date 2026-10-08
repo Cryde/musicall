@@ -54,7 +54,7 @@
     </div>
 
     <AddDiscoverModal @published="discoveriesKey++" />
-    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" />
+    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" :contact-origin="selectedContactOrigin" />
     <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="announcesKey++" />
   </div>
 </template>
@@ -111,6 +111,7 @@ onMounted(async () => {
 const showAnnounceModal = ref(false)
 const showMessageModal = ref(false)
 const selectedRecipient = ref(null)
+const selectedContactOrigin = ref(null)
 // Bumped to reload a block after the member posted to it.
 const announcesKey = ref(0)
 const discoveriesKey = ref(0)
@@ -123,8 +124,9 @@ watch(lowerBlocksVisible, (visible) => {
   if (visible) showLowerBlocks.value = true
 })
 
-function openMessageTo(author) {
-  selectedRecipient.value = author
+function openMessageTo(announce) {
+  selectedRecipient.value = announce.author
+  selectedContactOrigin.value = { musicianAnnounceId: announce.id }
   showMessageModal.value = true
 }
 </script>

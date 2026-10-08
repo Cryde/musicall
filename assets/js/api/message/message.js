@@ -4,15 +4,18 @@ import axios from 'axios'
 
 export default {
   /**
-   * Send a new message to a user (creates a new thread if needed)
+   * Send a new message to a user (creates a new thread if needed). `contactOrigin` says what it was
+   * sent from (#998): `{ musicianAnnounceId }` for an announce, `{ fromTeacherProfile: true }` for
+   * the recipient's teacher profile, or null.
    */
-  postMessage({ recipientId, content }) {
+  postMessage({ recipientId, content, contactOrigin = null }) {
     return axios
       .post(
         Routing.generate('api_message_post_to_user'),
         {
           recipient: `/api/users/${recipientId}`,
-          content
+          content,
+          ...(contactOrigin ?? {})
         },
         {
           headers: { 'Content-Type': 'application/ld+json' }

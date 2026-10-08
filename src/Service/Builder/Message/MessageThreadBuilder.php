@@ -7,6 +7,7 @@ namespace App\Service\Builder\Message;
 use App\ApiResource\Message\MessageThreadResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 
 readonly class MessageThreadBuilder
@@ -14,6 +15,7 @@ readonly class MessageThreadBuilder
     public function __construct(
         private MessageBuilder            $messageBuilder,
         private MessageParticipantBuilder $messageParticipantBuilder,
+        private ContactOriginBuilder      $contactOriginBuilder,
     ) {
     }
 
@@ -22,8 +24,11 @@ readonly class MessageThreadBuilder
      *                                                              here so the inbox resolves every
      *                                                              row's mentions in one query (#994)
      */
-    public function buildItem(MessageThread $entity, array $lastMessageMentionUsernamesById = []): MessageThreadResource
-    {
+    public function buildItem(
+        MessageThread $entity,
+        array $lastMessageMentionUsernamesById = [],
+        ?MessageContactOrigin $latestContactOrigin = null,
+    ): MessageThreadResource {
         $dto = new MessageThreadResource();
         $dto->id = (string) $entity->id;
         $dto->messageParticipants = $this->messageParticipantBuilder->buildList(
@@ -31,6 +36,10 @@ readonly class MessageThreadBuilder
         );
         $dto->lastMessage = $entity->lastMessage instanceof Message
             ? $this->messageBuilder->buildItem($entity->lastMessage, $lastMessageMentionUsernamesById)
+            : null;
+
+        $dto->latestContactOrigin = $latestContactOrigin instanceof MessageContactOrigin
+            ? $this->contactOriginBuilder->build($latestContactOrigin)
             : null;
 
         // A channel, so the inbox can label it and reach the chat API (#994). Read straight off the
