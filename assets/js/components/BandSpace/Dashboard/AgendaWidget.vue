@@ -23,6 +23,23 @@
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">
             {{ formatDayLabel(item) }}<template v-if="!isAllDayItem(item)"> - {{ formatTime(item.datetime) }}</template>
           </p>
+          <div
+            v-if="item.source === 'manual' && item.metadata?.ask_availability"
+            class="flex flex-wrap items-center justify-between gap-2 mt-1.5"
+          >
+            <span
+              v-if="availabilitySummary(item.metadata.availability)"
+              class="text-xs text-surface-600 dark:text-surface-300"
+            >
+              {{ availabilitySummary(item.metadata.availability) }}
+            </span>
+            <AgendaAvailabilityButtons
+              v-if="canAnswerFromAgenda(item)"
+              :band-space-id="bandSpaceId"
+              :item="item"
+              @answered="handleAnswered"
+            />
+          </div>
         </div>
       </li>
     </ul>
@@ -36,9 +53,15 @@ import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { agendaSourceFor } from '../../../constants/agendaSources.js'
+import {
+  availabilitySummary,
+  canAnswerFromAgenda,
+  withAvailabilityAnswer
+} from '../../../utils/agendaAvailability.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
 import { isAllDayItem } from '../../../utils/agendaItem.js'
 import { upcomingAgendaWindow } from '../../../utils/agendaRange.js'
+import AgendaAvailabilityButtons from '../Agenda/AgendaAvailabilityButtons.vue'
 import DashboardWidget from './DashboardWidget.vue'
 
 const WINDOW_DAYS = 7
@@ -63,6 +86,10 @@ onMounted(async () => {
     isLoading.value = false
   }
 })
+
+function handleAnswered({ entryId, occurrenceDate, availability }) {
+  items.value = withAvailabilityAnswer(items.value, entryId, occurrenceDate, availability)
+}
 
 function formatDayLabel(item) {
   const date = toAgendaDate(item.datetime, isAllDayItem(item))

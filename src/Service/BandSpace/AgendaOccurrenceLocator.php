@@ -31,6 +31,10 @@ readonly class AgendaOccurrenceLocator
         if (!$entry instanceof AgendaEntry) {
             throw new NotFoundHttpException('Événement introuvable');
         }
+        // Answers given before it was turned off are kept, and come back if it is turned on again.
+        if (!$entry->askAvailability) {
+            throw new NotFoundHttpException('Les disponibilités ne sont pas demandées pour cet événement');
+        }
 
         if ($occurrenceDate === null || $occurrenceDate === '') {
             if ($entry->recurrenceFrequency !== null) {

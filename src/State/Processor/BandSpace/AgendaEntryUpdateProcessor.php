@@ -96,6 +96,10 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $entry->isAllDay = (bool) $data->isAllDay;
         }
 
+        if (array_key_exists('ask_availability', $payload) || array_key_exists('askAvailability', $payload)) {
+            $entry->askAvailability = $data->askAvailability;
+        }
+
         if ($entry->isAllDay) {
             // The caller's own date, read before any conversion: see AgendaEntryCreateProcessor.
             $entry->eventDatetime = new DateTimeImmutable($entry->eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');

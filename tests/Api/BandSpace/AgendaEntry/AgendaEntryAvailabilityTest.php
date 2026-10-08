@@ -17,6 +17,7 @@ use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Mercure\MercureTopic;
+use App\Service\Builder\BandSpace\AgendaEntryAvailabilityBuilder;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\RecordingHub;
@@ -439,6 +440,275 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
         $this->assertJsonEquals($this->error(404, 'Cet événement n\'a pas lieu à cette date'));
     }
 
+    /** Turning the question off hides the answers already given, it does not delete them. */
+    public function test_an_entry_not_asking_hides_its_answers_and_keeps_them(): void
+    {
+        [$space, $author, , $yes] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $this->answer($entry, self::day(10), $yes, AvailabilityAnswer::Yes);
+        $this->stopAsking($entry);
+
+        $this->client->loginUser($author);
+        $this->client->request('GET', $this->url($space, $entry), [], [], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals($this->error(404, 'Les disponibilités ne sont pas demandées pour cet événement'));
+        $this->assertSame([[self::day(10), 'yes']], $this->answersOf($entry));
+    }
+
+    public function test_an_entry_not_asking_cannot_be_answered(): void
+    {
+        [$space, $author, , $yes] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $this->stopAsking($entry);
+
+        $this->client->loginUser($yes->user);
+        $this->client->jsonRequest('PUT', $this->url($space, $entry), ['answer' => 'yes'], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals($this->error(404, 'Les disponibilités ne sont pas demandées pour cet événement'));
+        $this->assertSame([], $this->answersOf($entry));
+    }
+
+    public function test_an_entry_not_asking_cannot_be_reminded(): void
+    {
+        [$space, $author] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $this->stopAsking($entry);
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', $this->url($space, $entry) . '/remind', [], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals($this->error(404, 'Les disponibilités ne sont pas demandées pour cet événement'));
+        $this->assertSame(0, self::getContainer()->get(EntityManagerInterface::class)->getRepository(Notification::class)->count([]));
+    }
+
+    public function test_the_feed_carries_no_totals_for_an_entry_not_asking(): void
+    {
+        [$space, $author, , $yes] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $this->answer($entry, self::day(10), $yes, AvailabilityAnswer::Yes);
+        $this->stopAsking($entry);
+
+        $this->client->loginUser($author);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/agenda?from=' . self::day(10) . '&to=' . self::day(10), [], [], self::JSON);
+
+        $this->assertResponseIsSuccessful();
+        $itemId = 'manual-' . $entry->id;
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $space->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/agenda_items/id=' . $itemId . ';bandSpaceId=' . $space->id,
+                    '@type' => 'AgendaItem',
+                    'id' => $itemId,
+                    'band_space_id' => (string) $space->id,
+                    'source' => 'manual',
+                    'source_id' => (string) $entry->id,
+                    'datetime' => self::day(10) . 'T20:00:00+00:00',
+                    'end_datetime' => null,
+                    'is_all_day' => false,
+                    'title' => 'Concert au Bota',
+                    'description' => null,
+                    'metadata' => [
+                        'location' => null,
+                        'is_recurring_occurrence' => false,
+                        'recurrence_frequency' => null,
+                        'recurrence_monthly_mode' => null,
+                        'recurrence_until_date' => null,
+                        'series_id' => null,
+                        'series_start_datetime' => null,
+                        'occurrence_date' => self::day(10),
+                        'ask_availability' => false,
+                        'availability' => null,
+                        'my_availability' => null,
+                    ],
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $space->id . '/agenda?from=' . self::day(10) . '&to=' . self::day(10),
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /** Each row carries the viewer's own answer, so the agenda can show it without opening the entry. */
+    public function test_the_feed_carries_the_viewer_own_answer(): void
+    {
+        [$space, $author, , $yes] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $this->answer($entry, self::day(10), $yes, AvailabilityAnswer::No);
+
+        $this->client->loginUser($yes->user);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/agenda?from=' . self::day(10) . '&to=' . self::day(10), [], [], self::JSON);
+
+        $this->assertResponseIsSuccessful();
+        $itemId = 'manual-' . $entry->id;
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $space->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/agenda_items/id=' . $itemId . ';bandSpaceId=' . $space->id,
+                    '@type' => 'AgendaItem',
+                    'id' => $itemId,
+                    'band_space_id' => (string) $space->id,
+                    'source' => 'manual',
+                    'source_id' => (string) $entry->id,
+                    'datetime' => self::day(10) . 'T20:00:00+00:00',
+                    'end_datetime' => null,
+                    'is_all_day' => false,
+                    'title' => 'Concert au Bota',
+                    'description' => null,
+                    'metadata' => [
+                        'location' => null,
+                        'is_recurring_occurrence' => false,
+                        'recurrence_frequency' => null,
+                        'recurrence_monthly_mode' => null,
+                        'recurrence_until_date' => null,
+                        'series_id' => null,
+                        'series_start_datetime' => null,
+                        'occurrence_date' => self::day(10),
+                        'ask_availability' => true,
+                        'availability' => ['yes' => 0, 'no' => 1, 'absent' => 0, 'pending' => 3],
+                        'my_availability' => 'no',
+                    ],
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $space->id . '/agenda?from=' . self::day(10) . '&to=' . self::day(10),
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /** A declared absence and no answer reads as `absent`, which the agenda shows apart from a « no ». */
+    public function test_the_feed_shows_a_declared_absence_as_the_viewer_state(): void
+    {
+        [$space, $author, , , $absent] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $absence = MemberAbsenceFactory::new([
+            'member' => $absent,
+            'startDate' => new DateTimeImmutable(self::day(9)),
+            'endDate' => new DateTimeImmutable(self::day(11)),
+            'reason' => null,
+        ])->create();
+
+        $this->client->loginUser($absent->user);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/agenda?from=' . self::day(10) . '&to=' . self::day(10), [], [], self::JSON);
+
+        $this->assertResponseIsSuccessful();
+        $absenceItemId = 'absence-' . $absence->id;
+        $itemId = 'manual-' . $entry->id;
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $space->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => '/api/agenda_items/id=' . $absenceItemId . ';bandSpaceId=' . $space->id,
+                    '@type' => 'AgendaItem',
+                    'id' => $absenceItemId,
+                    'band_space_id' => (string) $space->id,
+                    'source' => 'absence',
+                    'source_id' => (string) $absence->id,
+                    'datetime' => self::day(9) . 'T00:00:00+00:00',
+                    'end_datetime' => self::day(11) . 'T00:00:00+00:00',
+                    'is_all_day' => true,
+                    'title' => 'Absent indisponible',
+                    'description' => null,
+                    'metadata' => ['member_id' => (string) $absent->id],
+                ],
+                [
+                    '@id' => '/api/agenda_items/id=' . $itemId . ';bandSpaceId=' . $space->id,
+                    '@type' => 'AgendaItem',
+                    'id' => $itemId,
+                    'band_space_id' => (string) $space->id,
+                    'source' => 'manual',
+                    'source_id' => (string) $entry->id,
+                    'datetime' => self::day(10) . 'T20:00:00+00:00',
+                    'end_datetime' => null,
+                    'is_all_day' => false,
+                    'title' => 'Concert au Bota',
+                    'description' => null,
+                    'metadata' => [
+                        'location' => null,
+                        'is_recurring_occurrence' => false,
+                        'recurrence_frequency' => null,
+                        'recurrence_monthly_mode' => null,
+                        'recurrence_until_date' => null,
+                        'series_id' => null,
+                        'series_start_datetime' => null,
+                        'occurrence_date' => self::day(10),
+                        'ask_availability' => true,
+                        'availability' => ['yes' => 0, 'no' => 0, 'absent' => 1, 'pending' => 3],
+                        'my_availability' => 'absent',
+                    ],
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $space->id . '/agenda?from=' . self::day(10) . '&to=' . self::day(10),
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /** Asking again brings back what members had already answered. */
+    public function test_asking_again_brings_the_kept_answers_back(): void
+    {
+        [$space, $author, , $yes] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $this->answer($entry, self::day(10), $yes, AvailabilityAnswer::Yes);
+        $this->stopAsking($entry);
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $space->id . '/agenda-entries/' . $entry->id,
+            ['ask_availability' => true],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $space->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => (string) $entry->id,
+            'band_space_id' => (string) $space->id,
+            'title' => 'Concert au Bota',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => self::day(10) . 'T20:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'ask_availability' => true,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => (string) $author->id,
+            'creator_username' => 'auteur',
+            'creator_display_name' => 'Auteur',
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+        // The answer given before it was turned off counts again.
+        $this->assertSame([[self::day(10), 'yes']], $this->answersOf($entry));
+        $answeredOccurrence = self::getContainer()->get(AgendaEntryAvailabilityBuilder::class)->build(
+            $space,
+            $entry,
+            self::day(10),
+            $this->membershipOf($space, $author),
+        );
+        $this->assertSame(['yes' => 1, 'no' => 0, 'absent' => 0, 'pending' => 3], $answeredOccurrence->totals);
+    }
+
     /**
      * An author, three members, one who left, all named by their stage name so the expected bodies
      * do not depend on profile defaults.
@@ -486,6 +756,18 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
             'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
             'recurrenceUntilDate' => new DateTimeImmutable(self::day(60)),
         ])->create();
+    }
+
+    private function membershipOf(BandSpace $space, User $user): BandSpaceMembership
+    {
+        return self::getContainer()->get(EntityManagerInterface::class)->getRepository(BandSpaceMembership::class)
+            ->findOneBy(['bandSpace' => (string) $space->id, 'user' => (string) $user->id]);
+    }
+
+    private function stopAsking(AgendaEntry $entry): void
+    {
+        $entry->askAvailability = false;
+        self::getContainer()->get(EntityManagerInterface::class)->flush();
     }
 
     private function answer(AgendaEntry $entry, string $day, BandSpaceMembership $membership, AvailabilityAnswer $answer): void

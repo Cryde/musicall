@@ -60,8 +60,13 @@ readonly class AgendaAggregator
         $availability = $withAvailability
             ? new AgendaAvailabilityContext(
                 $this->membershipRepository->findActiveIdsByBandSpace($bandSpace),
-                $this->availabilityRepository->findForEntriesBetween($entries, $from, $to),
+                $this->availabilityRepository->findForEntriesBetween(
+                    array_values(array_filter($entries, static fn (AgendaEntry $entry): bool => $entry->askAvailability)),
+                    $from,
+                    $to,
+                ),
                 $absences,
+                (string) $viewer->id,
             )
             : null;
 
@@ -103,6 +108,7 @@ readonly class AgendaAggregator
         $isRecurringOccurrence = $entry->recurrenceFrequency !== null;
         $occurrenceDate = self::occurrenceDateOf($occurrenceStart);
         $occurrenceKey = $occurrenceStart->format('Ymd-Hi');
+        $occurrenceAvailability = $entry->askAvailability ? $availability?->forOccurrence($entry, $occurrenceDate) : null;
 
         $item = new AgendaItem();
         $item->id = $isRecurringOccurrence
@@ -133,7 +139,10 @@ readonly class AgendaAggregator
                 : null,
             // The key an availability answer (#1000) or a cancellation is filed under.
             'occurrence_date' => $occurrenceDate,
-            'availability' => $availability?->totalsFor($entry, $occurrenceDate),
+            'ask_availability' => $entry->askAvailability,
+            'availability' => $occurrenceAvailability['totals'] ?? null,
+            // The viewer's own state, as in the per-date list: `yes`, `no`, `absent` or null.
+            'my_availability' => $occurrenceAvailability['mine'] ?? null,
         ];
 
         return $item;

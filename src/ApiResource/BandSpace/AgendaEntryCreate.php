@@ -60,6 +60,8 @@ class AgendaEntryCreate
 
     public bool $isAllDay = false;
 
+    public bool $askAvailability = true;
+
     public ?string $recurrenceFrequency = null;
 
     /**

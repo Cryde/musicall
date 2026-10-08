@@ -24,6 +24,7 @@ final readonly class AgendaAvailabilityContext
         private array $activeMembershipIds,
         array $answers,
         private array $absences,
+        private string $viewerMembershipId,
     ) {
         $byOccurrence = [];
         foreach ($answers as $answer) {
@@ -33,16 +34,20 @@ final readonly class AgendaAvailabilityContext
     }
 
     /**
-     * @return array{yes: int, no: int, absent: int, pending: int}
+     * The totals, and the viewer's own state so the agenda can show their answer on each row.
+     *
+     * @return array{totals: array{yes: int, no: int, absent: int, pending: int}, mine: string|null}
      */
-    public function totalsFor(AgendaEntry $entry, string $occurrenceDate): array
+    public function forOccurrence(AgendaEntry $entry, string $occurrenceDate): array
     {
-        return AgendaAvailabilityTally::totals(AgendaAvailabilityTally::resolve(
+        $resolved = AgendaAvailabilityTally::resolve(
             $this->activeMembershipIds,
             $this->answersByOccurrence[self::key((string) $entry->id, $occurrenceDate)] ?? [],
             $this->absences,
             $occurrenceDate,
-        ));
+        );
+
+        return ['totals' => AgendaAvailabilityTally::totals($resolved), 'mine' => $resolved[$this->viewerMembershipId] ?? null];
     }
 
     private static function key(string $entryId, string $occurrenceDate): string

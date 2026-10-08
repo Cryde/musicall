@@ -70,6 +70,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-20T18:30:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -131,6 +132,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-08-25T19:00:00+00:00',
             'end_datetime' => '2026-08-25T21:30:00+00:00',
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -183,6 +185,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-08-25T00:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => true,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -232,6 +235,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-08-25T00:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => true,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -277,6 +281,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -328,6 +333,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => '2026-06-15T23:00:00+00:00',
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -383,6 +389,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -477,6 +484,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T00:00:00+00:00',
             'end_datetime' => '2026-06-17T00:00:00+00:00',
             'is_all_day' => true,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -640,6 +648,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-01-05T20:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => 'weekly',
             'recurrence_until_date' => '2026-06-30',
             'recurrence_monthly_mode' => null,
@@ -753,6 +762,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-01-04T18:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => 'weekly',
             'recurrence_until_date' => '2026-12-31',
             'recurrence_monthly_mode' => null,
@@ -801,6 +811,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-01-05T19:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => 'monthly',
             'recurrence_until_date' => '2026-12-31',
             'recurrence_monthly_mode' => 'by_weekday',
@@ -848,6 +859,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-01-04T18:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -906,6 +918,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-02T18:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => 'weekly',
             'recurrence_until_date' => '2026-07-31',
             'recurrence_monthly_mode' => null,
@@ -971,6 +984,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-01T18:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => 'weekly',
             'recurrence_until_date' => '2026-07-31',
             'recurrence_monthly_mode' => null,
@@ -1034,6 +1048,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-01T18:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'ask_availability' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
             'recurrence_monthly_mode' => null,
@@ -1124,6 +1139,55 @@ class AgendaEntryUpdateTest extends ApiTestCase
         $this->assertSame(1, self::getContainer()->get(AgendaEntryAvailabilityRepository::class)->count(['agendaEntry' => $entryId]));
     }
 
+
+    /** Turning the question off hides the answers already given; turning it back on brings them back. */
+    public function test_turning_availability_off_keeps_the_answers(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $day = (new \DateTimeImmutable('+20 days', new \DateTimeZone('UTC')))->format('Y-m-d');
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Concert',
+            'eventDatetime' => new \DateTimeImmutable($day . 'T20:00:00+00:00'),
+        ])->create();
+        AgendaEntryAvailabilityFactory::new(['agendaEntry' => $entry, 'membership' => $membership, 'occurrenceDate' => new \DateTimeImmutable($day)])->create();
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['ask_availability' => false],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            '@type' => 'AgendaEntry',
+            'id' => $entryId,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'Concert',
+            'description' => $entry->description,
+            'location' => $entry->location,
+            'event_datetime' => $day . 'T20:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'ask_availability' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => (string) $user->id,
+            'creator_username' => $user->username,
+            'creator_display_name' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+        $this->assertSame(1, self::getContainer()->get(AgendaEntryAvailabilityRepository::class)->count(['agendaEntry' => $entryId]));
+    }
 
     /** A series moved to another time asks again for what is ahead; the dates already past stay as they were. */
     public function test_moving_a_series_clears_only_the_answers_still_ahead(): void

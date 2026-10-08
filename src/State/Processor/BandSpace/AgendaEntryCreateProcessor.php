@@ -83,6 +83,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         $entry->eventDatetime = $eventDatetime;
         $entry->endDatetime = $endDatetime;
         $entry->isAllDay = $data->isAllDay;
+        $entry->askAvailability = $data->askAvailability;
 
         if ($data->recurrenceFrequency !== null && $data->recurrenceFrequency !== '') {
             // ValidRecurrence has already accepted the inputs here; tryFrom + parse can't fail.

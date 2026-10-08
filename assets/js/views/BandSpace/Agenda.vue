@@ -167,11 +167,22 @@
                   </div>
 
                   <div
-                    v-if="item.source === 'manual' && availabilitySummary(item.metadata?.availability)"
-                    class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300 mt-1"
+                    v-if="item.source === 'manual' && item.metadata?.ask_availability"
+                    class="flex flex-wrap items-center justify-between gap-2 mt-1.5"
                   >
-                    <i class="pi pi-users text-[0.7rem]" aria-hidden="true" />
-                    {{ availabilitySummary(item.metadata.availability) }}
+                    <span
+                      v-if="availabilitySummary(item.metadata.availability)"
+                      class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300"
+                    >
+                      <i class="pi pi-users text-[0.7rem]" aria-hidden="true" />
+                      {{ availabilitySummary(item.metadata.availability) }}
+                    </span>
+                    <AgendaAvailabilityButtons
+                      v-if="canAnswerFromAgenda(item)"
+                      :bandSpaceId="route.params.id"
+                      :item="item"
+                      @answered="agendaStore.applyAvailabilityAnswer"
+                    />
                   </div>
 
                   <div
@@ -282,6 +293,7 @@ import { useRoute, useRouter } from 'vue-router'
 import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import AbsencesDrawer from '../../components/BandSpace/Agenda/AbsencesDrawer.vue'
+import AgendaAvailabilityButtons from '../../components/BandSpace/Agenda/AgendaAvailabilityButtons.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import Avatar from '../../components/User/Avatar.vue'
@@ -294,7 +306,7 @@ import {
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
-import { availabilitySummary } from '../../utils/agendaAvailability.js'
+import { availabilitySummary, canAnswerFromAgenda } from '../../utils/agendaAvailability.js'
 import {
   agendaCalendarEventDates,
   agendaItemDayKeys,
