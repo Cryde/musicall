@@ -261,6 +261,8 @@
             v-for="announce in profile.musician_announces"
             :key="announce.id"
             :announce="announce"
+            :contactable="!isOwnProfile"
+            @contact="handleContactAbout"
           />
         </div>
       </div>
@@ -269,6 +271,7 @@
     <SendMessageModal
       v-model:visible="showMessageModal"
       :selected-recipient="messageRecipient"
+      :contact-origin="contactOrigin"
     />
 
     <AuthRequiredModal
@@ -429,6 +432,7 @@ const hasMusicianAnnounces = computed(() => {
   return profile.value?.musician_announces && profile.value.musician_announces.length > 0
 })
 
+const contactOrigin = ref(null)
 const messageRecipient = computed(() => {
   if (!profile.value) return null
   return {
@@ -494,11 +498,20 @@ function getPlatformIcon(platform) {
 }
 
 function handleContact() {
+  openMessage(null)
+}
+
+function handleContactAbout(announce) {
+  openMessage({ musicianAnnounceId: announce.id })
+}
+
+function openMessage(origin) {
   trackUmamiEvent('profile-contact-click')
   if (!userSecurityStore.isAuthenticated) {
     showAuthModal.value = true
     return
   }
+  contactOrigin.value = origin
   showMessageModal.value = true
 }
 

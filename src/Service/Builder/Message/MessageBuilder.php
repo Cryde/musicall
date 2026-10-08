@@ -8,6 +8,7 @@ use App\ApiResource\Message\MessageResource;
 use App\ApiResource\Message\MessageThreadResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageContactOrigin;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Message\MessagePlainTextExtractor;
 use Ramsey\Uuid\UuidInterface;
@@ -24,6 +25,7 @@ readonly class MessageBuilder
         private HtmlSanitizerInterface $contentSanitizer,
         private MessagePlainTextExtractor $plainTextExtractor,
         private ChatMentionRenderer $chatMentionRenderer,
+        private ContactOriginBuilder $contactOriginBuilder,
     ) {
     }
 
@@ -46,7 +48,7 @@ readonly class MessageBuilder
      *                                                    channel has any; a direct message cannot be
      *                                                    written with a mention at all.
      */
-    public function buildItem(Message $entity, array $mentionUsernamesById = []): MessageResource
+    public function buildItem(Message $entity, array $mentionUsernamesById = [], ?MessageContactOrigin $contactOrigin = null): MessageResource
     {
         $dto = new MessageResource();
         $dto->id = (string) $entity->id;
@@ -59,6 +61,7 @@ readonly class MessageBuilder
             $mentionUsernamesById,
         );
         $dto->contentPreview = $this->toPreview($entity, $mentionUsernamesById);
+        $dto->contactOrigin = $contactOrigin instanceof MessageContactOrigin ? $this->contactOriginBuilder->build($contactOrigin) : null;
 
         return $dto;
     }

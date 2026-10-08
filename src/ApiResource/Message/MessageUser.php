@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\State\Processor\Message\MessagePostToUserProcessor;
 use App\Validator\Message\NotDeletedRecipient;
 use App\Validator\Message\NotSelfRecipient;
+use App\Validator\Message\ValidContactOrigin;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -27,6 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[NotSelfRecipient]
 #[NotDeletedRecipient]
+#[ValidContactOrigin]
 class MessageUser
 {
     const POST = 'MESSAGE_USER_POST';
@@ -37,4 +39,12 @@ class MessageUser
     #[Assert\Length(max: 5000)]
     #[Groups([MessageUser::POST])]
     public string $content;
+
+    /** The recipient's announce the message is sent from, if any (#998). */
+    #[Groups([MessageUser::POST])]
+    public ?string $musicianAnnounceId = null;
+
+    /** Sent from the recipient's teacher profile (#998). A user has at most one, so no id is needed. */
+    #[Groups([MessageUser::POST])]
+    public bool $fromTeacherProfile = false;
 }

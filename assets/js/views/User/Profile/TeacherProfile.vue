@@ -355,6 +355,7 @@
     <SendMessageModal
       v-model:visible="showMessageModal"
       :selected-recipient="contactRecipient"
+      :contact-origin="{ fromTeacherProfile: true }"
     />
     <AuthRequiredModal
       v-model:visible="showAuthModal"

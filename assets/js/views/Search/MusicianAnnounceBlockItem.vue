@@ -106,7 +106,11 @@
             </div>
         </div>
 
-        <SendMessageModal v-model:visible="showMessageModal" :selected-recipient="user" />
+        <SendMessageModal
+            v-model:visible="showMessageModal"
+            :selected-recipient="user"
+            :contact-origin="announceId ? { musicianAnnounceId: announceId } : null"
+        />
         <AuthRequiredModal v-model:visible="showAuthModal" variant="contact" :musician-name="userName" />
     </div>
 </template>

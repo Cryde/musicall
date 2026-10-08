@@ -252,10 +252,10 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  async function postMessage({ recipientId, content }) {
+  async function postMessage({ recipientId, content, contactOrigin = null }) {
     isAddingMessage.value = true
     try {
-      const newMessage = await messageApi.postMessage({ recipientId, content })
+      const newMessage = await messageApi.postMessage({ recipientId, content, contactOrigin })
       // Reload threads to get the new/updated thread
       await loadThreads()
       // Return the thread ID so caller can navigate to it

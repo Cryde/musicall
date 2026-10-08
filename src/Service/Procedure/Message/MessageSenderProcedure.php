@@ -3,13 +3,18 @@
 namespace App\Service\Procedure\Message;
 
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
+use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
 use App\Event\MessagePostedEvent;
 use App\Event\MessageSentEvent;
+use App\Repository\Message\MessageContactOriginRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Repository\Message\MessageThreadRepository;
+use App\Service\Builder\Message\MessageContactOriginDirector;
 use App\Service\Builder\Message\MessageDirector;
 use App\Service\Builder\Message\MessageParticipantDirector;
 use App\Service\Builder\Message\MessageThreadDirector;
@@ -35,19 +40,23 @@ class MessageSenderProcedure
         private readonly EventDispatcherInterface         $eventDispatcher,
         private readonly UserNotificationPreferenceChecker $preferenceChecker,
         private readonly ThreadMemberResolver             $threadMemberResolver,
+        private readonly MessageContactOriginDirector     $messageContactOriginDirector,
+        private readonly MessageContactOriginRepository   $messageContactOriginRepository,
     ) {
     }
 
     /**
+     * @param MusicianAnnounce|TeacherProfile|null $contactOrigin what the sender wrote from (#998)
+     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function process(User $sender, User $recipient, string $content) : Message
+    public function process(User $sender, User $recipient, string $content, MusicianAnnounce|TeacherProfile|null $contactOrigin = null) : Message
     {
         /** @var MessageSentEvent[] $eventsToDispatch */
         $eventsToDispatch = [];
 
-        $message = $this->entityManager->wrapInTransaction(function () use ($sender, $recipient, $content, &$eventsToDispatch): Message {
+        $message = $this->entityManager->wrapInTransaction(function () use ($sender, $recipient, $content, $contactOrigin, &$eventsToDispatch): Message {
             // Serialize concurrent A↔B thread creation by acquiring write locks on the
             // two user rows in deterministic id-sorted order. The second request in a race blocks
             // here, then sees the thread the first just created.
@@ -86,6 +95,9 @@ class MessageSenderProcedure
 
             $message = $this->messageDirector->create($thread, $sender, $content);
             $this->entityManager->persist($message);
+            if ($contactOrigin !== null && !$this->isLatestOrigin($thread, $contactOrigin)) {
+                $this->entityManager->persist($this->messageContactOriginDirector->create($message, $contactOrigin));
+            }
             $thread->lastMessage = $message;
             $this->entityManager->flush();
 
@@ -150,6 +162,24 @@ class MessageSenderProcedure
         foreach ($emailEvents as $event) {
             $this->eventDispatcher->dispatch($event);
         }
+    }
+
+    /**
+     * Writing again from the announce the conversation is already about adds nothing: the card is
+     * only worth showing when the reason for talking changes.
+     */
+    private function isLatestOrigin(MessageThread $thread, MusicianAnnounce|TeacherProfile $source): bool
+    {
+        if ($thread->id === null) {
+            return false;
+        }
+        $latest = $this->messageContactOriginRepository->findLatestByThreads([$thread])[(string) $thread->id] ?? null;
+        if (!$latest instanceof MessageContactOrigin) {
+            return false;
+        }
+        $latestSource = $source instanceof MusicianAnnounce ? $latest->musicianAnnounce : $latest->teacherProfile;
+
+        return $latestSource !== null && (string) $latestSource->id === (string) $source->id;
     }
 
     /**

@@ -119,6 +119,12 @@
             :key="message['@id']"
             class="flex max-w-[85%] flex-col"
           >
+            <ContactOrigin
+              v-if="message.contact_origin"
+              :origin="message.contact_origin"
+              class="mt-2 mb-1"
+              :class="isSender(message) ? 'self-end' : 'self-start'"
+            />
             <div
               class="group/message flex items-center gap-2"
               :class="isSender(message) ? 'flex-row-reverse' : 'flex-row'"
@@ -265,6 +271,7 @@ import { idFromIri } from '../../utils/reportTarget.js'
 import ReportDialog from '../Report/ReportDialog.vue'
 import BlockUserButton from '../User/Block/BlockUserButton.vue'
 import UserName from '../User/UserName.vue'
+import ContactOrigin from './ContactOrigin.vue'
 import MusicLinkPreview from './MusicLinkPreview.vue'
 
 const emit = defineEmits(['back'])

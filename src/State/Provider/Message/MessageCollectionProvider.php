@@ -12,6 +12,7 @@ use App\ApiResource\Message\MessageResource;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
+use App\Repository\Message\MessageContactOriginRepository;
 use App\Repository\Message\MessageThreadRepository;
 use App\Service\Access\ThreadAccess;
 use App\Service\Builder\Message\MessageBuilder;
@@ -30,6 +31,7 @@ readonly class MessageCollectionProvider implements ProviderInterface
         private ThreadAccess            $threadAccess,
         private CollectionProvider      $collectionProvider,
         private MessageBuilder          $messageBuilder,
+        private MessageContactOriginRepository $messageContactOriginRepository,
     ) {
     }
 
@@ -55,9 +57,17 @@ readonly class MessageCollectionProvider implements ProviderInterface
         /** @var TraversablePaginator $paginator */
         $paginator = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
+        $messages = iterator_to_array($paginator);
+        // One query for the page's origin cards (#998), never one per message.
+        $origins = $this->messageContactOriginRepository->findByMessageIds(
+            array_map(static fn (Message $entity): string => (string) $entity->id, $messages),
+        );
         $dtos = array_map(
-            fn (Message $entity): MessageResource => $this->messageBuilder->buildItem($entity),
-            iterator_to_array($paginator),
+            fn (Message $entity): MessageResource => $this->messageBuilder->buildItem(
+                $entity,
+                contactOrigin: $origins[(string) $entity->id] ?? null,
+            ),
+            $messages,
         );
 
         return new TraversablePaginator(

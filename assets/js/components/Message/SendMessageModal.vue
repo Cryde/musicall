@@ -148,6 +148,12 @@ const props = defineProps({
   selectedRecipient: {
     type: Object,
     default: null
+  },
+  // What the message is sent from (#998), passed to the API as is: `{ musicianAnnounceId }` or
+  // `{ fromTeacherProfile: true }`. Only meaningful with a selectedRecipient, whose announce it is.
+  contactOrigin: {
+    type: Object,
+    default: null
   }
 })
 
@@ -207,7 +213,8 @@ async function sendMessage() {
   try {
     const threadId = await messageStore.postMessage({
       recipientId: targetRecipient.id,
-      content: content.value
+      content: content.value,
+      contactOrigin: props.selectedRecipient ? props.contactOrigin : null
     })
     trackUmamiEvent('message-send')
 
