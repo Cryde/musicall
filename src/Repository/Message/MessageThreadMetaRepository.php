@@ -92,6 +92,29 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
     }
 
     /**
+     * Lets the next message email this user again, after the one that set the flag failed to send
+     * (#1151). The flag is set inside the send transaction, before the email is attempted, so a
+     * failed email would otherwise leave this thread silent until the recipient reads it.
+     *
+     * DQL rather than loading the row: it runs after the send's transaction has ended, and an update
+     * by key avoids hydrating the meta again just to flip one column. Like any DQL update it skips
+     * the identity map, so a meta already loaded in this request still reads `true`; nothing flushes
+     * one afterwards.
+     *
+     * Unconditional, and so racy in one known way: if the recipient reads the thread and a newer
+     * message sets the flag again while this email was failing, this clears the newer flag and the
+     * next message emails once more within the streak. One extra email, never a lost one.
+     */
+    public function releasePendingNotification(MessageThread $thread, User $user): void
+    {
+        $this->getEntityManager()
+            ->createQuery('UPDATE App\Entity\Message\MessageThreadMeta meta SET meta.pendingNotificationSent = false WHERE meta.thread = :thread AND meta.user = :user')
+            ->setParameter('thread', $thread)
+            ->setParameter('user', $user)
+            ->execute();
+    }
+
+    /**
      * Where each active member of a channel has read up to, for the « Vu par » line (#977).
      *
      * One query for a whole page, not one per message: a read position belongs to a member rather

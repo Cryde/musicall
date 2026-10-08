@@ -147,11 +147,11 @@ class MessageSenderProcedure
      * where MessageSentEvent is not, and its "recently active in the last five minutes" rule excludes
      * exactly the person sitting in the conversation.
      *
-     * Going second would also make the signal hostage to the email. An email listener that throws
-     * propagates out of here, and dispatching the emails first meant one failing provider took the
-     * live update with it: measured against a provider that was genuinely refusing us, the send was a
-     * 500 and no subscriber received anything. The signal is local, cheap and swallows its own
-     * failures, so it goes first and the slow remote thing goes after.
+     * Going second would also make the signal hostage to the email. Dispatching the emails first
+     * meant one failing provider took the live update with it: measured against a provider that was
+     * genuinely refusing us, the send was a 500 and no subscriber received anything. MessageSentListener
+     * now catches its own failures (#1151), but the signal is local and cheap while the email is slow
+     * and remote, so the signal still goes first.
      *
      * @param MessageSentEvent[] $emailEvents
      */
