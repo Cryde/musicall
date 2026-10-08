@@ -11,6 +11,14 @@ parameters:
     # site. Deployer shares .env rather than deploying it, so "not set yet" is the normal state of a
     # first release and must stay survivable.
     mercure.default_hub_url: '%env(DEFAULT_URI)%/.well-known/mercure'
+    # Who signs the hub's tokens (`iss`), which the hub's `issuer` block must name exactly, and the
+    # hub's own identity (`aud`), which its `resource_identifier` pins (#1153). An identifier, not an
+    # address: the hub is reached on a different URL by PHP (internally) than by the browser, so a
+    # value derived from the request would differ between the two. Dev sets MERCURE_ISSUER through
+    # compose so Caddy reads the same value; production falls back to its own site URL, which its
+    # Caddyfile then has to name.
+    mercure.default_issuer: '%env(DEFAULT_URI)%'
+    mercure.issuer: '%env(default:mercure.default_issuer:MERCURE_ISSUER)%'
 
 mercure:
     hubs:
@@ -25,12 +33,25 @@ mercure:
             # localhost, on musicall.local, on the suite's musicall.test and in production, there is
             # nothing to keep in step, and it is one fewer variable that a deploy can forget.
             public_url: /.well-known/mercure
+            # Mercure 1.0 (#1153): `authorization_details` tokens and the `__Secure-mercure_access_token`
+            # cookie. The hub still runs protocol_version_compatibility 8 until the mobile app has moved,
+            # so tokens of either shape are accepted in the meantime.
+            protocol_version: '1.0'
             jwt:
                 secret: '%env(MERCURE_JWT_SECRET)%'
                 # The topics the token PHP publishes with is allowed to reach. Without it the
                 # publish grant is an empty selector list, and the hub matches requested topics
                 # against that list, so every publish comes back 401.
                 publish: '*'
+                # RFC 9068 asks every 1.0 access token for these four, and the bundle refuses to build
+                # without them. The application mints every token itself, publisher and subscriber
+                # alike, so `sub` and `client_id` both name it: what a subscriber may read is in the
+                # token's grant, not in who it says it is.
+                claims:
+                    iss: '%mercure.issuer%'
+                    aud: '%mercure.issuer%/.well-known/mercure'
+                    sub: musicall
+                    client_id: musicall
     # The subscriber cookie is renewed by the same POST /api/token/refresh that renews the JWT, so
     # it gets the same life. Left unset it falls back to session.cookie_lifetime, which nothing
     # here controls: every firewall is stateless and a session is rarely started at all. Reading

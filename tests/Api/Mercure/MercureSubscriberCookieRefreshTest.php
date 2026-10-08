@@ -43,11 +43,11 @@ class MercureSubscriberCookieRefreshTest extends ApiTestCase
         $this->client->request('POST', '/api/token/refresh');
         $this->assertResponseIsSuccessful();
 
-        $this->assertResponseHasCookie('mercureAuthorization', '/.well-known/mercure');
+        $this->assertResponseHasCookie('__Secure-mercure_access_token', '/.well-known/mercure');
 
         $cookie = null;
         foreach ($this->client->getResponse()->headers->getCookies() as $responseCookie) {
-            if ($responseCookie->getName() === 'mercureAuthorization') {
+            if ($responseCookie->getName() === '__Secure-mercure_access_token') {
                 $cookie = $responseCookie;
             }
         }
@@ -56,8 +56,14 @@ class MercureSubscriberCookieRefreshTest extends ApiTestCase
         // The same user's topic, not merely "a" cookie: a refresh that renewed somebody else's token
         // would be a far worse bug than one that renewed nothing.
         $this->assertSame(
-            ['subscribe' => ['/users/' . $user->id . '/notifications']],
-            JwtPayload::of($cookie->getValue())['mercure']
+            [
+                [
+                    'type' => 'https://mercure.rocks/authorization-detail',
+                    'actions' => ['subscribe'],
+                    'topics' => [['match' => '/users/' . $user->id . '/notifications']],
+                ],
+            ],
+            JwtPayload::of($cookie->getValue())['authorization_details']
         );
     }
 }

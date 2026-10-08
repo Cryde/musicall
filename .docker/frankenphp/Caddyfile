@@ -71,8 +71,23 @@
 		publisher_jwt {$MERCURE_JWT_SECRET}
 		subscriber_jwt {$MERCURE_JWT_SECRET}
 
-		# FrankenPHP 1.13 ships Mercure 1.0, whose protocol changed. Compatibility mode keeps the
-		# version 8 behaviour the clients were written against. Must match prod's Caddyfile.
+		# The Mercure 1.0 tokens the application signs (#1153): the id must equal their `iss`.
+		issuer {$MERCURE_ISSUER} {
+			publisher {
+				jwt {$MERCURE_JWT_SECRET}
+			}
+			subscriber {
+				jwt {$MERCURE_JWT_SECRET}
+			}
+		}
+		# Pinned because PHP reaches the hub on http://php-web:8080 and the browser on the public
+		# host, and a 1.0 hub otherwise derives the expected audience from each request.
+		resource_identifier {$MERCURE_ISSUER}/.well-known/mercure
+
+		# FrankenPHP 1.13 ships Mercure 1.0, whose protocol changed. Compatibility mode keeps
+		# accepting 0.x tokens and `topic=` subscriptions, which the mobile app still sends
+		# (Cryde/musicall-app#86). Remove it, and the publisher_jwt / subscriber_jwt lines above,
+		# once that has shipped (#1153). Must match prod's Caddyfile.
 		protocol_version_compatibility 8
 	}
 
