@@ -166,6 +166,10 @@
       />
 
       <div v-if="isEditMode && props.entry?.id" class="border-t border-surface-200 dark:border-surface-700 pt-4">
+        <!-- Band Space files are shared: only the entry is private, not what is attached to it (#1146). -->
+        <Message v-if="form.scope === 'personal'" severity="warn" :closable="false" class="text-sm mb-3">
+          Les fichiers joints restent visibles par tous les membres du Band Space, même si cette entrée est personnelle.
+        </Message>
         <AttachedFilesSection
           :band-space-id="props.bandSpaceId"
           source-type="finance"

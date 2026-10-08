@@ -3,7 +3,9 @@
 namespace App\Tests\Api\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -86,6 +88,18 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        // The file is the band's, the personal entry's label is not (#1146).
+        $bandSpaceId = (string) $bandSpace->id;
+        $payloads = array_map(
+            static fn ($activity): ?array => $activity->payload,
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findBy([
+                'bandSpace' => $bandSpaceId,
+                'module' => BandSpaceModule::File,
+                'type' => 'attached',
+            ]),
+        );
+        $this->assertSame([['source_type' => 'finance', 'source_id' => (string) $entry->id, 'source_label' => null]], $payloads);
     }
 
     public function test_attach_personal_entry_by_non_owner_returns_403(): void

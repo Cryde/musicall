@@ -132,7 +132,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         return $task->title;
     }
 
-    private function resolveFinanceEntry(string $entryId, BandSpace $bandSpace, User $user): string
+    private function resolveFinanceEntry(string $entryId, BandSpace $bandSpace, User $user): ?string
     {
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
@@ -143,7 +143,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
         }
 
-        return $entry->label;
+        return $entry->labelVisibleToBand();
     }
 
     private function resolveNote(string $noteId, BandSpace $bandSpace): string

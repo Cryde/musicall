@@ -82,7 +82,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
             payload: [
                 'source_type' => 'finance',
                 'source_id' => (string) $entry->id,
-                'source_label' => $entry->label,
+                'source_label' => $entry->labelVisibleToBand(),
             ],
         );
 

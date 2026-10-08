@@ -2,8 +2,10 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\TaskStatus;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -211,6 +213,44 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    /** The file is the band's, the personal entry's label is not (#1146). */
+    public function test_attach_existing_to_a_personal_finance_entry_does_not_name_it_in_the_file_feed(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace])->create();
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cours de chant',
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $ownerMembership,
+        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
+        $bandSpaceId = (string) $bandSpace->id;
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($owner);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpaceId . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'finance', 'sourceId' => $entryId],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $payloads = array_map(
+            static fn ($activity): ?array => $activity->payload,
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findBy([
+                'bandSpace' => $bandSpaceId,
+                'module' => BandSpaceModule::File,
+                'type' => 'attached',
+            ]),
+        );
+        $this->assertSame([['source_type' => 'finance', 'source_id' => $entryId, 'source_label' => null]], $payloads);
     }
 
     /**

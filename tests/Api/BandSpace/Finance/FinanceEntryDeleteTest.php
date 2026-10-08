@@ -138,6 +138,47 @@ class FinanceEntryDeleteTest extends ApiTestCase
         $this->assertSame([], $attachmentRepository->findByFile($fileRepository->find($fileId)));
     }
 
+    /** The file stays the band's, but the personal entry it hung on is not named in the feed (#1146). */
+    public function test_deleting_a_personal_entry_does_not_name_it_in_the_file_feed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cours de chant',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $membership,
+            'amount' => 50000,
+        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString((string) $entry->id),
+            'attachedBy' => $user,
+        ]);
+        $bandSpaceId = (string) $bandSpace->id;
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpaceId . '/finance/entries/' . $entryId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $payloads = array_map(
+            static fn ($activity): ?array => $activity->payload,
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findBy([
+                'bandSpace' => $bandSpaceId,
+                'module' => BandSpaceModule::File,
+                'type' => 'source_deleted',
+            ]),
+        );
+        $this->assertSame([['source_type' => 'finance', 'source_id' => $entryId, 'source_label' => null]], $payloads);
+    }
+
     public function test_delete_entry_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

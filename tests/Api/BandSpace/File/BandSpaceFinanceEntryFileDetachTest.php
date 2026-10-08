@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -55,6 +57,39 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
         $this->assertNull($attachmentRepo->findOneByFileAndSource($reloaded, 'finance', $entry->id));
+    }
+
+    /** The file is the band's, the personal entry's label is not (#1146). */
+    public function test_detaching_from_a_personal_entry_does_not_name_it_in_the_file_feed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace])->create();
+        $entry = FinanceEntryFactory::new(['category' => $category, 'scope' => FinanceEntryScope::Personal, 'member' => $membership])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString($entry->id),
+            'attachedBy' => $user,
+        ]);
+        $bandSpaceId = (string) $bandSpace->id;
+
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpaceId . '/finance/entries/' . $entry->id . '/files/' . $file->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $payloads = array_map(
+            static fn ($activity): ?array => $activity->payload,
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findBy([
+                'bandSpace' => $bandSpaceId,
+                'module' => BandSpaceModule::File,
+                'type' => 'detached',
+            ]),
+        );
+        $this->assertSame([['source_type' => 'finance', 'source_id' => (string) $entry->id, 'source_label' => null]], $payloads);
     }
 
     public function test_detach_with_archive_query_archives_file(): void

@@ -121,6 +121,49 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         $this->assertSame([], $attachmentRepository->findByFile($reloadedFile));
     }
 
+    /** The file stays the band's, but the personal entry it hung on is not named in the feed (#1146). */
+    public function test_delete_category_does_not_name_a_personal_entry_in_the_file_feed(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio'])->create();
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cours de chant',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $membership,
+            'amount' => 12000,
+            'date' => new \DateTime('2026-03-01'),
+        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString((string) $entry->id),
+            'attachedBy' => $admin,
+        ]);
+        $bandSpaceId = (string) $bandSpace->id;
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($admin);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpaceId . '/finance/categories/' . $category->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $payloads = array_map(
+            static fn ($activity): ?array => $activity->payload,
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findBy([
+                'bandSpace' => $bandSpaceId,
+                'module' => BandSpaceModule::File,
+                'type' => 'source_deleted',
+            ]),
+        );
+        $this->assertSame([['source_type' => 'finance', 'source_id' => $entryId, 'source_label' => null]], $payloads);
+    }
+
     public function test_delete_category_as_non_admin_member_returns_403(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();

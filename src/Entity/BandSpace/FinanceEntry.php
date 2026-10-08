@@ -81,4 +81,10 @@ class FinanceEntry
         $this->creationDatetime = new DateTime();
         $this->splits = new ArrayCollection();
     }
+
+    /** The name a band wide surface may show for it: none for a personal entry, whose label is private. */
+    public function labelVisibleToBand(): ?string
+    {
+        return $this->scope === FinanceEntryScope::Personal ? null : $this->label;
+    }
 }
