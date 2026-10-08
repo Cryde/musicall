@@ -63,13 +63,6 @@
         @blocked="handleBlocked"
       />
     </div>
-    <!-- Why this conversation exists (#998): the latest announce or course it was started from. -->
-    <ContactOrigin
-      v-if="!isCurrentChannel && currentThread?.thread?.latest_contact_origin"
-      :origin="currentThread.thread.latest_contact_origin"
-      compact
-      class="px-4 py-2 border-b border-surface-200 dark:border-surface-700"
-    />
 
     <!-- Messages area -->
     <div

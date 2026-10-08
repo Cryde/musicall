@@ -194,6 +194,8 @@
                 v-for="announce in profile.musician_announces"
                 :key="announce.id"
                 :announce="announce"
+                :contactable="!isOwnProfile"
+                @contact="handleContactAbout"
               />
             </div>
 
@@ -227,6 +229,7 @@
     <SendMessageModal
       v-model:visible="showMessageModal"
       :selected-recipient="contactRecipient"
+      :contact-origin="contactOrigin"
     />
     <AuthRequiredModal
       v-model:visible="showAuthModal"
@@ -292,6 +295,7 @@ const showEditModal = ref(false)
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
 const contactRecipient = ref(null)
+const contactOrigin = ref(null)
 
 const profile = computed(() => musicianProfileStore.profile)
 
@@ -372,6 +376,14 @@ function handleProfileSaved() {
 }
 
 function handleContact() {
+  openMessage(null)
+}
+
+function handleContactAbout(announce) {
+  openMessage({ musicianAnnounceId: announce.id })
+}
+
+function openMessage(origin) {
   if (!userSecurityStore.isAuthenticated) {
     showAuthModal.value = true
     return
@@ -380,6 +392,7 @@ function handleContact() {
     id: profile.value.user_id,
     username: profile.value.username
   }
+  contactOrigin.value = origin
   showMessageModal.value = true
 }
 
