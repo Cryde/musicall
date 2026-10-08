@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1.12-php8.5-alpine
+FROM dunglas/frankenphp:1.13-php8.5-alpine
 
 RUN install-php-extensions \
     bcmath \

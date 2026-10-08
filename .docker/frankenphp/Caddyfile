@@ -41,6 +41,13 @@
 	# Production runs the same binary but its Caddyfile lives on the server, outside this
 	# repository, so this block has to be reproduced there by hand.
 	mercure {
+		# Named because SERVER_NAME also lists http://php-web:8080, the address the app publishes to
+		# inside the Docker network, and a different port is a second Caddy server: this block is
+		# provisioned once per server. Mercure 1.0 (FrankenPHP 1.13) refuses two unnamed hubs, and
+		# the same name makes both servers share one hub, so a publish on :8080 reaches a browser
+		# subscribed on :443.
+		name musicall
+
 		# Bolt is the default transport and its default path is Caddy's own data directory,
 		# /data/caddy/mercure.db here: writable by the container user, inside the caddy_data
 		# volume, and on the server outside the release directory, so a deploy does not lose it.
@@ -63,6 +70,10 @@
 		# .env so there is a single source; an empty one is a startup error, not a silent 401.
 		publisher_jwt {$MERCURE_JWT_SECRET}
 		subscriber_jwt {$MERCURE_JWT_SECRET}
+
+		# FrankenPHP 1.13 ships Mercure 1.0, whose protocol changed. Compatibility mode keeps the
+		# version 8 behaviour the clients were written against. Must match prod's Caddyfile.
+		protocol_version_compatibility 8
 	}
 
 	php_server {
