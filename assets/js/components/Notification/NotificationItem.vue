@@ -276,7 +276,11 @@ const TYPE_CONFIG = {
     title: payload.actor_username,
     preview: `demande vos disponibilités pour « ${payload.entry_title} » le ${agendaEventDay(payload)}`,
     actions: null,
-    target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
+    target: {
+      name: BAND_SPACE_ROUTES.AGENDA,
+      params: { id: payload.band_space_id },
+      query: { entry: payload.agenda_entry_id, occurrence: payload.occurrence_date }
+    }
   }),
   band_space_finance_split_assigned: (payload) => ({
     icon: 'pi pi-wallet',

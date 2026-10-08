@@ -5,6 +5,16 @@
     :header="isEditMode ? 'Modifier un événement' : 'Nouvel événement'"
     class="w-full! md:w-[28rem]!"
   >
+    <AgendaAvailabilityPanel
+      v-if="availabilityOccurrenceDate"
+      :bandSpaceId="bandSpaceId"
+      :entryId="agendaItem.source_id"
+      :occurrenceDate="availabilityOccurrenceDate"
+      :dateLabel="isSeriesOccurrence ? occurrenceDateLabel : null"
+      class="mb-4"
+      @changed="emit('availability-changed')"
+    />
+
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <Message
         v-if="formError"
@@ -331,6 +341,7 @@ import {
   SERIES_IMPACT_NONE,
   SERIES_IMPACT_RECURRENCE_REMOVED
 } from '../../../utils/agendaSeriesEdit.js'
+import AgendaAvailabilityPanel from './AgendaAvailabilityPanel.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -338,7 +349,7 @@ const props = defineProps({
   initialDatetime: { type: Date, default: null }
 })
 
-const emit = defineEmits(['saved', 'deleted'])
+const emit = defineEmits(['saved', 'deleted', 'availability-changed'])
 const isVisible = defineModel('visible', { type: Boolean, default: false })
 
 const agendaStore = useBandAgendaStore()
@@ -430,6 +441,19 @@ const occurrenceStart = computed(() =>
   toAgendaDate(props.agendaItem?.datetime, isAllDayEntry.value)
 )
 const seriesStartLabel = computed(() => formatEventMoment(seriesAnchorStart.value))
+
+// Who can make it is asked per occurrence, so only an entry already saved has one to ask about.
+const availabilityOccurrenceDate = computed(() =>
+  isEditMode.value ? (props.agendaItem.metadata?.occurrence_date ?? null) : null
+)
+// Read from the item rather than the form, so editing the date pickers does not relabel answers
+// that still belong to the occurrence as saved.
+const occurrenceDateLabel = computed(() => {
+  if (!occurrenceStart.value) return null
+  return isAllDayEntry.value
+    ? format(occurrenceStart.value, 'EEEE d MMMM yyyy', { locale: fr })
+    : format(occurrenceStart.value, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })
+})
 
 function formatEventMoment(date) {
   if (!date) return ''

@@ -167,6 +167,14 @@
                   </div>
 
                   <div
+                    v-if="item.source === 'manual' && availabilitySummary(item.metadata?.availability)"
+                    class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300 mt-1"
+                  >
+                    <i class="pi pi-users text-[0.7rem]" aria-hidden="true" />
+                    {{ availabilitySummary(item.metadata.availability) }}
+                  </div>
+
+                  <div
                     v-if="item.source === 'task' && item.metadata?.assignees?.length"
                     class="flex items-center gap-1 mt-1.5"
                   >
@@ -231,6 +239,7 @@
       :agendaItem="dialogItem"
       :initialDatetime="dialogInitialDatetime"
       @saved="handleEntrySaved"
+      @availability-changed="fetchWithCurrentRange"
     />
 
     <AbsencesDrawer
@@ -285,13 +294,14 @@ import {
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
+import { availabilitySummary } from '../../utils/agendaAvailability.js'
 import {
   agendaCalendarEventDates,
   agendaItemDayKeys,
   withoutAllDayPin
 } from '../../utils/agendaDate.js'
 import { isAllDayItem } from '../../utils/agendaItem.js'
-import { agendaViewForSavedEntry } from '../../utils/agendaRange.js'
+import { agendaViewForOccurrence, agendaViewForSavedEntry } from '../../utils/agendaRange.js'
 import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
 
 const route = useRoute()
@@ -511,7 +521,7 @@ onMounted(() => {
   const linkedEntryId = linkedEntryIdFromRoute()
   if (linkedEntryId) {
     // openLinkedEntry does its own fetch, once, over whichever period turns out to hold the entry.
-    openLinkedEntry(linkedEntryId)
+    openLinkedEntry(linkedEntryId, linkedOccurrenceFromRoute())
     return
   }
 
@@ -522,12 +532,21 @@ function linkedEntryIdFromRoute() {
   return typeof route.query.entry === 'string' && route.query.entry ? route.query.entry : null
 }
 
+// The UTC day of one occurrence, set by an availability reminder so it opens that date and not
+// the start of the series.
+function linkedOccurrenceFromRoute() {
+  return typeof route.query.occurrence === 'string' && route.query.occurrence
+    ? route.query.occurrence
+    : null
+}
+
 // Fired when the palette links to another entry while the agenda is already on screen: the route
 // name does not change, so the view is never remounted and onMounted never runs again.
 watch(
-  () => route.query.entry,
-  (entryId) => {
-    if (typeof entryId === 'string' && entryId) openLinkedEntry(entryId)
+  () => [route.query.entry, route.query.occurrence],
+  () => {
+    const entryId = linkedEntryIdFromRoute()
+    if (entryId) openLinkedEntry(entryId, linkedOccurrenceFromRoute())
   }
 )
 
@@ -535,7 +554,7 @@ watch(
 // what the files and finance modules do with their own item parameters.
 watch(dialogVisible, (isOpen) => {
   if (!isOpen && route.query.entry) {
-    router.replace({ query: { ...route.query, entry: undefined } })
+    router.replace({ query: { ...route.query, entry: undefined, occurrence: undefined } })
   }
 })
 
@@ -550,9 +569,10 @@ let linkedEntryRequestId = 0
  *
  * A recurring entry lands on the day the series starts, which is the one date the whole series
  * agrees on. If that first occurrence has since been cancelled, no item matches and the agenda just
- * stays on that period rather than opening something the member did not ask for.
+ * stays on that period rather than opening something the member did not ask for. With an
+ * `occurrenceDate`, the agenda goes to that occurrence instead.
  */
-async function openLinkedEntry(entryId) {
+async function openLinkedEntry(entryId, occurrenceDate = null) {
   linkedEntryRequestId += 1
   const requestId = linkedEntryRequestId
 
@@ -565,14 +585,16 @@ async function openLinkedEntry(entryId) {
     // A link to an entry somebody has since deleted: say so and drop the parameter, rather than
     // leaving the member on an agenda that silently ignored what they clicked.
     toast.add({ severity: 'error', summary: 'Événement introuvable', life: 4000 })
-    router.replace({ query: { ...route.query, entry: undefined } })
+    router.replace({ query: { ...route.query, entry: undefined, occurrence: undefined } })
     fetchWithCurrentRange()
     return
   }
 
   if (requestId !== linkedEntryRequestId) return
 
-  const nextView = agendaViewForSavedEntry(entry, viewedRange.value.from, viewedRange.value.to)
+  const nextView = occurrenceDate
+    ? agendaViewForOccurrence(occurrenceDate, viewedRange.value.from, viewedRange.value.to)
+    : agendaViewForSavedEntry(entry, viewedRange.value.from, viewedRange.value.to)
   if (nextView !== null) {
     dateFrom.value = nextView.from
     dateTo.value = nextView.to
@@ -583,10 +605,20 @@ async function openLinkedEntry(entryId) {
 
   if (requestId !== linkedEntryRequestId) return
 
-  const item = agendaStore.items.find(
+  const entryItems = agendaStore.items.filter(
     (candidate) => candidate.source === 'manual' && candidate.source_id === entryId
   )
-  if (item) handleItemClick(item)
+  // A requested date that is gone (cancelled, moved) opens nothing: falling back to another date of
+  // the series would let the member answer for a day they did not pick.
+  const item = occurrenceDate
+    ? entryItems.find((candidate) => candidate.metadata?.occurrence_date === occurrenceDate)
+    : entryItems[0]
+  if (item) {
+    handleItemClick(item)
+  } else if (occurrenceDate) {
+    toast.add({ severity: 'warn', summary: "Cette date n'a plus lieu", life: 4000 })
+    router.replace({ query: { ...route.query, entry: undefined, occurrence: undefined } })
+  }
 }
 
 function fetchRange(from, to) {

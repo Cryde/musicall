@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, it } from 'node:test'
 import {
+  agendaViewForOccurrence,
   agendaViewForSavedEntry,
   isEntryVisibleInRange,
   upcomingAgendaWindow
@@ -221,5 +222,33 @@ describe('upcomingAgendaWindow', () => {
   // the 5th, which is what a UTC-based format would hand them before 02:00.
   it('reads the local calendar day rather than the UTC one', () => {
     assert.equal(upcomingAgendaWindow(new Date(2026, 8, 6, 0, 30), 1).from, '2026-09-06')
+  })
+})
+
+describe('agendaViewForOccurrence', () => {
+  it('stays put when the occurrence and the days around it are on screen', () => {
+    assert.equal(agendaViewForOccurrence('2026-09-15', SEPTEMBER_FROM, SEPTEMBER_TO), null)
+  })
+
+  it('moves to the occurrence month when it is out of the period', () => {
+    assert.deepEqual(agendaViewForOccurrence('2026-10-15', SEPTEMBER_FROM, SEPTEMBER_TO), {
+      from: new Date(2026, 9, 1),
+      to: new Date(2026, 9, 31, 23, 59, 59, 999),
+      focusDate: new Date(2026, 9, 15)
+    })
+  })
+
+  // The UTC day of an evening start west of UTC, or an early start east of it, is the local day
+  // before or after, so a period ending on the occurrence day could still miss it.
+  it('widens to the next month when the occurrence is the last day on screen', () => {
+    assert.deepEqual(agendaViewForOccurrence('2026-09-30', SEPTEMBER_FROM, SEPTEMBER_TO), {
+      from: new Date(2026, 8, 1),
+      to: new Date(2026, 9, 31, 23, 59, 59, 999),
+      focusDate: new Date(2026, 8, 30)
+    })
+  })
+
+  it('ignores a date it cannot read', () => {
+    assert.equal(agendaViewForOccurrence('not-a-date', SEPTEMBER_FROM, SEPTEMBER_TO), null)
   })
 })
