@@ -24,6 +24,8 @@ use App\Tests\ApiTestCase;
 use App\Tests\Double\RecordingHub;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntrySplitFactory;
@@ -33,6 +35,7 @@ use App\Validator\BandSpace\PersonalScopeWithoutSplitsValidator;
 use App\Validator\BandSpace\RecurrenceEndDateValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\GreaterThan;
@@ -755,6 +758,40 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
             $this->assertSame(FinanceEntryScope::Personal, $entry->scope);
             $this->assertSame($ownerMembershipId, (string) $entry->member->id, $entry->date->format('Y-m-d'));
         }
+    }
+
+    /** A dropped forecast's file stays the band's, but the personal forecast is not named (#1146). */
+    public function test_pausing_a_personal_recurrence_does_not_name_its_forecasts_in_the_file_feed(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3), FinanceEntryScope::Personal);
+        $forecast = $this->createEntry($category, $recurrence, self::monthStart(2), FinanceEntryStatus::Planned, $ownerMembership);
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString((string) $forecast->id),
+            'attachedBy' => $owner,
+        ]);
+        $bandSpaceId = (string) $bandSpace->id;
+        $forecastId = (string) $forecast->id;
+
+        $this->patchRecurrence($owner, $bandSpace, (string) $recurrence->id, ['is_active' => false]);
+
+        $this->assertResponseIsSuccessful();
+        $payloads = array_map(
+            static fn ($activity): ?array => $activity->payload,
+            self::getContainer()->get(BandSpaceActivityRepository::class)->findBy([
+                'bandSpace' => $bandSpaceId,
+                'module' => BandSpaceModule::File,
+                'type' => 'source_deleted',
+            ]),
+        );
+        $this->assertSame([['source_type' => 'finance', 'source_id' => $forecastId, 'source_label' => null]], $payloads);
     }
 
     /**

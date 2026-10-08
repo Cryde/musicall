@@ -76,7 +76,7 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
         $this->fileSourceDetacher->detachDeletedSources(
             $bandSpace,
             'finance',
-            [(string) $entry->id => $entry->label],
+            [(string) $entry->id => $entry->labelVisibleToBand()],
             $user,
         );
 

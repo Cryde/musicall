@@ -340,17 +340,18 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Id => label of the planned entries deletePlannedByRecurrence() would drop, same predicate.
+     * Id => label of the planned entries deletePlannedByRecurrence() would drop, same predicate. A
+     * personal entry's label is null, since the file feed it ends up in is read by the whole band.
      *
      * A projection, not a hydration: the only caller detaches the files hanging on those entries before
      * the bulk delete removes them, and for that it needs an id and something to name the source with.
      *
-     * @return array<string, string>
+     * @return array<string, string|null>
      */
     public function findPlannedLabelsByRecurrence(FinanceRecurrence $recurrence, ?\DateTimeInterface $after = null): array
     {
         $qb = $this->createQueryBuilder('e')
-            ->select('e.id AS id', 'e.label AS label')
+            ->select('e.id AS id', 'e.label AS label', 'e.scope AS scope')
             ->where('e.recurrence = :recurrence')
             ->andWhere('e.status = :status')
             ->setParameter('recurrence', $recurrence)
@@ -362,12 +363,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
 
         $rows = $qb->getQuery()->getArrayResult();
 
-        $labels = [];
-        foreach ($rows as $row) {
-            $labels[(string) $row['id']] = (string) $row['label'];
-        }
-
-        return $labels;
+        return self::labelsBandMayRead($rows);
     }
 
     /**
@@ -376,22 +372,32 @@ class FinanceEntryRepository extends ServiceEntityRepository
      * `finance_entry.category_id` is `ON DELETE CASCADE` and `FinanceCategory` declares no inverse
      * collection, so deleting a category takes its entries with it in the database without Doctrine
      * ever loading them. The caller needs this list to detach the files hanging on those entries
-     * first, since nothing afterwards can name a source that no longer exists.
+     * first, since nothing afterwards can name a source that no longer exists. A personal entry's label
+     * is null, as above.
      *
-     * @return array<string, string>
+     * @return array<string, string|null>
      */
     public function findLabelsByCategory(FinanceCategory $category): array
     {
         $rows = $this->createQueryBuilder('e')
-            ->select('e.id AS id', 'e.label AS label')
+            ->select('e.id AS id', 'e.label AS label', 'e.scope AS scope')
             ->where('e.category = :category')
             ->setParameter('category', $category)
             ->getQuery()
             ->getArrayResult();
 
+        return self::labelsBandMayRead($rows);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows id, label and scope
+     * @return array<string, string|null>
+     */
+    private static function labelsBandMayRead(array $rows): array
+    {
         $labels = [];
         foreach ($rows as $row) {
-            $labels[(string) $row['id']] = (string) $row['label'];
+            $labels[(string) $row['id']] = $row['scope'] === FinanceEntryScope::Personal ? null : (string) $row['label'];
         }
 
         return $labels;

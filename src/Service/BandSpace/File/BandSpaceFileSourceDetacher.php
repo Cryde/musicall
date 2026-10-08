@@ -43,8 +43,9 @@ readonly class BandSpaceFileSourceDetacher
      * here: the removals join the caller's own unit of work so the source and its attachments disappear
      * together, or not at all.
      *
-     * @param array<string, string> $labelsBySourceId id of every source about to be deleted, mapped to
-     *                                                the name the activity feed should show for it
+     * @param array<string, string|null> $labelsBySourceId id of every source about to be deleted, mapped to
+     *                                                     the name the activity feed should show for it,
+     *                                                     null for one the band may not read
      * @param User                  $actor            required, not optional: BandSpaceFileActivityBuilder
      *                                                drops activities with no actor, so an anonymous
      *                                                entry here would leave the band unaware the file
