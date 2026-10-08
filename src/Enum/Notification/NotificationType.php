@@ -24,6 +24,7 @@ enum NotificationType: string
     case BandSpaceMemberRemoved = 'band_space_member_removed';
     case BandSpaceMemberLeft = 'band_space_member_left';
     case BandSpaceAgendaEntryCreated = 'band_space_agenda_entry_created';
+    case BandSpaceAgendaAvailabilityRequested = 'band_space_agenda_availability_requested';
     case BandSpaceFinanceSplitAssigned = 'band_space_finance_split_assigned';
     case BandSpaceDeletionScheduled = 'band_space_deletion_scheduled';
     case BandSpaceDeletionCancelled = 'band_space_deletion_cancelled';
@@ -43,7 +44,7 @@ enum NotificationType: string
             self::GalleryApproved, self::GalleryRejected => PushCategory::Moderation,
             self::BandSpaceChatMention, self::TaskMention => PushCategory::BandMention,
             self::BandSpaceTaskAssignment, self::TaskComment => PushCategory::BandTasks,
-            self::BandSpaceAgendaEntryCreated => PushCategory::BandAgenda,
+            self::BandSpaceAgendaEntryCreated, self::BandSpaceAgendaAvailabilityRequested => PushCategory::BandAgenda,
             self::BandSpaceFinanceSplitAssigned => PushCategory::BandFinance,
             self::BandSpaceInvitation, self::BandSpaceInvitationAccepted, self::BandSpaceInvitationDeclined,
             self::BandSpaceRoleChanged, self::BandSpaceMemberRemoved, self::BandSpaceMemberLeft => PushCategory::BandMembership,

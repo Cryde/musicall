@@ -81,7 +81,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Répétition',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -153,7 +153,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Répétition',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -223,7 +223,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Résidence',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -302,7 +302,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Veille',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -379,7 +379,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Réunion',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -450,7 +450,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Conseil',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -524,7 +524,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Concert annuel',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([
@@ -601,7 +601,7 @@ class AgendaRecurrenceDstTest extends ApiTestCase
                 'is_all_day' => true,
                 'title' => 'Tournée',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1]],
             ];
         };
         $this->assertJsonEquals([

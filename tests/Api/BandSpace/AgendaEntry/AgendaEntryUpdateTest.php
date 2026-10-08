@@ -6,6 +6,7 @@ use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\BandSpace\AgendaEntryException;
 use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\AgendaEntryAvailabilityRepository;
 use App\Repository\BandSpace\AgendaEntryExceptionRepository;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
@@ -13,6 +14,7 @@ use App\Repository\BandSpace\BandSpaceRepository;
 use App\Service\BandSpace\AgendaAggregator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\AgendaEntryAvailabilityFactory;
 use App\Tests\Factory\BandSpace\AgendaEntryFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
@@ -1068,4 +1070,96 @@ class AgendaEntryUpdateTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
+
+    /** Members said yes to the old slot: a moved date or time asks them again (#1000). Dated ahead, as past answers are kept. */
+    public function test_moving_an_entry_clears_its_availability_answers(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $day = (new \DateTimeImmutable('+20 days', new \DateTimeZone('UTC')))->format('Y-m-d');
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new \DateTimeImmutable($day . 'T20:00:00+00:00'),
+        ])->create();
+        AgendaEntryAvailabilityFactory::new(['agendaEntry' => $entry, 'membership' => $membership, 'occurrenceDate' => new \DateTimeImmutable($day)])->create();
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['eventDatetime' => $day . 'T21:00:00+00:00'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(0, self::getContainer()->get(AgendaEntryAvailabilityRepository::class)->count(['agendaEntry' => $entryId]));
+    }
+
+    public function test_renaming_an_entry_keeps_its_availability_answers(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $day = (new \DateTimeImmutable('+20 days', new \DateTimeZone('UTC')))->format('Y-m-d');
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new \DateTimeImmutable($day . 'T20:00:00+00:00'),
+        ])->create();
+        AgendaEntryAvailabilityFactory::new(['agendaEntry' => $entry, 'membership' => $membership, 'occurrenceDate' => new \DateTimeImmutable($day)])->create();
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['title' => 'Concert au Botanique'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(1, self::getContainer()->get(AgendaEntryAvailabilityRepository::class)->count(['agendaEntry' => $entryId]));
+    }
+
+
+    /** A series moved to another time asks again for what is ahead; the dates already past stay as they were. */
+    public function test_moving_a_series_clears_only_the_answers_still_ahead(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $start = new \DateTimeImmutable('-14 days 18:00', new \DateTimeZone('UTC'));
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => $start,
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => $start->modify('+8 weeks'),
+        ])->create();
+        $past = $start->modify('+1 week');
+        $ahead = $start->modify('+3 weeks');
+        foreach ([$past, $ahead] as $occurrence) {
+            AgendaEntryAvailabilityFactory::new(['agendaEntry' => $entry, 'membership' => $membership, 'occurrenceDate' => $occurrence->setTime(0, 0)])->create();
+        }
+        $entryId = (string) $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['eventDatetime' => $start->setTime(19, 0)->format(\DateTimeInterface::ATOM)],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $remaining = array_map(
+            static fn ($row): string => $row->occurrenceDate->format('Y-m-d'),
+            self::getContainer()->get(AgendaEntryAvailabilityRepository::class)->findBy(['agendaEntry' => $entryId]),
+        );
+        $this->assertSame([$past->format('Y-m-d')], $remaining);
+    }
+
 }

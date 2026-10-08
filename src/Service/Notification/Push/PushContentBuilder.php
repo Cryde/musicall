@@ -42,6 +42,7 @@ readonly class PushContentBuilder
             NotificationType::BandSpaceChatMention => sprintf('vous a mentionné dans la discussion de « %s »', $bandName),
             NotificationType::TaskComment => sprintf('a commenté la tâche « %s »', $text('task_title')),
             NotificationType::BandSpaceAgendaEntryCreated => sprintf('a ajouté l\'événement « %s »', $text('entry_title')),
+            NotificationType::BandSpaceAgendaAvailabilityRequested => sprintf('demande vos disponibilités pour « %s »', $text('entry_title')),
             NotificationType::BandSpaceFinanceSplitAssigned => sprintf('vous a attribué une dépense sur « %s »', $text('entry_label')),
             NotificationType::BandSpaceRoleChanged => $text('to') === Role::Admin->value
                 ? sprintf('vous a nommé administrateur de « %s »', $bandName)
@@ -120,7 +121,8 @@ readonly class PushContentBuilder
         $message = $payload['message_id'] ?? null;
 
         return match ($type) {
-            NotificationType::BandSpaceAgendaEntryCreated => sprintf('/band/%s/agenda', $band),
+            NotificationType::BandSpaceAgendaEntryCreated,
+            NotificationType::BandSpaceAgendaAvailabilityRequested => sprintf('/band/%s/agenda', $band),
             NotificationType::BandSpaceChatMention => is_string($message)
                 ? sprintf('/band/%s/chat?message=%s', $band, $message)
                 : sprintf('/band/%s/chat', $band),

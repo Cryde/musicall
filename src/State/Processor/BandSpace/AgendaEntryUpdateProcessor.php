@@ -11,6 +11,7 @@ use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\AgendaEntryAvailabilityRepository;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\AgendaSeriesReconciler;
@@ -41,6 +42,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         private Security $security,
         private RequestStack $requestStack,
         private BandSpaceChangeSignal $changeSignal,
+        private AgendaEntryAvailabilityRepository $availabilityRepository,
     ) {
     }
 
@@ -163,6 +165,11 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         $this->changeSignal->changed($bandSpace, BandSpaceModule::Agenda);
 
         $this->entityManager->flush();
+
+        // Members said yes to the old slot, not to this one: a moved date or time asks again (#1000).
+        if ($oldEventDatetime->getTimestamp() !== $entry->eventDatetime->getTimestamp()) {
+            $this->availabilityRepository->deleteUpcomingByEntry($entry);
+        }
 
         return $this->agendaEntryBuilder->buildItem($entry);
     }

@@ -23,6 +23,13 @@ framework:
             limit: 60
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # « Relancer » on one date of an agenda entry (#1000), keyed by entry and date: a push to the whole
+        # band, so once every twelve hours at most.
+        agenda_availability_reminder:
+            policy: fixed_window
+            limit: 1
+            interval: '12 hours'
+            cache_pool: "rate_limiter.cache"
         # The city pickers' suggestions: one call a pause in typing, so a few per field filled in.
         geocoding:
             policy: sliding_window
