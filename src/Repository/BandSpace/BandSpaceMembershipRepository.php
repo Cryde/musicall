@@ -164,6 +164,27 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
         return array_values(array_map(static fn (array $row): string => (string) $row['user_id'], $rows));
     }
 
+    /**
+     * The active memberships' ids, in roster order: all the agenda feed needs to count who has not
+     * answered yet, without hydrating a roster per request.
+     *
+     * @return list<string>
+     */
+    public function findActiveIdsByBandSpace(BandSpace $bandSpace): array
+    {
+        $rows = $this->createQueryBuilder('m')
+            ->select('m.id AS id')
+            ->where('m.bandSpace = :bandSpace')
+            ->andWhere('m.status = :status')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('status', MembershipStatus::Active)
+            ->orderBy('m.creationDatetime', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_values(array_map(static fn (array $row): string => (string) $row['id'], $rows));
+    }
+
     public function countActiveMembers(BandSpace $bandSpace): int
     {
         return (int) $this->createQueryBuilder('m')

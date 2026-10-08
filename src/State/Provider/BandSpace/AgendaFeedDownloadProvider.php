@@ -96,6 +96,8 @@ readonly class AgendaFeedDownloadProvider implements ProviderInterface
                 $membership,
                 $today->modify(self::WINDOW_START),
                 $today->modify(self::WINDOW_END),
+                // A calendar app shows none of it, and this endpoint is polled.
+                withAvailability: false,
             ),
             static fn(AgendaItem $item): bool => $item->source === self::PUBLISHED_SOURCE,
         );

@@ -54,6 +54,44 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * Who can make one date of an entry. `occurrenceDate` is the item's `metadata.occurrence_date`,
+   * sent back as is: it is the UTC day of the occurrence start, not the local day on screen.
+   */
+  getAvailability(bandSpaceId, entryId, occurrenceDate) {
+    return axios
+      .get(
+        Routing.generate('api_band_space_agenda_entry_availability_get', { bandSpaceId, entryId }),
+        { params: { occurrence: occurrenceDate } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  answerAvailability(bandSpaceId, entryId, occurrenceDate, answer) {
+    return axios
+      .put(
+        Routing.generate('api_band_space_agenda_entry_availability_put', { bandSpaceId, entryId }),
+        { occurrence_date: occurrenceDate, answer },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  remindAvailability(bandSpaceId, entryId, occurrenceDate) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_agenda_entry_availability_remind', {
+          bandSpaceId,
+          entryId
+        }),
+        { occurrence_date: occurrenceDate },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
   deleteOccurrence(bandSpaceId, entryId, occurrenceDate) {
     return axios
       .delete(

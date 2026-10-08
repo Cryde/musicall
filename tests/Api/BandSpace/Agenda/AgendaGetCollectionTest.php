@@ -96,6 +96,10 @@ class AgendaGetCollectionTest extends ApiTestCase
                         'recurrence_until_date' => null,
                         'series_id' => null,
                         'series_start_datetime' => null,
+                        'occurrence_date' => '2026-06-15',
+                        'ask_availability' => true,
+                        'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1],
+                        'my_availability' => null,
                     ],
                 ],
                 [
@@ -486,7 +490,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Répétition',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'ask_availability' => true, 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1], 'my_availability' => null],
             ];
         };
         $this->assertJsonEquals([
@@ -564,7 +568,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Réunion mensuelle',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'ask_availability' => true, 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1], 'my_availability' => null],
             ];
         };
         $this->assertJsonEquals([
@@ -638,7 +642,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                 'is_all_day' => true,
                 'title' => 'Anniversaire bissextile',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'ask_availability' => true, 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1], 'my_availability' => null],
             ];
         };
         $this->assertJsonEquals([
@@ -710,7 +714,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                 'is_all_day' => false,
                 'title' => 'Répétition',
                 'description' => null,
-                'metadata' => $metadata,
+                'metadata' => $metadata + ['occurrence_date' => substr($datetime, 0, 10), 'ask_availability' => true, 'availability' => ['yes' => 0, 'no' => 0, 'absent' => 0, 'pending' => 1], 'my_availability' => null],
             ];
         };
         $this->assertJsonEquals([

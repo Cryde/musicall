@@ -5,6 +5,49 @@
     :header="isEditMode ? 'Modifier un événement' : 'Nouvel événement'"
     class="w-full! md:w-[28rem]!"
   >
+    <!--
+      On a saved entry the switch acts at once, right above the block it shows: the block reads the
+      stored answers, which the API only serves once the entry asks.
+    -->
+    <div v-if="isEditMode" class="flex flex-col gap-1 mb-3">
+      <div class="flex items-center gap-2">
+        <Checkbox
+          :modelValue="form.askAvailability"
+          inputId="agenda-ask-availability-saved"
+          binary
+          :disabled="isSavingAskAvailability"
+          @update:modelValue="handleAskAvailabilityToggle"
+        />
+        <label for="agenda-ask-availability-saved" class="text-sm font-medium select-none">
+          Demander les disponibilités aux membres
+        </label>
+        <i
+          v-if="isSavingAskAvailability"
+          class="pi pi-spin pi-spinner text-xs text-surface-500"
+          aria-hidden="true"
+        />
+      </div>
+      <small v-if="askAvailabilityError" class="text-red-600 dark:text-red-400">
+        {{ askAvailabilityError }}
+      </small>
+      <small v-else-if="!form.askAvailability" class="text-surface-600 dark:text-surface-300">
+        Les réponses déjà données sont conservées et réapparaîtront si vous réactivez l’option.
+      </small>
+      <small v-if="isSeriesOccurrence" class="text-surface-600 dark:text-surface-300">
+        S’applique à toutes les dates de la série.
+      </small>
+    </div>
+
+    <AgendaAvailabilityPanel
+      v-if="availabilityOccurrenceDate"
+      :bandSpaceId="bandSpaceId"
+      :entryId="agendaItem.source_id"
+      :occurrenceDate="availabilityOccurrenceDate"
+      :dateLabel="isSeriesOccurrence ? occurrenceDateLabel : null"
+      class="mb-4"
+      @changed="emit('availability-changed')"
+    />
+
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <Message
         v-if="formError"
@@ -131,6 +174,13 @@
           autoResize
           placeholder="Notes complémentaires"
         />
+      </div>
+
+      <div v-if="!isEditMode" class="flex items-center gap-2">
+        <Checkbox v-model="form.askAvailability" inputId="agenda-ask-availability" binary />
+        <label for="agenda-ask-availability" class="text-sm font-medium select-none">
+          Demander les disponibilités aux membres
+        </label>
       </div>
 
       <div class="flex flex-col gap-3 border border-surface-200 dark:border-surface-700 rounded-md p-3">
@@ -324,6 +374,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
+import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
 import {
@@ -331,6 +382,7 @@ import {
   SERIES_IMPACT_NONE,
   SERIES_IMPACT_RECURRENCE_REMOVED
 } from '../../../utils/agendaSeriesEdit.js'
+import AgendaAvailabilityPanel from './AgendaAvailabilityPanel.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -338,7 +390,7 @@ const props = defineProps({
   initialDatetime: { type: Date, default: null }
 })
 
-const emit = defineEmits(['saved', 'deleted'])
+const emit = defineEmits(['saved', 'deleted', 'availability-changed'])
 const isVisible = defineModel('visible', { type: Boolean, default: false })
 
 const agendaStore = useBandAgendaStore()
@@ -360,6 +412,7 @@ const form = reactive({
   isAllDay: false,
   location: '',
   description: '',
+  askAvailability: true,
   recurrenceFrequency: null,
   recurrenceUntilDate: null,
   recurrenceMonthlyMode: null
@@ -430,6 +483,41 @@ const occurrenceStart = computed(() =>
   toAgendaDate(props.agendaItem?.datetime, isAllDayEntry.value)
 )
 const seriesStartLabel = computed(() => formatEventMoment(seriesAnchorStart.value))
+
+// Who can make it is asked per occurrence, so only an entry already saved, and asking, has one.
+// In edit mode form.askAvailability is the stored value: the switch saves it as soon as it moves.
+const availabilityOccurrenceDate = computed(() =>
+  isEditMode.value && form.askAvailability
+    ? (props.agendaItem.metadata?.occurrence_date ?? null)
+    : null
+)
+
+const isSavingAskAvailability = ref(false)
+const askAvailabilityError = ref(null)
+
+async function handleAskAvailabilityToggle(askAvailability) {
+  isSavingAskAvailability.value = true
+  askAvailabilityError.value = null
+  try {
+    await bandSpaceAgendaApi.updateEntry(props.bandSpaceId, props.agendaItem.source_id, {
+      askAvailability
+    })
+    form.askAvailability = askAvailability
+    emit('availability-changed')
+  } catch (error) {
+    askAvailabilityError.value = error?.message ?? 'Impossible de modifier cette option'
+  } finally {
+    isSavingAskAvailability.value = false
+  }
+}
+// Read from the item rather than the form, so editing the date pickers does not relabel answers
+// that still belong to the occurrence as saved.
+const occurrenceDateLabel = computed(() => {
+  if (!occurrenceStart.value) return null
+  return isAllDayEntry.value
+    ? format(occurrenceStart.value, 'EEEE d MMMM yyyy', { locale: fr })
+    : format(occurrenceStart.value, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })
+})
 
 function formatEventMoment(date) {
   if (!date) return ''
@@ -509,6 +597,7 @@ watch(isVisible, (visible) => {
   fieldErrors.recurrenceMonthlyMode = null
   showSeriesSaveDialog.value = false
   pendingSubmission.value = null
+  askAvailabilityError.value = null
 
   skipShiftEnd = true
   if (props.agendaItem && props.agendaItem.source === 'manual') {
@@ -521,6 +610,7 @@ watch(isVisible, (visible) => {
     form.isAllDay = !!props.agendaItem.is_all_day
     form.location = props.agendaItem.metadata?.location ?? ''
     form.description = props.agendaItem.description ?? ''
+    form.askAvailability = props.agendaItem.metadata?.ask_availability === true
     form.recurrenceFrequency = props.agendaItem.metadata?.recurrence_frequency ?? null
     form.recurrenceMonthlyMode = props.agendaItem.metadata?.recurrence_monthly_mode ?? null
     form.recurrenceUntilDate = props.agendaItem.metadata?.recurrence_until_date
@@ -533,6 +623,7 @@ watch(isVisible, (visible) => {
     form.isAllDay = false
     form.location = ''
     form.description = ''
+    form.askAvailability = true
     form.recurrenceFrequency = null
     form.recurrenceUntilDate = null
     form.recurrenceMonthlyMode = null
@@ -614,6 +705,7 @@ async function persistEntry(submission) {
     isAllDay: form.isAllDay,
     location: form.location.trim() === '' ? null : form.location.trim(),
     description: form.description.trim() === '' ? null : form.description.trim(),
+    askAvailability: form.askAvailability,
     recurrenceFrequency: form.recurrenceFrequency,
     recurrenceUntilDate:
       form.recurrenceFrequency && form.recurrenceUntilDate

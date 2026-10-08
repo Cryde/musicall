@@ -12,7 +12,9 @@ use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
+use App\Repository\BandSpace\AgendaEntryAvailabilityRepository;
 use App\Repository\BandSpace\AgendaEntryRepository;
+use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Repository\BandSpace\TaskRepository;
@@ -37,6 +39,8 @@ readonly class AgendaAggregator
         private MemberAbsenceRepository $memberAbsenceRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private BandSpaceMemberNames $memberNames,
+        private AgendaEntryAvailabilityRepository $availabilityRepository,
+        private BandSpaceMembershipRepository $membershipRepository,
     ) {
     }
 
@@ -48,18 +52,34 @@ readonly class AgendaAggregator
         BandSpaceMembership $viewer,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
+        bool $withAvailability = true,
     ): array
     {
+        $entries = $this->agendaEntryRepository->findUpcomingForBand($bandSpace, $from, $to);
+        $absences = $this->memberAbsenceRepository->findOverlappingForBand($bandSpace, $from, $to);
+        $availability = $withAvailability
+            ? new AgendaAvailabilityContext(
+                $this->membershipRepository->findActiveIdsByBandSpace($bandSpace),
+                $this->availabilityRepository->findForEntriesBetween(
+                    array_values(array_filter($entries, static fn (AgendaEntry $entry): bool => $entry->askAvailability)),
+                    $from,
+                    $to,
+                ),
+                $absences,
+                (string) $viewer->id,
+            )
+            : null;
+
         $manualItems = [];
-        foreach ($this->agendaEntryRepository->findUpcomingForBand($bandSpace, $from, $to) as $entry) {
+        foreach ($entries as $entry) {
             if ($entry->recurrenceFrequency === null) {
-                $manualItems[] = $this->buildManual($bandSpace, $entry, $entry->eventDatetime, $entry->endDatetime);
+                $manualItems[] = $this->buildManual($bandSpace, $entry, $entry->eventDatetime, $entry->endDatetime, $availability);
                 continue;
             }
 
             foreach ($this->expandOccurrences($entry, $from, $to) as $occurrenceStart) {
                 $occurrenceEnd = $this->shiftEnd($entry->eventDatetime, $entry->endDatetime, $occurrenceStart);
-                $manualItems[] = $this->buildManual($bandSpace, $entry, $occurrenceStart, $occurrenceEnd);
+                $manualItems[] = $this->buildManual($bandSpace, $entry, $occurrenceStart, $occurrenceEnd, $availability);
             }
         }
 
@@ -67,7 +87,7 @@ readonly class AgendaAggregator
             ...$manualItems,
             ...array_map(fn(Task $t): AgendaItem => $this->buildTask($bandSpace, $t), $this->taskRepository->findUpcomingForBand($bandSpace, $from, $to)),
             ...array_map(fn(FinanceEntry $f): AgendaItem => $this->buildFinance($bandSpace, $f), $this->financeEntryRepository->findUpcomingForBand($bandSpace, $viewer, $from, $to)),
-            ...array_map(fn(MemberAbsence $a): AgendaItem => $this->buildAbsence($bandSpace, $a), $this->memberAbsenceRepository->findOverlappingForBand($bandSpace, $from, $to)),
+            ...array_map(fn(MemberAbsence $a): AgendaItem => $this->buildAbsence($bandSpace, $a), $absences),
         ];
 
         usort(
@@ -83,9 +103,12 @@ readonly class AgendaAggregator
         AgendaEntry $entry,
         DateTimeImmutable $occurrenceStart,
         ?DateTimeImmutable $occurrenceEnd,
+        ?AgendaAvailabilityContext $availability,
     ): AgendaItem {
         $isRecurringOccurrence = $entry->recurrenceFrequency !== null;
+        $occurrenceDate = self::occurrenceDateOf($occurrenceStart);
         $occurrenceKey = $occurrenceStart->format('Ymd-Hi');
+        $occurrenceAvailability = $entry->askAvailability ? $availability?->forOccurrence($entry, $occurrenceDate) : null;
 
         $item = new AgendaItem();
         $item->id = $isRecurringOccurrence
@@ -114,6 +137,12 @@ readonly class AgendaAggregator
             'series_start_datetime' => $isRecurringOccurrence
                 ? $entry->eventDatetime->format(DateTimeInterface::ATOM)
                 : null,
+            // The key an availability answer (#1000) or a cancellation is filed under.
+            'occurrence_date' => $occurrenceDate,
+            'ask_availability' => $entry->askAvailability,
+            'availability' => $occurrenceAvailability['totals'] ?? null,
+            // The viewer's own state, as in the per-date list: `yes`, `no`, `absent` or null.
+            'my_availability' => $occurrenceAvailability['mine'] ?? null,
         ];
 
         return $item;
@@ -135,6 +164,31 @@ readonly class AgendaAggregator
             static fn(DateTimeImmutable $occurrence): string => $occurrence->format('Y-m-d'),
             $this->expandRule($entry, $entry->eventDatetime, null),
         );
+    }
+
+    /**
+     * The start of the entry's live occurrence on this date, cancellations applied, or null when it
+     * has none. The date is the UTC date of the occurrence's start, the key cancellations and
+     * availability answers share.
+     */
+    public function occurrenceStartOn(AgendaEntry $entry, string $occurrenceDate): ?DateTimeImmutable
+    {
+        if ($entry->recurrenceFrequency === null) {
+            return self::occurrenceDateOf($entry->eventDatetime) === $occurrenceDate ? $entry->eventDatetime : null;
+        }
+
+        $utc = new DateTimeZone('UTC');
+
+        return $this->expandOccurrences(
+            $entry,
+            new DateTimeImmutable($occurrenceDate . ' 00:00:00', $utc),
+            new DateTimeImmutable($occurrenceDate . ' 23:59:59', $utc),
+        )[0] ?? null;
+    }
+
+    public static function occurrenceDateOf(DateTimeImmutable $occurrenceStart): string
+    {
+        return $occurrenceStart->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d');
     }
 
     /**

@@ -70,6 +70,31 @@ export function agendaViewForSavedEntry(entry, from, to) {
 }
 
 /**
+ * Where the agenda must point to show one occurrence, or null when it is already on screen.
+ * `occurrenceDate` is the UTC day an availability reminder carries, which can be the local day
+ * before or after, so the day on each side has to be on screen too.
+ */
+export function agendaViewForOccurrence(occurrenceDate, from, to) {
+  const day = toAgendaDate(occurrenceDate, true)
+  if (!day) return null
+
+  const firstDay = addDays(day, -1)
+  const lastDay = addDays(day, 1)
+  const rangeStart = toAgendaDate(from, false)
+  const rangeEnd = toAgendaDate(to, false)
+  if (
+    rangeStart &&
+    rangeEnd &&
+    dayKey(firstDay) >= dayKey(rangeStart) &&
+    dayKey(lastDay) <= dayKey(rangeEnd)
+  ) {
+    return null
+  }
+
+  return { from: startOfMonth(firstDay), to: endOfMonth(lastDay), focusDate: day }
+}
+
+/**
  * The bounds the dashboard's « Agenda à venir » widget asks for: today, and the next `days` days.
  *
  * Bare calendar days, never a wall clock. The API's `from` and `to` are `Assert\Date`, an anchored

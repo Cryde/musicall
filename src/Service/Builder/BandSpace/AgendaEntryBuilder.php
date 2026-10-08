@@ -36,6 +36,7 @@ readonly class AgendaEntryBuilder
         $dto->eventDatetime = $entity->eventDatetime;
         $dto->endDatetime = $entity->endDatetime;
         $dto->isAllDay = $entity->isAllDay;
+        $dto->askAvailability = $entity->askAvailability;
         $dto->recurrenceFrequency = $entity->recurrenceFrequency?->value;
         $dto->recurrenceUntilDate = $entity->recurrenceUntilDate?->format('Y-m-d');
         $dto->recurrenceMonthlyMode = $entity->recurrenceMonthlyMode?->value;

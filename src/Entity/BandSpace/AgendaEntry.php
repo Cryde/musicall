@@ -57,6 +57,10 @@ class AgendaEntry
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     public bool $isAllDay = false;
 
+    /** Whether members are asked who can make it (#1000). Turning it off hides the answers, it keeps them. */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $askAvailability = true;
+
     #[ORM\Column(type: Types::STRING, length: 20, nullable: true, enumType: AgendaRecurrenceFrequency::class)]
     public ?AgendaRecurrenceFrequency $recurrenceFrequency = null;
 

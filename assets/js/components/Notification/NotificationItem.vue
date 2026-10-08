@@ -270,6 +270,18 @@ const TYPE_CONFIG = {
     actions: null,
     target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
   }),
+  band_space_agenda_availability_requested: (payload) => ({
+    icon: 'pi pi-question-circle',
+    avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
+    title: payload.actor_username,
+    preview: `demande vos disponibilités pour « ${payload.entry_title} » le ${agendaEventDay(payload)}`,
+    actions: null,
+    target: {
+      name: BAND_SPACE_ROUTES.AGENDA,
+      params: { id: payload.band_space_id },
+      query: { entry: payload.agenda_entry_id, occurrence: payload.occurrence_date }
+    }
+  }),
   band_space_finance_split_assigned: (payload) => ({
     icon: 'pi pi-wallet',
     avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',

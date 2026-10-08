@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
+import { withAvailabilityAnswer } from '../../utils/agendaAvailability.js'
 
 export const useBandAgendaStore = defineStore('bandAgenda', () => {
   const items = ref([])
@@ -91,6 +92,11 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
     }
   }
 
+  // An answer given from a row updates that row in place: reloading the period would dim the agenda.
+  function applyAvailabilityAnswer({ entryId, occurrenceDate, availability }) {
+    items.value = withAvailabilityAnswer(items.value, entryId, occurrenceDate, availability)
+  }
+
   function clear() {
     items.value = []
     loadError.value = null
@@ -110,6 +116,7 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
     deleteEntry,
     deleteOccurrence,
     deleteFromOccurrence,
+    applyAvailabilityAnswer,
     clear
   }
 })
