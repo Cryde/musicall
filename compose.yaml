@@ -32,6 +32,9 @@ services:
             # different keys. An empty value makes Caddy refuse to start rather than silently reject
             # every subscription.
             MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET}'
+            # The token issuer and the hub's identity, read by the Caddyfile's mercure block and by
+            # config/packages/mercure.yaml alike, so the two cannot disagree (#1153).
+            MERCURE_ISSUER: '${MERCURE_ISSUER}'
         tty: true
         networks:
             musicall:

@@ -36,7 +36,7 @@ class NativeLoginTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
 
         // Sorted, because the order the fields land in follows ResponseHeaderBag's cookie bag,
-        // which is keyed by path: mercureAuthorization lives on /.well-known/mercure and so comes
+        // which is keyed by path: the Mercure subscriber cookie lives on /.well-known/mercure and so comes
         // out first. What is being pinned is the set, and that nothing else joins it.
         $body = json_decode((string) $this->client->getResponse()->getContent(), true);
         $keys = array_keys($body);
@@ -51,8 +51,14 @@ class NativeLoginTest extends ApiTestCase
         // this in an Authorization header, where the web needs it as a cookie because an EventSource
         // cannot set one.
         $this->assertSame(
-            ['subscribe' => ['/users/' . $user->id . '/notifications']],
-            JwtPayload::of($body['mercure_authorization'])['mercure']
+            [
+                [
+                    'type' => 'https://mercure.rocks/authorization-detail',
+                    'actions' => ['subscribe'],
+                    'topics' => [['match' => '/users/' . $user->id . '/notifications']],
+                ],
+            ],
+            JwtPayload::of($body['mercure_authorization'])['authorization_details']
         );
 
         // The point of the endpoint. Anything here would be a credential the client never asked for

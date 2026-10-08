@@ -26,10 +26,22 @@ class MercureHubConfigurationTest extends KernelTestCase
         $hub = self::getContainer()->get('mercure.hub.default');
         self::assertInstanceOf(RemoteHubInterface::class, $hub);
 
-        // Drop "jwt.publish" from config/packages/mercure.yaml and this claim becomes an empty
-        // selector list, which matches no topic, so every publish comes back 401 while the app looks
-        // entirely healthy. It is the default when the option is simply left out.
-        $this->assertSame(['*'], JwtPayload::of($hub->getProvider()->getJwt())['mercure']['publish']);
+        // Drop "jwt.publish" from config/packages/mercure.yaml and this grant matches no topic, so
+        // every publish is refused while the app looks entirely healthy. It is the default when the
+        // option is simply left out. Mercure 1.0's shape (#1153).
+        $payload = JwtPayload::of($hub->getProvider()->getJwt());
+        $this->assertSame([
+            [
+                'type' => 'https://mercure.rocks/authorization-detail',
+                'actions' => ['publish'],
+                'topics' => [['match' => '*']],
+            ],
+        ], $payload['authorization_details']);
+
+        // The two the hub checks against its `issuer` block and its pinned `resource_identifier`:
+        // either one off and every publish is a 401, with nothing else failing.
+        $this->assertSame('https://musicall.local', $payload['iss']);
+        $this->assertSame('https://musicall.local/.well-known/mercure', $payload['aud']);
     }
 
     public function test_the_public_url_carries_no_host(): void

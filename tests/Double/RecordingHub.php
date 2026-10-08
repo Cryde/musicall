@@ -53,11 +53,11 @@ final class RecordingHub implements HubInterface
 
     public function getProtocolVersion(): ProtocolVersion
     {
-        return ProtocolVersion::Legacy;
+        return ProtocolVersion::V1;
     }
 
     public function getCookieName(): string
     {
-        return 'mercureAuthorization';
+        return '__Secure-mercure_access_token';
     }
 }

@@ -11,7 +11,7 @@ import { reconnectDelay } from './realtimeBackoff.js'
  * The server publishes a tag, not the thing that changed, so the body is only ever a discriminator:
  * this parses it and hands it over, and the refetching is the store's job.
  *
- * Topics are a list because Mercure multiplexes: one connection carries as many `topic=` parameters
+ * Topics are a list because Mercure multiplexes: one connection carries as many `match=` parameters
  * as you give it, and opening a second EventSource per topic would cost a second hub subscriber and
  * a second reconnect on every deploy for nothing. Today the list holds one entry, because the
  * subscriber cookie authorizes exactly one topic and a topic the token does not name receives
@@ -92,7 +92,8 @@ export function createNotificationStream({
     }
 
     const currentGeneration = generation
-    const query = topics.map((topic) => `topic=${encodeURIComponent(topic)}`).join('&')
+    // `match=` is Mercure 1.0's exact matcher (#1153), what `topic=` was under 0.x.
+    const query = topics.map((topic) => `match=${encodeURIComponent(topic)}`).join('&')
     stream = openStream(`${HUB_PATH}?${query}`)
 
     stream.onopen = () => {

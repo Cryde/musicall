@@ -45,8 +45,14 @@ class NativeTokenRefreshTest extends ApiTestCase
 
         $this->assertSame($user->username, JwtPayload::of($body['token'])['username']);
         $this->assertSame(
-            ['subscribe' => ['/users/' . $user->id . '/notifications']],
-            JwtPayload::of($body['mercure_authorization'])['mercure']
+            [
+                [
+                    'type' => 'https://mercure.rocks/authorization-detail',
+                    'actions' => ['subscribe'],
+                    'topics' => [['match' => '/users/' . $user->id . '/notifications']],
+                ],
+            ],
+            JwtPayload::of($body['mercure_authorization'])['authorization_details']
         );
 
         // single_use: true, so the token that was spent is gone and the one in the body is its

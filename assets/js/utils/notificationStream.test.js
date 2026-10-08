@@ -94,7 +94,7 @@ describe('createNotificationStream', () => {
     assert.equal(FakeEventSource.opened.length, 1)
     assert.equal(
       FakeEventSource.opened[0].url,
-      '/.well-known/mercure?topic=%2Fusers%2Fa-user-id%2Fnotifications'
+      '/.well-known/mercure?match=%2Fusers%2Fa-user-id%2Fnotifications'
     )
   })
 
@@ -130,7 +130,7 @@ describe('createNotificationStream', () => {
     assert.equal(FakeEventSource.opened.length, 1)
     assert.equal(
       FakeEventSource.opened[0].url,
-      '/.well-known/mercure?topic=%2Fusers%2Fa%2Fnotifications&topic=%2Fband-spaces%2Fb%2Fchat'
+      '/.well-known/mercure?match=%2Fusers%2Fa%2Fnotifications&match=%2Fband-spaces%2Fb%2Fchat'
     )
   })
 

@@ -17,7 +17,7 @@ class MercureSubscriberCookieTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
-    private const string COOKIE_NAME = 'mercureAuthorization';
+    private const string COOKIE_NAME = '__Secure-mercure_access_token';
     private const string COOKIE_PATH = '/.well-known/mercure';
 
     public function test_login_issues_a_subscriber_token_for_that_user_and_nothing_else(): void
@@ -36,11 +36,23 @@ class MercureSubscriberCookieTest extends ApiTestCase
         $this->assertTrue($cookie->isSecure());
         $this->assertSame(Cookie::SAMESITE_STRICT, $cookie->getSameSite());
 
-        // The whole claim, not a subset: the hub decides what this browser may read from exactly
-        // this, and an extra key here is an extra permission. In particular there is no "publish".
+        // The whole grant, not a subset: the hub decides what this browser may read from exactly
+        // this, and an extra entry here is an extra permission. In particular there is no "publish".
+        // Mercure 1.0's shape (#1153): an RFC 9396 authorization detail rather than a `mercure` claim.
+        $payload = JwtPayload::of($cookie->getValue());
+        $this->assertSame([
+            [
+                'type' => 'https://mercure.rocks/authorization-detail',
+                'actions' => ['subscribe'],
+                'topics' => [['match' => '/users/' . $user->id . '/notifications']],
+            ],
+        ], $payload['authorization_details']);
+        $this->assertArrayNotHasKey('mercure', $payload);
+        // Who issued it and for which hub, the two the hub checks against its issuer block and its
+        // pinned resource identifier.
         $this->assertSame(
-            ['subscribe' => ['/users/' . $user->id . '/notifications']],
-            JwtPayload::of($cookie->getValue())['mercure']
+            ['iss' => 'https://musicall.local', 'aud' => 'https://musicall.local/.well-known/mercure', 'sub' => 'musicall', 'client_id' => 'musicall'],
+            ['iss' => $payload['iss'], 'aud' => $payload['aud'], 'sub' => $payload['sub'], 'client_id' => $payload['client_id']],
         );
     }
 
