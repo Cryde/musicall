@@ -21,7 +21,7 @@
         <i :class="['pi mt-0.5 text-surface-400', moduleIcon(activity.module)]" aria-hidden="true" />
         <div class="flex-1 min-w-0">
           <p class="text-surface-700 dark:text-surface-200 leading-snug">
-            <span class="font-medium"><UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template></span>
+            <span class="font-medium"><UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template></span>{{ ' ' }}
             <RouterLink
               v-if="activityLink(activity, bandSpaceId)"
               :to="activityLink(activity, bandSpaceId)"
