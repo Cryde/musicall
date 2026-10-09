@@ -22,7 +22,14 @@
         <div class="flex-1 min-w-0">
           <p class="text-surface-700 dark:text-surface-200 leading-snug">
             <span class="font-medium"><UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template></span>
-            {{ activitySentence(activity) }}
+            <RouterLink
+              v-if="activityLink(activity, bandSpaceId)"
+              :to="activityLink(activity, bandSpaceId)"
+              class="hover:underline focus-visible:underline"
+            >
+              {{ activitySentence(activity) }}
+            </RouterLink>
+            <template v-else>{{ activitySentence(activity) }}</template>
           </p>
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">{{ formatRelative(activity.creation_datetime) }}</p>
         </div>
@@ -38,6 +45,7 @@ import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceActivityApi from '../../../api/bandSpace/band-space-activity.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
+import { activityLink } from '../../../utils/bandSpaceActivityLink.js'
 import { ALL_BAND_SPACE_MODULES } from '../../../utils/bandSpaceLiveRefresh.js'
 import UserName from '../../User/UserName.vue'
 import { activitySentence as buildSentence } from '../Settings/activitySentences.js'

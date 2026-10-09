@@ -364,8 +364,10 @@ watch(
         toast.add({ severity: 'error', summary: 'Entrée introuvable', life: 4000 })
         router.replace({ query: { ...route.query, entry: undefined } })
       }
-    } catch {
-      toast.add({ severity: 'error', summary: 'Erreur de chargement', life: 4000 })
+    } catch (e) {
+      // A link from the activity log or the agenda can outlive the entry it names (#1159).
+      const summary = e?.status === 404 ? 'Entrée introuvable' : 'Erreur de chargement'
+      toast.add({ severity: 'error', summary, life: 4000 })
       router.replace({ query: { ...route.query, entry: undefined } })
     }
   },

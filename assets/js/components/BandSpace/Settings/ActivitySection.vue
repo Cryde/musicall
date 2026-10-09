@@ -66,13 +66,7 @@
         <div
           v-for="activity in store.items"
           :key="activity.id"
-          :class="[
-            'flex items-start gap-3 p-3 rounded-lg',
-            isClickable(activity)
-              ? 'cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800'
-              : ''
-          ]"
-          @click="handleClick(activity)"
+          class="flex items-start gap-3 p-3 rounded-lg"
         >
           <Avatar
             :username="activity.actor?.username || 'Système'"
@@ -90,7 +84,14 @@
                 :severity="moduleSeverity(activity.module)"
                 class="text-xs"
               />
-              <span class="text-sm text-surface-600 dark:text-surface-300">
+              <RouterLink
+                v-if="activityLink(activity, bandSpaceId)"
+                :to="activityLink(activity, bandSpaceId)"
+                class="text-sm text-surface-600 dark:text-surface-300 hover:underline focus-visible:underline"
+              >
+                {{ activitySentence(activity) }}
+              </RouterLink>
+              <span v-else class="text-sm text-surface-600 dark:text-surface-300">
                 {{ activitySentence(activity) }}
               </span>
             </div>
@@ -123,16 +124,16 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandSpaceActivityStore } from '../../../store/bandSpace/bandSpaceActivity.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
+import { activityLink } from '../../../utils/bandSpaceActivityLink.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 import { activitySentence as buildSentence } from './activitySentences.js'
 
 const route = useRoute()
-const router = useRouter()
 const store = useBandSpaceActivityStore()
 const settingsStore = useBandSpaceSettingsStore()
 // Wipe previous space's activity feed synchronously before first render to
@@ -191,28 +192,6 @@ function activitySentence(activity) {
 
 function formatRelative(dateStr) {
   return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
-}
-
-function isClickable(activity) {
-  return ['task', 'finance', 'agenda', 'notes'].includes(activity.module)
-}
-
-function handleClick(activity) {
-  if (!isClickable(activity)) {
-    return
-  }
-
-  const routeMap = {
-    task: { name: 'app_band_tasks', query: { task: activity.resource_id } },
-    finance: { name: 'app_band_finance' },
-    agenda: { name: 'app_band_agenda' },
-    notes: { name: 'app_band_notes', query: { note: activity.resource_id } }
-  }
-
-  const target = routeMap[activity.module]
-  if (target) {
-    router.push({ ...target, params: { id: bandSpaceId } })
-  }
 }
 
 function applyFiltersToStore() {

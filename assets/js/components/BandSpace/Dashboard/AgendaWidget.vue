@@ -19,7 +19,16 @@
     <ul class="list-none p-0 m-0 flex flex-col gap-3">
       <li v-for="item in items" :key="item.id" class="flex gap-3 text-sm border-l-2 pl-3" :class="sourceBorderClass(item.source)">
         <div class="flex-1 min-w-0">
-          <p class="font-medium text-surface-900 dark:text-surface-0 truncate">{{ item.title }}</p>
+          <p class="font-medium text-surface-900 dark:text-surface-0 truncate">
+            <RouterLink
+              v-if="agendaItemLink(item, bandSpaceId)"
+              :to="agendaItemLink(item, bandSpaceId)"
+              class="hover:underline focus-visible:underline"
+            >
+              {{ item.title }}
+            </RouterLink>
+            <template v-else>{{ item.title }}</template>
+          </p>
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">
             {{ formatDayLabel(item) }}<template v-if="!isAllDayItem(item)"> - {{ formatTime(item.datetime) }}</template>
           </p>
@@ -60,7 +69,7 @@ import {
   withAvailabilityAnswer
 } from '../../../utils/agendaAvailability.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
-import { isAllDayItem } from '../../../utils/agendaItem.js'
+import { agendaItemLink, isAllDayItem } from '../../../utils/agendaItem.js'
 import { upcomingAgendaWindow } from '../../../utils/agendaRange.js'
 import AgendaAvailabilityButtons from '../Agenda/AgendaAvailabilityButtons.vue'
 import DashboardWidget from './DashboardWidget.vue'

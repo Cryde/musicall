@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { isAllDayItem } from './agendaItem.js'
+import { agendaItemLink, isAllDayItem } from './agendaItem.js'
 
 /**
  * The shared all day rule for agenda items. Datetimes are written the way the API sends them,
@@ -47,5 +47,45 @@ describe('isAllDayItem', () => {
   it('reads a missing item as all day instead of throwing', () => {
     assert.equal(isAllDayItem(null), true)
     assert.equal(isAllDayItem(undefined), true)
+  })
+})
+
+describe('agendaItemLink', () => {
+  const params = { id: 'space-1' }
+
+  it('opens a band entry on its occurrence, or on the entry alone', () => {
+    const occurrence = {
+      source: 'manual',
+      source_id: 'e1',
+      metadata: { occurrence_date: '2026-10-15' }
+    }
+    assert.deepEqual(agendaItemLink(occurrence, 'space-1'), {
+      name: 'app_band_agenda',
+      params,
+      query: { entry: 'e1', occurrence: '2026-10-15' }
+    })
+    assert.deepEqual(agendaItemLink({ source: 'manual', source_id: 'e1' }, 'space-1'), {
+      name: 'app_band_agenda',
+      params,
+      query: { entry: 'e1' }
+    })
+  })
+
+  it('opens the task or the finance entry an item comes from', () => {
+    assert.deepEqual(agendaItemLink({ source: 'task', source_id: 't1' }, 'space-1'), {
+      name: 'app_band_tasks',
+      params,
+      query: { task: 't1' }
+    })
+    assert.deepEqual(agendaItemLink({ source: 'finance', source_id: 'f1' }, 'space-1'), {
+      name: 'app_band_finance',
+      params,
+      query: { entry: 'f1' }
+    })
+  })
+
+  it('leads nowhere for an absence or an item without a source', () => {
+    assert.equal(agendaItemLink({ source: 'absence', source_id: 'a1' }, 'space-1'), null)
+    assert.equal(agendaItemLink({ source: 'task' }, 'space-1'), null)
   })
 })

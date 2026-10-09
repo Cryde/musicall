@@ -37,7 +37,7 @@
       </div>
 
       <div class="grid md:grid-cols-3 gap-3">
-        <router-link :to="{ name: 'app_band_agenda', params: { id: space.id } }" :class="TILE">
+        <router-link :to="nextEventLink" :class="TILE">
           <span class="text-xs font-bold uppercase tracking-wide text-primary">Prochain événement</span>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <template v-else-if="nextEvents.length > 0">
@@ -58,21 +58,30 @@
           <span v-else class="text-sm text-surface-600 dark:text-surface-300">Rien de prévu ces {{ AGENDA_DAYS }} prochains jours.</span>
         </router-link>
 
-        <router-link :to="{ name: 'app_band_tasks', params: { id: space.id } }" :class="TILE">
-          <span class="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-300">
+        <!-- Not one link like its neighbours: each task opens itself, and links cannot nest. -->
+        <div :class="TILE_FRAME">
+          <router-link
+            :to="{ name: 'app_band_tasks', params: { id: space.id } }"
+            class="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-300 hover:underline focus-visible:underline"
+          >
             Tâches ouvertes<template v-if="!isLoadingDetails"> · {{ openTaskCount }}</template>
-          </span>
+          </router-link>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <ul v-else-if="tasks.length > 0" class="m-0 p-0 list-none flex flex-col gap-1.5">
             <li v-for="task in tasks" :key="task.id" class="flex items-center gap-2 text-sm text-surface-900 dark:text-surface-0 min-w-0">
               <span class="w-3.5 h-3.5 shrink-0 rounded border-2 border-surface-400 dark:border-surface-500" aria-hidden="true" />
-              <span class="truncate">{{ task.title }}</span>
+              <router-link
+                :to="{ name: 'app_band_tasks', params: { id: space.id }, query: { task: task.id } }"
+                class="truncate hover:underline focus-visible:underline"
+              >
+                {{ task.title }}
+              </router-link>
             </li>
           </ul>
           <span v-else class="text-sm text-surface-600 dark:text-surface-300">Aucune tâche ouverte.</span>
-        </router-link>
+        </div>
 
-        <router-link :to="{ name: 'app_band_setlist', params: { id: space.id } }" :class="TILE">
+        <router-link :to="setlistLink" :class="TILE">
           <span class="text-xs font-bold uppercase tracking-wide text-fuchsia-700 dark:text-fuchsia-300">Dernière setlist</span>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <template v-else-if="setlist">
@@ -101,7 +110,7 @@ import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
@@ -110,7 +119,7 @@ import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigat
 import relativeDate from '../../../helper/date/relative-date.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
-import { isAllDayItem } from '../../../utils/agendaItem.js'
+import { agendaItemLink, isAllDayItem } from '../../../utils/agendaItem.js'
 import { upcomingAgendaWindow } from '../../../utils/agendaRange.js'
 import { lastChangedSetlist, openTasks, pickBandSpace } from '../../../utils/memberHome.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
@@ -121,8 +130,10 @@ import { formatDuration } from '../../../utils/setlistDuration.js'
  */
 const AGENDA_DAYS = 30
 const TASKS_SHOWN = 3
-const TILE =
-  'flex flex-col gap-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0/80 dark:bg-surface-950 p-4 hover:border-primary-300 dark:hover:border-surface-500 transition-colors min-w-0'
+const TILE_FRAME =
+  'flex flex-col gap-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0/80 dark:bg-surface-950 p-4 min-w-0'
+// A whole tile is a link; the tasks tile is not, so it keeps the frame without the hover.
+const TILE = `${TILE_FRAME} hover:border-primary-300 dark:hover:border-surface-500 transition-colors`
 const PLACEHOLDER = 'h-10 rounded-md bg-surface-100 dark:bg-surface-800 animate-pulse'
 
 const bandSpaceStore = useBandSpaceStore()
@@ -137,6 +148,20 @@ const tasks = ref([])
 const openTaskCount = ref(0)
 const setlist = ref(null)
 let detailsRequest = 0
+
+// The tiles open what they show (#1159), and the module when they show nothing.
+const nextEventLink = computed(
+  () =>
+    (nextEvents.value[0] && agendaItemLink(nextEvents.value[0], space.value.id)) || {
+      name: 'app_band_agenda',
+      params: { id: space.value.id }
+    }
+)
+const setlistLink = computed(() => ({
+  name: 'app_band_setlist',
+  params: { id: space.value.id },
+  query: setlist.value ? { setlist: setlist.value.setlist.id } : {}
+}))
 
 onMounted(() => {
   if (space.value) loadDetails(space.value.id)
