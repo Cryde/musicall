@@ -186,6 +186,14 @@ const tasksStore = useBandTasksStore()
 // A's tasks until cleared, which would flash for the duration of B's fetch.
 tasksStore.clear()
 
+// The dashboard's « N en retard » lands here with ?overdue=1 (#1164). Read once, before the first
+// fetch, then taken out of the URL, which would otherwise keep saying so after the filter is
+// switched off on the board.
+if (route.query.overdue) {
+  tasksStore.setFilter('overdue', true)
+  router.replace({ query: { ...route.query, overdue: undefined } })
+}
+
 const bandSpaceId = route.params.id
 const detailVisible = ref(false)
 const categoryManagerVisible = ref(false)
