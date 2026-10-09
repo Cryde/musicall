@@ -31,6 +31,7 @@
               {{ node.label }}
             </span>
             <Button
+              v-if="nodeActions(node).length > 0"
               icon="pi pi-ellipsis-h"
               aria-label="Actions de la note"
               severity="secondary"
@@ -64,6 +65,9 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Tree from 'primevue/tree'
 import { computed, nextTick, ref, watch } from 'vue'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
+import { canDeleteNote } from '../../../utils/noteActions.js'
 
 const MAX_DEPTH = 3
 
@@ -79,7 +83,14 @@ const selectionKeys = ref({})
 const nodeMenu = ref(null)
 const nodeMenuItems = ref([])
 
-function openNodeMenu(event, node) {
+const userSecurityStore = useUserSecurityStore()
+const { isAdmin } = useBandSpaceNavigation()
+
+/**
+ * Only what the API accepts: a note at the deepest level takes no child, and only its author or an
+ * administrator deletes it (#1166). A note offering neither shows no menu at all.
+ */
+function nodeActions(node) {
   const items = []
 
   if (canCreateChild(node.key)) {
@@ -90,14 +101,20 @@ function openNodeMenu(event, node) {
     })
   }
 
-  items.push({
-    label: 'Supprimer',
-    icon: 'pi pi-trash',
-    class: 'text-red-500',
-    command: () => emit('delete', node.key)
-  })
+  if (canDeleteNote(node.data, userSecurityStore.userProfile?.id ?? null, isAdmin.value)) {
+    items.push({
+      label: 'Supprimer',
+      icon: 'pi pi-trash',
+      class: 'text-red-500',
+      command: () => emit('delete', node.key)
+    })
+  }
 
-  nodeMenuItems.value = items
+  return items
+}
+
+function openNodeMenu(event, node) {
+  nodeMenuItems.value = nodeActions(node)
   nodeMenu.value.toggle(event)
 }
 
