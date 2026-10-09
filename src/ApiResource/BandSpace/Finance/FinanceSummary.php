@@ -38,7 +38,11 @@ class FinanceSummary
     public int $totalPlanned = 0;
     public int $totalCommitted = 0;
     public int $totalPaid = 0;
+    // Only ever the reader's own personal entries (#812), all statuses. The total adds incomes and
+    // expenses together and is kept for the mobile app; the web shows the two apart (#1168).
     public int $totalPersonal = 0;
+    public int $totalPersonalIncome = 0;
+    public int $totalPersonalExpense = 0;
     public bool $hasEstimates = false;
     public ?string $minDate = null;
     public ?string $maxDate = null;

@@ -39,17 +39,26 @@
     <div v-if="summary?.total_personal > 0" class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
       <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
         Personnel
-        <i class="pi pi-info-circle text-xs ml-1 cursor-help" v-tooltip.top="'Total des entrées personnelles de tous les membres, tous statuts confondus. Non inclus dans les totaux du groupe.'"></i>
+        <i class="pi pi-info-circle text-xs ml-1 cursor-help" v-tooltip.top="'Total de vos entrées personnelles, tous statuts confondus. Non inclus dans les totaux du groupe.'"></i>
       </p>
-      <p class="text-xl font-semibold text-purple-600 dark:text-purple-400">{{ formatAmount(summary?.total_personal) }}</p>
+      <!-- Incomes and expenses apart, never added up (#1168) -->
+      <FinanceTypeTotals :totals="personalTotals" class="text-xl font-semibold flex-wrap" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { formatAmount } from '../../../utils/currency.js'
+import FinanceTypeTotals from './FinanceTypeTotals.vue'
 
-defineProps({
+const props = defineProps({
   summary: { type: Object, default: null }
 })
+
+// The shape FinanceTypeTotals reads; only the totals are shown here.
+const personalTotals = computed(() => ({
+  income: { total: props.summary?.total_personal_income ?? 0 },
+  expense: { total: props.summary?.total_personal_expense ?? 0 }
+}))
 </script>

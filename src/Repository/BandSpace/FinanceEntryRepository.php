@@ -158,7 +158,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{total_income: int, total_expense: int, total_income_all: int, total_expense_all: int, total_planned: int, total_committed: int, total_paid: int, total_personal: int, has_estimates: bool}
+     * @return array{total_income: int, total_expense: int, total_income_all: int, total_expense_all: int, total_planned: int, total_committed: int, total_paid: int, total_personal: int, total_personal_income: int, total_personal_expense: int, has_estimates: bool}
      */
     public function getSummaryByBandSpace(
         BandSpace $bandSpace,
@@ -182,6 +182,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'committed' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_committed,
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'paid' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_paid,
                 COALESCE(SUM(CASE WHEN e.scope = 'personal' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_personal,
+                COALESCE(SUM(CASE WHEN e.scope = 'personal' AND e.type = 'income' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_personal_income,
+                COALESCE(SUM(CASE WHEN e.scope = 'personal' AND e.type = 'expense' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_personal_expense,
                 MAX(CASE WHEN e.amount IS NULL AND (e.amount_min IS NOT NULL OR e.amount_max IS NOT NULL) THEN 1 ELSE 0 END) AS has_estimates
             FROM finance_entry e
             JOIN finance_category c ON e.category_id = c.id
@@ -200,6 +202,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
             'total_committed' => (int) $result['total_committed'],
             'total_paid' => (int) $result['total_paid'],
             'total_personal' => (int) $result['total_personal'],
+            'total_personal_income' => (int) $result['total_personal_income'],
+            'total_personal_expense' => (int) $result['total_personal_expense'],
             'has_estimates' => (bool) $result['has_estimates'],
         ];
     }

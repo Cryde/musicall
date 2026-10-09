@@ -506,6 +506,8 @@ class FinanceAmountLimitTest extends ApiTestCase
             'total_committed' => self::CAP,
             'total_paid' => 2 * self::CAP,
             'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
             'has_estimates' => true,
             'min_date' => '2024-01-15T00:00:00+00:00',
             'max_date' => '2024-03-10T00:00:00+00:00',

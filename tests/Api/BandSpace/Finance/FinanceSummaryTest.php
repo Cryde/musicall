@@ -55,6 +55,8 @@ class FinanceSummaryTest extends ApiTestCase
             'total_committed' => 0,
             'total_paid' => 0,
             'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
             'has_estimates' => false,
             'min_date' => null,
             'max_date' => null,
@@ -120,6 +122,8 @@ class FinanceSummaryTest extends ApiTestCase
             'total_committed' => 0,
             'total_paid' => 65000,
             'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
             'has_estimates' => false,
             'min_date' => '2024-03-10T00:00:00+00:00',
             'max_date' => '2024-06-20T00:00:00+00:00',
@@ -129,6 +133,81 @@ class FinanceSummaryTest extends ApiTestCase
                     'name' => 'Studio',
                     'paid' => 65000,
                     'committed' => 0,
+                    'planned' => 0,
+                ],
+            ],
+            'member_contributions' => [],
+            'upcoming_entries' => [],
+        ]);
+    }
+
+    /**
+     * The « Personnel » card shows the reader's personal incomes and expenses apart (#1168): added up,
+     * a 300 € income and a 500 € expense read 800 €. The sum stays for the mobile app.
+     */
+    public function test_get_summary_splits_the_readers_personal_entries_by_type(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+
+        FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cours particulier',
+            'type' => FinanceEntryType::Income,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $membership,
+            'amount' => 30000,
+            'date' => new \DateTime('2024-03-10'),
+        ])->create();
+        FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cordes',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Committed,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $membership,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-06-20'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            [],
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceSummary',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            '@type' => 'FinanceSummary',
+            'band_space_id' => $bandSpace->id,
+            'current_membership_id' => $membership->id,
+            'total_income' => 0,
+            'total_expense' => 0,
+            'total_income_all' => 0,
+            'total_expense_all' => 0,
+            'total_planned' => 0,
+            'total_committed' => 0,
+            'total_paid' => 0,
+            'total_personal' => 80000,
+            'total_personal_income' => 30000,
+            'total_personal_expense' => 50000,
+            'has_estimates' => false,
+            'min_date' => '2024-03-10T00:00:00+00:00',
+            'max_date' => '2024-06-20T00:00:00+00:00',
+            'by_category' => [
+                [
+                    'id' => $category->id,
+                    'name' => 'Studio',
+                    'paid' => 30000,
+                    'committed' => 50000,
                     'planned' => 0,
                 ],
             ],
@@ -175,6 +254,8 @@ class FinanceSummaryTest extends ApiTestCase
             'total_committed' => 0,
             'total_paid' => 50000,
             'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
             'has_estimates' => false,
             'min_date' => '2024-03-10T00:00:00+00:00',
             'max_date' => '2024-03-10T00:00:00+00:00',
@@ -248,6 +329,8 @@ class FinanceSummaryTest extends ApiTestCase
             'total_committed' => 0,
             'total_paid' => 30000,
             'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
             'has_estimates' => true,
             'min_date' => '2024-02-15T00:00:00+00:00',
             'max_date' => '2024-09-01T00:00:00+00:00',
@@ -372,6 +455,8 @@ class FinanceSummaryTest extends ApiTestCase
             'total_committed' => 0,
             'total_paid' => 0,
             'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
             'has_estimates' => true,
             'min_date' => '2024-09-01T00:00:00+00:00',
             'max_date' => '2024-09-02T00:00:00+00:00',

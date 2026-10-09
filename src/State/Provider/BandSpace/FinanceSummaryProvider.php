@@ -52,6 +52,8 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         $summary->totalCommitted = $totals['total_committed'];
         $summary->totalPaid = $totals['total_paid'];
         $summary->totalPersonal = $totals['total_personal'];
+        $summary->totalPersonalIncome = $totals['total_personal_income'];
+        $summary->totalPersonalExpense = $totals['total_personal_expense'];
         $summary->hasEstimates = $totals['has_estimates'];
         $summary->minDate = $boundaries['min_date'];
         $summary->maxDate = $boundaries['max_date'];
