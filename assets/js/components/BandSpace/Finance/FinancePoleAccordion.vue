@@ -11,25 +11,27 @@
   <Accordion v-model:value="openPanels" multiple>
     <AccordionPanel v-for="pole in poles" :key="pole.id" :value="pole.id">
       <AccordionHeader>
-        <div class="flex items-center justify-between w-full pr-2 gap-3">
+        <div class="flex flex-wrap items-center justify-between w-full pr-2 gap-x-3 gap-y-1">
           <span class="font-semibold min-w-0 truncate">{{ pole.name }}</span>
           <span class="flex items-baseline gap-2 sm:gap-3 shrink-0">
-            <span class="text-sm font-semibold tabular-nums">{{ formatAmount(poleTotal(pole)) }}</span>
+            <FinanceTypeTotals :totals="poleTotals(pole)" class="text-sm font-semibold" />
             <span class="text-xs text-surface-500 dark:text-surface-400">{{ countEntries(pole) }} entrée{{ countEntries(pole) > 1 ? 's' : '' }}</span>
           </span>
         </div>
       </AccordionHeader>
       <AccordionContent>
-        <!-- Progress bar -->
-        <div v-if="poleTotal(pole) > 0" class="mb-4">
-          <div class="h-2 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden">
-            <div
-              class="h-full rounded-full transition-all"
-              :class="progressBarColor(pole)"
-              :style="{ width: progressPercent(pole) + '%' }"
-            ></div>
+        <!-- Share paid, one bar per type: money in and money out are never added up -->
+        <div v-if="progressRows(pole).length > 0" class="mb-4 flex flex-col gap-2">
+          <div v-for="row in progressRows(pole)" :key="row.label">
+            <div class="h-2 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all"
+                :class="row.percent >= 100 ? 'bg-green-500' : 'bg-blue-500'"
+                :style="{ width: row.percent + '%' }"
+              ></div>
+            </div>
+            <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ row.label }} · {{ row.percent }}% payé</p>
           </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ progressPercent(pole) }}% payé</p>
         </div>
 
         <!-- Entries at pole level (always rendered so the pole itself is a drop target, even when it
@@ -60,7 +62,7 @@
             </div>
 
             <div class="min-w-0 flex-1 pb-4">
-              <div class="flex items-center gap-2 mb-2">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
                 <template v-if="editingId === child.id">
                   <InputText
                     v-model="editingName"
@@ -92,7 +94,10 @@
                       <i class="pi pi-trash text-xs"></i>
                     </button>
                   </div>
-                  <span class="text-sm tabular-nums text-surface-600 dark:text-surface-400 shrink-0 ml-auto">{{ formatAmount(categoryTotal(child.id)) }}</span>
+                  <FinanceTypeTotals
+                    :totals="categoryTotals(child.id)"
+                    class="text-sm shrink-0 ml-auto"
+                  />
                 </template>
               </div>
               <EntryList
@@ -171,8 +176,9 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { effectiveAmount, formatAmount } from '../../../utils/currency.js'
+import { financeCategoryTotals } from '../../../utils/financeCategoryTotals.js'
 import EntryList from './EntryList.vue'
+import FinanceTypeTotals from './FinanceTypeTotals.vue'
 
 const STORAGE_KEY_PREFIX = 'finance_open_panels_'
 
@@ -240,42 +246,31 @@ const poleStats = computed(() => {
     for (const child of pole.children) {
       entries.push(...(props.entriesByCategory[child.id] || []))
     }
-    const bandEntries = entries.filter((e) => e.scope !== 'personal')
-    const total = bandEntries.reduce((sum, e) => sum + effectiveAmount(e), 0)
-    const paid = bandEntries
-      .filter((e) => e.status === 'paid')
-      .reduce((sum, e) => sum + effectiveAmount(e), 0)
-    const percent = total === 0 ? 0 : Math.min(Math.round((paid / total) * 100), 100)
-    stats.set(pole.id, { count: entries.length, total, paid, percent })
+    stats.set(pole.id, { count: entries.length, totals: financeCategoryTotals(entries) })
   }
   return stats
 })
+
+const NO_TOTALS = financeCategoryTotals([])
 
 function countEntries(pole) {
   return poleStats.value.get(pole.id)?.count ?? 0
 }
 
-function poleTotal(pole) {
-  return poleStats.value.get(pole.id)?.total ?? 0
+/** The pole and its sub-categories together. */
+function poleTotals(pole) {
+  return poleStats.value.get(pole.id)?.totals ?? NO_TOTALS
 }
 
-// Gross total for a single category (used for subcategories); excludes personal-scope entries
-// to match poleStats. Pole-level totals use poleTotal (pole + its children).
-function categoryTotal(categoryId) {
-  return (props.entriesByCategory[categoryId] || [])
-    .filter((entry) => entry.scope !== 'personal')
-    .reduce((sum, entry) => sum + effectiveAmount(entry), 0)
+function categoryTotals(categoryId) {
+  return financeCategoryTotals(props.entriesByCategory[categoryId] || [])
 }
 
-function progressPercent(pole) {
-  return poleStats.value.get(pole.id)?.percent ?? 0
-}
-
-function progressBarColor(pole) {
-  const stats = poleStats.value.get(pole.id)
-  if (!stats) return 'bg-blue-500'
-  if (stats.percent >= 100) return 'bg-green-500'
-  if (stats.paid > stats.total) return 'bg-red-500'
-  return 'bg-blue-500'
+function progressRows(pole) {
+  const { income, expense } = poleTotals(pole)
+  return [
+    { label: 'Revenus', ...income },
+    { label: 'Dépenses', ...expense }
+  ].filter((row) => row.total > 0)
 }
 </script>
