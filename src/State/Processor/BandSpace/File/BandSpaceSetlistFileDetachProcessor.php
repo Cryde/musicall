@@ -59,7 +59,7 @@ readonly class BandSpaceSetlistFileDetachProcessor implements ProcessorInterface
 
         $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'setlist', (string) $setlist->id);
         if (!$attachment instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
-            throw new NotFoundHttpException("Le fichier n'est pas attaché à ce setlist");
+            throw new NotFoundHttpException("Le fichier n'est pas attaché à cette setlist");
         }
 
         $shouldArchive = $this->requestStack->getCurrentRequest()?->query->getBoolean('archive') ?? false;

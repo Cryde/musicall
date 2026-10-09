@@ -199,10 +199,10 @@ class BandSpaceSetlistFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Le fichier n'est pas attaché à ce setlist",
+            'detail' => "Le fichier n'est pas attaché à cette setlist",
             'status' => 404,
             'type' => '/errors/404',
-            'description' => "Le fichier n'est pas attaché à ce setlist",
+            'description' => "Le fichier n'est pas attaché à cette setlist",
         ]);
     }
 

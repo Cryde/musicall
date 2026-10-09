@@ -3,11 +3,11 @@
     v-model:visible="visible"
     position="right"
     :style="{ width: '400px' }"
-    header="Fichiers du setlist"
+    header="Fichiers de la setlist"
   >
     <div class="flex flex-col gap-4">
       <p class="text-xs text-surface-400 italic">
-        Importez les fichiers liés à ce setlist (timing sheet, notes scéniques, etc.).
+        Importez les fichiers liés à cette setlist (timing sheet, notes scéniques, etc.).
         Ils apparaitront dans le dossier virtuel «&nbsp;Setlists&nbsp;» du module Fichiers.
       </p>
 
@@ -138,7 +138,7 @@ async function handleFileSelected(event) {
 
 function confirmDetach(file) {
   confirm.require({
-    message: `Détacher le fichier « ${file.original_name} » de ce setlist ?`,
+    message: `Détacher le fichier « ${file.original_name} » de cette setlist ?`,
     header: 'Confirmer',
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Détacher',

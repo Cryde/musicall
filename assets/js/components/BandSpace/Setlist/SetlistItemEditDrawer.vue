@@ -153,7 +153,7 @@ async function handleSave() {
 function confirmRemove() {
   if (!props.item) return
   confirm.require({
-    message: 'Retirer cet élément du setlist ?',
+    message: 'Retirer cet élément de la setlist ?',
     header: 'Confirmer',
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Retirer',

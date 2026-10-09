@@ -63,12 +63,12 @@ readonly class SetlistReorderProcessor implements ProcessorInterface
 
         $missingIds = array_diff($requestedIds, $foundIds);
         if (count($missingIds) > 0) {
-            throw new BadRequestHttpException(sprintf('Item %s introuvable dans ce setlist', reset($missingIds)));
+            throw new BadRequestHttpException(sprintf('Item %s introuvable dans cette setlist', reset($missingIds)));
         }
 
         // Reorder must cover every item in the setlist (no partial reorders).
         if (count($foundItems) !== $setlist->items->count()) {
-            throw new UnprocessableEntityHttpException('Le réordonnancement doit inclure tous les items du setlist');
+            throw new UnprocessableEntityHttpException('Le réordonnancement doit inclure tous les items de la setlist');
         }
 
         $this->itemRepository->bulkUpdatePositions($data->positions);

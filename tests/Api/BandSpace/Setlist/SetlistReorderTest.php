@@ -135,10 +135,10 @@ class SetlistReorderTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Le réordonnancement doit inclure tous les items du setlist',
+            'detail' => 'Le réordonnancement doit inclure tous les items de la setlist',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Le réordonnancement doit inclure tous les items du setlist',
+            'description' => 'Le réordonnancement doit inclure tous les items de la setlist',
         ]);
     }
 
