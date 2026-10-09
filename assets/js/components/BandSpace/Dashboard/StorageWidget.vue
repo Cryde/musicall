@@ -38,6 +38,7 @@ import ProgressBar from 'primevue/progressbar'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import DashboardWidget from './DashboardWidget.vue'
 
@@ -49,15 +50,26 @@ const quota = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 
-onMounted(async () => {
+/** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
+async function load({ quiet = false } = {}) {
   try {
     quota.value = await bandSpaceFilesApi.getQuota(props.bandSpaceId)
+    error.value = null
   } catch {
+    if (quiet) return
     error.value = 'Quota indisponible.'
   } finally {
     isLoading.value = false
   }
+}
+
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['file'],
+  refresh: () => load({ quiet: true })
 })
+
+onMounted(() => load())
 
 const cappedPercentage = computed(() => Math.min(100, quota.value?.used_percentage ?? 0))
 

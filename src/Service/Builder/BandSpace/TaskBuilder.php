@@ -51,6 +51,7 @@ readonly class TaskBuilder
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->title = $entity->title;
         $dto->description = $entity->description;
+        $dto->textVersion = $entity->textVersion;
         $dto->status = $entity->status->value;
         $dto->priority = $entity->priority->value;
         $dto->dueDate = $entity->dueDate?->format('Y-m-d');

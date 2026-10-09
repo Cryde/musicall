@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref, watch } from 'vue'
 import userNotificationApi from '../../api/notification/userNotification.js'
+import { announceBandSpaceChange } from '../../utils/bandSpaceLiveRefresh.js'
 import { routeLiveSignal } from '../../utils/liveSignalRouter.js'
 import { createNotificationStream, notificationTopic } from '../../utils/notificationStream.js'
 import { useBandSpaceChatStore } from '../bandSpace/bandSpaceChat.js'
@@ -127,7 +128,8 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
         chatRead: (bandSpaceId) => useBandSpaceChatStore().handleChatRead(bandSpaceId),
         chatMessageChanged: (change) => useBandSpaceChatStore().handleMessageChanged(change),
         chatTyping: (typing) => useBandSpaceChatStore().handleTyping(typing),
-        chatPresence: (bandSpaceId) => useBandSpaceChatStore().handlePresence(bandSpaceId)
+        chatPresence: (bandSpaceId) => useBandSpaceChatStore().handlePresence(bandSpaceId),
+        bandSpaceChanged: announceBandSpaceChange
       }),
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()
   })

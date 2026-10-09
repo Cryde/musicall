@@ -32,6 +32,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceSettingsApi from '../../../api/bandSpace/band-space-settings.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import DashboardWidget from './DashboardWidget.vue'
 
 const props = defineProps({
@@ -46,13 +47,24 @@ const pendingCount = computed(
   () => invitations.value.filter((inv) => inv.status === 'pending').length
 )
 
-onMounted(async () => {
+/** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
+async function load({ quiet = false } = {}) {
   try {
     invitations.value = await bandSpaceSettingsApi.getInvitations(props.bandSpaceId)
+    error.value = null
   } catch {
+    if (quiet) return
     error.value = 'Invitations indisponibles.'
   } finally {
     isLoading.value = false
   }
+}
+
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['settings'],
+  refresh: () => load({ quiet: true })
 })
+
+onMounted(() => load())
 </script>

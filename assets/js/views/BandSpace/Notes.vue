@@ -90,6 +90,7 @@ import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vu
 import CreateNoteDialog from '../../components/BandSpace/Notes/CreateNoteDialog.vue'
 import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
 import NoteTree from '../../components/BandSpace/Notes/NoteTree.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNotesStore } from '../../store/bandSpace/bandSpaceNotes.js'
 
 const route = useRoute()
@@ -114,6 +115,12 @@ const bandSpaceId = route.params.id
 onMounted(() => {
   window.addEventListener('beforeunload', warnOnUnload)
   notesStore.loadNotes(bandSpaceId)
+})
+
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['notes'],
+  refresh: () => notesStore.refreshFromLiveSignal(bandSpaceId, () => editorHasPendingEdits.value)
 })
 
 onBeforeUnmount(() => window.removeEventListener('beforeunload', warnOnUnload))

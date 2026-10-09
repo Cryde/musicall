@@ -192,6 +192,7 @@ import FinanceSidebar from '../../components/BandSpace/Finance/FinanceSidebar.vu
 import FinanceTimeline from '../../components/BandSpace/Finance/FinanceTimeline.vue'
 import RecurrenceDrawer from '../../components/BandSpace/Finance/RecurrenceDrawer.vue'
 import RecurrenceList from '../../components/BandSpace/Finance/RecurrenceList.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceFinanceStore } from '../../store/bandSpace/bandSpaceFinance.js'
 import { categoryDeleteMessage } from '../../utils/financeConfirmations.js'
 
@@ -325,15 +326,24 @@ const recurrenceDrawerVisible = ref(false)
 const editingRecurrence = ref(null)
 const isDateRangeLoading = ref(false)
 
-onMounted(() => {
-  financeStore.loadCategories(bandSpaceId)
-  financeStore.loadEntries(bandSpaceId)
-  financeStore.loadSummary(bandSpaceId)
-  financeStore.loadRecurrences(bandSpaceId)
+function loadAll(options = {}) {
+  financeStore.loadCategories(bandSpaceId, options)
+  financeStore.loadEntries(bandSpaceId, options)
+  financeStore.loadSummary(bandSpaceId, options)
+  financeStore.loadRecurrences(bandSpaceId, options)
   if (viewMode.value === 'chart') {
-    financeStore.loadAllTimeEntries(bandSpaceId)
+    financeStore.loadAllTimeEntries(bandSpaceId, options)
   }
+}
+
+// An open drawer keeps the entry it was opened with, so a refetch never touches a form being filled.
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['finance'],
+  refresh: () => loadAll({ quiet: true })
 })
+
+onMounted(() => loadAll())
 
 watch(
   () => route.query.entry,

@@ -206,6 +206,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
@@ -365,6 +366,15 @@ function handleLeave() {
     }
   })
 }
+
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['settings'],
+  refresh: () => {
+    settingsStore.loadMembers(bandSpaceId, { quiet: true }).catch(() => {})
+    if (isAdmin.value) settingsStore.loadInvitations(bandSpaceId, { quiet: true }).catch(() => {})
+  }
+})
 
 onMounted(async () => {
   try {

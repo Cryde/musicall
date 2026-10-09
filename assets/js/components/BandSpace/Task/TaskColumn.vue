@@ -25,6 +25,7 @@
       ghost-class="opacity-30"
       :data-status="status"
       class="flex flex-col gap-2 min-h-[100px]"
+      @start="tasksStore.setDragging(true)"
       @end="handleDragEnd"
     >
       <TaskCard
@@ -104,6 +105,7 @@ function getCategoryColor(categoryId) {
 }
 
 function handleDragEnd(event) {
+  tasksStore.setDragging(false)
   // v-model splices localTasks at the indices the drag reports, and those address the cards on
   // screen. Here that is a re-sorted, cut-down view of the model, so a card leaving the column
   // takes a different one out of it, and both the cards drawn and the "voir tout" button are built

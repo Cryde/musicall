@@ -205,6 +205,7 @@ import RiderPdfPreview from '../../components/BandSpace/TechRider/RiderPdfPrevie
 import RiderWorkspace from '../../components/BandSpace/TechRider/RiderWorkspace.vue'
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { LAST_TECH_RIDER_KEY, TECH_RIDER_PREVIEW_KEY } from '../../constants/bandSpace.js'
 import { COPY_SUFFIX, MAX_NAME_LENGTH } from '../../constants/techRider.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
@@ -358,6 +359,14 @@ function syncQuery() {
     router.replace({ query: next })
   }
 }
+
+// The list only. The open rider is left alone: its sections save as the member types, with no
+// version check to tell another member's edit from their own, so re-reading it could wipe a field.
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['rider'],
+  refresh: () => techRidersStore.fetchRiders(bandSpaceId.value)
+})
 
 async function load() {
   if (!bandSpaceId.value) return

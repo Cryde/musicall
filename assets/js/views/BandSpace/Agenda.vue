@@ -297,6 +297,7 @@ import AgendaAvailabilityButtons from '../../components/BandSpace/Agenda/AgendaA
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import Avatar from '../../components/User/Avatar.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import {
   AGENDA_SOURCE_KEYS,
   AGENDA_SOURCE_LIST,
@@ -646,6 +647,14 @@ function fetchRange(from, to) {
 function fetchWithCurrentRange() {
   return fetchRange(dateFrom.value, dateTo.value)
 }
+
+// The agenda also draws task due dates and finance entries. An open entry drawer keeps its own copy
+// of the entry, so a refetch never touches a form being filled.
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => route.params.id,
+  modules: ['agenda', 'task', 'finance'],
+  refresh: fetchWithCurrentRange
+})
 
 function handleDateRangeApply({ from, to }) {
   dateFrom.value = from

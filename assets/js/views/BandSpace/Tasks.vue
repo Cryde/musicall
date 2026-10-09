@@ -174,6 +174,7 @@ import TaskCategoryManager from '../../components/BandSpace/Task/TaskCategoryMan
 import TaskCreateForm from '../../components/BandSpace/Task/TaskCreateForm.vue'
 import TaskDetail from '../../components/BandSpace/Task/TaskDetail.vue'
 import TaskFilterBar from '../../components/BandSpace/Task/TaskFilterBar.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandTasksStore } from '../../store/bandSpace/bandSpaceTasks.js'
 
 const route = useRoute()
@@ -190,6 +191,13 @@ const detailVisible = ref(false)
 const categoryManagerVisible = ref(false)
 const createFormVisible = ref(false)
 const showAllDone = ref(false)
+
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['task'],
+  refresh: () => tasksStore.refreshFromLiveSignal(bandSpaceId),
+  isBusy: () => tasksStore.isDragging
+})
 
 // Deep link: ?task={id}
 watch(

@@ -37,6 +37,8 @@ import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceActivityApi from '../../../api/bandSpace/band-space-activity.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
+import { ALL_BAND_SPACE_MODULES } from '../../../utils/bandSpaceLiveRefresh.js'
 import UserName from '../../User/UserName.vue'
 import { activitySentence as buildSentence } from '../Settings/activitySentences.js'
 import DashboardWidget from './DashboardWidget.vue'
@@ -51,16 +53,28 @@ const items = ref([])
 const isLoading = ref(true)
 const error = ref(null)
 
-onMounted(async () => {
+/** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
+async function load({ quiet = false } = {}) {
   try {
     const data = await bandSpaceActivityApi.list(props.bandSpaceId, { page: 1 })
     items.value = (data.member ?? []).slice(0, ITEMS_LIMIT)
+    error.value = null
   } catch {
+    if (quiet) return
     error.value = "Impossible de charger l'activité récente."
   } finally {
     isLoading.value = false
   }
+}
+
+// Every write records an activity, so every module change can add a line (#1157).
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ALL_BAND_SPACE_MODULES,
+  refresh: () => load({ quiet: true })
 })
+
+onMounted(() => load())
 
 function activitySentence(activity) {
   return buildSentence(activity)

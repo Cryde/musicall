@@ -17,16 +17,19 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
   const isSchedulingDeletion = ref(false)
   const isRestoring = ref(false)
 
+  // `quiet` on the loaders below re-reads in place, for a live refetch (#1157).
   // Monotonic tokens to prevent stale members/invitations from a previous
   // bandSpace overwriting the current view when the user switches spaces
   // while a request is in flight.
   let membersLoadToken = 0
   let invitationsLoadToken = 0
 
-  async function loadMembers(bandSpaceId) {
+  async function loadMembers(bandSpaceId, { quiet = false } = {}) {
     const token = ++membersLoadToken
-    isLoadingMembers.value = true
-    members.value = []
+    if (!quiet) {
+      isLoadingMembers.value = true
+      members.value = []
+    }
     try {
       const data = await bandSpaceSettingsApi.getMembers(bandSpaceId)
       if (token !== membersLoadToken) return
@@ -38,10 +41,12 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     }
   }
 
-  async function loadInvitations(bandSpaceId) {
+  async function loadInvitations(bandSpaceId, { quiet = false } = {}) {
     const token = ++invitationsLoadToken
-    isLoadingInvitations.value = true
-    invitations.value = []
+    if (!quiet) {
+      isLoadingInvitations.value = true
+      invitations.value = []
+    }
     try {
       const data = await bandSpaceSettingsApi.getInvitations(bandSpaceId)
       if (token !== invitationsLoadToken) return

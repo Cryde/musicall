@@ -43,6 +43,14 @@ class Task
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $description = null;
 
+    /**
+     * The revision of the title and the description, bumped only when one of them changes (#1157), so
+     * a description typed for minutes cannot silently replace one saved meanwhile. Not an
+     * `#[ORM\Version]`: a status or an assignee changed meanwhile must not refuse that save.
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
+    public int $textVersion = 1;
+
     #[ORM\Column(type: Types::STRING, length: 20, nullable: false, enumType: TaskStatus::class)]
     public TaskStatus $status = TaskStatus::Todo;
 

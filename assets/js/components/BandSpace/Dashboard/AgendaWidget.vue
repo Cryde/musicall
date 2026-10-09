@@ -52,6 +52,7 @@ import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { agendaSourceFor } from '../../../constants/agendaSources.js'
 import {
   availabilitySummary,
@@ -75,17 +76,28 @@ const items = ref([])
 const isLoading = ref(true)
 const error = ref(null)
 
-onMounted(async () => {
+/** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
+async function load({ quiet = false } = {}) {
   try {
     const { from, to } = upcomingAgendaWindow(new Date(), WINDOW_DAYS)
     const data = await bandSpaceAgendaApi.getAgenda(props.bandSpaceId, { from, to })
     items.value = [...data].sort((a, b) => a.datetime.localeCompare(b.datetime)).slice(0, MAX_ITEMS)
+    error.value = null
   } catch {
+    if (quiet) return
     error.value = "Impossible de charger l'agenda."
   } finally {
     isLoading.value = false
   }
+}
+
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['agenda', 'task', 'finance'],
+  refresh: () => load({ quiet: true })
 })
+
+onMounted(() => load())
 
 function handleAnswered({ entryId, occurrenceDate, availability }) {
   items.value = withAvailabilityAnswer(items.value, entryId, occurrenceDate, availability)

@@ -34,6 +34,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
   // (selects another note before the first one loads, or switches bandSpace).
   let notesLoadToken = 0
   let selectedNoteLoadToken = 0
+  let liveNoteToken = 0
 
   const tree = computed(() => buildTree(notes.value))
 
@@ -105,23 +106,65 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     return roots
   }
 
-  async function loadNotes(bandSpaceId) {
+  /** `quiet` re-reads the tree in place, for a refetch the member did not ask for. */
+  async function loadNotes(bandSpaceId, { quiet = false } = {}) {
     const token = ++notesLoadToken
-    isLoading.value = true
-    loadError.value = null
-    notes.value = []
+    if (!quiet) {
+      isLoading.value = true
+      loadError.value = null
+      notes.value = []
+    }
     try {
       const data = await bandSpaceNotesApi.getNotes(bandSpaceId)
       if (token !== notesLoadToken) return
       notes.value = data
     } catch {
-      if (token !== notesLoadToken) return
+      if (token !== notesLoadToken || quiet) return
       notes.value = []
       loadError.value = 'Impossible de charger les notes'
     } finally {
       if (token === notesLoadToken) {
         isLoading.value = false
       }
+    }
+  }
+
+  /**
+   * Another member changed the notes (#1157). The open note is replaced only when it changed and
+   * nothing typed here is on its way to the server: replacing rebuilds the editor, and text still
+   * pending is caught by the version check on its save, which opens the conflict banner instead.
+   * The member's own saves come back here too, and match what is on screen.
+   *
+   * @param {() => boolean} editorHasPendingEdits
+   */
+  async function refreshFromLiveSignal(bandSpaceId, editorHasPendingEdits) {
+    await loadNotes(bandSpaceId, { quiet: true })
+
+    const open = selectedNote.value
+    const isSettled = () => !editorHasPendingEdits() && [null, 'saved'].includes(saveStatus.value)
+    if (!open || !isSettled()) return
+
+    // Its own token, and the member's loads win: opening another note or reloading this one
+    // meanwhile makes this answer stale, and this never makes theirs stale.
+    const liveToken = ++liveNoteToken
+    const memberToken = selectedNoteLoadToken
+    try {
+      const data = await bandSpaceNotesApi.getNote(bandSpaceId, open.id)
+      const isStale = liveToken !== liveNoteToken || memberToken !== selectedNoteLoadToken
+      if (isStale || selectedNote.value?.id !== open.id || !isSettled()) return
+      // Against what is on screen now: a save of this member's may have landed meanwhile.
+      const current = selectedNote.value
+      const changed =
+        data.content_version !== current.content_version ||
+        data.title !== current.title ||
+        data.emoji !== current.emoji
+      if (changed) {
+        selectedNote.value = data
+        clearSaveStatus(open.id)
+        selectedNoteReloadCount.value++
+      }
+    } catch {
+      // A note deleted meanwhile: the tree no longer lists it, and its next save is refused.
     }
   }
 
@@ -336,6 +379,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     selectedNoteReloadCount: readonly(selectedNoteReloadCount),
     tree,
     loadNotes,
+    refreshFromLiveSignal,
     selectNote,
     reloadSelectedNote,
     createNote,
