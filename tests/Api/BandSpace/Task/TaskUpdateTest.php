@@ -56,6 +56,7 @@ class TaskUpdateTest extends ApiTestCase
             'band_space_id' => (string) $bandSpace->id,
             'title' => $task->title,
             'description' => null,
+            'text_version' => 1,
             'status' => 'in_progress',
             'priority' => 'normal',
             'due_date' => null,
@@ -114,6 +115,7 @@ class TaskUpdateTest extends ApiTestCase
             'band_space_id' => (string) $bandSpace->id,
             'title' => 'Updated title',
             'description' => null,
+            'text_version' => 2,
             'status' => 'todo',
             'priority' => 'normal',
             'due_date' => null,
@@ -168,6 +170,7 @@ class TaskUpdateTest extends ApiTestCase
             'band_space_id' => (string) $bandSpace->id,
             'title' => $task->title,
             'description' => 'Une description',
+            'text_version' => 2,
             'status' => 'todo',
             'priority' => 'normal',
             'due_date' => null,
@@ -273,6 +276,7 @@ class TaskUpdateTest extends ApiTestCase
             'band_space_id' => (string) $bandSpace->id,
             'title' => 'Mix final',
             'description' => null,
+            'text_version' => 1,
             'status' => 'done',
             'priority' => 'normal',
             'due_date' => null,
@@ -362,6 +366,7 @@ class TaskUpdateTest extends ApiTestCase
             'band_space_id' => (string) $bandSpace->id,
             'title' => 'Master cassette',
             'description' => null,
+            'text_version' => 1,
             'status' => 'done',
             'priority' => 'normal',
             'due_date' => null,
@@ -608,5 +613,152 @@ class TaskUpdateTest extends ApiTestCase
         ], $notifications[0]->payload);
 
         $this->assertCount(0, $notificationRepository->findForRecipient($actor, 10, 0));
+    }
+
+    /**
+     * Two members editing one task (#1157, #588): a description typed from a copy somebody else has
+     * changed since is refused rather than written over their text.
+     */
+    public function test_a_description_saved_from_a_stale_copy_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Réserver la salle',
+            'description' => 'Ce que Léa a écrit entre temps',
+            'textVersion' => 3,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['description' => 'Mon texte', 'expected_text_version' => 2],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Cette tâche a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => "Cette tâche a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+        ]);
+
+        $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);
+        $this->assertSame('Ce que Léa a écrit entre temps', $refreshed->description);
+        $this->assertSame(3, $refreshed->textVersion);
+    }
+
+    /** Only the text is guarded: a status set meanwhile cannot erase anybody's writing. */
+    public function test_a_status_change_from_a_stale_copy_is_not_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Réserver la salle',
+            'status' => TaskStatus::Todo,
+            'textVersion' => 3,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['status' => 'in_progress', 'expected_text_version' => 2],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            '@type' => 'Task',
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'Réserver la salle',
+            'description' => null,
+            'text_version' => 3,
+            'status' => 'in_progress',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'created_by_display_name' => $user->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+            'file_count' => 0,
+            'linked_message_id' => null,
+        ]);
+    }
+
+    public function test_a_description_saved_from_the_current_copy_bumps_the_version(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Réserver la salle',
+            'status' => TaskStatus::Todo,
+            'textVersion' => 3,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['description' => 'Appeler avant jeudi', 'expected_text_version' => 3],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            '@type' => 'Task',
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'Réserver la salle',
+            'description' => 'Appeler avant jeudi',
+            'text_version' => 4,
+            'status' => 'todo',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'created_by_display_name' => $user->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+            'file_count' => 0,
+            'linked_message_id' => null,
+        ]);
     }
 }

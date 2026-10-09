@@ -21,17 +21,20 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
   // multiple times in quick succession (auth state churn, retries).
   let loadToken = 0
 
-  async function loadMyBandSpaces() {
+  /** `quiet` re-reads in place for a live refetch (#1157): no loading state, and a failure keeps the list. */
+  async function loadMyBandSpaces({ quiet = false } = {}) {
     const token = ++loadToken
-    isLoading.value = true
-    error.value = null
+    if (!quiet) {
+      isLoading.value = true
+      error.value = null
+    }
 
     try {
       const data = await bandSpaceApi.getMyBandSpaces()
       if (token !== loadToken) return
       spaces.value = data
     } catch (e) {
-      if (token !== loadToken) return
+      if (token !== loadToken || quiet) return
       error.value = e.message || 'Failed to load band spaces'
       spaces.value = []
       throw e

@@ -33,6 +33,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
   const loadError = ref(null)
   const isLoadingActiveTask = ref(false)
   const activeTaskError = ref(null)
+  // A card is under the pointer: a live refetch would rebuild the column it is being dropped into.
+  const isDragging = ref(false)
 
   let tasksRequestId = 0
   let activeTaskRequestId = 0
@@ -122,13 +124,18 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     }
   }
 
-  async function fetchTaskById(bandSpaceId, taskId) {
+  /**
+   * `quiet` re-reads a task already on screen without swapping the drawer for its skeleton, and only
+   * a task that is gone replaces it with an error.
+   * @returns {Promise<boolean>} whether the task was read
+   */
+  async function fetchTaskById(bandSpaceId, taskId, { quiet = false } = {}) {
     const requestId = ++activeTaskRequestId
-    isLoadingActiveTask.value = true
+    isLoadingActiveTask.value = !quiet
     activeTaskError.value = null
     try {
       const fetched = await bandSpaceTasksApi.getTask(bandSpaceId, taskId)
-      if (requestId !== activeTaskRequestId) return
+      if (requestId !== activeTaskRequestId) return false
       const target = fetched.archive_datetime ? archivedTasks : tasks
       const existing = target.value.findIndex((t) => t.id === fetched.id)
       if (existing === -1) {
@@ -136,9 +143,13 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
       } else {
         target.value = target.value.map((t) => (t.id === fetched.id ? fetched : t))
       }
+      return true
     } catch (e) {
-      if (requestId !== activeTaskRequestId) return
+      if (requestId !== activeTaskRequestId) return false
+      // A background re-read that failed leaves the task on screen as it was.
+      if (quiet && e.status !== 404) return false
       activeTaskError.value = e.status === 404 ? 'Tâche introuvable' : e.message
+      return false
     } finally {
       if (requestId === activeTaskRequestId) {
         isLoadingActiveTask.value = false
@@ -358,6 +369,31 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     )
   }
 
+  function isTaskLoaded(taskId) {
+    return (
+      tasks.value.some((t) => t.id === taskId) || archivedTasks.value.some((t) => t.id === taskId)
+    )
+  }
+
+  /**
+   * Another member changed the task module (#1157). The board is replaced wholesale, which can drop
+   * the task open in the drawer when a filter hides it, so that one is re-read on its own.
+   */
+  async function refreshFromLiveSignal(bandSpaceId) {
+    await Promise.all([
+      fetchTasks(bandSpaceId),
+      fetchCategories(bandSpaceId),
+      filters.showArchived ? fetchArchivedTasks(bandSpaceId) : null
+    ])
+    if (activeTaskId.value && !isTaskLoaded(activeTaskId.value)) {
+      await fetchTaskById(bandSpaceId, activeTaskId.value, { quiet: true })
+    }
+  }
+
+  function setDragging(dragging) {
+    isDragging.value = dragging
+  }
+
   function setActiveTask(taskId, bandSpaceId = null) {
     activeTaskId.value = taskId || null
     if (!taskId) {
@@ -365,9 +401,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
       isLoadingActiveTask.value = false
       return
     }
-    const alreadyLoaded =
-      tasks.value.some((t) => t.id === taskId) || archivedTasks.value.some((t) => t.id === taskId)
-    if (!alreadyLoaded && bandSpaceId) {
+    if (!isTaskLoaded(taskId) && bandSpaceId) {
       fetchTaskById(bandSpaceId, taskId)
     }
   }
@@ -434,6 +468,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     loadError.value = null
     isLoadingActiveTask.value = false
     activeTaskError.value = null
+    isDragging.value = false
   }
 
   return {
@@ -452,6 +487,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     loadError: readonly(loadError),
     isLoadingActiveTask: readonly(isLoadingActiveTask),
     activeTaskError: readonly(activeTaskError),
+    isDragging: readonly(isDragging),
     isReorderDisabled,
     tasksByStatus,
     activeTask,
@@ -460,6 +496,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     fetchArchivedTasks,
     fetchCategories,
     fetchMembers,
+    refreshFromLiveSignal,
+    setDragging,
     createTask,
     createComment,
     updateComment,

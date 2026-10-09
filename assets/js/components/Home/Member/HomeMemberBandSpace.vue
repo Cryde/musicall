@@ -105,6 +105,7 @@ import { onMounted, ref } from 'vue'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import relativeDate from '../../../helper/date/relative-date.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
@@ -147,11 +148,25 @@ function switchTo(spaceId) {
   loadDetails(spaceId)
 }
 
-// Only the latest space lands: switching twice quickly must not show the first one's agenda.
-async function loadDetails(spaceId) {
+// The agenda feed carries task due dates and finance entries too (#1157).
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => space.value?.id ?? null,
+  modules: ['agenda', 'task', 'finance', 'setlist'],
+  refresh: () => {
+    if (space.value) loadDetails(space.value.id, { quiet: true })
+  }
+})
+
+/**
+ * Only the latest space lands: switching twice quickly must not show the first one's agenda.
+ * `quiet` keeps what is on screen, with no placeholders and no error, for a live refetch.
+ */
+async function loadDetails(spaceId, { quiet = false } = {}) {
   const request = ++detailsRequest
-  isLoadingDetails.value = true
-  detailsError.value = null
+  if (!quiet) {
+    isLoadingDetails.value = true
+    detailsError.value = null
+  }
   try {
     const { from, to } = upcomingAgendaWindow(new Date(), AGENDA_DAYS)
     const [agenda, taskList, stats, setlists] = await Promise.all([
@@ -166,7 +181,7 @@ async function loadDetails(spaceId) {
     openTaskCount.value = stats.todo + stats.in_progress
     setlist.value = lastChangedSetlist(setlists)
   } catch {
-    if (request !== detailsRequest) return
+    if (request !== detailsRequest || quiet) return
     detailsError.value = 'Impossible de charger le résumé du Band Space.'
   } finally {
     if (request === detailsRequest) isLoadingDetails.value = false

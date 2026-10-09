@@ -160,6 +160,7 @@ import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBandSpaceLiveRefresh } from '../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
@@ -317,6 +318,14 @@ const pageTitle = computed(() => {
 
 useHead({
   title: pageTitle
+})
+
+// A rename, a role change or a scheduled deletion of the open space reaches the header, the sidebar
+// and the deletion banner, which all read the space list. Quietly: a blip keeps the list on screen.
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => route.params.id ?? null,
+  modules: ['settings'],
+  refresh: () => bandSpaceStore.loadMyBandSpaces({ quiet: true })
 })
 
 onMounted(() => {

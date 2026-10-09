@@ -95,6 +95,7 @@ import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vu
 import SetlistEditor from '../../components/BandSpace/Setlist/SetlistEditor.vue'
 import SetlistTrashList from '../../components/BandSpace/Setlist/SetlistTrashList.vue'
 import SidebarContent from '../../components/BandSpace/Setlist/SidebarContent.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../store/bandSpace/bandSpaceSongs.js'
 
@@ -183,6 +184,19 @@ function loadAll() {
   songsStore.fetchArchivedSongs(bandSpaceId.value)
   setlistsStore.fetchArchivedSetlists(bandSpaceId.value)
 }
+
+// The song and item drawers keep the copy they were opened with, and the editor does not rebuild
+// its list while an item is being dragged, so a refetch never moves anything under the member.
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['setlist'],
+  refresh: () => {
+    loadAll()
+    if (activeSetlistId.value) {
+      setlistsStore.fetchActive(bandSpaceId.value, activeSetlistId.value, { quiet: true })
+    }
+  }
+})
 
 function handleSetlistCreated(created) {
   selectSetlist(created.id)

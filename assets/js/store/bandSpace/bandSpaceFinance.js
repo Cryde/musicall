@@ -77,7 +77,8 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     }
   }
 
-  async function loadCategories(bandSpaceId) {
+  // `quiet` on the loaders below: a live refetch (#1157), which keeps what is on screen on failure.
+  async function loadCategories(bandSpaceId, { quiet = false } = {}) {
     const requestId = ++categoriesRequestId
     const isInitialLoad = categories.value.length === 0
     if (isInitialLoad) {
@@ -89,7 +90,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
       if (requestId !== categoriesRequestId) return
       categories.value = data
     } catch {
-      if (requestId !== categoriesRequestId) return
+      if (requestId !== categoriesRequestId || quiet) return
       categories.value = []
       loadError.value = 'Impossible de charger les catégories'
     } finally {
@@ -99,9 +100,9 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     }
   }
 
-  async function loadEntries(bandSpaceId) {
+  async function loadEntries(bandSpaceId, { quiet = false } = {}) {
     const requestId = ++entriesRequestId
-    isLoadingEntries.value = true
+    isLoadingEntries.value = !quiet
     const { from, to } = dateParams()
     try {
       const result = await bandSpaceFinanceApi.getEntries(bandSpaceId, from, to)
@@ -109,7 +110,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
         entries.value = result
       }
     } catch {
-      if (requestId === entriesRequestId) {
+      if (requestId === entriesRequestId && !quiet) {
         entries.value = []
       }
     } finally {
@@ -119,9 +120,9 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     }
   }
 
-  async function loadSummary(bandSpaceId) {
+  async function loadSummary(bandSpaceId, { quiet = false } = {}) {
     const requestId = ++summaryRequestId
-    isLoadingSummary.value = true
+    isLoadingSummary.value = !quiet
     const { from, to } = dateParams()
     try {
       const result = await bandSpaceFinanceApi.getSummary(bandSpaceId, from, to)
@@ -129,7 +130,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
         summary.value = result
       }
     } catch {
-      if (requestId === summaryRequestId) {
+      if (requestId === summaryRequestId && !quiet) {
         summary.value = null
       }
     } finally {
@@ -140,16 +141,16 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   }
 
   // Loaded on demand when the chart view opens; ignores the page date range (all-time).
-  async function loadAllTimeEntries(bandSpaceId) {
+  async function loadAllTimeEntries(bandSpaceId, { quiet = false } = {}) {
     const requestId = ++allTimeRequestId
-    isLoadingAllTime.value = true
+    isLoadingAllTime.value = !quiet
     try {
       const result = await bandSpaceFinanceApi.getEntries(bandSpaceId)
       if (requestId === allTimeRequestId) {
         allTimeEntries.value = result ?? []
       }
     } catch {
-      if (requestId === allTimeRequestId) {
+      if (requestId === allTimeRequestId && !quiet) {
         allTimeEntries.value = []
       }
     } finally {
@@ -262,11 +263,11 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     }
   }
 
-  async function loadRecurrences(bandSpaceId) {
+  async function loadRecurrences(bandSpaceId, { quiet = false } = {}) {
     try {
       recurrences.value = await bandSpaceFinanceApi.getRecurrences(bandSpaceId)
     } catch {
-      recurrences.value = []
+      if (!quiet) recurrences.value = []
     }
   }
 

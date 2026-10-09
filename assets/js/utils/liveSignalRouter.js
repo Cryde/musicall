@@ -16,6 +16,7 @@
  * @param {(change: {bandSpaceId: string, messageId: string, change: string}) => unknown} handlers.chatMessageChanged
  * @param {(typing: {bandSpaceId: string, userId: string}) => unknown} handlers.chatTyping
  * @param {(bandSpaceId: string) => unknown} handlers.chatPresence
+ * @param {(change: {bandSpaceId: string, module: string} | null) => unknown} handlers.bandSpaceChanged
  */
 export function routeLiveSignal(payload, handlers) {
   const type = payload?.type ?? null
@@ -54,6 +55,14 @@ export function routeLiveSignal(payload, handlers) {
   }
   if (type === 'band_space_typing' && payload.band_space_id && payload.user_id) {
     handlers.chatTyping({ bandSpaceId: payload.band_space_id, userId: payload.user_id })
+  }
+  // A module of a space changed (#1102, #1157): the screen showing it refetches. A reconnect reaches
+  // every screen, since whatever was published while we were down is gone.
+  if (type === null) {
+    handlers.bandSpaceChanged(null)
+  }
+  if (type === 'band_space_changed' && payload.band_space_id && payload.module) {
+    handlers.bandSpaceChanged({ bandSpaceId: payload.band_space_id, module: payload.module })
   }
   if (type === 'band_space_message_changed' && payload.band_space_id && payload.message_id) {
     handlers.chatMessageChanged({

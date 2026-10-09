@@ -50,6 +50,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import DashboardWidget from './DashboardWidget.vue'
 
 const props = defineProps({
@@ -62,13 +63,24 @@ const error = ref(null)
 
 const totalOpen = computed(() => (stats.value?.todo ?? 0) + (stats.value?.in_progress ?? 0))
 
-onMounted(async () => {
+/** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
+async function load({ quiet = false } = {}) {
   try {
     stats.value = await bandSpaceTasksApi.getStats(props.bandSpaceId)
+    error.value = null
   } catch {
+    if (quiet) return
     error.value = 'Impossible de charger les tâches.'
   } finally {
     isLoading.value = false
   }
+}
+
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['task'],
+  refresh: () => load({ quiet: true })
 })
+
+onMounted(() => load())
 </script>

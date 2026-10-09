@@ -286,6 +286,7 @@ import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.
 import FolderBreadcrumb from '../../components/BandSpace/Files/FolderBreadcrumb.vue'
 import FolderEditDialog from '../../components/BandSpace/Files/FolderEditDialog.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
+import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { directChildren } from '../../composables/useFolderDragDrop.js'
 import {
@@ -426,6 +427,12 @@ onUnmounted(() => {
   if (queryDebounce) clearTimeout(queryDebounce)
   window.removeEventListener('keydown', handleSelectionEscape)
   filesStore.clear()
+})
+
+useBandSpaceLiveRefresh({
+  bandSpaceId,
+  modules: ['file'],
+  refresh: () => filesStore.refreshFromLiveSignal(bandSpaceId.value)
 })
 
 function loadAll() {

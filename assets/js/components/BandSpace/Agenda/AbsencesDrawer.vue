@@ -220,6 +220,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, reactive, ref, watch } from 'vue'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandAbsenceStore } from '../../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
@@ -320,6 +321,14 @@ async function loadMembers() {
     // The roster only feeds the two pickers; the list itself carries every name it renders.
   }
 }
+
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['agenda'],
+  refresh: () => {
+    if (isVisible.value) fetchYear()
+  }
+})
 
 function fetchYear() {
   absenceStore.fetchAbsences(props.bandSpaceId, {

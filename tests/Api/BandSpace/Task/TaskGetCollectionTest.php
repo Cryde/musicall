@@ -801,6 +801,7 @@ class TaskGetCollectionTest extends ApiTestCase
             'band_space_id' => (string) $bandSpace->id,
             'title' => $task->title,
             'description' => $task->description,
+            'text_version' => 1,
             'status' => $task->status->value,
             'priority' => $task->priority->value,
             'due_date' => $task->dueDate?->format('Y-m-d'),

@@ -17,7 +17,8 @@ function route(payload) {
     chatRead: record('chatRead'),
     chatMessageChanged: record('chatMessageChanged'),
     chatTyping: record('chatTyping'),
-    chatPresence: record('chatPresence')
+    chatPresence: record('chatPresence'),
+    bandSpaceChanged: record('bandSpaceChanged')
   })
 
   return calls
@@ -87,7 +88,8 @@ describe('routeLiveSignal', () => {
       ['refreshNotificationCounts'],
       ['inboxMessage', null],
       ['chatMessage', null],
-      ['inboxMessage', null]
+      ['inboxMessage', null],
+      ['bandSpaceChanged', null]
     ])
   })
 
@@ -114,6 +116,19 @@ describe('routeLiveSignal', () => {
         ['inboxMessage', 'thread-1']
       ]
     )
+  })
+
+  it('sends a module change to its own handler and nowhere else', () => {
+    // No badge and no bell: the change is not new content, only a stale screen.
+    assert.deepEqual(
+      route({ type: 'band_space_changed', band_space_id: 'space-1', module: 'task' }),
+      [['bandSpaceChanged', { bandSpaceId: 'space-1', module: 'task' }]]
+    )
+  })
+
+  it('drops a module change that names no space or no module', () => {
+    assert.deepEqual(route({ type: 'band_space_changed', module: 'task' }), [])
+    assert.deepEqual(route({ type: 'band_space_changed', band_space_id: 'space-1' }), [])
   })
 
   it('ignores a type it does not know', () => {

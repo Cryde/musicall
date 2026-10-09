@@ -94,6 +94,17 @@ class TaskResource
 
     public ?string $description = null;
 
+    /** The revision of the title and the description. The server owns it, a caller cannot set it. */
+    #[ApiProperty(writable: false)]
+    public int $textVersion = 1;
+
+    /**
+     * The revision the caller last read, refused when stale on a title or description write. Optional,
+     * so a client that does not send it keeps writing as before. See TaskUpdateProcedure.
+     */
+    #[ApiProperty(readable: false)]
+    public ?int $expectedTextVersion = null;
+
     #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'Le statut doit être "todo", "in_progress" ou "done"')]
     public string $status;
 

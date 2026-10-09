@@ -152,6 +152,21 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   }
 
   /**
+   * Another member changed the files (#1157). The list goes back to its first page on a refetch, so
+   * it is left alone once the member has scrolled past it rather than pulled from under them; the
+   * folders, tags and counters around it are always cheap to re-read.
+   */
+  function refreshFromLiveSignal(bandSpaceId) {
+    fetchFolders(bandSpaceId)
+    fetchTags(bandSpaceId)
+    fetchQuota(bandSpaceId)
+    fetchArchivedCount(bandSpaceId)
+    if (files.value.length <= FILES_PAGE_SIZE) {
+      fetchFiles(bandSpaceId)
+    }
+  }
+
+  /**
    * Appends the next page. The page number comes from the rows already held rather than a counter,
    * so a file deleted, restored or moved out of the list since the last page cannot open a gap the
    * next request steps over. See utils/filePagination.js.
@@ -692,6 +707,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     isDeletingFile: readonly(isDeletingFile),
     activeFileError: readonly(activeFileError),
     fetchFiles,
+    refreshFromLiveSignal,
     fetchMoreFiles,
     fetchFolders,
     fetchTags,

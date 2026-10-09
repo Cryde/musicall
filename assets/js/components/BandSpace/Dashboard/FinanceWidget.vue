@@ -45,6 +45,7 @@ import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceFinanceApi from '../../../api/bandSpace/band-space-finance.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { formatAmount } from '../../../utils/currency.js'
 import DashboardWidget from './DashboardWidget.vue'
 
@@ -56,18 +57,29 @@ const summary = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 
-onMounted(async () => {
+/** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
+async function load({ quiet = false } = {}) {
   try {
     const today = new Date()
     const from = format(startOfMonth(today), 'yyyy-MM-dd')
     const to = format(endOfMonth(today), 'yyyy-MM-dd')
     summary.value = await bandSpaceFinanceApi.getSummary(props.bandSpaceId, from, to)
+    error.value = null
   } catch {
+    if (quiet) return
     error.value = 'Finances indisponibles.'
   } finally {
     isLoading.value = false
   }
+}
+
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['finance'],
+  refresh: () => load({ quiet: true })
 })
+
+onMounted(() => load())
 
 const balance = computed(
   () => (summary.value?.total_income_all ?? 0) - (summary.value?.total_expense_all ?? 0)

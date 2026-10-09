@@ -21,6 +21,7 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -51,6 +52,10 @@ readonly class TaskUpdateProcedure
     ): Task {
         $this->taskWriteGuard->assertWritableForPayload($task, $payload);
         $this->assertPositionIsNotWritable($payload);
+        $this->refuseATextWriteFromAStaleCopy($task, $payload, $data->expectedTextVersion);
+
+        $oldTitle = $task->title;
+        $oldDescription = $task->description;
 
         if (array_key_exists('title', $payload)) {
             $task->title = $data->title;
@@ -58,6 +63,10 @@ readonly class TaskUpdateProcedure
 
         if (array_key_exists('description', $payload)) {
             $task->description = $data->description;
+        }
+
+        if ($task->title !== $oldTitle || $task->description !== $oldDescription) {
+            ++$task->textVersion;
         }
 
         if (array_key_exists('status', $payload)) {
@@ -116,6 +125,30 @@ readonly class TaskUpdateProcedure
         }
 
         throw new HttpException(422, 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne');
+    }
+
+    /**
+     * Two members editing one task used to be last write wins (#588): a description typed for minutes
+     * replaced the one somebody saved meanwhile, and neither of them knew. Optional, unlike the note
+     * body, because the mobile app does not send a revision yet.
+     *
+     * Read and write are not atomic, so two saves within the same few milliseconds can both pass, as
+     * with the note body (BandSpaceNoteUpdateProcessor).
+     *
+     * @param array<string, mixed> $payload
+     */
+    private function refuseATextWriteFromAStaleCopy(Task $task, array $payload, ?int $expectedTextVersion): void
+    {
+        if ($expectedTextVersion === null || $expectedTextVersion === $task->textVersion) {
+            return;
+        }
+        if (!array_key_exists('title', $payload) && !array_key_exists('description', $payload)) {
+            return;
+        }
+
+        throw new ConflictHttpException(
+            'Cette tâche a été modifiée par un autre membre depuis que vous l\'avez ouverte. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.'
+        );
     }
 
     private function applyStatusChange(Task $task, string $newStatus, User $user): void

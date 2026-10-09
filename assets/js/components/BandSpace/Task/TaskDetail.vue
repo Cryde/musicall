@@ -146,6 +146,9 @@
           aria-label="Description"
           :disabled="isArchived"
         />
+        <Message v-if="textConflict && hasTextChanges" severity="warn" :closable="false">
+          {{ textConflict }} Votre texte est conservé : « Enregistrer » remplace sa version, « Annuler » affiche la sienne.
+        </Message>
         <div v-if="!isArchived" class="flex justify-end gap-2">
           <Button
             v-if="hasTextChanges"
@@ -260,6 +263,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
+import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, CHAT_TESTER_ONLY } from '../../../constants/bandSpace.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
@@ -388,6 +392,7 @@ watch(task, async () => {
     editCategoryId.value = task.value.category_id
     editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
     editAssigneeIds.value = assigneeIdsStillInTheBand()
+    takeServerTextWhereUntouched()
     return
   }
   populateForm()
@@ -418,17 +423,34 @@ function populateForm() {
   editAssigneeIds.value = assigneeIdsStillInTheBand()
   editDescription.value = task.value.description || ''
   lastPopulatedId.value = task.value.id
+  textBase.value = textBaseOf(task.value)
+  textConflict.value = null
 }
 
-async function loadDetails() {
+// The task itself comes back through the board (Tasks.vue), and the watch above keeps a title or a
+// description being typed. Comments and activities are this drawer's own.
+useBandSpaceLiveRefresh({
+  bandSpaceId: () => props.bandSpaceId,
+  modules: ['task'],
+  refresh: () => {
+    if (props.visible && props.taskId) loadDetails({ quiet: true })
+  }
+})
+
+/** `quiet`: a background refetch, which fails without a toast and keeps what is on screen. */
+async function loadDetails({ quiet = false } = {}) {
+  const taskId = props.taskId
   try {
     const [c, a] = await Promise.all([
-      bandSpaceTasksApi.getComments(props.bandSpaceId, props.taskId),
-      bandSpaceTasksApi.getActivities(props.bandSpaceId, props.taskId)
+      bandSpaceTasksApi.getComments(props.bandSpaceId, taskId),
+      bandSpaceTasksApi.getActivities(props.bandSpaceId, taskId)
     ])
+    // Another task opened while this one was loading.
+    if (taskId !== props.taskId) return
     comments.value = c
     activities.value = a
   } catch {
+    if (quiet) return
     toast.add({
       severity: 'warn',
       summary: 'Impossible de charger les commentaires et activités',
@@ -448,12 +470,40 @@ async function saveField(field, value) {
 }
 
 const isSavingText = ref(false)
+// What the title and description fields were filled from, and at which revision. Not read off the
+// task: a live refetch replaces it under a member still typing (#1157), so a field nobody touched
+// would read as edited, and a save would always carry the newest revision and erase what another
+// member wrote meanwhile.
+// One revision covers both fields, so a title changed by someone else while this member edits the
+// description still refuses their save once: the banner, then a second save, is the way through.
+const textBase = ref({ title: '', description: '', version: null })
+const textConflict = ref(null)
+
+function textBaseOf(source) {
+  return {
+    title: source.title,
+    description: source.description || '',
+    version: source.text_version
+  }
+}
+
+/** Another member's title or description lands in whichever of the two fields is not being edited. */
+function takeServerTextWhereUntouched() {
+  if (editTitle.value === textBase.value.title) {
+    editTitle.value = task.value.title
+    textBase.value = { ...textBase.value, title: task.value.title }
+  }
+  if (editDescription.value === textBase.value.description) {
+    editDescription.value = task.value.description || ''
+    textBase.value = { ...textBase.value, description: task.value.description || '' }
+  }
+}
 
 const hasTextChanges = computed(() => {
   if (!task.value) return false
   const trimmedTitle = editTitle.value.trim()
-  const titleChanged = trimmedTitle !== '' && trimmedTitle !== task.value.title
-  const descriptionChanged = editDescription.value !== (task.value.description || '')
+  const titleChanged = trimmedTitle !== '' && trimmedTitle !== textBase.value.title
+  const descriptionChanged = editDescription.value !== textBase.value.description
   return titleChanged || descriptionChanged
 })
 
@@ -461,6 +511,8 @@ function resetTextFields() {
   if (!task.value) return
   editTitle.value = task.value.title
   editDescription.value = task.value.description || ''
+  textBase.value = textBaseOf(task.value)
+  textConflict.value = null
 }
 
 async function saveTextFields() {
@@ -474,22 +526,41 @@ async function saveTextFields() {
   }
 
   const payload = {}
-  if (trimmedTitle !== task.value.title) payload.title = trimmedTitle
-  if (editDescription.value !== (task.value.description || '')) {
+  if (trimmedTitle !== textBase.value.title) payload.title = trimmedTitle
+  if (editDescription.value !== textBase.value.description) {
     payload.description = editDescription.value || null
   }
   if (Object.keys(payload).length === 0) return
+  payload.expected_text_version = textBase.value.version
 
   isSavingText.value = true
   try {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, payload)
+    // The fields now hold the saved revision, so they are its new base.
+    resetTextFields()
     toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 3000 })
   } catch (e) {
+    if (e.status === 409) {
+      await keepTextAfterConflict(e.message)
+      return
+    }
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
     populateForm()
   } finally {
     isSavingText.value = false
   }
+}
+
+/**
+ * Somebody else changed the title or the description since the fields were filled. What the member
+ * typed stays in the fields, the task underneath becomes the other member's version (the watch on
+ * `task` keeps typed text), and saving again is now a choice made knowingly: it replaces theirs.
+ */
+async function keepTextAfterConflict(message) {
+  textConflict.value = message
+  const reread = await tasksStore.fetchTaskById(props.bandSpaceId, props.taskId, { quiet: true })
+  // Unread, the base keeps its old revision, so saving again is refused again rather than blind.
+  if (reread && task.value) textBase.value = { ...textBase.value, version: task.value.text_version }
 }
 
 async function saveDueDate() {

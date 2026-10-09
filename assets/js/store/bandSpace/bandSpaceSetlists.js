@@ -61,9 +61,10 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     }
   }
 
-  async function fetchActive(bandSpaceId, setlistId) {
+  /** `quiet` re-reads the setlist on screen without the loading state, for a live refetch. */
+  async function fetchActive(bandSpaceId, setlistId, { quiet = false } = {}) {
     const requestId = ++activeRequestId
-    isLoadingActive.value = true
+    isLoadingActive.value = !quiet
     try {
       const result = await bandSpaceSetlistsApi.getSetlist(bandSpaceId, setlistId)
       if (requestId !== activeRequestId) return
