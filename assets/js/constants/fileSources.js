@@ -59,8 +59,7 @@ const FILE_SOURCES = Object.freeze([
     quotaLabel: 'Notes',
     color: '#06b6d4',
     routeName: 'app_band_notes',
-    // Notes.vue selects through its store and reads no query param, so the link stops at the tree.
-    routeQueryKey: null
+    routeQueryKey: 'note'
   }),
   Object.freeze({
     type: 'song',
@@ -70,9 +69,9 @@ const FILE_SOURCES = Object.freeze([
     icon: 'pi pi-headphones text-emerald-600',
     quotaLabel: 'Chansons',
     color: '#10b981',
-    // Songs live in the Répertoire, which is what Setlist.vue shows when no query param is set.
+    // Songs live in the Répertoire, which opens the song's drawer from `?song=`.
     routeName: 'app_band_setlist',
-    routeQueryKey: null
+    routeQueryKey: 'song'
   }),
   Object.freeze({
     type: 'setlist',
@@ -226,8 +225,8 @@ export function fileSourceAttachedMessage(sourceType) {
 /**
  * Where an attachment sends the member, as a router target.
  *
- * The query param is only added when the destination view actually reads one, so a note or a song
- * lands on its module rather than on a URL carrying an id nothing opens.
+ * The query param is only added when the destination view actually reads one, so a source no
+ * view can open lands on its module rather than on a URL carrying an id nothing opens.
  *
  * @param {?string} sourceType
  * @param {?string} bandSpaceId

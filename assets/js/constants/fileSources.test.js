@@ -201,16 +201,15 @@ describe('fileSourceRoute', () => {
       params: { id: 'space-1' },
       query: { setlist: 'setlist-1' }
     })
-  })
-
-  it('stops at the module for a source no view can deep link to', () => {
     assert.deepEqual(fileSourceRoute('note', 'space-1', 'note-1'), {
       name: 'app_band_notes',
-      params: { id: 'space-1' }
+      params: { id: 'space-1' },
+      query: { note: 'note-1' }
     })
     assert.deepEqual(fileSourceRoute('song', 'space-1', 'song-1'), {
       name: 'app_band_setlist',
-      params: { id: 'space-1' }
+      params: { id: 'space-1' },
+      query: { song: 'song-1' }
     })
   })
 
