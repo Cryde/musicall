@@ -376,7 +376,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
-import { toAgendaDate } from '../../../utils/agendaDate.js'
+import { seriesCutDate, toAgendaDate } from '../../../utils/agendaDate.js'
 import {
   agendaSeriesSubmission,
   SERIES_IMPACT_NONE,
@@ -809,21 +809,22 @@ function handleDelete() {
   })
 }
 
-function pickedOccurrenceDate() {
-  // The expanded occurrence id from AgendaAggregator carries the occurrence's
-  // local date in its .datetime ATOM string. Slice off the YYYY-MM-DD prefix.
-  return props.agendaItem?.datetime?.slice(0, 10) ?? null
-}
-
 async function confirmScopedDelete() {
   const seriesId = props.agendaItem?.metadata?.series_id ?? props.agendaItem?.source_id
-  const occurrenceDate = pickedOccurrenceDate()
 
   try {
     if (deleteScope.value === 'single') {
-      await agendaStore.deleteOccurrence(props.bandSpaceId, seriesId, occurrenceDate)
+      await agendaStore.deleteOccurrence(
+        props.bandSpaceId,
+        seriesId,
+        props.agendaItem?.metadata?.occurrence_date
+      )
     } else if (deleteScope.value === 'from') {
-      await agendaStore.deleteFromOccurrence(props.bandSpaceId, seriesId, occurrenceDate)
+      await agendaStore.deleteFromOccurrence(
+        props.bandSpaceId,
+        seriesId,
+        seriesCutDate(props.agendaItem)
+      )
     } else {
       await agendaStore.deleteEntry(props.bandSpaceId, seriesId)
     }

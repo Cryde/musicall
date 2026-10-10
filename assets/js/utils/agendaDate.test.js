@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import {
   agendaCalendarEventDates,
   agendaItemDayKeys,
+  seriesCutDate,
   toAgendaDate,
   withoutAllDayPin
 } from './agendaDate.js'
@@ -267,3 +268,34 @@ for (const timeZone of [EAST_OF_UTC, WEST_OF_UTC]) {
     })
   })
 }
+
+describe('seriesCutDate', () => {
+  // Monday 12 October at 00:30 in Paris, which is still Sunday 11 in UTC: the date of #1163.
+  const AFTER_PARIS_MIDNIGHT = item({ datetime: '2026-10-11T22:30:00+00:00' })
+
+  describeInTimeZone(EAST_OF_UTC, () => {
+    it('cuts from the Paris day of an occurrence between midnight and 2 a.m., not its UTC day', () => {
+      assert.equal(seriesCutDate(AFTER_PARIS_MIDNIGHT), '2026-10-12')
+    })
+  })
+
+  for (const timeZone of [EAST_OF_UTC, WEST_OF_UTC, 'UTC']) {
+    describeInTimeZone(timeZone, () => {
+      it('cuts an all day series from the day it was written for', () => {
+        assert.equal(
+          seriesCutDate(item({ is_all_day: true, datetime: '2026-10-12T00:00:00+00:00' })),
+          '2026-10-12'
+        )
+      })
+
+      it('cuts a timed series from the day it is shown on', () => {
+        assert.equal(seriesCutDate(TIMED), format(new Date(TIMED.datetime), 'yyyy-MM-dd'))
+      })
+
+      it('has no date to cut from without a datetime', () => {
+        assert.equal(seriesCutDate(item({ datetime: null })), null)
+        assert.equal(seriesCutDate(null), null)
+      })
+    })
+  }
+})

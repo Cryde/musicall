@@ -50,6 +50,16 @@ function agendaDayKey(value, isAllDay) {
 }
 
 /**
+ * The `{date}` « Celle-ci et les suivantes » ends a series from: the day the occurrence is shown on.
+ * The server cuts on the series' own calendar (Paris days for a timed series), so the UTC day in
+ * `metadata.occurrence_date`, the day before for a date between midnight and 2 a.m. in Paris, would
+ * take one date too many (#1163). The reader's calendar stands in for Paris, as in the mobile app.
+ */
+export function seriesCutDate(item) {
+  return agendaDayKey(item?.datetime, item?.is_all_day === true)
+}
+
+/**
  * The days an agenda item occupies, as `yyyy-MM-dd` keys, for the list grouping and the year
  * overview dots. Takes the API shape of an agenda item, so snake_case properties.
  *
