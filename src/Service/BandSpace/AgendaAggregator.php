@@ -192,6 +192,15 @@ readonly class AgendaAggregator
     }
 
     /**
+     * The day members see an occurrence on, on the calendar its series is stepped in. For a timed
+     * date between midnight and 2 a.m. in Paris it is the day after occurrenceDateOf().
+     */
+    public function civilDateOf(AgendaEntry $entry, DateTimeImmutable $occurrenceStart): string
+    {
+        return $occurrenceStart->setTimezone($this->expansionTimezone($entry))->format('Y-m-d');
+    }
+
+    /**
      * Expand a recurring entry into the list of occurrence start datetimes whose date falls
      * within [$from, $to] and on or before `recurrenceUntilDate`.
      *

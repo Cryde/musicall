@@ -84,7 +84,48 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $activities = $activityRepo->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
         $this->assertCount(1, $activities);
         $this->assertSame('occurrence_cancelled', $activities[0]->type);
-        $this->assertSame('2026-06-15', $activities[0]->payload['occurrence_date']);
+        $this->assertSame(
+            ['title' => 'Répétition', 'occurrence_date' => '2026-06-15', 'occurrence_civil_date' => '2026-06-15'],
+            $activities[0]->payload,
+        );
+    }
+
+    public function test_cancelling_a_date_just_after_paris_midnight_records_the_day_members_saw(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // Daily at 00:30 in Paris from Sunday 11 October, which is 22:30 UTC the day before.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Test minuit',
+            'eventDatetime' => new DateTimeImmutable('2026-10-10 22:30:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Daily,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-10-14'),
+        ])->create();
+        $entryId = $entry->id;
+
+        // Monday 12 in Paris, filed under its UTC day, Sunday 11.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId . '/occurrences/2026-10-11',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
+            ->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame(
+            ['title' => 'Test minuit', 'occurrence_date' => '2026-10-11', 'occurrence_civil_date' => '2026-10-12'],
+            $activities[0]->payload,
+        );
     }
 
     public function test_delete_single_occurrence_is_idempotent(): void

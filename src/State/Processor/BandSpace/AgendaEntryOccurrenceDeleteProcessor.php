@@ -14,6 +14,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryExceptionRepository;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\AgendaAggregator;
 use App\Service\BandSpace\AgendaSeriesReconciler;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTimeImmutable;
@@ -42,6 +43,7 @@ readonly class AgendaEntryOccurrenceDeleteProcessor implements ProcessorInterfac
         private AgendaEntryRepository $agendaEntryRepository,
         private AgendaEntryExceptionRepository $exceptionRepository,
         private AgendaSeriesReconciler $agendaSeriesReconciler,
+        private AgendaAggregator $agendaAggregator,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
@@ -108,6 +110,7 @@ readonly class AgendaEntryOccurrenceDeleteProcessor implements ProcessorInterfac
         // Cancelling one date changes the series, so it counts as an edit of the entry (#1046).
         $entry->updateDatetime = new \DateTime();
 
+        $occurrenceStart = $this->agendaAggregator->occurrenceStartOn($entry, $occurrenceDate->format('Y-m-d'));
         $this->activityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Agenda,
@@ -117,6 +120,11 @@ readonly class AgendaEntryOccurrenceDeleteProcessor implements ProcessorInterfac
             payload: [
                 'title' => $entry->title,
                 'occurrence_date' => $occurrenceDate->format('Y-m-d'),
+                // The UTC key above is the day before the one members saw for a date between
+                // midnight and 2 a.m. in Paris, so the sentence names this one (#1162).
+                'occurrence_civil_date' => $occurrenceStart instanceof DateTimeImmutable
+                    ? $this->agendaAggregator->civilDateOf($entry, $occurrenceStart)
+                    : null,
             ],
         );
 

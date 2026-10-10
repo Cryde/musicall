@@ -27,6 +27,11 @@ function invitee(payload) {
   return 'un utilisateur'
 }
 
+// A `yyyy-MM-dd` from a payload, spelled out like every other date in the app (#1162).
+function payloadDate(value) {
+  return value ? formatDateLong(value) : '?'
+}
+
 function formatAmount(cents) {
   if (cents === null || cents === undefined) {
     return '—'
@@ -62,12 +67,13 @@ const SENTENCES = {
   'agenda.end_datetime_changed': () => "a modifié la date de fin de l'événement",
   'agenda.is_all_day_changed': (a) =>
     a.payload?.to ? "a basculé l'événement en journée entière" : 'a quitté la journée entière',
+  // The civil date is the day members saw; rows written before #1162 only carry the UTC key.
   'agenda.occurrence_cancelled': (a) =>
-    `a annulé l'occurrence du ${a.payload?.occurrence_date ?? '?'} de « ${a.payload?.title ?? 'Sans titre'} »`,
+    `a annulé la date du ${payloadDate(a.payload?.occurrence_civil_date ?? a.payload?.occurrence_date)} de « ${a.payload?.title ?? 'Sans titre'} »`,
   'agenda.feed_generated': () => "a généré un lien d'abonnement à l'agenda",
   'agenda.feed_revoked': () => "a révoqué son lien d'abonnement à l'agenda",
   'agenda.series_truncated': (a) =>
-    `a tronqué la série « ${a.payload?.title ?? 'Sans titre'} » à partir du ${a.payload?.from_occurrence_date ?? '?'}`,
+    `a tronqué la série « ${a.payload?.title ?? 'Sans titre'} » à partir du ${payloadDate(a.payload?.from_occurrence_date)}`,
 
   // Notes
   'notes.note_created': (a) => `a créé la note « ${a.payload?.title ?? 'Sans titre'} »`,
