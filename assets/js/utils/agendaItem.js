@@ -24,3 +24,31 @@ const TIMED_SOURCE = 'manual'
 export function isAllDayItem(item) {
   return item?.source !== TIMED_SOURCE || item?.is_all_day === true
 }
+
+/**
+ * Where an agenda item leads outside the agenda (#1159): its entry on its occurrence, the task, or
+ * the finance entry. An absence has no screen of its own to open it in, so it leads nowhere.
+ *
+ * @returns {object | null} a route location
+ */
+export function agendaItemLink(item, bandSpaceId) {
+  if (!item?.source_id) return null
+  const params = { id: bandSpaceId }
+
+  if (item.source === 'manual') {
+    const occurrence = item.metadata?.occurrence_date
+    return {
+      name: 'app_band_agenda',
+      params,
+      query: occurrence ? { entry: item.source_id, occurrence } : { entry: item.source_id }
+    }
+  }
+  if (item.source === 'task') {
+    return { name: 'app_band_tasks', params, query: { task: item.source_id } }
+  }
+  if (item.source === 'finance') {
+    return { name: 'app_band_finance', params, query: { entry: item.source_id } }
+  }
+
+  return null
+}
