@@ -26,9 +26,10 @@ class TaskStatsTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        // 2 todo (one overdue)
+        // 3 todo (one overdue, one due today which is not late yet)
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'dueDate' => new \DateTimeImmutable('-2 days')])->create();
+        TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'dueDate' => new \DateTimeImmutable('today')])->create();
 
         // 3 in_progress (one overdue, one due in the future, one no due date)
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress])->create();
@@ -55,7 +56,7 @@ class TaskStatsTest extends ApiTestCase
             '@context' => '/api/contexts/TaskStats',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/task-stats',
             '@type' => 'TaskStats',
-            'todo' => 2,
+            'todo' => 3,
             'done' => 1,
             'overdue' => 2,
             'band_space_id' => (string) $bandSpace->id,

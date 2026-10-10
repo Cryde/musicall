@@ -34,7 +34,7 @@ readonly class TaskStatsProvider implements ProviderInterface
 
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
-        $counts = $this->taskRepository->getStatusCounts($bandSpace, new \DateTimeImmutable());
+        $counts = $this->taskRepository->getStatusCounts($bandSpace);
 
         $stats = new TaskStats();
         $stats->bandSpaceId = (string) $bandSpace->id;

@@ -10,6 +10,7 @@ use App\Repository\BandSpace\Filter\TaskFilter;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -80,10 +81,7 @@ class TaskRepository extends ServiceEntityRepository
         }
 
         if ($filter->overdueOnly) {
-            $qb->andWhere('t.dueDate < :today')
-                ->andWhere('t.status != :doneStatus')
-                ->setParameter('today', new DateTimeImmutable('today'))
-                ->setParameter('doneStatus', TaskStatus::Done->value);
+            $this->andWhereOverdue($qb);
         }
 
         return $qb->getQuery()->getResult();
@@ -251,16 +249,11 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Task[]
-     */
-    /**
-     * Per-status counts of non-archived tasks, plus an "overdue" count
-     * (status != done AND dueDate < now). Returned shape:
-     *   ['todo' => int, 'in_progress' => int, 'done' => int, 'overdue' => int]
+     * Per-status counts of non-archived tasks, plus an "overdue" count with the same rule as the overdue filter.
      *
      * @return array{todo: int, in_progress: int, done: int, overdue: int}
      */
-    public function getStatusCounts(BandSpace $bandSpace, DateTimeImmutable $now): array
+    public function getStatusCounts(BandSpace $bandSpace): array
     {
         $rows = $this->createQueryBuilder('t')
             ->select('t.status, COUNT(t.id) AS row_count')
@@ -281,16 +274,12 @@ class TaskRepository extends ServiceEntityRepository
             $counts[$status] = (int) $row['row_count'];
         }
 
-        $overdue = (int) $this->createQueryBuilder('t')
+        $overdueQb = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.bandSpace = :bandSpace')
             ->andWhere('t.archiveDatetime IS NULL')
-            ->andWhere('t.status != :doneStatus')
-            ->andWhere('t.dueDate IS NOT NULL')
-            ->andWhere('t.dueDate < :now')
-            ->setParameter('bandSpace', $bandSpace)
-            ->setParameter('doneStatus', TaskStatus::Done)
-            ->setParameter('now', $now)
+            ->setParameter('bandSpace', $bandSpace);
+        $overdue = (int) $this->andWhereOverdue($overdueQb)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -368,5 +357,16 @@ class TaskRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * A due date is a day: a task due today is not late until tomorrow.
+     */
+    private function andWhereOverdue(QueryBuilder $qb): QueryBuilder
+    {
+        return $qb->andWhere('t.dueDate < :today')
+            ->andWhere('t.status != :doneStatus')
+            ->setParameter('today', new DateTimeImmutable('today'))
+            ->setParameter('doneStatus', TaskStatus::Done->value);
     }
 }
