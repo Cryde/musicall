@@ -154,6 +154,7 @@ onMounted(load)
 const PRESENCE_INTERVAL_MS = 30000
 const PRESENCE_HIDDEN_GRACE_MS = 15000
 const presence = createPresenceSession({
+  channelName: `musicall_chat_presence_${bandSpaceId}`,
   heartbeat: createHeartbeat({
     intervalMs: PRESENCE_INTERVAL_MS,
     beat: () => chatStore.beatPresence(bandSpaceId)
