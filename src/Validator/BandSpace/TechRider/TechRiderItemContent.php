@@ -5,7 +5,7 @@ namespace App\Validator\BandSpace\TechRider;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * Bounds a item's TipTap document.
+ * Bounds a item's TipTap document, and holds a text item to the rich text format (#1012).
  *
  * The column is LONGTEXT and the editor autosaves, so an accidental paste of a whole
  * document, or a pathological nesting depth, would otherwise be written without complaint.

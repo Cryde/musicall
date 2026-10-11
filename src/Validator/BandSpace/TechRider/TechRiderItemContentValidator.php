@@ -2,12 +2,20 @@
 
 namespace App\Validator\BandSpace\TechRider;
 
+use App\ApiResource\BandSpace\TechRider\TechRiderItemCreate;
+use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
+use App\Enum\BandSpace\TechRiderItemType;
+use App\Service\BandSpace\RichText\TipTapDocumentChecker;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class TechRiderItemContentValidator extends ConstraintValidator
 {
+    public function __construct(private readonly TipTapDocumentChecker $documentChecker)
+    {
+    }
+
     public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof TechRiderItemContent) {
@@ -43,6 +51,26 @@ class TechRiderItemContentValidator extends ConstraintValidator
                 ->setParameter('{{ limit }}', (string) intdiv(TechRiderItemContent::MAX_CONTENT_BYTES, 1000))
                 ->setCode(TechRiderItemContent::ERROR_CODE)
                 ->addViolation();
+
+            return;
         }
+
+        // Only a text item holds prose; a contacts item keeps its presentation choices here.
+        if (!$this->isTextItem($this->context->getObject())) {
+            return;
+        }
+
+        $problem = $this->documentChecker->findProblem($value, allowsImages: false, allowsColour: true);
+        if ($problem !== null) {
+            $this->context->buildViolation($problem)
+                ->setCode(TechRiderItemContent::ERROR_CODE)
+                ->addViolation();
+        }
+    }
+
+    private function isTextItem(mixed $item): bool
+    {
+        return ($item instanceof TechRiderItemCreate || $item instanceof TechRiderItemResource)
+            && $item->type === TechRiderItemType::Text->value;
     }
 }

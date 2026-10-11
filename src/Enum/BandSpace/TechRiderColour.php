@@ -35,6 +35,18 @@ enum TechRiderColour: string
         return array_map(static fn (self $case): string => $case->value, self::cases());
     }
 
+    /** Matched without case, like the editor's own filter: a pasted `#DC2626` is the palette's red. */
+    public static function fromHex(string $hex): ?self
+    {
+        foreach (self::cases() as $case) {
+            if (strcasecmp($case->hex(), trim($hex)) === 0) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
     public function hex(): string
     {
         return match ($this) {
