@@ -12,6 +12,7 @@ use App\Enum\BandSpace\MembershipStatus;
 use App\Event\BandSpaceMemberRemovedEvent;
 use App\Repository\BandSpace\AgendaFeedTokenRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\BandSpace\BandSpaceOpenedItemRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\PersonalRecurrenceDeactivator;
@@ -35,6 +36,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         private PersonalRecurrenceDeactivator $personalRecurrenceDeactivator,
         private TaskAssignmentRevoker $taskAssignmentRevoker,
         private AgendaFeedTokenRepository $agendaFeedTokenRepository,
+        private BandSpaceOpenedItemRepository $openedItemRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private EventDispatcherInterface $eventDispatcher,
@@ -75,6 +77,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
             $this->personalRecurrenceDeactivator->deactivateForMember($membership, $user);
             $this->taskAssignmentRevoker->revokeForMember($membership, $user);
             $this->agendaFeedTokenRepository->deleteForMembership($membership);
+            $this->openedItemRepository->deleteForMembership($membership);
 
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $bandSpace,

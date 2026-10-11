@@ -15,6 +15,7 @@ use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\BandSpace\BandSpaceOpenedItemRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
@@ -25,6 +26,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\BandSpaceOpenedItemFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\BandSpace\FinanceRecurrenceFactory;
@@ -245,6 +247,31 @@ class DeleteAccountBandSpaceTest extends ApiTestCase
 
         // Nobody was promoted, so nobody is told anything.
         $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findForRecipient($admin, 10, 0));
+    }
+
+    public function test_deleting_an_account_deletes_its_opened_items_in_every_space(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $bandMate = UserFactory::new()->create(['username' => 'band_mate', 'email' => 'mate@test.com']);
+
+        $firstSpace = BandSpaceFactory::new()->create(['name' => 'Premier groupe']);
+        $mateMembership = BandSpaceMembershipFactory::new(['bandSpace' => $firstSpace, 'user' => $bandMate, 'role' => Role::Admin])->create();
+        $firstMembership = BandSpaceMembershipFactory::new(['bandSpace' => $firstSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $secondSpace = BandSpaceFactory::new()->create(['name' => 'Second groupe']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $secondSpace, 'user' => $bandMate, 'role' => Role::Admin])->create();
+        $secondMembership = BandSpaceMembershipFactory::new(['bandSpace' => $secondSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        BandSpaceOpenedItemFactory::new(['membership' => $firstMembership])->create();
+        BandSpaceOpenedItemFactory::new(['membership' => $secondMembership])->create();
+        BandSpaceOpenedItemFactory::new(['membership' => $mateMembership])->create();
+
+        $this->deleteAccount($member);
+
+        $openedItemRepository = self::getContainer()->get(BandSpaceOpenedItemRepository::class);
+        $this->assertCount(0, $openedItemRepository->findBy(['membership' => $firstMembership->id]));
+        $this->assertCount(0, $openedItemRepository->findBy(['membership' => $secondMembership->id]));
+        $this->assertCount(1, $openedItemRepository->findBy(['membership' => $mateMembership->id]));
     }
 
     public function test_deleting_an_account_revokes_its_task_assignments_in_every_space(): void

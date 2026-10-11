@@ -225,6 +225,7 @@ import { ERROR_CODES } from '../../../constants/errorCodes.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import { centsToCurrency, currencyToCents, MAX_AMOUNT_EUROS } from '../../../utils/currency.js'
+import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import SplitManager from './SplitManager.vue'
 
@@ -325,6 +326,14 @@ watch(
     }
   }
 )
+
+// The member's « Ouverts par moi » history (#1047). By id, not by object: a live refresh hands over a
+// new copy of the same entry, which is not a new open. A null entry is the create form.
+watch([() => props.visible, () => props.entry?.id], ([visible, entryId]) => {
+  if (visible && entryId) {
+    recordOpenedItem(props.bandSpaceId, 'finance', entryId)
+  }
+})
 
 // Also watch props.entry, not just props.visible: if the drawer ever swaps the entry while
 // staying open (today the modal mask prevents it, but that is incidental), we must re-sync the

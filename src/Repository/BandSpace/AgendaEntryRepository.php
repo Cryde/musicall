@@ -6,6 +6,7 @@ use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\BandSpace\BandSpace;
 use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -126,14 +127,37 @@ class AgendaEntryRepository extends ServiceEntityRepository
      */
     public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
     {
-        return $this->createQueryBuilder('a')
+        return $this->createPaletteQueryBuilder($bandSpace)
             ->addSelect('COALESCE(a.updateDatetime, a.creationDatetime) AS HIDDEN recency')
-            ->where('a.bandSpace = :bandSpace')
-            ->setParameter('bandSpace', $bandSpace)
             ->orderBy('recency', 'DESC')
             ->addOrderBy('a.id', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * The items of a member's « Ouverts par moi » history the palette may still list (#1047), in no
+     * particular order: the history gives it.
+     *
+     * @param string[] $ids
+     *
+     * @return AgendaEntry[]
+     */
+    public function findOpenedByIds(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createPaletteQueryBuilder($bandSpace)
+            ->andWhere('a.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** What the palette may list with nothing typed, recents and opened items alike: the rule lives here once. */
+    private function createPaletteQueryBuilder(BandSpace $bandSpace): QueryBuilder
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.bandSpace = :bandSpace')
+            ->setParameter('bandSpace', $bandSpace);
     }
 }

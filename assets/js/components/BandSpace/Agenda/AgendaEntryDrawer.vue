@@ -382,6 +382,7 @@ import {
   SERIES_IMPACT_NONE,
   SERIES_IMPACT_RECURRENCE_REMOVED
 } from '../../../utils/agendaSeriesEdit.js'
+import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import AgendaAvailabilityPanel from './AgendaAvailabilityPanel.vue'
 
 const props = defineProps({
@@ -468,6 +469,17 @@ watch(
 )
 
 const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.source === 'manual')
+
+// The member's « Ouverts par moi » history (#1047), under the series id, which is what the palette
+// opens. The id is watched too, for an entry opened while the drawer is still showing another.
+watch(
+  [isVisible, () => (isEditMode.value ? props.agendaItem.source_id : null)],
+  ([visible, entryId]) => {
+    if (visible && entryId) {
+      recordOpenedItem(props.bandSpaceId, 'agenda', entryId)
+    }
+  }
+)
 
 // The agenda expands a series into occurrences that all share one `source_id`, so editing any of
 // them edits the series. `datetime` is the occurrence on screen, `series_start_datetime` the anchor

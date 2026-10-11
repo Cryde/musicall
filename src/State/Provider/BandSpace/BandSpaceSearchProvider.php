@@ -15,10 +15,12 @@ use App\Entity\BandSpace\Setlist;
 use App\Entity\BandSpace\Song;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceRecentsOrder;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
+use App\Repository\BandSpace\BandSpaceOpenedItemRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
@@ -62,6 +64,7 @@ readonly class BandSpaceSearchProvider implements ProviderInterface
         private SetlistRepository $setlistRepository,
         private SongRepository $songRepository,
         private FinanceEntryRepository $financeEntryRepository,
+        private BandSpaceOpenedItemRepository $openedItemRepository,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -87,7 +90,9 @@ readonly class BandSpaceSearchProvider implements ProviderInterface
         $types = $onlyType instanceof BandSpaceSearchResultType ? [$onlyType] : BandSpaceSearchResultType::cases();
 
         if (mb_strlen($search) < self::MIN_QUERY_LENGTH) {
-            return $this->recent($bandSpace, $viewer, $types);
+            return BandSpaceRecentsOrder::tryFrom($query?->getString('order') ?? '') === BandSpaceRecentsOrder::Opened
+                ? $this->recentlyOpened($bandSpace, $viewer, $types)
+                : $this->recent($bandSpace, $viewer, $types);
         }
 
         // With one kind picked there is no budget to share, and picking it is asking to see more of it.
@@ -130,9 +135,58 @@ readonly class BandSpaceSearchProvider implements ProviderInterface
     }
 
     /**
-     * One entry per kind, so there is a single place deciding what each kind may show. Should
-     * per-module permissions ever land (#785), this is where they have to be applied, search and
-     * recents alike: a palette is precisely the surface that leaks a module a member may not open.
+     * The « Ouverts par moi » order (#1047): the caller's own history, newest first, resolved against
+     * the live tables, so an item deleted, archived or no longer visible to them drops out and a renamed
+     * one shows its current title. A history shorter than the panel is topped up with the band's
+     * recents, so the empty state is never empty.
+     *
+     * @param BandSpaceSearchResultType[] $types
+     *
+     * @return BandSpaceSearchResult[]
+     */
+    private function recentlyOpened(BandSpace $bandSpace, BandSpaceMembership $viewer, array $types): array
+    {
+        $history = $this->openedItemRepository->findLatestByMembership($viewer, $types);
+
+        $idsByType = [];
+        foreach ($history as $opened) {
+            $idsByType[$opened->type->value][] = $opened->resourceId;
+        }
+
+        $resolved = [];
+        foreach ($idsByType as $typeValue => $ids) {
+            $type = BandSpaceSearchResultType::from($typeValue);
+            foreach ($this->findOpened($type, $bandSpace, $viewer, $ids) as $entity) {
+                $result = $this->build($type, $entity);
+                $resolved[$typeValue][$result->resourceId] = $result;
+            }
+        }
+
+        $results = [];
+        foreach ($history as $opened) {
+            $result = $resolved[$opened->type->value][$opened->resourceId] ?? null;
+            if ($result instanceof BandSpaceSearchResult) {
+                $results[$result->id] = $result;
+            }
+            if (count($results) === self::RECENT_LIMIT) {
+                return array_values($results);
+            }
+        }
+
+        foreach ($this->recent($bandSpace, $viewer, $types) as $result) {
+            $results[$result->id] ??= $result;
+            if (count($results) === self::RECENT_LIMIT) {
+                break;
+            }
+        }
+
+        return array_values($results);
+    }
+
+    /**
+     * One entry per kind. Should per-module permissions ever land (#785), they have to be applied here
+     * and in findRecent() and findOpened(), the three maps every palette list goes through: a palette
+     * is precisely the surface that leaks a module a member may not open.
      *
      * @return object[]
      */
@@ -163,6 +217,24 @@ readonly class BandSpaceSearchProvider implements ProviderInterface
             BandSpaceSearchResultType::Setlist => $this->setlistRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
             BandSpaceSearchResultType::Song => $this->songRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
             BandSpaceSearchResultType::Finance => $this->financeEntryRepository->findRecentByBandSpace($bandSpace, $viewer, self::RECENT_LIMIT),
+        };
+    }
+
+    /**
+     * @param string[] $ids
+     *
+     * @return object[]
+     */
+    private function findOpened(BandSpaceSearchResultType $type, BandSpace $bandSpace, BandSpaceMembership $viewer, array $ids): array
+    {
+        return match ($type) {
+            BandSpaceSearchResultType::Agenda => $this->agendaEntryRepository->findOpenedByIds($bandSpace, $ids),
+            BandSpaceSearchResultType::Task => $this->taskRepository->findOpenedByIds($bandSpace, $ids),
+            BandSpaceSearchResultType::Note => $this->noteRepository->findOpenedByIds($bandSpace, $ids),
+            BandSpaceSearchResultType::File => $this->fileRepository->findOpenedByIds($bandSpace, $ids),
+            BandSpaceSearchResultType::Setlist => $this->setlistRepository->findOpenedByIds($bandSpace, $ids),
+            BandSpaceSearchResultType::Song => $this->songRepository->findOpenedByIds($bandSpace, $ids),
+            BandSpaceSearchResultType::Finance => $this->financeEntryRepository->findOpenedByIds($bandSpace, $viewer, $ids),
         };
     }
 
