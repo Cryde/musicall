@@ -2,6 +2,7 @@
 
 namespace App\Service\BandSpace\RichText;
 
+use App\Enum\BandSpace\RichTextSurface;
 use App\Enum\BandSpace\TechRiderColour;
 
 /**
@@ -12,7 +13,8 @@ use App\Enum\BandSpace\TechRiderColour;
  * Link and image URIs are deliberately not checked: the editor saves a pasted external image or a
  * `tel:` link, so refusing them would stop a member's autosave. They are filtered on the way out
  * instead, by BandSpaceNoteBuilder and TipTapHtmlRenderer. Nesting and attribute types are not
- * checked either: ProseMirror loads a document whatever they are.
+ * checked either, ProseMirror loads a document whatever they are, except where a wrong type would
+ * change what the member reads: a heading's level and a checklist item's `checked`.
  *
  * Walked with a stack rather than recursively: the depth is the client's to choose.
  */
@@ -22,7 +24,8 @@ readonly class TipTapDocumentChecker
     private const string NODE_WITHOUT_TYPE = 'Le contenu contient un élément sans type';
     private const string UNKNOWN_NODE = 'Le contenu contient un élément non pris en charge (« %s »)';
     private const string UNKNOWN_MARK = 'Le contenu contient une mise en forme non prise en charge (« %s »)';
-    private const string HEADING_LEVEL = 'Les titres doivent être de niveau 2 ou 3';
+    private const string HEADING_LEVEL = 'Les titres doivent être de niveau %s';
+    private const string CHECKBOX = 'Le contenu contient une case à cocher invalide';
     private const string ALIGNMENT = 'Le contenu contient un alignement non pris en charge';
     private const string COLOUR = 'Le contenu contient une couleur hors de la palette';
 
@@ -33,17 +36,16 @@ readonly class TipTapDocumentChecker
      * The first reason the document is out of the format, as a message for the member, or null.
      *
      * @param array<array-key, mixed> $document
-     * @param bool                    $allowsImages a note's uploaded images
-     * @param bool                    $allowsColour the rider's palette colours
      */
-    public function findProblem(array $document, bool $allowsImages, bool $allowsColour): ?string
+    public function findProblem(array $document, RichTextSurface $surface): ?string
     {
         if (($document['type'] ?? null) !== 'doc') {
             return self::NOT_A_DOCUMENT;
         }
 
-        $allowedNodes = [...TipTapVocabulary::NODES, 'text', ...($allowsImages ? [TipTapVocabulary::IMAGE_NODE] : [])];
-        $allowedMarks = [...TipTapVocabulary::MARKS, ...($allowsColour ? [TipTapVocabulary::COLOUR_MARK] : [])];
+        $allowedNodes = $surface->nodes();
+        $allowedMarks = $surface->marks();
+        $headingLevels = $surface->headingLevels();
 
         $pendingLists = [$document['content'] ?? []];
         while ($pendingLists !== []) {
@@ -53,7 +55,7 @@ readonly class TipTapDocumentChecker
             }
 
             foreach ($nodes as $node) {
-                $problem = $this->findNodeProblem($node, $allowedNodes, $allowedMarks);
+                $problem = $this->findNodeProblem($node, $allowedNodes, $allowedMarks, $headingLevels);
                 if ($problem !== null) {
                     return $problem;
                 }
@@ -69,8 +71,9 @@ readonly class TipTapDocumentChecker
     /**
      * @param list<string> $allowedNodes
      * @param list<string> $allowedMarks
+     * @param list<int>    $headingLevels
      */
-    private function findNodeProblem(mixed $node, array $allowedNodes, array $allowedMarks): ?string
+    private function findNodeProblem(mixed $node, array $allowedNodes, array $allowedMarks, array $headingLevels): ?string
     {
         if (!is_array($node)) {
             return self::NOT_A_DOCUMENT;
@@ -95,11 +98,21 @@ readonly class TipTapDocumentChecker
         $problem = match (true) {
             // ProseMirror refuses an empty text node, and TipTap then loads the whole note as empty.
             $type === 'text' && (!is_string($node['text'] ?? null) || $node['text'] === '') => self::NOT_A_DOCUMENT,
-            $type === 'heading' && !in_array($attrs['level'] ?? null, TipTapVocabulary::HEADING_LEVELS, true) => self::HEADING_LEVEL,
+            $type === 'heading' && !in_array($attrs['level'] ?? null, $headingLevels, true) => $this->headingLevelMessage($headingLevels),
+            // TipTap writes `checked` on every item; a missing one defaults to unticked.
+            $type === 'taskItem' && array_key_exists('checked', $attrs) && !is_bool($attrs['checked']) => self::CHECKBOX,
             default => $this->findAlignmentProblem($type, $attrs['textAlign'] ?? null),
         };
 
         return $problem ?? $this->findMarksProblem($node['marks'] ?? [], $allowedMarks);
+    }
+
+    /** @param list<int> $levels « 1, 2 ou 3 » */
+    private function headingLevelMessage(array $levels): string
+    {
+        $last = array_pop($levels);
+
+        return sprintf(self::HEADING_LEVEL, $levels === [] ? (string) $last : implode(', ', $levels) . ' ou ' . $last);
     }
 
     /** The editor writes `textAlign: null` on every paragraph and heading it has not aligned. */

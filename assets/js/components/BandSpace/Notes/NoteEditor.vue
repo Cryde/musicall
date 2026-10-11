@@ -101,12 +101,57 @@
           >
             I
           </Button>
+          <Button
+            v-tooltip.bottom="'Lien'"
+            aria-label="Lien"
+            icon="pi pi-link"
+            :severity="editor?.isActive('link') ? 'primary' : 'secondary'"
+            text
+            size="small"
+            @click="toggleLinkPopover"
+          />
+          <Popover ref="linkPopover">
+            <form class="flex flex-col gap-2 w-72" @submit.prevent="handleApplyLink">
+              <label for="note-link-address" class="text-sm font-medium">Adresse du lien</label>
+              <InputText
+                id="note-link-address"
+                v-model="linkAddress"
+                placeholder="https://"
+                size="small"
+                autofocus
+                :invalid="!!linkError"
+                :aria-describedby="linkError ? 'note-link-address-error' : undefined"
+              />
+              <small v-if="linkError" id="note-link-address-error" class="text-red-600 dark:text-red-400">{{ linkError }}</small>
+              <div class="flex justify-end gap-2">
+                <Button
+                  v-if="isEditingLink"
+                  label="Retirer le lien"
+                  severity="danger"
+                  text
+                  size="small"
+                  @click="handleRemoveLink"
+                />
+                <Button type="submit" label="Appliquer" size="small" />
+              </div>
+            </form>
+          </Popover>
         </div>
 
         <!-- Headings -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
+            v-tooltip.bottom="'Titre 1'"
+            aria-label="Titre 1"
+            label="H1"
+            :severity="editor?.isActive('heading', { level: 1 }) ? 'primary' : 'secondary'"
+            text
+            size="small"
+            @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
+          />
+          <Button
             v-tooltip.bottom="'Titre 2'"
+            aria-label="Titre 2"
             label="H2"
             :severity="editor?.isActive('heading', { level: 2 }) ? 'primary' : 'secondary'"
             text
@@ -115,6 +160,7 @@
           />
           <Button
             v-tooltip.bottom="'Titre 3'"
+            aria-label="Titre 3"
             label="H3"
             :severity="editor?.isActive('heading', { level: 3 }) ? 'primary' : 'secondary'"
             text
@@ -158,11 +204,20 @@
           <Button
             v-tooltip.bottom="'Liste numérotée'"
             aria-label="Liste numérotée"
-            icon="pi pi-list-check"
+            icon="pi pi-sort-numeric-down"
             :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
             text
             size="small"
             @click="editor?.chain().focus().toggleOrderedList().run()"
+          />
+          <Button
+            v-tooltip.bottom="'Check-list'"
+            aria-label="Check-list"
+            icon="pi pi-list-check"
+            :severity="editor?.isActive('taskList') ? 'primary' : 'secondary'"
+            text
+            size="small"
+            @click="editor?.chain().focus().toggleTaskList().run()"
           />
         </div>
 
@@ -319,11 +374,13 @@
 
 <script setup>
 import Image from '@tiptap/extension-image'
+import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { EditorContent } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
+import Popover from 'primevue/popover'
 import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
 import UserName from '../../User/UserName.vue'
@@ -333,6 +390,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
 import { useBandSpaceNotesStore } from '../../../store/bandSpace/bandSpaceNotes.js'
+import { checkLinkAddress } from '../../../utils/noteLinkAddress.js'
 
 const props = defineProps({
   note: { type: Object, required: true },
@@ -394,12 +452,25 @@ onMounted(() => {
   trackedImageSrcs.value = collectImageSrcs(props.note.content)
 })
 
+/** TipTap's own label is English, and names the nested items too: only the item's own line here. */
+function checklistItemLabel(node) {
+  const text = node.firstChild?.textContent.trim()
+
+  return text ? `Élément de check-list « ${text} »` : 'Élément de check-list vide'
+}
+
 // Shared with the tech rider section editor. Images are Notes only, and so is the detach
 // pass on save, which is why it lives in the callback rather than in the composable.
 const { editor, stopSaving, hasPendingEdits } = useRichTextEditor({
   content: props.note.content,
   placeholder: 'Commencez à écrire...',
-  extensions: [Image.configure({ inline: false, allowBase64: false })],
+  // « Titre 1 » and checklists are a note's only, as on the phone (#1175).
+  headingLevels: [1, 2, 3],
+  extensions: [
+    Image.configure({ inline: false, allowBase64: false }),
+    TaskList,
+    TaskItem.configure({ nested: true, a11y: { checkboxLabel: checklistItemLabel } })
+  ],
   onSave: (json) => {
     detachRemovedImages(json)
 
@@ -485,6 +556,65 @@ async function handleCopyMyText() {
   }
 }
 
+const linkPopover = ref(null)
+const linkAddress = ref('')
+const linkError = ref('')
+const isEditingLink = ref(false)
+
+function toggleLinkPopover(event) {
+  isEditingLink.value = editor.value?.isActive('link') ?? false
+  linkAddress.value = editor.value?.getAttributes('link').href ?? ''
+  linkError.value = ''
+  linkPopover.value?.toggle(event)
+}
+
+function handleApplyLink() {
+  // A link pasted or written on the phone may hold an address the button would refuse (`tel:`, a
+  // relative path): leaving it as it was is not a new address, so it is not checked.
+  if (
+    isEditingLink.value &&
+    linkAddress.value.trim() === editor.value?.getAttributes('link').href
+  ) {
+    linkPopover.value?.hide()
+    return
+  }
+
+  const result = checkLinkAddress(linkAddress.value)
+  if (result.error) {
+    linkError.value = result.error
+    return
+  }
+
+  const currentEditor = editor.value
+  if (!currentEditor) return
+
+  // With nothing selected and no link under the cursor there is no text to put the link on, so the
+  // address becomes the text. The stored mark is dropped so what is typed next is not part of it.
+  if (currentEditor.state.selection.empty && !currentEditor.isActive('link')) {
+    currentEditor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'text',
+        text: result.href,
+        marks: [{ type: 'link', attrs: { href: result.href } }]
+      })
+      .unsetMark('link')
+      .run()
+  } else if (currentEditor.state.selection.empty) {
+    // The cursor sits in a link: the whole link takes the new address.
+    currentEditor.chain().focus().extendMarkRange('link').setLink({ href: result.href }).run()
+  } else {
+    currentEditor.chain().focus().setLink({ href: result.href }).run()
+  }
+  linkPopover.value?.hide()
+}
+
+function handleRemoveLink() {
+  editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
+  linkPopover.value?.hide()
+}
+
 function shouldShowTableMenu({ editor }) {
   return editor.isActive('table')
 }
@@ -564,6 +694,13 @@ async function uploadAndInsertImage(file) {
   outline: none;
 }
 
+.note-editor .tiptap h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  line-height: 1.25;
+}
+
 .note-editor .tiptap h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -576,6 +713,11 @@ async function uploadAndInsertImage(file) {
   font-weight: 600;
   margin: 1rem 0 0.5rem;
   line-height: 1.4;
+}
+
+.note-editor .tiptap a {
+  color: var(--p-primary-color);
+  text-decoration: underline;
 }
 
 .note-editor .tiptap p.is-editor-empty:first-child::before {
@@ -604,6 +746,36 @@ async function uploadAndInsertImage(file) {
 
 .note-editor .tiptap li p {
   margin: 0;
+}
+
+.note-editor .tiptap ul[data-type='taskList'] {
+  padding-left: 0.25rem;
+  list-style: none;
+}
+
+.note-editor .tiptap ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.note-editor .tiptap ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+}
+
+.note-editor .tiptap ul[data-type='taskList'] li > div {
+  flex: 1 1 auto;
+}
+
+.note-editor .tiptap ul[data-type='taskList'] li[data-checked='true'] > div > p {
+  color: var(--p-surface-500);
+  text-decoration: line-through;
+}
+
+.note-editor .tiptap ul[data-type='taskList'] ul[data-type='taskList'] {
+  margin: 0.25rem 0 0;
+  padding-left: 1rem;
 }
 
 .note-editor .tiptap blockquote {

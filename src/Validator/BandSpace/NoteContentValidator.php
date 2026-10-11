@@ -2,6 +2,7 @@
 
 namespace App\Validator\BandSpace;
 
+use App\Enum\BandSpace\RichTextSurface;
 use App\Service\BandSpace\RichText\TipTapDocumentChecker;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -33,7 +34,7 @@ class NoteContentValidator extends ConstraintValidator
             return;
         }
 
-        $problem = $this->documentChecker->findProblem($value, allowsImages: true, allowsColour: false);
+        $problem = $this->documentChecker->findProblem($value, RichTextSurface::Note);
         if ($problem !== null) {
             $this->context->buildViolation($problem)
                 ->setCode(NoteContent::ERROR_CODE)

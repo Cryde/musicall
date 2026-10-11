@@ -62,6 +62,41 @@ class TechRiderItemContentFormatTest extends ApiTestCase
         $this->assertSame([], self::getContainer()->get(TechRiderItemRepository::class)->findBy(['techRider' => $rider->id]));
     }
 
+    /** Checklists are a note's only (#1175): a rider text is sent to a venue as a PDF. */
+    public function test_creating_a_text_item_with_a_checklist_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $rider = TechRiderFactory::new(['bandSpace' => $bandSpace])->create();
+        $checklist = ['type' => 'doc', 'content' => [['type' => 'taskList', 'content' => [
+            ['type' => 'taskItem', 'attrs' => ['checked' => false], 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Wedges']]]]],
+        ]]]];
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', $this->itemsUrl($bandSpace->id, $rider->id), ['title' => 'Son', 'content' => $checklist], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . TechRiderItemContent::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'content',
+                    'message' => 'Le contenu contient un élément non pris en charge (« taskList »)',
+                    'code' => TechRiderItemContent::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'content: Le contenu contient un élément non pris en charge (« taskList »)',
+            'type' => '/validation_errors/' . TechRiderItemContent::ERROR_CODE,
+            'title' => 'An error occurred',
+            'description' => 'content: Le contenu contient un élément non pris en charge (« taskList »)',
+        ]);
+        $this->assertSame([], self::getContainer()->get(TechRiderItemRepository::class)->findBy(['techRider' => $rider->id]));
+    }
+
     public function test_a_colour_off_the_palette_is_refused_and_the_item_is_unchanged(): void
     {
         [$user, $bandSpace, $rider, $item] = $this->seedTextItem();
