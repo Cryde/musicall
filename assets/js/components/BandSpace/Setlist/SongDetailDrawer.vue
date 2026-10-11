@@ -150,6 +150,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
 import InlineEditField from './Song/InlineEditField.vue'
 
@@ -201,6 +202,8 @@ watch(
   [visible, () => props.song?.id],
   ([isOpen, songId]) => {
     if (isOpen && songId) {
+      // Both places that mount this drawer go through here, once per open (#1047).
+      recordOpenedItem(props.bandSpaceId, 'song', songId)
       loadFiles()
     } else if (!isOpen) {
       files.value = []

@@ -269,6 +269,7 @@ import { BAND_SPACE_ROUTES, CHAT_TESTER_ONLY } from '../../../constants/bandSpac
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
+import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import { canDeleteTask } from '../../../utils/taskActions.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import TaskActivityFeed from './TaskActivityFeed.vue'
@@ -380,6 +381,8 @@ watch(task, async () => {
   if (!task.value) return
   if (props.visible && detailsLoadedFor.value !== task.value.id) {
     detailsLoadedFor.value = task.value.id
+    // Once per open, and only once the task has loaded, so an id that no longer exists is not recorded (#1047).
+    recordOpenedItem(props.bandSpaceId, 'task', task.value.id)
     await loadDetails()
   }
   if (lastPopulatedId.value !== task.value.id) {

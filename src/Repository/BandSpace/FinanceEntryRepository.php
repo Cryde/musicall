@@ -617,19 +617,43 @@ class FinanceEntryRepository extends ServiceEntityRepository
                 . ' OR (COALESCE(sibling.updateDatetime, sibling.creationDatetime) = COALESCE(e.updateDatetime, e.creationDatetime) AND sibling.id > e.id)',
             );
 
+        return $this->createPaletteQueryBuilder($bandSpace, $viewer)
+            ->addSelect('COALESCE(e.updateDatetime, e.creationDatetime) AS HIDDEN recency')
+            ->andWhere('e.recurrence IS NULL OR NOT EXISTS (' . $newerOfTheSameRecurrence->getDQL() . ')')
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('e.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The entries of a member's « Ouverts par moi » history the palette may still list (#1047), in no
+     * particular order: the history gives it. Not collapsed per recurrence like the recents: the member
+     * opened that occurrence. An entry that has since moved to someone else's personal scope drops out.
+     *
+     * @param string[] $ids
+     *
+     * @return FinanceEntry[]
+     */
+    public function findOpenedByIds(BandSpace $bandSpace, BandSpaceMembership $viewer, array $ids): array
+    {
+        return $this->createPaletteQueryBuilder($bandSpace, $viewer)
+            ->andWhere('e.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** What the palette may list with nothing typed, recents and opened entries alike: the rule lives here once. */
+    private function createPaletteQueryBuilder(BandSpace $bandSpace, BandSpaceMembership $viewer): QueryBuilder
+    {
         $qb = $this->createQueryBuilder('e')
             ->addSelect('c')
             ->innerJoin('e.category', 'c')
-            ->addSelect('COALESCE(e.updateDatetime, e.creationDatetime) AS HIDDEN recency')
             ->where('c.bandSpace = :bandSpace')
-            ->andWhere('e.recurrence IS NULL OR NOT EXISTS (' . $newerOfTheSameRecurrence->getDQL() . ')')
-            ->setParameter('bandSpace', $bandSpace)
-            ->orderBy('recency', 'DESC')
-            ->addOrderBy('e.id', 'DESC')
-            ->setMaxResults($limit);
+            ->setParameter('bandSpace', $bandSpace);
 
-        $this->applyVisibleTo($qb, $viewer);
-
-        return $qb->getQuery()->getResult();
+        return $this->applyVisibleTo($qb, $viewer);
     }
 }

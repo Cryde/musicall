@@ -16,6 +16,39 @@ export const MIN_SEARCH_QUERY_LENGTH = 2
 
 const DEBOUNCE_MS = 250
 
+/** Mirrors BandSpaceRecentsOrder: how the list shown before anything is typed is sorted (#1047). */
+export const RECENTS_ORDER = Object.freeze({ UPDATED: 'updated', OPENED: 'opened' })
+
+/**
+ * One remembered order per member, shared by the palette and the chat attachment picker: two people
+ * signing in on the same browser each keep their own. No username, no key, nothing remembered.
+ *
+ * @param {?string} username
+ */
+export function recentsOrderStorageKey(username) {
+  return username ? `band_space_recents_order_${username}` : ''
+}
+
+/** localStorage, made safe: a private window or blocked site data throws, and then nothing is remembered. */
+function browserStorage() {
+  return {
+    get(key) {
+      try {
+        return globalThis.localStorage?.getItem(key) ?? null
+      } catch {
+        return null
+      }
+    },
+    set(key, value) {
+      try {
+        globalThis.localStorage?.setItem(key, value)
+      } catch {
+        // Not remembered, which only means choosing the order again next time.
+      }
+    }
+  }
+}
+
 /**
  * One band space search, as the command palette and the chat attachment picker (#971) both need it:
  * a debounced call per typed term, the hits grouped by kind, and a single active row the arrow keys
@@ -29,8 +62,15 @@ const DEBOUNCE_MS = 250
  * @param {string} listboxId the caller's own list, since minting a DOM id is a component's business
  *   and not a search's. Keeping `useId()` out of here is also what makes this file unit testable:
  *   it needs a component instance, and there is none in a `node --test` process.
+ * @param {{ orderStorageKey?: import('vue').MaybeRefOrGetter<string>, storage?: { get: Function, set: Function } }} options
+ *   where the member's choice of order is remembered (#1047), per member, so it is set once rather
+ *   than on every open. No key, nothing remembered.
  */
-export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
+export function useBandSpaceSearch(
+  bandSpaceId,
+  listboxId = '',
+  { orderStorageKey = '', storage = browserStorage() } = {}
+) {
   const query = ref('')
   const results = ref([])
   const isSearching = ref(false)
@@ -42,6 +82,7 @@ export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
   // What the panel shows before anything is typed: the space's latest items, newest first, flat.
   const recents = ref([])
   const isLoadingRecents = ref(false)
+  const order = ref(readStoredOrder())
 
   // Monotonic, so a response that arrives after a newer keystroke is dropped instead of overwriting
   // the newer results. Not reactive: nothing renders it.
@@ -134,7 +175,7 @@ export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
     isLoadingRecents.value = true
 
     try {
-      const found = await bandSpaceSearchApi.search(spaceId, '', selectedType.value)
+      const found = await bandSpaceSearchApi.search(spaceId, '', selectedType.value, order.value)
       if (id === requestId) {
         recents.value = found
       }
@@ -167,6 +208,30 @@ export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
     runSearch(trimmed)
   }
 
+  /** Between the band's latest changes and what the member opened last. Only the recents depend on it. */
+  function toggleOrder() {
+    order.value =
+      order.value === RECENTS_ORDER.OPENED ? RECENTS_ORDER.UPDATED : RECENTS_ORDER.OPENED
+    activeIndex.value = 0
+
+    const key = toValue(orderStorageKey)
+    if (key) {
+      storage.set(key, order.value)
+    }
+
+    if ((query.value ?? '').trim().length < MIN_SEARCH_QUERY_LENGTH) {
+      loadRecents()
+    }
+  }
+
+  function readStoredOrder() {
+    const key = toValue(orderStorageKey)
+
+    return key && storage.get(key) === RECENTS_ORDER.OPENED
+      ? RECENTS_ORDER.OPENED
+      : RECENTS_ORDER.UPDATED
+  }
+
   function moveActive(step) {
     activeIndex.value = moveActiveIndex(flatResults.value.length, activeIndex.value, step)
   }
@@ -178,7 +243,10 @@ export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
     }
   }
 
-  /** Called by both dialogs when they open, which is when the recents are wanted. */
+  /**
+   * Called by both dialogs when they open, which is when the recents are wanted. The order is read
+   * back rather than reset: it is the member's standing choice, not part of one search.
+   */
   function reset() {
     query.value = ''
     results.value = []
@@ -187,6 +255,7 @@ export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
     isSearching.value = false
     activeIndex.value = 0
     selectedType.value = null
+    order.value = readStoredOrder()
     recents.value = []
     requestId += 1
     loadRecents()
@@ -201,12 +270,14 @@ export function useBandSpaceSearch(bandSpaceId, listboxId = '') {
     isLoadingRecents,
     isSearching,
     moveActive,
+    order,
     query,
     recents,
     reset,
     searchError,
     selectedType,
     setActiveResult,
+    toggleOrder,
     toggleType
   }
 }

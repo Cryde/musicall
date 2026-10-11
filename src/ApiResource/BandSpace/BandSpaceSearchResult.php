@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Enum\BandSpace\BandSpaceRecentsOrder;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\State\Provider\BandSpace\BandSpaceSearchProvider;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -31,6 +32,10 @@ use Symfony\Component\Validator\Constraints as Assert;
                 // recently created or edited items.
                 'type' => new QueryParameter(key: 'type', constraints: [
                     new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'Type de résultat inconnu'),
+                ]),
+                // Without a query only (#1047): the band's latest changes, or what the caller opened last.
+                'order' => new QueryParameter(key: 'order', constraints: [
+                    new Assert\Choice(callback: [BandSpaceRecentsOrder::class, 'values'], message: 'Ordre inconnu'),
                 ]),
             ],
         ),

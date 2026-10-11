@@ -44,6 +44,7 @@ class BandSpaceWriteGuardCoverageTest extends TestCase
             . 'to tidy up the pending invitations of a condemned space.',
         'ChatPresenceProcessor.php' => 'Having the chat open is reading it, which stays open for the whole grace period. It writes a cache entry about the member, never the space\'s content (#1040).',
         'ChatPresenceLeaveProcessor.php' => 'The other half of the presence heartbeat: takes the member\'s own cache entry away, nothing of the space (#1040).',
+        'BandSpaceOpenedItemRecordProcessor.php' => 'Records an item in the member\'s own « Ouverts par moi » history, never the space\'s content. The grace period is when members open things to retrieve them, so a 409 on every open would be noise (#1047).',
         'ChatReadProcessor.php' => 'Moves the member\'s own read position, not the space\'s content. Reads stay open for the whole grace period, so being unable to clear your own badge would be the odd behaviour.',
         'BandSpaceMemberUpdateRoleProcessor.php' => 'Leaving requires promoting a successor first, so guarding '
             . 'this would trap the sole admin of a condemned space. Letting them leave without a successor is '

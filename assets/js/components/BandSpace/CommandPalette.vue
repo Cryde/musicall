@@ -42,6 +42,7 @@
         :recents="recents"
         :is-loading-recents="isLoadingRecents"
         :selected-type="selectedType"
+        :order="order"
         :active-result="activeResult"
         :query="query"
         :is-searching="isSearching"
@@ -52,6 +53,7 @@
         @select="openResult"
         @activate="setActiveResult"
         @toggle-type="toggleType"
+        @toggle-order="toggleOrder"
       />
     </div>
 
@@ -84,7 +86,12 @@ import InputText from 'primevue/inputtext'
 import { computed, useId } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
-import { useBandSpaceSearch } from '../../composables/useBandSpaceSearch.js'
+import {
+  RECENTS_ORDER,
+  recentsOrderStorageKey,
+  useBandSpaceSearch
+} from '../../composables/useBandSpaceSearch.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import { routeForResult } from '../../utils/bandSpaceSearch.js'
 import BandSpaceSearchResults from './BandSpaceSearchResults.vue'
 
@@ -102,6 +109,7 @@ const { currentSpaceId } = useBandSpaceNavigation()
 // Per instance, because the palette and the attachment picker each own a listbox and two elements
 // cannot share a DOM id.
 const listboxId = useId()
+const userSecurityStore = useUserSecurityStore()
 
 const {
   activeOptionId,
@@ -112,14 +120,18 @@ const {
   isLoadingRecents,
   isSearching,
   moveActive,
+  order,
   query,
   recents,
   reset,
   searchError,
   selectedType,
   setActiveResult,
+  toggleOrder,
   toggleType
-} = useBandSpaceSearch(currentSpaceId, listboxId)
+} = useBandSpaceSearch(currentSpaceId, listboxId, {
+  orderStorageKey: () => recentsOrderStorageKey(userSecurityStore.user?.username)
+})
 
 const resultCountLabel = computed(() => {
   // The recents have a count of their own wording (#1046), and the same announcement as the hits.
@@ -127,6 +139,13 @@ const resultCountLabel = computed(() => {
     const count = recents.value.length
     if (isLoadingRecents.value || count === 0) {
       return ''
+    }
+
+    // Worded by order too, so switching it changes the text and the live region announces the swap.
+    if (order.value === RECENTS_ORDER.OPENED) {
+      return count === 1
+        ? "1 élément, derniers ouverts d'abord"
+        : `${count} éléments, derniers ouverts d'abord`
     }
 
     return count === 1 ? '1 élément récent' : `${count} éléments récents`

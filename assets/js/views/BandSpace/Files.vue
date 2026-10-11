@@ -298,6 +298,7 @@ import {
 } from '../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 import { listedFolderOfRows } from '../../utils/fileListing.js'
+import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -524,9 +525,15 @@ watch(
   () => route.query.file,
   (fileId) => {
     if (fileId && bandSpaceId.value) {
+      const spaceId = bandSpaceId.value
       filesStore.setActiveFile(fileId)
-      filesStore.fetchFileById(bandSpaceId.value, fileId)
-      filesStore.fetchFileActivities(bandSpaceId.value, fileId)
+      filesStore.fetchFileById(spaceId, fileId).then(() => {
+        // Once it has loaded, so a file deleted since is not recorded (#1047).
+        if (filesStore.activeFileId === fileId && !filesStore.activeFileError) {
+          recordOpenedItem(spaceId, 'file', fileId)
+        }
+      })
+      filesStore.fetchFileActivities(spaceId, fileId)
       detailVisible.value = true
     } else {
       filesStore.setActiveFile(null)

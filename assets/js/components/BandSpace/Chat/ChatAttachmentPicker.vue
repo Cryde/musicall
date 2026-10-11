@@ -44,6 +44,7 @@
         :recents="recents"
         :is-loading-recents="isLoadingRecents"
         :selected-type="selectedType"
+        :order="order"
         :active-result="activeResult"
         :query="query"
         :is-searching="isSearching"
@@ -57,6 +58,7 @@
         @select="pick"
         @activate="setActiveResult"
         @toggle-type="toggleType"
+        @toggle-order="toggleOrder"
       />
     </div>
 
@@ -79,7 +81,11 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import { computed, nextTick, ref, useId } from 'vue'
-import { useBandSpaceSearch } from '../../../composables/useBandSpaceSearch.js'
+import {
+  recentsOrderStorageKey,
+  useBandSpaceSearch
+} from '../../../composables/useBandSpaceSearch.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { FULL_DRAFT_MESSAGE, MAX_CHAT_ATTACHMENTS } from '../../../utils/chatAttachmentDraft.js'
 import BandSpaceSearchResults from '../BandSpaceSearchResults.vue'
 
@@ -106,6 +112,7 @@ const searchInput = ref(null)
 // Per instance, because the palette and this picker each own a listbox and two elements cannot
 // share a DOM id.
 const listboxId = useId()
+const userSecurityStore = useUserSecurityStore()
 
 const {
   activeOptionId,
@@ -116,14 +123,18 @@ const {
   isLoadingRecents,
   isSearching,
   moveActive,
+  order,
   query,
   recents,
   reset,
   searchError,
   selectedType,
   setActiveResult,
+  toggleOrder,
   toggleType
-} = useBandSpaceSearch(() => props.bandSpaceId, listboxId)
+} = useBandSpaceSearch(() => props.bandSpaceId, listboxId, {
+  orderStorageKey: () => recentsOrderStorageKey(userSecurityStore.user?.username)
+})
 
 const isFull = computed(() => props.pickedIds.length >= MAX_CHAT_ATTACHMENTS)
 

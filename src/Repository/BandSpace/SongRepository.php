@@ -5,6 +5,7 @@ namespace App\Repository\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Song;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -89,15 +90,38 @@ class SongRepository extends ServiceEntityRepository
      */
     public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
     {
-        return $this->createQueryBuilder('s')
+        return $this->createPaletteQueryBuilder($bandSpace)
             ->addSelect('COALESCE(s.updateDatetime, s.creationDatetime) AS HIDDEN recency')
-            ->where('s.bandSpace = :bandSpace')
-            ->andWhere('s.archiveDatetime IS NULL')
-            ->setParameter('bandSpace', $bandSpace)
             ->orderBy('recency', 'DESC')
             ->addOrderBy('s.id', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * The items of a member's « Ouverts par moi » history the palette may still list (#1047), in no
+     * particular order: the history gives it.
+     *
+     * @param string[] $ids
+     *
+     * @return Song[]
+     */
+    public function findOpenedByIds(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createPaletteQueryBuilder($bandSpace)
+            ->andWhere('s.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** What the palette may list with nothing typed, recents and opened items alike: the rule lives here once. */
+    private function createPaletteQueryBuilder(BandSpace $bandSpace): QueryBuilder
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.bandSpace = :bandSpace')
+            ->andWhere('s.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace);
     }
 }

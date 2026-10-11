@@ -92,6 +92,7 @@ import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
 import NoteTree from '../../components/BandSpace/Notes/NoteTree.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNotesStore } from '../../store/bandSpace/bandSpaceNotes.js'
+import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -168,7 +169,12 @@ function openNote(noteId) {
 
   if (!notesStore.confirmDiscardingEdits()) return false
 
-  notesStore.selectNote(bandSpaceId, noteId)
+  notesStore.selectNote(bandSpaceId, noteId).then(() => {
+    // Once it has loaded, so a note deleted since is not recorded, and not if another took its place (#1047).
+    if (notesStore.selectedNoteId === noteId && notesStore.selectedNote) {
+      recordOpenedItem(bandSpaceId, 'note', noteId)
+    }
+  })
 
   return true
 }

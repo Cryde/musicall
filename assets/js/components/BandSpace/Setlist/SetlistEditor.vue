@@ -333,6 +333,7 @@ import { useRouter } from 'vue-router'
 import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
 import {
   COLUMNS,
@@ -404,7 +405,12 @@ watch(
   (id) => {
     insertPosition.value = null
     if (id) {
-      setlistsStore.fetchActive(props.bandSpaceId, id)
+      setlistsStore.fetchActive(props.bandSpaceId, id).then(() => {
+        // Once it has loaded, and only if it is still the one shown (#1047).
+        if (props.setlistId === id && setlistsStore.activeSetlist?.id === id) {
+          recordOpenedItem(props.bandSpaceId, 'setlist', id)
+        }
+      })
     }
   },
   { immediate: true }

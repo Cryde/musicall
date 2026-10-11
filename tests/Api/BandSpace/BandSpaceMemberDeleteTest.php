@@ -8,12 +8,14 @@ use App\Enum\BandSpace\Role;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\BandSpace\BandSpaceOpenedItemRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\BandSpaceOpenedItemFactory;
 use App\Tests\Factory\BandSpace\TaskCommentFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -56,6 +58,30 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
             $activities[0]->payload,
         );
         $this->assertSame($admin->id, $activities[0]->actor?->id);
+    }
+
+    /** The membership row survives the kick, so its cascade never fires: the kick deletes the history itself. */
+    public function test_kick_deletes_the_members_opened_items(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'member_user', 'email' => 'member@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        $adminMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $memberMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+        BandSpaceOpenedItemFactory::new(['membership' => $memberMembership])->many(2)->create();
+        BandSpaceOpenedItemFactory::new(['membership' => $adminMembership])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $openedItemRepository = self::getContainer()->get(BandSpaceOpenedItemRepository::class);
+        $this->assertCount(0, $openedItemRepository->findBy(['membership' => $memberMembership->id]));
+        $this->assertCount(1, $openedItemRepository->findBy(['membership' => $adminMembership->id]));
     }
 
     public function test_kick_revokes_the_member_task_assignments(): void
