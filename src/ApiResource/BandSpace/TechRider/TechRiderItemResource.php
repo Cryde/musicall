@@ -86,6 +86,8 @@ class TechRiderItemResource
     #[Groups([self::READ])]
     public string $riderId;
 
+    /** Read only: the content validator trusts it to tell prose from a contacts item's choices. */
+    #[ApiProperty(writable: false)]
     #[Groups([self::READ])]
     public string $type = 'text';
 

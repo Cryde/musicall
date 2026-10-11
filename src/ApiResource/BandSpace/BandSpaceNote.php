@@ -14,6 +14,7 @@ use App\State\Processor\BandSpace\BandSpaceNoteDeleteProcessor;
 use App\State\Processor\BandSpace\BandSpaceNoteUpdateProcessor;
 use App\State\Provider\BandSpace\BandSpaceNoteCollectionProvider;
 use App\State\Provider\BandSpace\BandSpaceNoteItemProvider;
+use App\Validator\BandSpace\NoteContent;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
@@ -89,6 +90,7 @@ class BandSpaceNote
     #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
     public int $position;
     /** @var array<string, mixed>|null */
+    #[NoteContent]
     public ?array $content = null;
 
     /** The revision of the body this payload carries. The server owns it, a caller cannot set it. */

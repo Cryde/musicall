@@ -3,49 +3,25 @@
 namespace App\Service\BandSpace\TechRider;
 
 use App\Enum\BandSpace\TechRiderColour;
+use App\Service\BandSpace\RichText\TipTapVocabulary;
 
 /**
  * Turns a stored TipTap document into HTML for the PDF export.
  *
- * This is the security boundary as much as the renderer, because nothing else is one. A rider's text
- * is stored exactly as the browser sent it: TechRiderItemContentValidator checks only that the value
- * is an array within a depth and a byte budget, and no HtmlSanitizer is wired anywhere in the rider
- * module. The colour allowlist that keeps pasted CSS out of a document lives in the editor, in
- * JavaScript, which a crafted PATCH simply skips.
+ * This is the security boundary as much as the renderer. TechRiderItemContentValidator checks a
+ * rider text's vocabulary on write (#1012) but not its link targets, and no HtmlSanitizer is wired
+ * anywhere in the rider module.
  *
  * So this works by allowlist rather than by sanitising: it walks the tree and emits only the node
  * types, marks and attribute values it recognises, escaping every piece of text. Anything unknown is
  * dropped rather than cleaned, which means an attribute nobody thought about cannot reach the output
  * by default. That is the opposite bias to a denylist and the reason no sanitiser is needed.
  *
- * The vocabulary is whatever the editor can actually produce, read off the installed packages rather
- * than guessed: StarterKit 3.29 with headings limited to h2 and h3, and note that it bundles link and
- * underline, which the editor's own extension list does not mention. Plus TextAlign on headings and
- * paragraphs, tables whose rows hold only cells, and the TextStyle colour mark the rider adds.
+ * The nodes, heading levels and alignments come from TipTapVocabulary, the format the API validates
+ * on write (#1012). Images are dropped: a rider's text has never been able to hold one.
  */
 readonly class TipTapHtmlRenderer
 {
-    /** Everything else is dropped, including images: a rider's text has never been able to hold one. */
-    private const array BLOCK_NODES = [
-        'paragraph',
-        'heading',
-        'bulletList',
-        'orderedList',
-        'listItem',
-        'blockquote',
-        'codeBlock',
-        'horizontalRule',
-        'hardBreak',
-        'table',
-        'tableRow',
-        'tableCell',
-    ];
-
-    /** The editor is configured for h2 and h3 only, so anything else falls back to the smaller one. */
-    private const array HEADING_LEVELS = [2, 3];
-
-    private const array TEXT_ALIGNMENTS = ['left', 'center', 'right', 'justify'];
-
     /** More columns than this in a rider table is a broken document, not a wide one. */
     private const int MAX_CELL_SPAN = 64;
 
@@ -98,7 +74,7 @@ readonly class TipTapHtmlRenderer
             return $this->renderText($node);
         }
 
-        if (!in_array($type, self::BLOCK_NODES, true)) {
+        if (!in_array($type, TipTapVocabulary::NODES, true)) {
             return '';
         }
 
@@ -244,13 +220,11 @@ readonly class TipTapHtmlRenderer
             return null;
         }
 
-        foreach (TechRiderColour::cases() as $case) {
-            if (strcasecmp($case->hex(), trim($colour)) === 0) {
-                return [sprintf('<span style="color:%s">', $case->hex()), '</span>'];
-            }
-        }
+        $paletteColour = TechRiderColour::fromHex($colour);
 
-        return null;
+        return $paletteColour instanceof TechRiderColour
+            ? [sprintf('<span style="color:%s">', $paletteColour->hex()), '</span>']
+            : null;
     }
 
     /** @param array<array-key, mixed> $node */
@@ -258,7 +232,7 @@ readonly class TipTapHtmlRenderer
     {
         $level = $node['attrs']['level'] ?? null;
 
-        return in_array($level, self::HEADING_LEVELS, true) ? 'h' . $level : 'h3';
+        return in_array($level, TipTapVocabulary::HEADING_LEVELS, true) ? 'h' . $level : 'h3';
     }
 
     /** @param array<array-key, mixed> $node */
@@ -266,7 +240,7 @@ readonly class TipTapHtmlRenderer
     {
         $alignment = $node['attrs']['textAlign'] ?? null;
 
-        return is_string($alignment) && in_array($alignment, self::TEXT_ALIGNMENTS, true)
+        return is_string($alignment) && in_array($alignment, TipTapVocabulary::TEXT_ALIGNMENTS, true)
             ? 'text-align:' . $alignment
             : '';
     }
