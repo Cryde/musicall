@@ -2,6 +2,7 @@
 
 namespace App\Tests\Unit\Service\BandSpace\RichText;
 
+use App\Enum\BandSpace\RichTextSurface;
 use App\Service\BandSpace\RichText\TipTapDocumentChecker;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -61,16 +62,58 @@ class TipTapDocumentCheckerTest extends TestCase
         );
     }
 
+    /** What only the note editor adds (#1175): a level 1 heading and a checklist, which nests. */
+    private static function headingAndChecklist(): array
+    {
+        return self::doc(
+            ['type' => 'heading', 'attrs' => ['textAlign' => null, 'level' => 1], 'content' => [self::text('Concert')]],
+            ['type' => 'taskList', 'content' => [
+                ['type' => 'taskItem', 'attrs' => ['checked' => true], 'content' => [
+                    self::paragraph(self::text('Câbles')),
+                    ['type' => 'taskList', 'content' => [
+                        ['type' => 'taskItem', 'attrs' => ['checked' => false], 'content' => [self::paragraph(self::text('XLR'))]],
+                    ]],
+                ]],
+            ]],
+        );
+    }
+
     public function test_everything_the_editor_writes_is_in_the_format(): void
     {
-        $this->assertNull($this->checker->findProblem(self::everythingTheEditorWrites(), allowsImages: false, allowsColour: false));
-        $this->assertNull($this->checker->findProblem(self::everythingTheEditorWrites(), allowsImages: true, allowsColour: true));
+        $this->assertNull($this->checker->findProblem(self::everythingTheEditorWrites(), RichTextSurface::Note));
+        $this->assertNull($this->checker->findProblem(self::everythingTheEditorWrites(), RichTextSurface::TechRider));
+    }
+
+    public function test_a_level_one_heading_and_a_checklist_are_in_a_note(): void
+    {
+        $this->assertNull($this->checker->findProblem(self::headingAndChecklist(), RichTextSurface::Note));
+    }
+
+    public function test_a_checklist_item_without_its_ticked_state_is_in_a_note(): void
+    {
+        $document = self::doc(['type' => 'taskList', 'content' => [['type' => 'taskItem', 'content' => [self::paragraph(self::text('Câbles'))]]]]);
+
+        $this->assertNull($this->checker->findProblem($document, RichTextSurface::Note));
+    }
+
+    public function test_a_level_one_heading_is_refused_in_a_rider_text(): void
+    {
+        $document = self::doc(['type' => 'heading', 'attrs' => ['level' => 1], 'content' => [self::text('Son')]]);
+
+        $this->assertSame('Les titres doivent être de niveau 2 ou 3', $this->checker->findProblem($document, RichTextSurface::TechRider));
+    }
+
+    public function test_a_checklist_is_refused_in_a_rider_text(): void
+    {
+        $document = self::doc(['type' => 'taskList', 'content' => [['type' => 'taskItem', 'attrs' => ['checked' => false]]]]);
+
+        $this->assertSame('Le contenu contient un élément non pris en charge (« taskList »)', $this->checker->findProblem($document, RichTextSurface::TechRider));
     }
 
     public function test_an_empty_document_is_in_the_format(): void
     {
-        $this->assertNull($this->checker->findProblem(['type' => 'doc'], false, false));
-        $this->assertNull($this->checker->findProblem(self::doc(), false, false));
+        $this->assertNull($this->checker->findProblem(['type' => 'doc'], RichTextSurface::TechRider));
+        $this->assertNull($this->checker->findProblem(self::doc(), RichTextSurface::TechRider));
     }
 
     public function test_a_deeply_nested_document_is_walked_without_recursing(): void
@@ -80,13 +123,13 @@ class TipTapDocumentCheckerTest extends TestCase
             $node = ['type' => 'blockquote', 'content' => [$node]];
         }
 
-        $this->assertNull($this->checker->findProblem(self::doc($node), false, false));
+        $this->assertNull($this->checker->findProblem(self::doc($node), RichTextSurface::Note));
     }
 
     #[DataProvider('outOfFormatProvider')]
     public function test_a_document_out_of_the_format_is_refused(array $document, string $expected): void
     {
-        $this->assertSame($expected, $this->checker->findProblem($document, allowsImages: true, allowsColour: false));
+        $this->assertSame($expected, $this->checker->findProblem($document, RichTextSurface::Note));
     }
 
     /**
@@ -109,9 +152,11 @@ class TipTapDocumentCheckerTest extends TestCase
 
         // Standard TipTap that this editor is configured not to produce.
         yield 'a table header' => [self::doc(['type' => 'table', 'content' => [['type' => 'tableRow', 'content' => [['type' => 'tableHeader']]]]]), 'Le contenu contient un élément non pris en charge (« tableHeader »)'];
-        yield 'a level 1 heading' => [self::doc(['type' => 'heading', 'attrs' => ['level' => 1]]), 'Les titres doivent être de niveau 2 ou 3'];
-        yield 'a heading level as a string' => [self::doc(['type' => 'heading', 'attrs' => ['level' => '2']]), 'Les titres doivent être de niveau 2 ou 3'];
-        yield 'a heading with no level' => [self::doc(['type' => 'heading']), 'Les titres doivent être de niveau 2 ou 3'];
+        yield 'a level 4 heading' => [self::doc(['type' => 'heading', 'attrs' => ['level' => 4]]), 'Les titres doivent être de niveau 1, 2 ou 3'];
+        yield 'a heading level as a string' => [self::doc(['type' => 'heading', 'attrs' => ['level' => '2']]), 'Les titres doivent être de niveau 1, 2 ou 3'];
+        yield 'a heading with no level' => [self::doc(['type' => 'heading']), 'Les titres doivent être de niveau 1, 2 ou 3'];
+        yield 'a ticked state as a string' => [self::doc(['type' => 'taskList', 'content' => [['type' => 'taskItem', 'attrs' => ['checked' => 'yes']]]]), 'Le contenu contient une case à cocher invalide'];
+        yield 'a null ticked state' => [self::doc(['type' => 'taskList', 'content' => [['type' => 'taskItem', 'attrs' => ['checked' => null]]]]), 'Le contenu contient une case à cocher invalide'];
         yield 'an unknown alignment' => [self::doc(['type' => 'paragraph', 'attrs' => ['textAlign' => 'start']]), 'Le contenu contient un alignement non pris en charge'];
         yield 'an alignment on a list item' => [self::doc(['type' => 'bulletList', 'content' => [['type' => 'listItem', 'attrs' => ['textAlign' => 'center']]]]), 'Le contenu contient un alignement non pris en charge'];
         yield 'attributes that are not an object' => [self::doc(['type' => 'paragraph', 'attrs' => 'x']), 'Le contenu n\'est pas un document valide'];
@@ -134,14 +179,14 @@ class TipTapDocumentCheckerTest extends TestCase
             self::paragraph(self::text('appeler', ['type' => 'link', 'attrs' => ['href' => 'tel:+33612345678']])),
         );
 
-        $this->assertNull($this->checker->findProblem($document, allowsImages: true, allowsColour: false));
+        $this->assertNull($this->checker->findProblem($document, RichTextSurface::Note));
     }
 
     public function test_an_image_is_refused_where_images_are(): void
     {
         $image = ['type' => 'image', 'attrs' => ['src' => 'https://images.example/affiche.jpg']];
 
-        $this->assertSame('Le contenu contient un élément non pris en charge (« image »)', $this->checker->findProblem(self::doc($image), allowsImages: false, allowsColour: false));
+        $this->assertSame('Le contenu contient un élément non pris en charge (« image »)', $this->checker->findProblem(self::doc($image), RichTextSurface::TechRider));
     }
 
     /** Empty is what a pasted `<span style="font-weight:400">` becomes: a span styled without a colour. */
@@ -150,7 +195,7 @@ class TipTapDocumentCheckerTest extends TestCase
         foreach (['#dc2626', '#DC2626', null, ''] as $colour) {
             $document = self::doc(self::paragraph(self::text('x', ['type' => 'textStyle', 'attrs' => ['color' => $colour]])));
 
-            $this->assertNull($this->checker->findProblem($document, allowsImages: false, allowsColour: true), (string) $colour);
+            $this->assertNull($this->checker->findProblem($document, RichTextSurface::TechRider), (string) $colour);
         }
     }
 
@@ -158,6 +203,6 @@ class TipTapDocumentCheckerTest extends TestCase
     {
         $document = self::doc(self::paragraph(self::text('x', ['type' => 'textStyle', 'attrs' => ['color' => '#123456']])));
 
-        $this->assertSame('Le contenu contient une couleur hors de la palette', $this->checker->findProblem($document, allowsImages: false, allowsColour: true));
+        $this->assertSame('Le contenu contient une couleur hors de la palette', $this->checker->findProblem($document, RichTextSurface::TechRider));
     }
 }

@@ -232,7 +232,7 @@ readonly class TipTapHtmlRenderer
     {
         $level = $node['attrs']['level'] ?? null;
 
-        return in_array($level, TipTapVocabulary::HEADING_LEVELS, true) ? 'h' . $level : 'h3';
+        return in_array($level, TipTapVocabulary::RIDER_HEADING_LEVELS, true) ? 'h' . $level : 'h3';
     }
 
     /** @param array<array-key, mixed> $node */

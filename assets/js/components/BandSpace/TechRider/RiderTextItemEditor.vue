@@ -76,7 +76,7 @@
         <Button
           v-tooltip.bottom="'Liste numérotée'"
           aria-label="Liste numérotée"
-          icon="pi pi-list-check"
+          icon="pi pi-sort-numeric-down"
           :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
           text
           size="small"

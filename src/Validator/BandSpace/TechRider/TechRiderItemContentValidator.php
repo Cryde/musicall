@@ -4,6 +4,7 @@ namespace App\Validator\BandSpace\TechRider;
 
 use App\ApiResource\BandSpace\TechRider\TechRiderItemCreate;
 use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
+use App\Enum\BandSpace\RichTextSurface;
 use App\Enum\BandSpace\TechRiderItemType;
 use App\Service\BandSpace\RichText\TipTapDocumentChecker;
 use Symfony\Component\Validator\Constraint;
@@ -60,7 +61,7 @@ class TechRiderItemContentValidator extends ConstraintValidator
             return;
         }
 
-        $problem = $this->documentChecker->findProblem($value, allowsImages: false, allowsColour: true);
+        $problem = $this->documentChecker->findProblem($value, RichTextSurface::TechRider);
         if ($problem !== null) {
             $this->context->buildViolation($problem)
                 ->setCode(TechRiderItemContent::ERROR_CODE)

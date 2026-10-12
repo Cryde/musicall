@@ -13,8 +13,9 @@ import { createDebouncedSaver } from '../utils/debouncedSaver.js'
  * sections today.
  *
  * It exists so a fix to the editor is made once. The two consumers differ only in which
- * extensions they add on top (Notes uploads images, rider sections colour text from a fixed
- * palette) and in what they do with a save, so those are the parameters.
+ * extensions they add on top (Notes uploads images and has checklists, rider sections colour
+ * text from a fixed palette), in their heading levels and in what they do with a save, so those
+ * are the parameters.
  *
  * Saving is debounced rather than explicit because this is prose: a save button on a
  * paragraph someone is still writing is friction. The flush on unmount is the important
@@ -32,6 +33,7 @@ import { createDebouncedSaver } from '../utils/debouncedSaver.js'
  * @param {object|string|null} options.content        initial TipTap document
  * @param {string}   options.placeholder
  * @param {Array}    [options.extensions]             consumer specific extensions
+ * @param {number[]} [options.headingLevels]          a rider text stays at h2 and h3, a note adds h1
  * @param {number}   [options.debounceMs]
  * @param {boolean}  [options.editable]
  * @param {function} options.onSave                   receives the document as JSON
@@ -40,6 +42,7 @@ export function useRichTextEditor({
   content,
   placeholder,
   extensions = [],
+  headingLevels = [2, 3],
   debounceMs = 2000,
   editable = true,
   onSave
@@ -62,7 +65,7 @@ export function useRichTextEditor({
     editable,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] }
+        heading: { levels: headingLevels }
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph']

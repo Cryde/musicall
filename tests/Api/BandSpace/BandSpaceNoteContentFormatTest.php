@@ -54,6 +54,53 @@ class BandSpaceNoteContentFormatTest extends ApiTestCase
         $this->assertStoredContent($note->id, self::STORED_CONTENT, 1);
     }
 
+    /** What the phone writes and the web now offers too (#1175). */
+    public function test_a_level_one_heading_and_a_nested_checklist_are_saved(): void
+    {
+        [$user, $bandSpace, $note] = $this->seedNote();
+        $content = ['type' => 'doc', 'content' => [
+            ['type' => 'heading', 'attrs' => ['textAlign' => null, 'level' => 1], 'content' => [['type' => 'text', 'text' => 'Concert']]],
+            ['type' => 'taskList', 'content' => [
+                ['type' => 'taskItem', 'attrs' => ['checked' => true], 'content' => [
+                    ['type' => 'paragraph', 'attrs' => ['textAlign' => null], 'content' => [['type' => 'text', 'text' => 'Câbles']]],
+                    ['type' => 'taskList', 'content' => [
+                        ['type' => 'taskItem', 'attrs' => ['checked' => false], 'content' => [
+                            ['type' => 'paragraph', 'attrs' => ['textAlign' => null], 'content' => [['type' => 'text', 'text' => 'XLR']]],
+                        ]],
+                    ]],
+                ]],
+            ]],
+        ]];
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id, ['content' => $content, 'expected_content_version' => 1], self::PATCH_HEADERS);
+
+        $this->assertResponseIsSuccessful();
+        $refreshed = self::getContainer()->get(BandSpaceNoteRepository::class)->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'Setlist',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => $content,
+            'content_version' => 2,
+            'has_children' => false,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'display_name' => $user->username,
+            ],
+            'emoji' => null,
+            'creation_datetime' => '2026-10-01T10:00:00+00:00',
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+        $this->assertStoredContent($note->id, $content, 2);
+    }
+
     public function test_a_body_too_large_is_refused(): void
     {
         [$user, $bandSpace, $note] = $this->seedNote();

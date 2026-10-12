@@ -7,8 +7,8 @@ namespace App\Service\BandSpace\RichText;
  * `assets/js/composables/useRichTextEditor.js` and the installed TipTap packages (#1012).
  *
  * StarterKit 3 bundles link and underline although the editor's extension list does not mention
- * them. Headings are limited to h2 and h3, and table rows hold only cells, so `tableHeader` is not
- * part of the format even though it is standard TipTap.
+ * them. Table rows hold only cells, so `tableHeader` is not part of the format even though it is
+ * standard TipTap. What each surface adds on top is in RichTextSurface.
  */
 final class TipTapVocabulary
 {
@@ -31,12 +31,18 @@ final class TipTapVocabulary
     /** Notes upload images; a rider text has never been able to hold one. */
     public const string IMAGE_NODE = 'image';
 
+    /** Notes only, as on the phone (#1175): a rider text is sent to a venue as a PDF. */
+    public const array CHECKLIST_NODES = ['taskList', 'taskItem'];
+
     public const array MARKS = ['bold', 'italic', 'strike', 'underline', 'code', 'link'];
 
     /** The rider colours text from its palette, see TechRiderColour. */
     public const string COLOUR_MARK = 'textStyle';
 
-    public const array HEADING_LEVELS = [2, 3];
+    /** A rider text's headings, below the PDF's own section titles. */
+    public const array RIDER_HEADING_LEVELS = [2, 3];
+
+    public const array NOTE_HEADING_LEVELS = [1, 2, 3];
 
     /** TextAlign is configured on these nodes only. */
     public const array ALIGNABLE_NODES = ['heading', 'paragraph'];
