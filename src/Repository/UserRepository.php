@@ -126,9 +126,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Looked up through a QueryBuilder rather than find(), which coerces the id through the uuid
-     * field type and throws on a malformed one. The id arrives as a URI path segment, so nothing has
-     * validated it, and a stray character has to be a 404 rather than a 500 (see #934).
+     * The id arrives as a URI path segment that nothing has validated, so a malformed one is not
+     * found here rather than sent to the database (see #934).
      */
     public function findOneById(string $id): ?User
     {
