@@ -117,9 +117,6 @@ security:
                     # The Mercure 1.0 name (#1153). Secure, or the browser refuses the clearing
                     # cookie: the __Secure- prefix applies to deleting it as much as to setting it.
                     __Secure-mercure_access_token: { path: /.well-known/mercure, secure: true }
-                    # The 0.x name, still in browsers for up to a token's life after the switch.
-                    # Remove once protocol_version_compatibility 8 is gone from the hub.
-                    mercureAuthorization: { path: /.well-known/mercure }
                 clear_site_data:
                     - cookies
                     - storage

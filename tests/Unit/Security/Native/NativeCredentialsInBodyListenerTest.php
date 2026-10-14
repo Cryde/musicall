@@ -44,24 +44,6 @@ class NativeCredentialsInBodyListenerTest extends TestCase
     }
 
     /**
-     * The 0.x subscriber cookie still reaches the app's field while the hub accepts both protocols
-     * (#1153), rather than being dropped as an unknown credential.
-     */
-    public function test_the_legacy_mercure_cookie_still_lands_in_the_body(): void
-    {
-        $response = new Response();
-        $response->headers->setCookie(
-            Cookie::create('mercureAuthorization')->withValue('a-legacy-token')->withPath('/.well-known/mercure')
-        );
-        $event = $this->eventFor($response, ['token' => 'a.jwt.here']);
-
-        $this->listenerOn('/api/native/login_check')($event);
-
-        $this->assertSame(['token' => 'a.jwt.here', 'mercure_authorization' => 'a-legacy-token'], $event->getData());
-        $this->assertSame([], $response->headers->getCookies());
-    }
-
-    /**
      * A cookie this class does not know is still a credential, so it goes. The invariant is "no
      * Set-Cookie on the native surface", and it does not bend for an unfamiliar name. Silence would
      * mean a client quietly missing something it was meant to be given.
