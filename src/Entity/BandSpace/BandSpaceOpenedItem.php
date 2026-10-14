@@ -39,7 +39,7 @@ class BandSpaceOpenedItem
     #[ORM\Column(type: Types::STRING, length: 20, enumType: BandSpaceSearchResultType::class)]
     public BandSpaceSearchResultType $type;
 
-    #[ORM\Column(type: 'uuid')]
+    #[ORM\Column(type: Types::GUID)]
     public string $resourceId;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

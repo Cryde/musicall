@@ -15,7 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use SortDirection;
 
 #[ORM\Entity(repositoryClass: MusicianProfileRepository::class)]
@@ -24,7 +24,7 @@ use SortDirection;
 class MusicianProfile implements ViewableInterface
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     public ?string $id = null;

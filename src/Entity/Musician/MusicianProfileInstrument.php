@@ -9,7 +9,7 @@ use App\Enum\Musician\SkillLevel;
 use App\Repository\Musician\MusicianProfileInstrumentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: MusicianProfileInstrumentRepository::class)]
 #[ORM\Table(name: 'user_musician_profile_instrument')]
@@ -17,7 +17,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 class MusicianProfileInstrument
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     public ?string $id = null;

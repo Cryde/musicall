@@ -11,7 +11,7 @@ use App\Repository\Search\MusicianSearchLogRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 /**
  * One musician search as it was asked (#1075), for the homepage's frequent searches and the admin.
@@ -24,7 +24,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 class MusicianSearchLog
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     public ?string $id = null;
