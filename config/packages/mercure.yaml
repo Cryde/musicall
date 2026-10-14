@@ -34,8 +34,7 @@ mercure:
             # nothing to keep in step, and it is one fewer variable that a deploy can forget.
             public_url: /.well-known/mercure
             # Mercure 1.0 (#1153): `authorization_details` tokens and the `__Secure-mercure_access_token`
-            # cookie. The hub still runs protocol_version_compatibility 8 until the mobile app has moved,
-            # so tokens of either shape are accepted in the meantime.
+            # cookie.
             protocol_version: '1.0'
             jwt:
                 secret: '%env(MERCURE_JWT_SECRET)%'

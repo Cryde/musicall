@@ -40,8 +40,6 @@ final readonly class NativeCredentialsInBodyListener
         'refresh_token' => 'refresh_token',
         // The Mercure 1.0 cookie (#1153). Same body field as before, so the app sees no change.
         '__Secure-mercure_access_token' => 'mercure_authorization',
-        // The 0.x name. Remove once protocol_version_compatibility 8 is gone from the hub.
-        'mercureAuthorization' => 'mercure_authorization',
     ];
 
     public function __construct(
