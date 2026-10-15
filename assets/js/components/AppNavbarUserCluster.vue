@@ -5,7 +5,7 @@
         <RouterLink
           :to="{ name: 'app_messages' }"
           class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-          :aria-label="notificationStore.unreadMessages > 0 ? `Messages (${notificationStore.unreadMessages} non lus)` : 'Messages'"
+          :aria-label="notificationStore.unreadMessages > 0 ? t('user_menu.messages_unread', { count: notificationStore.unreadMessages }) : t('user_menu.messages')"
           @click="emit('navigate')"
         >
           <OverlayBadge
@@ -26,7 +26,7 @@
           v-if="userSecurityStore.isAdmin && notificationStore.newFeedbacks > 0"
           :to="{ name: 'admin_feedbacks_index' }"
           class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-          :aria-label="`Retours utilisateurs (${notificationStore.newFeedbacks} à traiter)`"
+          :aria-label="t('user_menu.feedbacks_pending', { count: notificationStore.newFeedbacks })"
           @click="emit('navigate')"
         >
           <OverlayBadge :value="notificationStore.newFeedbacks" severity="warn" size="small">
@@ -36,11 +36,11 @@
         <Avatar
           v-if="userSecurityStore.profilePictureUrl"
           :image="userSecurityStore.profilePictureUrl"
-          :pt="{ image: { alt: `Photo de ${userSecurityStore.user.username}` } }"
+          :pt="{ image: { alt: t('user_menu.avatar_alt', { username: userSecurityStore.user.username }) } }"
           class="cursor-pointer"
           shape="circle"
           role="button"
-          :aria-label="`Menu utilisateur de ${userSecurityStore.user.username}`"
+          :aria-label="t('user_menu.open', { username: userSecurityStore.user.username })"
           aria-haspopup="menu"
           @click="userMenu?.toggle($event)"
         />
@@ -51,7 +51,7 @@
           class="cursor-pointer"
           shape="circle"
           role="button"
-          :aria-label="`Menu utilisateur de ${userSecurityStore.user.username}`"
+          :aria-label="t('user_menu.open', { username: userSecurityStore.user.username })"
           aria-haspopup="menu"
           @click="userMenu?.toggle($event)"
         />
@@ -59,10 +59,10 @@
       </template>
       <template v-else>
         <Button asChild v-slot="slotProps" severity="info" outlined>
-          <RouterLink :to="{ name: 'app_login' }" :class="slotProps.class" @click="emit('navigate')">Se connecter</RouterLink>
+          <RouterLink :to="{ name: 'app_login' }" :class="slotProps.class" @click="emit('navigate')">{{ t('common.login') }}</RouterLink>
         </Button>
         <Button asChild v-slot="slotProps" severity="primary">
-          <RouterLink :to="{ name: 'app_register' }" :class="slotProps.class" @click="emit('navigate')">S'inscrire</RouterLink>
+          <RouterLink :to="{ name: 'app_register' }" :class="slotProps.class" @click="emit('navigate')">{{ t('common.register') }}</RouterLink>
         </Button>
       </template>
     </div>
@@ -76,6 +76,7 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import OverlayBadge from 'primevue/overlaybadge'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../store/notification/notification.js'
 import { useUserSecurityStore } from '../store/user/security.js'
@@ -87,6 +88,7 @@ const NotificationBell = defineAsyncComponent(() => import('./Notification/Notif
 
 const emit = defineEmits(['navigate'])
 
+const { t } = useI18n()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 const notificationStore = useNotificationStore()
@@ -102,7 +104,7 @@ onMounted(async () => {
 const menuItems = computed(() => {
   const items = [
     {
-      label: 'Mon profil',
+      label: t('user_menu.profile'),
       icon: 'pi pi-user',
       command: () => {
         router.push({
@@ -113,28 +115,28 @@ const menuItems = computed(() => {
     },
     { separator: true },
     {
-      label: 'Mes annonces',
+      label: t('user_menu.announces'),
       icon: 'pi pi-megaphone',
       command: () => router.push({ name: 'app_user_announces' })
     },
     {
-      label: 'Mes publications',
+      label: t('user_menu.publications'),
       icon: 'pi pi-file-edit',
       command: () => router.push({ name: 'app_user_publications' })
     },
     {
-      label: 'Mes cours',
+      label: t('user_menu.courses'),
       icon: 'pi pi-book',
       command: () => router.push({ name: 'app_user_courses' })
     },
     {
-      label: 'Mes photos',
+      label: t('user_menu.photos'),
       icon: 'pi pi-images',
       command: () => router.push({ name: 'app_user_galleries' })
     },
     { separator: true },
     {
-      label: 'Paramètres',
+      label: t('user_menu.settings'),
       icon: 'pi pi-cog',
       command: () => router.push({ name: 'app_user_settings' })
     }
@@ -144,7 +146,7 @@ const menuItems = computed(() => {
     items.push(
       { separator: true },
       {
-        label: 'Administration',
+        label: t('user_menu.admin'),
         icon: 'pi pi-shield',
         command: () => router.push({ name: 'admin_dashboard' })
       }
@@ -154,7 +156,7 @@ const menuItems = computed(() => {
   items.push(
     { separator: true },
     {
-      label: 'Se déconnecter',
+      label: t('user_menu.logout'),
       icon: 'pi pi-sign-out',
       command: () => {
         trackUmamiEvent('user-logout')

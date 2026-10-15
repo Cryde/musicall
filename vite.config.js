@@ -14,6 +14,15 @@ export default defineConfig({
       resolvers: [PrimeVueResolver()]
     })
   ],
+  // vue-i18n's bundler build reads these at runtime unless they are replaced here. Composition API
+  // only, so the legacy API is dropped; the message compiler stays because the JSON catalogue is
+  // compiled in the browser rather than precompiled by @intlify/unplugin-vue-i18n.
+  define: {
+    __VUE_I18N_FULL_INSTALL__: true,
+    __VUE_I18N_LEGACY_API__: false,
+    __INTLIFY_DROP_MESSAGE_COMPILER__: false,
+    __INTLIFY_PROD_DEVTOOLS__: false
+  },
   build: {
     assetsInlineLimit: 0,
     rollupOptions: {

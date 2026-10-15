@@ -1,10 +1,10 @@
 <template>
-    <nav aria-label="Navigation principale" class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
+    <nav :aria-label="t('menu.aria_label')" class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
       <div class="flex items-center gap-4">
-        <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" aria-label="Accueil MusicAll">
+        <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" :aria-label="t('common.musicall_home')">
           <img
             src="../../../image/logo-2.webp"
-            alt="Logo MusicAll"
+            :alt="t('common.musicall_logo')"
             width="106"
             height="16"
             class="h-4 w-auto"
@@ -21,7 +21,7 @@
             hideOnOutsideClick: true
           }"
         class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100 bg-transparent border-0 p-0"
-        aria-label="Ouvrir le menu de navigation"
+        :aria-label="t('common.open_navigation_menu')"
         aria-expanded="false"
         aria-controls="mobile-menu"
       >
@@ -75,7 +75,7 @@
                 :aria-expanded="searchDropdownVisible"
                 @click="toggleSearchDropdown"
               >
-                <span class="font-medium">Recherche</span>
+                <span class="font-medium">{{ t('menu.search') }}</span>
                 <i class="pi pi-chevron-down text-xs transition-transform" :class="{ 'rotate-180': searchDropdownVisible }" aria-hidden="true" />
               </button>
               <div
@@ -90,7 +90,7 @@
                       @click="onSearchItemClick"
                     >
                       <i class="pi pi-users" aria-hidden="true" />
-                      <span class="font-medium">Musiciens</span>
+                      <span class="font-medium">{{ t('menu.search_musicians') }}</span>
                     </RouterLink>
                   </li>
                   <li>
@@ -100,7 +100,7 @@
                       @click="onSearchItemClick"
                     >
                       <i class="pi pi-graduation-cap" aria-hidden="true" />
-                      <span class="font-medium">Professeurs</span>
+                      <span class="font-medium">{{ t('menu.search_teachers') }}</span>
                     </RouterLink>
                   </li>
                 </ul>
@@ -114,10 +114,12 @@
 </template>
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
+const { t } = useI18n()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 
@@ -187,17 +189,17 @@ onUnmounted(() => {
 })
 
 const navs = computed(() => [
-  { label: 'Accueil', to: 'app_home' },
-  { label: 'Publications', to: 'app_publications' },
-  { label: 'Cours', to: 'app_course' },
-  { label: 'Forum', to: 'app_forum_index' },
+  { label: t('menu.home'), to: 'app_home' },
+  { label: t('menu.publications'), to: 'app_publications' },
+  { label: t('menu.courses'), to: 'app_course' },
+  { label: t('menu.forum'), to: 'app_forum_index' },
   // Same entry either way, but a visitor without an account is sold the module rather than sent to
   // a login form. A member goes straight in, and app_band_index handles having no space yet.
   //
   // While the auth check is still in flight isAuthenticated is false for everyone, including a
   // returning member, so waiting on it keeps them from being sent to the pitch for their own module.
   {
-    label: 'Band Space',
+    label: t('menu.band_space'),
     to:
       userSecurityStore.isAuthenticatedLoading || userSecurityStore.isAuthenticated
         ? 'app_band_index'

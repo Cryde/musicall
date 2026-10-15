@@ -1,0 +1,110 @@
+{
+  "common": {
+    "login": "Se connecter",
+    "register": "S'inscrire",
+    "musicall_home": "Accueil MusicAll",
+    "musicall_logo": "Logo MusicAll",
+    "open_navigation_menu": "Ouvrir le menu de navigation"
+  },
+  "skip_link": {
+    "to_content": "Aller au contenu"
+  },
+  "breadcrumb": {
+    "home": "Accueil"
+  },
+  "menu": {
+    "aria_label": "Navigation principale",
+    "home": "Accueil",
+    "publications": "Publications",
+    "courses": "Cours",
+    "forum": "Forum",
+    "band_space": "Band Space",
+    "search": "Recherche",
+    "search_musicians": "Musiciens",
+    "search_teachers": "Professeurs"
+  },
+  "band_menu": {
+    "search_aria_label": "Rechercher dans le Band Space",
+    "search": "Rechercher",
+    "back_to_musicall": "back to musicall"
+  },
+  "user_menu": {
+    "messages": "Messages",
+    "messages_unread": "Messages ({count} non lus)",
+    "feedbacks_pending": "Retours utilisateurs ({count} à traiter)",
+    "avatar_alt": "Photo de {username}",
+    "open": "Menu utilisateur de {username}",
+    "profile": "Mon profil",
+    "announces": "Mes annonces",
+    "publications": "Mes publications",
+    "courses": "Mes cours",
+    "photos": "Mes photos",
+    "settings": "Paramètres",
+    "admin": "Administration",
+    "logout": "Se déconnecter"
+  },
+  "footer": {
+    "tagline": "La plateforme gratuite des musicien·ne·s et des groupes : trouver, organiser, apprendre. Depuis 2008.",
+    "follow_instagram": "Suivre MusicAll sur Instagram",
+    "follow_facebook": "Suivre MusicAll sur Facebook",
+    "contact_form": "Accéder au formulaire de contact",
+    "post_announce": "Poster une annonce",
+    "copyright": "© 2008-{year} MusicAll",
+    "search": {
+      "title": "Recherche",
+      "guitarist": "Un·e guitariste",
+      "drummer": "Un·e batteur·euse",
+      "bassist": "Un·e bassiste",
+      "singer": "Un·e chanteur·euse",
+      "pianist": "Un·e pianiste"
+    },
+    "band_space": {
+      "title": "Band Space",
+      "presentation": "Présentation",
+      "agenda": "Agenda",
+      "setlists": "Setlists",
+      "finances": "Finances du groupe",
+      "create": "Créer un Band Space"
+    },
+    "publications": {
+      "title": "Publications",
+      "news": "News",
+      "reviews": "Chroniques",
+      "interviews": "Interviews",
+      "live_reports": "Live-reports",
+      "articles": "Articles",
+      "photos": "Photos"
+    },
+    "courses": {
+      "title": "Cours",
+      "guitar": "Guitare",
+      "bass": "Basse",
+      "drums": "Batterie",
+      "computer_music": "MAO",
+      "misc": "Divers"
+    },
+    "community": {
+      "title": "Communauté",
+      "forum": "Forum",
+      "contact": "Nous contacter"
+    },
+    "legal": {
+      "privacy": "Confidentialité",
+      "terms": "CGU",
+      "legal_notice": "Mentions légales",
+      "delete_account": "Supprimer mon compte"
+    }
+  },
+  "auth_modal": {
+    "title": "Inscription requise",
+    "see_more": "Inscrivez-vous pour voir tous les résultats et contacter les musiciens",
+    "contact_musician": "Créez votre profil pour contacter {name}",
+    "contact": "Créez votre profil pour contacter ce musicien",
+    "post_announce": "Inscrivez-vous pour poster votre annonce",
+    "default": "Vous devez vous connecter pour effectuer cette action.",
+    "register_with_google": "S'inscrire avec Google",
+    "no_google_account": "Pas de compte Google ?",
+    "register_with_email": "S'inscrire avec un email",
+    "has_account": "Déjà un compte ?"
+  }
+}
