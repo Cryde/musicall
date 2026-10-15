@@ -48,6 +48,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertSame('images/publication/cover/max_res_url_path', $result->cover->imageName);
         $this->assertSame(12345, $result->cover->imageSize);
         $this->assertSame(2, $result->type); // 2 = Publication::TYPE_VIDEO
+        $this->assertNull($result->language);
         $this->assertSame(1, $result->status); // 1 = Publication::STATUS_ONLINE
         $this->assertSame('v-the-video-title', $result->slug);
         $this->assertSame($category->slug, $result->subCategory->slug);
@@ -77,6 +78,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertSame('images/publication/cover/max_res_url_path', $result->cover->imageName);
         $this->assertSame(12345, $result->cover->imageSize);
         $this->assertSame(2, $result->type); // 2 = Publication::TYPE_VIDEO
+        $this->assertNull($result->language);
         $this->assertSame(1, $result->status); // 1 = Publication::STATUS_ONLINE
         $this->assertSame('v-the-video-title', $result->slug);
         $this->assertSame($category->slug, $result->subCategory->slug);

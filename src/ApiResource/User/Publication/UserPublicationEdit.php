@@ -64,6 +64,9 @@ class UserPublicationEdit
 
     public ?string $coverUrl = null;
 
+    #[ApiProperty(writable: false)]
+    public ?string $language = null;
+
     /**
      * null = leave tags untouched. [] = clear all tags. Non-empty array = replace tag set.
      *

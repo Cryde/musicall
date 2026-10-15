@@ -123,6 +123,10 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     public ?int $type = null;
 
+    /** Null on a video: it is shown in every language and never translated. */
+    #[ORM\Column(type: Types::STRING, length: 10, nullable: true)]
+    public ?string $language = null;
+
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     public ?int $oldPublicationId = null;
 
@@ -149,6 +153,16 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
         $this->creationDatetime = new DateTime();
         $this->images = new ArrayCollection();
         $this->tags = new ArrayCollection();
+    }
+
+    /**
+     * Sets the type and its language together, so a text always has one and a video never does.
+     * A text is in its author's language until the editor offers a picker (#1196), so set the author first.
+     */
+    public function assignType(int $type): void
+    {
+        $this->type = $type;
+        $this->language = $type === self::TYPE_VIDEO ? null : $this->author->locale;
     }
 
     #[Groups([Publication::ITEM, Publication::LIST])]

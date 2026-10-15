@@ -76,6 +76,7 @@ readonly class PublicationBuilder
         $publication->category = $this->buildCategory($subCategory);
         $publication->thread = $this->buildThread($thread);
         $publication->type = $this->buildType((int) $publicationEntity->type);
+        $publication->language = $publicationEntity->language;
         $publication->tags = $this->buildTags($publicationEntity);
         $publication->viewCount = $publicationEntity->viewCache->count ?? 0;
         $publication->readingTime = $publicationEntity->type === PublicationEntity::TYPE_TEXT

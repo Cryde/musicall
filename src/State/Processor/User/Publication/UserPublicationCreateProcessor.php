@@ -46,7 +46,7 @@ class UserPublicationCreateProcessor implements ProcessorInterface
         $publication->author = $user;
         $publication->slug = $this->publicationSlug->create($data->title) . '-' . $publication->id;
         $publication->status = Publication::STATUS_DRAFT;
-        $publication->type = Publication::TYPE_TEXT;
+        $publication->assignType(Publication::TYPE_TEXT);
 
         $this->entityManager->persist($publication);
         $this->entityManager->flush();

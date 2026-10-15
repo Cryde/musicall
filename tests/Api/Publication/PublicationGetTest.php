@@ -83,11 +83,79 @@ class PublicationGetTest extends ApiTestCase
                 'id'       => 1,
                 'label'    => 'text',
             ],
+            'language'             => 'fr',
             'upvotes'              => 0,
             'downvotes'            => 0,
             'user_vote'            => null,
             'view_count'           => 124,
             'reading_time'         => 1,
+            'tags'                 => [],
+        ]);
+    }
+
+    public function test_get_item_video_has_no_language(): void
+    {
+        $sub = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $cover = PublicationCoverFactory::new(['imageName' => 'video.jpg'])->create();
+        $thread = CommentThreadFactory::new()->create();
+        $publication = PublicationFactory::new([
+            'author'              => $author,
+            'content'             => 'video_id',
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2022-01-02T02:03:04+00:00'),
+            'shortDescription'    => 'Description de la video',
+            'slug'                => 'titre-de-la-video',
+            'status'              => Publication::STATUS_ONLINE,
+            'subCategory'         => $sub,
+            'title'               => 'Titre de la video',
+            'type'                => Publication::TYPE_VIDEO,
+            'cover'               => $cover,
+            'thread'              => $thread,
+        ])->create();
+        $this->client->request('GET', '/api/publications/titre-de-la-video');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications/titre-de-la-video',
+            '@type' => 'Publication',
+            'id'                   => $publication->id,
+            'title'                => 'Titre de la video',
+            'author'               => [
+                '@type'    => 'Author',
+                'username' => 'user_admin',
+                'display_name' => 'user_admin',
+                'deletion_datetime' => null,
+            ],
+            'slug'                 => 'titre-de-la-video',
+            'content'              => 'video_id',
+            'publication_datetime' => '2022-01-02T02:03:04+00:00',
+            'category'             => [
+                '@type'    => 'Category',
+                'id'       => $sub->id,
+                'title'    => 'Découvertes',
+                'slug'     => 'decouvertes',
+                'is_course' => false,
+            ],
+            'description'          => '',
+            'cover'                => [
+                '@type'     => 'Cover',
+                'cover_url' => 'http://musicall.test/media/cache/resolve/publication_cover_300x300/images/publication/cover/video.jpg',
+            ],
+            'thread'               => [
+                '@type'    => 'Thread',
+                'id'       => $thread->id,
+            ],
+            'type'                 => [
+                '@type'    => 'Type',
+                'id'       => 2,
+                'label'    => 'video',
+            ],
+            'language'             => null,
+            'upvotes'              => 0,
+            'downvotes'            => 0,
+            'user_vote'            => null,
+            'view_count'           => 1,
+            'reading_time'         => 0,
             'tags'                 => [],
         ]);
     }

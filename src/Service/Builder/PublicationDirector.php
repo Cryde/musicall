@@ -32,12 +32,12 @@ class PublicationDirector
 
         $publication = new Publication();
         $publication->title = $addVideo->title;
-        $publication->type = Publication::TYPE_VIDEO;
         $publication->status = Publication::STATUS_ONLINE;
         $publication->shortDescription = $addVideo->description;
         $publication->content = $this->youtubeUrlHelper->getVideoId($addVideo->url);
         $publication->subCategory = $category;
         $publication->author = $user;
+        $publication->assignType(Publication::TYPE_VIDEO);
         $publication->publicationDatetime = new \DateTime();
         $publication->slug = $this->publicationSlug->create('v-' . $addVideo->title);
 
