@@ -34,6 +34,16 @@ final class PublicationFactory extends PersistentObjectFactory
         ];
     }
 
+    protected function initialize(): static
+    {
+        // Gives the language the creation paths would, unless the caller pins one.
+        return $this->afterInstantiate(static function (Publication $publication, array $parameters): void {
+            if (!array_key_exists('language', $parameters) && $publication->type !== null) {
+                $publication->assignType($publication->type);
+            }
+        });
+    }
+
     public function asBaseTextPublicationOnline(): static
     {
         $title = self::faker()->sentence();

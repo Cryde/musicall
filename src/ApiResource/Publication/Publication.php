@@ -58,6 +58,8 @@ class Publication
     public Thread $thread;
     #[ApiProperty(genId: false)]
     public Type $type;
+    /** Null on a video, which is shown in every language. */
+    public ?string $language = null;
     public int $upvotes = 0;
     public int $downvotes = 0;
     public ?int $userVote = null;

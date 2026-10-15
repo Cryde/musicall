@@ -62,6 +62,7 @@ class PublicationTagTest extends ApiTestCase
                 'slug' => 'news',
             ],
             'tags' => ['Interview', 'Metal', 'Review'],
+            'language' => 'fr',
         ]);
     }
 
@@ -110,6 +111,7 @@ class PublicationTagTest extends ApiTestCase
                 'slug' => 'news',
             ],
             'tags' => ['A', 'B', 'C'],
+            'language' => 'fr',
         ]);
     }
 
@@ -158,6 +160,7 @@ class PublicationTagTest extends ApiTestCase
                 'slug' => 'news',
             ],
             'tags' => [],
+            'language' => 'fr',
         ]);
     }
 
@@ -206,6 +209,7 @@ class PublicationTagTest extends ApiTestCase
                 'slug' => 'news',
             ],
             'tags' => ['B'],
+            'language' => 'fr',
         ]);
     }
 

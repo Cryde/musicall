@@ -63,6 +63,7 @@ class UserPublicationEditTest extends ApiTestCase
         $this->assertSame('Brouillon', $response['status_label']);
         $this->assertSame($category->id, $response['category']['id']);
         $this->assertSame('News', $response['category']['title']);
+        $this->assertSame('fr', $response['language']);
     }
 
     public function test_get_edit_not_owner(): void
@@ -154,6 +155,50 @@ class UserPublicationEditTest extends ApiTestCase
         $this->assertSame('Updated desc', $response['short_description']);
         $this->assertSame('<p>Updated content</p>', $response['content']);
         $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
+    }
+
+    public function test_patch_cannot_change_language(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $category = PublicationSubCategoryFactory::new()->asNews()->create();
+        $publication = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'title' => 'Mon article',
+            'slug' => 'mon-article',
+            'shortDescription' => 'Une description',
+            'content' => 'Le contenu',
+            'status' => Publication::STATUS_DRAFT,
+            'type' => Publication::TYPE_TEXT,
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
+            'CONTENT_TYPE' => 'application/merge-patch+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ], json_encode(['language' => 'en']));
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserPublicationEdit',
+            '@id' => '/api/user/publications/' . $publication->id,
+            '@type' => 'UserPublicationEdit',
+            'id' => $publication->id,
+            'title' => 'Mon article',
+            'slug' => 'mon-article',
+            'short_description' => 'Une description',
+            'content' => 'Le contenu',
+            'status_id' => Publication::STATUS_DRAFT,
+            'status_label' => 'Brouillon',
+            'category' => [
+                '@type' => 'UserPublicationCategory',
+                'id' => $category->id,
+                'title' => 'News',
+                'slug' => 'news',
+            ],
+            'tags' => [],
+            'language' => 'fr',
+        ]);
     }
 
     public function test_patch_partial_update(): void

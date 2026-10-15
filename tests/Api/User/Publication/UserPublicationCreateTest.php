@@ -50,6 +50,7 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->assertEquals('My New Publication', $createdPublication->title);
         $this->assertEquals(Publication::STATUS_DRAFT, $createdPublication->status);
         $this->assertEquals(Publication::TYPE_TEXT, $createdPublication->type);
+        $this->assertSame('fr', $createdPublication->language);
         $this->assertEquals($category->id, $createdPublication->subCategory->id);
 
         $response = $this->getResponseAsArray();
@@ -59,6 +60,43 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->assertSame('Brouillon', $response['status_label']);
         $this->assertSame($category->id, $response['category']['id']);
         $this->assertSame('News', $response['category']['title']);
+        $this->assertSame('fr', $response['language']);
+    }
+
+    public function test_create_publication_takes_the_author_locale(): void
+    {
+        $publicationRepository = self::getContainer()->get(PublicationRepository::class);
+        $user = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
+        $category = PublicationSubCategoryFactory::new()->asNews()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/publications', [
+            'title' => 'My New Publication',
+            'categoryId' => $category->id,
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $publications = $publicationRepository->findBy(['author' => $user]);
+        $this->assertCount(1, $publications);
+        $this->assertSame('en', $publications[0]->language);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserPublicationEdit',
+            '@id' => '/api/user/publications/' . $publications[0]->id . '/edit',
+            '@type' => 'UserPublicationEdit',
+            'id' => $publications[0]->id,
+            'title' => 'My New Publication',
+            'slug' => 'my-new-publication-',
+            'status_id' => Publication::STATUS_DRAFT,
+            'status_label' => 'Brouillon',
+            'category' => [
+                '@type' => 'UserPublicationCategory',
+                'id' => $category->id,
+                'title' => 'News',
+                'slug' => 'news',
+            ],
+            'language' => 'en',
+            'tags' => [],
+        ]);
     }
 
     public function test_create_publication_validation_error_empty_title(): void
