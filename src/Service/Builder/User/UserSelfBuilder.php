@@ -27,6 +27,7 @@ readonly class UserSelfBuilder
         $dto->profilePicture = $this->buildProfilePicture($user);
         $dto->usernameChangedDatetime = $user->usernameChangedDatetime;
         $dto->hasPassword = $user->password !== null;
+        $dto->locale = $user->locale;
 
         return $dto;
     }

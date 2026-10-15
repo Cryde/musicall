@@ -155,6 +155,7 @@ class NativeLoginTest extends ApiTestCase
             'profile_picture' => null,
             'username_changed_datetime' => null,
             'has_password' => true,
+            'locale' => 'fr',
         ]);
     }
 

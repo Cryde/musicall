@@ -119,6 +119,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $usernameChangedDatetime = null;
 
+    #[ORM\Column(type: Types::STRING, length: 10, options: ['default' => 'fr'])]
+    public string $locale = 'fr';
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, GalleryResource::LIST])]
     public ?\DateTimeImmutable $deletionDatetime = null;
