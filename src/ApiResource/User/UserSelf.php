@@ -34,4 +34,5 @@ class UserSelf
     public ?array $profilePicture = null;
     public ?\DateTimeImmutable $usernameChangedDatetime = null;
     public bool $hasPassword;
+    public string $locale;
 }
