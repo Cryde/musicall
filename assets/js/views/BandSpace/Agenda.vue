@@ -284,7 +284,6 @@ import {
   startOfMonth,
   startOfWeek
 } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
@@ -305,6 +304,7 @@ import {
   agendaSourceLabel
 } from '../../constants/agendaSources.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
+import { dateFnsLocale, forActiveLocale } from '../../i18n/formatLocale.js'
 import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { availabilitySummary, canAnswerFromAgenda } from '../../utils/agendaAvailability.js'
@@ -316,6 +316,8 @@ import {
 import { isAllDayItem } from '../../utils/agendaItem.js'
 import { agendaViewForOccurrence, agendaViewForSavedEntry } from '../../utils/agendaRange.js'
 import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
+
+const FULL_CALENDAR_LOCALES = { fr: frLocale }
 
 const route = useRoute()
 const router = useRouter()
@@ -380,8 +382,8 @@ const agendaPresets = [
   {
     key: 'this_week',
     label: 'Cette semaine',
-    from: () => startOfWeek(new Date(), { locale: fr }),
-    to: () => endOfWeek(new Date(), { locale: fr })
+    from: () => startOfWeek(new Date(), { locale: dateFnsLocale() }),
+    to: () => endOfWeek(new Date(), { locale: dateFnsLocale() })
   },
   {
     key: 'this_month',
@@ -507,7 +509,7 @@ const calendarOptions = computed(() => ({
   plugins: [classicTheme, dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
   initialView: viewMode.value === 'list' ? 'dayGridMonth' : viewMode.value,
   initialDate: focusDate.value ?? dateFrom.value,
-  locale: frLocale,
+  locale: forActiveLocale(FULL_CALENDAR_LOCALES),
   firstDay: 1,
   // The year overview draws its own source dots (dayCellTopContent), so it renders no
   // native events - keeps the tiny month cells clean.

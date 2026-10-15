@@ -241,6 +241,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import securityApi from '../../../api/user/security.js'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
@@ -282,7 +283,7 @@ const nextUsernameChangeDate = computed(() => {
   }
   const lastChangeDate = new Date(lastChange)
   const cooldownEnd = new Date(lastChangeDate.getTime() + COOLDOWN_DAYS * 24 * 60 * 60 * 1000)
-  return cooldownEnd.toLocaleDateString('fr-FR', {
+  return cooldownEnd.toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'long',
     year: 'numeric'

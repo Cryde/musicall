@@ -34,12 +34,12 @@
 
 <script setup>
 import { format, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Card from 'primevue/card'
 import Chart from 'primevue/chart'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed } from 'vue'
+import { dateFnsLocale } from '../../i18n/formatLocale.js'
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -57,7 +57,9 @@ const chartData = computed(() => {
     countMap[point.date_label] = point.count
   }
 
-  const labels = props.allDates.map((d) => format(parseISO(d), 'd MMM', { locale: fr }))
+  const labels = props.allDates.map((d) =>
+    format(parseISO(d), 'd MMM', { locale: dateFnsLocale() })
+  )
   const data = props.allDates.map((d) => countMap[d] || 0)
 
   return {

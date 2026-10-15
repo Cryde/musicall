@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { dateFnsLocale } from '../i18n/formatLocale.js'
 import { toAgendaDate } from './agendaDate.js'
 
 /**
@@ -30,20 +30,22 @@ export function formatAbsenceRange(startDate, endDate) {
   const end = toDate(endDate)
   if (start === null || end === null) return ''
 
+  const options = { locale: dateFnsLocale() }
+
   if (start.getTime() === end.getTime()) {
-    return format(start, 'd MMMM', { locale: fr })
+    return format(start, 'd MMMM', options)
   }
 
   const sameYear = start.getFullYear() === end.getFullYear()
   const sameMonth = sameYear && start.getMonth() === end.getMonth()
 
   if (sameMonth) {
-    return `${format(start, 'd', { locale: fr })} → ${format(end, 'd MMMM', { locale: fr })}`
+    return `${format(start, 'd', options)} → ${format(end, 'd MMMM', options)}`
   }
 
   const pattern = sameYear ? 'd MMMM' : 'd MMMM yyyy'
 
-  return `${format(start, pattern, { locale: fr })} → ${format(end, pattern, { locale: fr })}`
+  return `${format(start, pattern, options)} → ${format(end, pattern, options)}`
 }
 
 /**
@@ -67,7 +69,7 @@ export function groupAbsencesByMonth(absences) {
     // at the cost of a locale-aware format call per row.
     const key = absence.start_date.slice(0, 7)
     if (!groups.has(key)) {
-      const label = format(start, 'LLLL yyyy', { locale: fr })
+      const label = format(start, 'LLLL yyyy', { locale: dateFnsLocale() })
       groups.set(key, { key, label: label.charAt(0).toUpperCase() + label.slice(1), absences: [] })
     }
     groups.get(key).absences.push(absence)

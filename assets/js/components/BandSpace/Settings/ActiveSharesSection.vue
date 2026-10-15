@@ -78,7 +78,6 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
@@ -88,6 +87,7 @@ import { useToast } from 'primevue/usetoast'
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { dateFnsLocale, intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
@@ -134,7 +134,7 @@ function confirmRevoke(share) {
 
 function formatDate(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -145,6 +145,6 @@ function formatDate(iso) {
 
 function formatRelative(iso) {
   if (!iso) return ''
-  return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale() })
 }
 </script>

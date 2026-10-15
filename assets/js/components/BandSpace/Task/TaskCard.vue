@@ -122,6 +122,7 @@ import Checkbox from 'primevue/checkbox'
 import Menu from 'primevue/menu'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
 import TaskCommentPopover from './TaskCommentPopover.vue'
@@ -196,7 +197,7 @@ const isPastDue = computed(() => {
 
 const formattedDueDate = computed(() => {
   if (!props.task.due_date) return ''
-  return new Date(props.task.due_date).toLocaleDateString('fr-FR', {
+  return new Date(props.task.due_date).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short'
   })

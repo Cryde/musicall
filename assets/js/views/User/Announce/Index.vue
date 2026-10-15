@@ -123,6 +123,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { TYPES_ANNOUNCE_BAND } from '../../../constants/types.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
 import AddAnnounceModal from './AddAnnounceModal.vue'
 
@@ -150,7 +151,7 @@ function getTypeSeverity(type) {
 
 function formatDate(dateString) {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('fr-FR', {
+  return new Date(dateString).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric'

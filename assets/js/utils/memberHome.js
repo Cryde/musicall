@@ -1,4 +1,5 @@
 import { TYPES_ANNOUNCE_MUSICIAN } from '../constants/types.js'
+import { intlLocale } from '../i18n/formatLocale.js'
 
 /**
  * The logged in home's rules (#1078), apart from its components so they are tested without a browser.
@@ -52,7 +53,7 @@ export function openTasks(tasks, limit) {
       if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date)
       if (a.due_date) return -1
       if (b.due_date) return 1
-      return a.title.localeCompare(b.title, 'fr')
+      return a.title.localeCompare(b.title, intlLocale())
     })
     .slice(0, limit)
 }

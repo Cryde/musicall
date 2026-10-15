@@ -12,7 +12,8 @@ import Tooltip from 'primevue/tooltip'
 import facebookLogoUrl from '../image/facebook-logo.jpg'
 import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
-import { PRIME_VUE_CALENDAR_LOCALE } from './constants/primeVueLocale.js'
+import { PRIME_VUE_CALENDAR_LOCALES } from './constants/primeVueLocale.js'
+import { forActiveLocale } from './i18n/formatLocale.js'
 import { i18n } from './i18n/index.js'
 import router from './router/index.js'
 import { useUserSecurityStore } from './store/user/security.js'
@@ -142,7 +143,7 @@ app.use(head)
 app.use(i18n)
 app.use(PrimeVue, {
   ripple: true,
-  locale: PRIME_VUE_CALENDAR_LOCALE,
+  locale: forActiveLocale(PRIME_VUE_CALENDAR_LOCALES),
   theme: {
     preset: MusicAllPreset,
     options: {

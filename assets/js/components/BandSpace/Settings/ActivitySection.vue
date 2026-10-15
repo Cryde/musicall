@@ -117,7 +117,6 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import MultiSelect from 'primevue/multiselect'
@@ -126,6 +125,7 @@ import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useBandSpaceActivityStore } from '../../../store/bandSpace/bandSpaceActivity.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { activityLink } from '../../../utils/bandSpaceActivityLink.js'
@@ -191,7 +191,7 @@ function activitySentence(activity) {
 }
 
 function formatRelative(dateStr) {
-  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: dateFnsLocale() })
 }
 
 function applyFiltersToStore() {

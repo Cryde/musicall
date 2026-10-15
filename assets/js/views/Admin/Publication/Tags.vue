@@ -90,6 +90,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
 import tagsApi from '../../../api/admin/tags.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { formatDate } from '../../../utils/date.js'
 
 const ROWS_PER_PAGE = 25
@@ -139,7 +140,9 @@ async function handleCreate() {
         life: 3000
       })
     } else {
-      tags.value = [...tags.value, created].sort((a, b) => a.label.localeCompare(b.label))
+      tags.value = [...tags.value, created].sort((a, b) =>
+        a.label.localeCompare(b.label, intlLocale())
+      )
       toast.add({ severity: 'success', summary: 'Tag créé', life: 3000 })
     }
     showCreateModal.value = false

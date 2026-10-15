@@ -87,7 +87,6 @@
 
 <script setup>
 import { format, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
@@ -96,6 +95,7 @@ import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onUnmounted, ref } from 'vue'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useAdminPublicationStore } from '../../../store/admin/publication.js'
 
 const confirm = useConfirm()
@@ -112,7 +112,7 @@ onUnmounted(() => {
 function formatDate(iso) {
   if (!iso) return '—'
   try {
-    return format(parseISO(iso), 'd MMM yyyy', { locale: fr })
+    return format(parseISO(iso), 'd MMM yyyy', { locale: dateFnsLocale() })
   } catch {
     return iso
   }

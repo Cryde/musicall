@@ -214,6 +214,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useCoursesStore } from '../../../store/course/course.js'
 import { useUserCoursesStore } from '../../../store/course/userCourses.js'
 
@@ -262,7 +263,7 @@ onUnmounted(() => {
 
 function formatDate(dateString) {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('fr-FR', {
+  return new Date(dateString).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric'

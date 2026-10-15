@@ -1,3 +1,4 @@
+import { formatEurosFromCents } from '../../../utils/currency.js'
 import { formatDateLong } from '../../../utils/date.js'
 
 const TASK_STATUS_LABELS = {
@@ -36,7 +37,7 @@ function formatAmount(cents) {
   if (cents === null || cents === undefined) {
     return '—'
   }
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+  return formatEurosFromCents(cents)
 }
 
 const SENTENCES = {

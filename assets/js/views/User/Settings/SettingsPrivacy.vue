@@ -70,12 +70,12 @@
 
 <script setup>
 import { format, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, ref } from 'vue'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useUserBlockStore } from '../../../store/user/block.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 
@@ -85,7 +85,7 @@ const loadError = ref('')
 const unblockingId = ref(null)
 
 function formatDate(value) {
-  return format(parseISO(value), 'd MMMM yyyy', { locale: fr })
+  return format(parseISO(value), 'd MMMM yyyy', { locale: dateFnsLocale() })
 }
 
 onMounted(async () => {

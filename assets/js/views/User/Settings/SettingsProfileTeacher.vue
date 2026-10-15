@@ -399,6 +399,7 @@ import {
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { useTeacherProfileMediaStore } from '../../../store/user/teacherProfileMedia.js'
+import { formatEurosFromCents } from '../../../utils/currency.js'
 
 const teacherProfileStore = useTeacherProfileStore()
 const userSecurityStore = useUserSecurityStore()
@@ -421,8 +422,7 @@ function truncateDescription(text, maxLength = 200) {
 
 function formatPrice(priceInCents) {
   if (priceInCents == null) return ''
-  const euros = priceInCents / 100
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  return formatEurosFromCents(priceInCents)
 }
 
 async function loadProfile() {

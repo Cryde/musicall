@@ -148,7 +148,6 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
@@ -160,6 +159,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, watch } from 'vue'
+import { dateFnsLocale, intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const props = defineProps({
@@ -301,7 +301,7 @@ function resetDialog() {
 
 function formatDate(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -312,6 +312,6 @@ function formatDate(iso) {
 
 function formatRelative(iso) {
   if (!iso) return ''
-  return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale() })
 }
 </script>

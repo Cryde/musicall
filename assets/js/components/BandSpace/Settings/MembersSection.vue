@@ -209,6 +209,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -256,7 +257,7 @@ const isOnlyAdmin = computed(() => {
 })
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
+  return new Date(dateStr).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric'

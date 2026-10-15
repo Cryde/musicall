@@ -83,3 +83,18 @@ for (const timeZone of ['Europe/Paris', 'America/Martinique']) {
     })
   })
 }
+
+const finance = (type, payload) => ({ module: 'finance', type, payload })
+
+describe('finance activity sentences', () => {
+  it('write amounts in euros the French way', () => {
+    assert.equal(
+      activitySentence(finance('entry_created', { label: 'Cachet', amount: 123450 })),
+      "a créé l'entrée « Cachet » (1\u202f234,50\u00a0€)"
+    )
+    assert.equal(
+      activitySentence(finance('entry_amount_changed', { from: 5000, to: 7500 })),
+      'a changé le montant de 50,00\u00a0€ à 75,00\u00a0€'
+    )
+  })
+})
