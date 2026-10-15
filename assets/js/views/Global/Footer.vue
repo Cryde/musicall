@@ -9,7 +9,7 @@
           <span class="font-extrabold">MUSIC</span>ALL
         </RouterLink>
         <p class="m-0 text-sm leading-relaxed text-surface-600 dark:text-surface-400 max-w-sm">
-          La plateforme gratuite des musicien·ne·s et des groupes : trouver, organiser, apprendre. Depuis 2008.
+          {{ t('footer.tagline') }}
         </p>
         <div class="flex gap-2 pt-1">
           <a
@@ -25,7 +25,7 @@
           </a>
           <RouterLink
             :to="{ name: 'app_contact' }"
-            aria-label="Accéder au formulaire de contact"
+            :aria-label="t('footer.contact_form')"
             :class="socialButtonClass"
           >
             <i class="pi pi-envelope" aria-hidden="true" />
@@ -54,13 +54,13 @@
           :class="[actionLinkClass, 'self-start cursor-pointer']"
           @click="handlePostAnnounce"
         >
-          Poster une annonce
+          {{ t('footer.post_announce') }}
         </button>
       </nav>
     </div>
 
     <div class="mt-16 py-6 border-t border-surface-200 dark:border-surface-800 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-surface-600 dark:text-surface-400">
-      <span>© 2008-{{ currentYear }} MusicAll</span>
+      <span>{{ t('footer.copyright', { year: currentYear }) }}</span>
       <RouterLink
         v-for="link in legalLinks"
         :key="link.label"
@@ -77,7 +77,8 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
@@ -90,20 +91,23 @@ const actionLinkClass = 'text-sm font-semibold text-primary hover:underline'
 const socialButtonClass =
   'size-11 flex items-center justify-center rounded-lg border border-surface-300 dark:border-surface-700 text-surface-700 dark:text-surface-300 hover:text-primary hover:border-primary'
 
+const { t } = useI18n()
+
 const currentYear = new Date().getFullYear()
 
-const socialLinks = [
+// Computed, like the lists below, so the labels follow a locale change.
+const socialLinks = computed(() => [
   {
-    label: 'Suivre MusicAll sur Instagram',
+    label: t('footer.follow_instagram'),
     href: 'https://www.instagram.com/music.all.official',
     icon: 'pi pi-instagram'
   },
   {
-    label: 'Suivre MusicAll sur Facebook',
+    label: t('footer.follow_facebook'),
     href: 'https://www.facebook.com/MusicAll/',
     icon: 'pi pi-facebook'
   }
-]
+])
 
 const bandSpacePresentation = { name: 'app_band_space_presentation' }
 
@@ -120,65 +124,65 @@ function courseCategory(slug) {
   return { name: 'app_course_by_category', params: { slug } }
 }
 
-const columns = [
+const columns = computed(() => [
   {
-    title: 'Recherche',
+    title: t('footer.search.title'),
     hasPostAnnounce: true,
     links: [
-      { label: 'Un·e guitariste', to: { name: 'app_search_guitarist' } },
-      { label: 'Un·e batteur·euse', to: { name: 'app_search_drummer' } },
-      { label: 'Un·e bassiste', to: { name: 'app_search_bassist' } },
-      { label: 'Un·e chanteur·euse', to: { name: 'app_search_singer' } },
-      { label: 'Un·e pianiste', to: { name: 'app_search_pianist' } }
+      { label: t('footer.search.guitarist'), to: { name: 'app_search_guitarist' } },
+      { label: t('footer.search.drummer'), to: { name: 'app_search_drummer' } },
+      { label: t('footer.search.bassist'), to: { name: 'app_search_bassist' } },
+      { label: t('footer.search.singer'), to: { name: 'app_search_singer' } },
+      { label: t('footer.search.pianist'), to: { name: 'app_search_pianist' } }
     ]
   },
   {
-    title: 'Band Space',
+    title: t('footer.band_space.title'),
     links: [
-      { label: 'Présentation', to: bandSpacePresentation },
-      { label: 'Agenda', to: bandSpaceModule('agenda') },
-      { label: 'Setlists', to: bandSpaceModule('setlists') },
-      { label: 'Finances du groupe', to: bandSpaceModule('finances') },
+      { label: t('footer.band_space.presentation'), to: bandSpacePresentation },
+      { label: t('footer.band_space.agenda'), to: bandSpaceModule('agenda') },
+      { label: t('footer.band_space.setlists'), to: bandSpaceModule('setlists') },
+      { label: t('footer.band_space.finances'), to: bandSpaceModule('finances') },
       // app_band_index sends a visitor to the presentation and a member to their space.
-      { label: 'Créer un Band Space', to: { name: 'app_band_index' }, isAction: true }
+      { label: t('footer.band_space.create'), to: { name: 'app_band_index' }, isAction: true }
     ]
   },
   {
-    title: 'Publications',
+    title: t('footer.publications.title'),
     links: [
-      { label: 'News', to: publicationCategory('news') },
-      { label: 'Chroniques', to: publicationCategory('chroniques') },
-      { label: 'Interviews', to: publicationCategory('interviews') },
-      { label: 'Live-reports', to: publicationCategory('live-reports') },
-      { label: 'Articles', to: publicationCategory('articles') },
-      { label: 'Photos', to: publicationCategory('photos') }
+      { label: t('footer.publications.news'), to: publicationCategory('news') },
+      { label: t('footer.publications.reviews'), to: publicationCategory('chroniques') },
+      { label: t('footer.publications.interviews'), to: publicationCategory('interviews') },
+      { label: t('footer.publications.live_reports'), to: publicationCategory('live-reports') },
+      { label: t('footer.publications.articles'), to: publicationCategory('articles') },
+      { label: t('footer.publications.photos'), to: publicationCategory('photos') }
     ]
   },
   {
-    title: 'Cours',
+    title: t('footer.courses.title'),
     links: [
-      { label: 'Guitare', to: courseCategory('guitare') },
-      { label: 'Basse', to: courseCategory('basse') },
-      { label: 'Batterie', to: courseCategory('batterie') },
-      { label: 'MAO', to: courseCategory('mao') },
-      { label: 'Divers', to: courseCategory('divers') }
+      { label: t('footer.courses.guitar'), to: courseCategory('guitare') },
+      { label: t('footer.courses.bass'), to: courseCategory('basse') },
+      { label: t('footer.courses.drums'), to: courseCategory('batterie') },
+      { label: t('footer.courses.computer_music'), to: courseCategory('mao') },
+      { label: t('footer.courses.misc'), to: courseCategory('divers') }
     ]
   },
   {
-    title: 'Communauté',
+    title: t('footer.community.title'),
     links: [
-      { label: 'Forum', to: { name: 'app_forum_index' } },
-      { label: 'Nous contacter', to: { name: 'app_contact' } }
+      { label: t('footer.community.forum'), to: { name: 'app_forum_index' } },
+      { label: t('footer.community.contact'), to: { name: 'app_contact' } }
     ]
   }
-]
+])
 
-const legalLinks = [
-  { label: 'Confidentialité', to: { name: 'app_privacy' } },
-  { label: 'CGU', to: { name: 'app_terms' } },
-  { label: 'Mentions légales', to: { name: 'app_mentions_legales' } },
-  { label: 'Supprimer mon compte', to: { name: 'app_account_deletion' } }
-]
+const legalLinks = computed(() => [
+  { label: t('footer.legal.privacy'), to: { name: 'app_privacy' } },
+  { label: t('footer.legal.terms'), to: { name: 'app_terms' } },
+  { label: t('footer.legal.legal_notice'), to: { name: 'app_mentions_legales' } },
+  { label: t('footer.legal.delete_account'), to: { name: 'app_account_deletion' } }
+])
 
 const userSecurityStore = useUserSecurityStore()
 const showAnnounceModal = ref(false)

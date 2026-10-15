@@ -11,18 +11,18 @@
         <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
         <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
       </svg>
-      <span>S'inscrire avec Google</span>
+      <span>{{ $t('auth_modal.register_with_google') }}</span>
     </a>
 
-    <!-- Secondary signup link -->
+    <!-- Secondary signup link. Both link texts start with a space, on top of ml-1, as they always have. -->
     <div class="text-center mb-4">
-      <span class="text-surface-500 dark:text-surface-400 text-sm">Pas de compte Google ?</span>
+      <span class="text-surface-500 dark:text-surface-400 text-sm">{{ $t('auth_modal.no_google_account') }}</span>
       <router-link
         :to="{ name: 'app_register', query: { return_url: returnUrl } }"
         class="text-primary hover:text-primary-emphasis text-sm ml-1"
         @click="$emit('navigate')"
       >
-        S'inscrire avec un email
+        {{ ' ' }}{{ $t('auth_modal.register_with_email') }}
       </router-link>
     </div>
 
@@ -30,13 +30,13 @@
 
     <!-- Login link -->
     <div class="text-center">
-      <span class="text-surface-500 dark:text-surface-400 text-sm">Déjà un compte ?</span>
+      <span class="text-surface-500 dark:text-surface-400 text-sm">{{ $t('auth_modal.has_account') }}</span>
       <router-link
         :to="{ name: 'app_login', query: { return_url: returnUrl } }"
         class="text-primary hover:text-primary-emphasis text-sm ml-1 font-medium"
         @click="$emit('navigate')"
       >
-        Se connecter
+        {{ ' ' }}{{ $t('common.login') }}
       </router-link>
     </div>
   </div>

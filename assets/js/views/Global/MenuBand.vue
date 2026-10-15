@@ -4,7 +4,7 @@
       v-if="currentSpaceId"
       type="button"
       class="lg:hidden text-surface-700 dark:text-surface-200 bg-transparent border-0 px-3 py-2 ml-2 my-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-      aria-label="Ouvrir le menu de navigation"
+      :aria-label="$t('common.open_navigation_menu')"
       @click="mobileNavOpen = !mobileNavOpen"
     >
       <i class="pi pi-bars text-xl" aria-hidden="true" />
@@ -15,10 +15,10 @@
     <RouterLink
       :to="{ name: 'app_home' }"
       class="flex items-center px-4 lg:w-[var(--band-sidebar-width)] lg:shrink-0 lg:justify-center"
-      aria-label="Accueil MusicAll"
+      :aria-label="$t('common.musicall_home')"
     >
       <span class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
-        <img src="../../../image/logo-2.webp" alt="Logo MusicAll" width="106" height="16" class="h-4 w-auto" />
+        <img src="../../../image/logo-2.webp" :alt="$t('common.musicall_logo')" width="106" height="16" class="h-4 w-auto" />
       </span>
     </RouterLink>
 
@@ -32,12 +32,12 @@
         v-if="currentSpaceId"
         type="button"
         class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors duration-150 shrink-0"
-        aria-label="Rechercher dans le Band Space"
+        :aria-label="$t('band_menu.search_aria_label')"
         aria-keyshortcuts="Control+K Meta+K"
         @click="emit('open-search')"
       >
         <i class="pi pi-search text-sm shrink-0" aria-hidden="true" />
-        <span class="hidden sm:inline text-sm">Rechercher</span>
+        <span class="hidden sm:inline text-sm">{{ $t('band_menu.search') }}</span>
         <kbd
           class="hidden lg:inline font-sans text-[0.65rem] px-1.5 py-0.5 rounded border border-surface-300 dark:border-surface-600"
           aria-hidden="true"
@@ -59,7 +59,7 @@
               : 'cursor-pointer hover:underline'
           ]"
         >
-          <span class="font-medium">back to musicall</span>
+          <span class="font-medium">{{ $t('band_menu.back_to_musicall') }}</span>
         </a>
       </RouterLink>
 
