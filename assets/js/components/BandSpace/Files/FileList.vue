@@ -177,6 +177,7 @@ import {
   collectFolderAndDescendants
 } from '../../../composables/useFolderDragDrop.js'
 import { deleteBlockingAttachments, fileSourceDetachHint } from '../../../constants/fileSources.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -432,7 +433,7 @@ function formatSize(bytes) {
 function formatDate(iso) {
   if (!iso) return '—'
   const date = new Date(iso)
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+  return date.toLocaleDateString(intlLocale(), { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 /**

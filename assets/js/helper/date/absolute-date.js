@@ -1,5 +1,5 @@
 import { format, isThisYear, isToday, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { dateFnsLocale } from '../../i18n/formatLocale.js'
 
 /**
  * The exact moment a message was sent, for the hover label and the block header (#1031).
@@ -21,13 +21,15 @@ export default function absoluteDate(value) {
     return ''
   }
 
+  const options = { locale: dateFnsLocale() }
+
   if (isToday(parsed)) {
-    return format(parsed, 'HH:mm', { locale: fr })
+    return format(parsed, 'HH:mm', options)
   }
 
   if (isThisYear(parsed)) {
-    return format(parsed, "d MMMM 'à' HH:mm", { locale: fr })
+    return format(parsed, "d MMMM 'à' HH:mm", options)
   }
 
-  return format(parsed, "d MMMM yyyy 'à' HH:mm", { locale: fr })
+  return format(parsed, "d MMMM yyyy 'à' HH:mm", options)
 }

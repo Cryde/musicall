@@ -82,6 +82,18 @@ describe('openTasks', () => {
     )
     assert.equal(openTasks(tasks, 1).length, 1)
   })
+
+  it('sorts the undated by title in French order, accents beside their letter', () => {
+    const tasks = ['Zoom', 'Écrire le set', 'enregistrer', 'Appeler'].map((title) => ({
+      title,
+      status: 'todo',
+      due_date: null
+    }))
+    assert.deepEqual(
+      openTasks(tasks, 4).map((task) => task.title),
+      ['Appeler', 'Écrire le set', 'enregistrer', 'Zoom']
+    )
+  })
 })
 
 describe('announces for a member', () => {

@@ -71,8 +71,8 @@
 
 <script setup>
 import { format, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Paginator from 'primevue/paginator'
+import { dateFnsLocale } from '../../i18n/formatLocale.js'
 import { highlightTerm } from '../../utils/highlight.js'
 
 const props = defineProps({
@@ -93,7 +93,7 @@ function highlight(text) {
 
 function formatLastPost(iso) {
   try {
-    return format(parseISO(iso), 'dd MMM yyyy', { locale: fr })
+    return format(parseISO(iso), 'dd MMM yyyy', { locale: dateFnsLocale() })
   } catch {
     return iso
   }

@@ -360,7 +360,6 @@
 
 <script setup>
 import { differenceInCalendarDays, format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
@@ -375,6 +374,7 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 import { seriesCutDate, toAgendaDate } from '../../../utils/agendaDate.js'
 import {
@@ -527,15 +527,15 @@ async function handleAskAvailabilityToggle(askAvailability) {
 const occurrenceDateLabel = computed(() => {
   if (!occurrenceStart.value) return null
   return isAllDayEntry.value
-    ? format(occurrenceStart.value, 'EEEE d MMMM yyyy', { locale: fr })
-    : format(occurrenceStart.value, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })
+    ? format(occurrenceStart.value, 'EEEE d MMMM yyyy', { locale: dateFnsLocale() })
+    : format(occurrenceStart.value, "EEEE d MMMM yyyy 'à' HH:mm", { locale: dateFnsLocale() })
 })
 
 function formatEventMoment(date) {
   if (!date) return ''
   return form.isAllDay
-    ? format(date, 'EEEE d MMMM yyyy', { locale: fr })
-    : format(date, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })
+    ? format(date, 'EEEE d MMMM yyyy', { locale: dateFnsLocale() })
+    : format(date, "EEEE d MMMM yyyy 'à' HH:mm", { locale: dateFnsLocale() })
 }
 
 const eventTimeText = computed({

@@ -107,7 +107,6 @@
 
 <script setup>
 import { format, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { computed, onMounted, ref } from 'vue'
@@ -117,6 +116,7 @@ import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import relativeDate from '../../../helper/date/relative-date.js'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
 import { agendaItemLink, isAllDayItem } from '../../../utils/agendaItem.js'
@@ -219,7 +219,7 @@ function dateOfItem(item) {
 
 function dayOf(item) {
   const date = dateOfItem(item)
-  return date ? format(date, 'EEE', { locale: fr }).replace('.', '') : ''
+  return date ? format(date, 'EEE', { locale: dateFnsLocale() }).replace('.', '') : ''
 }
 
 function dateOf(item) {
@@ -229,7 +229,7 @@ function dateOf(item) {
 
 function shortDateOf(item) {
   const date = dateOfItem(item)
-  return date ? format(date, 'EEE d', { locale: fr }) : ''
+  return date ? format(date, 'EEE d', { locale: dateFnsLocale() }) : ''
 }
 
 function timeOf(item) {

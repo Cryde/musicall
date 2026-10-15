@@ -4,9 +4,10 @@
  * like the agenda (FullCalendar `firstDay: 1`). Without it the pickers started on Sunday and read
  * « Su Mo Tu », « January ».
  *
- * Only the keys a DatePicker reads: the rest of PrimeVue's wording is set per component.
+ * Only the keys a DatePicker reads: the rest of PrimeVue's wording is set per component. Keyed by
+ * app locale, picked with `forActiveLocale()`.
  */
-export const PRIME_VUE_CALENDAR_LOCALE = Object.freeze({
+const FRENCH = Object.freeze({
   firstDayOfWeek: 1,
   dateFormat: 'dd/mm/yy',
   dayNames: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
@@ -59,3 +60,5 @@ export const PRIME_VUE_CALENDAR_LOCALE = Object.freeze({
   prevSecond: 'Seconde précédente',
   nextSecond: 'Seconde suivante'
 })
+
+export const PRIME_VUE_CALENDAR_LOCALES = Object.freeze({ fr: FRENCH })

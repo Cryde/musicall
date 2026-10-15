@@ -226,6 +226,7 @@ import { useRouter } from 'vue-router'
 import publicationApi from '../../../api/user/publication.js'
 import AddDiscoverModal from '../../../components/Publication/AddDiscoverModal.vue'
 import AddPublicationModal from '../../../components/publication/AddPublicationModal.vue'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { usePublicationsStore } from '../../../store/publication/publications.js'
 import { useUserPublicationsStore } from '../../../store/publication/userPublications.js'
 import { useVideoStore } from '../../../store/publication/video.js'
@@ -277,7 +278,7 @@ onUnmounted(() => {
 
 function formatDate(dateString) {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('fr-FR', {
+  return new Date(dateString).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric'

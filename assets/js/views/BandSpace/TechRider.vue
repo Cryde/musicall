@@ -208,6 +208,7 @@ import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSel
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { LAST_TECH_RIDER_KEY, TECH_RIDER_PREVIEW_KEY } from '../../constants/bandSpace.js'
 import { COPY_SUFFIX, MAX_NAME_LENGTH } from '../../constants/techRider.js'
+import { intlLocale } from '../../i18n/formatLocale.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
 import { downloadBlob } from '../../utils/downloadBlob.js'
 import { selectableItemId } from '../../utils/riderWorkspace.js'
@@ -462,7 +463,7 @@ async function handleUnarchive() {
 
 function formatDate(value) {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString('fr-FR', {
+  return new Date(value).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',
     year: 'numeric'

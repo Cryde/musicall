@@ -40,11 +40,11 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceActivityApi from '../../../api/bandSpace/band-space-activity.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { activityLink } from '../../../utils/bandSpaceActivityLink.js'
 import { ALL_BAND_SPACE_MODULES } from '../../../utils/bandSpaceLiveRefresh.js'
 import UserName from '../../User/UserName.vue'
@@ -89,7 +89,7 @@ function activitySentence(activity) {
 }
 
 function formatRelative(dateStr) {
-  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: dateFnsLocale() })
 }
 
 const MODULE_ICONS = {

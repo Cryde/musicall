@@ -97,12 +97,12 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, ref } from 'vue'
 import { useMentionParser } from '../../../composables/useMentionParser.js'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import Avatar from '../../User/Avatar.vue'
@@ -171,7 +171,7 @@ function parts(content) {
 }
 
 function formatRelative(dateStr) {
-  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: dateFnsLocale() })
 }
 
 function startEdit(comment) {

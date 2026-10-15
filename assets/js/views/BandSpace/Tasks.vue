@@ -175,6 +175,7 @@ import TaskCreateForm from '../../components/BandSpace/Task/TaskCreateForm.vue'
 import TaskDetail from '../../components/BandSpace/Task/TaskDetail.vue'
 import TaskFilterBar from '../../components/BandSpace/Task/TaskFilterBar.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { intlLocale } from '../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../store/bandSpace/bandSpaceTasks.js'
 
 const route = useRoute()
@@ -322,7 +323,7 @@ function handleRetry() {
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
+  return new Date(dateStr).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric'

@@ -48,6 +48,7 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { onBeforeUnmount, ref } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true }
@@ -87,7 +88,7 @@ async function load() {
     ])
     if (currentRequest !== requestId) return
     files.value = [...(images.member ?? []), ...(pdfs.member ?? [])].sort((a, b) =>
-      a.original_name.localeCompare(b.original_name)
+      a.original_name.localeCompare(b.original_name, intlLocale())
     )
   } catch (e) {
     if (currentRequest !== requestId) return

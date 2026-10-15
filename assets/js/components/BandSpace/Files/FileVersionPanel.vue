@@ -107,6 +107,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
@@ -211,7 +212,7 @@ function formatSize(bytes) {
 
 function formatDate(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

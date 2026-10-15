@@ -57,12 +57,12 @@
 
 <script setup>
 import { format, isToday, isTomorrow, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { agendaSourceFor } from '../../../constants/agendaSources.js'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import {
   availabilitySummary,
   canAnswerFromAgenda,
@@ -117,7 +117,7 @@ function formatDayLabel(item) {
   if (date === null) return ''
   if (isToday(date)) return "Aujourd'hui"
   if (isTomorrow(date)) return 'Demain'
-  return format(date, 'EEEE d MMMM', { locale: fr })
+  return format(date, 'EEEE d MMMM', { locale: dateFnsLocale() })
 }
 
 function formatTime(datetimeStr) {

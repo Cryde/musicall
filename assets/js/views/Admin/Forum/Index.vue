@@ -151,6 +151,7 @@ import { computed, onMounted, ref } from 'vue'
 import AdminModuleCard from '../../../components/Admin/AdminModuleCard.vue'
 import DateRangePicker from '../../../components/Admin/DateRangePicker.vue'
 import TimeSeriesChart from '../../../components/Admin/TimeSeriesChart.vue'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useAdminDashboardStore } from '../../../store/admin/dashboard.js'
 
 const dashboardStore = useAdminDashboardStore()
@@ -160,7 +161,7 @@ const forumRecentActivity = computed(() => dashboardStore.forumRecentActivity)
 
 function formatDate(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',

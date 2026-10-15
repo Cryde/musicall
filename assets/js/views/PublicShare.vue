@@ -97,6 +97,7 @@ import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import publicShareApi from '../api/publicShare.js'
+import { intlLocale } from '../i18n/formatLocale.js'
 import { downloadBlob } from '../utils/downloadBlob.js'
 import { formatBytes } from '../utils/formatBytes.js'
 
@@ -203,7 +204,7 @@ function iconForMime(mime) {
 
 function formatDate(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

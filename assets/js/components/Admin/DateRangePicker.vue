@@ -55,11 +55,11 @@ import {
   subDays,
   subYears
 } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
+import { dateFnsLocale } from '../../i18n/formatLocale.js'
 
 const props = defineProps({
   from: { type: Date, required: true },
@@ -83,7 +83,7 @@ const defaultPresets = [
   {
     key: 'this_week',
     label: 'Cette semaine',
-    from: () => startOfWeek(today, { locale: fr }),
+    from: () => startOfWeek(today, { locale: dateFnsLocale() }),
     to: () => today
   },
   { key: 'this_month', label: 'Ce mois', from: () => startOfMonth(today), to: () => today },
@@ -97,9 +97,9 @@ const effectivePresets = computed(() => props.presets ?? defaultPresets)
 
 const buttonLabel = computed(() => {
   return (
-    format(props.from, 'd MMM yyyy', { locale: fr }) +
+    format(props.from, 'd MMM yyyy', { locale: dateFnsLocale() }) +
     ' – ' +
-    format(props.to, 'd MMM yyyy', { locale: fr })
+    format(props.to, 'd MMM yyyy', { locale: dateFnsLocale() })
   )
 })
 

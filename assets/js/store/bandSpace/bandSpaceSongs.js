@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import bandSpaceSongsApi from '../../api/bandSpace/band-space-songs.js'
+import { intlLocale } from '../../i18n/formatLocale.js'
+
+function byTitle(a, b) {
+  return a.title.localeCompare(b.title, intlLocale())
+}
 
 export const useBandSongsStore = defineStore('bandSongs', () => {
   const songs = ref([])
@@ -66,15 +71,13 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
 
   async function createSong(bandSpaceId, data) {
     const created = await bandSpaceSongsApi.createSong(bandSpaceId, data)
-    songs.value = [...songs.value, created].sort((a, b) => a.title.localeCompare(b.title))
+    songs.value = [...songs.value, created].sort(byTitle)
     return created
   }
 
   async function updateSong(bandSpaceId, songId, data) {
     const updated = await bandSpaceSongsApi.updateSong(bandSpaceId, songId, data)
-    songs.value = songs.value
-      .map((s) => (s.id === songId ? updated : s))
-      .sort((a, b) => a.title.localeCompare(b.title))
+    songs.value = songs.value.map((s) => (s.id === songId ? updated : s)).sort(byTitle)
     return updated
   }
 
@@ -106,15 +109,13 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
       .filter((s) => ids.has(s.id))
       .map((s) => ({ ...s, archive_datetime: archivedAt }))
     songs.value = songs.value.filter((s) => !ids.has(s.id))
-    archivedSongs.value = [...archivedSongs.value, ...moved].sort((a, b) =>
-      a.title.localeCompare(b.title)
-    )
+    archivedSongs.value = [...archivedSongs.value, ...moved].sort(byTitle)
   }
 
   async function restoreSong(bandSpaceId, songId) {
     const restored = await bandSpaceSongsApi.restoreSong(bandSpaceId, songId)
     archivedSongs.value = archivedSongs.value.filter((s) => s.id !== songId)
-    songs.value = [...songs.value, restored].sort((a, b) => a.title.localeCompare(b.title))
+    songs.value = [...songs.value, restored].sort(byTitle)
     return restored
   }
 

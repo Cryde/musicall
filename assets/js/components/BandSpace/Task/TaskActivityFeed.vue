@@ -27,7 +27,7 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 
@@ -60,6 +60,6 @@ function statusLabel(status) {
 }
 
 function formatRelative(dateStr) {
-  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: dateFnsLocale() })
 }
 </script>
