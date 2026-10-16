@@ -7,6 +7,7 @@ use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Message\MessagePlainTextExtractor;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * The words and the `route` of a push (#1110). The sentences follow the app's notification list word
@@ -15,58 +16,67 @@ use App\Service\Message\MessagePlainTextExtractor;
  */
 readonly class PushContentBuilder
 {
-    private const string DEFAULT_TITLE = 'MusicAll';
-    private const string ATTACHMENT_ONLY = 'Pièce jointe';
+    private const string DOMAIN = 'push';
     private const int BODY_MAX_LENGTH = 140;
 
     public function __construct(
         private MessagePlainTextExtractor $plainTextExtractor,
         private ChatMentionRenderer $chatMentionRenderer,
+        private TranslatorInterface $translator,
     ) {
     }
 
     /**
      * @param array<string, mixed> $payload as stored on the notification
+     * @param string               $locale  the recipient's, never the request's (the actor's)
      */
-    public function forNotification(NotificationType $type, array $payload): PushContent
+    public function forNotification(NotificationType $type, array $payload, string $locale): PushContent
     {
         $text = static fn (string $key): string => is_scalar($payload[$key] ?? null) ? (string) $payload[$key] : '';
         $bandName = $text('band_space_name');
 
-        $sentence = match ($type) {
-            NotificationType::BandSpaceInvitation => sprintf('vous a invité à rejoindre %s', $bandName),
-            NotificationType::BandSpaceInvitationAccepted => sprintf('a accepté votre invitation à %s', $bandName),
-            NotificationType::BandSpaceInvitationDeclined => sprintf('a décliné votre invitation à %s', $bandName),
-            NotificationType::BandSpaceTaskAssignment => sprintf('vous a assigné à la tâche « %s »', $text('task_title')),
-            NotificationType::TaskMention => sprintf('vous a mentionné dans la tâche « %s »', $text('task_title')),
-            NotificationType::BandSpaceChatMention => sprintf('vous a mentionné dans la discussion de « %s »', $bandName),
-            NotificationType::TaskComment => sprintf('a commenté la tâche « %s »', $text('task_title')),
-            NotificationType::BandSpaceAgendaEntryCreated => sprintf('a ajouté l\'événement « %s »', $text('entry_title')),
-            NotificationType::BandSpaceAgendaAvailabilityRequested => sprintf('demande vos disponibilités pour « %s »', $text('entry_title')),
-            NotificationType::BandSpaceFinanceSplitAssigned => sprintf('vous a attribué une dépense sur « %s »', $text('entry_label')),
+        $sentenceKey = match ($type) {
+            NotificationType::BandSpaceInvitation => 'notification.band_space_invitation',
+            NotificationType::BandSpaceInvitationAccepted => 'notification.band_space_invitation_accepted',
+            NotificationType::BandSpaceInvitationDeclined => 'notification.band_space_invitation_declined',
+            NotificationType::BandSpaceTaskAssignment => 'notification.band_space_task_assignment',
+            NotificationType::TaskMention => 'notification.task_mention',
+            NotificationType::BandSpaceChatMention => 'notification.band_space_chat_mention',
+            NotificationType::TaskComment => 'notification.task_comment',
+            NotificationType::BandSpaceAgendaEntryCreated => 'notification.band_space_agenda_entry_created',
+            NotificationType::BandSpaceAgendaAvailabilityRequested => 'notification.band_space_agenda_availability_requested',
+            NotificationType::BandSpaceFinanceSplitAssigned => 'notification.band_space_finance_split_assigned',
             NotificationType::BandSpaceRoleChanged => $text('to') === Role::Admin->value
-                ? sprintf('vous a nommé administrateur de « %s »', $bandName)
-                : sprintf('vous a retiré les droits d\'administrateur sur « %s »', $bandName),
-            NotificationType::BandSpaceMemberRemoved => sprintf('vous a retiré de « %s »', $bandName),
-            NotificationType::BandSpaceMemberLeft => sprintf('a quitté « %s »', $bandName),
-            NotificationType::BandSpaceDeletionScheduled => sprintf('a programmé la suppression de « %s »', $bandName),
-            NotificationType::BandSpaceDeletionCancelled => sprintf('a annulé la suppression de « %s »', $bandName),
-            NotificationType::ForumTopicReply => 'a répondu à votre sujet sur le forum',
-            NotificationType::PublicationComment => 'a commenté votre publication',
-            NotificationType::CommentReply => 'a répondu à votre commentaire',
-            NotificationType::PublicationApproved => 'a publié votre article',
-            NotificationType::PublicationRejected => 'a refusé votre article',
-            NotificationType::GalleryApproved => 'a publié votre galerie',
-            NotificationType::GalleryRejected => 'a refusé votre galerie',
-            NotificationType::ReportReceived, NotificationType::ReportResolved => 'a une nouvelle notification pour vous',
+                ? 'notification.band_space_role_changed.promoted'
+                : 'notification.band_space_role_changed.demoted',
+            NotificationType::BandSpaceMemberRemoved => 'notification.band_space_member_removed',
+            NotificationType::BandSpaceMemberLeft => 'notification.band_space_member_left',
+            NotificationType::BandSpaceDeletionScheduled => 'notification.band_space_deletion_scheduled',
+            NotificationType::BandSpaceDeletionCancelled => 'notification.band_space_deletion_cancelled',
+            NotificationType::ForumTopicReply => 'notification.forum_topic_reply',
+            NotificationType::PublicationComment => 'notification.publication_comment',
+            NotificationType::CommentReply => 'notification.comment_reply',
+            NotificationType::PublicationApproved => 'notification.publication_approved',
+            NotificationType::PublicationRejected => 'notification.publication_rejected',
+            NotificationType::GalleryApproved => 'notification.gallery_approved',
+            NotificationType::GalleryRejected => 'notification.gallery_rejected',
+            NotificationType::ReportReceived, NotificationType::ReportResolved => 'notification.report',
         };
 
         // An invitation predates the actor_username convention and names its inviter under its own key.
         $actor = $text('actor_username') !== '' ? $text('actor_username') : $text('invited_by_username');
+        $sentence = $this->translator->trans($sentenceKey, [
+            'actor' => $actor,
+            'band' => $bandName,
+            'task' => $text('task_title'),
+            'event' => $text('entry_title'),
+            'expense' => $text('entry_label'),
+        ], self::DOMAIN, $locale);
 
         return new PushContent(
-            $bandName !== '' ? $bandName : self::DEFAULT_TITLE,
-            self::shorten(trim($actor . ' ' . $sentence)),
+            $bandName !== '' ? $bandName : $this->translator->trans('title.default', [], self::DOMAIN, $locale),
+            // Trimmed for a notification without an actor, which leaves the sentence starting with a space.
+            self::shorten(trim($sentence)),
             self::data($type->value, $this->routeFor($type, $payload)),
         );
     }
@@ -74,13 +84,14 @@ readonly class PushContentBuilder
     /**
      * A message in a direct conversation or a band channel, for one of its other members.
      *
+     * @param string                $locale               the recipient's, as for {@see forNotification()}
      * @param array<string, string> $mentionUsernamesById the names the channel's mentions resolve to
      */
-    public function forMessage(Message $message, string $authorName, array $mentionUsernamesById = []): PushContent
+    public function forMessage(Message $message, string $authorName, string $locale, array $mentionUsernamesById = []): PushContent
     {
         $thread = $message->thread;
         $bandSpace = $thread->bandSpace;
-        $preview = $this->preview($message, $mentionUsernamesById, $bandSpace !== null);
+        $preview = $this->preview($message, $mentionUsernamesById, $bandSpace !== null, $locale);
 
         if ($bandSpace === null) {
             return new PushContent(
@@ -92,7 +103,7 @@ readonly class PushContentBuilder
 
         return new PushContent(
             $bandSpace->name,
-            self::shorten(sprintf('%s : %s', $authorName, $preview)),
+            self::shorten($this->translator->trans('message.band_channel_body', ['author' => $authorName, 'preview' => $preview], self::DOMAIN, $locale)),
             self::data('band_space_message', sprintf('/band/%s/chat?message=%s', $bandSpace->id, $message->id)),
         );
     }
@@ -137,11 +148,11 @@ readonly class PushContentBuilder
     /**
      * @param array<string, string> $mentionUsernamesById
      */
-    private function preview(Message $message, array $mentionUsernamesById, bool $isChannel): string
+    private function preview(Message $message, array $mentionUsernamesById, bool $isChannel, string $locale): string
     {
         // Content is empty for a channel message sent for its attachments alone.
         if ($message->content === '') {
-            return self::ATTACHMENT_ONLY;
+            return $this->translator->trans('message.attachment_only', [], self::DOMAIN, $locale);
         }
 
         $content = $isChannel
