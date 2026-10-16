@@ -6,6 +6,8 @@
  * being deleted, so nothing here may assume the announce still exists.
  */
 
+import { i18n } from '../i18n/index.js'
+
 const ANNOUNCE_LOOKING_FOR_MUSICIAN = 1
 
 /** « Annonce : recherche un batteur », « Annonce : Bassiste cherche un groupe », « Cours : Piano ». */
@@ -14,15 +16,19 @@ export function contactOriginLabel(origin) {
 
   const instruments = origin.instruments ?? []
   if (origin.type === 'teacher_profile') {
-    return instruments.length > 0 ? `Cours : ${instruments.join(', ')}` : 'Cours particuliers'
+    return instruments.length > 0
+      ? i18n.global.t('message.contact_origin.course', { instruments: instruments.join(', ') })
+      : i18n.global.t('message.contact_origin.private_lessons')
   }
 
   const instrument = instruments[0]
-  if (!instrument) return 'Annonce'
+  if (!instrument) return i18n.global.t('message.contact_origin.announce')
 
   return origin.announce_type === ANNOUNCE_LOOKING_FOR_MUSICIAN
-    ? `Annonce : recherche un ${instrument.toLowerCase()}`
-    : `Annonce : ${instrument} cherche un groupe`
+    ? i18n.global.t('message.contact_origin.announce_looking_for_musician', {
+        instrument: instrument.toLowerCase()
+      })
+    : i18n.global.t('message.contact_origin.announce_looking_for_band', { instrument })
 }
 
 /** « Rock, Blues · Lyon », or null when the snapshot carries neither. */

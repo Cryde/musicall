@@ -1,3 +1,4 @@
+import { i18n } from '../i18n/index.js'
 import { extractUrls } from './autoLink.js'
 
 /**
@@ -15,12 +16,12 @@ import { extractUrls } from './autoLink.js'
  * the browser decodes the same entities out of the `href` before navigating.
  */
 
-const KIND_LABELS = {
-  video: 'Vidéo',
-  track: 'Morceau',
-  album: 'Album',
-  playlist: 'Playlist',
-  artist: 'Artiste'
+const KIND_TITLE_KEYS = {
+  video: 'message.music_link.title.video',
+  track: 'message.music_link.title.track',
+  album: 'message.music_link.title.album',
+  playlist: 'message.music_link.title.playlist',
+  artist: 'message.music_link.title.artist'
 }
 
 const PROVIDER_LABELS = {
@@ -124,7 +125,7 @@ function describe(provider, kind, embedUrl, href) {
     provider,
     kind,
     embedUrl,
-    title: `${KIND_LABELS[kind]} ${PROVIDER_LABELS[provider]}`,
+    title: i18n.global.t(KIND_TITLE_KEYS[kind], { provider: PROVIDER_LABELS[provider] }),
     href
   }
 }

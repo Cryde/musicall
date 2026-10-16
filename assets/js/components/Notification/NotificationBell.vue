@@ -3,7 +3,7 @@
     <button
       type="button"
       class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-      :aria-label="store.unreadCount > 0 ? `Notifications (${store.unreadCount} non lues)` : 'Notifications'"
+      :aria-label="store.unreadCount > 0 ? t('notification.bell.aria_label_unread', { count: store.unreadCount }) : t('notification.title')"
       aria-haspopup="dialog"
       :aria-expanded="isPopoverOpen"
       @click="toggle"
@@ -16,15 +16,15 @@
 
     <Popover
       ref="popover"
-      :pt="{ root: { 'aria-label': 'Notifications' } }"
+      :pt="{ root: { 'aria-label': t('notification.title') } }"
       @show="onPopoverShow"
       @hide="isPopoverOpen = false"
     >
       <div class="w-80 sm:w-96">
         <div class="flex items-center justify-between gap-2 px-2 pb-3">
-          <span class="text-lg font-semibold">Notifications</span>
+          <span class="text-lg font-semibold">{{ t('notification.title') }}</span>
           <Button
-            label="Tout marquer comme lu"
+            :label="t('notification.mark_all_read')"
             link
             size="small"
             :disabled="store.unreadCount === 0"
@@ -35,7 +35,7 @@
         <div
           class="flex gap-1 border-b border-surface px-2 pb-2 mb-1"
           role="tablist"
-          aria-label="Filtrer les notifications"
+          :aria-label="t('notification.bell.filter_aria_label')"
         >
           <button
             v-for="tab in tabs"
@@ -51,16 +51,16 @@
             "
             @click="activeTab = tab.value"
           >
-            {{ tab.label }}
+            {{ t(tab.labelKey) }}
           </button>
         </div>
 
         <div class="max-h-96 overflow-y-auto">
           <div v-if="store.isLoading" class="py-8 text-center text-sm text-surface-500">
-            Chargement...
+            {{ t('notification.bell.loading') }}
           </div>
           <div v-else-if="visibleItems.length === 0" class="py-8 text-center text-sm text-surface-500">
-            <p>{{ activeTab === 'unread' ? 'Aucune notification non lue' : 'Aucune notification' }}</p>
+            <p>{{ activeTab === 'unread' ? t('notification.bell.empty_unread') : t('notification.bell.empty') }}</p>
           </div>
           <NotificationItem
             v-for="notification in visibleItems"
@@ -79,7 +79,7 @@
             class="text-sm text-primary hover:underline"
             @click="onItemNavigate"
           >
-            Voir toutes les notifications
+            {{ t('notification.bell.see_all') }}
           </RouterLink>
         </div>
       </div>
@@ -92,6 +92,7 @@ import Button from 'primevue/button'
 import OverlayBadge from 'primevue/overlaybadge'
 import Popover from 'primevue/popover'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
@@ -104,6 +105,7 @@ const POLL_INTERVAL_MS = 5 * 60_000
 
 const emit = defineEmits(['navigate'])
 
+const { t } = useI18n()
 const store = useUserNotificationStore()
 const notificationStore = useNotificationStore()
 
@@ -112,8 +114,8 @@ const isPopoverOpen = ref(false)
 const activeTab = ref('unread')
 
 const tabs = [
-  { value: 'unread', label: 'Non lues' },
-  { value: 'all', label: 'Toutes' }
+  { value: 'unread', labelKey: 'notification.bell.tab_unread' },
+  { value: 'all', labelKey: 'notification.bell.tab_all' }
 ]
 
 const badgeValue = computed(() => (store.unreadCount > 99 ? '99+' : store.unreadCount))

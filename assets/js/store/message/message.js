@@ -4,6 +4,7 @@ import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { CHAT_TESTER_ONLY } from '../../constants/bandSpace.js'
+import { i18n } from '../../i18n/index.js'
 import { isChannel } from '../../utils/conversationIdentity.js'
 import {
   hasOlderToLoad,
@@ -225,7 +226,7 @@ export const useMessageStore = defineStore('message', () => {
       totalMessages.value = response.totalItems ?? totalMessages.value
     } catch (e) {
       console.error('Failed to load older messages:', e)
-      loadOlderError.value = 'Impossible de charger les messages plus anciens.'
+      loadOlderError.value = i18n.global.t('message.thread.load_older_error')
     } finally {
       isLoadingOlderMessages.value = false
     }

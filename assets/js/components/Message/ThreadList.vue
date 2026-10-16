@@ -21,16 +21,16 @@
               shape="circle"
               size="large"
               role="img"
-              :aria-label="`Discussion du groupe ${getTitle(threadMeta)}`"
+              :aria-label="t('message.avatar.channel', { name: getTitle(threadMeta) })"
             />
             <Avatar
               v-else-if="getParticipant(threadMeta)?.profile_picture?.small && !getParticipant(threadMeta)?.deletion_datetime"
               :image="getParticipant(threadMeta).profile_picture.small"
-              :pt="{ image: { alt: `Photo de ${getTitle(threadMeta)}` } }"
+              :pt="{ image: { alt: t('message.avatar.photo', { name: getTitle(threadMeta) }) } }"
               shape="circle"
               size="large"
               role="img"
-              :aria-label="`Photo de ${getTitle(threadMeta)}`"
+              :aria-label="t('message.avatar.photo', { name: getTitle(threadMeta) })"
             />
             <Avatar
               v-else
@@ -39,7 +39,7 @@
               shape="circle"
               size="large"
               role="img"
-              :aria-label="`Avatar de ${getTitle(threadMeta)}`"
+              :aria-label="t('message.avatar.initial', { name: getTitle(threadMeta) })"
             />
 
             <div class="flex-1 min-w-0">
@@ -67,7 +67,7 @@
                   v-if="threadMeta.unread_count > 0"
                   severity="info"
                   :value="unreadLabel(threadMeta.unread_count)"
-                  :aria-label="`${threadMeta.unread_count} message(s) non lu(s)`"
+                  :aria-label="t('message.thread_list.unread_aria_label', { count: threadMeta.unread_count })"
                   class="text-xs"
                 />
               </div>
@@ -87,9 +87,9 @@
                 <!-- Who wrote it, for a channel only: a direct message has one possible other author
                      and the row is already named after them. -->
                 <span v-if="isChannel(threadMeta) && threadMeta.thread.last_message?.author">
-                  {{ displayName(threadMeta.thread.last_message.author) }}&nbsp;:
+                  {{ t('message.thread_list.last_message_author', { author: displayName(threadMeta.thread.last_message.author) }) }}
                 </span>
-                {{ threadMeta.thread.last_message?.content_preview || 'Aucun message' }}
+                {{ threadMeta.thread.last_message?.content_preview || t('message.thread_list.no_message') }}
               </p>
             </div>
           </div>
@@ -98,7 +98,7 @@
     </template>
 
     <div v-else class="flex-1 flex items-center justify-center text-surface-500 dark:text-surface-400 p-4 text-center">
-      Vous n'avez pas encore de message.
+      {{ t('message.thread_list.empty') }}
     </div>
   </div>
 </template>
@@ -106,6 +106,7 @@
 <script setup>
 import Avatar from 'primevue/avatar'
 import Tag from 'primevue/tag'
+import { useI18n } from 'vue-i18n'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useMessageStore } from '../../store/message/message.js'
@@ -114,6 +115,7 @@ import { conversationTitle, isChannel } from '../../utils/conversationIdentity.j
 import UserName from '../User/UserName.vue'
 import ContactOrigin from './ContactOrigin.vue'
 
+const { t } = useI18n()
 const messageStore = useMessageStore()
 
 function getParticipant(threadMeta) {

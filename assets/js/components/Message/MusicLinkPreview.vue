@@ -23,7 +23,7 @@
     <a
       v-else
       :href="preview.href"
-      :aria-label="`${preview.title} : ouvrir ${displayedHref} dans un nouvel onglet`"
+      :aria-label="t('message.music_link.open_aria_label', { title: preview.title, href: displayedHref })"
       target="_blank"
       rel="noopener noreferrer"
       class="flex items-center gap-3 rounded-xl border border-surface-200 bg-surface-0 p-3 transition-colors hover:border-primary-500 dark:border-surface-600 dark:bg-surface-800"
@@ -51,6 +51,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { findMusicLinkPreview } from '../../utils/musicLinkPreview.js'
 
 const props = defineProps({
@@ -58,6 +59,8 @@ const props = defineProps({
   /** Own messages sit on the right, so their preview does too. Same prop as ChatMessageReactions. */
   alignEnd: { type: Boolean, default: false }
 })
+
+const { t } = useI18n()
 
 // Only what each player actually needs. Absent means the browser grants a cross-origin frame
 // nothing, which is what SoundCloud runs on.

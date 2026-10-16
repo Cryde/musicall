@@ -14,12 +14,16 @@ const MIGRATED_PATHS = [
   'components/AppNavbarUserCluster.vue',
   'components/Auth/AuthRequiredModal.vue',
   'components/Auth/SignupOptions.vue',
+  'components/Message/',
+  'components/Notification/',
   'components/Search/',
   'components/SkipLink.vue',
   'views/Global/Breadcrumb.vue',
   'views/Global/Footer.vue',
   'views/Global/Menu.vue',
   'views/Global/MenuBand.vue',
+  'views/Message/',
+  'views/Notification/',
   'views/Search/'
 ]
 
