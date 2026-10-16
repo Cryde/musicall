@@ -2,10 +2,10 @@
   <div class="flex flex-col gap-6">
     <!-- Contributions des membres -->
     <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
-      <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-3">Contributions des membres</h3>
+      <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-3">{{ t('band_space_finance.sidebar.contributions') }}</h3>
 
       <div v-if="!memberContributions.length" class="text-sm text-surface-400 italic">
-        Aucune contribution
+        {{ t('band_space_finance.sidebar.no_contribution') }}
       </div>
 
       <div v-else class="flex flex-col gap-3">
@@ -26,10 +26,10 @@
 
     <!-- Prochaines échéances -->
     <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
-      <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-3">Prochaines échéances</h3>
+      <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-3">{{ t('band_space_finance.sidebar.upcoming') }}</h3>
 
       <div v-if="!upcomingEntries.length" class="text-sm text-surface-400 italic">
-        Aucune échéance à venir
+        {{ t('band_space_finance.sidebar.no_upcoming') }}
       </div>
 
       <div v-else class="flex flex-col gap-2">
@@ -50,10 +50,13 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { contributionPercent, largestContribution } from '../../../utils/contributionBar.js'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
 import FinanceStatusDot from './FinanceStatusDot.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   summary: { type: Object, default: null }

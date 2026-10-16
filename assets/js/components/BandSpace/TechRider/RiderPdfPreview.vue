@@ -6,8 +6,8 @@
       <span role="status" class="flex items-center gap-2 min-w-0">
         <template v-if="error">
           <i class="pi pi-times text-red-600 dark:text-red-400" aria-hidden="true" />
-          <span>Aperçu indisponible</span>
-          <Button label="Réessayer" size="small" severity="secondary" text @click="scheduler.refresh()" />
+          <span>{{ t('band_space_tech_rider.pdf_preview.unavailable') }}</span>
+          <Button :label="t('band_space_tech_rider.common.retry')" size="small" severity="secondary" text @click="scheduler.refresh()" />
         </template>
       </span>
       <!-- The way in where the browser cannot show a PDF inline, which most phones cannot. -->
@@ -17,7 +17,7 @@
         target="_blank"
         rel="noopener"
         class="shrink-0 underline hover:no-underline"
-      >Ouvrir dans un onglet</a>
+      >{{ t('band_space_tech_rider.pdf_preview.open_in_tab') }}</a>
     </div>
 
     <!-- Keyed on its URL: the viewer only reads the destination on load, a new fragment alone
@@ -27,7 +27,7 @@
       <iframe
         :key="viewerUrl"
         :src="viewerUrl"
-        title="Aperçu du PDF du tech rider"
+        :title="t('band_space_tech_rider.pdf_preview.frame_title')"
         :class="[
           'flex-1 min-h-0 w-full rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 transition-opacity',
           isOutdated ? 'opacity-50' : ''
@@ -41,7 +41,7 @@
         class="pointer-events-none absolute top-14 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full shadow-md text-sm bg-surface-0 text-surface-700 dark:bg-surface-900 dark:text-surface-200 border border-surface-200 dark:border-surface-700"
       >
         <i class="pi pi-spin pi-spinner" />
-        <span>Mise à jour de l’aperçu…</span>
+        <span>{{ t('band_space_tech_rider.pdf_preview.updating') }}</span>
       </div>
     </div>
     <div
@@ -57,6 +57,7 @@
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceTechRidersApi from '../../../api/bandSpace/band-space-tech-riders.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import { createPdfPreviewScheduler } from '../../../utils/pdfPreviewScheduler.js'
@@ -71,6 +72,7 @@ const props = defineProps({
   selectedItemId: { type: String, default: null }
 })
 
+const { t } = useI18n()
 const techRidersStore = useBandTechRidersStore()
 
 const pdfUrl = ref(null)

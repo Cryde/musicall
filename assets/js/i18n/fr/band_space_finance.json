@@ -1,1 +1,227 @@
-{}
+{
+  "common": {
+    "error": "Erreur",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "confirm_delete_header": "Confirmer la suppression",
+    "recurrence": "Récurrence",
+    "personal_badge": "Perso",
+    "add_category": "Ajouter une catégorie",
+    "add_entry": "Ajouter une entrée",
+    "entry_count": "{count} entrée | {count} entrées",
+    "label": "Libellé",
+    "category": "Catégorie",
+    "type": "Type",
+    "scope": "Portée",
+    "select_category": "Sélectionne une catégorie",
+    "select_type": "Sélectionne un type",
+    "select_scope": "Sélectionne la portée"
+  },
+  "type": {
+    "expense": "Dépense",
+    "income": "Revenu"
+  },
+  "totals": {
+    "income": "Revenus",
+    "expense": "Dépenses"
+  },
+  "status": {
+    "planned": "Prévu",
+    "committed": "Engagé",
+    "paid": "Payé"
+  },
+  "scope": {
+    "band": "Groupe",
+    "personal": "Personnel"
+  },
+  "store": {
+    "load_categories_error": "Impossible de charger les catégories"
+  },
+  "confirmations": {
+    "category_has_children": "Cette catégorie contient des sous-catégories et ne peut pas être supprimée. Supprimez ou déplacez ses sous-catégories d’abord.",
+    "category_delete": "Es-tu sûr de vouloir supprimer cette catégorie ? Elle ne contient aucune entrée. | Es-tu sûr de vouloir supprimer cette catégorie ? L’entrée qu’elle contient et ses récurrences seront également supprimées. | Es-tu sûr de vouloir supprimer cette catégorie ? Les {count} entrées qu’elle contient et ses récurrences seront également supprimées.",
+    "recurrence_delete": "Es-tu sûr de vouloir supprimer cette récurrence ? Les entrées prévues qu’elle a générées seront également supprimées, les entrées engagées ou payées seront conservées."
+  },
+  "page": {
+    "retry": "Réessayer",
+    "all_periods": "Toutes périodes",
+    "view_categories": "Vue par catégories",
+    "view_timeline": "Vue chronologique",
+    "view_chart": "Vue graphique (toutes périodes)",
+    "presets": {
+      "this_month": "Ce mois",
+      "last_month": "Mois dernier",
+      "this_quarter": "Ce trimestre",
+      "last_quarter": "Trimestre dernier",
+      "this_year": "Cette année",
+      "last_year": "Année dernière",
+      "all": "Depuis le début"
+    },
+    "entry_not_found": "Entrée introuvable",
+    "load_error": "Erreur de chargement",
+    "move_entry_error": "Impossible de déplacer cette entrée",
+    "category_created": "Catégorie créée",
+    "create_category_error": "Impossible de créer la catégorie",
+    "category_deleted": "Catégorie supprimée",
+    "delete_category_error": "Impossible de supprimer la catégorie",
+    "category_renamed": "Catégorie renommée",
+    "rename_category_error": "Impossible de renommer la catégorie",
+    "recurrence_entries_updated": "{count} entrée mise à jour | {count} entrées mises à jour",
+    "recurrence_entries_created": "{count} entrée ajoutée | {count} entrées ajoutées",
+    "recurrence_entries_removed": "{count} entrée supprimée | {count} entrées supprimées",
+    "recurrence_no_entry_changed": "Aucune entrée modifiée",
+    "recurrence_saved": "Récurrence enregistrée",
+    "recurrence_deleted": "Récurrence supprimée",
+    "entry_saved": "Entrée enregistrée",
+    "entry_deleted": "Entrée supprimée"
+  },
+  "bootstrap": {
+    "title": "Aucune catégorie de finances configurée",
+    "intro": "Veux-tu partir d'une structure suggérée ? Tu pourras la personnaliser ensuite.",
+    "create_defaults": "Créer les catégories par défaut",
+    "create_manually": "Ou crée ta première catégorie manuellement",
+    "created": "Catégories créées",
+    "create_error": "Impossible de créer les catégories"
+  },
+  "create_category_dialog": {
+    "title_child": "Nouvelle sous-catégorie",
+    "title": "Nouvelle catégorie",
+    "name": "Nom",
+    "name_placeholder_child": "Nom de la sous-catégorie",
+    "name_placeholder": "Nom de la catégorie",
+    "create": "Créer",
+    "name_required": "Veuillez saisir un nom"
+  },
+  "metric_cards": {
+    "income_hint": "Total des revenus du groupe avec le statut Payé",
+    "expense_hint": "Total des dépenses du groupe avec le statut Payé",
+    "committed_hint": "Total des entrées du groupe avec le statut Engagé (dépenses + revenus). Les fourchettes utilisent la moyenne.",
+    "planned_hint": "Total des entrées du groupe avec le statut Prévu (dépenses + revenus). Les fourchettes utilisent la moyenne.",
+    "personal": "Personnel",
+    "personal_hint": "Total de vos entrées personnelles, tous statuts confondus. Non inclus dans les totaux du groupe."
+  },
+  "type_totals": {
+    "income": "Revenus :",
+    "expense": "Dépenses :"
+  },
+  "split_warning": {
+    "label": "Répartition à revoir : le total réparti entre les membres ne correspond pas au montant de l’entrée."
+  },
+  "entry_list": {
+    "drag_title": "Déplacer vers une autre catégorie",
+    "drag_aria_label": "Déplacer l'entrée",
+    "paid_locked_title": "Entrée payée : repassez-la en « Engagé » pour la déplacer",
+    "paid_locked_aria_label": "Entrée payée, non déplaçable",
+    "empty": "Aucune entrée"
+  },
+  "pole_accordion": {
+    "paid_share": "{type} · {percent}% payé",
+    "validate": "Valider",
+    "rename_child": "Renommer la sous-catégorie",
+    "delete_child": "Supprimer la sous-catégorie",
+    "add_child": "Ajouter une sous-catégorie",
+    "rename": "Renommer",
+    "delete_category": "Supprimer la catégorie"
+  },
+  "timeline": {
+    "empty": "Aucune entrée sur cette période"
+  },
+  "sidebar": {
+    "contributions": "Contributions des membres",
+    "no_contribution": "Aucune contribution",
+    "upcoming": "Prochaines échéances",
+    "no_upcoming": "Aucune échéance à venir"
+  },
+  "recurrence_list": {
+    "title": "Récurrences",
+    "add": "+ Nouvelle récurrence",
+    "empty": "Aucune récurrence",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "interval": {
+      "weekly": "Hebdo",
+      "monthly": "Mensuel",
+      "quarterly": "Trim.",
+      "yearly": "Annuel"
+    }
+  },
+  "entry_drawer": {
+    "title_edit": "Modifier l’entrée",
+    "title_new": "Nouvelle entrée",
+    "locked": "Cette entrée est verrouillée. Repassez le statut à « Engagé » pour la modifier.",
+    "label_placeholder": "Ex : Location salle de répétition",
+    "status": "Statut",
+    "select_status": "Sélectionne un statut",
+    "amount": "Montant",
+    "amount_min": "Montant minimum",
+    "amount_max": "Montant maximum",
+    "amount_min_placeholder": "Min",
+    "amount_max_placeholder": "Max",
+    "date": "Date",
+    "generated_by_recurrence": "Entrée générée par une récurrence",
+    "personal_files_warning": "Les fichiers joints restent visibles par tous les membres du Band Space, même si cette entrée est personnelle.",
+    "amount_mode": {
+      "exact": "Montant exact",
+      "range": "Fourchette"
+    },
+    "transition": {
+      "mark_committed": "Marquer comme Engagé",
+      "mark_paid": "Marquer comme Payé",
+      "back_to_planned": "Annuler → Prévu",
+      "reopen": "Rouvrir → Engagé"
+    },
+    "status_change_error": "Impossible de changer le statut",
+    "reopen_confirm": "Cette entrée sera marquée comme « Engagé » et redeviendra modifiable. Continuer ?",
+    "reopen_header": "Rouvrir l’entrée",
+    "reopen_accept": "Rouvrir",
+    "category_required": "Veuillez sélectionner une catégorie",
+    "split_failed": "L’entrée a été enregistrée mais la répartition a échoué : {error}",
+    "unknown_error": "erreur inconnue",
+    "save_error": "Impossible d’enregistrer l’entrée",
+    "delete_confirm": "Es-tu sûr de vouloir supprimer cette entrée ?",
+    "delete_error": "Impossible de supprimer l’entrée"
+  },
+  "recurrence_drawer": {
+    "title_edit": "Modifier la récurrence",
+    "title_new": "Nouvelle récurrence",
+    "label_placeholder": "Ex : Loyer local de répétition",
+    "amount": "Montant (en euros)",
+    "interval": "Intervalle",
+    "select_interval": "Sélectionne un intervalle",
+    "frozen_schedule_hint": "Non modifiable : terminez cette récurrence et créez-en une nouvelle.",
+    "start_date": "Date de début",
+    "end_date": "Date de fin",
+    "deactivate": "Désactiver",
+    "activate": "Activer",
+    "intervals": {
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel",
+      "quarterly": "Trimestriel",
+      "yearly": "Annuel"
+    },
+    "save_error": "Impossible d’enregistrer la récurrence",
+    "delete_error": "Impossible de supprimer la récurrence",
+    "toggle_error": "Impossible de modifier le statut de la récurrence"
+  },
+  "split_manager": {
+    "title": "Répartition entre membres",
+    "no_member": "Aucun membre trouvé",
+    "total": "Total",
+    "total_matches": "Le total réparti correspond au montant de l’entrée",
+    "total_mismatch": "Le total réparti ne correspond pas au montant de l’entrée",
+    "no_split": "Aucune répartition",
+    "summary": "{count} membre · {amount} | {count} membres · {amount}",
+    "total_exceeds_amount": "Le total des répartitions ({total}) dépasse le montant de l’entrée ({amount})."
+  },
+  "pie_chart": {
+    "income_title": "Revenus par catégorie",
+    "expense_title": "Dépenses par catégorie",
+    "no_income": "Aucun revenu enregistré",
+    "no_expense": "Aucune dépense enregistrée",
+    "top_income": "Top 10 des revenus",
+    "top_expense": "Top 10 des dépenses",
+    "tooltip": "{label} : {amount}"
+  }
+}

@@ -2,7 +2,7 @@
   <div class="flex flex-col min-h-0 h-full">
     <div class="flex items-center gap-2 px-4 pt-4 pb-3">
       <i class="pi pi-book text-surface-600 dark:text-surface-300" aria-hidden="true" />
-      <h2 class="flex-1 m-0 text-base font-semibold">Répertoire</h2>
+      <h2 class="flex-1 m-0 text-base font-semibold">{{ t('band_space_setlist.common.repertoire') }}</h2>
       <Button
         v-if="closable"
         icon="pi pi-times"
@@ -10,7 +10,7 @@
         text
         rounded
         size="small"
-        aria-label="Masquer le répertoire"
+        :aria-label="t('band_space_setlist.repertoire_panel.hide_aria')"
         @click="emit('close')"
       />
     </div>
@@ -18,7 +18,7 @@
     <div class="px-4 pb-3">
       <IconField>
         <InputIcon class="pi pi-search" />
-        <InputText v-model="query" type="search" placeholder="Rechercher un titre…" aria-label="Rechercher dans le répertoire" class="w-full" />
+        <InputText v-model="query" type="search" :placeholder="t('band_space_setlist.common.search_song_placeholder')" :aria-label="t('band_space_setlist.common.search_repertoire_aria')" class="w-full" />
       </IconField>
     </div>
 
@@ -28,10 +28,10 @@
 
     <div class="flex-1 min-h-0 overflow-y-auto pb-2">
       <h3 class="px-4 pt-1 pb-1.5 m-0 text-[11px] font-semibold tracking-wide uppercase text-surface-600 dark:text-surface-300">
-        Disponibles · {{ available.length }}
+        {{ t('band_space_setlist.repertoire_panel.available', { count: available.length }) }}
       </h3>
       <p v-if="available.length === 0" class="px-4 text-xs italic text-surface-600 dark:text-surface-300 m-0">
-        {{ query ? 'Aucun titre ne correspond.' : 'Tout le répertoire est dans la setlist.' }}
+        {{ query ? t('band_space_setlist.common.no_matching_song') : t('band_space_setlist.repertoire_panel.all_in_setlist') }}
       </p>
       <!-- A drag source only: dropping a song on the setlist inserts it where it lands, and the list
            here is never reordered or emptied by a drag. -->
@@ -55,7 +55,7 @@
       <template v-if="inSetlist.length > 0">
         <h3 class="flex items-center gap-1.5 px-4 pt-4 pb-1.5 m-0 text-[11px] font-semibold tracking-wide uppercase text-surface-600 dark:text-surface-300">
           <i class="pi pi-check-circle text-[11px]" aria-hidden="true" />
-          Déjà dans la setlist · {{ inSetlist.length }}
+          {{ t('band_space_setlist.repertoire_panel.in_setlist', { count: inSetlist.length }) }}
         </h3>
         <VueDraggable
           :model-value="inSetlist"
@@ -79,7 +79,7 @@
 
     <div v-if="!readonly" class="p-3 border-t border-surface-200 dark:border-surface-700">
       <Button
-        label="Nouveau titre (ajouté au répertoire)"
+        :label="t('band_space_setlist.repertoire_panel.new_song')"
         icon="pi pi-plus"
         severity="secondary"
         outlined
@@ -98,6 +98,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useI18n } from 'vue-i18n'
 import SetlistRepertoireEntry from './SetlistRepertoireEntry.vue'
 import { DRAG_GROUP, pendingSongItem } from './setlistDrag.js'
 
@@ -114,6 +115,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add', 'create-song', 'close'])
+const { t } = useI18n()
 
 const query = ref('')
 

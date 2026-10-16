@@ -1,3 +1,4 @@
+import { i18n } from '../i18n/index.js'
 import { channelLabel } from './patchGrid.js'
 
 /**
@@ -6,16 +7,25 @@ import { channelLabel } from './patchGrid.js'
  * since those are what the venue's engineer patches from.
  */
 
-function plural(count, singular, pluralForm) {
-  return `${count} ${count > 1 ? pluralForm : singular}`
+const WITHOUT_NAME_KEYS = {
+  none: 'band_space_tech_rider.readiness.without_name',
+  one: 'band_space_tech_rider.readiness.without_name_on_channel',
+  many: 'band_space_tech_rider.readiness.without_name_on_channels'
 }
 
-/** « canal 7 », « canaux 3, 8-9 »: the channels of the rows concerned, as printed. */
-function channelsOf(rows) {
-  const labels = rows.map(channelLabel).filter(Boolean)
-  if (labels.length === 0) return ''
+const WITHOUT_MICROPHONE_KEYS = {
+  none: 'band_space_tech_rider.readiness.without_microphone',
+  one: 'band_space_tech_rider.readiness.without_microphone_on_channel',
+  many: 'band_space_tech_rider.readiness.without_microphone_on_channels'
+}
 
-  return ` (${labels.length > 1 ? 'canaux' : 'canal'} ${labels.join(', ')})`
+/** « 1 entrée sans micro (canal 7) », « 2 entrées sans nom (canaux 3, 8-9) »: the channels as printed. */
+function missingMessage(rows, keys) {
+  const labels = rows.map(channelLabel).filter(Boolean)
+  if (labels.length === 0) return i18n.global.t(keys.none, rows.length)
+
+  const key = labels.length > 1 ? keys.many : keys.one
+  return i18n.global.t(key, { channels: labels.join(', ') }, rows.length)
 }
 
 function patchListProblems(item) {
@@ -24,12 +34,8 @@ function patchListProblems(item) {
   const withoutMicrophone = inputs.filter((row) => !row.microphone?.trim())
 
   return [
-    withoutName.length > 0
-      ? `${plural(withoutName.length, 'entrée sans nom', 'entrées sans nom')}${channelsOf(withoutName)}`
-      : null,
-    withoutMicrophone.length > 0
-      ? `${plural(withoutMicrophone.length, 'entrée sans micro', 'entrées sans micro')}${channelsOf(withoutMicrophone)}`
-      : null
+    withoutName.length > 0 ? missingMessage(withoutName, WITHOUT_NAME_KEYS) : null,
+    withoutMicrophone.length > 0 ? missingMessage(withoutMicrophone, WITHOUT_MICROPHONE_KEYS) : null
   ].filter(Boolean)
 }
 

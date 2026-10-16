@@ -5,11 +5,16 @@
     class="flex flex-col gap-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 p-3"
   >
     <div class="flex items-baseline justify-between gap-2 text-sm">
-      <h3 :id="titleId" class="font-semibold">Prêt à envoyer</h3>
+      <h3 :id="titleId" class="font-semibold">{{ t('band_space_tech_rider.readiness.title') }}</h3>
       <span class="tabular-nums text-surface-600 dark:text-surface-300">
         <span aria-hidden="true">{{ readiness.ready }} / {{ readiness.total }}</span>
         <!-- Worded so nothing has to agree with the count: « 1 sur 1 sections prêtes » was not French. -->
-        <span class="sr-only">sections prêtes : {{ readiness.ready }} sur {{ readiness.total }}</span>
+        <span class="sr-only">{{
+          t('band_space_tech_rider.readiness.ready_count', {
+            ready: readiness.ready,
+            total: readiness.total
+          })
+        }}</span>
       </span>
     </div>
     <div class="h-1.5 rounded-full bg-surface-200 dark:bg-surface-700" aria-hidden="true">
@@ -22,12 +27,12 @@
 
     <p v-if="isReady" class="flex items-center gap-2 text-xs text-surface-700 dark:text-surface-200">
       <i class="pi pi-check text-teal-700 dark:text-teal-300" aria-hidden="true" />
-      Tout ce qui est visible dans le PDF est complet.
+      {{ t('band_space_tech_rider.readiness.complete') }}
     </p>
     <!-- Each line opens the section it is about: the card says what to fix and gets you there. -->
     <ul v-else class="m-0 p-0 list-none flex flex-col gap-1 text-xs leading-snug text-surface-700 dark:text-surface-200">
       <li v-if="readiness.empty.length > 0" class="px-1 py-0.5">
-        <span class="font-medium">{{ readiness.empty.length > 1 ? 'Sections vides' : 'Section vide' }}</span>&nbsp;:
+        <span class="font-medium">{{ t('band_space_tech_rider.readiness.empty_sections', readiness.empty.length) }}</span>&nbsp;:
         <template v-for="(section, index) in readiness.empty" :key="section.itemId">
           <button
             type="button"
@@ -51,6 +56,7 @@
 
 <script setup>
 import { computed, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { riderReadiness } from '../../../utils/riderCompleteness.js'
 
 /** The « Prêt à envoyer » card under the outline (#1093), from the sections as last saved. */
@@ -59,6 +65,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select'])
+
+const { t } = useI18n()
 
 // Rendered once per layout, so the heading id cannot be fixed.
 const titleId = useId()

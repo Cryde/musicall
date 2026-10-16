@@ -23,8 +23,8 @@
         <span
           v-if="isDraggable(entry)"
           class="finance-entry-drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing touch-none text-surface-300 hover:text-surface-500 dark:text-surface-600 dark:hover:text-surface-400 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-          title="Déplacer vers une autre catégorie"
-          aria-label="Déplacer l'entrée"
+          :title="t('band_space_finance.entry_list.drag_title')"
+          :aria-label="t('band_space_finance.entry_list.drag_aria_label')"
           @click.stop
         >
           <i class="pi pi-bars text-xs"></i>
@@ -34,8 +34,8 @@
         <span
           v-else-if="isPaidLocked(entry)"
           class="flex-shrink-0 cursor-not-allowed text-surface-300 dark:text-surface-600 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-          title="Entrée payée : repassez-la en « Engagé » pour la déplacer"
-          aria-label="Entrée payée, non déplaçable"
+          :title="t('band_space_finance.entry_list.paid_locked_title')"
+          :aria-label="t('band_space_finance.entry_list.paid_locked_aria_label')"
         >
           <i class="pi pi-lock text-xs"></i>
         </span>
@@ -47,7 +47,7 @@
         <i
           v-if="entry.recurrence_id"
           class="pi pi-sync text-xs text-surface-400 flex-shrink-0"
-          title="Récurrence"
+          :title="t('band_space_finance.common.recurrence')"
         ></i>
 
         <!-- Label -->
@@ -61,7 +61,7 @@
           v-if="entry.scope === 'personal'"
           class="text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
         >
-          Perso
+          {{ t('band_space_finance.common.personal_badge') }}
         </span>
 
         <!-- Type badge (hidden on mobile) -->
@@ -69,7 +69,7 @@
           class="hidden sm:inline text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
           :class="typeBadgeClass(entry.type)"
         >
-          {{ entry.type === 'expense' ? 'Dépense' : 'Revenu' }}
+          {{ entry.type === 'expense' ? t('band_space_finance.type.expense') : t('band_space_finance.type.income') }}
         </span>
 
         <!-- Répartition that no longer matches the amount. Sits against the amount because that is
@@ -86,7 +86,7 @@
         <button
           v-if="canEdit(entry)"
           class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-surface-400 hover:text-primary flex-shrink-0 p-1"
-          title="Modifier"
+          :title="t('band_space_finance.common.edit')"
           @click.stop="emit('edit', entry)"
         >
           <i class="pi pi-pencil text-sm"></i>
@@ -94,7 +94,7 @@
       </div>
     </VueDraggable>
     <div v-if="localEntries.length === 0 && !hideEmptyState" class="text-sm text-surface-400 italic py-1">
-      Aucune entrée
+      {{ t('band_space_finance.entry_list.empty') }}
     </div>
   </div>
 </template>
@@ -102,11 +102,14 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
 import FinanceSplitWarning from './FinanceSplitWarning.vue'
 import FinanceStatusDot from './FinanceStatusDot.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   entries: { type: Array, required: true },

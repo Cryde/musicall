@@ -1,7 +1,7 @@
 <template>
   <section
     class="flex flex-col gap-4 min-w-0"
-    :aria-label="`Édition : ${item.title}`"
+    :aria-label="t('band_space_tech_rider.section_panel.label', { title: item.title })"
   >
     <div class="flex flex-wrap items-center gap-3">
       <i :class="['pi', riderSectionTypeIcon(item.type), 'text-surface-600 dark:text-surface-300']" aria-hidden="true" />
@@ -23,7 +23,9 @@
             :model-value="item.is_included"
             @update:model-value="emit('toggle-included', item)"
           />
-          <label :for="visibilityId" class="text-sm">Visible dans le PDF</label>
+          <label :for="visibilityId" class="text-sm">{{
+            t('band_space_tech_rider.section_panel.visible_in_pdf')
+          }}</label>
         </div>
         <Button
           icon="pi pi-ellipsis-v"
@@ -31,7 +33,7 @@
           text
           rounded
           aria-haspopup="menu"
-          :aria-label="`Actions de la section ${item.title}`"
+          :aria-label="t('band_space_tech_rider.section_panel.actions', { title: item.title })"
           @click="(event) => menuRef.toggle(event)"
         />
         <Menu ref="menuRef" :model="menuItems" :popup="true" />
@@ -40,7 +42,7 @@
         v-else-if="!item.is_included"
         class="text-sm text-surface-600 dark:text-surface-300"
       >
-        Masquée dans le PDF
+        {{ t('band_space_tech_rider.section_panel.hidden_in_pdf') }}
       </span>
     </div>
 
@@ -95,17 +97,30 @@
       :read-only="readOnly"
     />
 
-    <Dialog v-model:visible="renameDialogOpen" modal header="Renommer la section" :style="{ width: '26rem' }">
+    <Dialog
+      v-model:visible="renameDialogOpen"
+      modal
+      :header="t('band_space_tech_rider.section_panel.rename_header')"
+      :style="{ width: '26rem' }"
+    >
       <form class="flex flex-col gap-4" @submit.prevent="handleRename">
         <div>
           <label for="renameSectionTitle" class="block text-sm font-medium mb-1">
-            Titre <span class="text-red-600 dark:text-red-400">*</span>
+            {{ t('band_space_tech_rider.section_panel.title_label') }} <span class="text-red-600 dark:text-red-400">*</span>
           </label>
           <InputText id="renameSectionTitle" v-model="renameTitle" autofocus class="w-full" />
         </div>
         <div class="flex justify-end gap-2">
-          <Button label="Annuler" severity="secondary" text type="button" @click="renameDialogOpen = false" />
-          <Button label="Renommer" type="submit" :loading="isRenaming" :disabled="!renameTitle.trim()" />
+          <Button
+            :label="t('band_space_tech_rider.common.cancel')"
+            severity="secondary"
+            text
+            type="button"
+            @click="renameDialogOpen = false"
+          />
+          <Button
+            :label="t('band_space_tech_rider.common.rename')"
+            type="submit" :loading="isRenaming" :disabled="!renameTitle.trim()" />
         </div>
       </form>
     </Dialog>
@@ -120,6 +135,7 @@ import Menu from 'primevue/menu'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { riderSectionTypeIcon } from '../../../constants/techRider.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import RiderContactsItemEditor from './RiderContactsItemEditor.vue'
@@ -144,6 +160,7 @@ const props = defineProps({
 
 const emit = defineEmits(['move', 'delete', 'toggle-included'])
 
+const { t } = useI18n()
 const techRidersStore = useBandTechRidersStore()
 const toast = useToast()
 const visibilityId = useId()
@@ -167,18 +184,21 @@ onBeforeUnmount(() => {
 })
 
 const saveState = computed(() => techRidersStore.saveStateFor(props.item.id)?.state ?? null)
-const saveMessage = computed(() => techRidersStore.saveStateFor(props.item.id)?.message ?? 'Erreur')
+const saveMessage = computed(
+  () =>
+    techRidersStore.saveStateFor(props.item.id)?.message ?? t('band_space_tech_rider.common.error')
+)
 
 const menuItems = computed(() => [
-  { label: 'Renommer', icon: 'pi pi-pencil', command: openRename },
+  { label: t('band_space_tech_rider.common.rename'), icon: 'pi pi-pencil', command: openRename },
   {
-    label: 'Monter',
+    label: t('band_space_tech_rider.common.move_up'),
     icon: 'pi pi-arrow-up',
     disabled: !props.canMoveUp,
     command: () => emit('move', -1)
   },
   {
-    label: 'Descendre',
+    label: t('band_space_tech_rider.common.move_down'),
     icon: 'pi pi-arrow-down',
     disabled: !props.canMoveDown,
     command: () => emit('move', 1)
@@ -186,7 +206,7 @@ const menuItems = computed(() => [
   { separator: true },
   // Asked one level up: the workspace knows the order, so it knows which section to show next.
   {
-    label: 'Supprimer',
+    label: t('band_space_tech_rider.common.delete'),
     icon: 'pi pi-trash',
     class: 'text-red-600 dark:text-red-400',
     command: () => emit('delete')
@@ -197,7 +217,12 @@ async function handleChooseFile({ itemId, fileId }) {
   try {
     await techRidersStore.setItemFile(props.bandSpaceId, props.riderId, itemId, fileId)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_tech_rider.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   }
 }
 
@@ -231,7 +256,9 @@ async function handleSave(save) {
     report(
       itemId,
       'error',
-      e.violationsByField?.content?.[0]?.message ?? e.message ?? 'Erreur',
+      e.violationsByField?.content?.[0]?.message ??
+        e.message ??
+        t('band_space_tech_rider.common.error'),
       () => handleSave(save)
     )
   }
@@ -259,7 +286,12 @@ async function handleRename() {
     await techRidersStore.renameItem(props.bandSpaceId, props.riderId, props.item.id, title)
     renameDialogOpen.value = false
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_tech_rider.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   } finally {
     isRenaming.value = false
   }

@@ -3,12 +3,11 @@
     v-model:visible="visible"
     position="right"
     :style="{ width: '400px' }"
-    header="Fichiers de la setlist"
+    :header="t('band_space_setlist.file_drawer.header')"
   >
     <div class="flex flex-col gap-4">
       <p class="text-xs text-surface-400 italic">
-        Importez les fichiers liés à cette setlist (timing sheet, notes scéniques, etc.).
-        Ils apparaitront dans le dossier virtuel «&nbsp;Setlists&nbsp;» du module Fichiers.
+        {{ t('band_space_setlist.file_drawer.intro') }}
       </p>
 
       <div v-if="isLoadingFiles && files.length === 0" class="flex flex-col gap-2">
@@ -34,21 +33,21 @@
             text
             rounded
             size="small"
-            aria-label="Détacher"
-            v-tooltip.left="'Détacher ce fichier'"
+            :aria-label="t('band_space_setlist.attached_files.detach')"
+            v-tooltip.left="t('band_space_setlist.attached_files.detach_tooltip')"
             @click="confirmDetach(file)"
           />
         </li>
       </ul>
 
-      <p v-else class="text-xs text-surface-400 italic">Aucun fichier pour le moment.</p>
+      <p v-else class="text-xs text-surface-400 italic">{{ t('band_space_setlist.attached_files.empty') }}</p>
 
       <!-- Import only: detaching stays available on an archived setlist, the same way the API keeps
            it open, because it frees a file rather than adding to a list nobody can see. -->
       <template v-if="!readonly">
         <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
         <Button
-          label="Importer un fichier"
+          :label="t('band_space_setlist.attached_files.upload')"
           icon="pi pi-cloud-upload"
           severity="secondary"
           :loading="isUploading"
@@ -66,6 +65,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 
 const props = defineProps({
@@ -77,6 +77,7 @@ const props = defineProps({
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 const fileInput = ref(null)
@@ -102,7 +103,12 @@ async function loadFiles() {
   try {
     files.value = await bandSpaceSetlistsApi.getAttachedFiles(props.bandSpaceId, props.setlistId)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   } finally {
     isLoadingFiles.value = false
   }
@@ -126,10 +132,19 @@ async function handleFileSelected(event) {
   isUploading.value = true
   try {
     await bandSpaceSetlistsApi.uploadFile(props.bandSpaceId, props.setlistId, file)
-    toast.add({ severity: 'success', summary: 'Fichier téléversé', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.attached_files.uploaded'),
+      life: 3000
+    })
     await loadFiles()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   } finally {
     isUploading.value = false
     if (fileInput.value) fileInput.value.value = ''
@@ -138,18 +153,29 @@ async function handleFileSelected(event) {
 
 function confirmDetach(file) {
   confirm.require({
-    message: `Détacher le fichier « ${file.original_name} » de cette setlist ?`,
-    header: 'Confirmer',
+    message: t('band_space_setlist.file_drawer.detach_confirm_message', {
+      name: file.original_name
+    }),
+    header: t('band_space_setlist.common.confirm'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Détacher',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.attached_files.detach'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       try {
         await bandSpaceSetlistsApi.detachFile(props.bandSpaceId, props.setlistId, file.id)
-        toast.add({ severity: 'success', summary: 'Fichier détaché', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_setlist.attached_files.detached'),
+          life: 3000
+        })
         await loadFiles()
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: t('band_space_setlist.common.error'),
+          detail: e.message,
+          life: 5000
+        })
       }
     }
   })

@@ -4,7 +4,7 @@
     class="group w-full min-h-11 flex items-center gap-2 pl-2.5 pr-1.5 rounded-lg text-left hover:bg-surface-100 dark:hover:bg-surface-800 disabled:cursor-default disabled:hover:bg-transparent"
     :class="inSet && 'text-surface-600 dark:text-surface-300'"
     :disabled="readonly"
-    :aria-label="inSet ? `Ajouter encore ${song.title} à la setlist` : `Ajouter ${song.title} à la setlist`"
+    :aria-label="inSet ? t('band_space_setlist.repertoire_entry.add_again_aria', { title: song.title }) : t('band_space_setlist.repertoire_entry.add_aria', { title: song.title })"
     @click="emit('add')"
   >
     <span class="flex-1 min-w-0 truncate text-sm">{{ song.title }}</span>
@@ -25,6 +25,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
 
 const props = defineProps({
@@ -35,6 +36,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add'])
+const { t } = useI18n()
 
 const inSet = computed(() => props.positions.length > 0)
 </script>

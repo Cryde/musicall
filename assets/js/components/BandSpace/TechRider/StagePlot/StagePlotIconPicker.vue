@@ -1,13 +1,13 @@
 <template>
-  <section class="flex flex-col gap-2 min-w-0" aria-label="Icônes disponibles">
-    <h4 class="font-semibold text-sm">Icônes</h4>
+  <section class="flex flex-col gap-2 min-w-0" :aria-label="t('band_space_tech_rider.icon_picker.label')">
+    <h4 class="font-semibold text-sm">{{ t('band_space_tech_rider.icon_picker.title') }}</h4>
 
     <InputText
       v-model="query"
       class="w-full"
       size="small"
-      placeholder="Rechercher..."
-      aria-label="Rechercher une icône"
+      :placeholder="t('band_space_tech_rider.icon_picker.search_placeholder')"
+      :aria-label="t('band_space_tech_rider.icon_picker.search_label')"
     />
 
     <div class="flex flex-wrap gap-1">
@@ -25,7 +25,7 @@
     </div>
 
     <p v-if="visibleIcons.length === 0" class="text-xs text-surface-600 dark:text-surface-300 py-2">
-      Aucune icône ne correspond.
+      {{ t('band_space_tech_rider.icon_picker.no_match') }}
     </p>
 
     <ul v-else class="grid grid-cols-3 gap-1 max-h-72 overflow-y-auto pr-1">
@@ -37,7 +37,7 @@
           class="w-full flex flex-col items-center gap-1 p-1 rounded border border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
           :draggable="!readOnly"
           :disabled="readOnly"
-          :aria-label="`Placer ${icon.label} au centre de la scène`"
+          :aria-label="t('band_space_tech_rider.icon_picker.place', { icon: icon.label })"
           v-tooltip.top="icon.label"
           @dragstart="handleDragStart($event, icon)"
           @click="emit('place', icon.slug)"
@@ -59,6 +59,7 @@
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import StagePlotIcon from './StagePlotIcon.vue'
 
 const props = defineProps({
@@ -67,6 +68,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['place'])
+
+const { t } = useI18n()
 
 const query = ref('')
 const activeCategory = ref(null)
@@ -81,7 +84,10 @@ const categories = computed(() => {
     if (!seen.has(icon.category)) seen.set(icon.category, icon.category_label)
   }
 
-  return [{ value: null, label: 'Tout' }, ...[...seen].map(([value, label]) => ({ value, label }))]
+  return [
+    { value: null, label: t('band_space_tech_rider.icon_picker.all') },
+    ...[...seen].map(([value, label]) => ({ value, label }))
+  ]
 })
 
 const visibleIcons = computed(() => {

@@ -5,19 +5,19 @@
   >
     <div v-if="isLoading" class="flex-1 flex items-center justify-center text-surface-400">
       <i class="pi pi-spin pi-spinner text-3xl mr-3"></i>
-      Chargement…
+      {{ t('band_space_setlist.live.loading') }}
     </div>
 
     <div v-else-if="loadError" class="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
       <i class="pi pi-exclamation-triangle text-4xl text-amber-500"></i>
       <p class="text-xl">{{ loadError }}</p>
-      <Button label="Retour" icon="pi pi-arrow-left" severity="secondary" @click="exitLive" />
+      <Button :label="t('band_space_setlist.live.back')" icon="pi pi-arrow-left" severity="secondary" @click="exitLive" />
     </div>
 
     <div v-else-if="items.length === 0" class="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
       <i class="pi pi-headphones text-4xl text-surface-400"></i>
-      <p class="text-xl">Cette setlist est vide.</p>
-      <Button label="Retour à l'éditeur" icon="pi pi-arrow-left" severity="secondary" @click="exitLive" />
+      <p class="text-xl">{{ t('band_space_setlist.live.empty') }}</p>
+      <Button :label="t('band_space_setlist.live.back_to_editor')" icon="pi pi-arrow-left" severity="secondary" @click="exitLive" />
     </div>
 
     <template v-else>
@@ -28,16 +28,16 @@
           icon="pi pi-list"
           severity="secondary"
           rounded
-          aria-label="Aperçu"
-          v-tooltip.bottom="'Aperçu de la setlist'"
+          :aria-label="t('band_space_setlist.live.overview')"
+          v-tooltip.bottom="t('band_space_setlist.live.overview_tooltip')"
           @click="overviewOpen = true"
         />
         <Button
           icon="pi pi-times"
           severity="danger"
           rounded
-          aria-label="Quitter le mode Live"
-          v-tooltip.bottom="'Quitter le mode Live'"
+          :aria-label="t('band_space_setlist.live.exit')"
+          v-tooltip.bottom="t('band_space_setlist.live.exit')"
           @click="exitLive"
         />
       </div>
@@ -72,12 +72,12 @@
           size="large"
           class="!py-6 !px-8"
           :disabled="currentIndex === 0"
-          aria-label="Précédent"
+          :aria-label="t('band_space_setlist.live.previous')"
           @click="goPrev"
         />
 
         <div class="flex-1 text-center">
-          <div class="text-xs uppercase tracking-widest text-surface-400">Position</div>
+          <div class="text-xs uppercase tracking-widest text-surface-400">{{ t('band_space_setlist.live.position') }}</div>
           <div class="text-2xl tabular-nums font-semibold">
             {{ currentIndex + 1 }} / {{ items.length }}
           </div>
@@ -89,7 +89,7 @@
           size="large"
           class="!py-6 !px-8"
           :disabled="currentIndex === items.length - 1"
-          aria-label="Suivant"
+          :aria-label="t('band_space_setlist.live.next')"
           @click="goNext"
         />
       </footer>
@@ -131,6 +131,7 @@ import { useSwipe } from '@vueuse/core'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { formatDuration } from '../../utils/setlistDuration.js'
@@ -140,6 +141,7 @@ import {
   writeLivePosition
 } from '../../utils/setlistLivePosition.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const setlistsStore = useBandSetlistsStore()
@@ -202,7 +204,10 @@ const currentMeta = computed(() => {
     meta.push({ key: 'tonality', label: item.song.tonality })
   }
   if (item.type === 'song' && item.song?.tempo) {
-    meta.push({ key: 'tempo', label: `${item.song.tempo} BPM` })
+    meta.push({
+      key: 'tempo',
+      label: t('band_space_setlist.common.tempo_bpm', { tempo: item.song.tempo })
+    })
   }
   const duration = durationFor(item)
   if (duration) {

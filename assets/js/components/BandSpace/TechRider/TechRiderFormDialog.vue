@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    :header="HEADERS[mode]"
+    :header="t(HEADER_KEYS[mode])"
     modal
     :style="{ width: '28rem' }"
     @hide="resetForm"
@@ -9,13 +9,13 @@
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <div>
         <label for="techRiderName" class="block text-sm font-medium mb-1">
-          Nom <span class="text-red-600 dark:text-red-400">*</span>
+          {{ t('band_space_tech_rider.form_dialog.name_label') }} <span class="text-red-600 dark:text-red-400">*</span>
         </label>
         <InputText
           id="techRiderName"
           v-model="name"
           autofocus
-          placeholder="ex. Tech rider 2026"
+          :placeholder="t('band_space_tech_rider.form_dialog.name_placeholder')"
           class="w-full"
           :invalid="!!violation"
           :aria-describedby="violation ? 'techRiderNameError' : undefined"
@@ -26,8 +26,14 @@
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
-        <Button label="Annuler" severity="secondary" text type="button" @click="visible = false" />
-        <Button :label="SUBMIT_LABELS[mode]" type="submit" :loading="isSubmitting" />
+        <Button
+          :label="t('band_space_tech_rider.common.cancel')"
+          severity="secondary"
+          text
+          type="button"
+          @click="visible = false"
+        />
+        <Button :label="t(SUBMIT_LABEL_KEYS[mode])" type="submit" :loading="isSubmitting" />
       </div>
     </form>
   </Dialog>
@@ -39,6 +45,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 
 const props = defineProps({
@@ -52,6 +59,7 @@ const props = defineProps({
 const emit = defineEmits(['saved'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const techRidersStore = useBandTechRidersStore()
 const toast = useToast()
 
@@ -59,22 +67,22 @@ const name = ref('')
 const isSubmitting = ref(false)
 const violation = ref(null)
 
-const HEADERS = {
-  create: 'Nouveau tech rider',
-  rename: 'Renommer le tech rider',
-  duplicate: 'Dupliquer le tech rider'
+const HEADER_KEYS = {
+  create: 'band_space_tech_rider.common.new_rider',
+  rename: 'band_space_tech_rider.form_dialog.rename_header',
+  duplicate: 'band_space_tech_rider.form_dialog.duplicate_header'
 }
 
-const SUBMIT_LABELS = {
-  create: 'Créer',
-  rename: 'Renommer',
-  duplicate: 'Dupliquer'
+const SUBMIT_LABEL_KEYS = {
+  create: 'band_space_tech_rider.form_dialog.create',
+  rename: 'band_space_tech_rider.common.rename',
+  duplicate: 'band_space_tech_rider.common.duplicate'
 }
 
-const SUCCESS_SUMMARIES = {
-  create: 'Tech rider créé',
-  rename: 'Tech rider renommé',
-  duplicate: 'Tech rider dupliqué'
+const SUCCESS_SUMMARY_KEYS = {
+  create: 'band_space_tech_rider.form_dialog.created',
+  rename: 'band_space_tech_rider.form_dialog.renamed',
+  duplicate: 'band_space_tech_rider.form_dialog.duplicated'
 }
 
 const isRename = computed(() => props.mode === 'rename')
@@ -96,7 +104,7 @@ function resetForm() {
 async function handleSubmit() {
   const trimmed = name.value.trim()
   if (!trimmed) {
-    violation.value = 'Veuillez spécifier un nom'
+    violation.value = t('band_space_tech_rider.form_dialog.name_required')
     return
   }
   isSubmitting.value = true
@@ -109,7 +117,7 @@ async function handleSubmit() {
         : await techRidersStore.createTechRider(props.bandSpaceId, trimmed)
     toast.add({
       severity: 'success',
-      summary: SUCCESS_SUMMARIES[props.mode],
+      summary: t(SUCCESS_SUMMARY_KEYS[props.mode]),
       life: 3000
     })
     emit('saved', saved)
@@ -119,7 +127,12 @@ async function handleSubmit() {
     if (e.isValidationError && e.violationsByField?.name?.[0]?.message) {
       violation.value = e.violationsByField.name[0].message
     } else {
-      toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+      toast.add({
+        severity: 'error',
+        summary: t('band_space_tech_rider.common.error'),
+        detail: e.message,
+        life: 5000
+      })
     }
   } finally {
     isSubmitting.value = false

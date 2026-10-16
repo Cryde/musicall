@@ -4,6 +4,8 @@
  * each rule is pinned by a test.
  */
 
+import { i18n } from '../i18n/index.js'
+
 export const INTERMISSION_TYPES = ['break', 'talk', 'interlude']
 
 /** An item's own duration if set, else its song's, else null: nobody knows yet. */
@@ -68,11 +70,36 @@ export function targetProgress(total, target) {
 // What a row shows, chosen by the viewer and remembered per browser.
 
 export const COLUMNS = [
-  { key: 'tonality', label: 'Tonalité' },
-  { key: 'tempo', label: 'BPM' },
-  { key: 'duration', label: 'Durée' },
-  { key: 'cumulative', label: 'Cumul' },
-  { key: 'details', label: 'Transitions et notes' }
+  {
+    key: 'tonality',
+    get label() {
+      return i18n.global.t('band_space_setlist.column.tonality')
+    }
+  },
+  {
+    key: 'tempo',
+    get label() {
+      return i18n.global.t('band_space_setlist.column.tempo')
+    }
+  },
+  {
+    key: 'duration',
+    get label() {
+      return i18n.global.t('band_space_setlist.column.duration')
+    }
+  },
+  {
+    key: 'cumulative',
+    get label() {
+      return i18n.global.t('band_space_setlist.column.cumulative')
+    }
+  },
+  {
+    key: 'details',
+    get label() {
+      return i18n.global.t('band_space_setlist.column.details')
+    }
+  }
 ]
 
 export const DEFAULT_COLUMNS = {

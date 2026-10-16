@@ -7,6 +7,8 @@
  * against tests/Fixtures/ChordPro/cases.json so they cannot drift.
  */
 
+import { i18n } from '../i18n/index.js'
+
 export const SINGER_ALL = 'all'
 
 /**
@@ -15,15 +17,60 @@ export const SINGER_ALL = 'all'
  * (`start_of_tab`) stays a directive kept verbatim. Mirrors ChordProParser::SECTION_KINDS.
  */
 export const SECTION_KINDS = [
-  { value: 'intro', label: 'Intro' },
-  { value: 'verse', label: 'Couplet' },
-  { value: 'prechorus', label: 'Pré-refrain' },
-  { value: 'chorus', label: 'Refrain' },
-  { value: 'bridge', label: 'Pont' },
-  { value: 'break', label: 'Break' },
-  { value: 'solo', label: 'Solo' },
-  { value: 'interlude', label: 'Interlude' },
-  { value: 'outro', label: 'Outro' }
+  {
+    value: 'intro',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.intro')
+    }
+  },
+  {
+    value: 'verse',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.verse')
+    }
+  },
+  {
+    value: 'prechorus',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.prechorus')
+    }
+  },
+  {
+    value: 'chorus',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.chorus')
+    }
+  },
+  {
+    value: 'bridge',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.bridge')
+    }
+  },
+  {
+    value: 'break',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.break')
+    }
+  },
+  {
+    value: 'solo',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.solo')
+    }
+  },
+  {
+    value: 'interlude',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.interlude')
+    }
+  },
+  {
+    value: 'outro',
+    get label() {
+      return i18n.global.t('band_space_setlist.section_kind.outro')
+    }
+  }
 ]
 const KIND_VALUES = SECTION_KINDS.map((kind) => kind.value)
 const KIND_ALIASES = { v: 'verse', c: 'chorus', b: 'bridge', pre_chorus: 'prechorus' }

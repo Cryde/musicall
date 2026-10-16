@@ -7,18 +7,18 @@
       @click="emit('select-repertoire')"
     >
       <i class="pi pi-book text-emerald-600"></i>
-      <span class="flex-1 truncate font-medium">Répertoire</span>
+      <span class="flex-1 truncate font-medium">{{ t('band_space_setlist.common.repertoire') }}</span>
       <Badge :value="songsCount" severity="secondary" />
     </button>
 
     <h2 class="text-xs font-semibold uppercase tracking-wide text-surface-500 dark:text-surface-400 px-3 mt-5 mb-2">
-      Setlists
+      {{ t('band_space_setlist.sidebar.setlists') }}
     </h2>
     <div v-if="isLoadingSetlists && setlists.length === 0" class="flex flex-col gap-1 px-3">
       <Skeleton v-for="i in 3" :key="i" width="100%" height="1.75rem" borderRadius="0.375rem" />
     </div>
     <div v-else-if="setlists.length === 0" class="text-xs text-surface-400 italic px-3 py-2">
-      Aucune setlist pour le moment.
+      {{ t('band_space_setlist.sidebar.empty') }}
     </div>
     <ul v-else class="flex flex-col gap-1">
       <li v-for="setlist in setlists" :key="setlist.id">
@@ -39,7 +39,7 @@
 
     <div class="mt-5">
       <Button
-        label="Nouvelle setlist"
+        :label="t('band_space_setlist.sidebar.new_setlist')"
         icon="pi pi-plus"
         size="small"
         severity="secondary"
@@ -59,7 +59,7 @@
         @click="emit('select-trash')"
       >
         <i class="pi pi-trash" aria-hidden="true"></i>
-        <span class="flex-1 truncate">Corbeille</span>
+        <span class="flex-1 truncate">{{ t('band_space_setlist.sidebar.trash') }}</span>
         <span class="text-xs text-surface-500 tabular-nums">{{ trashCount }}</span>
       </button>
     </div>
@@ -71,6 +71,7 @@ import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatDuration } from '../../../utils/setlistDuration.js'
 import { programmeSummary } from '../../../utils/setlistProgramme.js'
 
@@ -84,6 +85,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select-repertoire', 'select-setlist', 'select-trash', 'new-setlist'])
+const { t } = useI18n()
 
 const repertoireButtonClasses = computed(() =>
   props.activeView === 'repertoire'
@@ -106,8 +108,13 @@ function setlistButtonClasses(id) {
 /** « 7 titres · 27:17 », or « Vide »: enough to pick the right set without opening it. */
 function setlistLine(setlist) {
   const { songs, total } = programmeSummary(setlist.items ?? [])
-  if (songs === 0) return 'Vide'
-  const count = `${songs} ${songs > 1 ? 'titres' : 'titre'}`
-  return total > 0 ? `${count} · ${formatDuration(total)}` : count
+  if (songs === 0) return t('band_space_setlist.sidebar.setlist_empty')
+  return total > 0
+    ? t(
+        'band_space_setlist.sidebar.song_count_with_duration',
+        { duration: formatDuration(total) },
+        songs
+      )
+    : t('band_space_setlist.sidebar.song_count', songs)
 }
 </script>

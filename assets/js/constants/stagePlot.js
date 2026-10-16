@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * Shared vocabulary and limits for the stage plot editor.
  *
@@ -87,22 +89,30 @@ export const COARSE_NUDGE_STEP = 0.1
  */
 export const ALIGNMENT_TOLERANCE = SNAP_STEP / 2
 
-const HORIZONTAL_BANDS = [
-  { limit: 1 / 3, label: 'à gauche' },
-  { limit: 2 / 3, label: 'au centre' },
-  { limit: Number.POSITIVE_INFINITY, label: 'à droite' }
+const BAND_LIMITS = [1 / 3, 2 / 3, Number.POSITIVE_INFINITY]
+
+// Rows from back to front, columns from left to right. y grows downstage-to-upstage on screen: 0 is
+// the back wall, 1 is the audience edge, which is why "avant" is the high end rather than the low one.
+const POSITION_KEYS = [
+  [
+    'band_space_tech_rider.stage_position.back_left',
+    'band_space_tech_rider.stage_position.back_centre',
+    'band_space_tech_rider.stage_position.back_right'
+  ],
+  [
+    'band_space_tech_rider.stage_position.middle_left',
+    'band_space_tech_rider.stage_position.middle_centre',
+    'band_space_tech_rider.stage_position.middle_right'
+  ],
+  [
+    'band_space_tech_rider.stage_position.front_left',
+    'band_space_tech_rider.stage_position.front_centre',
+    'band_space_tech_rider.stage_position.front_right'
+  ]
 ]
 
-// y grows downstage-to-upstage on screen: 0 is the back wall, 1 is the audience edge, which is
-// why "avant" is the high end rather than the low one.
-const VERTICAL_BANDS = [
-  { limit: 1 / 3, label: 'au fond' },
-  { limit: 2 / 3, label: 'au milieu' },
-  { limit: Number.POSITIVE_INFINITY, label: "à l'avant" }
-]
-
-function bandLabel(bands, value) {
-  return bands.find((band) => value < band.limit).label
+function bandIndex(value) {
+  return BAND_LIMITS.findIndex((limit) => value < limit)
 }
 
 /**
@@ -113,7 +123,7 @@ function bandLabel(bands, value) {
  * read aloud, and this is the only description a non-sighted user gets of a drawing.
  */
 export function describePosition(x, y) {
-  return `${bandLabel(VERTICAL_BANDS, y)} ${bandLabel(HORIZONTAL_BANDS, x)}`
+  return i18n.global.t(POSITION_KEYS[bandIndex(y)][bandIndex(x)])
 }
 
 /** Rounded to the stored precision so a drag does not write fifteen decimal places. */

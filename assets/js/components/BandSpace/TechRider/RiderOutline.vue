@@ -1,9 +1,11 @@
 <template>
-  <nav aria-label="Sections du rider" class="flex flex-col gap-3">
+  <nav :aria-label="t('band_space_tech_rider.outline.label')" class="flex flex-col gap-3">
     <div class="flex items-baseline justify-between gap-2 px-1">
-      <h2 class="text-sm font-bold uppercase tracking-wide text-surface-600 dark:text-surface-300">Sections</h2>
+      <h2 class="text-sm font-bold uppercase tracking-wide text-surface-600 dark:text-surface-300">
+        {{ t('band_space_tech_rider.outline.title') }}
+      </h2>
       <span v-if="!readOnly && localItems.length > 1" class="text-xs text-surface-600 dark:text-surface-300">
-        glisser ou ⋮ pour réordonner
+        {{ t('band_space_tech_rider.outline.reorder_hint') }}
       </span>
     </div>
 
@@ -47,7 +49,7 @@
         >
           <i :class="['pi', riderSectionTypeIcon(item.type), 'shrink-0 text-surface-600 dark:text-surface-300']" aria-hidden="true" />
           <span class="truncate">{{ item.title }}</span>
-          <span v-if="!item.is_included" class="sr-only">, masquée dans le PDF</span>
+          <span v-if="!item.is_included" class="sr-only">{{ t('band_space_tech_rider.outline.hidden_in_pdf') }}</span>
           <span class="flex-1" />
           <!-- Shape as well as colour: hollow for empty, filled for written. -->
           <span
@@ -55,17 +57,21 @@
               'shrink-0 size-2.5 rounded-full',
               item.is_empty ? 'border-2 border-surface-500 dark:border-surface-400' : 'bg-teal-600 dark:bg-teal-400'
             ]"
-            :title="item.is_empty ? 'Vide' : 'Rempli'"
+            :title="item.is_empty ? t('band_space_tech_rider.outline.empty') : t('band_space_tech_rider.outline.filled')"
             aria-hidden="true"
           />
-          <span class="sr-only">{{ item.is_empty ? ', vide' : ', remplie' }}</span>
+          <span class="sr-only">{{
+            item.is_empty
+              ? t('band_space_tech_rider.outline.empty_status')
+              : t('band_space_tech_rider.outline.filled_status')
+          }}</span>
         </button>
 
         <template v-if="!readOnly">
           <button
             type="button"
             :aria-pressed="item.is_included"
-            :aria-label="`Visible dans le PDF : ${item.title}`"
+            :aria-label="t('band_space_tech_rider.outline.visible_in_pdf', { title: item.title })"
             class="shrink-0 size-8 inline-flex items-center justify-center rounded-lg cursor-pointer text-surface-600 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700"
             @click="emit('toggle-included', item)"
           >
@@ -74,7 +80,7 @@
           <button
             type="button"
             aria-haspopup="menu"
-            :aria-label="`Plus d'actions : ${item.title}`"
+            :aria-label="t('band_space_tech_rider.outline.more_actions', { title: item.title })"
             class="shrink-0 size-8 inline-flex items-center justify-center rounded-lg cursor-pointer text-surface-600 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700"
             @click="(event) => openRowMenu(event, item)"
           >
@@ -102,6 +108,7 @@
 import Menu from 'primevue/menu'
 import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useI18n } from 'vue-i18n'
 import { riderSectionTypeIcon } from '../../../constants/techRider.js'
 import { movedIds } from '../../../utils/riderWorkspace.js'
 import RiderAddSectionButton from './RiderAddSectionButton.vue'
@@ -118,6 +125,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'reorder', 'toggle-included', 'add'])
+
+const { t } = useI18n()
 
 // The draggable list owns its own copy; the store's order comes back through `items` once saved.
 const localItems = ref([...props.items])
@@ -137,13 +146,13 @@ const rowMenuItems = computed(() => {
   const id = rowMenuTarget.value?.id
   return [
     {
-      label: 'Monter',
+      label: t('band_space_tech_rider.common.move_up'),
       icon: 'pi pi-arrow-up',
       disabled: !movedIds(ids, id, -1),
       command: () => move(-1)
     },
     {
-      label: 'Descendre',
+      label: t('band_space_tech_rider.common.move_down'),
       icon: 'pi pi-arrow-down',
       disabled: !movedIds(ids, id, 1),
       command: () => move(1)
@@ -164,7 +173,10 @@ function move(step) {
   )
   if (!ids) return
   emit('reorder', ids)
-  announcement.value = `« ${rowMenuTarget.value.title} » déplacée en position ${ids.indexOf(rowMenuTarget.value.id) + 1}`
+  announcement.value = t('band_space_tech_rider.outline.moved', {
+    title: rowMenuTarget.value.title,
+    position: ids.indexOf(rowMenuTarget.value.id) + 1
+  })
 }
 
 function handleDragEnd() {

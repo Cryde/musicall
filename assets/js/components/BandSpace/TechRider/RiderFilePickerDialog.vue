@@ -2,17 +2,21 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Choisir un fichier"
+    :header="t('band_space_tech_rider.file_picker.header')"
     :style="{ width: '40rem' }"
     @show="reset"
   >
     <div class="flex flex-col gap-3">
       <p class="text-sm text-surface-600 dark:text-surface-300">
-        Seuls les images et les PDF de vos fichiers peuvent servir de page. Importez le fichier
-        depuis le module Fichiers s'il n'apparaît pas ici.
+        {{ t('band_space_tech_rider.file_picker.hint') }}
       </p>
 
-      <InputText v-model="query" placeholder="Rechercher un fichier..." class="w-full" @input="debouncedLoad" />
+      <InputText
+        v-model="query"
+        :placeholder="t('band_space_tech_rider.file_picker.search_placeholder')"
+        class="w-full"
+        @input="debouncedLoad"
+      />
 
       <div v-if="isLoading" class="py-8 flex justify-center">
         <ProgressSpinner style="width: 2rem; height: 2rem" />
@@ -21,7 +25,7 @@
       <Message v-else-if="loadError" severity="error" :closable="false">{{ loadError }}</Message>
 
       <p v-else-if="files.length === 0" class="py-6 text-center text-surface-600 dark:text-surface-300">
-        Aucune image ni PDF dans les fichiers de cet espace.
+        {{ t('band_space_tech_rider.file_picker.empty') }}
       </p>
 
       <ul v-else class="flex flex-col gap-1 max-h-80 overflow-y-auto">
@@ -47,6 +51,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { onBeforeUnmount, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 
@@ -56,6 +61,8 @@ const props = defineProps({
 
 const emit = defineEmits(['choose'])
 const visible = defineModel('visible', { type: Boolean, default: false })
+
+const { t } = useI18n()
 
 const files = ref([])
 const query = ref('')

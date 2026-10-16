@@ -2,7 +2,7 @@
   <div class="flex justify-end mb-4">
     <Button
       icon="pi pi-plus"
-      label="Ajouter une catégorie"
+      :label="t('band_space_finance.common.add_category')"
       size="small"
       outlined
       @click="emit('add-category', null)"
@@ -15,7 +15,7 @@
           <span class="font-semibold min-w-0 truncate">{{ pole.name }}</span>
           <span class="flex items-baseline gap-2 sm:gap-3 shrink-0">
             <FinanceTypeTotals :totals="poleTotals(pole)" class="text-sm font-semibold" />
-            <span class="text-xs text-surface-500 dark:text-surface-400">{{ countEntries(pole) }} entrée{{ countEntries(pole) > 1 ? 's' : '' }}</span>
+            <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('band_space_finance.common.entry_count', countEntries(pole)) }}</span>
           </span>
         </div>
       </AccordionHeader>
@@ -30,7 +30,7 @@
                 :style="{ width: row.percent + '%' }"
               ></div>
             </div>
-            <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ row.label }} · {{ row.percent }}% payé</p>
+            <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ t('band_space_finance.pole_accordion.paid_share', { type: row.label, percent: row.percent }) }}</p>
           </div>
         </div>
 
@@ -71,24 +71,24 @@
                     @keydown.enter="saveRename(child)"
                     @keydown.escape="cancelRename"
                   />
-                  <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(child)" />
-                  <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
+                  <Button icon="pi pi-check" :aria-label="t('band_space_finance.pole_accordion.validate')" text rounded size="small" @click="saveRename(child)" />
+                  <Button icon="pi pi-times" :aria-label="t('band_space_finance.common.cancel')" text rounded size="small" @click="cancelRename" />
                 </template>
                 <template v-else>
                   <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300 min-w-0 truncate">{{ child.name }}</h4>
                   <div class="flex items-center gap-0.5 shrink-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <button
                       class="p-1 text-surface-400 hover:text-primary"
-                      title="Renommer la sous-catégorie"
-                      aria-label="Renommer la sous-catégorie"
+                      :title="t('band_space_finance.pole_accordion.rename_child')"
+                      :aria-label="t('band_space_finance.pole_accordion.rename_child')"
                       @click="startRename(child)"
                     >
                       <i class="pi pi-pencil text-xs"></i>
                     </button>
                     <button
                       class="p-1 text-red-500 hover:text-red-700"
-                      title="Supprimer la sous-catégorie"
-                      aria-label="Supprimer la sous-catégorie"
+                      :title="t('band_space_finance.pole_accordion.delete_child')"
+                      :aria-label="t('band_space_finance.pole_accordion.delete_child')"
                       @click="emit('delete-category', child.id)"
                     >
                       <i class="pi pi-trash text-xs"></i>
@@ -112,7 +112,7 @@
                 @click="emit('add-entry', child.id)"
               >
                 <i class="pi pi-plus text-xs"></i>
-                Ajouter une entrée
+                {{ t('band_space_finance.common.add_entry') }}
               </button>
             </div>
           </div>
@@ -128,8 +128,8 @@
               @keydown.enter="saveRename(pole)"
               @keydown.escape="cancelRename"
             />
-            <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(pole)" />
-            <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
+            <Button icon="pi pi-check" :aria-label="t('band_space_finance.pole_accordion.validate')" text rounded size="small" @click="saveRename(pole)" />
+            <Button icon="pi pi-times" :aria-label="t('band_space_finance.common.cancel')" text rounded size="small" @click="cancelRename" />
           </div>
           <div v-else class="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
@@ -137,28 +137,28 @@
               @click="emit('add-entry', pole.id)"
             >
               <i class="pi pi-plus text-xs"></i>
-              Ajouter une entrée
+              {{ t('band_space_finance.common.add_entry') }}
             </button>
             <button
               class="text-xs sm:text-sm text-surface-500 hover:text-primary hover:underline flex items-center gap-1"
               @click="emit('add-category', pole.id)"
             >
               <i class="pi pi-plus text-xs"></i>
-              Ajouter une sous-catégorie
+              {{ t('band_space_finance.pole_accordion.add_child') }}
             </button>
             <button
               class="text-xs sm:text-sm text-surface-500 hover:text-primary hover:underline flex items-center gap-1"
               @click="startRename(pole)"
             >
               <i class="pi pi-pencil text-xs"></i>
-              Renommer
+              {{ t('band_space_finance.pole_accordion.rename') }}
             </button>
             <button
               class="text-xs sm:text-sm text-red-500 hover:text-red-700 flex items-center gap-1 ml-auto"
               @click="emit('delete-category', pole.id)"
             >
               <i class="pi pi-trash text-xs"></i>
-              Supprimer la catégorie
+              {{ t('band_space_finance.pole_accordion.delete_category') }}
             </button>
           </div>
         </div>
@@ -175,12 +175,15 @@ import AccordionPanel from 'primevue/accordionpanel'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { financeCategoryTotals } from '../../../utils/financeCategoryTotals.js'
 import EntryList from './EntryList.vue'
 import FinanceTypeTotals from './FinanceTypeTotals.vue'
 
 const STORAGE_KEY_PREFIX = 'finance_open_panels_'
+
+const { t } = useI18n()
 
 const props = defineProps({
   poles: { type: Array, required: true },
@@ -269,8 +272,8 @@ function categoryTotals(categoryId) {
 function progressRows(pole) {
   const { income, expense } = poleTotals(pole)
   return [
-    { label: 'Revenus', ...income },
-    { label: 'Dépenses', ...expense }
+    { label: t('band_space_finance.totals.income'), ...income },
+    { label: t('band_space_finance.totals.expense'), ...expense }
   ].filter((row) => row.total > 0)
 }
 </script>

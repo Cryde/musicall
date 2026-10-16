@@ -5,8 +5,8 @@
        grey surface band where the 500 level fails AA (same reason as the #688 darkening). -->
   <span
     role="img"
-    :aria-label="SPLIT_WARNING_LABEL"
-    :title="SPLIT_WARNING_LABEL"
+    :aria-label="splitWarningLabel"
+    :title="splitWarningLabel"
     class="inline-flex flex-shrink-0 leading-none text-amber-700 dark:text-amber-400"
   >
     <i class="pi pi-exclamation-triangle text-xs" aria-hidden="true" />
@@ -14,6 +14,11 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 /**
  * The entry carries a répartition that no longer adds up to its amount, which the API reports as
  * split_warning and nothing on screen used to show.
@@ -26,6 +31,5 @@
  * Under-allocation counts too: the flag is raised as soon as the shares total anything other than
  * the amount, so the wording says "ne correspond pas" and not "dépasse".
  */
-const SPLIT_WARNING_LABEL =
-  'Répartition à revoir : le total réparti entre les membres ne correspond pas au montant de l’entrée.'
+const splitWarningLabel = computed(() => t('band_space_finance.split_warning.label'))
 </script>

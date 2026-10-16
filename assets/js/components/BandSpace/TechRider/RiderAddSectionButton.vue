@@ -1,7 +1,7 @@
 <template>
   <div>
     <Button
-      label="Ajouter une section"
+      :label="t('band_space_tech_rider.add_section.label')"
       data-rider-add
       icon="pi pi-plus"
       severity="secondary"
@@ -31,6 +31,7 @@
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RIDER_SECTION_TYPES } from '../../../constants/techRider.js'
 
 const props = defineProps({
@@ -41,6 +42,8 @@ const props = defineProps({
 
 const emit = defineEmits(['add'])
 
+const { t } = useI18n()
+
 const menuRef = ref(null)
 
 const menuItems = computed(() =>
@@ -49,7 +52,7 @@ const menuItems = computed(() =>
     icon: type.icon,
     description:
       type.value === 'contacts' && props.presentTypes.includes('contacts')
-        ? 'Déjà présente'
+        ? t('band_space_tech_rider.add_section.already_present')
         : type.description,
     command: () => emit('add', type)
   }))

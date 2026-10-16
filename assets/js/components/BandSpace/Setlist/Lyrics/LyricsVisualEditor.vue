@@ -1,7 +1,7 @@
 <template>
   <div class="lyrics-editor flex flex-col gap-2">
-    <div class="flex flex-wrap items-center gap-1" role="toolbar" aria-label="Mise en forme des paroles">
-      <Button label="Accord" icon="pi pi-plus" size="small" severity="secondary" text @click="openChordInput()" />
+    <div class="flex flex-wrap items-center gap-1" role="toolbar" :aria-label="t('band_space_setlist.lyrics_visual_editor.toolbar_aria')">
+      <Button :label="t('band_space_setlist.lyrics_visual_editor.chord')" icon="pi pi-plus" size="small" severity="secondary" text @click="openChordInput()" />
       <span class="w-px h-5 bg-surface-300 dark:bg-surface-600 mx-1" aria-hidden="true" />
       <Button
         v-for="kind in QUICK_KINDS"
@@ -14,7 +14,7 @@
         @click="toggleSection(kind.value)"
       />
       <Button
-        :label="otherActiveKind?.label ?? 'Section'"
+        :label="otherActiveKind?.label ?? t('band_space_setlist.lyrics_visual_editor.section')"
         icon="pi pi-chevron-down"
         icon-pos="right"
         size="small"
@@ -26,7 +26,7 @@
       />
       <Menu id="lyrics-section-menu" ref="sectionMenu" :model="sectionMenuItems" :popup="true" />
       <Button
-        label="Commentaire"
+        :label="t('band_space_setlist.lyrics_visual_editor.comment')"
         icon="pi pi-comment"
         size="small"
         severity="secondary"
@@ -35,7 +35,7 @@
         @click="toggleComment"
       />
       <span class="ml-auto text-xs text-surface-600 dark:text-surface-300 hidden sm:inline">
-        Sélectionnez des mots pour les attribuer · « [ » pour un accord
+        {{ t('band_space_setlist.lyrics_visual_editor.hint', { key: '[' }) }}
       </span>
     </div>
 
@@ -47,13 +47,13 @@
     >
       <div class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-lg shadow-lg p-1 text-sm">
         <div v-if="selectedChord" class="flex items-center gap-1">
-          <Button label="Modifier l'accord" icon="pi pi-pencil" size="small" text @click="openChordInput(selectedChord)" />
-          <Button label="Supprimer" icon="pi pi-trash" size="small" severity="danger" text @click="deleteSelection" />
+          <Button :label="t('band_space_setlist.lyrics_visual_editor.edit_chord')" icon="pi pi-pencil" size="small" text @click="openChordInput(selectedChord)" />
+          <Button :label="t('band_space_setlist.lyrics_visual_editor.delete')" icon="pi pi-trash" size="small" severity="danger" text @click="deleteSelection" />
         </div>
         <div v-else-if="!isPickingSingers" class="flex items-center gap-1">
-          <Button label="Attribuer" icon="pi pi-microphone" size="small" text @click="startPickingSingers" />
+          <Button :label="t('band_space_setlist.lyrics_visual_editor.assign')" icon="pi pi-microphone" size="small" text @click="startPickingSingers" />
         </div>
-        <div v-else class="flex flex-col gap-0.5 min-w-52 p-1" role="group" aria-label="Qui chante ce passage">
+        <div v-else class="flex flex-col gap-0.5 min-w-52 p-1" role="group" :aria-label="t('band_space_setlist.lyrics_visual_editor.singers_aria')">
           <label
             v-for="member in pickable"
             :key="member.id"
@@ -63,8 +63,8 @@
             <span>{{ member.name }}</span>
           </label>
           <div class="flex justify-between gap-2 border-t border-surface-200 dark:border-surface-700 pt-1 mt-1">
-            <Button label="Retirer" size="small" severity="secondary" text @click="applySingers([])" />
-            <Button label="Appliquer" size="small" :disabled="pickedSingers.length === 0" @click="applySingers(pickedSingers)" />
+            <Button :label="t('band_space_setlist.common.remove')" size="small" severity="secondary" text @click="applySingers([])" />
+            <Button :label="t('band_space_setlist.lyrics_visual_editor.apply')" size="small" :disabled="pickedSingers.length === 0" @click="applySingers(pickedSingers)" />
           </div>
         </div>
       </div>
@@ -80,13 +80,13 @@
         v-model="chordInput.name"
         size="small"
         class="w-28 font-bold"
-        placeholder="ex. Am7"
-        aria-label="Accord"
+        :placeholder="t('band_space_setlist.lyrics_visual_editor.chord_placeholder')"
+        :aria-label="t('band_space_setlist.lyrics_visual_editor.chord')"
         @keydown.enter.prevent="confirmChord"
         @keydown.escape.prevent="closeChordInput"
       />
-      <Button :label="chordInput.editing ? 'Modifier' : 'Insérer'" size="small" @click="confirmChord" />
-      <Button icon="pi pi-times" size="small" severity="secondary" text aria-label="Annuler" @click="closeChordInput" />
+      <Button :label="chordInput.editing ? t('band_space_setlist.common.edit') : t('band_space_setlist.lyrics_visual_editor.insert')" size="small" @click="confirmChord" />
+      <Button icon="pi pi-times" size="small" severity="secondary" text :aria-label="t('band_space_setlist.common.cancel')" @click="closeChordInput" />
     </div>
 
     <EditorContent :editor="editor" class="border border-surface-200 dark:border-surface-700 rounded-lg" />
@@ -102,6 +102,7 @@ import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
 import Menu from 'primevue/menu'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   fromChordSite,
   parse,
@@ -124,8 +125,12 @@ const props = defineProps({
 })
 
 const source = defineModel({ type: String, default: '' })
+const { t } = useI18n()
 
-const pickable = computed(() => [...props.members, { id: SINGER_ALL, name: 'Tous' }])
+const pickable = computed(() => [
+  ...props.members,
+  { id: SINGER_ALL, name: t('band_space_setlist.singer.everyone') }
+])
 
 // What this editor last wrote to the model, so its own echo does not reset the document and the caret.
 let lastEmitted = source.value

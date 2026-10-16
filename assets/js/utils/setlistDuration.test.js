@@ -1,12 +1,10 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
-  DURATION_FORMAT_MESSAGE,
-  DURATION_RANGE_MESSAGE,
-  formatDuration,
-  MAX_DURATION_SECONDS,
-  parseDurationInput
-} from './setlistDuration.js'
+import { formatDuration, MAX_DURATION_SECONDS, parseDurationInput } from './setlistDuration.js'
+
+const DURATION_FORMAT_MESSAGE = 'Durée invalide. Utilisez le format mm:ss, par exemple 3:47.'
+const DURATION_RANGE_MESSAGE =
+  'La durée doit être comprise entre 1 seconde et 24 heures (24:00:00).'
 
 /**
  * These pin the two halves of the contract that lets a member type "3:47" into a field the API

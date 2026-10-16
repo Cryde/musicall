@@ -12,14 +12,14 @@
           :invalid="!!error"
           :aria-describedby="error ? `${inputId}-error` : undefined"
         />
-        <Button type="submit" label="OK" size="small" :loading="saving" />
+        <Button type="submit" :label="t('band_space_setlist.duration_prompt.submit')" size="small" :loading="saving" />
       </div>
       <small v-if="error" :id="`${inputId}-error`" class="text-red-600 dark:text-red-400">{{ error }}</small>
-      <small v-else class="text-surface-600 dark:text-surface-300">Minutes et secondes, par exemple 3:47.</small>
+      <small v-else class="text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.common.duration_hint') }}</small>
       <Button
         v-if="clearable && hadValue"
         type="button"
-        label="Retirer"
+        :label="t('band_space_setlist.common.remove')"
         severity="secondary"
         text
         size="small"
@@ -35,6 +35,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Popover from 'primevue/popover'
 import { nextTick, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatDuration, parseDurationInput } from '../../../../utils/setlistDuration.js'
 
 /**
@@ -51,6 +52,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['submit'])
+const { t } = useI18n()
 
 const popover = ref(null)
 const field = ref(null)
@@ -71,11 +73,13 @@ async function open(event, seconds = null) {
 function submit() {
   const parsed = parseDurationInput(value.value)
   if (parsed.error || parsed.seconds === null) {
-    error.value = parsed.error ?? 'Indiquez une durée.'
+    error.value = parsed.error ?? t('band_space_setlist.duration_prompt.required')
     return
   }
   if (props.minSeconds !== null && parsed.seconds < props.minSeconds) {
-    error.value = `Au moins ${formatDuration(props.minSeconds)}.`
+    error.value = t('band_space_setlist.duration_prompt.at_least', {
+      duration: formatDuration(props.minSeconds)
+    })
     return
   }
   emit('submit', parsed.seconds)

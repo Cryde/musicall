@@ -2,7 +2,7 @@
   <Drawer
     v-model:visible="visibleModel"
     position="right"
-    :header="isEditMode ? 'Modifier l\u2019entrée' : 'Nouvelle entrée'"
+    :header="isEditMode ? t('band_space_finance.entry_drawer.title_edit') : t('band_space_finance.entry_drawer.title_new')"
     class="w-full! md:w-[28rem]!"
   >
     <form class="flex flex-col gap-4" @submit.prevent="handleSave">
@@ -11,42 +11,42 @@
       </Message>
 
       <Message v-if="isLocked" severity="info" :closable="false" class="text-sm">
-        Cette entrée est verrouillée. Repassez le statut à « Engagé » pour la modifier.
+        {{ t('band_space_finance.entry_drawer.locked') }}
       </Message>
 
       <div class="flex flex-col gap-1">
-        <label for="finance-label" class="text-sm font-medium">Libellé <span class="text-red-500">*</span></label>
-        <InputText id="finance-label" v-model="form.label" :disabled="isLocked" placeholder="Ex : Location salle de répétition" />
+        <label for="finance-label" class="text-sm font-medium">{{ t('band_space_finance.common.label') }} <span class="text-red-500">*</span></label>
+        <InputText id="finance-label" v-model="form.label" :disabled="isLocked" :placeholder="t('band_space_finance.entry_drawer.label_placeholder')" />
       </div>
 
       <div v-if="showCategorySelect" class="flex flex-col gap-1">
-        <label for="finance-category" class="text-sm font-medium">Catégorie <span class="text-red-500">*</span></label>
+        <label for="finance-category" class="text-sm font-medium">{{ t('band_space_finance.common.category') }} <span class="text-red-500">*</span></label>
         <Select
           id="finance-category"
           v-model="form.categoryId"
           :options="financeStore.categories"
           optionLabel="name"
           optionValue="id"
-          placeholder="Sélectionne une catégorie"
+          :placeholder="t('band_space_finance.common.select_category')"
           :disabled="isLocked"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="finance-type" class="text-sm font-medium">Type</label>
+        <label for="finance-type" class="text-sm font-medium">{{ t('band_space_finance.common.type') }}</label>
         <Select
           id="finance-type"
           v-model="form.type"
           :options="typeOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionne un type"
+          :placeholder="t('band_space_finance.common.select_type')"
           :disabled="isLocked"
         />
       </div>
 
       <div class="flex flex-col gap-2">
-        <label class="text-sm font-medium">Statut</label>
+        <label class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.status') }}</label>
         <div v-if="isEditMode" class="flex items-center gap-2 flex-wrap">
           <span
             class="text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -69,20 +69,20 @@
         <Select
           v-else
           id="finance-status"
-          aria-label="Statut"
+          :aria-label="t('band_space_finance.entry_drawer.status')"
           v-model="form.status"
           :options="statusOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionne un statut"
+          :placeholder="t('band_space_finance.entry_drawer.select_status')"
         />
       </div>
 
       <div class="flex flex-col gap-2">
-        <label class="text-sm font-medium">Montant</label>
+        <label class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.amount') }}</label>
         <SelectButton
           v-model="form.amountMode"
-          aria-label="Montant"
+          :aria-label="t('band_space_finance.entry_drawer.amount')"
           :options="amountModeOptions"
           optionLabel="label"
           optionValue="value"
@@ -93,7 +93,7 @@
         <div v-if="form.amountMode === 'exact'" class="flex flex-col gap-1">
           <InputNumber
             id="finance-amount"
-            aria-label="Montant"
+            :aria-label="t('band_space_finance.entry_drawer.amount')"
             v-model="form.amountEuros"
             :max="MAX_AMOUNT_EUROS"
             :minFractionDigits="2"
@@ -107,11 +107,11 @@
           <InputNumber
             v-model="form.amountMinEuros"
             :max="MAX_AMOUNT_EUROS"
-            aria-label="Montant minimum"
+            :aria-label="t('band_space_finance.entry_drawer.amount_min')"
             :minFractionDigits="2"
             :maxFractionDigits="2"
             suffix=" €"
-            placeholder="Min"
+            :placeholder="t('band_space_finance.entry_drawer.amount_min_placeholder')"
             fluid
             class="flex-1 min-w-0"
             :disabled="isLocked"
@@ -119,11 +119,11 @@
           <InputNumber
             v-model="form.amountMaxEuros"
             :max="MAX_AMOUNT_EUROS"
-            aria-label="Montant maximum"
+            :aria-label="t('band_space_finance.entry_drawer.amount_max')"
             :minFractionDigits="2"
             :maxFractionDigits="2"
             suffix=" €"
-            placeholder="Max"
+            :placeholder="t('band_space_finance.entry_drawer.amount_max_placeholder')"
             fluid
             class="flex-1 min-w-0"
             :disabled="isLocked"
@@ -132,26 +132,26 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="finance-date" class="text-sm font-medium">Date <span class="text-red-500">*</span></label>
+        <label for="finance-date" class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.date') }} <span class="text-red-500">*</span></label>
         <DatePicker id="finance-date" v-model="form.date" dateFormat="dd/mm/yy" showIcon :disabled="isLocked" />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="finance-scope" class="text-sm font-medium">Portée</label>
+        <label for="finance-scope" class="text-sm font-medium">{{ t('band_space_finance.common.scope') }}</label>
         <Select
           id="finance-scope"
           v-model="form.scope"
           :options="scopeOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionne la portée"
+          :placeholder="t('band_space_finance.common.select_scope')"
           :disabled="isLocked"
         />
       </div>
 
       <div v-if="isEditMode && props.entry?.recurrence_id" class="flex items-center gap-2 text-sm text-surface-500 bg-surface-100 dark:bg-surface-800 rounded-lg px-3 py-2">
         <i class="pi pi-sync text-xs"></i>
-        <span>Entrée générée par une récurrence</span>
+        <span>{{ t('band_space_finance.entry_drawer.generated_by_recurrence') }}</span>
       </div>
 
       <SplitManager
@@ -168,7 +168,7 @@
       <div v-if="isEditMode && props.entry?.id" class="border-t border-surface-200 dark:border-surface-700 pt-4">
         <!-- Band Space files are shared: only the entry is private, not what is attached to it (#1146). -->
         <Message v-if="form.scope === 'personal'" severity="warn" :closable="false" class="text-sm mb-3">
-          Les fichiers joints restent visibles par tous les membres du Band Space, même si cette entrée est personnelle.
+          {{ t('band_space_finance.entry_drawer.personal_files_warning') }}
         </Message>
         <AttachedFilesSection
           :band-space-id="props.bandSpaceId"
@@ -183,12 +183,12 @@
         <Button
           v-if="canEditEntry && !isLocked"
           type="submit"
-          label="Enregistrer"
+          :label="t('band_space_finance.common.save')"
           :loading="financeStore.isCreating || financeStore.isSaving"
         />
         <Button
           type="button"
-          label="Annuler"
+          :label="t('band_space_finance.common.cancel')"
           severity="secondary"
           text
           @click="visibleModel = false"
@@ -196,7 +196,7 @@
         <Button
           v-if="isEditMode && canEditEntry && !isLocked"
           type="button"
-          label="Supprimer"
+          :label="t('band_space_finance.common.delete')"
           severity="danger"
           text
           class="ml-auto"
@@ -221,6 +221,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ERROR_CODES } from '../../../constants/errorCodes.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
@@ -238,6 +239,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved', 'deleted'])
+const { t } = useI18n()
 const confirm = useConfirm()
 const financeStore = useBandSpaceFinanceStore()
 const splitManagerRef = ref(null)
@@ -257,42 +259,73 @@ const canEditEntry = computed(() => {
 })
 const isLocked = computed(() => isEditMode.value && form.status === 'paid')
 
-const typeOptions = [
-  { label: 'Dépense', value: 'expense' },
-  { label: 'Revenu', value: 'income' }
-]
+const typeOptions = computed(() => [
+  { label: t('band_space_finance.type.expense'), value: 'expense' },
+  { label: t('band_space_finance.type.income'), value: 'income' }
+])
 
 const transitionMap = {
   planned: [
-    { value: 'committed', label: 'Marquer comme Engagé', severity: 'warn' },
-    { value: 'paid', label: 'Marquer comme Payé', severity: 'success' }
+    {
+      value: 'committed',
+      labelKey: 'band_space_finance.entry_drawer.transition.mark_committed',
+      severity: 'warn'
+    },
+    {
+      value: 'paid',
+      labelKey: 'band_space_finance.entry_drawer.transition.mark_paid',
+      severity: 'success'
+    }
   ],
   committed: [
-    { value: 'paid', label: 'Marquer comme Payé', severity: 'success' },
-    { value: 'planned', label: 'Annuler → Prévu', severity: 'secondary' }
+    {
+      value: 'paid',
+      labelKey: 'band_space_finance.entry_drawer.transition.mark_paid',
+      severity: 'success'
+    },
+    {
+      value: 'planned',
+      labelKey: 'band_space_finance.entry_drawer.transition.back_to_planned',
+      severity: 'secondary'
+    }
   ],
-  paid: [{ value: 'committed', label: 'Rouvrir → Engagé', severity: 'warn' }]
+  paid: [
+    {
+      value: 'committed',
+      labelKey: 'band_space_finance.entry_drawer.transition.reopen',
+      severity: 'warn'
+    }
+  ]
 }
 
-const availableTransitions = computed(() => transitionMap[form.status] ?? [])
+const availableTransitions = computed(() =>
+  (transitionMap[form.status] ?? []).map(({ labelKey, ...transition }) => ({
+    ...transition,
+    label: t(labelKey)
+  }))
+)
 
-const statusOptions = [
-  { label: 'Prévu', value: 'planned' },
-  { label: 'Engagé', value: 'committed' },
-  { label: 'Payé', value: 'paid' }
-]
+const STATUS_LABEL_KEYS = {
+  planned: 'band_space_finance.status.planned',
+  committed: 'band_space_finance.status.committed',
+  paid: 'band_space_finance.status.paid'
+}
+
+const statusOptions = computed(() =>
+  Object.entries(STATUS_LABEL_KEYS).map(([value, labelKey]) => ({ label: t(labelKey), value }))
+)
 
 const showCategorySelect = computed(() => !isEditMode.value && !props.categoryId)
 
-const scopeOptions = [
-  { label: 'Groupe', value: 'band' },
-  { label: 'Personnel', value: 'personal' }
-]
+const scopeOptions = computed(() => [
+  { label: t('band_space_finance.scope.band'), value: 'band' },
+  { label: t('band_space_finance.scope.personal'), value: 'personal' }
+])
 
-const amountModeOptions = [
-  { label: 'Montant exact', value: 'exact' },
-  { label: 'Fourchette', value: 'range' }
-]
+const amountModeOptions = computed(() => [
+  { label: t('band_space_finance.entry_drawer.amount_mode.exact'), value: 'exact' },
+  { label: t('band_space_finance.entry_drawer.amount_mode.range'), value: 'range' }
+])
 
 const form = reactive({
   label: '',
@@ -386,8 +419,8 @@ watch([() => props.visible, () => props.entry], async ([visible]) => {
 })
 
 function statusLabel(status) {
-  const labels = { planned: 'Prévu', committed: 'Engagé', paid: 'Payé' }
-  return labels[status] ?? status
+  const labelKey = STATUS_LABEL_KEYS[status]
+  return labelKey ? t(labelKey) : status
 }
 
 function statusBadgeClass(status) {
@@ -408,18 +441,18 @@ async function applyStatusTransition(newStatus) {
     trackUmamiEvent('finance-entry-status-change', { from: form.status, to: newStatus })
     form.status = newStatus
   } catch (error) {
-    formError.value = error.message || 'Impossible de changer le statut'
+    formError.value = error.message || t('band_space_finance.entry_drawer.status_change_error')
   }
 }
 
 function handleStatusTransition(newStatus) {
   if (form.status === 'paid') {
     confirm.require({
-      message: 'Cette entrée sera marquée comme « Engagé » et redeviendra modifiable. Continuer ?',
-      header: 'Rouvrir l’entrée',
+      message: t('band_space_finance.entry_drawer.reopen_confirm'),
+      header: t('band_space_finance.entry_drawer.reopen_header'),
       icon: 'pi pi-exclamation-triangle',
-      rejectLabel: 'Annuler',
-      acceptLabel: 'Rouvrir',
+      rejectLabel: t('band_space_finance.common.cancel'),
+      acceptLabel: t('band_space_finance.entry_drawer.reopen_accept'),
       accept: () => applyStatusTransition(newStatus)
     })
     return
@@ -458,7 +491,7 @@ function buildPayload() {
 async function handleSave() {
   formError.value = null
   if (!isEditMode.value && !props.categoryId && !form.categoryId) {
-    formError.value = 'Veuillez sélectionner une catégorie'
+    formError.value = t('band_space_finance.entry_drawer.category_required')
     return
   }
 
@@ -500,7 +533,9 @@ async function handleSave() {
         // longer what the entry carries. The drawer stays open on the reloaded splits instead of
         // closing on a success message, which is how a lost share used to go unnoticed.
         await splitManager.loadExistingSplits(entryId)
-        formError.value = `L\u2019entrée a été enregistrée mais la répartition a échoué : ${error.message || 'erreur inconnue'}`
+        formError.value = t('band_space_finance.entry_drawer.split_failed', {
+          error: error.message || t('band_space_finance.entry_drawer.unknown_error')
+        })
         return
       }
     }
@@ -508,7 +543,7 @@ async function handleSave() {
     emit('saved')
   } catch (error) {
     await restoreScopeIfSplitsBlockedIt(error)
-    formError.value = error.message || 'Impossible d\u2019enregistrer l\u2019entrée'
+    formError.value = error.message || t('band_space_finance.entry_drawer.save_error')
   }
 }
 
@@ -530,18 +565,18 @@ async function restoreScopeIfSplitsBlockedIt(error) {
 
 function handleDelete() {
   confirm.require({
-    message: `Es-tu sûr de vouloir supprimer cette entrée ?${attachedFilesNotice(attachedFileCount.value)}`,
-    header: 'Confirmer la suppression',
+    message: `${t('band_space_finance.entry_drawer.delete_confirm')}${attachedFilesNotice(attachedFileCount.value)}`,
+    header: t('band_space_finance.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_finance.common.cancel'),
+    acceptLabel: t('band_space_finance.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await financeStore.deleteEntry(props.bandSpaceId, props.entry.id)
         emit('deleted')
       } catch (error) {
-        formError.value = error.message || 'Impossible de supprimer l\u2019entrée'
+        formError.value = error.message || t('band_space_finance.entry_drawer.delete_error')
       }
     }
   })

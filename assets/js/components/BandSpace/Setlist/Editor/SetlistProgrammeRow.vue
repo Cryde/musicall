@@ -33,25 +33,25 @@
           <span
             v-if="row.item.song?.archive_datetime"
             class="shrink-0 text-xs px-1.5 py-0.5 rounded bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300"
-          >archivée</span>
+          >{{ t('band_space_setlist.programme_row.archived') }}</span>
           <span
             v-if="columns.tonality && row.item.song?.tonality"
             class="shrink-0 text-xs px-1.5 py-0.5 rounded bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-200"
-            :aria-label="`Tonalité ${row.item.song.tonality}`"
+            :aria-label="t('band_space_setlist.programme_row.tonality_aria', { tonality: row.item.song.tonality })"
           >{{ row.item.song.tonality }}</span>
           <span v-if="columns.tempo && row.item.song?.tempo" class="shrink-0 text-xs text-surface-600 dark:text-surface-300 tabular-nums">
-            {{ row.item.song.tempo }} BPM
+            {{ t('band_space_setlist.common.tempo_bpm', { tempo: row.item.song.tempo }) }}
           </span>
         </div>
         <SetlistRowDetails v-if="columns.details" :item="row.item" />
       </div>
       <div class="hidden sm:flex items-center gap-2 text-primary shrink-0">
-        <i v-if="row.item.song?.has_lyrics" class="pi pi-align-left text-sm" v-tooltip.top="'Paroles et accords'" aria-label="Paroles et accords" />
+        <i v-if="row.item.song?.has_lyrics" class="pi pi-align-left text-sm" v-tooltip.top="t('band_space_setlist.common.lyrics_present')" :aria-label="t('band_space_setlist.common.lyrics_present')" />
         <span
           v-if="fileCount > 0"
           class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300"
-          v-tooltip.top="'Fichiers attachés'"
-          :aria-label="`${fileCount} ${fileCount > 1 ? 'fichiers' : 'fichier'}`"
+          v-tooltip.top="t('band_space_setlist.attached_files.title')"
+          :aria-label="t('band_space_setlist.common.file_count_aria', fileCount)"
         >
           <i class="pi pi-paperclip text-xs" aria-hidden="true" />{{ fileCount }}
         </span>
@@ -67,7 +67,7 @@
             type="button"
             class="flex items-center gap-2 min-w-0 text-left hover:underline disabled:hover:no-underline"
             :disabled="readonly"
-            :aria-label="`Modifier ${intermissionLabel ?? kind.label}`"
+            :aria-label="t('band_space_setlist.programme_row.edit_aria', { label: intermissionLabel ?? kind.label })"
             @click="emit('edit', row.item)"
           >
             <span :class="['text-[11px] font-bold tracking-wide shrink-0', kind.color]">{{ kind.tag }}</span>
@@ -83,10 +83,10 @@
         v-if="row.missingDuration && !readonly"
         type="button"
         class="h-7 w-16 rounded-md border border-dashed border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs"
-        :aria-label="`Ajouter la durée de ${row.item.song?.title}`"
+        :aria-label="t('band_space_setlist.common.add_duration_aria', { title: row.item.song?.title })"
         @click="emit('set-duration', $event, row.item)"
       >
-        + durée
+        {{ t('band_space_setlist.common.add_duration') }}
       </button>
       <span v-else class="text-sm tabular-nums" :class="row.isSong ? '' : 'text-surface-600 dark:text-surface-300'">
         {{ formatDuration(row.duration) || '—' }}
@@ -105,8 +105,8 @@
         rounded
         size="small"
         class="!hidden sm:!inline-flex sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
-        aria-label="Retirer de la setlist"
-        v-tooltip.top="'Retirer de la setlist'"
+        :aria-label="t('band_space_setlist.programme_row.remove')"
+        v-tooltip.top="t('band_space_setlist.programme_row.remove')"
         @click="emit('remove', row.item)"
       />
       <Button
@@ -115,7 +115,7 @@
         text
         rounded
         size="small"
-        :aria-label="row.isSong ? 'Actions du titre' : 'Actions de l’intermède'"
+        :aria-label="row.isSong ? t('band_space_setlist.programme_row.song_actions_aria') : t('band_space_setlist.programme_row.intermission_actions_aria')"
         @click="emit('menu', $event, row.item)"
       />
     </div>
@@ -125,6 +125,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
 import { intermissionKind } from './intermissionKinds.js'
 import SetlistRowDetails from './SetlistRowDetails.vue'
@@ -139,6 +140,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['edit', 'remove', 'menu', 'set-duration'])
+const { t } = useI18n()
 
 const kind = computed(() => intermissionKind(props.row.item.type))
 const intermissionLabel = computed(() => {

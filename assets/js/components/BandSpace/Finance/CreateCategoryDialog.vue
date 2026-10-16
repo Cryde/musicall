@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    :header="parentId ? 'Nouvelle sous-catégorie' : 'Nouvelle catégorie'"
+    :header="parentId ? t('band_space_finance.create_category_dialog.title_child') : t('band_space_finance.create_category_dialog.title')"
     :style="{ width: '100%', maxWidth: '25rem' }"
     :closable="true"
     :closeOnEscape="true"
@@ -10,11 +10,11 @@
     <form @submit.prevent="handleSubmit">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
-          <label for="categoryName" class="font-medium">Nom</label>
+          <label for="categoryName" class="font-medium">{{ t('band_space_finance.create_category_dialog.name') }}</label>
           <InputText
             id="categoryName"
             v-model="name"
-            :placeholder="parentId ? 'Nom de la sous-catégorie' : 'Nom de la catégorie'"
+            :placeholder="parentId ? t('band_space_finance.create_category_dialog.name_placeholder_child') : t('band_space_finance.create_category_dialog.name_placeholder')"
             class="w-full"
             autofocus
           />
@@ -23,13 +23,13 @@
         <div class="flex justify-end gap-2 mt-4">
           <Button
             type="button"
-            label="Annuler"
+            :label="t('band_space_finance.common.cancel')"
             severity="secondary"
             @click="isVisible = false"
           />
           <Button
             type="submit"
-            label="Créer"
+            :label="t('band_space_finance.create_category_dialog.create')"
             :disabled="!name.trim()"
           />
         </div>
@@ -43,6 +43,9 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   parentId: { type: String, default: null }
@@ -63,7 +66,7 @@ watch(isVisible, (newValue) => {
 
 function handleSubmit() {
   if (!name.value.trim()) {
-    error.value = 'Veuillez saisir un nom'
+    error.value = t('band_space_finance.create_category_dialog.name_required')
     return
   }
 

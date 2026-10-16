@@ -2,7 +2,9 @@
   <div ref="rootRef" class="grid md:grid-cols-[18rem_minmax(0,1fr)] gap-6">
     <!-- Below md the outline would squeeze the editor, so it becomes a picker above it. -->
     <div class="md:hidden flex flex-col gap-2">
-      <label for="rider-section-picker" class="text-sm font-medium">Section</label>
+      <label for="rider-section-picker" class="text-sm font-medium">{{
+        t('band_space_tech_rider.workspace.section_label')
+      }}</label>
       <Select
         input-id="rider-section-picker"
         :model-value="selectedId"
@@ -53,7 +55,11 @@
       @toggle-included="handleToggleIncluded"
     />
     <p v-else class="text-surface-600 dark:text-surface-300 py-8 text-center">
-      Ce tech rider n'a aucune section.{{ readOnly ? '' : ' Ajoutez-en une pour commencer.' }}
+      {{
+        readOnly
+          ? t('band_space_tech_rider.workspace.no_sections')
+          : t('band_space_tech_rider.workspace.no_sections_add')
+      }}
     </p>
   </div>
 </template>
@@ -63,6 +69,7 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import { movedIds, neighbourAfterRemoval, selectableItemId } from '../../../utils/riderWorkspace.js'
@@ -82,6 +89,7 @@ const props = defineProps({
   readOnly: { type: Boolean, default: false }
 })
 
+const { t } = useI18n()
 const techRidersStore = useBandTechRidersStore()
 const route = useRoute()
 const router = useRouter()
@@ -96,7 +104,9 @@ const rootRef = ref(null)
 const pickerOptions = computed(() =>
   props.items.map((item) => ({
     id: item.id,
-    label: item.is_included ? item.title : `${item.title} (masquée)`
+    label: item.is_included
+      ? item.title
+      : t('band_space_tech_rider.workspace.hidden_option', { title: item.title })
   }))
 )
 
@@ -138,7 +148,7 @@ async function handleAdd(type) {
     await selectItem(created.id)
     focusPanel()
   } catch (e) {
-    showError('Erreur', e)
+    showError(t('band_space_tech_rider.common.error'), e)
   } finally {
     isAdding.value = false
   }
@@ -148,7 +158,7 @@ async function handleReorder(orderedIds) {
   try {
     await techRidersStore.reorderItems(props.bandSpaceId, props.riderId, orderedIds)
   } catch (e) {
-    showError('Réordonnancement impossible', e)
+    showError(t('band_space_tech_rider.workspace.reorder_failed'), e)
   }
 }
 
@@ -166,17 +176,17 @@ async function handleToggleIncluded(item) {
       !item.is_included
     )
   } catch (e) {
-    showError('Erreur', e)
+    showError(t('band_space_tech_rider.common.error'), e)
   }
 }
 
 function confirmDelete(item) {
   confirm.require({
-    message: `« ${item.title} » et son contenu seront supprimés. Cette action est irréversible.`,
-    header: 'Supprimer la section',
+    message: t('band_space_tech_rider.workspace.delete_confirm_message', { title: item.title }),
+    header: t('band_space_tech_rider.workspace.delete_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Supprimer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_tech_rider.common.delete'),
+    rejectLabel: t('band_space_tech_rider.common.cancel'),
     acceptProps: { severity: 'danger' },
     accept: async () => {
       // Read before the delete: the store drops the item, and with it the order to pick a neighbour in.
@@ -185,9 +195,13 @@ function confirmDelete(item) {
         await techRidersStore.deleteItem(props.bandSpaceId, props.riderId, item.id)
         if (next) await selectItem(next)
         focusPanel()
-        toast.add({ severity: 'success', summary: 'Section supprimée', life: 2500 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_tech_rider.workspace.deleted'),
+          life: 2500
+        })
       } catch (e) {
-        showError('Erreur', e)
+        showError(t('band_space_tech_rider.common.error'), e)
       }
     }
   })

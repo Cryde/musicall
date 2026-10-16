@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
+import { i18n } from '../../i18n/index.js'
 import { aggregateSaveStatus } from '../../utils/riderWorkspace.js'
 
 export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
@@ -347,7 +348,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     if (refusedItemIds.value.length === 0) return true
 
     const confirmed = window.confirm(
-      "Des modifications n'ont pas pu être enregistrées et seront perdues. Continuer ?"
+      i18n.global.t('band_space_tech_rider.page.unsaved_edits_confirm')
     )
     if (confirmed) {
       itemSaveStates.value = {}

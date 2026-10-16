@@ -4,7 +4,7 @@
       <Message severity="error" :closable="false">
         {{ songsStore.loadError || setlistsStore.loadError }}
       </Message>
-      <Button label="Réessayer" icon="pi pi-refresh" severity="secondary" @click="loadAll" />
+      <Button :label="t('band_space_setlist.page.retry')" icon="pi pi-refresh" severity="secondary" @click="loadAll" />
     </div>
 
     <div v-else class="flex flex-col lg:flex-row gap-6">
@@ -37,7 +37,7 @@
 
       <Drawer v-model:visible="mobileNavOpen" position="left" :style="{ width: '20rem' }">
         <template #header>
-          <span class="font-semibold">Navigation Setlists</span>
+          <span class="font-semibold">{{ t('band_space_setlist.page.mobile_nav_title') }}</span>
         </template>
         <SidebarContent
           :songs-count="songsStore.songs.length"
@@ -89,6 +89,7 @@ import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Message from 'primevue/message'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import NewSetlistDialog from '../../components/BandSpace/Setlist/NewSetlistDialog.vue'
 import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vue'
@@ -99,6 +100,7 @@ import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefre
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../store/bandSpace/bandSpaceSongs.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const songsStore = useBandSongsStore()
@@ -133,9 +135,9 @@ const trashCount = computed(
 )
 
 const currentSelectionLabel = computed(() => {
-  if (activeView.value === 'trash') return 'Corbeille'
+  if (activeView.value === 'trash') return t('band_space_setlist.sidebar.trash')
   if (activeView.value === 'setlist' && activeSetlist.value) return activeSetlist.value.name
-  return 'Répertoire'
+  return t('band_space_setlist.common.repertoire')
 })
 
 function selectRepertoire() {

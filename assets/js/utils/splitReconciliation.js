@@ -1,3 +1,4 @@
+import { i18n } from '../i18n/index.js'
 import { formatAmount } from './currency.js'
 
 /**
@@ -69,7 +70,10 @@ export function planSplitSync(existingSplits, desiredSplits, capCents = null) {
   const desiredTotal = totalOfSplits(desiredSplits)
   if (capCents != null && desiredTotal > capCents) {
     return {
-      error: `Le total des répartitions (${formatAmount(desiredTotal)}) dépasse le montant de l’entrée (${formatAmount(capCents)}).`,
+      error: i18n.global.t('band_space_finance.split_manager.total_exceeds_amount', {
+        total: formatAmount(desiredTotal),
+        amount: formatAmount(capCents)
+      }),
       operations: []
     }
   }

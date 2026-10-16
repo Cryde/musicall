@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The rules of the patch list table (#1099), kept out of the component so they can be tested:
  * which channels a row takes, what a new row is numbered, and how a selection grows.
@@ -111,11 +113,11 @@ export function microphoneSuggestionGroups(query, suggestions) {
 
   const groups = [
     {
-      label: 'Suggestions',
+      label: i18n.global.t('band_space_tech_rider.patch_grid.microphone_suggestions'),
       items: suggestions.catalogue.filter(matches).map((name) => ({ name, usageCount: null }))
     },
     {
-      label: 'Déjà utilisés dans vos riders',
+      label: i18n.global.t('band_space_tech_rider.patch_grid.microphone_used'),
       items: suggestions.used
         .filter(({ name }) => matches(name))
         .map(({ name, usage_count }) => ({ name, usageCount: usage_count }))
