@@ -6,8 +6,8 @@
       v-if="onlineMembers.length > 0"
       class="flex items-center gap-2 px-4 py-2 text-xs text-surface-600 dark:text-surface-300 border-b border-surface-200 dark:border-surface-700"
     >
-      <span class="sr-only">En ligne : {{ onlineMembers.map((member) => member.display_name).join(', ') }}</span>
-      <span aria-hidden="true">En ligne</span>
+      <span class="sr-only">{{ t('band_space_chat.view.online_names', { names: onlineMembers.map((member) => member.display_name).join(', ') }) }}</span>
+      <span aria-hidden="true">{{ t('band_space_chat.view.online') }}</span>
       <ul class="m-0 p-0 list-none flex items-center gap-1.5" aria-hidden="true">
         <li v-for="member in onlineMembers" :key="member.user_id" v-tooltip.bottom="member.display_name">
           <ChatPresenceAvatar
@@ -36,7 +36,7 @@
       class="flex flex-col items-center justify-center flex-1 p-8 gap-4"
     >
       <Message severity="error" :closable="false">{{ chatStore.loadError }}</Message>
-      <Button label="Réessayer" icon="pi pi-refresh" severity="secondary" @click="load" />
+      <Button :label="t('band_space_chat.view.retry')" icon="pi pi-refresh" severity="secondary" @click="load" />
     </div>
 
     <div v-else-if="chatStore.isLoading" class="flex-1 flex items-center justify-center p-8">
@@ -48,9 +48,9 @@
       class="flex flex-col items-center justify-center flex-1 text-center p-8"
     >
       <i class="pi pi-comments text-4xl text-surface-400 dark:text-surface-500" aria-hidden="true" />
-      <p class="mt-3 font-medium">Aucun message</p>
+      <p class="mt-3 font-medium">{{ t('band_space_chat.view.empty_title') }}</p>
       <p class="mt-1 text-surface-600 dark:text-surface-300">
-        Écrivez le premier message du groupe, il restera ici pour tout le monde.
+        {{ t('band_space_chat.view.empty_text') }}
       </p>
     </div>
 
@@ -85,6 +85,7 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
@@ -97,6 +98,7 @@ import { createHeartbeat } from '../../utils/heartbeat.js'
 import { createPresenceSession } from '../../utils/presenceSession.js'
 
 const route = useRoute()
+const { t } = useI18n()
 // Read once: AppBandLayout keys <router-view> on the space id, so this view is remounted rather than
 // reused when the member switches band.
 const bandSpaceId = route.params.id

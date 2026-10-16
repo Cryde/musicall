@@ -9,17 +9,17 @@
         <i class="pi pi-exclamation-triangle text-amber-600 dark:text-amber-400 mt-1" aria-hidden="true" />
         <div class="flex-1 min-w-0">
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
-            Suppression programmée
+            {{ t('band_space.danger.scheduled_title') }}
           </h3>
-          <p class="text-sm text-surface-600 dark:text-surface-300 mt-1">
-            Cet espace et tous ses contenus seront définitivement supprimés le
-            <strong>{{ formatDateLong(scheduledFor) }}</strong>. D'ici là, les membres peuvent encore
-            récupérer leurs fichiers.
-          </p>
+          <i18n-t keypath="band_space.danger.scheduled_text" tag="p" class="text-sm text-surface-600 dark:text-surface-300 mt-1">
+            <template #date>
+              <strong>{{ formatDateLong(scheduledFor) }}</strong>
+            </template>
+          </i18n-t>
         </div>
         <Button
           v-if="isAdmin"
-          label="Restaurer"
+          :label="t('band_space.danger.restore')"
           icon="pi pi-undo"
           outlined
           class="shrink-0"
@@ -34,16 +34,14 @@
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="min-w-0">
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
-            Supprimer ce Band Space
+            {{ t('band_space.danger.delete_title') }}
           </h3>
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
-            L'espace, ses fichiers, son agenda, ses notes, ses tâches, ses setlists et ses finances
-            seront supprimés après un délai de {{ GRACE_PERIOD_DAYS }} jours, pendant lequel un
-            administrateur peut annuler la suppression.
+            {{ t('band_space.danger.delete_text', { days: GRACE_PERIOD_DAYS }) }}
           </p>
         </div>
         <Button
-          label="Supprimer"
+          :label="t('band_space.danger.delete')"
           icon="pi pi-trash"
           severity="danger"
           outlined
@@ -58,43 +56,44 @@
       class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6"
     >
       <p class="text-sm text-surface-500 dark:text-surface-400">
-        Seul un administrateur peut supprimer cet espace. Vous pouvez le quitter depuis la section
-        « Membres ».
+        {{ t('band_space.danger.admin_only') }}
       </p>
     </div>
 
     <Dialog
       v-model:visible="isDeleteDialogOpen"
       modal
-      header="Supprimer ce Band Space ?"
+      :header="t('band_space.danger.dialog_header')"
       :style="{ width: '32rem' }"
       @hide="resetDialog"
     >
       <div class="flex flex-col gap-4">
-        <p class="text-sm">
-          Vous êtes sur le point de programmer la suppression de
-          <span class="font-medium">« {{ currentSpace?.name }} »</span>.
-        </p>
+        <i18n-t keypath="band_space.danger.dialog_intro" tag="p" class="text-sm">
+          <template #name>
+            <span class="font-medium">{{ t('band_space.danger.quoted_name', { name: currentSpace?.name }) }}</span>
+          </template>
+        </i18n-t>
 
         <ul class="list-disc list-inside text-sm text-surface-600 dark:text-surface-300 space-y-1">
           <li>
-            L'espace reste accessible {{ GRACE_PERIOD_DAYS }} jours, le temps que chacun récupère ses
-            fichiers.
+            {{ t('band_space.danger.dialog_grace', { days: GRACE_PERIOD_DAYS }) }}
           </li>
-          <li>Les autres membres sont prévenus immédiatement.</li>
-          <li>Un administrateur peut annuler jusqu'à l'échéance.</li>
-          <li>Passé ce délai, tout est supprimé définitivement et rien ne peut être récupéré.</li>
+          <li>{{ t('band_space.danger.dialog_members_notified') }}</li>
+          <li>{{ t('band_space.danger.dialog_admin_can_cancel') }}</li>
+          <li>{{ t('band_space.danger.dialog_permanent') }}</li>
         </ul>
 
         <div class="flex flex-col gap-2">
-          <label for="delete-confirmation" class="text-sm text-surface-700 dark:text-surface-200">
-            Pour confirmer, tapez <strong>{{ CONFIRMATION_WORD }}</strong> ci-dessous.
-          </label>
+          <i18n-t keypath="band_space.danger.confirm_label" tag="label" for="delete-confirmation" class="text-sm text-surface-700 dark:text-surface-200">
+            <template #word>
+              <strong>{{ confirmationWord }}</strong>
+            </template>
+          </i18n-t>
           <InputText
             id="delete-confirmation"
             v-model="confirmation"
             autocomplete="off"
-            :placeholder="CONFIRMATION_WORD"
+            :placeholder="confirmationWord"
             @keyup.enter="handleDelete"
           />
         </div>
@@ -104,14 +103,14 @@
 
       <template #footer>
         <Button
-          label="Annuler"
+          :label="t('band_space.common.cancel')"
           severity="secondary"
           text
           :disabled="settingsStore.isSchedulingDeletion"
           @click="isDeleteDialogOpen = false"
         />
         <Button
-          label="Supprimer"
+          :label="t('band_space.danger.delete')"
           severity="danger"
           :disabled="!isConfirmed"
           :loading="settingsStore.isSchedulingDeletion"
@@ -129,6 +128,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
@@ -138,10 +138,11 @@ import { formatDateLong } from '../../../utils/date.js'
 // to before the space reports its own scheduled date.
 const GRACE_PERIOD_DAYS = 30
 
-const CONFIRMATION_WORD = 'Supprimer'
-
 const route = useRoute()
 const toast = useToast()
+const { t } = useI18n()
+
+const confirmationWord = computed(() => t('band_space.danger.confirmation_word'))
 const settingsStore = useBandSpaceSettingsStore()
 const { currentSpace } = useBandSpaceNavigation()
 
@@ -157,7 +158,7 @@ const scheduledFor = computed(() => currentSpace.value?.deletion_scheduled_datet
 // Case-insensitive so a stray capital does not stand between an admin and their own space, but the word
 // still has to be typed out: that deliberate keystroke is the point of the confirmation.
 const isConfirmed = computed(
-  () => confirmation.value.trim().toLowerCase() === CONFIRMATION_WORD.toLowerCase()
+  () => confirmation.value.trim().toLowerCase() === confirmationWord.value.toLowerCase()
 )
 
 async function handleDelete() {
@@ -167,7 +168,7 @@ async function handleDelete() {
   try {
     await settingsStore.scheduleDeletion(bandSpaceId)
     isDeleteDialogOpen.value = false
-    toast.add({ severity: 'warn', summary: 'Suppression programmée', life: 4000 })
+    toast.add({ severity: 'warn', summary: t('band_space.danger.scheduled_title'), life: 4000 })
   } catch (e) {
     globalError.value = e.message
   }
@@ -176,7 +177,7 @@ async function handleDelete() {
 async function handleRestore() {
   try {
     await settingsStore.restore(bandSpaceId)
-    toast.add({ severity: 'success', summary: 'Suppression annulée', life: 3000 })
+    toast.add({ severity: 'success', summary: t('band_space.danger.restored'), life: 3000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }

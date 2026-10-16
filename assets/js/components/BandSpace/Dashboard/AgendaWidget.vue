@@ -1,18 +1,18 @@
 <template>
   <DashboardWidget
-    title="Agenda à venir"
+    :title="t('band_space.dashboard.agenda.title')"
     icon="pi pi-calendar"
     :is-loading="isLoading"
     :error="error"
     :is-empty="!isLoading && !error && items.length === 0"
-    empty-message="Rien de prévu dans les 7 prochains jours."
+    :empty-message="t('band_space.dashboard.agenda.empty')"
   >
     <template #header-action>
       <RouterLink
         :to="{ name: 'app_band_agenda', params: { id: bandSpaceId } }"
         class="text-xs text-primary hover:underline"
       >
-        Voir l'agenda
+        {{ t('band_space.dashboard.agenda.see_all') }}
       </RouterLink>
     </template>
 
@@ -58,6 +58,7 @@
 <script setup>
 import { format, isToday, isTomorrow, parseISO } from 'date-fns'
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -84,6 +85,7 @@ const props = defineProps({
 const items = ref([])
 const isLoading = ref(true)
 const error = ref(null)
+const { t } = useI18n()
 
 /** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
 async function load({ quiet = false } = {}) {
@@ -94,7 +96,7 @@ async function load({ quiet = false } = {}) {
     error.value = null
   } catch {
     if (quiet) return
-    error.value = "Impossible de charger l'agenda."
+    error.value = t('band_space.dashboard.agenda.load_error')
   } finally {
     isLoading.value = false
   }
@@ -115,8 +117,8 @@ function handleAnswered({ entryId, occurrenceDate, availability }) {
 function formatDayLabel(item) {
   const date = toAgendaDate(item.datetime, isAllDayItem(item))
   if (date === null) return ''
-  if (isToday(date)) return "Aujourd'hui"
-  if (isTomorrow(date)) return 'Demain'
+  if (isToday(date)) return t('band_space.dashboard.agenda.today')
+  if (isTomorrow(date)) return t('band_space.dashboard.agenda.tomorrow')
   return format(date, 'EEEE d MMMM', { locale: dateFnsLocale() })
 }
 

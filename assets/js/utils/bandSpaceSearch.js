@@ -1,4 +1,5 @@
 import { BAND_SPACE_ROUTES } from '../constants/bandSpace.js'
+import { i18n } from '../i18n/index.js'
 
 /**
  * The record kinds the command palette can return, in the order it groups them. Mirrors
@@ -11,49 +12,63 @@ import { BAND_SPACE_ROUTES } from '../constants/bandSpace.js'
 export const SEARCH_TYPES = Object.freeze([
   {
     type: 'agenda',
-    label: 'Agenda',
+    get label() {
+      return i18n.global.t('band_space.module_name.agenda')
+    },
     icon: 'pi-calendar',
     route: BAND_SPACE_ROUTES.AGENDA,
     param: 'entry'
   },
   {
     type: 'task',
-    label: 'Tâches',
+    get label() {
+      return i18n.global.t('band_space.module_name.tasks')
+    },
     icon: 'pi-check-square',
     route: BAND_SPACE_ROUTES.TASKS,
     param: 'task'
   },
   {
     type: 'note',
-    label: 'Notes',
+    get label() {
+      return i18n.global.t('band_space.module_name.notes')
+    },
     icon: 'pi-file-edit',
     route: BAND_SPACE_ROUTES.NOTES,
     param: 'note'
   },
   {
     type: 'file',
-    label: 'Fichiers',
+    get label() {
+      return i18n.global.t('band_space.module_name.files')
+    },
     icon: 'pi-folder',
     route: BAND_SPACE_ROUTES.FILES,
     param: 'file'
   },
   {
     type: 'setlist',
-    label: 'Setlists',
+    get label() {
+      return i18n.global.t('band_space.module_name.setlist')
+    },
     icon: 'pi-list',
     route: BAND_SPACE_ROUTES.SETLIST,
     param: 'setlist'
   },
   {
     type: 'song',
-    label: 'Morceaux',
+    get label() {
+      return i18n.global.t('band_space.search.type.song')
+    },
     icon: 'pi-play',
     route: BAND_SPACE_ROUTES.SETLIST,
     param: 'song'
   },
   {
     type: 'finance',
-    label: 'Finances',
+    get label() {
+      return i18n.global.t('band_space.module_name.finance')
+    },
     icon: 'pi-wallet',
     route: BAND_SPACE_ROUTES.FINANCE,
     param: 'entry'

@@ -1,6 +1,6 @@
 <template>
   <DashboardWidget
-    title="Finances - ce mois"
+    :title="t('band_space.dashboard.finance.title')"
     icon="pi pi-wallet"
     :is-loading="isLoading"
     :error="error"
@@ -10,31 +10,31 @@
         :to="{ name: 'app_band_finance', params: { id: bandSpaceId } }"
         class="text-xs text-primary hover:underline"
       >
-        Voir les finances
+        {{ t('band_space.dashboard.finance.see_all') }}
       </RouterLink>
     </template>
 
     <div v-if="summary" class="flex flex-col gap-3">
       <div class="flex justify-between items-baseline pb-2 border-b border-surface-200 dark:border-surface-700">
-        <span class="text-sm text-surface-600 dark:text-surface-300">Solde prévu</span>
+        <span class="text-sm text-surface-600 dark:text-surface-300">{{ t('band_space.dashboard.finance.balance') }}</span>
         <span class="text-xl font-semibold tabular-nums" :class="balanceClass">{{ formatAmount(balance) }}</span>
       </div>
       <div class="flex justify-between items-center text-sm">
         <span class="flex items-center gap-2 text-surface-600 dark:text-surface-300">
           <i class="pi pi-arrow-up text-green-500" aria-hidden="true" />
-          Revenus
+          {{ t('band_space.dashboard.finance.income') }}
         </span>
         <span class="tabular-nums text-green-700 dark:text-green-400">{{ formatAmount(summary.total_income_all) }}</span>
       </div>
       <div class="flex justify-between items-center text-sm">
         <span class="flex items-center gap-2 text-surface-600 dark:text-surface-300">
           <i class="pi pi-arrow-down text-red-500" aria-hidden="true" />
-          Dépenses
+          {{ t('band_space.dashboard.finance.expense') }}
         </span>
         <span class="tabular-nums text-red-600 dark:text-red-400">{{ formatAmount(summary.total_expense_all) }}</span>
       </div>
       <p v-if="paidShare" class="text-xs text-surface-500 dark:text-surface-400 mt-1">
-        Dont {{ formatAmount(summary.total_paid) }} déjà payés.
+        {{ t('band_space.dashboard.finance.already_paid', { amount: formatAmount(summary.total_paid) }) }}
       </p>
     </div>
   </DashboardWidget>
@@ -43,6 +43,7 @@
 <script setup>
 import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceFinanceApi from '../../../api/bandSpace/band-space-finance.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -56,6 +57,7 @@ const props = defineProps({
 const summary = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const { t } = useI18n()
 
 /** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
 async function load({ quiet = false } = {}) {
@@ -67,7 +69,7 @@ async function load({ quiet = false } = {}) {
     error.value = null
   } catch {
     if (quiet) return
-    error.value = 'Finances indisponibles.'
+    error.value = t('band_space.dashboard.finance.load_error')
   } finally {
     isLoading.value = false
   }

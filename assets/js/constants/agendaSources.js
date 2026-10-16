@@ -14,6 +14,8 @@
  * Ordered as the filter chips read left to right.
  */
 
+import { i18n } from '../i18n/index.js'
+
 /**
  * @typedef {object} AgendaSource
  * @property {string} key The `source` the API emits.
@@ -29,8 +31,12 @@
 const AGENDA_SOURCES = Object.freeze([
   Object.freeze({
     key: 'manual',
-    chipLabel: 'Manuel',
-    label: 'Manuel',
+    get chipLabel() {
+      return i18n.global.t('band_space_agenda.source.chip.manual')
+    },
+    get label() {
+      return i18n.global.t('band_space_agenda.source.badge.manual')
+    },
     color: '#3b82f6',
     badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     borderClass: 'border-l-blue-500',
@@ -38,8 +44,12 @@ const AGENDA_SOURCES = Object.freeze([
   }),
   Object.freeze({
     key: 'task',
-    chipLabel: 'Tâches',
-    label: 'Tâche',
+    get chipLabel() {
+      return i18n.global.t('band_space_agenda.source.chip.task')
+    },
+    get label() {
+      return i18n.global.t('band_space_agenda.source.badge.task')
+    },
     color: '#f59e0b',
     badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     borderClass: 'border-l-amber-500',
@@ -47,8 +57,12 @@ const AGENDA_SOURCES = Object.freeze([
   }),
   Object.freeze({
     key: 'finance',
-    chipLabel: 'Finances',
-    label: 'Finance',
+    get chipLabel() {
+      return i18n.global.t('band_space_agenda.source.chip.finance')
+    },
+    get label() {
+      return i18n.global.t('band_space_agenda.source.badge.finance')
+    },
     color: '#10b981',
     badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     borderClass: 'border-l-emerald-500',
@@ -56,8 +70,12 @@ const AGENDA_SOURCES = Object.freeze([
   }),
   Object.freeze({
     key: 'absence',
-    chipLabel: 'Absences',
-    label: 'Absence',
+    get chipLabel() {
+      return i18n.global.t('band_space_agenda.source.chip.absence')
+    },
+    get label() {
+      return i18n.global.t('band_space_agenda.source.badge.absence')
+    },
     // Violet: distinct from the other three, and not red, which would read as an error rather than
     // as somebody being away.
     color: '#8b5cf6',

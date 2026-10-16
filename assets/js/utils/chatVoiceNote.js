@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The rules around a chat voice note that do not need a browser to be checked (#974).
  */
@@ -13,11 +15,6 @@ export const MIN_VOICE_NOTE_SECONDS = 1
  * server converts all of them to AAC, so this only has to find one the browser can produce.
  */
 const RECORDING_MIME_TYPES = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus']
-
-export const MICROPHONE_DENIED_MESSAGE =
-  "L'accès au micro a été refusé. Autorisez-le dans les réglages du navigateur pour enregistrer une note vocale."
-export const NO_MICROPHONE_MESSAGE = 'Aucun micro détecté.'
-export const RECORDING_FAILED_MESSAGE = "L'enregistrement n'a pas pu démarrer."
 
 /**
  * @param {(mimeType: string) => boolean} isTypeSupported MediaRecorder.isTypeSupported
@@ -48,13 +45,13 @@ export function formatVoiceNoteDuration(totalSeconds) {
  */
 export function recordingErrorMessage(error) {
   if (error?.name === 'NotAllowedError' || error?.name === 'SecurityError') {
-    return MICROPHONE_DENIED_MESSAGE
+    return i18n.global.t('band_space_chat.voice_note.microphone_denied')
   }
   if (error?.name === 'NotFoundError' || error?.name === 'OverconstrainedError') {
-    return NO_MICROPHONE_MESSAGE
+    return i18n.global.t('band_space_chat.voice_note.no_microphone')
   }
 
-  return RECORDING_FAILED_MESSAGE
+  return i18n.global.t('band_space_chat.voice_note.recording_failed')
 }
 
 /** Mirrors ChatVoiceNoteConverter::PEAK_MAX. */

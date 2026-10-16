@@ -1,18 +1,18 @@
 <template>
   <DashboardWidget
-    title="Activité récente"
+    :title="t('band_space.dashboard.activity.title')"
     icon="pi pi-history"
     :is-loading="isLoading"
     :error="error"
     :is-empty="!isLoading && !error && items.length === 0"
-    empty-message="Aucune activité pour le moment."
+    :empty-message="t('band_space.dashboard.activity.empty')"
   >
     <template #header-action>
       <RouterLink
         :to="{ name: 'app_band_parameters', params: { id: bandSpaceId }, query: { section: 'activity' } }"
         class="text-xs text-primary hover:underline"
       >
-        Tout voir
+        {{ t('band_space.dashboard.activity.see_all') }}
       </RouterLink>
     </template>
 
@@ -21,7 +21,7 @@
         <i :class="['pi mt-0.5 text-surface-400', moduleIcon(activity.module)]" aria-hidden="true" />
         <div class="flex-1 min-w-0">
           <p class="text-surface-700 dark:text-surface-200 leading-snug">
-            <span class="font-medium"><UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template></span>{{ ' ' }}
+            <span class="font-medium"><UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>{{ t('band_space.common.system') }}</template></span>{{ ' ' }}
             <RouterLink
               v-if="activityLink(activity, bandSpaceId)"
               :to="activityLink(activity, bandSpaceId)"
@@ -41,6 +41,7 @@
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceActivityApi from '../../../api/bandSpace/band-space-activity.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -60,6 +61,7 @@ const props = defineProps({
 const items = ref([])
 const isLoading = ref(true)
 const error = ref(null)
+const { t } = useI18n()
 
 /** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
 async function load({ quiet = false } = {}) {
@@ -69,7 +71,7 @@ async function load({ quiet = false } = {}) {
     error.value = null
   } catch {
     if (quiet) return
-    error.value = "Impossible de charger l'activité récente."
+    error.value = t('band_space.dashboard.activity.load_error')
   } finally {
     isLoading.value = false
   }

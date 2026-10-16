@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The chat composer's pending attachment list: the Band Space objects a message will point at, held
  * between the moment they are picked and the moment the message goes out (#971).
@@ -13,9 +15,10 @@
  */
 export const MAX_CHAT_ATTACHMENTS = 5
 
-export const DUPLICATE_ATTACHMENT_MESSAGE = 'Cet élément est déjà joint à ce message.'
-export const FULL_DRAFT_MESSAGE = `Un message ne peut pas référencer plus de ${MAX_CHAT_ATTACHMENTS} éléments.`
-export const UNUSABLE_ATTACHMENT_MESSAGE = 'Cet élément ne peut pas être joint.'
+/** The refusal shown once the draft holds MAX_CHAT_ATTACHMENTS, by the composer and the picker alike. */
+export function fullDraftMessage() {
+  return i18n.global.t('band_space_chat.draft.full', { max: MAX_CHAT_ATTACHMENTS })
+}
 
 /**
  * @typedef {Object} DraftAttachment
@@ -40,15 +43,15 @@ export function addToDraft(draft, candidate) {
   const attachments = [...draft]
 
   if (!candidate?.id || !candidate.type) {
-    return { attachments, error: UNUSABLE_ATTACHMENT_MESSAGE }
+    return { attachments, error: i18n.global.t('band_space_chat.draft.unusable') }
   }
 
   if (attachments.some((attachment) => attachment.id === candidate.id)) {
-    return { attachments, error: DUPLICATE_ATTACHMENT_MESSAGE }
+    return { attachments, error: i18n.global.t('band_space_chat.draft.duplicate') }
   }
 
   if (attachments.length >= MAX_CHAT_ATTACHMENTS) {
-    return { attachments, error: FULL_DRAFT_MESSAGE }
+    return { attachments, error: fullDraftMessage() }
   }
 
   attachments.push({ id: candidate.id, type: candidate.type, title: candidate.title ?? '' })

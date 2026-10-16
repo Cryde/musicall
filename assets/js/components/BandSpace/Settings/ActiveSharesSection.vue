@@ -1,7 +1,7 @@
 <template>
   <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100">Partages actifs</h2>
+      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100">{{ t('band_space.settings.section.shares') }}</h2>
       <Button
         icon="pi pi-refresh"
         size="small"
@@ -19,11 +19,11 @@
       v-else-if="filesStore.shares.length === 0"
       class="text-sm italic text-surface-400 text-center py-8"
     >
-      Aucun lien de partage actif pour ce Band Space.
+      {{ t('band_space.shares.empty') }}
     </p>
 
     <DataTable v-else :value="filesStore.shares" data-key="id" class="text-sm">
-      <Column field="file_original_name" header="Fichier">
+      <Column field="file_original_name" :header="t('band_space.shares.file')">
         <template #body="{ data }">
           <div class="flex items-center gap-2 min-w-0">
             <i class="pi pi-file text-surface-400"></i>
@@ -32,19 +32,19 @@
         </template>
       </Column>
 
-      <Column field="expiry_datetime" header="Expire le" headerStyle="width:12rem">
+      <Column field="expiry_datetime" :header="t('band_space.shares.expires')" headerStyle="width:12rem">
         <template #body="{ data }">
           <span class="tabular-nums">{{ formatDate(data.expiry_datetime) }}</span>
         </template>
       </Column>
 
-      <Column field="access_count" header="Accès" headerStyle="width:6rem">
+      <Column field="access_count" :header="t('band_space.shares.access_count')" headerStyle="width:6rem">
         <template #body="{ data }">
           <span class="tabular-nums">{{ data.access_count }}</span>
         </template>
       </Column>
 
-      <Column field="last_access_datetime" header="Dernier accès" headerStyle="width:12rem">
+      <Column field="last_access_datetime" :header="t('band_space.shares.last_access')" headerStyle="width:12rem">
         <template #body="{ data }">
           <span v-if="data.last_access_datetime" class="text-surface-500">
             {{ formatRelative(data.last_access_datetime) }}
@@ -66,8 +66,8 @@
             size="small"
             severity="danger"
             text
-            v-tooltip.top="'Révoquer le lien'"
-            aria-label="Révoquer le lien de partage"
+            v-tooltip.top="t('band_space.shares.revoke_tooltip')"
+            :aria-label="t('band_space.shares.revoke_aria')"
             @click="confirmRevoke(data)"
           />
         </template>
@@ -85,6 +85,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { dateFnsLocale, intlLocale } from '../../../i18n/formatLocale.js'
@@ -94,6 +95,7 @@ const route = useRoute()
 const filesStore = useBandFilesStore()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 // Every member may read the list, only an admin may revoke a link, so the column is dropped rather
 // than offering a button the server would refuse.
 const { isAdmin } = useBandSpaceNavigation()
@@ -115,16 +117,16 @@ function loadShares() {
 
 function confirmRevoke(share) {
   confirm.require({
-    message: `Révoquer le lien de partage pour « ${share.file_original_name} » ?`,
-    header: 'Confirmer la révocation',
+    message: t('band_space.shares.revoke_message', { name: share.file_original_name }),
+    header: t('band_space.shares.revoke_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Révoquer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space.shares.revoke'),
+    rejectLabel: t('band_space.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await filesStore.revokeShare(bandSpaceId, share.id)
-        toast.add({ severity: 'success', summary: 'Lien révoqué', life: 3000 })
+        toast.add({ severity: 'success', summary: t('band_space.shares.revoked'), life: 3000 })
       } catch (e) {
         toast.add({ severity: 'error', summary: e.message, life: 5000 })
       }

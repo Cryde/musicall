@@ -2,16 +2,16 @@
   <div class="flex flex-col gap-4">
     <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
       <h2 class="text-lg font-semibold text-surface-700 dark:text-surface-200 mb-4">
-        Journal d'activité
+        {{ t('band_space.settings.section.activity') }}
       </h2>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <MultiSelect
           v-model="localFilters.modules"
-          :options="MODULE_OPTIONS"
+          :options="moduleOptions"
           option-label="label"
           option-value="value"
-          placeholder="Tous les modules"
+          :placeholder="t('band_space.activity_log.all_modules')"
           display="chip"
           class="w-full"
         />
@@ -21,20 +21,20 @@
           :options="memberOptions"
           option-label="label"
           option-value="value"
-          placeholder="Tous les auteurs"
+          :placeholder="t('band_space.activity_log.all_authors')"
           show-clear
           class="w-full"
         />
         <DatePicker
           v-model="localFilters.from"
-          placeholder="Du..."
+          :placeholder="t('band_space.activity_log.from')"
           show-button-bar
           date-format="dd/mm/yy"
           class="w-full"
         />
         <DatePicker
           v-model="localFilters.to"
-          placeholder="Au..."
+          :placeholder="t('band_space.activity_log.to')"
           show-button-bar
           date-format="dd/mm/yy"
           class="w-full"
@@ -43,7 +43,7 @@
 
       <div class="flex justify-end mb-2">
         <Button
-          label="Réinitialiser"
+          :label="t('band_space.activity_log.reset')"
           severity="secondary"
           text
           size="small"
@@ -52,14 +52,14 @@
       </div>
 
       <div v-if="store.isLoading" class="text-center text-sm text-surface-500 py-8">
-        Chargement…
+        {{ t('band_space.activity_log.loading') }}
       </div>
 
       <div
         v-else-if="store.items.length === 0"
         class="text-center text-sm text-surface-500 py-8"
       >
-        Aucune activité ne correspond à ces filtres.
+        {{ t('band_space.activity_log.empty') }}
       </div>
 
       <div v-else class="flex flex-col gap-1">
@@ -69,7 +69,7 @@
           class="flex items-start gap-3 p-3 rounded-lg"
         >
           <Avatar
-            :username="activity.actor?.username || 'Système'"
+            :username="activity.actor?.username || t('band_space.common.system')"
             :display-name="activity.actor?.display_name"
             :picture-url="activity.actor?.profile_picture_url"
             size="sm"
@@ -77,7 +77,7 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="font-medium text-sm text-surface-700 dark:text-surface-200">
-                <UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>Système</template>
+                <UserName v-if="activity.actor" :username="activity.actor.username" :display-name="activity.actor.display_name" :picture-url="activity.actor.profile_picture_url" /><template v-else>{{ t('band_space.common.system') }}</template>
               </span>
               <Tag
                 :value="moduleLabel(activity.module)"
@@ -103,7 +103,7 @@
 
         <div v-if="store.items.length < store.totalItems" class="flex justify-center mt-4">
           <Button
-            label="Charger plus"
+            :label="t('band_space.activity_log.load_more')"
             :loading="store.isLoadingMore"
             severity="secondary"
             outlined
@@ -123,6 +123,7 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { dateFnsLocale } from '../../../i18n/formatLocale.js'
@@ -136,6 +137,7 @@ import { activitySentence as buildSentence } from './activitySentences.js'
 const route = useRoute()
 const store = useBandSpaceActivityStore()
 const settingsStore = useBandSpaceSettingsStore()
+const { t } = useI18n()
 // Wipe previous space's activity feed synchronously before first render to
 // avoid flashing A's events when switching to B's Settings.
 store.clear()
@@ -146,15 +148,15 @@ const bandSpaceId = route.params.id
 const { currentSpace } = useBandSpaceNavigation()
 const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 
-const MODULE_OPTIONS = [
-  { value: 'task', label: 'Tâches' },
-  { value: 'finance', label: 'Finances' },
-  { value: 'agenda', label: 'Agenda' },
-  { value: 'notes', label: 'Notes' },
-  { value: 'file', label: 'Fichiers' },
-  { value: 'setlist', label: 'Setlists' },
-  { value: 'settings', label: 'Paramètres' }
-]
+const moduleOptions = computed(() => [
+  { value: 'task', label: t('band_space.module_name.tasks') },
+  { value: 'finance', label: t('band_space.module_name.finance') },
+  { value: 'agenda', label: t('band_space.module_name.agenda') },
+  { value: 'notes', label: t('band_space.module_name.notes') },
+  { value: 'file', label: t('band_space.module_name.files') },
+  { value: 'setlist', label: t('band_space.module_name.setlist') },
+  { value: 'settings', label: t('band_space.module_name.parameters') }
+])
 
 const localFilters = reactive({
   modules: [],
@@ -171,7 +173,7 @@ const memberOptions = computed(() =>
 )
 
 function moduleLabel(module) {
-  return MODULE_OPTIONS.find((o) => o.value === module)?.label ?? module
+  return moduleOptions.value.find((o) => o.value === module)?.label ?? module
 }
 
 function moduleSeverity(module) {

@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The image a chat message will carry, checked before it is sent (#973).
  *
@@ -15,21 +17,17 @@ export const ACCEPTED_IMAGE_TYPES = Object.freeze([
 /** Decimal, like Symfony reads the server's `25M`. */
 export const MAX_IMAGE_BYTES = 25_000_000
 
-export const UNSUPPORTED_IMAGE_MESSAGE =
-  "Format d'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF)."
-export const IMAGE_TOO_LARGE_MESSAGE = "L'image est trop volumineuse, la limite est de 25 Mo."
-
 /**
  * @param {{type: string, size: number}} file
  * @returns {string|null} why the file cannot be sent, or null when it can
  */
 export function imageRefusalFor(file) {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return UNSUPPORTED_IMAGE_MESSAGE
+    return i18n.global.t('band_space_chat.image.unsupported')
   }
 
   if (file.size > MAX_IMAGE_BYTES) {
-    return IMAGE_TOO_LARGE_MESSAGE
+    return i18n.global.t('band_space_chat.image.too_large')
   }
 
   return null

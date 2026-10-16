@@ -5,13 +5,13 @@
     class="mb-2 last:mb-0 flex items-center gap-2 text-sm italic opacity-80"
   >
     <i class="pi pi-microphone text-xs" aria-hidden="true" />
-    Note vocale supprimée
+    {{ t('band_space_chat.voice_note.deleted') }}
   </span>
   <div v-else class="mb-2 last:mb-0 flex w-64 max-w-full items-center gap-3">
     <button
       type="button"
       class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-current/15 transition-colors hover:bg-current/25 disabled:opacity-60"
-      :aria-label="isPlaying ? 'Mettre en pause la note vocale' : 'Écouter la note vocale'"
+      :aria-label="isPlaying ? t('band_space_chat.voice_note.pause') : t('band_space_chat.voice_note.play')"
       :disabled="isLoading"
       @click="togglePlayback"
     >
@@ -41,7 +41,7 @@
         :max="voiceNote.duration_seconds"
         step="0.1"
         :value="currentSeconds"
-        aria-label="Position dans la note vocale"
+        :aria-label="t('band_space_chat.voice_note.position')"
         :aria-valuetext="formatVoiceNoteDuration(currentSeconds)"
         @input="seek(Number($event.target.value))"
       />
@@ -54,6 +54,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { formatVoiceNoteDuration, voiceNoteEnvelopePath } from '../../../utils/chatVoiceNote.js'
 
@@ -66,6 +67,7 @@ const props = defineProps({
   bandSpaceId: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const isPlaying = ref(false)
 const isLoading = ref(false)
 const hasFailed = ref(false)

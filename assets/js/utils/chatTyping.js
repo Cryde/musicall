@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * « X écrit… » (#1040), kept out of the store and the composer so each rule is pinned by a test.
  */
@@ -56,14 +58,18 @@ export function activeTypists(typists, now) {
 /** How the chat names members, typists or online, from the band's roster; somebody not on it yet is « Un membre ». */
 export function memberNames(userIds, members) {
   return userIds.map(
-    (userId) => members.find((member) => member.user_id === userId)?.display_name ?? 'Un membre'
+    (userId) =>
+      members.find((member) => member.user_id === userId)?.display_name ??
+      i18n.global.t('band_space_chat.typing.unknown_member')
   )
 }
 
 /** Named up to two, counted past that. */
 export function typingSentence(names) {
   if (names.length === 0) return ''
-  if (names.length === 1) return `${names[0]} écrit…`
-  if (names.length === 2) return `${names[0]} et ${names[1]} écrivent…`
-  return `${names.length} personnes écrivent…`
+  if (names.length === 1) return i18n.global.t('band_space_chat.typing.one', { name: names[0] })
+  if (names.length === 2) {
+    return i18n.global.t('band_space_chat.typing.two', { first: names[0], second: names[1] })
+  }
+  return i18n.global.t('band_space_chat.typing.many', { count: names.length })
 }

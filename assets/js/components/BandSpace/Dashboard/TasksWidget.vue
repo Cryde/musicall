@@ -1,18 +1,18 @@
 <template>
   <DashboardWidget
-    title="Tâches"
+    :title="t('band_space.module_name.tasks')"
     icon="pi pi-check-square"
     :is-loading="isLoading"
     :error="error"
     :is-empty="!isLoading && !error && totalOpen === 0 && stats?.done === 0"
-    empty-message="Aucune tâche pour le moment."
+    :empty-message="t('band_space.dashboard.tasks.empty')"
   >
     <template #header-action>
       <RouterLink
         :to="{ name: 'app_band_tasks', params: { id: bandSpaceId } }"
         class="text-xs text-primary hover:underline"
       >
-        Voir le board
+        {{ t('band_space.dashboard.tasks.see_all') }}
       </RouterLink>
     </template>
 
@@ -20,15 +20,15 @@
       <div class="grid grid-cols-3 gap-2">
         <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-center">
           <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ stats.todo }}</div>
-          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">À faire</div>
+          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ t('band_space.dashboard.tasks.todo') }}</div>
         </div>
         <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-center">
           <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ stats.in_progress }}</div>
-          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">En cours</div>
+          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ t('band_space.dashboard.tasks.in_progress') }}</div>
         </div>
         <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-center">
           <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ stats.done }}</div>
-          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">Terminé</div>
+          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ t('band_space.dashboard.tasks.done') }}</div>
         </div>
       </div>
       <RouterLink
@@ -38,7 +38,7 @@
       >
         <span class="flex items-center gap-2 text-sm text-red-700 dark:text-red-300 font-medium">
           <i class="pi pi-exclamation-triangle" aria-hidden="true" />
-          {{ stats.overdue }} en retard
+          {{ t('band_space.dashboard.tasks.overdue', { count: stats.overdue }) }}
         </span>
         <i class="pi pi-arrow-right text-red-700 dark:text-red-300 text-sm" aria-hidden="true" />
       </RouterLink>
@@ -48,6 +48,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -60,6 +61,7 @@ const props = defineProps({
 const stats = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const { t } = useI18n()
 
 const totalOpen = computed(() => (stats.value?.todo ?? 0) + (stats.value?.in_progress ?? 0))
 
@@ -70,7 +72,7 @@ async function load({ quiet = false } = {}) {
     error.value = null
   } catch {
     if (quiet) return
-    error.value = 'Impossible de charger les tâches.'
+    error.value = t('band_space.dashboard.tasks.load_error')
   } finally {
     isLoading.value = false
   }

@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Créer un Band Space"
+    :header="t('band_space.selector.create')"
     :style="{ width: '25rem' }"
     :closable="!bandSpaceStore.isCreating"
     :closeOnEscape="!bandSpaceStore.isCreating"
@@ -10,11 +10,11 @@
     <form @submit.prevent="handleSubmit">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
-          <label for="bandSpaceName" class="font-medium">Nom du Band Space</label>
+          <label for="bandSpaceName" class="font-medium">{{ t('band_space.create_modal.name_label') }}</label>
           <InputText
             id="bandSpaceName"
             v-model="name"
-            placeholder="Ex: Mon groupe de rock"
+            :placeholder="t('band_space.create_modal.name_placeholder')"
             :disabled="bandSpaceStore.isCreating"
             class="w-full"
             autofocus
@@ -24,14 +24,14 @@
         <div class="flex justify-end gap-2 mt-4">
           <Button
             type="button"
-            label="Annuler"
+            :label="t('band_space.common.cancel')"
             severity="secondary"
             @click="handleClose"
             :disabled="bandSpaceStore.isCreating"
           />
           <Button
             type="submit"
-            label="Créer"
+            :label="t('band_space.create_modal.submit')"
             :loading="bandSpaceStore.isCreating"
             :disabled="!name.trim()"
           />
@@ -47,6 +47,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { openDraftNameStorage, takeDraftName } from '../../utils/bandSpaceDraftName.js'
 
@@ -54,6 +55,7 @@ const emit = defineEmits(['created'])
 
 const bandSpaceStore = useBandSpaceStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const name = ref('')
 const error = ref('')
@@ -86,7 +88,7 @@ function handleClose() {
 
 async function handleSubmit() {
   if (!name.value.trim()) {
-    error.value = 'Veuillez saisir un nom'
+    error.value = t('band_space.create_modal.name_required')
     return
   }
 
@@ -97,8 +99,8 @@ async function handleSubmit() {
     bandSpaceStore.closeCreateModal()
     toast.add({
       severity: 'success',
-      summary: 'Band Space créé',
-      detail: `"${newSpace.name}" a été créé avec succès`,
+      summary: t('band_space.create_modal.created_summary'),
+      detail: t('band_space.create_modal.created_detail', { name: newSpace.name }),
       life: 3000
     })
     emit('created', newSpace)
@@ -111,7 +113,7 @@ async function handleSubmit() {
     if (!e.isValidationError) {
       toast.add({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('band_space.common.error'),
         detail: e.message,
         life: 5000
       })

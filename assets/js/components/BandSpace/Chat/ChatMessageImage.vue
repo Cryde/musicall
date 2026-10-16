@@ -5,13 +5,13 @@
     class="mb-2 last:mb-0 flex items-center gap-2 text-sm italic opacity-80"
   >
     <i class="pi pi-image text-xs" aria-hidden="true" />
-    Image supprimée
+    {{ t('band_space_chat.image.deleted') }}
   </span>
   <!-- A fixed height so a page of images does not push the conversation down as each one loads. -->
   <Image
     v-else
     :src="src"
-    alt="Image envoyée dans la conversation"
+    :alt="t('band_space_chat.image.alt')"
     preview
     class="mb-2 last:mb-0 block"
     image-class="h-48 w-auto max-w-64 rounded-lg object-cover"
@@ -24,6 +24,7 @@
 <script setup>
 import Image from 'primevue/image'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 
 const props = defineProps({
@@ -32,6 +33,7 @@ const props = defineProps({
   bandSpaceId: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const hasFailed = ref(false)
 const src = computed(() => bandSpaceChatApi.imageUrl(props.bandSpaceId, props.image.file_id))
 </script>

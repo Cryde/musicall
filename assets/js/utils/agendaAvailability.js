@@ -3,16 +3,18 @@
  * and the member rows so the three never disagree on what `absent` or a null answer is called.
  */
 
-const ANSWER_LABELS = {
-  yes: 'Disponible',
-  no: 'Indisponible',
-  absent: 'Absent',
-  pending: 'Sans réponse'
+import { i18n } from '../i18n/index.js'
+
+const ANSWER_LABEL_KEYS = {
+  yes: 'band_space_agenda.availability.answer.yes',
+  no: 'band_space_agenda.availability.answer.no',
+  absent: 'band_space_agenda.availability.answer.absent',
+  pending: 'band_space_agenda.availability.answer.pending'
 }
 
 /** A member's state as the API sends it: `yes`, `no`, `absent` or null for no answer yet. */
 export function availabilityAnswerLabel(answer) {
-  return ANSWER_LABELS[answer ?? 'pending'] ?? ANSWER_LABELS.pending
+  return i18n.global.t(ANSWER_LABEL_KEYS[answer ?? 'pending'] ?? ANSWER_LABEL_KEYS.pending)
 }
 
 /**
@@ -23,10 +25,15 @@ export function availabilitySummary(totals) {
   if (!totals) return null
 
   const parts = []
-  if (totals.yes > 0) parts.push(`${totals.yes} dispo${totals.yes > 1 ? 's' : ''}`)
-  if (totals.no > 0) parts.push(`${totals.no} indispo${totals.no > 1 ? 's' : ''}`)
-  if (totals.absent > 0) parts.push(`${totals.absent} absent${totals.absent > 1 ? 's' : ''}`)
-  if (totals.pending > 0) parts.push(`${totals.pending} sans réponse`)
+  const { t } = i18n.global
+  if (totals.yes > 0) parts.push(t('band_space_agenda.availability.summary.yes', totals.yes))
+  if (totals.no > 0) parts.push(t('band_space_agenda.availability.summary.no', totals.no))
+  if (totals.absent > 0) {
+    parts.push(t('band_space_agenda.availability.summary.absent', totals.absent))
+  }
+  if (totals.pending > 0) {
+    parts.push(t('band_space_agenda.availability.summary.pending', { count: totals.pending }))
+  }
 
   return parts.length > 0 ? parts.join(' · ') : null
 }

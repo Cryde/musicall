@@ -2,14 +2,14 @@
   <div class="p-3 sm:p-4">
     <div class="flex items-center justify-between gap-2 mb-4">
       <div class="flex items-center gap-2 min-w-0">
-        <h1 class="text-xl sm:text-2xl font-bold">Agenda</h1>
+        <h1 class="text-xl sm:text-2xl font-bold">{{ t('band_space_agenda.page.title') }}</h1>
         <span
           v-if="isRefreshing"
           role="status"
           class="flex items-center gap-1.5 text-sm text-surface-500 dark:text-surface-400"
         >
           <i class="pi pi-spin pi-spinner text-xs" aria-hidden="true" />
-          Mise à jour…
+          {{ t('band_space_agenda.page.refreshing') }}
         </span>
       </div>
       <div class="flex items-center gap-2">
@@ -21,29 +21,29 @@
             query: { section: 'calendar' }
           }"
           icon="pi pi-calendar-plus"
-          label="Synchroniser"
+          :label="t('band_space_agenda.page.sync')"
           size="small"
           severity="secondary"
           text
           :pt="{ label: { class: 'hidden sm:inline' } }"
-          aria-label="Synchroniser l'agenda avec mon calendrier personnel"
+          :aria-label="t('band_space_agenda.page.sync_aria')"
         />
         <Button
           icon="pi pi-user-minus"
-          label="Indisponibilités"
+          :label="t('band_space_agenda.common.absences')"
           size="small"
           severity="secondary"
           outlined
           :pt="{ label: { class: 'hidden sm:inline' } }"
-          aria-label="Indisponibilités"
+          :aria-label="t('band_space_agenda.common.absences')"
           @click="openAbsencesDrawer()"
         />
         <Button
           icon="pi pi-plus"
-          label="Nouvel événement"
+          :label="t('band_space_agenda.common.new_event')"
           size="small"
           :pt="{ label: { class: 'hidden sm:inline' } }"
-          aria-label="Nouvel événement"
+          :aria-label="t('band_space_agenda.common.new_event')"
           @click="openCreateDialog"
         />
       </div>
@@ -105,14 +105,14 @@
           v-if="agendaStore.items.length === 0"
           class="text-center text-surface-400 italic py-12"
         >
-          Aucun événement à venir dans cette période
+          {{ t('band_space_agenda.page.empty') }}
         </div>
 
         <div
           v-else-if="filteredItems.length === 0"
           class="text-center text-surface-400 italic py-12"
         >
-          Aucun événement avec ces filtres
+          {{ t('band_space_agenda.page.empty_filtered') }}
         </div>
 
         <div v-else>
@@ -122,7 +122,7 @@
                 {{ formatDateLabel(group.date) }}
               </span>
               <span class="text-xs text-surface-400">
-                {{ group.items.length }} événement{{ group.items.length > 1 ? 's' : '' }}
+                {{ t('band_space_agenda.page.event_count', group.items.length) }}
               </span>
             </div>
             <div
@@ -137,7 +137,7 @@
               >
                 <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
                   <template v-if="isAllDayItem(item)">
-                    <span class="italic text-xs">Toute la journée</span>
+                    <span class="italic text-xs">{{ t('band_space_agenda.common.all_day') }}</span>
                   </template>
                   <template v-else>
                     {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
@@ -288,6 +288,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
@@ -319,6 +320,7 @@ import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
 
 const FULL_CALENDAR_LOCALES = { fr: frLocale }
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
@@ -352,52 +354,52 @@ const focusDate = ref(null)
 // whole weeks and browsing months only ever widens the period. Saving an entry needs the honest
 // answer, otherwise the agenda stays on a month that does not contain what was just saved.
 const calendarSpan = ref(null)
-const viewModeOptions = [
-  { key: 'list', label: 'Planning', icon: 'pi pi-list' },
-  { key: 'timeGridDay', label: 'Jour', icon: 'pi pi-clock' },
-  { key: 'timeGridWeek', label: 'Semaine', icon: 'pi pi-calendar-clock' },
-  { key: 'dayGridMonth', label: 'Mois', icon: 'pi pi-calendar' },
-  { key: 'multiMonthYear', label: 'Année', icon: 'pi pi-th-large' }
-]
+const viewModeOptions = computed(() => [
+  { key: 'list', label: t('band_space_agenda.view.list'), icon: 'pi pi-list' },
+  { key: 'timeGridDay', label: t('band_space_agenda.view.day'), icon: 'pi pi-clock' },
+  { key: 'timeGridWeek', label: t('band_space_agenda.view.week'), icon: 'pi pi-calendar-clock' },
+  { key: 'dayGridMonth', label: t('band_space_agenda.view.month'), icon: 'pi pi-calendar' },
+  { key: 'multiMonthYear', label: t('band_space_agenda.view.year'), icon: 'pi pi-th-large' }
+])
 
-const agendaPresets = [
+const agendaPresets = computed(() => [
   {
     key: 'next_7d',
-    label: '7 prochains jours',
+    label: t('band_space_agenda.preset.next_7d'),
     from: () => startOfDay(new Date()),
     to: () => addDays(startOfDay(new Date()), 6)
   },
   {
     key: 'next_14d',
-    label: '14 prochains jours',
+    label: t('band_space_agenda.preset.next_14d'),
     from: () => startOfDay(new Date()),
     to: () => addDays(startOfDay(new Date()), 13)
   },
   {
     key: 'next_30d',
-    label: '30 prochains jours',
+    label: t('band_space_agenda.preset.next_30d'),
     from: () => startOfDay(new Date()),
     to: () => addDays(startOfDay(new Date()), 29)
   },
   {
     key: 'this_week',
-    label: 'Cette semaine',
+    label: t('band_space_agenda.preset.this_week'),
     from: () => startOfWeek(new Date(), { locale: dateFnsLocale() }),
     to: () => endOfWeek(new Date(), { locale: dateFnsLocale() })
   },
   {
     key: 'this_month',
-    label: 'Ce mois',
+    label: t('band_space_agenda.preset.this_month'),
     from: () => startOfMonth(new Date()),
     to: () => endOfMonth(new Date())
   },
   {
     key: 'next_month',
-    label: 'Le mois prochain',
+    label: t('band_space_agenda.preset.next_month'),
     from: () => startOfMonth(addDays(endOfMonth(new Date()), 1)),
     to: () => endOfMonth(addDays(endOfMonth(new Date()), 1))
   }
-]
+])
 
 // One shared descriptor per source; the chip's inactive styling is the same for all of them.
 const INACTIVE_CHIP_CLASS =
@@ -482,7 +484,11 @@ function dayEventSources(date) {
 
 function yearDotsLabel(sources) {
   const distinct = AGENDA_SOURCE_KEYS.filter((source) => sources.includes(source))
-  return `${sources.length} événement${sources.length > 1 ? 's' : ''} : ${distinct.map(sourceLabel).join(', ')}`
+  return t(
+    'band_space_agenda.page.year_dots_label',
+    { sources: distinct.map(sourceLabel).join(', ') },
+    sources.length
+  )
 }
 
 const calendarEvents = computed(() =>
@@ -522,10 +528,10 @@ const calendarOptions = computed(() => ({
     center: 'title',
     right: ''
   },
-  todayText: "Aujourd'hui",
+  todayText: t('band_space_agenda.page.today'),
   height: 'auto',
   allDaySlot: true,
-  allDayText: 'Toute la journée',
+  allDayText: t('band_space_agenda.common.all_day'),
   slotMinTime: '06:00:00',
   slotMaxTime: '24:00:00',
   nowIndicator: true,
@@ -599,7 +605,11 @@ async function openLinkedEntry(entryId, occurrenceDate = null) {
 
     // A link to an entry somebody has since deleted: say so and drop the parameter, rather than
     // leaving the member on an agenda that silently ignored what they clicked.
-    toast.add({ severity: 'error', summary: 'Événement introuvable', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_agenda.page.linked_not_found'),
+      life: 4000
+    })
     router.replace({ query: { ...route.query, entry: undefined, occurrence: undefined } })
     fetchWithCurrentRange()
     return
@@ -631,7 +641,11 @@ async function openLinkedEntry(entryId, occurrenceDate = null) {
   if (item) {
     handleItemClick(item)
   } else if (occurrenceDate) {
-    toast.add({ severity: 'warn', summary: "Cette date n'a plus lieu", life: 4000 })
+    toast.add({
+      severity: 'warn',
+      summary: t('band_space_agenda.page.linked_occurrence_gone'),
+      life: 4000
+    })
     router.replace({ query: { ...route.query, entry: undefined, occurrence: undefined } })
   }
 }
@@ -679,8 +693,8 @@ function handleEntrySaved(savedEntry) {
   const savedDay = withoutAllDayPin(savedEntry.event_datetime, savedEntry.is_all_day === true)
   toast.add({
     severity: 'success',
-    summary: 'Événement enregistré',
-    detail: `Il a lieu le ${formatDateLong(savedDay)} : l'agenda affiche maintenant cette période.`,
+    summary: t('band_space_agenda.page.saved_summary'),
+    detail: t('band_space_agenda.page.saved_detail', { date: formatDateLong(savedDay) }),
     life: 5000
   })
 }
@@ -828,7 +842,11 @@ function metadataLine(item) {
   if (item.source === 'finance') {
     if (item.metadata?.category_name) parts.push(item.metadata.category_name)
     if (item.metadata?.type) {
-      parts.push(item.metadata.type === 'expense' ? 'Dépense' : 'Revenu')
+      parts.push(
+        item.metadata.type === 'expense'
+          ? t('band_space_agenda.item.expense')
+          : t('band_space_agenda.item.income')
+      )
     }
   }
   return parts.join(' · ')
@@ -837,9 +855,9 @@ function metadataLine(item) {
 function taskPriorityLabel(priority) {
   switch (priority) {
     case 'high':
-      return 'Priorité haute'
+      return t('band_space_agenda.item.priority_high')
     case 'urgent':
-      return 'Urgent'
+      return t('band_space_agenda.item.priority_urgent')
     default:
       return priority
   }

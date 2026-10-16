@@ -3,18 +3,18 @@
     <!-- Invite form, admin only: the server refuses an invitation sent by a plain member -->
     <div v-if="isAdmin" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
       <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">
-        Inviter un membre
+        {{ t('band_space.members.invite_title') }}
       </h3>
       <form @submit.prevent="handleInvite" class="flex gap-3">
         <InputText
           v-model="inviteIdentifier"
-          placeholder="Email ou nom d'utilisateur"
+          :placeholder="t('band_space.members.invite_placeholder')"
           class="flex-1"
           :disabled="settingsStore.isInviting"
         />
         <Button
           type="submit"
-          label="Inviter"
+          :label="t('band_space.members.invite')"
           icon="pi pi-send"
           :loading="settingsStore.isInviting"
           :disabled="!inviteIdentifier.trim()"
@@ -27,7 +27,7 @@
     <!-- Pending invitations -->
     <div v-if="settingsStore.invitations.length > 0" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
       <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">
-        Invitations en attente
+        {{ t('band_space.dashboard.invitations.title') }}
       </h3>
       <div class="flex flex-col gap-3">
         <div
@@ -40,7 +40,7 @@
               {{ invitationTarget(invitation) }}
             </span>
             <span class="text-xs text-surface-500 dark:text-surface-400 ml-2">
-              Expire le {{ formatDate(invitation.expiration_datetime) }}
+              {{ t('band_space.members.expires_on', { date: formatDate(invitation.expiration_datetime) }) }}
             </span>
           </div>
           <Button
@@ -49,8 +49,8 @@
             rounded
             severity="danger"
             size="small"
-            v-tooltip.top="'Annuler l\'invitation'"
-            aria-label="Annuler l'invitation"
+            v-tooltip.top="t('band_space.members.cancel_invitation')"
+            :aria-label="t('band_space.members.cancel_invitation')"
             :loading="settingsStore.isCancellingInvitation"
             @click="handleCancelInvitation(invitation)"
           />
@@ -60,7 +60,7 @@
 
     <!-- Members list -->
     <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
-      <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">Membres</h3>
+      <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">{{ t('band_space.settings.section.members') }}</h3>
 
       <ProgressSpinner v-if="settingsStore.isLoadingMembers" class="flex justify-center" />
 
@@ -95,7 +95,7 @@
               >
                 ({{ member.username }})
               </span>
-              <span v-if="isMe(member)" class="text-xs text-surface-400 ml-1">(vous)</span>
+              <span v-if="isMe(member)" class="text-xs text-surface-400 ml-1">{{ t('band_space.members.you') }}</span>
               <p
                 v-if="member.instruments.length > 0"
                 class="text-xs text-surface-600 dark:text-surface-300"
@@ -104,7 +104,7 @@
               </p>
             </div>
             <Tag
-              :value="member.role === 'admin' ? 'Admin' : 'Membre'"
+              :value="member.role === 'admin' ? t('band_space.members.role_admin') : t('band_space.members.role_member')"
               :severity="member.role === 'admin' ? 'warn' : 'info'"
               class="text-xs"
             />
@@ -119,8 +119,8 @@
               text
               rounded
               size="small"
-              v-tooltip.top="'Nom de scène et instruments'"
-              :aria-label="`Modifier le nom de scène et les instruments de ${member.display_name}`"
+              v-tooltip.top="t('band_space.member_profile.header')"
+              :aria-label="t('band_space.members.edit_profile_aria', { name: member.display_name })"
               @click="openProfileDialog(member)"
             />
             <!-- Promoting, demoting and excluding are admin only server side, so a member is not
@@ -132,8 +132,8 @@
               text
               rounded
               size="small"
-              v-tooltip.top="'Promouvoir admin'"
-              aria-label="Promouvoir admin"
+              v-tooltip.top="t('band_space.members.promote')"
+              :aria-label="t('band_space.members.promote')"
               :loading="settingsStore.isUpdatingRole"
               @click="handlePromote(member)"
             />
@@ -143,8 +143,8 @@
               text
               rounded
               size="small"
-              v-tooltip.top="'Rétrograder membre'"
-              aria-label="Rétrograder membre"
+              v-tooltip.top="t('band_space.members.demote')"
+              :aria-label="t('band_space.members.demote')"
               :loading="settingsStore.isUpdatingRole"
               @click="handleDemote(member)"
             />
@@ -154,8 +154,8 @@
               rounded
               severity="danger"
               size="small"
-              v-tooltip.top="'Exclure'"
-              aria-label="Exclure"
+              v-tooltip.top="t('band_space.members.kick')"
+              :aria-label="t('band_space.members.kick')"
               :loading="settingsStore.isKicking"
               @click="handleKick(member)"
             />
@@ -177,14 +177,14 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
-            Quitter le Band Space
+            {{ t('band_space.members.leave_title') }}
           </h3>
           <p v-if="isOnlyAdmin" class="text-xs text-surface-500 mt-1">
-            Vous devez promouvoir un autre membre administrateur avant de quitter.
+            {{ t('band_space.members.only_admin') }}
           </p>
         </div>
         <Button
-          label="Quitter"
+          :label="t('band_space.members.leave')"
           severity="danger"
           outlined
           :disabled="isOnlyAdmin"
@@ -205,6 +205,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
@@ -220,6 +221,7 @@ const route = useRoute()
 const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 const settingsStore = useBandSpaceSettingsStore()
 const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()
@@ -269,7 +271,7 @@ async function handleInvite() {
   inviteSuccess.value = ''
   try {
     await settingsStore.invite(bandSpaceId, inviteIdentifier.value.trim())
-    inviteSuccess.value = `Invitation envoyée à ${inviteIdentifier.value}`
+    inviteSuccess.value = t('band_space.members.invite_sent', { target: inviteIdentifier.value })
     inviteIdentifier.value = ''
   } catch (e) {
     inviteError.value = e.message
@@ -280,21 +282,29 @@ async function handleInvite() {
 function invitationTarget(invitation) {
   if (invitation.email) return invitation.email
   // The account behind an invitation by username can be gone, leaving neither
-  return invitation.invited_username ? `@${invitation.invited_username}` : 'un utilisateur'
+  return invitation.invited_username
+    ? `@${invitation.invited_username}`
+    : t('band_space.members.unknown_user')
 }
 
 function handleCancelInvitation(invitation) {
   confirm.require({
-    message: `Annuler l'invitation envoyée à ${invitationTarget(invitation)} ?`,
-    header: "Confirmer l'annulation",
+    message: t('band_space.members.cancel_invitation_message', {
+      target: invitationTarget(invitation)
+    }),
+    header: t('band_space.members.cancel_invitation_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Non',
-    acceptLabel: 'Oui, annuler',
+    rejectLabel: t('band_space.members.no'),
+    acceptLabel: t('band_space.members.yes_cancel'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await settingsStore.cancelInvitation(bandSpaceId, invitation.id)
-        toast.add({ severity: 'success', summary: 'Invitation annulée', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space.members.invitation_cancelled'),
+          life: 3000
+        })
       } catch (e) {
         toast.add({ severity: 'error', summary: e.message, life: 5000 })
       }
@@ -307,7 +317,7 @@ async function handlePromote(member) {
     await settingsStore.updateRole(bandSpaceId, member.id, 'admin')
     toast.add({
       severity: 'success',
-      summary: `${member.username} est maintenant admin`,
+      summary: t('band_space.members.promoted', { username: member.username }),
       life: 3000
     })
   } catch (e) {
@@ -320,7 +330,7 @@ async function handleDemote(member) {
     await settingsStore.updateRole(bandSpaceId, member.id, 'user')
     toast.add({
       severity: 'success',
-      summary: `${member.username} est maintenant membre`,
+      summary: t('band_space.members.demoted', { username: member.username }),
       life: 3000
     })
   } catch (e) {
@@ -330,16 +340,20 @@ async function handleDemote(member) {
 
 function handleKick(member) {
   confirm.require({
-    message: `Êtes-vous sûr de vouloir exclure ${member.username} ?`,
-    header: "Confirmer l'exclusion",
+    message: t('band_space.members.kick_message', { username: member.username }),
+    header: t('band_space.members.kick_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Exclure',
+    rejectLabel: t('band_space.common.cancel'),
+    acceptLabel: t('band_space.members.kick'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await settingsStore.kickMember(bandSpaceId, member.id)
-        toast.add({ severity: 'success', summary: `${member.username} a été exclu`, life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space.members.kicked', { username: member.username }),
+          life: 3000
+        })
       } catch (e) {
         toast.add({ severity: 'error', summary: e.message, life: 5000 })
       }
@@ -349,18 +363,18 @@ function handleKick(member) {
 
 function handleLeave() {
   confirm.require({
-    message: 'Êtes-vous sûr de vouloir quitter ce Band Space ?',
-    header: 'Confirmer le départ',
+    message: t('band_space.members.leave_message'),
+    header: t('band_space.members.leave_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Quitter',
+    rejectLabel: t('band_space.common.cancel'),
+    acceptLabel: t('band_space.members.leave'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await settingsStore.leave(bandSpaceId)
         await bandSpaceStore.loadMyBandSpaces()
         router.replace({ name: BAND_SPACE_ROUTES.INDEX })
-        toast.add({ severity: 'info', summary: 'Vous avez quitté le Band Space', life: 3000 })
+        toast.add({ severity: 'info', summary: t('band_space.members.left'), life: 3000 })
       } catch (e) {
         toast.add({ severity: 'error', summary: e.message, life: 5000 })
       }

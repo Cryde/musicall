@@ -28,7 +28,7 @@
           ? 'opacity-100'
           : 'opacity-0 focus-visible:opacity-100 group-hover/message:opacity-100'
       "
-      aria-label="Ajouter une réaction"
+      :aria-label="t('band_space_chat.reaction.add')"
       aria-haspopup="dialog"
       :aria-expanded="isPickerOpen"
       @click="handleOpenPicker"
@@ -37,13 +37,13 @@
     </button>
 
     <Popover ref="pickerRef" @show="isPickerOpen = true" @hide="isPickerOpen = false">
-      <div class="flex gap-1" role="group" aria-label="Choisir une réaction">
+      <div class="flex gap-1" role="group" :aria-label="t('band_space_chat.reaction.choose')">
         <button
           v-for="choice in CHAT_REACTIONS"
           :key="choice.key"
           type="button"
           class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg transition-colors hover:bg-surface-100 dark:hover:bg-surface-700"
-          :aria-label="choice.label"
+          :aria-label="chatReactionLabel(choice.key)"
           :aria-pressed="isHeld(choice.key)"
           @click="handlePick(choice.key)"
         >
@@ -57,6 +57,7 @@
 <script setup>
 import Popover from 'primevue/popover'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { CHAT_REACTIONS, chatReactionLabel } from '../../../constants/chatReactions.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { hasReacted } from '../../../utils/chatReactionToggle.js'
@@ -69,6 +70,7 @@ const props = defineProps({
   alignEnd: { type: Boolean, default: false }
 })
 
+const { t } = useI18n()
 const chatStore = useBandSpaceChatStore()
 const pickerRef = ref(null)
 const isPickerOpen = ref(false)
@@ -82,10 +84,11 @@ function isHeld(emojiKey) {
  * (#688), so the whole sentence goes in the label.
  */
 function pillLabel(reaction) {
-  const name = chatReactionLabel(reaction.key)
-  const action = reaction.has_reacted ? 'retirer ma réaction' : 'réagir'
+  const params = { name: chatReactionLabel(reaction.key), count: reaction.count }
 
-  return `${name}, ${reaction.count} : ${action}`
+  return reaction.has_reacted
+    ? t('band_space_chat.reaction.pill_remove', params)
+    : t('band_space_chat.reaction.pill_add', params)
 }
 
 function handleOpenPicker(event) {

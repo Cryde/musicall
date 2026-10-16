@@ -10,9 +10,9 @@
       <div class="flex flex-col items-center justify-center min-h-[50rem] gap-4">
         <i class="pi pi-exclamation-circle text-6xl text-red-500"></i>
         <p class="text-surface-600 dark:text-surface-400">
-          Une erreur est survenue lors du chargement.
+          {{ t('band_space.layout.load_error') }}
         </p>
-        <Button label="Réessayer" icon="pi pi-refresh" @click="retry" />
+        <Button :label="t('band_space.layout.retry')" icon="pi pi-refresh" @click="retry" />
       </div>
     </template>
     <template v-else>
@@ -39,17 +39,19 @@
               class="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300"
             >
               <i class="pi pi-exclamation-triangle mt-0.5" aria-hidden="true" />
-              <p class="flex-1 min-w-0">
-                Cet espace sera définitivement supprimé le
-                <strong>{{ formatDateLong(deletionScheduledFor) }}</strong>. Les modifications sont
-                désactivées, mais vous pouvez toujours consulter et télécharger vos fichiers.
-                <RouterLink
-                  :to="{ name: BAND_SPACE_ROUTES.PARAMETERS, params: { id: route.params.id }, query: { section: 'danger' } }"
-                  class="underline"
-                >
-                  Gérer la suppression
-                </RouterLink>
-              </p>
+              <i18n-t keypath="band_space.layout.deletion_banner" tag="p" class="flex-1 min-w-0">
+                <template #date>
+                  <strong>{{ formatDateLong(deletionScheduledFor) }}</strong>
+                </template>
+                <template #link>
+                  <RouterLink
+                    :to="{ name: BAND_SPACE_ROUTES.PARAMETERS, params: { id: route.params.id }, query: { section: 'danger' } }"
+                    class="underline"
+                  >
+                    {{ t('band_space.layout.manage_deletion') }}
+                  </RouterLink>
+                </template>
+              </i18n-t>
             </div>
             <!-- Force remount on space switch so module views never retain
                  another space's bandSpaceId or store state. -->
@@ -63,7 +65,7 @@
         :style="{ width: '18rem' }"
       >
         <template #header>
-          <span class="font-semibold">Navigation</span>
+          <span class="font-semibold">{{ t('band_space.layout.navigation') }}</span>
         </template>
         <div class="flex flex-col h-full">
           <div
@@ -77,7 +79,7 @@
                 class="flex items-center text-xs gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800"
               >
                 <i class="pi pi-arrow-left text-xs" aria-hidden="true"></i>
-                <span class="font-medium">back to musicall</span>
+                <span class="font-medium">{{ t('band_menu.back_to_musicall') }}</span>
               </a>
             </RouterLink>
           </div>
@@ -101,7 +103,7 @@
                   >
                     <i class="pi pi-user text-base shrink-0" aria-hidden="true"></i>
                     <span class="font-medium truncate">
-                      {{ userSecurityStore.user?.username ?? 'Mon compte' }}
+                      {{ userSecurityStore.user?.username ?? t('band_space.layout.my_account') }}
                     </span>
                     <i class="pi pi-chevron-down text-sm ml-auto" aria-hidden="true"></i>
                   </button>
@@ -132,7 +134,7 @@
                     class="flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
                   >
                     <i class="pi pi-envelope text-base shrink-0" aria-hidden="true"></i>
-                    <span class="font-medium truncate">Messages</span>
+                    <span class="font-medium truncate">{{ t('user_menu.messages') }}</span>
                     <Badge
                       v-if="notificationStore.unreadMessages > 0"
                       :value="notificationStore.unreadMessages"
@@ -159,6 +161,7 @@ import Drawer from 'primevue/drawer'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
@@ -179,6 +182,7 @@ const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 
 // Mirror of AppNavbarUserCluster's menuItems for the mobile drawer's
 // collapsible account section. Keep in sync if the desktop avatar menu
@@ -187,7 +191,7 @@ const toast = useToast()
 const userMenuEntries = computed(() => {
   const entries = [
     {
-      label: 'Mon profil',
+      label: t('user_menu.profile'),
       icon: 'pi-user',
       to: () => ({
         name: 'app_user_public_profile',
@@ -195,40 +199,40 @@ const userMenuEntries = computed(() => {
       })
     },
     {
-      label: 'Mes annonces',
+      label: t('user_menu.announces'),
       icon: 'pi-megaphone',
       to: () => ({ name: 'app_user_announces' })
     },
     {
-      label: 'Mes publications',
+      label: t('user_menu.publications'),
       icon: 'pi-file-edit',
       to: () => ({ name: 'app_user_publications' })
     },
     {
-      label: 'Mes cours',
+      label: t('user_menu.courses'),
       icon: 'pi-book',
       to: () => ({ name: 'app_user_courses' })
     },
     {
-      label: 'Mes photos',
+      label: t('user_menu.photos'),
       icon: 'pi-images',
       to: () => ({ name: 'app_user_galleries' })
     },
     {
-      label: 'Paramètres du compte',
+      label: t('band_space.layout.account_settings'),
       icon: 'pi-cog',
       to: () => ({ name: 'app_user_settings' })
     }
   ]
   if (userSecurityStore.isAdmin) {
     entries.push({
-      label: 'Administration',
+      label: t('user_menu.admin'),
       icon: 'pi-shield',
       to: () => ({ name: 'admin_dashboard' })
     })
   }
   entries.push({
-    label: 'Se déconnecter',
+    label: t('user_menu.logout'),
     icon: 'pi-sign-out',
     action: () => {
       trackUmamiEvent('user-logout')
@@ -304,16 +308,22 @@ watch(
   { immediate: true }
 )
 
-// Page title based on current space and route
+// Page title based on current space and route. The pipe goes in as a parameter because vue-i18n
+// reads a literal one as a plural separator.
+const TITLE_SEPARATOR = '|'
 const pageTitle = computed(() => {
   const spaceName = currentSpace.value?.name
   const routeName = route.name
-  const section = SECTION_NAMES[routeName] || 'Band Space'
+  const section = SECTION_NAMES[routeName] || t('band_space.module_name.band_space')
 
   if (spaceName) {
-    return `${section} - ${spaceName} | MusicAll`
+    return t('band_space.layout.page_title_with_space', {
+      section,
+      space: spaceName,
+      separator: TITLE_SEPARATOR
+    })
   }
-  return `${section} | MusicAll`
+  return t('band_space.layout.page_title', { section, separator: TITLE_SEPARATOR })
 })
 
 useHead({
@@ -348,8 +358,8 @@ async function loadSpaces() {
       if (!validateCurrentSpace()) {
         toast.add({
           severity: 'warn',
-          summary: 'Band Space introuvable',
-          detail: "Ce Band Space n'existe pas ou vous n'y avez pas accès",
+          summary: t('band_space.layout.not_found_summary'),
+          detail: t('band_space.layout.not_found_detail'),
           life: 5000
         })
       }
@@ -358,8 +368,8 @@ async function loadSpaces() {
     hasError.value = true
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger vos Band Spaces',
+      summary: t('band_space.common.error'),
+      detail: t('band_space.layout.load_spaces_error'),
       life: 5000
     })
   } finally {
@@ -396,8 +406,8 @@ watch(
     if (!validateCurrentSpace()) {
       toast.add({
         severity: 'warn',
-        summary: 'Band Space introuvable',
-        detail: "Ce Band Space n'existe pas ou vous n'y avez pas accès",
+        summary: t('band_space.layout.not_found_summary'),
+        detail: t('band_space.layout.not_found_detail'),
         life: 5000
       })
     }

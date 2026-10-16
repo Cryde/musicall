@@ -2,10 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   formatVoiceNoteDuration,
-  MICROPHONE_DENIED_MESSAGE,
-  NO_MICROPHONE_MESSAGE,
   pickRecordingMimeType,
-  RECORDING_FAILED_MESSAGE,
   recordingErrorMessage,
   recordingExtension,
   voiceNoteEnvelopePath
@@ -61,16 +58,19 @@ describe('formatVoiceNoteDuration', () => {
 
 describe('recordingErrorMessage', () => {
   it('explains a refused permission', () => {
-    assert.equal(recordingErrorMessage({ name: 'NotAllowedError' }), MICROPHONE_DENIED_MESSAGE)
+    assert.equal(
+      recordingErrorMessage({ name: 'NotAllowedError' }),
+      "L'accès au micro a été refusé. Autorisez-le dans les réglages du navigateur pour enregistrer une note vocale."
+    )
   })
 
   it('explains a missing microphone', () => {
-    assert.equal(recordingErrorMessage({ name: 'NotFoundError' }), NO_MICROPHONE_MESSAGE)
+    assert.equal(recordingErrorMessage({ name: 'NotFoundError' }), 'Aucun micro détecté.')
   })
 
   it('falls back to a generic sentence', () => {
-    assert.equal(recordingErrorMessage(new Error('boom')), RECORDING_FAILED_MESSAGE)
-    assert.equal(recordingErrorMessage(undefined), RECORDING_FAILED_MESSAGE)
+    assert.equal(recordingErrorMessage(new Error('boom')), "L'enregistrement n'a pas pu démarrer.")
+    assert.equal(recordingErrorMessage(undefined), "L'enregistrement n'a pas pu démarrer.")
   })
 })
 

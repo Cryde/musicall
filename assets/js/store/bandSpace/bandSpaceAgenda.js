@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
+import { i18n } from '../../i18n/index.js'
 import { withAvailabilityAnswer } from '../../utils/agendaAvailability.js'
 
 export const useBandAgendaStore = defineStore('bandAgenda', () => {
@@ -31,7 +32,7 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
       items.value = data
     } catch (error) {
       if (currentRequestId !== requestId) return
-      loadError.value = error?.message ?? "Erreur lors du chargement de l'agenda"
+      loadError.value = error?.message ?? i18n.global.t('band_space_agenda.page.load_error')
     } finally {
       if (currentRequestId === requestId) {
         isLoading.value = false

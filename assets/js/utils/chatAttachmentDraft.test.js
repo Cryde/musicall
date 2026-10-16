@@ -3,13 +3,10 @@ import { describe, it } from 'node:test'
 import {
   addToDraft,
   canSendDraft,
-  DUPLICATE_ATTACHMENT_MESSAGE,
   draftAfterSend,
   draftIdentifiers,
-  FULL_DRAFT_MESSAGE,
   MAX_CHAT_ATTACHMENTS,
-  removeFromDraft,
-  UNUSABLE_ATTACHMENT_MESSAGE
+  removeFromDraft
 } from './chatAttachmentDraft.js'
 
 /**
@@ -70,7 +67,7 @@ describe('addToDraft', () => {
     const before = addToDraft([], searchResult('file', 'contrat')).attachments
     const { attachments, error } = addToDraft(before, searchResult('file', 'contrat'))
 
-    assert.equal(error, DUPLICATE_ATTACHMENT_MESSAGE)
+    assert.equal(error, 'Cet élément est déjà joint à ce message.')
     assert.deepEqual(draftIdentifiers(attachments), ['file-contrat'])
   })
 
@@ -86,7 +83,7 @@ describe('addToDraft', () => {
     const full = draftOf(MAX_CHAT_ATTACHMENTS)
     const { attachments, error } = addToDraft(full, searchResult('note', 'sixth'))
 
-    assert.equal(error, FULL_DRAFT_MESSAGE)
+    assert.equal(error, 'Un message ne peut pas référencer plus de 5 éléments.')
     assert.equal(attachments.length, MAX_CHAT_ATTACHMENTS)
     assert.equal(
       attachments.some((attachment) => attachment.id === 'note-sixth'),
@@ -98,13 +95,13 @@ describe('addToDraft', () => {
     const full = draftOf(MAX_CHAT_ATTACHMENTS)
     const { error } = addToDraft(full, searchResult('task', 'task-0'))
 
-    assert.equal(error, DUPLICATE_ATTACHMENT_MESSAGE)
+    assert.equal(error, 'Cet élément est déjà joint à ce message.')
   })
 
   it('refuses a candidate with no identifier instead of putting undefined on the wire', () => {
     for (const candidate of [null, undefined, {}, { type: 'task', title: 'sans id' }]) {
       const { attachments, error } = addToDraft([], candidate)
-      assert.equal(error, UNUSABLE_ATTACHMENT_MESSAGE)
+      assert.equal(error, 'Cet élément ne peut pas être joint.')
       assert.deepEqual(attachments, [])
     }
   })

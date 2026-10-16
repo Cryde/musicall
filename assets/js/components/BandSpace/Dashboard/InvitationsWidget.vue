@@ -1,18 +1,18 @@
 <template>
   <DashboardWidget
-    title="Invitations en attente"
+    :title="t('band_space.dashboard.invitations.title')"
     icon="pi pi-envelope"
     :is-loading="isLoading"
     :error="error"
     :is-empty="!isLoading && !error && pendingCount === 0"
-    empty-message="Aucune invitation en attente."
+    :empty-message="t('band_space.dashboard.invitations.empty')"
   >
     <template #header-action>
       <RouterLink
         :to="{ name: 'app_band_parameters', params: { id: bandSpaceId } }"
         class="text-xs text-primary hover:underline"
       >
-        Gérer
+        {{ t('band_space.dashboard.invitations.manage') }}
       </RouterLink>
     </template>
 
@@ -20,7 +20,7 @@
       <div>
         <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ pendingCount }}</div>
         <div class="text-xs text-surface-500 mt-1">
-          {{ pendingCount === 1 ? 'invitation en attente' : 'invitations en attente' }}
+          {{ t('band_space.dashboard.invitations.pending_label', pendingCount) }}
         </div>
       </div>
       <i class="pi pi-clock text-3xl text-amber-500" aria-hidden="true" />
@@ -30,6 +30,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceSettingsApi from '../../../api/bandSpace/band-space-settings.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -42,6 +43,7 @@ const props = defineProps({
 const invitations = ref([])
 const isLoading = ref(true)
 const error = ref(null)
+const { t } = useI18n()
 
 const pendingCount = computed(
   () => invitations.value.filter((inv) => inv.status === 'pending').length
@@ -54,7 +56,7 @@ async function load({ quiet = false } = {}) {
     error.value = null
   } catch {
     if (quiet) return
-    error.value = 'Invitations indisponibles.'
+    error.value = t('band_space.dashboard.invitations.load_error')
   } finally {
     isLoading.value = false
   }

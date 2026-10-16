@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The `@tous` sentinel of the Band Space chat.
  *
@@ -12,5 +14,7 @@ export const EVERYONE_MENTION_ID = 'tous'
 export const EVERYONE_MEMBER = {
   user_id: EVERYONE_MENTION_ID,
   username: EVERYONE_MENTION_ID,
-  hint: 'tout le groupe'
+  get hint() {
+    return i18n.global.t('band_space_chat.everyone_mention.hint')
+  }
 }

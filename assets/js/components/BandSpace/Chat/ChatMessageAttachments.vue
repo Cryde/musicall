@@ -18,7 +18,7 @@
       >
         <i :class="['pi', card.icon, 'text-xs', 'shrink-0']" aria-hidden="true" />
         <span class="truncate">{{ card.label }}</span>
-        <span v-if="!card.isAvailable" class="shrink-0 text-xs italic">(supprimé)</span>
+        <span v-if="!card.isAvailable" class="shrink-0 text-xs italic">{{ t('band_space_chat.message_attachments.deleted') }}</span>
       </span>
     </li>
   </ul>
@@ -26,6 +26,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { routeForResult, searchTypeFor } from '../../../utils/bandSpaceSearch.js'
 
@@ -34,6 +35,8 @@ const THEIR_CARD_CLASS =
   'border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-800 text-surface-800 dark:text-surface-100'
 const MINE_CARD_CLASS = 'border-white/40 bg-white/15 text-white'
 const FALLBACK_ICON = 'pi-link'
+
+const { t } = useI18n()
 
 const props = defineProps({
   /** The `attachments` of one ChatMessage, straight from the API. */

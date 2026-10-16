@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The « Vu par » line the chat pane prints under its last message (#977).
  *
@@ -18,23 +20,21 @@ export function readReceiptLabel(readByUsernames) {
     return ''
   }
 
+  if (names.length === 1) {
+    return i18n.global.t('band_space_chat.read_receipt.one', { name: names[0] })
+  }
+
   if (names.length <= MAX_NAMES) {
-    return `Vu par ${joinWithAnd(names)}`
+    return i18n.global.t('band_space_chat.read_receipt.several', {
+      names: names.slice(0, -1).join(', '),
+      last: names.at(-1)
+    })
   }
 
   const shown = names.slice(0, MAX_NAMES - 1)
 
-  return `Vu par ${shown.join(', ')} et ${names.length - shown.length} autres`
-}
-
-/**
- * @param {string[]} names
- * @returns {string}
- */
-function joinWithAnd(names) {
-  if (names.length === 1) {
-    return names[0]
-  }
-
-  return `${names.slice(0, -1).join(', ')} et ${names.at(-1)}`
+  return i18n.global.t('band_space_chat.read_receipt.many', {
+    names: shown.join(', '),
+    count: names.length - shown.length
+  })
 }

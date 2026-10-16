@@ -1,4 +1,5 @@
 import { useToast } from 'primevue/usetoast'
+import { i18n } from '../i18n/index.js'
 import { useBandSpaceChatStore } from '../store/bandSpace/bandSpaceChat.js'
 
 /**
@@ -19,7 +20,9 @@ export function useChatPin(bandSpaceId) {
   }
 
   function actionLabel(message) {
-    return message.is_pinned ? 'Détacher ce message' : 'Épingler ce message'
+    return message.is_pinned
+      ? i18n.global.t('band_space_chat.pin.unpin')
+      : i18n.global.t('band_space_chat.pin.pin')
   }
 
   async function togglePin(message) {

@@ -2,7 +2,7 @@
   <div>
     <div class="mb-6 lg:mb-8">
       <h1 class="text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
-        Tableau de bord
+        {{ t('band_space.dashboard.title') }}
       </h1>
       <p v-if="currentSpace?.name" class="text-surface-600 dark:text-surface-400 mt-1">
         {{ currentSpace.name }}
@@ -26,6 +26,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import ActivityWidget from '../../components/BandSpace/Dashboard/ActivityWidget.vue'
 import AgendaWidget from '../../components/BandSpace/Dashboard/AgendaWidget.vue'
@@ -36,6 +37,7 @@ import TasksWidget from '../../components/BandSpace/Dashboard/TasksWidget.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 
 const route = useRoute()
+const { t } = useI18n()
 const { currentSpace } = useBandSpaceNavigation()
 
 const bandSpaceId = computed(() => route.params.id || null)

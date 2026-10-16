@@ -3,10 +3,10 @@
     v-model:visible="visible"
     modal
     dismissableMask
-    header="Joindre un élément du Band Space"
+    :header="t('band_space_chat.picker.header')"
     :style="{ width: '38rem' }"
     :breakpoints="{ '40rem': '95vw' }"
-    :close-button-props="{ 'aria-label': 'Fermer' }"
+    :close-button-props="{ 'aria-label': t('band_space_chat.picker.close') }"
     content-class="p-0!"
     @show="reset"
   >
@@ -20,11 +20,11 @@
           class="w-full"
           role="combobox"
           aria-autocomplete="list"
-          aria-label="Rechercher un élément à joindre"
+          :aria-label="t('band_space_chat.picker.search_label')"
           :aria-expanded="flatResults.length > 0"
           :aria-controls="flatResults.length > 0 ? listboxId : undefined"
           :aria-activedescendant="activeOptionId"
-          placeholder="Agenda, tâche, note, fichier, setlist..."
+          :placeholder="t('band_space_chat.picker.search_placeholder')"
           @keydown.down.prevent="moveActive(1)"
           @keydown.up.prevent="moveActive(-1)"
           @keydown.enter.prevent="pickActiveResult"
@@ -36,7 +36,7 @@
       <!-- Before the list rather than after: the reason the rows stopped responding has to be read
            before they are clicked, not once nothing happens. -->
       <Message v-if="isFull" severity="warn" :closable="false" class="mb-3">
-        {{ FULL_DRAFT_MESSAGE }} Retirez-en un pour en joindre un autre.
+        {{ fullDraftMessage() }} {{ t('band_space_chat.picker.remove_one') }}
       </Message>
 
       <BandSpaceSearchResults
@@ -53,8 +53,8 @@
         :listbox-id="listboxId"
         :picked-ids="pickedIds"
         :disabled="isFull"
-        label="Éléments à joindre"
-        picked-label="Joint"
+        :label="t('band_space_chat.picker.results_label')"
+        :picked-label="t('band_space_chat.picker.picked')"
         @select="pick"
         @activate="setActiveResult"
         @toggle-type="toggleType"
@@ -65,9 +65,9 @@
     <template #footer>
       <div class="flex w-full items-center justify-between gap-3">
         <span class="text-xs text-surface-600 dark:text-surface-300 tabular-nums" aria-live="polite">
-          {{ pickedIds.length }} / {{ MAX_CHAT_ATTACHMENTS }} joints
+          {{ t('band_space_chat.picker.picked_count', { count: pickedIds.length, max: MAX_CHAT_ATTACHMENTS }) }}
         </span>
-        <Button label="Fermer" severity="secondary" text @click="visible = false" />
+        <Button :label="t('band_space_chat.picker.close')" severity="secondary" text @click="visible = false" />
       </div>
     </template>
   </Dialog>
@@ -81,12 +81,13 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import { computed, nextTick, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   recentsOrderStorageKey,
   useBandSpaceSearch
 } from '../../../composables/useBandSpaceSearch.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { FULL_DRAFT_MESSAGE, MAX_CHAT_ATTACHMENTS } from '../../../utils/chatAttachmentDraft.js'
+import { fullDraftMessage, MAX_CHAT_ATTACHMENTS } from '../../../utils/chatAttachmentDraft.js'
 import BandSpaceSearchResults from '../BandSpaceSearchResults.vue'
 
 /**
@@ -104,6 +105,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['pick'])
+
+const { t } = useI18n()
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
