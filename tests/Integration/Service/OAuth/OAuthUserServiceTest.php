@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Service\OAuth;
 use App\Entity\SocialAccount;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
+use App\Locale\RequestLocaleResolver;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use App\Service\OAuth\OAuthUserData;
@@ -15,6 +16,8 @@ use App\Service\OAuth\ProfilePictureImporter;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -176,6 +179,27 @@ class OAuthUserServiceTest extends KernelTestCase
         );
         $this->assertNotNull($socialAccount);
         $this->assertSame($result->user->id, $socialAccount->user->id);
+    }
+
+    public function test_find_or_create_user_stores_the_locale_the_request_asks_for(): void
+    {
+        $this->mockProfilePictureImporter();
+        // As it will resolve once `en` is enabled. No RequestLocaleListener here, as for the app's sign-in.
+        self::getContainer()->set(RequestLocaleResolver::class, new RequestLocaleResolver(['fr', 'en'], 'fr'));
+        self::getContainer()->get(RequestStack::class)->push(Request::create('/', server: ['HTTP_ACCEPT_LANGUAGE' => 'en']));
+
+        $userData = new OAuthUserData(
+            id: 'google-id-new',
+            email: 'newuser@example.com',
+            username: 'New User',
+            pictureUrl: null,
+            emailVerified: true,
+        );
+
+        $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
+
+        $this->assertTrue($result->isNew);
+        $this->assertSame('en', $result->user->locale);
     }
 
     public function test_find_or_create_user_sanitizes_username(): void
