@@ -5,7 +5,7 @@
     optionLabel="name"
     optionGroupLabel="label"
     optionGroupChildren="items"
-    placeholder="Selectionnez votre band space"
+    :placeholder="t('band_space.selector.placeholder')"
     class="w-full md:w-56"
     :disabled="bandSpaceStore.isCreating"
     @change="handleSpaceChange"
@@ -29,6 +29,7 @@
 <script setup>
 import Select from 'primevue/select'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, CREATE_ACTION_ID } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
@@ -36,6 +37,7 @@ import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 const emit = defineEmits(['navigate'])
 
 const bandSpaceStore = useBandSpaceStore()
+const { t } = useI18n()
 const { currentSpace, navigateToSpace } = useBandSpaceNavigation()
 
 const selectOptions = computed(() => {
@@ -50,7 +52,7 @@ const selectOptions = computed(() => {
 
   options.push({
     label: '',
-    items: [{ id: CREATE_ACTION_ID, name: 'Créer un Band Space', isCreateAction: true }]
+    items: [{ id: CREATE_ACTION_ID, name: t('band_space.selector.create'), isCreateAction: true }]
   })
 
   return options

@@ -2,17 +2,17 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Partager le fichier"
+    :header="t('band_space_files.share_dialog.title')"
     :style="{ width: '36rem' }"
     @hide="resetDialog"
   >
     <div class="flex flex-col gap-5">
       <div v-if="!createdShare" class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Date d'expiration</label>
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ t('band_space_files.share_dialog.expiry_label') }}</label>
           <DatePicker
             v-model="form.expiryDatetime"
-            aria-label="Date d'expiration"
+            :aria-label="t('band_space_files.share_dialog.expiry_label')"
             show-time
             hour-format="24"
             date-format="dd/mm/yy"
@@ -28,7 +28,7 @@
           <div class="flex items-center gap-2">
             <Checkbox v-model="usePassword" input-id="use-password" binary :disabled="filesStore.isCreatingShare" />
             <label for="use-password" class="text-sm text-surface-700 dark:text-surface-200">
-              Protéger par mot de passe
+              {{ t('band_space_files.share_dialog.use_password') }}
             </label>
           </div>
           <Password
@@ -36,7 +36,7 @@
             v-model="form.password"
             :feedback="false"
             toggle-mask
-            placeholder="Mot de passe"
+            :placeholder="t('band_space_files.share_dialog.password_placeholder')"
             input-class="w-full"
             class="w-full"
             :disabled="filesStore.isCreatingShare"
@@ -52,7 +52,7 @@
         class="flex flex-col gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800"
       >
         <p class="text-sm font-medium text-amber-900 dark:text-amber-200">
-          Lien créé. Le lien complet ne sera plus visible après fermeture — copiez-le maintenant.
+          {{ t('band_space_files.share_dialog.link_created') }}
         </p>
         <div class="flex items-center gap-2">
           <InputText
@@ -66,19 +66,19 @@
           <Button
             icon="pi pi-copy"
             size="small"
-            label="Copier"
+            :label="t('band_space_files.share_dialog.copy')"
             severity="secondary"
             @click="copyShareUrl"
           />
         </div>
         <p v-if="createdShare.has_password" class="text-xs text-amber-800 dark:text-amber-300">
-          Mot de passe requis pour ce lien.
+          {{ t('band_space_files.share_dialog.password_required') }}
         </p>
       </div>
 
       <div class="flex flex-col gap-2">
         <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-200">
-          Liens actifs ({{ fileShares.length }})
+          {{ t('band_space_files.share_dialog.active_links', { count: fileShares.length }) }}
         </h4>
 
         <div v-if="filesStore.isLoadingShares && fileShares.length === 0" class="flex flex-col gap-2">
@@ -86,7 +86,7 @@
         </div>
 
         <p v-else-if="fileShares.length === 0" class="text-xs italic text-surface-400">
-          Aucun lien de partage actif pour ce fichier.
+          {{ t('band_space_files.share_dialog.no_active_links') }}
         </p>
 
         <div
@@ -97,15 +97,22 @@
           <i class="pi pi-link text-surface-400"></i>
           <div class="flex-1 min-w-0 text-xs">
             <p class="text-surface-700 dark:text-surface-200">
-              Expire le {{ formatDate(share.expiry_datetime) }}
+              {{ t('band_space_files.share_dialog.expires_on', { date: formatDate(share.expiry_datetime) }) }}
               <span v-if="share.has_password" class="ml-2 text-amber-600">
-                <i class="pi pi-lock"></i> protégé
+                <i class="pi pi-lock"></i> {{ t('band_space_files.share_dialog.protected') }}
               </span>
             </p>
             <p class="text-surface-400">
-              {{ share.access_count }} accès
               <template v-if="share.last_access_datetime">
-                — dernier {{ formatRelative(share.last_access_datetime) }}
+                {{
+                  t('band_space_files.share_dialog.access_count_last', {
+                    count: share.access_count,
+                    when: formatRelative(share.last_access_datetime)
+                  })
+                }}
+              </template>
+              <template v-else>
+                {{ t('band_space_files.share_dialog.access_count', { count: share.access_count }) }}
               </template>
             </p>
           </div>
@@ -123,7 +130,7 @@
     <template #footer>
       <Button
         v-if="!createdShare"
-        label="Annuler"
+        :label="t('band_space_files.common.cancel')"
         severity="secondary"
         text
         :disabled="filesStore.isCreatingShare"
@@ -131,7 +138,7 @@
       />
       <Button
         v-if="!createdShare"
-        label="Créer le lien"
+        :label="t('band_space_files.share_dialog.create')"
         icon="pi pi-share-alt"
         :loading="filesStore.isCreatingShare"
         :disabled="!form.expiryDatetime"
@@ -139,7 +146,7 @@
       />
       <Button
         v-else
-        label="Fermer"
+        :label="t('band_space_files.common.close')"
         @click="visible = false"
       />
     </template>
@@ -159,6 +166,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { dateFnsLocale, intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
@@ -169,6 +177,7 @@ const props = defineProps({
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const confirm = useConfirm()
 const toast = useToast()
@@ -217,7 +226,7 @@ function initDefaults() {
 
 async function handleCreate() {
   if (!form.expiryDatetime) {
-    fieldErrors.expiryDatetime = "Veuillez choisir une date d'expiration"
+    fieldErrors.expiryDatetime = t('band_space_files.share_dialog.expiry_required')
     return
   }
   fieldErrors.expiryDatetime = null
@@ -249,17 +258,17 @@ async function handleCreate() {
 
 function confirmRevoke(share) {
   confirm.require({
-    message: 'Révoquer ce lien de partage ? Il deviendra immédiatement inaccessible.',
-    header: 'Confirmer la révocation',
+    message: t('band_space_files.share_dialog.revoke_confirm_message'),
+    header: t('band_space_files.share_dialog.revoke_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Révoquer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_files.share_dialog.revoke'),
+    rejectLabel: t('band_space_files.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       await filesStore.revokeShare(props.bandSpaceId, share.id)
       toast.add({
         severity: 'success',
-        summary: 'Lien révoqué',
+        summary: t('band_space_files.share_dialog.revoked'),
         life: 3000
       })
     }
@@ -272,14 +281,14 @@ async function copyShareUrl() {
     await navigator.clipboard.writeText(createdShare.value.share_url)
     toast.add({
       severity: 'success',
-      summary: 'Lien copié.',
+      summary: t('band_space_files.share_dialog.copied'),
       life: 2500
     })
   } catch {
     toast.add({
       severity: 'warn',
-      summary: 'Copie impossible',
-      detail: 'Sélectionnez le lien et copiez-le manuellement.',
+      summary: t('band_space_files.share_dialog.copy_failed'),
+      detail: t('band_space_files.share_dialog.copy_failed_detail'),
       life: 4000
     })
   }

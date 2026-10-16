@@ -1,7 +1,7 @@
 <template>
   <section
     id="band-space-demo"
-    aria-label="Aperçu de votre Band Space"
+    :aria-label="t('home.band_space_presentation.preview.aria_label')"
     class="flex flex-col overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-2xl"
   >
     <div class="flex items-center justify-between gap-4 h-14 px-4 lg:px-5 border-b border-surface-200 dark:border-surface-700">
@@ -13,7 +13,7 @@
           {{ shownName }}
         </span>
       </div>
-      <div class="flex shrink-0 pl-2" :aria-label="`${size} membres`" role="img">
+      <div class="flex shrink-0 pl-2" :aria-label="t('home.band_space_presentation.preview.members', { count: size })" role="img">
         <span
           v-for="(member, index) in roster"
           :key="member"
@@ -29,7 +29,7 @@
       <div
         class="flex lg:flex-col gap-1 p-3 overflow-x-auto border-b lg:border-b-0 lg:border-r border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950"
         role="tablist"
-        aria-label="Modules de l'aperçu"
+        :aria-label="t('home.band_space_presentation.preview.tabs_aria_label')"
       >
         <button
           v-for="tab in TABS"
@@ -62,7 +62,7 @@
             v-if="pickedPains.includes(tab.key)"
             class="text-[10px] font-bold tracking-wide text-teal-700 dark:text-teal-300"
           >
-            PRIORITÉ
+            {{ t('home.band_space_presentation.preview.priority') }}
           </span>
         </button>
       </div>
@@ -80,8 +80,8 @@
         >
           <template v-if="tab.key === 'dashboard'">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">Bienvenue, {{ shownName }}</h3>
-              <span class="text-sm text-surface-600 dark:text-surface-400">{{ membersLabel }} · invitations par mail</span>
+              <h3 class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space_presentation.preview.welcome', { name: shownName }) }}</h3>
+              <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.members_invited_by_mail', { members: membersLabel }) }}</span>
             </div>
             <div class="grid sm:grid-cols-2 gap-3">
               <button
@@ -122,7 +122,7 @@
                   <span class="font-semibold text-surface-900 dark:text-surface-0">{{ event.name }}</span>
                   <span class="text-sm text-surface-600 dark:text-surface-400">{{ event.detail }}</span>
                 </span>
-                <span class="text-sm font-bold text-surface-700 dark:text-surface-300" :aria-label="`${event.available} membres sur ${size} disponibles`">
+                <span class="text-sm font-bold text-surface-700 dark:text-surface-300" :aria-label="t('home.band_space_presentation.preview.available', { available: event.available, size })">
                   {{ event.available }}/{{ size }}
                 </span>
               </li>
@@ -150,19 +150,19 @@
               <div v-if="openNote" class="flex flex-col gap-3">
                 <button type="button" :class="[ADD_BUTTON, 'self-start']" @click="openNoteId = null">
                   <i class="pi pi-arrow-left" aria-hidden="true" />
-                  Retour aux notes
+                  {{ t('home.band_space_presentation.preview.back_to_notes') }}
                 </button>
                 <div class="flex flex-col rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
                   <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950">
                     <span class="font-semibold text-surface-900 dark:text-surface-0">{{ openNote.title }}</span>
                     <!-- Decorative: a real formatting toolbar is the product, not the demo. -->
                     <span class="flex gap-3 text-surface-500 dark:text-surface-400" aria-hidden="true">
-                      <span class="font-bold">B</span>
-                      <span class="italic">I</span>
+                      <span class="font-bold">{{ t('home.band_space_presentation.preview.toolbar_bold') }}</span>
+                      <span class="italic">{{ t('home.band_space_presentation.preview.toolbar_italic') }}</span>
                       <i class="pi pi-list" />
                     </span>
                   </div>
-                  <label :for="`demo-note-${openNote.id}`" class="sr-only">Contenu de la note « {{ openNote.title }} »</label>
+                  <label :for="`demo-note-${openNote.id}`" class="sr-only">{{ t('home.band_space_presentation.preview.note_content', { title: openNote.title }) }}</label>
                   <textarea
                     :id="`demo-note-${openNote.id}`"
                     v-model="openNoteBody"
@@ -171,7 +171,7 @@
                   />
                 </div>
                 <span class="text-sm text-surface-600 dark:text-surface-400">
-                  {{ openNote.isEdited ? "Modifiée à l'instant par Vous" : `Écrite par ${openNote.who}` }}
+                  {{ openNote.isEdited ? t('home.band_space_presentation.preview.note_edited_by_you') : t('home.band_space_presentation.preview.note_written_by', { name: openNote.who }) }}
                 </span>
               </div>
               <ul v-else class="m-0 p-0 list-none flex flex-col gap-2">
@@ -180,10 +180,10 @@
                     <i :class="['pi pi-file-edit', MODULE_ACCENTS.notes.text]" aria-hidden="true" />
                     <span class="flex flex-col grow min-w-0">
                       <span class="font-semibold text-surface-900 dark:text-surface-0">{{ note.title }}</span>
-                      <span class="truncate text-sm text-surface-600 dark:text-surface-400">{{ note.body || 'Note vide' }}</span>
+                      <span class="truncate text-sm text-surface-600 dark:text-surface-400">{{ note.body || t('home.band_space_presentation.preview.note_empty') }}</span>
                     </span>
                     <span class="text-sm font-bold text-surface-700 dark:text-surface-300">
-                      {{ note.isEdited ? "À l'instant" : note.who }}
+                      {{ note.isEdited ? t('home.band_space_presentation.preview.just_now') : note.who }}
                     </span>
                   </button>
                 </li>
@@ -195,7 +195,7 @@
                 <span class="w-5 text-sm font-bold text-surface-600 dark:text-surface-400">{{ index + 1 }}</span>
                 <span class="flex flex-wrap items-center gap-x-2 grow min-w-0 font-semibold text-surface-900 dark:text-surface-0">
                   <span>{{ song.title }}</span>
-                  <span v-if="song.isNew" :class="['text-[10px] font-bold uppercase', MODULE_ACCENTS.setlists.text]">Nouveau</span>
+                  <span v-if="song.isNew" :class="['text-[10px] font-bold uppercase', MODULE_ACCENTS.setlists.text]">{{ t('home.band_space_presentation.preview.new_song') }}</span>
                 </span>
                 <span class="text-sm font-bold text-surface-700 dark:text-surface-300">{{ formatSongDuration(song.seconds) }}</span>
                 <span class="flex">
@@ -203,7 +203,7 @@
                     type="button"
                     :class="ICON_BUTTON"
                     :disabled="index === 0"
-                    :aria-label="`Monter « ${song.title} »`"
+                    :aria-label="t('home.band_space_presentation.preview.move_up', { title: song.title })"
                     @click="moveSongAt(index, -1)"
                   >
                     <i class="pi pi-arrow-up" aria-hidden="true" />
@@ -212,7 +212,7 @@
                     type="button"
                     :class="ICON_BUTTON"
                     :disabled="index === setlist.length - 1"
-                    :aria-label="`Descendre « ${song.title} »`"
+                    :aria-label="t('home.band_space_presentation.preview.move_down', { title: song.title })"
                     @click="moveSongAt(index, 1)"
                   >
                     <i class="pi pi-arrow-down" aria-hidden="true" />
@@ -227,12 +227,12 @@
                   <span :class="['w-10 text-xs font-bold', MODULE_ACCENTS.files.text]">{{ file.type }}</span>
                   <span class="flex flex-col grow min-w-0">
                     <span class="truncate font-semibold text-surface-900 dark:text-surface-0">{{ file.name }}</span>
-                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ file.folder }} · ajouté par {{ file.who }}</span>
+                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.file_added_by', { folder: file.folder, name: file.who }) }}</span>
                   </span>
                   <button
                     type="button"
                     :class="[ICON_BUTTON, 'hover:text-red-600 dark:hover:text-red-400']"
-                    :aria-label="`Supprimer ${file.name}`"
+                    :aria-label="t('home.band_space_presentation.preview.delete_file', { name: file.name })"
                     data-file-delete
                     @click="deleteFile(file.id)"
                   >
@@ -241,10 +241,10 @@
                 </li>
               </ul>
               <div v-else class="flex flex-col items-center gap-3 py-8 text-center">
-                <p class="m-0 text-surface-600 dark:text-surface-400">Plus aucun fichier. Dans votre espace, rien ne part sans vous.</p>
+                <p class="m-0 text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.files_empty') }}</p>
                 <button type="button" data-files-restore :class="ADD_BUTTON" @click="deletedFileIds = []">
                   <i class="pi pi-replay" aria-hidden="true" />
-                  Remettre les fichiers
+                  {{ t('home.band_space_presentation.preview.restore_files') }}
                 </button>
               </div>
             </template>
@@ -255,12 +255,12 @@
                   <span :class="['size-2 rounded-full shrink-0', MODULE_ACCENTS.finances.dot]" aria-hidden="true" />
                   <span class="flex flex-col grow min-w-0">
                     <span class="font-semibold text-surface-900 dark:text-surface-0">{{ expense.label }}</span>
-                    <span class="text-sm text-surface-600 dark:text-surface-400">Avancé par {{ expense.payer }}, partagé entre {{ size }}</span>
+                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.expense_split', { payer: expense.payer, size }) }}</span>
                   </span>
                   <span class="text-sm font-bold text-surface-900 dark:text-surface-0">{{ formatEuros(expense.amount) }}</span>
                 </li>
               </ul>
-              <h4 class="m-0 text-sm font-bold text-surface-900 dark:text-surface-0">Qui doit quoi</h4>
+              <h4 class="m-0 text-sm font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space_presentation.preview.who_owes_what') }}</h4>
               <ul class="m-0 p-0 list-none grid sm:grid-cols-2 gap-2">
                 <li
                   v-for="balance in balances"
@@ -291,14 +291,14 @@
                 {{ panels[tab.key].addLabel }}
               </button>
               <span v-if="!canAddMore(panels[tab.key].addedCount)" class="text-sm text-surface-600 dark:text-surface-400">
-                C'est tout pour la démo. Dans votre espace, il n'y a pas de limite.
+                {{ t('home.band_space_presentation.preview.demo_limit') }}
               </span>
             </div>
           </template>
         </div>
 
         <p class="m-0 mt-auto text-sm text-surface-600 dark:text-surface-400">
-          Aperçu : cliquez dans le menu. Les exemples seront remplacés par vos vraies dates, tâches et morceaux.
+          {{ t('home.band_space_presentation.preview.footer') }}
         </p>
       </div>
     </div>
@@ -307,6 +307,7 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BAND_SPACE_MODULES } from '../../../constants/bandSpace.js'
 import {
   canAddMore,
@@ -339,8 +340,16 @@ const props = defineProps({
   requestedTab: { type: [String, Array], default: null }
 })
 
+const { t } = useI18n()
+
 const TABS = [
-  { key: 'dashboard', label: 'Dashboard', icon: 'pi pi-th-large' },
+  {
+    key: 'dashboard',
+    get label() {
+      return t('home.band_space_presentation.preview.dashboard_tab')
+    },
+    icon: 'pi pi-th-large'
+  },
   ...BAND_SPACE_MODULES
 ]
 
@@ -378,10 +387,14 @@ const addedExpenseCount = ref(0)
 const editedNoteBodies = ref({})
 const openNoteId = ref(null)
 
-const shownName = computed(() => props.name.trim() || 'Votre groupe')
+const shownName = computed(
+  () => props.name.trim() || t('home.band_space_presentation.preview.your_band')
+)
 const roster = computed(() => demoRoster(props.size))
 const membersLabel = computed(() =>
-  props.size === 6 ? '6 membres et plus' : `${props.size} membres`
+  props.size === 6
+    ? t('home.band_space_presentation.preview.members_and_more', { count: props.size })
+    : t('home.band_space_presentation.preview.members', { count: props.size })
 )
 
 const agenda = computed(() => demoAgenda(props.size, addedEventCount.value))
@@ -411,39 +424,54 @@ const panels = computed(() => {
   const doneCount = tasks.value.length - openTasks.length
   return {
     agenda: {
-      title: 'Agenda',
-      subtitle: 'Octobre 2026',
-      summary: `${Math.max(1, props.size - 1)}/${props.size} dispos jeudi`,
-      addLabel: 'Ajouter une date',
+      title: t('home.band_space_presentation.preview.panels.agenda_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.agenda_subtitle'),
+      summary: t('home.band_space_presentation.preview.panels.agenda_summary', {
+        available: Math.max(1, props.size - 1),
+        size: props.size
+      }),
+      addLabel: t('home.band_space_presentation.preview.panels.agenda_add'),
       addedCount: addedEventCount.value,
       add: () => addedEventCount.value++
     },
     taches: {
-      title: 'Tâches',
-      subtitle: 'Chaque tâche a un responsable et une date',
-      summary: `${doneCount} ${doneCount > 1 ? 'faites' : 'faite'} sur ${tasks.value.length}`,
+      title: t('home.band_space_presentation.preview.panels.tasks_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.tasks_subtitle'),
+      summary: t(
+        'home.band_space_presentation.preview.panels.tasks_summary',
+        { total: tasks.value.length },
+        doneCount
+      ),
       openTasks
     },
     notes: {
-      title: 'Notes',
-      subtitle: "Les idées de la répète, avant qu'elles se perdent",
+      title: t('home.band_space_presentation.preview.panels.notes_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.notes_subtitle'),
       summary: ''
     },
     setlists: {
-      title: 'Setlist du concert',
-      subtitle: "Une seule version, à jour. Changez l'ordre avec les flèches.",
-      summary: `${setlist.value.length} morceaux · ${setlistMinutes(setlist.value)} min`
+      title: t('home.band_space_presentation.preview.panels.setlists_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.setlists_subtitle'),
+      summary: t('home.band_space_presentation.preview.panels.setlists_summary', {
+        songs: setlist.value.length,
+        minutes: setlistMinutes(setlist.value)
+      })
     },
     files: {
-      title: 'Fichiers',
-      subtitle: 'Rangés par dossier, partagés avec le groupe',
-      summary: `${files.value.length} ${files.value.length > 1 ? 'fichiers' : 'fichier'}`
+      title: t('home.band_space_presentation.preview.panels.files_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.files_subtitle'),
+      summary: t('home.band_space_presentation.preview.panels.files_summary', files.value.length)
     },
     finances: {
-      title: 'Finances',
-      subtitle: `${formatEuros(expensesTotal.value)} de dépenses, partagées entre ${props.size}`,
-      summary: `${sharePerMember.value} par membre`,
-      addLabel: 'Ajouter une dépense',
+      title: t('home.band_space_presentation.preview.panels.finances_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.finances_subtitle', {
+        amount: formatEuros(expensesTotal.value),
+        size: props.size
+      }),
+      summary: t('home.band_space_presentation.preview.panels.finances_summary', {
+        amount: sharePerMember.value
+      }),
+      addLabel: t('home.band_space_presentation.preview.panels.finances_add'),
       addedCount: addedExpenseCount.value,
       add: () => addedExpenseCount.value++
     }
@@ -454,29 +482,47 @@ const widgets = computed(() => {
   const nextTask = panels.value.taches.openTasks[0]
   const content = {
     agenda: {
-      tag: 'Agenda',
-      title: 'Prochaine répète · jeu. 20:00',
-      meta: `${Math.max(1, props.size - 1)}/${props.size} disponibles`
+      tag: t('home.band_space_presentation.preview.widgets.agenda_tag'),
+      title: t('home.band_space_presentation.preview.widgets.agenda_title'),
+      meta: t('home.band_space_presentation.preview.widgets.agenda_meta', {
+        available: Math.max(1, props.size - 1),
+        size: props.size
+      })
     },
     taches: {
-      tag: 'Tâches',
-      title: `${panels.value.taches.openTasks.length} tâches ouvertes`,
-      meta: nextTask ? `Prochaine : ${nextTask.label.toLowerCase()}` : 'Tout est fait'
+      tag: t('home.band_space_presentation.preview.widgets.tasks_tag'),
+      title: t('home.band_space_presentation.preview.widgets.tasks_title', {
+        count: panels.value.taches.openTasks.length
+      }),
+      meta: nextTask
+        ? t('home.band_space_presentation.preview.widgets.tasks_next', {
+            task: nextTask.label.toLowerCase()
+          })
+        : t('home.band_space_presentation.preview.widgets.tasks_all_done')
     },
     setlists: {
-      tag: 'Setlists',
-      title: 'Setlist du concert',
-      meta: `${setlist.value.length} morceaux · ${setlistMinutes(setlist.value)} min · imprimable`
+      tag: t('home.band_space_presentation.preview.widgets.setlists_tag'),
+      title: t('home.band_space_presentation.preview.widgets.setlists_title'),
+      meta: t('home.band_space_presentation.preview.widgets.setlists_meta', {
+        songs: setlist.value.length,
+        minutes: setlistMinutes(setlist.value)
+      })
     },
     finances: {
-      tag: 'Finances',
-      title: `Dépenses : ${formatEuros(expensesTotal.value)}`,
-      meta: `${sharePerMember.value} par membre, calculé`
+      tag: t('home.band_space_presentation.preview.widgets.finances_tag'),
+      title: t('home.band_space_presentation.preview.widgets.finances_title', {
+        amount: formatEuros(expensesTotal.value)
+      }),
+      meta: t('home.band_space_presentation.preview.widgets.finances_meta', {
+        amount: sharePerMember.value
+      })
     },
     files: {
-      tag: 'Fichiers',
-      title: 'Partitions & démos',
-      meta: `${files.value.length} fichiers, rangés par dossier`
+      tag: t('home.band_space_presentation.preview.widgets.files_tag'),
+      title: t('home.band_space_presentation.preview.widgets.files_title'),
+      meta: t('home.band_space_presentation.preview.widgets.files_meta', {
+        count: files.value.length
+      })
     }
   }
   return dashboardModules(props.pickedPains).map((key) => ({

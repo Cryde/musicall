@@ -2,41 +2,41 @@
   <Drawer
     v-model:visible="visibleModel"
     position="right"
-    :header="isEditMode ? 'Modifier la récurrence' : 'Nouvelle récurrence'"
+    :header="isEditMode ? t('band_space_finance.recurrence_drawer.title_edit') : t('band_space_finance.recurrence_drawer.title_new')"
     class="w-full! md:w-[28rem]!"
   >
     <form class="flex flex-col gap-4" @submit.prevent="handleSave">
       <div v-if="!isEditMode" class="flex flex-col gap-1">
-        <label for="recurrence-category" class="text-sm font-medium">Catégorie</label>
+        <label for="recurrence-category" class="text-sm font-medium">{{ t('band_space_finance.common.category') }}</label>
         <Select
           id="recurrence-category"
           v-model="form.categoryId"
           :options="props.categories"
           optionLabel="name"
           optionValue="id"
-          placeholder="Sélectionne une catégorie"
+          :placeholder="t('band_space_finance.common.select_category')"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-label" class="text-sm font-medium">Libellé</label>
-        <InputText id="recurrence-label" v-model="form.label" placeholder="Ex : Loyer local de répétition" />
+        <label for="recurrence-label" class="text-sm font-medium">{{ t('band_space_finance.common.label') }}</label>
+        <InputText id="recurrence-label" v-model="form.label" :placeholder="t('band_space_finance.recurrence_drawer.label_placeholder')" />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-type" class="text-sm font-medium">Type</label>
+        <label for="recurrence-type" class="text-sm font-medium">{{ t('band_space_finance.common.type') }}</label>
         <Select
           id="recurrence-type"
           v-model="form.type"
           :options="typeOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionne un type"
+          :placeholder="t('band_space_finance.common.select_type')"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-amount" class="text-sm font-medium">Montant (en euros)</label>
+        <label for="recurrence-amount" class="text-sm font-medium">{{ t('band_space_finance.recurrence_drawer.amount') }}</label>
         <InputNumber
           id="recurrence-amount"
           v-model="form.amountEuros"
@@ -49,33 +49,33 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-scope" class="text-sm font-medium">Portée</label>
+        <label for="recurrence-scope" class="text-sm font-medium">{{ t('band_space_finance.common.scope') }}</label>
         <Select
           id="recurrence-scope"
           v-model="form.scope"
           :options="scopeOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionne la portée"
+          :placeholder="t('band_space_finance.common.select_scope')"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-interval" class="text-sm font-medium">Intervalle</label>
+        <label for="recurrence-interval" class="text-sm font-medium">{{ t('band_space_finance.recurrence_drawer.interval') }}</label>
         <Select
           id="recurrence-interval"
           v-model="form.interval"
           :options="intervalOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionne un intervalle"
+          :placeholder="t('band_space_finance.recurrence_drawer.select_interval')"
           :disabled="isEditMode"
         />
         <small v-if="isEditMode" class="text-surface-600 dark:text-surface-300">{{ frozenScheduleHint }}</small>
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-start-date" class="text-sm font-medium">Date de début <span class="text-red-500">*</span></label>
+        <label for="recurrence-start-date" class="text-sm font-medium">{{ t('band_space_finance.recurrence_drawer.start_date') }} <span class="text-red-500">*</span></label>
         <DatePicker
           id="recurrence-start-date"
           v-model="form.startDate"
@@ -87,19 +87,19 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="recurrence-end-date" class="text-sm font-medium">Date de fin <span class="text-red-500">*</span></label>
+        <label for="recurrence-end-date" class="text-sm font-medium">{{ t('band_space_finance.recurrence_drawer.end_date') }} <span class="text-red-500">*</span></label>
         <DatePicker id="recurrence-end-date" v-model="form.endDate" dateFormat="dd/mm/yy" showIcon />
       </div>
 
       <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-4">
         <Button
           type="submit"
-          label="Enregistrer"
+          :label="t('band_space_finance.common.save')"
           :loading="financeStore.isCreating || financeStore.isSaving"
         />
         <Button
           type="button"
-          label="Annuler"
+          :label="t('band_space_finance.common.cancel')"
           severity="secondary"
           text
           @click="visibleModel = false"
@@ -107,14 +107,14 @@
         <div v-if="isEditMode" class="flex items-center gap-2 ml-auto">
           <Button
             type="button"
-            :label="props.recurrence.is_active ? 'Désactiver' : 'Activer'"
+            :label="props.recurrence.is_active ? t('band_space_finance.recurrence_drawer.deactivate') : t('band_space_finance.recurrence_drawer.activate')"
             :severity="props.recurrence.is_active ? 'warn' : 'success'"
             text
             @click="handleToggleActive"
           />
           <Button
             type="button"
-            label="Supprimer"
+            :label="t('band_space_finance.common.delete')"
             severity="danger"
             text
             :loading="financeStore.isDeleting"
@@ -137,10 +137,11 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { centsToCurrency, currencyToCents, MAX_AMOUNT_EUROS } from '../../../utils/currency.js'
-import { RECURRENCE_DELETE_MESSAGE } from '../../../utils/financeConfirmations.js'
+import { recurrenceDeleteMessage } from '../../../utils/financeConfirmations.js'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -150,6 +151,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved', 'deleted'])
+const { t } = useI18n()
 const confirm = useConfirm()
 const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
@@ -163,24 +165,26 @@ const isEditMode = computed(() => props.recurrence !== null)
 
 // The generated entries all sit on the grid drawn by the start date and the interval, so the API refuses
 // to re-anchor it once entries exist. Say it here rather than let the user hit a 422.
-const frozenScheduleHint = 'Non modifiable : terminez cette récurrence et créez-en une nouvelle.'
+const frozenScheduleHint = computed(() =>
+  t('band_space_finance.recurrence_drawer.frozen_schedule_hint')
+)
 
-const typeOptions = [
-  { label: 'Dépense', value: 'expense' },
-  { label: 'Revenu', value: 'income' }
-]
+const typeOptions = computed(() => [
+  { label: t('band_space_finance.type.expense'), value: 'expense' },
+  { label: t('band_space_finance.type.income'), value: 'income' }
+])
 
-const scopeOptions = [
-  { label: 'Groupe', value: 'band' },
-  { label: 'Personnel', value: 'personal' }
-]
+const scopeOptions = computed(() => [
+  { label: t('band_space_finance.scope.band'), value: 'band' },
+  { label: t('band_space_finance.scope.personal'), value: 'personal' }
+])
 
-const intervalOptions = [
-  { label: 'Hebdomadaire', value: 'weekly' },
-  { label: 'Mensuel', value: 'monthly' },
-  { label: 'Trimestriel', value: 'quarterly' },
-  { label: 'Annuel', value: 'yearly' }
-]
+const intervalOptions = computed(() => [
+  { label: t('band_space_finance.recurrence_drawer.intervals.weekly'), value: 'weekly' },
+  { label: t('band_space_finance.recurrence_drawer.intervals.monthly'), value: 'monthly' },
+  { label: t('band_space_finance.recurrence_drawer.intervals.quarterly'), value: 'quarterly' },
+  { label: t('band_space_finance.recurrence_drawer.intervals.yearly'), value: 'yearly' }
+])
 
 const form = reactive({
   categoryId: null,
@@ -259,8 +263,8 @@ async function handleSave() {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: apiErrorDetail(error, 'Impossible d\u2019enregistrer la récurrence'),
+      summary: t('band_space_finance.common.error'),
+      detail: apiErrorDetail(error, t('band_space_finance.recurrence_drawer.save_error')),
       life: 5000
     })
   }
@@ -268,11 +272,11 @@ async function handleSave() {
 
 function handleDelete() {
   confirm.require({
-    message: RECURRENCE_DELETE_MESSAGE,
-    header: 'Confirmer la suppression',
+    message: recurrenceDeleteMessage(),
+    header: t('band_space_finance.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_finance.common.cancel'),
+    acceptLabel: t('band_space_finance.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
@@ -282,8 +286,8 @@ function handleDelete() {
         // A personal recurrence answers only to its owner, and that 403 says so.
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: apiErrorDetail(error, 'Impossible de supprimer la récurrence'),
+          summary: t('band_space_finance.common.error'),
+          detail: apiErrorDetail(error, t('band_space_finance.recurrence_drawer.delete_error')),
           life: 5000
         })
       }
@@ -300,8 +304,8 @@ async function handleToggleActive() {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: apiErrorDetail(error, 'Impossible de modifier le statut de la récurrence'),
+      summary: t('band_space_finance.common.error'),
+      detail: apiErrorDetail(error, t('band_space_finance.recurrence_drawer.toggle_error')),
       life: 5000
     })
   }

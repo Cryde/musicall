@@ -1,3 +1,4 @@
+import { i18n } from '../i18n/index.js'
 import { canFileSitAtRoot } from '../utils/fileListing.js'
 
 /**
@@ -129,16 +130,24 @@ export async function applyMove(
   try {
     if (source.type === 'folder') {
       await filesStore.updateFolder(bandSpaceId, source.id, { parent_id: targetFolderId })
-      toast.add({ severity: 'success', summary: 'Dossier déplacé', life: 2500 })
+      toast.add({
+        severity: 'success',
+        summary: i18n.global.t('band_space_files.move.folder_moved'),
+        life: 2500
+      })
     } else if (source.type === 'file') {
       await filesApi.updateFile(bandSpaceId, source.id, { folder_id: targetFolderId })
       filesStore.applyFileMoved(bandSpaceId, source.id, targetFolderId)
-      toast.add({ severity: 'success', summary: 'Fichier déplacé', life: 2500 })
+      toast.add({
+        severity: 'success',
+        summary: i18n.global.t('band_space_files.move.file_moved'),
+        life: 2500
+      })
     }
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Déplacement impossible',
+      summary: i18n.global.t('band_space_files.move.failed'),
       detail: e.message,
       life: 5000
     })

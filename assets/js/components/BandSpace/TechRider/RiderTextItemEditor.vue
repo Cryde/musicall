@@ -6,37 +6,37 @@
     >
       <div class="flex items-center gap-1 pr-2 border-r border-surface-200 dark:border-surface-700">
         <Button
-          v-tooltip.bottom="'Gras'"
-          aria-label="Gras"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.bold')"
+          :aria-label="t('band_space_tech_rider.text_editor.bold')"
           :severity="editor?.isActive('bold') ? 'primary' : 'secondary'"
           text
           size="small"
           class="font-bold"
           @click="editor?.chain().focus().toggleBold().run()"
         >
-          B
+          {{ t('band_space_tech_rider.text_editor.bold_symbol') }}
         </Button>
         <Button
-          v-tooltip.bottom="'Italique'"
-          aria-label="Italique"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.italic')"
+          :aria-label="t('band_space_tech_rider.text_editor.italic')"
           :severity="editor?.isActive('italic') ? 'primary' : 'secondary'"
           text
           size="small"
           class="italic"
           @click="editor?.chain().focus().toggleItalic().run()"
         >
-          I
+          {{ t('band_space_tech_rider.text_editor.italic_symbol') }}
         </Button>
         <Button
-          v-tooltip.bottom="'Souligné'"
-          aria-label="Souligné"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.underline')"
+          :aria-label="t('band_space_tech_rider.text_editor.underline')"
           :severity="editor?.isActive('underline') ? 'primary' : 'secondary'"
           text
           size="small"
           class="underline"
           @click="editor?.chain().focus().toggleUnderline().run()"
         >
-          U
+          {{ t('band_space_tech_rider.text_editor.underline_symbol') }}
         </Button>
       </div>
 
@@ -47,14 +47,18 @@
           type="button"
           class="w-6 h-6 rounded border border-surface-300 dark:border-surface-600 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary-500"
           :style="{ backgroundColor: colour.hex }"
-          :aria-label="`Texte en ${colour.label.toLowerCase()}`"
+          :aria-label="
+            t('band_space_tech_rider.text_editor.text_colour', {
+              colour: techRiderColourLabel(colour.value).toLowerCase()
+            })
+          "
           :aria-pressed="editor?.isActive('textStyle', { color: colour.hex }) ?? false"
-          v-tooltip.bottom="colour.label"
+          v-tooltip.bottom="techRiderColourLabel(colour.value)"
           @click="editor?.chain().focus().setColor(colour.hex).run()"
         />
         <Button
-          v-tooltip.bottom="'Retirer la couleur'"
-          aria-label="Retirer la couleur"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.remove_colour')"
+          :aria-label="t('band_space_tech_rider.text_editor.remove_colour')"
           icon="pi pi-ban"
           severity="secondary"
           text
@@ -65,8 +69,8 @@
 
       <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
         <Button
-          v-tooltip.bottom="'Liste à puces'"
-          aria-label="Liste à puces"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.bullet_list')"
+          :aria-label="t('band_space_tech_rider.text_editor.bullet_list')"
           icon="pi pi-list"
           :severity="editor?.isActive('bulletList') ? 'primary' : 'secondary'"
           text
@@ -74,8 +78,8 @@
           @click="editor?.chain().focus().toggleBulletList().run()"
         />
         <Button
-          v-tooltip.bottom="'Liste numérotée'"
-          aria-label="Liste numérotée"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.ordered_list')"
+          :aria-label="t('band_space_tech_rider.text_editor.ordered_list')"
           icon="pi pi-sort-numeric-down"
           :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
           text
@@ -83,8 +87,8 @@
           @click="editor?.chain().focus().toggleOrderedList().run()"
         />
         <Button
-          v-tooltip.bottom="'Insérer un tableau'"
-          aria-label="Insérer un tableau"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.insert_table')"
+          :aria-label="t('band_space_tech_rider.text_editor.insert_table')"
           icon="pi pi-table"
           severity="secondary"
           text
@@ -95,8 +99,8 @@
 
       <div class="flex items-center gap-1 px-2">
         <Button
-          v-tooltip.bottom="'Annuler'"
-          aria-label="Annuler"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.undo')"
+          :aria-label="t('band_space_tech_rider.text_editor.undo')"
           icon="pi pi-undo"
           severity="secondary"
           text
@@ -105,8 +109,8 @@
           @click="editor?.chain().focus().undo().run()"
         />
         <Button
-          v-tooltip.bottom="'Rétablir'"
-          aria-label="Rétablir"
+          v-tooltip.bottom="t('band_space_tech_rider.text_editor.redo')"
+          :aria-label="t('band_space_tech_rider.text_editor.redo')"
           icon="pi pi-refresh"
           severity="secondary"
           text
@@ -117,7 +121,10 @@
       </div>
     </div>
 
-    <EditorContent :editor="editor" :aria-label="`Contenu de l'élément ${title}`" />
+    <EditorContent
+      :editor="editor"
+      :aria-label="t('band_space_tech_rider.text_editor.content_label', { title })"
+    />
   </div>
 </template>
 
@@ -126,8 +133,13 @@ import { Color, TextStyle } from '@tiptap/extension-text-style'
 import { EditorContent } from '@tiptap/vue-3'
 import Button from 'primevue/button'
 import { watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
-import { TECH_RIDER_COLOUR_HEXES, TECH_RIDER_COLOURS } from '../../../constants/techRiderColours.js'
+import {
+  TECH_RIDER_COLOUR_HEXES,
+  TECH_RIDER_COLOURS,
+  techRiderColourLabel
+} from '../../../constants/techRiderColours.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 
 const props = defineProps({
@@ -139,6 +151,8 @@ const props = defineProps({
 
 const emit = defineEmits(['save'])
 
+const { t } = useI18n()
+
 const colours = TECH_RIDER_COLOURS
 
 // Color is restricted to the palette so the exported document only ever carries values the
@@ -147,7 +161,7 @@ const techRidersStore = useBandTechRidersStore()
 
 const { editor, hasPendingEdits } = useRichTextEditor({
   content: props.content,
-  placeholder: 'Décrivez vos besoins pour cet élément...',
+  placeholder: t('band_space_tech_rider.text_editor.placeholder'),
   editable: !props.readOnly,
   extensions: [TextStyle, Color.configure({ types: ['textStyle'] })],
   onSave: (json) => emit('save', { itemId: props.itemId, content: sanitiseColours(json) })

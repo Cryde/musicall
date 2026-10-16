@@ -9,13 +9,13 @@
     <div v-else-if="notFound" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
       <i class="pi pi-user-minus text-4xl text-surface-400 mb-4" />
       <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-        Profil professeur non trouvé
+        {{ t('profile.teacher_page.not_found_title') }}
       </h2>
       <p class="text-surface-500 dark:text-surface-400 mb-4">
-        Cet utilisateur n'a pas encore créé son profil professeur.
+        {{ t('profile.teacher_page.not_found_help') }}
       </p>
       <Button
-        label="Voir le profil"
+        :label="t('profile.common.view_profile')"
         icon="pi pi-user"
         severity="info"
         @click="$router.push({ name: 'app_user_public_profile', params: { username: route.params.username } })"
@@ -34,19 +34,19 @@
               severity="secondary"
               text
               rounded
-              aria-label="Retour"
+              :aria-label="t('profile.common.back')"
               @click="handleBack"
             />
           </div>
           <Avatar
             v-if="profile.profile_picture_url"
             :image="profile.profile_picture_url"
-            :pt="{ image: { alt: `Photo de ${profile.username}` } }"
+            :pt="{ image: { alt: t('profile.common.photo_of', { name: profile.username }) } }"
             size="large"
             shape="circle"
             role="img"
             class="md:!w-16 md:!h-16"
-            :aria-label="`Photo de ${profile.username}`"
+            :aria-label="t('profile.common.photo_of', { name: profile.username })"
           />
           <Avatar
             v-else
@@ -56,11 +56,11 @@
             shape="circle"
             role="img"
             class="md:!w-16 md:!h-16"
-            :aria-label="`Avatar de ${profile.username}`"
+            :aria-label="t('profile.common.avatar_of', { name: profile.username })"
           />
           <div class="flex-1 min-w-0">
             <h1 class="hidden md:block text-2xl font-bold text-surface-900 dark:text-surface-0">
-              Profil professeur
+              {{ t('profile.teacher_page.title') }}
             </h1>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-surface-500 dark:text-surface-400 truncate">
@@ -76,7 +76,7 @@
                 :to="{ name: 'app_user_public_profile', params: { username: profile.username } }"
                 class="hidden md:inline text-sm text-primary hover:underline"
               >
-                Voir le profil
+                {{ t('profile.common.view_profile') }}
               </router-link>
             </div>
           </div>
@@ -86,8 +86,8 @@
               icon="pi pi-pencil"
               severity="secondary"
               rounded
-              v-tooltip.bottom="'Modifier'"
-              aria-label="Modifier le profil professeur"
+              v-tooltip.bottom="t('profile.common.edit')"
+              :aria-label="t('profile.teacher_page.edit')"
               @click="showEditModal = true"
             />
             <div v-if="!isOwnProfile" class="hidden md:block">
@@ -100,13 +100,13 @@
               <Button
                 icon="pi pi-envelope"
                 rounded
-                aria-label="Contacter"
+                :aria-label="t('profile.common.contact')"
                 @click="handleContact"
               />
             </div>
             <div v-if="!isOwnProfile" class="hidden md:block">
               <Button
-                label="Contacter"
+                :label="t('profile.common.contact')"
                 icon="pi pi-envelope"
                 rounded
                 @click="handleContact"
@@ -123,7 +123,7 @@
           <!-- 1. Instruments -->
           <div v-if="profile.instruments?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-volume-up mr-2" />Instruments enseignés
+              <i class="pi pi-volume-up mr-2" />{{ t('profile.teacher_page.instruments') }}
             </h2>
             <div class="flex flex-col gap-2">
               <div
@@ -141,7 +141,7 @@
           <!-- 2. Styles -->
           <div v-if="profile.styles?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-palette mr-2" />Styles enseignés
+              <i class="pi pi-palette mr-2" />{{ t('profile.teacher_page.styles') }}
             </h2>
             <div class="flex flex-wrap gap-2">
               <Tag
@@ -156,7 +156,7 @@
           <!-- 3. Student levels -->
           <div v-if="profile.student_levels?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-users mr-2" />Niveaux acceptés
+              <i class="pi pi-users mr-2" />{{ t('profile.teacher_page.student_levels') }}
             </h2>
             <div class="flex flex-wrap gap-2">
               <Tag
@@ -171,17 +171,17 @@
           <!-- 4. Experience -->
           <div v-if="profile.years_of_experience" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-calendar mr-2" />Expérience
+              <i class="pi pi-calendar mr-2" />{{ t('profile.teacher_page.experience') }}
             </h2>
             <p class="text-surface-700 dark:text-surface-300">
-              {{ profile.years_of_experience }} {{ profile.years_of_experience > 1 ? 'ans' : 'an' }} d'enseignement
+              {{ t('profile.teacher_page.years_of_teaching', profile.years_of_experience) }}
             </p>
           </div>
 
           <!-- 5. Age groups -->
           <div v-if="profile.age_groups?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-id-card mr-2" />Tranches d'âge
+              <i class="pi pi-id-card mr-2" />{{ t('profile.teacher_page.age_groups') }}
             </h2>
             <div class="flex flex-wrap gap-2">
               <Tag
@@ -196,7 +196,7 @@
           <!-- 6. Locations -->
           <div v-if="profile.locations?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-map-marker mr-2" />Lieux d'enseignement
+              <i class="pi pi-map-marker mr-2" />{{ t('profile.teacher_page.locations') }}
             </h2>
             <div class="flex flex-col gap-3">
               <div
@@ -211,7 +211,7 @@
                     : {{ loc.city }}<span v-if="loc.country">, {{ loc.country }}</span>
                   </span>
                   <span v-if="loc.type === 'student_place' && loc.radius" class="text-sm text-surface-500 dark:text-surface-400">
-                    ({{ loc.radius }} km)
+                    ({{ t('profile.teacher.radius_km', { radius: loc.radius }) }})
                   </span>
                   <div v-if="loc.address" class="text-sm text-surface-500 dark:text-surface-400 mt-0.5">
                     {{ loc.address }}
@@ -224,7 +224,7 @@
           <!-- 7. Availability -->
           <div v-if="profile.availability?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-clock mr-2" />Disponibilités
+              <i class="pi pi-clock mr-2" />{{ t('profile.teacher_page.availability') }}
             </h2>
             <div class="flex flex-col gap-1 text-sm">
               <div
@@ -241,7 +241,7 @@
           <!-- 8. Pricing & Packages (merged) -->
           <div v-if="profile.pricing?.length || profile.offers_trial || profile.packages?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              <i class="pi pi-euro mr-2" />Tarifs & Forfaits
+              <i class="pi pi-euro mr-2" />{{ t('profile.teacher_page.pricing') }}
             </h2>
 
             <!-- Session pricing -->
@@ -258,7 +258,7 @@
 
             <!-- Packages -->
             <div v-if="profile.packages?.length" :class="{ 'mt-4 pt-4 border-t border-surface-200 dark:border-surface-700': profile.pricing?.length }">
-              <div class="text-sm font-medium text-surface-500 dark:text-surface-400 mb-2">Forfaits</div>
+              <div class="text-sm font-medium text-surface-500 dark:text-surface-400 mb-2">{{ t('profile.teacher_page.packages') }}</div>
               <div class="flex flex-col gap-3">
                 <div
                   v-for="pkg in profile.packages"
@@ -270,7 +270,7 @@
                     <span class="font-bold text-primary-600 dark:text-primary-400">{{ formatPrice(pkg.price) }}</span>
                   </div>
                   <div v-if="pkg.sessions_count" class="text-sm text-surface-500 dark:text-surface-400">
-                    {{ pkg.sessions_count }} séance{{ pkg.sessions_count > 1 ? 's' : '' }}
+                    {{ t('profile.teacher_page.sessions', pkg.sessions_count) }}
                   </div>
                   <div v-if="pkg.description" class="text-sm text-surface-600 dark:text-surface-400 mt-1">
                     {{ pkg.description }}
@@ -283,10 +283,10 @@
             <div v-if="profile.offers_trial" :class="{ 'mt-4 pt-4 border-t border-surface-200 dark:border-surface-700': profile.pricing?.length || profile.packages?.length }">
               <div class="flex justify-between items-center">
                 <span class="text-surface-600 dark:text-surface-400">
-                  <i class="pi pi-star text-yellow-500 mr-1" />Cours d'essai
+                  <i class="pi pi-star text-yellow-500 mr-1" />{{ t('profile.teacher_page.trial') }}
                 </span>
                 <span class="font-bold text-green-600 dark:text-green-400">
-                  {{ profile.trial_price ? formatPrice(profile.trial_price) : 'Gratuit' }}
+                  {{ profile.trial_price ? formatPrice(profile.trial_price) : t('profile.teacher_page.trial_free') }}
                 </span>
               </div>
             </div>
@@ -305,7 +305,7 @@
           <!-- Description -->
           <div v-if="profile.description" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
             <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
-              Présentation
+              {{ t('profile.teacher_page.description') }}
             </h2>
             <div class="text-surface-700 dark:text-surface-300 whitespace-pre-line">
               {{ profile.description }}
@@ -323,7 +323,7 @@
           <!-- Social Links (moved from sidebar) -->
           <div v-if="profile.social_links?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
             <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
-              <i class="pi pi-share-alt mr-2" />Liens externes
+              <i class="pi pi-share-alt mr-2" />{{ t('profile.teacher_page.social_links') }}
             </h2>
             <div class="flex flex-wrap gap-3">
               <a
@@ -359,7 +359,7 @@
     />
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      message="Vous devez vous connecter pour envoyer un message à cet utilisateur."
+      :message="t('profile.common.contact_auth_required')"
     />
   </div>
 </template>
@@ -371,6 +371,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
@@ -393,6 +394,7 @@ const route = useRoute()
 const router = useRouter()
 const teacherProfileStore = useTeacherProfileStore()
 const userSecurityStore = useUserSecurityStore()
+const { t } = useI18n()
 
 // Contextual back navigation based on where user came from
 function handleBack() {
@@ -445,9 +447,9 @@ const isOwnProfile = computed(() => {
 
 const pageTitle = computed(() => {
   if (profile.value) {
-    return `Profil professeur - ${profile.value.username} - MusicAll`
+    return t('profile.teacher_page.page_title', { username: profile.value.username })
   }
-  return 'Profil professeur - MusicAll'
+  return t('profile.teacher_page.page_title_default')
 })
 
 const shareUrl = computed(() => {
@@ -456,9 +458,9 @@ const shareUrl = computed(() => {
 
 const shareTitle = computed(() => {
   if (profile.value) {
-    return `Découvrez le profil professeur de ${profile.value.username} sur MusicAll`
+    return t('profile.teacher_page.share_title', { username: profile.value.username })
   }
-  return 'Profil professeur sur MusicAll'
+  return t('profile.teacher_page.share_title_default')
 })
 
 useTitle(pageTitle)

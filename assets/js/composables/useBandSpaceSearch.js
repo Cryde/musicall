@@ -1,6 +1,7 @@
 import { useDebounceFn } from '@vueuse/core'
 import { computed, ref, toValue, watch } from 'vue'
 import bandSpaceSearchApi from '../api/bandSpace/band-space-search.js'
+import { i18n } from '../i18n/index.js'
 import {
   flattenGroups,
   groupResultsByType,
@@ -149,7 +150,7 @@ export function useBandSpaceSearch(
       if (id !== requestId) {
         return
       }
-      searchError.value = error?.message ?? 'Erreur pendant la recherche'
+      searchError.value = error?.message ?? i18n.global.t('band_space.search.error')
       results.value = []
     } finally {
       if (id === requestId) {

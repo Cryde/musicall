@@ -5,12 +5,12 @@
       <template v-if="selectedRows.length > 0">
         <div
           role="toolbar"
-          :aria-label="`Actions sur la sélection (${label.toLowerCase()})`"
+          :aria-label="t('band_space_tech_rider.patch_grid.selection_actions', { direction: label.toLowerCase() })"
           class="flex flex-wrap items-center gap-1 rounded-lg px-2 py-1 bg-primary-50 dark:bg-primary-950/40 text-sm"
         >
           <span class="font-medium px-1" role="status">{{ selectionLabel }}</span>
           <Button
-            label="Couleur"
+            :label="t('band_space_tech_rider.common.colour')"
             icon="pi pi-palette"
             severity="secondary"
             text
@@ -19,21 +19,28 @@
             @click="(event) => selectionColourMenuRef.toggle(event)"
           />
           <Button
-            label="Renuméroter"
+            :label="t('band_space_tech_rider.patch_grid.renumber')"
             icon="pi pi-sort-numeric-down"
             severity="secondary"
             text
             size="small"
             @click="renumberSelection"
           />
-          <Button label="Supprimer" icon="pi pi-trash" severity="danger" text size="small" @click="removeSelection" />
+          <Button
+            :label="t('band_space_tech_rider.common.delete')"
+            icon="pi pi-trash"
+            severity="danger"
+            text
+            size="small"
+            @click="removeSelection"
+          />
           <Button
             icon="pi pi-times"
             severity="secondary"
             text
             rounded
             size="small"
-            aria-label="Désélectionner"
+            :aria-label="t('band_space_tech_rider.patch_grid.deselect')"
             @click="clearSelection"
           />
         </div>
@@ -48,21 +55,21 @@
         <span class="flex-1" />
         <Button
           v-if="!readOnly"
-          label="Renuméroter"
+          :label="t('band_space_tech_rider.patch_grid.renumber')"
           icon="pi pi-sort-numeric-down"
           severity="secondary"
           text
           size="small"
           :disabled="rows.length === 0"
-          v-tooltip.top="'Renumérote les canaux à la suite dans l\'ordre affiché'"
-          :aria-label="`Renuméroter les canaux (${label.toLowerCase()})`"
+          v-tooltip.top="t('band_space_tech_rider.patch_grid.renumber_tooltip')"
+          :aria-label="t('band_space_tech_rider.patch_grid.renumber_label', { direction: label.toLowerCase() })"
           @click="renumberAll"
         />
       </template>
     </div>
 
     <Message v-if="isFull && !readOnly" severity="warn" :closable="false" size="small">
-      La limite de {{ maxRows }} lignes est atteinte.
+      {{ t('band_space_tech_rider.patch_grid.limit_reached', { max: maxRows }) }}
     </Message>
 
     <Message v-for="(message, index) in listErrors" :key="index" severity="error" :closable="false" size="small">
@@ -70,7 +77,7 @@
     </Message>
 
     <p v-if="readOnly && rows.length === 0" class="text-sm text-surface-600 dark:text-surface-300 py-3">
-      Aucune ligne.
+      {{ t('band_space_tech_rider.patch_grid.no_rows') }}
     </p>
 
     <!-- A table you type into, as in a spreadsheet: no form per row. It scrolls sideways inside its
@@ -89,12 +96,16 @@
         </colgroup>
         <thead>
           <tr class="text-xs font-medium text-left text-surface-600 dark:text-surface-300">
-            <th scope="col"><span class="sr-only">Sélection</span></th>
-            <th scope="col" class="px-2 py-1.5">{{ LABELS.channel }}</th>
-            <th scope="col" class="px-2 py-1.5">{{ LABELS.name }}</th>
-            <th scope="col" class="px-2 py-1.5">{{ LABELS.microphone }}</th>
-            <th scope="col" class="px-2 py-1.5">{{ LABELS.routing }}</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
+            <th scope="col">
+              <span class="sr-only">{{ t('band_space_tech_rider.patch_grid.selection_header') }}</span>
+            </th>
+            <th scope="col" class="px-2 py-1.5">{{ patchColumnLabel('channel') }}</th>
+            <th scope="col" class="px-2 py-1.5">{{ patchColumnLabel('name') }}</th>
+            <th scope="col" class="px-2 py-1.5">{{ patchColumnLabel('microphone') }}</th>
+            <th scope="col" class="px-2 py-1.5">{{ patchColumnLabel('routing') }}</th>
+            <th scope="col">
+              <span class="sr-only">{{ t('band_space_tech_rider.patch_grid.actions_header') }}</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -126,7 +137,11 @@
                     type="checkbox"
                     class="w-4 h-4 accent-primary-600"
                     :checked="selectedKeys.has(row.key)"
-                    :aria-label="`Sélectionner la ligne ${index + 1}${row.name ? ` (${row.name})` : ''}`"
+                    :aria-label="
+                      row.name
+                        ? t('band_space_tech_rider.patch_grid.select_row_named', { line: index + 1, name: row.name })
+                        : t('band_space_tech_rider.patch_grid.select_row', { line: index + 1 })
+                    "
                     @click="(event) => handleSelectClick(event, row.key)"
                   />
                 </div>
@@ -139,14 +154,16 @@
                     :style="{ backgroundColor: hexFor(row.colour) }"
                     :title="labelFor(row.colour)"
                   >
-                    <span class="sr-only">Couleur : {{ labelFor(row.colour) }}</span>
+                    <span class="sr-only">{{
+                      t('band_space_tech_rider.patch_grid.colour_status', { colour: labelFor(row.colour) })
+                    }}</span>
                   </span>
                   <input
                     :value="row.channel ?? ''"
                     inputmode="numeric"
                     :readonly="readOnly"
                     :class="[CELL_INPUT, 'tabular-nums', clashes(row) ? CELL_INPUT_CLASH : '']"
-                    :aria-label="`${LABELS.channel}, ligne ${index + 1}${row.stereo ? ', stéréo' : ''}`"
+                    :aria-label="cellLabel('channel', index, row.stereo)"
                     @input="(event) => (row.channel = parseChannel(event.target.value))"
                   />
                   <span v-if="row.stereo" class="shrink-0 pr-1 tabular-nums text-surface-600 dark:text-surface-300">
@@ -160,7 +177,7 @@
                   :readonly="readOnly"
                   :maxlength="FIELD_LIMITS.name"
                   :class="CELL_INPUT"
-                  :aria-label="`${LABELS.name}, ligne ${index + 1}`"
+                  :aria-label="cellLabel('name', index)"
                 />
               </td>
               <td :data-cell="`${index}:microphone`" v-bind="cellHandlers(index, 'microphone')">
@@ -172,13 +189,13 @@
                   option-group-children="items"
                   complete-on-focus
                   :delay="0"
-                  empty-search-message="Aucune suggestion, saisissez librement"
-                  search-message="{0} suggestions"
-                  selection-message="{0} sélectionné"
+                  :empty-search-message="t('band_space_tech_rider.patch_grid.microphone_empty')"
+                  :search-message="t('band_space_tech_rider.patch_grid.microphone_search', PRIMEVUE_COUNT)"
+                  :selection-message="t('band_space_tech_rider.patch_grid.microphone_selection', PRIMEVUE_COUNT)"
                   :disabled="readOnly"
                   :input-class="CELL_AUTOCOMPLETE"
                   class="w-full"
-                  :aria-label="`${LABELS.microphone}, ligne ${index + 1}`"
+                  :aria-label="cellLabel('microphone', index)"
                   @complete="(event) => (microphoneQuery = event.query)"
                   @update:model-value="(value) => (row.microphone = microphoneValue(value))"
                 >
@@ -201,7 +218,7 @@
                   :readonly="readOnly"
                   :maxlength="FIELD_LIMITS.routing"
                   :class="CELL_INPUT"
-                  :aria-label="`${LABELS.routing}, ligne ${index + 1}`"
+                  :aria-label="cellLabel('routing', index)"
                 />
               </td>
               <td class="text-right">
@@ -214,7 +231,11 @@
                   size="small"
                   :class="ROW_TOOL_VISIBILITY"
                   aria-haspopup="menu"
-                  :aria-label="`Actions de la ligne ${index + 1}${row.name ? ` (${row.name})` : ''}`"
+                  :aria-label="
+                    row.name
+                      ? t('band_space_tech_rider.patch_grid.row_actions_named', { line: index + 1, name: row.name })
+                      : t('band_space_tech_rider.patch_grid.row_actions', { line: index + 1 })
+                  "
                   @click="(event) => openRowMenu(event, index)"
                 />
               </td>
@@ -237,7 +258,7 @@
                 inputmode="numeric"
                 :placeholder="String(nextChannel(rows) ?? '')"
                 :class="[CELL_INPUT, PLACEHOLDER_STYLE, 'tabular-nums']"
-                :aria-label="`${LABELS.channel}, nouvelle entrée`"
+                :aria-label="t('band_space_tech_rider.patch_grid.new_entry_cell', { column: patchColumnLabel('channel') })"
                 @input="(event) => promote(event, 'channel', parseChannel(event.target.value))"
                 @compositionend="(event) => promote(event, 'channel', parseChannel(event.target.value))"
               />
@@ -245,9 +266,13 @@
             <td v-for="field in TEXT_FIELDS" :key="field" :data-cell="`blank:${field}`" v-bind="cellHandlers('blank', field)">
               <input
                 :maxlength="FIELD_LIMITS[field]"
-                :placeholder="field === 'name' ? 'Ajouter une entrée…' : PLACEHOLDERS[field]"
+                :placeholder="
+                  field === 'name'
+                    ? t('band_space_tech_rider.patch_grid.new_entry_placeholder')
+                    : patchColumnPlaceholder(field)
+                "
                 :class="[CELL_INPUT, PLACEHOLDER_STYLE]"
-                :aria-label="`${LABELS[field]}, nouvelle entrée`"
+                :aria-label="t('band_space_tech_rider.patch_grid.new_entry_cell', { column: patchColumnLabel(field) })"
                 @input="(event) => promote(event, field, event.target.value)"
                 @compositionend="(event) => promote(event, field, event.target.value)"
               />
@@ -297,10 +322,11 @@ import Menu from 'primevue/menu'
 import Message from 'primevue/message'
 import TieredMenu from 'primevue/tieredmenu'
 import { computed, nextTick, ref, useId, watch } from 'vue'
-import { TECH_RIDER_COLOURS } from '../../../constants/techRiderColours.js'
+import { useI18n } from 'vue-i18n'
+import { TECH_RIDER_COLOURS, techRiderColourLabel } from '../../../constants/techRiderColours.js'
 import {
-  PATCH_LIST_LABELS as LABELS,
-  PATCH_LIST_COLUMNS
+  patchColumnLabel,
+  patchColumnPlaceholder
 } from '../../../constants/techRiderPatchColumns.js'
 import {
   duplicateChannels,
@@ -331,6 +357,8 @@ const props = defineProps({
 /** Leaving a cell means the edit in it is done, so the parent saves without waiting. */
 const emit = defineEmits(['cell-left'])
 
+const { t } = useI18n()
+
 const uid = useId()
 
 const TEXT_FIELDS = ['name', 'microphone', 'routing']
@@ -360,17 +388,12 @@ const PLACEHOLDER_STYLE =
 const ROW_TOOL_VISIBILITY =
   'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100'
 
-const PLACEHOLDERS = Object.fromEntries(
-  PATCH_LIST_COLUMNS.map(({ field, placeholder }) => [field, placeholder])
-)
+// PrimeVue fills in its own {0} with the number of suggestions, so the braces go in as a value.
+const PRIMEVUE_COUNT = { count: '{0}' }
 
 const COLOUR_OPTIONS = [
-  { value: null, label: 'Aucune', hex: null },
-  ...TECH_RIDER_COLOURS.map((colour) => ({
-    value: colour.value,
-    label: colour.label,
-    hex: colour.hex
-  }))
+  { value: null, hex: null },
+  ...TECH_RIDER_COLOURS.map((colour) => ({ value: colour.value, hex: colour.hex }))
 ]
 
 let keyCounter = 0
@@ -402,7 +425,7 @@ const microphoneGroups = computed(() =>
 
 const selectedRows = computed(() => props.rows.filter((row) => selectedKeys.value.has(row.key)))
 const selectionLabel = computed(() =>
-  selectedRows.value.length > 1 ? `${selectedRows.value.length} lignes` : '1 ligne'
+  t('band_space_tech_rider.patch_grid.selection_count', selectedRows.value.length)
 )
 
 // A deleted row cannot stay selected.
@@ -423,7 +446,14 @@ function hexFor(value) {
 }
 
 function labelFor(value) {
-  return COLOUR_OPTIONS.find((option) => option.value === value)?.label ?? 'Aucune'
+  return techRiderColourLabel(value)
+}
+
+function cellLabel(field, index, isStereo = false) {
+  const params = { column: patchColumnLabel(field), line: index + 1 }
+  return isStereo
+    ? t('band_space_tech_rider.patch_grid.cell_stereo', params)
+    : t('band_space_tech_rider.patch_grid.cell', params)
 }
 
 function rowHasError(index) {
@@ -545,36 +575,38 @@ const rowMenuItems = computed(() => {
 
   return [
     {
-      label: 'Insérer au-dessus',
+      label: t('band_space_tech_rider.patch_grid.insert_above'),
       icon: 'pi pi-arrow-up',
       disabled: isFull.value,
       command: () => insertAt(at())
     },
     {
-      label: 'Insérer en dessous',
+      label: t('band_space_tech_rider.patch_grid.insert_below'),
       icon: 'pi pi-arrow-down',
       disabled: isFull.value,
       command: () => insertAt(at() + 1)
     },
     {
-      label: 'Dupliquer',
+      label: t('band_space_tech_rider.common.duplicate'),
       icon: 'pi pi-copy',
       disabled: isFull.value,
       command: () => duplicateRow(at())
     },
     {
       // Says what it will do, as the check mark alone is not read out.
-      label: row.stereo ? 'Repasser en mono (1 canal)' : 'Canal stéréo (2 canaux)',
+      label: row.stereo
+        ? t('band_space_tech_rider.patch_grid.to_mono')
+        : t('band_space_tech_rider.patch_grid.to_stereo'),
       icon: 'pi pi-arrows-h',
       command: () => {
         row.stereo = !row.stereo
       }
     },
     {
-      label: 'Couleur',
+      label: t('band_space_tech_rider.common.colour'),
       icon: 'pi pi-palette',
       items: COLOUR_OPTIONS.map((option) => ({
-        label: option.label,
+        label: labelFor(option.value),
         swatch: option.hex,
         checked: row.colour === option.value,
         command: () => {
@@ -585,20 +617,20 @@ const rowMenuItems = computed(() => {
     { separator: true },
     // Drag is not an accessible reorder, so the same move is here too.
     {
-      label: 'Monter',
+      label: t('band_space_tech_rider.common.move_up'),
       icon: 'pi pi-chevron-up',
       disabled: index === 0,
       command: () => move(at(), at() - 1)
     },
     {
-      label: 'Descendre',
+      label: t('band_space_tech_rider.common.move_down'),
       icon: 'pi pi-chevron-down',
       disabled: index === props.rows.length - 1,
       command: () => move(at(), at() + 1)
     },
     { separator: true },
     {
-      label: 'Supprimer l’entrée',
+      label: t('band_space_tech_rider.patch_grid.delete_entry'),
       icon: 'pi pi-trash',
       danger: true,
       command: () => props.rows.splice(at(), 1)
@@ -651,7 +683,7 @@ function clearSelection() {
 
 const selectionColourItems = computed(() =>
   COLOUR_OPTIONS.map((option) => ({
-    label: option.label,
+    label: labelFor(option.value),
     swatch: option.hex,
     command: () => {
       for (const row of selectedRows.value) row.colour = option.value

@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Déplacer le fichier"
+    :header="t('band_space_files.file_move.title')"
     :style="{ width: '28rem' }"
     @hide="resetState"
   >
@@ -13,15 +13,17 @@
       </p>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Dossier de destination</label>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">
+          {{ t('band_space_files.file_move.destination_label') }}
+        </label>
         <Select
           v-model="targetFolderId"
-          aria-label="Dossier de destination"
+          :aria-label="t('band_space_files.file_move.destination_label')"
           :options="folderOptions"
           option-label="label"
           option-value="value"
           option-disabled="disabled"
-          placeholder="Racine"
+          :placeholder="t('band_space_files.folder.root')"
           :disabled="isSubmitting"
         />
         <small v-if="rootRefusal" class="text-xs text-surface-500 dark:text-surface-400">
@@ -34,14 +36,14 @@
 
     <template #footer>
       <Button
-        label="Annuler"
+        :label="t('band_space_files.common.cancel')"
         severity="secondary"
         text
         :disabled="isSubmitting"
         @click="visible = false"
       />
       <Button
-        label="Déplacer"
+        :label="t('band_space_files.file_move.submit')"
         :loading="isSubmitting"
         :disabled="isSubmitting || !hasChanged"
         @click="handleConfirm"
@@ -56,6 +58,7 @@ import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { folderSelectOptions, rootDestinationRefusal } from '../../../utils/fileListing.js'
@@ -66,6 +69,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['moved'])
+const { t } = useI18n()
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 

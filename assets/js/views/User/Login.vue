@@ -3,10 +3,10 @@
     <div class="max-w-2xl w-full flex flex-col items-start gap-8 bg-surface-0 dark:bg-surface-900 p-4 md:p-12 rounded-3xl">
       <div class="flex flex-col items-center gap-2 w-full">
         <h1 class="text-center text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight w-full">
-          Bon retour parmi nous !
+          {{ t('auth.login.title') }}
         </h1>
         <p class="text-center text-surface-500 dark:text-surface-400">
-          Connectez-vous pour accéder à votre compte
+          {{ t('auth.login.subtitle') }}
         </p>
       </div>
 
@@ -43,28 +43,28 @@
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          <span class="text-surface-700 dark:text-surface-200 font-medium">Continuer avec Google</span>
+          <span class="text-surface-700 dark:text-surface-200 font-medium">{{ t('auth.login.google') }}</span>
         </a>
       </div>
 
       <!-- Separator -->
       <div class="flex items-center gap-4 w-full">
         <Divider class="flex-1" />
-        <span class="text-surface-500 dark:text-surface-400 text-sm">ou</span>
+        <span class="text-surface-500 dark:text-surface-400 text-sm">{{ t('auth.common.or') }}</span>
         <Divider class="flex-1" />
       </div>
 
       <form @submit.prevent="sendLogin" class="flex flex-col gap-6 w-full">
         <div class="flex flex-col gap-2">
           <label for="email" class="text-surface-900 dark:text-surface-0 font-medium">
-            Email ou nom d'utilisateur
+            {{ t('auth.common.email_or_username') }}
           </label>
           <IconField>
             <InputIcon class="pi pi-user" />
             <InputText
               id="email"
               v-model="email"
-              placeholder="Email ou nom d'utilisateur"
+              :placeholder="t('auth.common.email_or_username')"
               :invalid="!!errors.email"
               :aria-describedby="errors.email ? 'email-error' : undefined"
               class="p-3 shadow-sm dark:bg-surface-900! w-full"
@@ -79,12 +79,12 @@
 
         <div class="flex flex-col gap-2">
           <label for="password" class="text-surface-900 dark:text-surface-0 font-medium">
-            Mot de passe
+            {{ t('auth.common.password') }}
           </label>
           <Password
             id="password"
             v-model="password"
-            placeholder="Mot de passe"
+            :placeholder="t('auth.common.password')"
             :toggleMask="true"
             :feedback="false"
             :invalid="!!errors.password"
@@ -103,25 +103,25 @@
             :to="{ name: 'app_forgot_password' }"
             class="text-surface-500 dark:text-surface-400 font-medium cursor-pointer hover:text-surface-600 dark:hover:text-surface-300 text-sm"
           >
-            Mot de passe oublié ?
+            {{ t('auth.login.forgot_password') }}
           </RouterLink>
         </div>
 
         <Button
           type="submit"
-          label="Me connecter"
+          :label="t('auth.login.submit')"
           class="w-full"
           :loading="isLoginSubmitting"
           :disabled="isLoginSubmitting"
         />
 
         <div class="text-center w-full">
-          <span class="text-surface-600 dark:text-surface-400">Vous n'avez pas de compte ?</span>
+          <span class="text-surface-600 dark:text-surface-400">{{ t('auth.login.no_account') }}</span>
           <RouterLink
             :to="{ name: 'app_register', query: returnUrl ? { return_url: returnUrl } : {} }"
             class="ml-2 text-primary font-medium cursor-pointer hover:text-primary-emphasis"
           >
-            Créer un compte
+            {{ t('auth.login.create_account') }}
           </RouterLink>
         </div>
       </form>
@@ -140,10 +140,13 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
 import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
-useTitle('Se connecter - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('auth.login.page_title')))
 
 const route = useRoute()
 const userSecurity = useUserSecurityStore()
@@ -155,17 +158,16 @@ const isLoginSubmitting = ref(false)
 const returnUrl = computed(() => route.query.return_url || null)
 const oauthError = computed(() => route.query.oauth_error)
 
-const oauthErrorMessages = {
-  email_exists:
-    'Cette adresse email est déjà associée à un compte. Connectez-vous avec votre mot de passe puis liez votre compte social dans les paramètres.',
-  email_not_verified:
-    "L'adresse email de ce compte Google n'est pas vérifiée. Vérifiez-la auprès de Google puis réessayez.",
-  oauth_failed: 'La connexion a échoué. Veuillez réessayer.',
-  account_suspended: 'Votre compte a été suspendu par la modération.'
+const OAUTH_ERROR_KEYS = {
+  email_exists: 'auth.login.oauth_error.email_exists',
+  email_not_verified: 'auth.login.oauth_error.email_not_verified',
+  oauth_failed: 'auth.login.oauth_error.oauth_failed',
+  account_suspended: 'auth.login.oauth_error.account_suspended'
 }
 
 const oauthErrorMessage = computed(() => {
-  return oauthErrorMessages[oauthError.value] || 'Une erreur est survenue lors de la connexion.'
+  const key = OAUTH_ERROR_KEYS[oauthError.value]
+  return key ? t(key) : t('auth.login.oauth_error.default')
 })
 
 const googleAuthUrl = computed(() => {
@@ -183,7 +185,7 @@ const errors = reactive({
 function validateEmail() {
   errors.email = ''
   if (!email.value.trim()) {
-    errors.email = "Veuillez saisir votre email ou nom d'utilisateur"
+    errors.email = t('auth.common.email_or_username_required')
     return false
   }
   return true
@@ -192,7 +194,7 @@ function validateEmail() {
 function validatePassword() {
   errors.password = ''
   if (!password.value) {
-    errors.password = 'Veuillez saisir votre mot de passe'
+    errors.password = t('auth.login.password_required')
     return false
   }
   return true

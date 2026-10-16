@@ -3,7 +3,7 @@
     <div v-if="showSingers && legend.length > 0" class="flex flex-wrap gap-2 mb-3 text-xs">
       <span v-for="singer in legend" :key="singer.id" class="inline-flex items-center gap-1">
         <span class="lyrics-singer-tag" :style="{ background: singer.color }">{{ singer.name }}</span>
-        <span v-if="singer.former" class="text-surface-600 dark:text-surface-300">(ancien membre)</span>
+        <span v-if="singer.former" class="text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.singer.former_member') }}</span>
       </span>
     </div>
 
@@ -23,6 +23,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   parse,
   prefersFlats,
@@ -52,6 +53,7 @@ const props = defineProps({
   large: { type: Boolean, default: false }
 })
 
+const { t } = useI18n()
 const blocks = computed(() => parse(props.lyrics))
 const sheet = computed(() => toSheet(blocks.value))
 const colors = computed(() => singerColors(singerIds(blocks.value)))
@@ -60,9 +62,12 @@ const flats = computed(() =>
 )
 
 function singerFor(id) {
-  if (id === SINGER_ALL) return { name: 'Tous', former: false }
+  if (id === SINGER_ALL) return { name: t('band_space_setlist.singer.everyone'), former: false }
   const singer = props.singers.find((candidate) => candidate.id === id)
-  return { name: singer?.name ?? 'Membre inconnu', former: singer?.is_former_member ?? false }
+  return {
+    name: singer?.name ?? t('band_space_setlist.singer.unknown_member'),
+    former: singer?.is_former_member ?? false
+  }
 }
 
 const legend = computed(() =>

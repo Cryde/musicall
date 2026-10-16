@@ -6,20 +6,20 @@
   >
     <div class="flex flex-col gap-1 min-w-0">
       <h2 id="home-member-my-announces-title" class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">
-        Mes annonces · {{ announces.length }} en ligne
+        {{ t('home.member.my_announces.title', { count: announces.length }) }}
       </h2>
       <ul class="m-0 p-0 list-none flex flex-wrap gap-x-4 gap-y-1 text-sm text-surface-700 dark:text-surface-300">
         <li v-for="announce in shown" :key="announce.id" class="truncate">
           {{ announceHeadline(announce) }}<template v-if="announce.location_name"> · {{ announce.location_name }}</template>
         </li>
-        <li v-if="announces.length > shown.length">et {{ announces.length - shown.length }} autre{{ announces.length - shown.length > 1 ? 's' : '' }}</li>
+        <li v-if="announces.length > shown.length">{{ t('home.member.my_announces.more', announces.length - shown.length) }}</li>
       </ul>
     </div>
     <router-link
       :to="{ name: 'app_user_announces' }"
       class="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-primary hover:underline"
     >
-      Gérer mes annonces
+      {{ t('home.member.my_announces.manage') }}
       <i class="pi pi-arrow-right text-xs" aria-hidden="true" />
     </router-link>
   </section>
@@ -27,6 +27,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import musicianAnnounceApi from '../../../api/announce/musician.js'
 import { announceHeadline } from '../../../utils/homeSearch.js'
 
@@ -36,6 +37,7 @@ import { announceHeadline } from '../../../utils/homeSearch.js'
  */
 const SHOWN = 2
 
+const { t } = useI18n()
 const announces = ref([])
 const shown = computed(() => announces.value.slice(0, SHOWN))
 

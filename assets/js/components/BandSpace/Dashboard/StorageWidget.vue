@@ -1,6 +1,6 @@
 <template>
   <DashboardWidget
-    title="Stockage"
+    :title="t('band_space.dashboard.storage.title')"
     icon="pi pi-database"
     :is-loading="isLoading"
     :error="error"
@@ -10,7 +10,7 @@
         :to="{ name: 'app_band_files', params: { id: bandSpaceId } }"
         class="text-xs text-primary hover:underline"
       >
-        Voir les fichiers
+        {{ t('band_space.dashboard.storage.see_all') }}
       </RouterLink>
     </template>
 
@@ -18,7 +18,7 @@
       <ProgressBar
         :value="cappedPercentage"
         :show-value="false"
-        aria-label="Stockage utilisé"
+        :aria-label="t('band_space.dashboard.storage.used_aria')"
         :pt="{ value: { class: progressBarClass } }"
       />
       <div class="flex items-center justify-between text-sm">
@@ -36,6 +36,7 @@
 <script setup>
 import ProgressBar from 'primevue/progressbar'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -49,6 +50,7 @@ const props = defineProps({
 const quota = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const { t } = useI18n()
 
 /** `quiet`: a live refetch (#1157), which keeps what is on screen when it fails. */
 async function load({ quiet = false } = {}) {
@@ -57,7 +59,7 @@ async function load({ quiet = false } = {}) {
     error.value = null
   } catch {
     if (quiet) return
-    error.value = 'Quota indisponible.'
+    error.value = t('band_space.dashboard.storage.load_error')
   } finally {
     isLoading.value = false
   }

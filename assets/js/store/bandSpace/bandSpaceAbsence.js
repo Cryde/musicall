@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import bandSpaceAbsenceApi from '../../api/bandSpace/band-space-absence.js'
+import { i18n } from '../../i18n/index.js'
 
 export const useBandAbsenceStore = defineStore('bandAbsence', () => {
   const absences = ref([])
@@ -31,7 +32,7 @@ export const useBandAbsenceStore = defineStore('bandAbsence', () => {
       absences.value = data
     } catch (error) {
       if (currentRequestId !== requestId) return
-      loadError.value = error?.message ?? 'Erreur lors du chargement des indisponibilités'
+      loadError.value = error?.message ?? i18n.global.t('band_space_agenda.absences.load_error')
     } finally {
       if (currentRequestId === requestId) {
         isLoading.value = false

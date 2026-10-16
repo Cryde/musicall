@@ -1,87 +1,94 @@
 // TeacherProfile label maps
-// These maps are used to display labels in the UI from backend enum values
+// These maps hold the catalogue key of each backend enum value; the helpers translate at call time
 
-export const STUDENT_LEVEL_LABELS = {
-  beginner: 'Débutant',
-  intermediate: 'Intermédiaire',
-  advanced: 'Avancé'
+import { i18n } from '../i18n/index.js'
+
+export const STUDENT_LEVEL_LABEL_KEYS = {
+  beginner: 'profile.teacher.student_level.beginner',
+  intermediate: 'profile.teacher.student_level.intermediate',
+  advanced: 'profile.teacher.student_level.advanced'
 }
 
-export const AGE_GROUP_LABELS = {
-  children: 'Enfants',
-  teenagers: 'Adolescents',
-  adults: 'Adultes',
-  seniors: 'Seniors'
+export const AGE_GROUP_LABEL_KEYS = {
+  children: 'profile.teacher.age_group.children',
+  teenagers: 'profile.teacher.age_group.teenagers',
+  adults: 'profile.teacher.age_group.adults',
+  seniors: 'profile.teacher.age_group.seniors'
 }
 
-export const LOCATION_TYPE_LABELS = {
-  teacher_place: 'Chez le professeur',
-  student_place: "Chez l'élève",
-  online: 'En ligne'
+export const LOCATION_TYPE_LABEL_KEYS = {
+  teacher_place: 'profile.teacher.location_type.teacher_place',
+  student_place: 'profile.teacher.location_type.student_place',
+  online: 'profile.teacher.location_type.online'
 }
 
-export const SESSION_DURATION_LABELS = {
-  '30min': '30 minutes',
-  '45min': '45 minutes',
-  '1h': '1 heure',
-  '1h30': '1h30',
-  '2h': '2 heures'
+export const SESSION_DURATION_LABEL_KEYS = {
+  '30min': 'profile.teacher.session_duration.min_30',
+  '45min': 'profile.teacher.session_duration.min_45',
+  '1h': 'profile.teacher.session_duration.h_1',
+  '1h30': 'profile.teacher.session_duration.h_1_30',
+  '2h': 'profile.teacher.session_duration.h_2'
 }
 
-export const DAY_OF_WEEK_LABELS = {
-  monday: 'Lundi',
-  tuesday: 'Mardi',
-  wednesday: 'Mercredi',
-  thursday: 'Jeudi',
-  friday: 'Vendredi',
-  saturday: 'Samedi',
-  sunday: 'Dimanche'
+export const DAY_OF_WEEK_LABEL_KEYS = {
+  monday: 'profile.teacher.day_of_week.monday',
+  tuesday: 'profile.teacher.day_of_week.tuesday',
+  wednesday: 'profile.teacher.day_of_week.wednesday',
+  thursday: 'profile.teacher.day_of_week.thursday',
+  friday: 'profile.teacher.day_of_week.friday',
+  saturday: 'profile.teacher.day_of_week.saturday',
+  sunday: 'profile.teacher.day_of_week.sunday'
 }
 
-export const MEDIA_PLATFORM_LABELS = {
-  youtube: 'YouTube',
-  soundcloud: 'SoundCloud',
-  spotify: 'Spotify',
-  deezer: 'Deezer'
+export const MEDIA_PLATFORM_LABEL_KEYS = {
+  youtube: 'profile.platform.youtube',
+  soundcloud: 'profile.platform.soundcloud',
+  spotify: 'profile.platform.spotify',
+  deezer: 'profile.platform.deezer'
 }
 
-export const SOCIAL_PLATFORM_LABELS = {
-  website: 'Site web',
-  facebook: 'Facebook',
-  instagram: 'Instagram',
-  twitter: 'Twitter / X',
-  youtube: 'YouTube',
-  soundcloud: 'SoundCloud',
-  spotify: 'Spotify',
-  bandcamp: 'Bandcamp',
-  tiktok: 'TikTok'
+export const SOCIAL_PLATFORM_LABEL_KEYS = {
+  website: 'profile.platform.website',
+  facebook: 'profile.platform.facebook',
+  instagram: 'profile.platform.instagram',
+  twitter: 'profile.platform.twitter',
+  youtube: 'profile.platform.youtube',
+  soundcloud: 'profile.platform.soundcloud',
+  spotify: 'profile.platform.spotify',
+  bandcamp: 'profile.platform.bandcamp',
+  tiktok: 'profile.platform.tiktok'
+}
+
+function labelFor(keys, value) {
+  const key = keys[value]
+  return key ? i18n.global.t(key) : value
 }
 
 // Helper functions to get labels
 export function getStudentLevelLabel(level) {
-  return STUDENT_LEVEL_LABELS[level] || level
+  return labelFor(STUDENT_LEVEL_LABEL_KEYS, level)
 }
 
 export function getAgeGroupLabel(ageGroup) {
-  return AGE_GROUP_LABELS[ageGroup] || ageGroup
+  return labelFor(AGE_GROUP_LABEL_KEYS, ageGroup)
 }
 
 export function getLocationTypeLabel(type) {
-  return LOCATION_TYPE_LABELS[type] || type
+  return labelFor(LOCATION_TYPE_LABEL_KEYS, type)
 }
 
 export function getSessionDurationLabel(duration) {
-  return SESSION_DURATION_LABELS[duration] || duration
+  return labelFor(SESSION_DURATION_LABEL_KEYS, duration)
 }
 
 export function getDayOfWeekLabel(day) {
-  return DAY_OF_WEEK_LABELS[day] || day
+  return labelFor(DAY_OF_WEEK_LABEL_KEYS, day)
 }
 
 export function getMediaPlatformLabel(platform) {
-  return MEDIA_PLATFORM_LABELS[platform] || platform
+  return labelFor(MEDIA_PLATFORM_LABEL_KEYS, platform)
 }
 
 export function getSocialPlatformLabel(platform) {
-  return SOCIAL_PLATFORM_LABELS[platform] || platform
+  return labelFor(SOCIAL_PLATFORM_LABEL_KEYS, platform)
 }

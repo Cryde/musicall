@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-3 w-80">
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wide text-surface-500 mb-1">
-          Police
+          {{ t('band_space_setlist.pdf_export.font') }}
         </label>
         <Select
           v-model="options.font"
@@ -11,13 +11,13 @@
           option-label="label"
           option-value="value"
           class="w-full"
-          aria-label="Police"
+          :aria-label="t('band_space_setlist.pdf_export.font')"
         />
       </div>
 
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wide text-surface-500 mb-1">
-          Mise en page
+          {{ t('band_space_setlist.pdf_export.layout') }}
         </label>
         <SelectButton
           v-model="options.layout"
@@ -25,7 +25,7 @@
           option-label="label"
           option-value="value"
           :allow-empty="false"
-          aria-label="Mise en page"
+          :aria-label="t('band_space_setlist.pdf_export.layout')"
         />
       </div>
 
@@ -37,13 +37,13 @@
             input-id="pdf-fit"
             :disabled="!canFitOnePage"
           />
-          <label for="pdf-fit" class="text-sm">Ajuster à une page</label>
+          <label for="pdf-fit" class="text-sm">{{ t('band_space_setlist.pdf_export.fit_to_one_page') }}</label>
         </div>
       </div>
 
       <div
         class="flex flex-col gap-2 pt-1"
-        v-tooltip.top="isCompact ? 'Ne s’applique qu’en mode Large' : ''"
+        v-tooltip.top="isCompact ? t('band_space_setlist.pdf_export.large_layout_only') : ''"
       >
         <div class="flex items-center gap-2" :class="isCompact && 'opacity-50'">
           <Checkbox
@@ -52,7 +52,7 @@
             input-id="pdf-tempo"
             :disabled="isCompact"
           />
-          <label for="pdf-tempo" class="text-sm">Afficher le tempo</label>
+          <label for="pdf-tempo" class="text-sm">{{ t('band_space_setlist.pdf_export.show_tempo') }}</label>
         </div>
         <div class="flex items-center gap-2" :class="isCompact && 'opacity-50'">
           <Checkbox
@@ -61,7 +61,7 @@
             input-id="pdf-key"
             :disabled="isCompact"
           />
-          <label for="pdf-key" class="text-sm">Afficher la tonalité</label>
+          <label for="pdf-key" class="text-sm">{{ t('band_space_setlist.pdf_export.show_key') }}</label>
         </div>
         <div class="flex items-center gap-2" :class="isCompact && 'opacity-50'">
           <Checkbox
@@ -70,7 +70,7 @@
             input-id="pdf-dur"
             :disabled="isCompact"
           />
-          <label for="pdf-dur" class="text-sm">Afficher les durées</label>
+          <label for="pdf-dur" class="text-sm">{{ t('band_space_setlist.pdf_export.show_durations') }}</label>
         </div>
         <div class="flex items-center gap-2" :class="isCompact && 'opacity-50'">
           <Checkbox
@@ -79,7 +79,7 @@
             input-id="pdf-notes"
             :disabled="isCompact"
           />
-          <label for="pdf-notes" class="text-sm">Afficher les notes</label>
+          <label for="pdf-notes" class="text-sm">{{ t('band_space_setlist.pdf_export.show_notes') }}</label>
         </div>
         <div class="flex items-center gap-2" :class="isCompact && 'opacity-50'">
           <Checkbox
@@ -88,29 +88,29 @@
             input-id="pdf-trans"
             :disabled="isCompact"
           />
-          <label for="pdf-trans" class="text-sm">Afficher les transitions</label>
+          <label for="pdf-trans" class="text-sm">{{ t('band_space_setlist.pdf_export.show_transitions') }}</label>
         </div>
       </div>
 
       <div class="flex flex-col gap-2 pt-1 border-t border-surface-200 dark:border-surface-700">
         <div class="flex items-center gap-2 pt-2">
           <Checkbox v-model="options.showLyrics" :binary="true" input-id="pdf-lyrics" />
-          <label for="pdf-lyrics" class="text-sm">Inclure les paroles (une page par titre)</label>
+          <label for="pdf-lyrics" class="text-sm">{{ t('band_space_setlist.pdf_export.show_lyrics') }}</label>
         </div>
         <div class="flex flex-col gap-2 pl-6" :class="!options.showLyrics && 'opacity-50'">
           <div class="flex items-center gap-2">
             <Checkbox v-model="options.lyricsChords" :binary="true" input-id="pdf-lyrics-chords" :disabled="!options.showLyrics" />
-            <label for="pdf-lyrics-chords" class="text-sm">Avec les accords</label>
+            <label for="pdf-lyrics-chords" class="text-sm">{{ t('band_space_setlist.pdf_export.lyrics_chords') }}</label>
           </div>
           <div class="flex items-center gap-2">
             <Checkbox v-model="options.lyricsSingers" :binary="true" input-id="pdf-lyrics-singers" :disabled="!options.showLyrics" />
-            <label for="pdf-lyrics-singers" class="text-sm">Avec qui chante</label>
+            <label for="pdf-lyrics-singers" class="text-sm">{{ t('band_space_setlist.pdf_export.lyrics_singers') }}</label>
           </div>
         </div>
       </div>
 
       <Button
-        :label="isExporting ? 'Génération...' : 'Télécharger le PDF'"
+        :label="isExporting ? t('band_space_setlist.pdf_export.generating') : t('band_space_setlist.pdf_export.download')"
         :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
         :disabled="isExporting"
         @click="handleExport"
@@ -127,6 +127,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 import { downloadBlob } from '../../../utils/downloadBlob.js'
 
@@ -136,21 +137,25 @@ const props = defineProps({
   itemCount: { type: Number, default: 0 }
 })
 
+const { t } = useI18n()
 const toast = useToast()
 
 const popover = ref(null)
 const isExporting = ref(false)
 
-const layoutOptions = [
-  { label: 'Large', value: 'large' },
-  { label: 'Compact', value: 'compact' }
-]
+const layoutOptions = computed(() => [
+  { label: t('band_space_setlist.pdf_export.layout_large'), value: 'large' },
+  { label: t('band_space_setlist.pdf_export.layout_compact'), value: 'compact' }
+])
 
-const fontOptions = [
-  { label: 'Inter (sans-serif)', value: 'inter' },
-  { label: 'Atkinson Hyperlegible (lisibilité scène)', value: 'atkinson_hyperlegible' },
-  { label: 'Source Serif (serif)', value: 'source_serif' }
-]
+const fontOptions = computed(() => [
+  { label: t('band_space_setlist.pdf_export.font_inter'), value: 'inter' },
+  {
+    label: t('band_space_setlist.pdf_export.font_atkinson_hyperlegible'),
+    value: 'atkinson_hyperlegible'
+  },
+  { label: t('band_space_setlist.pdf_export.font_source_serif'), value: 'source_serif' }
+])
 
 // Keep in sync with SetlistPdfRenderer::MAX_FIT_ITEMS (the backend caps the fit too).
 const MAX_FIT_ITEMS = 15
@@ -173,8 +178,10 @@ const isCompact = computed(() => options.layout === 'compact')
 // With the lyrics the document is several pages by design, so the server ignores the fit then too.
 const canFitOnePage = computed(() => props.itemCount <= MAX_FIT_ITEMS && !options.showLyrics)
 const fitHint = computed(() => {
-  if (options.showLyrics) return 'Les paroles ajoutent une page par titre'
-  return props.itemCount > MAX_FIT_ITEMS ? 'Trop de titres pour tenir sur une page (max 15)' : ''
+  if (options.showLyrics) return t('band_space_setlist.pdf_export.fit_disabled_by_lyrics')
+  return props.itemCount > MAX_FIT_ITEMS
+    ? t('band_space_setlist.pdf_export.fit_too_many_items')
+    : ''
 })
 
 function toggle(event) {
@@ -210,8 +217,8 @@ async function handleExport() {
     // failing dependency cannot leak through it, which is why the wording lives here.
     toast.add({
       severity: 'error',
-      summary: 'Export impossible',
-      detail: 'Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant.',
+      summary: t('band_space_setlist.pdf_export.failed_summary'),
+      detail: t('band_space_setlist.pdf_export.failed_detail'),
       life: 6000
     })
   } finally {

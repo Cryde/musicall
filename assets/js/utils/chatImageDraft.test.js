@@ -1,12 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
-  firstImageAmong,
-  IMAGE_TOO_LARGE_MESSAGE,
-  imageRefusalFor,
-  MAX_IMAGE_BYTES,
-  UNSUPPORTED_IMAGE_MESSAGE
-} from './chatImageDraft.js'
+import { firstImageAmong, imageRefusalFor, MAX_IMAGE_BYTES } from './chatImageDraft.js'
 
 /**
  * The client half of ChatMessageCreate's image constraint, so the two cannot drift silently.
@@ -22,13 +16,16 @@ describe('imageRefusalFor', () => {
   })
 
   it('refuses an SVG, which can carry scripts', () => {
-    assert.equal(imageRefusalFor({ type: 'image/svg+xml', size: 1024 }), UNSUPPORTED_IMAGE_MESSAGE)
+    assert.equal(
+      imageRefusalFor({ type: 'image/svg+xml', size: 1024 }),
+      "Format d'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF)."
+    )
   })
 
   it('refuses what is not an image at all', () => {
     assert.equal(
       imageRefusalFor({ type: 'application/pdf', size: 1024 }),
-      UNSUPPORTED_IMAGE_MESSAGE
+      "Format d'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF)."
     )
   })
 
@@ -36,7 +33,7 @@ describe('imageRefusalFor', () => {
     assert.equal(imageRefusalFor({ type: 'image/jpeg', size: MAX_IMAGE_BYTES }), null)
     assert.equal(
       imageRefusalFor({ type: 'image/jpeg', size: MAX_IMAGE_BYTES + 1 }),
-      IMAGE_TOO_LARGE_MESSAGE
+      "L'image est trop volumineuse, la limite est de 25 Mo."
     )
   })
 })

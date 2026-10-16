@@ -116,7 +116,7 @@ const umamiRecorderScript =
 const head = createHead({
   init: [
     {
-      title: 'MusicAll, le site de référence au service de la musique',
+      title: i18n.global.t('shared.head.title'),
       htmlAttrs: {
         lang: 'fr'
       },
@@ -124,8 +124,7 @@ const head = createHead({
         {
           key: 'description',
           name: 'description',
-          content:
-            'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...'
+          content: i18n.global.t('shared.head.description')
         },
         { property: 'og:type', content: 'website' },
         { property: 'og:locale', content: 'fr_FR' },

@@ -14,8 +14,8 @@
     </div>
     <div v-if="!isPhotosCategory" class="flex gap-2 mt-2 md:mt-0">
       <Button
-        v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
-        label="Poster une découverte"
+        v-tooltip.bottom="t('publication.list.add_discover_tooltip')"
+        :label="t('publication.common.add_discover')"
         icon="pi pi-plus"
         severity="info"
         size="small"
@@ -23,8 +23,8 @@
         @click="handleOpenDiscoverModal"
       />
       <Button
-        v-tooltip.bottom="'Ajouter une publication'"
-        label="Poster une publication"
+        v-tooltip.bottom="t('publication.list.add_publication_tooltip')"
+        :label="t('publication.common.add_publication')"
         icon="pi pi-plus"
         severity="info"
         size="small"
@@ -37,7 +37,7 @@
   <AuthRequiredModal
     v-if="showAuthModal"
     v-model:visible="showAuthModal"
-    message="Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter."
+    :message="t('publication.list.auth_required')"
   />
 
   <div class="flex flex-col md:flex-row gap-5">
@@ -50,7 +50,7 @@
             severity="secondary"
             icon="pi pi-sort-alt"
             icon-pos="right"
-            label="Trier par"
+            :label="t('publication.common.sort_by')"
             class="px-3 py-2 border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400"
             @click="toggleSortMenu"
           />
@@ -63,9 +63,9 @@
           filter
           optionLabel="title"
           showClear
-          placeholder="Sélectionnez une catégorie"
+          :placeholder="t('publication.list.category_placeholder')"
           resetFilterOnHide
-          emptyFilterMessage="Cette catégorie n'existe pas"
+          :emptyFilterMessage="t('publication.list.category_not_found')"
           @change="handleCategoryChange"
           class="w-full md:w-70"
         >
@@ -113,7 +113,7 @@
             />
           </FadeList>
           <div v-else class="text-center py-12 text-surface-500">
-            {{ isPhotosCategory ? 'Aucune galerie pour le moment.' : 'Aucune publication pour le moment.' }}
+            {{ isPhotosCategory ? t('publication.list.empty_galleries') : t('publication.list.empty') }}
           </div>
         </div>
       </div>
@@ -129,6 +129,7 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import FadeList from '../../components/Global/FadeList.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
@@ -147,7 +148,15 @@ const AuthRequiredModal = defineAsyncComponent(
   () => import('../../components/Auth/AuthRequiredModal.vue')
 )
 
-const PHOTOS_CATEGORY = { id: 'photos', slug: 'photos', title: 'Photos' }
+const { t } = useI18n()
+
+const PHOTOS_CATEGORY = {
+  id: 'photos',
+  slug: 'photos',
+  get title() {
+    return t('publication.list.photos_category')
+  }
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -183,7 +192,7 @@ const allCategories = computed(() => {
 const breadcrumbItems = computed(() => {
   const items = [
     {
-      label: 'Publications',
+      label: t('publication.common.publications'),
       to: selectCategoryFilter.value ? { name: 'app_publications' } : undefined
     }
   ]
@@ -195,26 +204,28 @@ const breadcrumbItems = computed(() => {
 
 const pageTitle = computed(() => {
   if (selectCategoryFilter.value) {
-    return `${selectCategoryFilter.value.title} - Publications - MusicAll`
+    return t('publication.list.page_title_category', { category: selectCategoryFilter.value.title })
   }
-  return 'Toutes les publications relatives à la musique - MusicAll'
+  return t('publication.list.page_title')
 })
 
 const pageHeading = computed(() => {
   if (selectCategoryFilter.value) {
-    return `Publications - ${selectCategoryFilter.value.title}`
+    return t('publication.list.heading_category', { category: selectCategoryFilter.value.title })
   }
-  return 'Publications'
+  return t('publication.common.publications')
 })
 
 const pageDescription = computed(() => {
   if (isPhotosCategory.value) {
-    return 'Découvrez les galeries photos publiées sur MusicAll.'
+    return t('publication.list.description_photos')
   }
   if (selectCategoryFilter.value) {
-    return `Découvrez les ${selectCategoryFilter.value.title.toLowerCase()} publiées sur MusicAll.`
+    return t('publication.list.description_category', {
+      category: selectCategoryFilter.value.title.toLowerCase()
+    })
   }
-  return 'Découvrez les news, chroniques, découvertes... publiées sur MusicAll.'
+  return t('publication.list.description')
 })
 
 useTitle(pageTitle)
@@ -333,9 +344,9 @@ const toggleSortMenu = (event) => {
   sortMenu.value.toggle(event)
 }
 
-const sortOptions = ref([
+const sortOptions = computed(() => [
   {
-    label: 'Nouveau',
+    label: t('publication.common.sort_newest'),
     icon: 'pi pi-calendar-plus',
     command: async () => {
       sortMenu.value.hide()
@@ -344,7 +355,7 @@ const sortOptions = ref([
     }
   },
   {
-    label: 'Ancien',
+    label: t('publication.common.sort_oldest'),
     icon: 'pi pi-calendar-minus',
     command: async () => {
       sortMenu.value.hide()

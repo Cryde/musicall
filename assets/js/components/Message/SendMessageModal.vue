@@ -16,10 +16,10 @@
         </div>
         <div>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 m-0">
-            Nouveau message
+            {{ t('message.send_modal.title') }}
           </h2>
           <p class="text-sm text-surface-500 dark:text-surface-400 m-0">
-            Envoyez un message privé
+            {{ t('message.send_modal.subtitle') }}
           </p>
         </div>
       </div>
@@ -28,14 +28,14 @@
     <div class="flex flex-col gap-4">
       <!-- Recipient selection -->
       <div v-if="!selectedRecipient">
-        <label for="message-recipient" class="sr-only">Destinataire</label>
+        <label for="message-recipient" class="sr-only">{{ t('message.send_modal.recipient') }}</label>
         <AutoComplete
           inputId="message-recipient"
           v-model="recipient"
           :suggestions="recipientsOptions"
           :disabled="isSending"
           optionLabel="username"
-          placeholder="Rechercher un destinataire..."
+          :placeholder="t('message.send_modal.recipient_placeholder')"
           fluid
           @complete="searchUsers"
         >
@@ -44,11 +44,11 @@
               <Avatar
                 v-if="option.profile_picture?.small"
                 :image="option.profile_picture.small"
-                :pt="{ image: { alt: `Photo de ${option.username}` } }"
+                :pt="{ image: { alt: t('message.avatar.photo', { name: option.username }) } }"
                 shape="circle"
                 size="normal"
                 role="img"
-                :aria-label="`Photo de ${option.username}`"
+                :aria-label="t('message.avatar.photo', { name: option.username })"
               />
               <Avatar
                 v-else
@@ -57,7 +57,7 @@
                 shape="circle"
                 size="normal"
                 role="img"
-                :aria-label="`Avatar de ${option.username}`"
+                :aria-label="t('message.avatar.initial', { name: option.username })"
               />
               <div class="font-medium">{{ displayName(option) }}</div>
             </div>
@@ -70,11 +70,11 @@
         <Avatar
           v-if="selectedRecipient.profile_picture?.small && !selectedRecipient.deletion_datetime"
           :image="selectedRecipient.profile_picture.small"
-          :pt="{ image: { alt: `Photo de ${displayName(selectedRecipient)}` } }"
+          :pt="{ image: { alt: t('message.avatar.photo', { name: displayName(selectedRecipient) }) } }"
           shape="circle"
           size="large"
           role="img"
-          :aria-label="`Photo de ${displayName(selectedRecipient)}`"
+          :aria-label="t('message.avatar.photo', { name: displayName(selectedRecipient) })"
         />
         <Avatar
           v-else
@@ -83,7 +83,7 @@
           shape="circle"
           size="large"
           role="img"
-          :aria-label="`Avatar de ${displayName(selectedRecipient)}`"
+          :aria-label="t('message.avatar.initial', { name: displayName(selectedRecipient) })"
         />
         <div class="flex-1">
           <div class="font-semibold text-surface-900 dark:text-surface-0">{{ displayName(selectedRecipient) }}</div>
@@ -94,11 +94,11 @@
       <!-- Message input -->
       <Textarea
         v-model="content"
-        aria-label="Votre message"
+        :aria-label="t('message.send_modal.content_aria_label')"
         :disabled="isSending"
         rows="5"
         fluid
-        placeholder="Écrivez votre message..."
+        :placeholder="t('message.send_modal.content_placeholder')"
       />
 
       <!-- Error message -->
@@ -110,13 +110,13 @@
     <template #footer>
       <div class="flex justify-end gap-2 w-full">
         <Button
-          label="Annuler"
+          :label="t('message.send_modal.cancel')"
           severity="secondary"
           text
           @click="visible = false"
         />
         <Button
-          label="Envoyer le message"
+          :label="t('message.send_modal.send')"
           icon="pi pi-send"
           :loading="isSending"
           :disabled="!canSend"
@@ -138,6 +138,7 @@ import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import userSearchApi from '../../api/search/user.js'
 import { displayName } from '../../helper/user/displayName.js'
@@ -159,6 +160,7 @@ const props = defineProps({
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const router = useRouter()
 const messageStore = useMessageStore()
 
@@ -225,9 +227,9 @@ async function sendMessage() {
     }
   } catch (e) {
     if (e.status === 429 || e.originalError?.response?.status === 429) {
-      errorMessage.value = 'Trop de messages envoyés. Veuillez patienter un instant.'
+      errorMessage.value = t('message.error.too_many_messages')
     } else {
-      errorMessage.value = e.message || "Une erreur est survenue lors de l'envoi du message."
+      errorMessage.value = e.message || t('message.send_modal.error')
     }
   } finally {
     isSending.value = false

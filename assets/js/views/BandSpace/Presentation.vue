@@ -2,13 +2,12 @@
   <div class="max-w-6xl w-full mx-auto py-6 lg:py-12 flex flex-col gap-24">
     <section class="flex flex-col gap-10">
       <div class="flex flex-col gap-4 max-w-3xl">
-        <span class="text-sm font-bold tracking-wider uppercase text-primary">Band Space · gratuit</span>
+        <span class="text-sm font-bold tracking-wider uppercase text-primary">{{ t('home.band_space_presentation.eyebrow') }}</span>
         <h1 class="m-0 text-4xl lg:text-5xl font-extrabold leading-tight text-surface-900 dark:text-surface-0">
-          Votre groupe mérite mieux qu'une conversation de groupe.
+          {{ t('home.band_space_presentation.title') }}
         </h1>
         <p class="m-0 text-lg leading-relaxed text-surface-600 dark:text-surface-300">
-          Répondez à trois questions : on vous montre l'espace de votre groupe, et vous pouvez déjà
-          cocher, réordonner et ajouter.
+          {{ t('home.band_space_presentation.intro') }}
         </p>
       </div>
 
@@ -18,11 +17,11 @@
           @submit.prevent="handleCreate"
         >
           <div class="flex flex-col gap-2.5">
-            <label for="demo-band-name" :class="QUESTION">1 · Le nom du groupe</label>
+            <label for="demo-band-name" :class="QUESTION">{{ t('home.band_space_presentation.form.name_question') }}</label>
             <InputText
               id="demo-band-name"
               v-model="bandName"
-              placeholder="Ex : ElectricNight"
+              :placeholder="t('home.band_space_presentation.form.name_placeholder')"
               maxlength="40"
               size="large"
               class="w-full"
@@ -30,7 +29,7 @@
           </div>
 
           <fieldset class="m-0 p-0 border-0 flex flex-col gap-2.5">
-            <legend :class="[QUESTION, 'mb-2.5']">2 · Vous êtes combien ?</legend>
+            <legend :class="[QUESTION, 'mb-2.5']">{{ t('home.band_space_presentation.form.size_question') }}</legend>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="size in DEMO_SIZES"
@@ -46,8 +45,8 @@
           </fieldset>
 
           <fieldset class="m-0 p-0 border-0 flex flex-col gap-2.5">
-            <legend :class="[QUESTION, 'mb-1']">3 · Qu'est-ce qui coince aujourd'hui ?</legend>
-            <span class="text-sm text-surface-600 dark:text-surface-400">Plusieurs réponses possibles.</span>
+            <legend :class="[QUESTION, 'mb-1']">{{ t('home.band_space_presentation.form.pains_question') }}</legend>
+            <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.form.pains_hint') }}</span>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="pain in DEMO_PAINS"
@@ -65,12 +64,18 @@
           <div class="flex flex-col gap-3">
             <Button type="submit" :label="ctaLabel(bandName)" icon="pi pi-plus" size="large" class="w-full" />
             <span class="text-sm text-center text-surface-600 dark:text-surface-400">
-              Le nom est pré-rempli à la création. Rien n'est enregistré avant.
+              {{ t('home.band_space_presentation.form.prefill_hint') }}
             </span>
-            <span v-if="!userSecurityStore.isAuthenticated" class="text-sm text-center text-surface-600 dark:text-surface-400">
-              Déjà un compte ?
-              <RouterLink :to="{ name: 'app_login' }" class="font-semibold text-primary hover:underline">Se connecter</RouterLink>
-            </span>
+            <i18n-t
+              v-if="!userSecurityStore.isAuthenticated"
+              keypath="home.band_space_presentation.form.have_account"
+              tag="span"
+              class="text-sm text-center text-surface-600 dark:text-surface-400"
+            >
+              <template #login>
+                <RouterLink :to="{ name: 'app_login' }" class="font-semibold text-primary hover:underline">{{ t('common.login') }}</RouterLink>
+              </template>
+            </i18n-t>
           </div>
         </form>
 
@@ -83,8 +88,8 @@
       </div>
     </section>
 
-    <section class="grid lg:grid-cols-3 gap-5" aria-label="Pourquoi un Band Space">
-      <div v-for="reason in REASONS" :key="reason.title" class="flex flex-col gap-3 p-7 rounded-2xl bg-surface-0 dark:bg-surface-900">
+    <section class="grid lg:grid-cols-3 gap-5" :aria-label="t('home.band_space_presentation.reasons_aria_label')">
+      <div v-for="reason in reasons" :key="reason.title" class="flex flex-col gap-3 p-7 rounded-2xl bg-surface-0 dark:bg-surface-900">
         <i :class="[reason.icon, '!text-2xl', reason.accent]" aria-hidden="true" />
         <h2 class="m-0 text-lg font-bold text-surface-900 dark:text-surface-0">{{ reason.title }}</h2>
         <p class="m-0 leading-relaxed text-surface-600 dark:text-surface-300">{{ reason.body }}</p>
@@ -95,7 +100,7 @@
       <div class="flex flex-col gap-2.5">
         <h2 class="m-0 text-3xl font-extrabold text-surface-900 dark:text-surface-0">{{ closingTitle }}</h2>
         <p class="m-0 text-lg text-surface-600 dark:text-surface-300">
-          Créez l'espace, invitez les autres, et travaillez à plusieurs dès la prochaine répète.
+          {{ t('home.band_space_presentation.closing.body') }}
         </p>
       </div>
       <Button :label="ctaLabel(bandName)" icon="pi pi-plus" size="large" class="shrink-0" @click="handleCreate" />
@@ -107,6 +112,7 @@
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import BandSpaceDemoPreview from '../../components/BandSpace/Presentation/BandSpaceDemoPreview.vue'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
@@ -121,26 +127,28 @@ const PILL_ON = 'bg-primary border-primary text-primary-contrast'
 const PILL_OFF =
   'bg-transparent border-surface-300 dark:border-surface-600 text-surface-700 dark:text-surface-200 hover:border-primary'
 
-const REASONS = [
+const { t } = useI18n()
+
+const reasons = computed(() => [
   {
     icon: 'pi pi-envelope',
     accent: 'text-primary',
-    title: 'Invitez le groupe par mail',
-    body: "Chaque membre reçoit un lien et voit tout de suite l'agenda, les fichiers et les setlists. Vous choisissez qui est admin."
+    title: t('home.band_space_presentation.reasons.invite_title'),
+    body: t('home.band_space_presentation.reasons.invite_body')
   },
   {
     icon: 'pi pi-sync',
     accent: 'text-fuchsia-700 dark:text-fuchsia-300',
-    title: 'Plusieurs groupes ?',
-    body: "Un Band Space par groupe, on passe de l'un à l'autre en un clic. Chaque groupe ne voit que le sien."
+    title: t('home.band_space_presentation.reasons.several_bands_title'),
+    body: t('home.band_space_presentation.reasons.several_bands_body')
   },
   {
     icon: 'pi pi-lock',
     accent: 'text-teal-700 dark:text-teal-300',
-    title: 'Privé à votre groupe',
-    body: "Rien n'est public. Pas de pub, pas de revente de données. Gratuit, et ça le restera."
+    title: t('home.band_space_presentation.reasons.private_title'),
+    body: t('home.band_space_presentation.reasons.private_body')
   }
-]
+])
 
 const route = useRoute()
 const router = useRouter()
@@ -153,7 +161,9 @@ const pickedPains = ref(['agenda', 'finances'])
 
 const closingTitle = computed(() => {
   const name = bandName.value.trim()
-  return `${name || 'Votre groupe'} n'attend plus que vous.`
+  return name
+    ? t('home.band_space_presentation.closing.title_named', { name })
+    : t('home.band_space_presentation.closing.title_default')
 })
 
 function togglePain(key) {

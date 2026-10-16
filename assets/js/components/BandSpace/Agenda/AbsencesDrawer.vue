@@ -2,13 +2,12 @@
   <Drawer
     v-model:visible="isVisible"
     position="right"
-    header="Indisponibilités"
+    :header="t('band_space_agenda.common.absences')"
     class="w-full! md:w-[32rem]!"
   >
     <div class="flex flex-col gap-4">
       <p class="text-sm text-surface-500 dark:text-surface-400">
-        Qui est absent, et quand. Chacun gère ses propres dates, un administrateur peut gérer celles
-        de tout le groupe.
+        {{ t('band_space_agenda.absences.intro') }}
       </p>
 
       <Message
@@ -23,7 +22,7 @@
 
       <div class="flex flex-wrap items-end gap-2">
         <div class="flex flex-col gap-1">
-          <label for="absence-year" class="text-xs font-medium">Année</label>
+          <label for="absence-year" class="text-xs font-medium">{{ t('band_space_agenda.absences.year_label') }}</label>
           <Select
             id="absence-year"
             v-model="selectedYear"
@@ -34,7 +33,7 @@
           />
         </div>
         <div class="flex flex-col gap-1 flex-1 min-w-40">
-          <label for="absence-member-filter" class="text-xs font-medium">Membre</label>
+          <label for="absence-member-filter" class="text-xs font-medium">{{ t('band_space_agenda.absences.member_label') }}</label>
           <Select
             id="absence-member-filter"
             v-model="selectedMemberId"
@@ -47,7 +46,7 @@
         <Button
           v-if="!isFormOpen"
           icon="pi pi-plus"
-          label="Ajouter"
+          :label="t('band_space_agenda.absences.add')"
           size="small"
           @click="openCreateForm"
         />
@@ -59,7 +58,7 @@
         @submit.prevent="handleSubmit"
       >
         <div v-if="canPickMember" class="flex flex-col gap-1">
-          <label for="absence-member" class="text-sm font-medium">Membre</label>
+          <label for="absence-member" class="text-sm font-medium">{{ t('band_space_agenda.absences.member_label') }}</label>
           <Select
             id="absence-member"
             v-model="form.memberId"
@@ -70,14 +69,14 @@
             class="w-full"
           />
           <small v-if="isEditing" class="text-surface-500 dark:text-surface-400">
-            Pour changer de membre, supprimez cette indisponibilité et créez-en une autre.
+            {{ t('band_space_agenda.absences.member_locked_hint') }}
           </small>
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row">
           <div class="flex flex-col gap-1 flex-1">
             <label for="absence-start" class="text-sm font-medium">
-              Du <span class="text-red-500">*</span>
+              {{ t('band_space_agenda.absences.start_label') }} <span class="text-red-500">*</span>
             </label>
             <DatePicker
               id="absence-start"
@@ -93,7 +92,7 @@
           </div>
           <div class="flex flex-col gap-1 flex-1">
             <label for="absence-end" class="text-sm font-medium">
-              Au <span class="text-red-500">*</span>
+              {{ t('band_space_agenda.absences.end_label') }} <span class="text-red-500">*</span>
             </label>
             <DatePicker
               id="absence-end"
@@ -109,12 +108,12 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label for="absence-reason" class="text-sm font-medium">Motif (optionnel)</label>
+          <label for="absence-reason" class="text-sm font-medium">{{ t('band_space_agenda.absences.reason_label') }}</label>
           <InputText
             id="absence-reason"
             v-model="form.reason"
             maxlength="120"
-            placeholder="Ex : vacances, déplacement professionnel"
+            :placeholder="t('band_space_agenda.absences.reason_placeholder')"
             :class="{ 'p-invalid': fieldErrors.reason }"
           />
           <small v-if="fieldErrors.reason" class="text-red-500">{{ fieldErrors.reason }}</small>
@@ -122,7 +121,7 @@
 
         <div class="flex justify-end gap-2">
           <Button
-            label="Annuler"
+            :label="t('band_space_agenda.common.cancel')"
             severity="secondary"
             text
             :disabled="absenceStore.isSaving"
@@ -130,7 +129,7 @@
           />
           <Button
             type="submit"
-            :label="isEditing ? 'Enregistrer' : 'Ajouter'"
+            :label="isEditing ? t('band_space_agenda.common.save') : t('band_space_agenda.absences.add')"
             :loading="absenceStore.isSaving"
           />
         </div>
@@ -148,7 +147,7 @@
         v-else-if="groupedAbsences.length === 0"
         class="text-center text-surface-500 dark:text-surface-400 italic py-8"
       >
-        Aucune indisponibilité enregistrée sur cette période
+        {{ t('band_space_agenda.absences.empty') }}
       </div>
 
       <div v-else class="flex flex-col gap-4">
@@ -186,8 +185,8 @@
                   text
                   rounded
                   size="small"
-                  aria-label="Modifier l'indisponibilité"
-                  v-tooltip.bottom="'Modifier'"
+                  :aria-label="t('band_space_agenda.absences.edit_aria')"
+                  v-tooltip.bottom="t('band_space_agenda.absences.edit_tooltip')"
                   @click="openEditForm(absence)"
                 />
                 <Button
@@ -196,8 +195,8 @@
                   text
                   rounded
                   size="small"
-                  aria-label="Supprimer l'indisponibilité"
-                  v-tooltip.bottom="'Supprimer'"
+                  :aria-label="t('band_space_agenda.absences.delete_aria')"
+                  v-tooltip.bottom="t('band_space_agenda.common.delete')"
                   @click="confirmDelete(absence)"
                 />
               </div>
@@ -220,6 +219,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandAbsenceStore } from '../../../store/bandSpace/bandSpaceAbsence.js'
@@ -239,6 +239,7 @@ const isVisible = defineModel('visible', { type: Boolean, default: false })
 
 const ALL_MEMBERS = '__all__'
 
+const { t } = useI18n()
 const absenceStore = useBandAbsenceStore()
 const confirm = useConfirm()
 const { isAdmin } = useBandSpaceNavigation()
@@ -270,7 +271,7 @@ const memberOptions = computed(() =>
 )
 
 const memberFilterOptions = computed(() => [
-  { label: 'Tous', value: ALL_MEMBERS },
+  { label: t('band_space_agenda.absences.all_members'), value: ALL_MEMBERS },
   ...memberOptions.value
 ])
 
@@ -374,15 +375,15 @@ async function handleSubmit() {
   resetErrors()
 
   if (!form.startDate) {
-    fieldErrors.startDate = 'Veuillez spécifier une date de début'
+    fieldErrors.startDate = t('band_space_agenda.absences.start_required')
     return
   }
   if (!form.endDate) {
-    fieldErrors.endDate = 'Veuillez spécifier une date de fin'
+    fieldErrors.endDate = t('band_space_agenda.absences.end_required')
     return
   }
   if (form.endDate < form.startDate) {
-    fieldErrors.endDate = 'La date de fin doit être postérieure ou égale à la date de début'
+    fieldErrors.endDate = t('band_space_agenda.absences.end_before_start')
     return
   }
 
@@ -409,7 +410,7 @@ async function handleSubmit() {
     emit('changed')
   } catch (error) {
     applyViolations(error)
-    formError.value = error?.message ?? "Impossible d'enregistrer l'indisponibilité"
+    formError.value = error?.message ?? t('band_space_agenda.absences.save_error')
   }
 }
 
@@ -423,11 +424,14 @@ function applyViolations(error) {
 
 function confirmDelete(absence) {
   confirm.require({
-    message: `Supprimer l'indisponibilité de ${absence.display_name} (${formatAbsenceRange(absence.start_date, absence.end_date)}) ?`,
-    header: 'Confirmer la suppression',
+    message: t('band_space_agenda.absences.delete_confirm', {
+      name: absence.display_name,
+      range: formatAbsenceRange(absence.start_date, absence.end_date)
+    }),
+    header: t('band_space_agenda.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_agenda.common.cancel'),
+    acceptLabel: t('band_space_agenda.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       resetErrors()
@@ -436,7 +440,7 @@ function confirmDelete(absence) {
         if (editingId.value === absence.id) closeForm()
         emit('changed')
       } catch (error) {
-        formError.value = error?.message ?? "Impossible de supprimer l'indisponibilité"
+        formError.value = error?.message ?? t('band_space_agenda.absences.delete_error')
       }
     }
   })

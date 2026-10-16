@@ -9,13 +9,13 @@
     <div v-else-if="notFound" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
       <i class="pi pi-user-minus text-4xl text-surface-400 mb-4" />
       <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-        Profil musicien non trouvé
+        {{ t('profile.musician_page.not_found_title') }}
       </h2>
       <p class="text-surface-500 dark:text-surface-400 mb-4">
-        Cet utilisateur n'a pas encore créé son profil musicien.
+        {{ t('profile.musician_page.not_found_help') }}
       </p>
       <Button
-        label="Voir le profil"
+        :label="t('profile.common.view_profile')"
         icon="pi pi-user"
         severity="info"
         @click="$router.push({ name: 'app_user_public_profile', params: { username: route.params.username } })"
@@ -34,19 +34,19 @@
               severity="secondary"
               text
               rounded
-              aria-label="Retour"
+              :aria-label="t('profile.common.back')"
               @click="handleBack"
             />
           </div>
           <Avatar
             v-if="profile.profile_picture_url"
             :image="profile.profile_picture_url"
-            :pt="{ image: { alt: `Photo de ${profile.username}` } }"
+            :pt="{ image: { alt: t('profile.common.photo_of', { name: profile.username }) } }"
             size="large"
             shape="circle"
             role="img"
             class="md:!w-16 md:!h-16"
-            :aria-label="`Photo de ${profile.username}`"
+            :aria-label="t('profile.common.photo_of', { name: profile.username })"
           />
           <Avatar
             v-else
@@ -56,11 +56,11 @@
             shape="circle"
             role="img"
             class="md:!w-16 md:!h-16"
-            :aria-label="`Avatar de ${profile.username}`"
+            :aria-label="t('profile.common.avatar_of', { name: profile.username })"
           />
           <div class="flex-1 min-w-0">
             <h1 class="hidden md:block text-2xl font-bold text-surface-900 dark:text-surface-0">
-              Profil musicien
+              {{ t('profile.musician_page.title') }}
             </h1>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-surface-500 dark:text-surface-400 truncate">
@@ -70,7 +70,7 @@
                 :to="{ name: 'app_user_public_profile', params: { username: profile.username } }"
                 class="hidden md:inline text-sm text-primary hover:underline"
               >
-                Voir le profil
+                {{ t('profile.common.view_profile') }}
               </router-link>
             </div>
           </div>
@@ -80,8 +80,8 @@
               icon="pi pi-pencil"
               severity="secondary"
               rounded
-              v-tooltip.bottom="'Modifier'"
-              aria-label="Modifier le profil musicien"
+              v-tooltip.bottom="t('profile.common.edit')"
+              :aria-label="t('profile.musician_page.edit')"
               @click="showEditModal = true"
             />
             <div v-if="!isOwnProfile" class="hidden md:block">
@@ -94,13 +94,13 @@
               <Button
                 icon="pi pi-envelope"
                 rounded
-                aria-label="Contacter"
+                :aria-label="t('profile.common.contact')"
                 @click="handleContact"
               />
             </div>
             <div v-if="!isOwnProfile" class="hidden md:block">
               <Button
-                label="Contacter"
+                :label="t('profile.common.contact')"
                 icon="pi pi-envelope"
                 rounded
                 @click="handleContact"
@@ -117,7 +117,7 @@
           <!-- Availability status -->
           <div v-if="profile.availability_status" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              Disponibilité
+              {{ t('profile.musician_page.availability') }}
             </h2>
             <Tag
               :value="profile.availability_status_label"
@@ -128,7 +128,7 @@
           <!-- Instruments -->
           <div v-if="profile.instruments?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              Instruments
+              {{ t('profile.musician_page.instruments') }}
             </h2>
             <div class="flex flex-col gap-2">
               <div
@@ -151,7 +151,7 @@
           <!-- Styles -->
           <div v-if="profile.styles?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
             <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
-              Styles musicaux
+              {{ t('profile.musician_page.styles') }}
             </h2>
             <div class="flex flex-wrap gap-2">
               <Tag
@@ -177,12 +177,12 @@
           <div v-if="profile.musician_announces?.length || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
-                Annonces
+                {{ t('profile.musician_page.announces') }}
               </h2>
               <Button
                 v-if="isOwnProfile"
                 icon="pi pi-plus"
-                label="Ajouter"
+                :label="t('profile.musician_page.add_announce')"
                 size="small"
                 @click="$router.push({ name: 'app_user_announces' })"
               />
@@ -205,10 +205,10 @@
                 <i class="pi pi-megaphone text-2xl text-primary-600 dark:text-primary-400" />
               </div>
               <p class="text-surface-500 dark:text-surface-400 mb-4">
-                Vous n'avez pas encore d'annonce
+                {{ t('profile.musician_page.announces_empty') }}
               </p>
               <Button
-                label="Créer une annonce"
+                :label="t('profile.musician_page.create_announce')"
                 icon="pi pi-plus"
                 @click="$router.push({ name: 'app_user_announces' })"
               />
@@ -233,7 +233,7 @@
     />
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      message="Vous devez vous connecter pour envoyer un message à cet utilisateur."
+      :message="t('profile.common.contact_auth_required')"
     />
   </div>
 </template>
@@ -245,6 +245,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
@@ -260,6 +261,7 @@ const route = useRoute()
 const router = useRouter()
 const musicianProfileStore = useMusicianProfileStore()
 const userSecurityStore = useUserSecurityStore()
+const { t } = useI18n()
 
 // Contextual back navigation based on where user came from
 function handleBack() {
@@ -306,9 +308,9 @@ const isOwnProfile = computed(() => {
 
 const pageTitle = computed(() => {
   if (profile.value) {
-    return `Profil musicien - ${profile.value.username} - MusicAll`
+    return t('profile.musician_page.page_title', { username: profile.value.username })
   }
-  return 'Profil musicien - MusicAll'
+  return t('profile.musician_page.page_title_default')
 })
 
 const shareUrl = computed(() => {
@@ -317,9 +319,9 @@ const shareUrl = computed(() => {
 
 const shareTitle = computed(() => {
   if (profile.value) {
-    return `Découvrez le profil musicien de ${profile.value.username} sur MusicAll`
+    return t('profile.musician_page.share_title', { username: profile.value.username })
   }
-  return 'Profil musicien sur MusicAll'
+  return t('profile.musician_page.share_title_default')
 })
 
 useTitle(pageTitle)

@@ -1,0 +1,124 @@
+{
+  "common": {
+    "forum": "Forum",
+    "my_topics": "Mes sujets",
+    "page_title": "{title} - MusicAll",
+    "pinned": "Épinglé",
+    "resolved": "Résolu",
+    "locked": "Verrouillé",
+    "cancel": "Annuler",
+    "error": "Erreur",
+    "action_failed": "Action impossible",
+    "generic_error": "Une erreur est survenue."
+  },
+  "index": {
+    "page_title": "Forum - MusicAll",
+    "title": "Liste des forums",
+    "search_placeholder": "Rechercher un sujet ou un message…",
+    "clear_search": "Effacer la recherche",
+    "search_error": "Erreur pendant la recherche"
+  },
+  "search": {
+    "no_result": "Aucun résultat pour « {term} »",
+    "results": "{count} résultat trouvé pour « {term} » | {count} résultats trouvés pour « {term} »"
+  },
+  "show": {
+    "new_topic": "Nouveau sujet",
+    "no_topics": "Aucun sujet dans ce forum pour le moment.",
+    "login_to_create": "Vous devez vous connecter pour créer un nouveau sujet."
+  },
+  "topic": {
+    "default_title": "Sujet",
+    "mark_resolved": "Marquer résolu",
+    "mark_unresolved": "Marquer non résolu",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "pin": "Épingler",
+    "unpin": "Détacher",
+    "reply_title": "Poster un message sur ce sujet",
+    "locked_toast": "Sujet verrouillé",
+    "unlocked_toast": "Sujet déverrouillé",
+    "pinned_toast": "Sujet épinglé",
+    "unpinned_toast": "Sujet détaché",
+    "resolved_toast": "Sujet marqué résolu",
+    "unresolved_toast": "Sujet marqué non résolu"
+  },
+  "my_topics": {
+    "page_title": "Mes sujets - MusicAll",
+    "empty": "Vous ne participez à aucun sujet pour le moment.",
+    "unread": "Non lu",
+    "in_forum": "Dans {forum}",
+    "last_post_on": "Dernier message le {date}",
+    "no_post": "Aucun message",
+    "remove": "Retirer de mes sujets",
+    "removed_toast": "Sujet retiré de votre liste"
+  },
+  "topic_item": {
+    "created_by": "Par {author} le {date}",
+    "last_post_by": "Dernier message par {author}",
+    "last_post_on": "le {date}",
+    "no_reply": "Aucune réponse"
+  },
+  "post": {
+    "creator_photo": "Photo de {name}",
+    "creator_avatar": "Avatar de {name}",
+    "view_profile": "Voir le profil de {name}",
+    "view_profile_with_handle": "Voir le profil de {name} ({handle})",
+    "contact": "Contacter",
+    "contact_user": "Contacter {name}",
+    "edited_on": "(modifié le {date})",
+    "edit": "Modifier",
+    "edit_message": "Modifier le message",
+    "edit_placeholder": "Modifiez votre message…",
+    "save": "Enregistrer",
+    "like": "J'aime",
+    "dislike": "Je n'aime pas",
+    "quote": "Citer",
+    "quote_message_of": "Citer le message de {name}",
+    "report_message_of": "Signaler le message de {name}",
+    "login_to_message": "Vous devez vous connecter pour envoyer un message.",
+    "edited_toast": "Message modifié"
+  },
+  "reply": {
+    "login_to_post": "Vous devez vous connecter pour poster un message.",
+    "locked": "Ce sujet est verrouillé. Vous ne pouvez plus y répondre.",
+    "send": "Envoyer",
+    "sent_toast": "Message envoyé",
+    "sent_toast_detail": "Votre message a été publié avec succès",
+    "rate_limited": "Veuillez patienter avant de poster un nouveau message.",
+    "send_failed": "Une erreur est survenue lors de l'envoi du message"
+  },
+  "add_topic": {
+    "title": "Ajouter un nouveau sujet",
+    "title_label": "Titre du sujet",
+    "title_placeholder": "Votre titre ici",
+    "title_too_short": "Le titre doit contenir au moins {min} caractères",
+    "message_label": "Votre message",
+    "message_too_short": "Le message doit contenir au moins {min} caractères",
+    "created": "Le sujet a été créé !",
+    "close": "Fermer",
+    "create": "Créer",
+    "go_to_topic": "Aller sur le sujet",
+    "rate_limited": "Veuillez patienter quelques minutes avant de créer un nouveau sujet.",
+    "create_failed": "Une erreur est survenue lors de la création du sujet"
+  },
+  "editor": {
+    "placeholder": "Écrivez votre message…",
+    "bold": "Gras",
+    "bold_glyph": "B",
+    "italic": "Italique",
+    "italic_glyph": "I",
+    "bullet_list": "Liste à puces",
+    "ordered_list": "Liste numérotée",
+    "quote": "Citation",
+    "add_image": "Ajouter une image",
+    "add_youtube": "Ajouter une vidéo YouTube",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "youtube_hint": "Collez l'URL d'une vidéo YouTube",
+    "add": "Ajouter",
+    "image_added": "Image ajoutée",
+    "upload_failed": "Échec du téléchargement",
+    "quote_author": "{author} a écrit :"
+  }
+}

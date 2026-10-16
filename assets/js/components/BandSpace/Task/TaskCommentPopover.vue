@@ -3,7 +3,7 @@
     <div class="w-80 max-w-sm">
       <div class="px-4 py-2 border-b border-surface-200 dark:border-surface-700">
         <span class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider">
-          Commentaires
+          {{ t('band_space_tasks.common.comments') }}
         </span>
       </div>
 
@@ -24,7 +24,7 @@
 
       <div class="border-t border-surface-200 dark:border-surface-700 p-2">
         <Button
-          label="Ouvrir la tâche"
+          :label="t('band_space_tasks.comment_popover.open_task')"
           icon="pi pi-external-link"
           text
           size="small"
@@ -41,6 +41,7 @@ import Button from 'primevue/button'
 import Popover from 'primevue/popover'
 import Skeleton from 'primevue/skeleton'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import TaskCommentList from './TaskCommentList.vue'
@@ -53,6 +54,7 @@ const props = defineProps({
 const emit = defineEmits(['open-task'])
 
 const tasksStore = useBandTasksStore()
+const { t } = useI18n()
 const popoverRef = ref()
 const comments = ref([])
 const isLoading = ref(false)
@@ -64,7 +66,7 @@ async function handleShow() {
   try {
     comments.value = await bandSpaceTasksApi.getComments(props.bandSpaceId, props.taskId)
   } catch {
-    error.value = 'Impossible de charger les commentaires'
+    error.value = t('band_space_tasks.comment_popover.load_failed')
   } finally {
     isLoading.value = false
   }

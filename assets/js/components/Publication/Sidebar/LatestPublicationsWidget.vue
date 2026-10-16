@@ -59,9 +59,9 @@ const props = defineProps({
   excludeId: { type: Number, default: null },
   count: { type: Number, default: 3 },
   subCategoryType: { type: Number, default: null },
-  title: { type: String, default: 'Dernières publications' },
+  title: { type: String, required: true },
   icon: { type: String, default: 'pi-clock' },
-  emptyMessage: { type: String, default: 'Aucune publication récente.' }
+  emptyMessage: { type: String, required: true }
 })
 
 const items = ref([])

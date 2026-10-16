@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * Mirrors `App\Procedure\BandSpace\TechRiderDuplicateProcedure`, whose constants these are.
  *
@@ -17,33 +19,53 @@ export const COPY_SUFFIX = ' (copie)'
 export const RIDER_SECTION_TYPES = Object.freeze([
   {
     value: 'text',
-    label: 'Texte libre',
     icon: 'pi-align-left',
-    description: 'Backline, catering, loges, horaires'
+    get label() {
+      return i18n.global.t('band_space_tech_rider.section_type.text')
+    },
+    get description() {
+      return i18n.global.t('band_space_tech_rider.section_type.text_description')
+    }
   },
   {
     value: 'stage_plot',
-    label: 'Plan de scène',
     icon: 'pi-map',
-    description: 'La disposition sur scène'
+    get label() {
+      return i18n.global.t('band_space_tech_rider.section_type.stage_plot')
+    },
+    get description() {
+      return i18n.global.t('band_space_tech_rider.section_type.stage_plot_description')
+    }
   },
   {
     value: 'patch_list',
-    label: 'Patch list',
     icon: 'pi-sliders-h',
-    description: 'Entrées et retours'
+    get label() {
+      return i18n.global.t('band_space_tech_rider.section_type.patch_list')
+    },
+    get description() {
+      return i18n.global.t('band_space_tech_rider.section_type.patch_list_description')
+    }
   },
   {
     value: 'contacts',
-    label: 'Membres et contacts',
     icon: 'pi-users',
-    description: 'Repris de la liste des membres'
+    get label() {
+      return i18n.global.t('band_space_tech_rider.section_type.contacts')
+    },
+    get description() {
+      return i18n.global.t('band_space_tech_rider.section_type.contacts_description')
+    }
   },
   {
     value: 'document',
-    label: 'Document',
     icon: 'pi-file',
-    description: 'Une image ou un PDF de vos fichiers'
+    get label() {
+      return i18n.global.t('band_space_tech_rider.section_type.document')
+    },
+    get description() {
+      return i18n.global.t('band_space_tech_rider.section_type.document_description')
+    }
   }
 ])
 

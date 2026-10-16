@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { checkLinkAddress, LINK_ADDRESS_ERROR } from './noteLinkAddress.js'
+import { checkLinkAddress } from './noteLinkAddress.js'
+
+const LINK_ADDRESS_ERROR = "L'adresse doit commencer par http://, https:// ou mailto:"
 
 describe('checkLinkAddress', () => {
   it('accepts http, https and mailto addresses', () => {

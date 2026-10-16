@@ -6,12 +6,12 @@
 
     <div class="flex items-center gap-3 mb-6">
       <h1 class="text-2xl font-semibold">{{ forumStore.currentTopic?.title }}</h1>
-      <Tag v-if="forumStore.currentTopic?.is_pinned" value="Épinglé" severity="info" icon="pi pi-thumbtack" />
-      <Tag v-if="forumStore.currentTopic?.is_resolved" value="Résolu" severity="success" icon="pi pi-check-circle" />
-      <Tag v-if="forumStore.currentTopic?.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" />
+      <Tag v-if="forumStore.currentTopic?.is_pinned" :value="t('forum.common.pinned')" severity="info" icon="pi pi-thumbtack" />
+      <Tag v-if="forumStore.currentTopic?.is_resolved" :value="t('forum.common.resolved')" severity="success" icon="pi pi-check-circle" />
+      <Tag v-if="forumStore.currentTopic?.is_locked" :value="t('forum.common.locked')" severity="warn" icon="pi pi-lock" />
       <Button
         v-if="canManageTopic"
-        :label="forumStore.currentTopic.is_resolved ? 'Marquer non résolu' : 'Marquer résolu'"
+        :label="forumStore.currentTopic.is_resolved ? t('forum.topic.mark_unresolved') : t('forum.topic.mark_resolved')"
         :icon="forumStore.currentTopic.is_resolved ? 'pi pi-times-circle' : 'pi pi-check-circle'"
         size="small"
         severity="secondary"
@@ -21,7 +21,7 @@
       />
       <Button
         v-if="canManageTopic"
-        :label="forumStore.currentTopic.is_locked ? 'Déverrouiller' : 'Verrouiller'"
+        :label="forumStore.currentTopic.is_locked ? t('forum.topic.unlock') : t('forum.topic.lock')"
         :icon="forumStore.currentTopic.is_locked ? 'pi pi-lock-open' : 'pi pi-lock'"
         size="small"
         severity="secondary"
@@ -31,7 +31,7 @@
       />
       <Button
         v-if="userSecurityStore.isAdmin && forumStore.currentTopic"
-        :label="forumStore.currentTopic.is_pinned ? 'Détacher' : 'Épingler'"
+        :label="forumStore.currentTopic.is_pinned ? t('forum.topic.unpin') : t('forum.topic.pin')"
         icon="pi pi-thumbtack"
         size="small"
         severity="secondary"
@@ -75,7 +75,7 @@
       <Divider />
 
       <div ref="replyFormSectionRef" class="max-w-3xl mx-auto mt-6">
-        <h2 class="text-xl font-semibold mb-4">Poster un message sur ce sujet</h2>
+        <h2 class="text-xl font-semibold mb-4">{{ t('forum.topic.reply_title') }}</h2>
         <AddMessageForm
           v-if="forumStore.currentTopic"
           ref="addMessageFormRef"
@@ -102,6 +102,7 @@ import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddMessageForm from '../../components/Forum/AddMessageForm.vue'
@@ -113,6 +114,7 @@ import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const POSTS_PER_PAGE = 10
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const forumStore = useForumStore()
@@ -147,16 +149,16 @@ async function handleToggleLock() {
   try {
     if (forumStore.currentTopic.is_locked) {
       await forumStore.unlockCurrentTopic()
-      toast.add({ severity: 'success', summary: 'Sujet déverrouillé', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.topic.unlocked_toast'), life: 3000 })
     } else {
       await forumStore.lockCurrentTopic()
-      toast.add({ severity: 'success', summary: 'Sujet verrouillé', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.topic.locked_toast'), life: 3000 })
     }
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Action impossible',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('forum.common.action_failed'),
+      detail: e?.response?.data?.detail || t('forum.common.generic_error'),
       life: 4000
     })
   } finally {
@@ -170,16 +172,16 @@ async function handleTogglePinned() {
   try {
     if (forumStore.currentTopic.is_pinned) {
       await forumStore.unpinCurrentTopic()
-      toast.add({ severity: 'success', summary: 'Sujet détaché', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.topic.unpinned_toast'), life: 3000 })
     } else {
       await forumStore.pinCurrentTopic()
-      toast.add({ severity: 'success', summary: 'Sujet épinglé', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.topic.pinned_toast'), life: 3000 })
     }
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Action impossible',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('forum.common.action_failed'),
+      detail: e?.response?.data?.detail || t('forum.common.generic_error'),
       life: 4000
     })
   } finally {
@@ -193,16 +195,16 @@ async function handleToggleResolved() {
   try {
     if (forumStore.currentTopic.is_resolved) {
       await forumStore.unresolveCurrentTopic()
-      toast.add({ severity: 'success', summary: 'Sujet marqué non résolu', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.topic.unresolved_toast'), life: 3000 })
     } else {
       await forumStore.resolveCurrentTopic()
-      toast.add({ severity: 'success', summary: 'Sujet marqué résolu', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.topic.resolved_toast'), life: 3000 })
     }
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Action impossible',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('forum.common.action_failed'),
+      detail: e?.response?.data?.detail || t('forum.common.generic_error'),
       life: 4000
     })
   } finally {
@@ -217,7 +219,7 @@ const currentPage = computed(() => {
 })
 
 const breadcrumbItems = computed(() => [
-  { label: 'Forum', to: { name: 'app_forum_index' } },
+  { label: t('forum.common.forum'), to: { name: 'app_forum_index' } },
   {
     label: forumStore.currentTopic?.forum?.title || '...',
     to: forumStore.currentTopic?.forum?.slug
@@ -227,7 +229,13 @@ const breadcrumbItems = computed(() => [
   { label: forumStore.currentTopic?.title || '...' }
 ])
 
-useTitle(computed(() => `${forumStore.currentTopic?.title || 'Sujet'} - MusicAll`))
+useTitle(
+  computed(() =>
+    t('forum.common.page_title', {
+      title: forumStore.currentTopic?.title || t('forum.topic.default_title')
+    })
+  )
+)
 
 async function fetchData() {
   await forumStore.loadTopic(topicSlug.value)

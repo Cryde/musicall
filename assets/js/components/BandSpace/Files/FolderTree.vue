@@ -14,15 +14,15 @@
         @click="emit('select', ROOT_FOLDER_ID)"
       >
         <i class="pi pi-folder text-surface-500"></i>
-        <span class="flex-1 truncate">Racine</span>
+        <span class="flex-1 truncate">{{ t('band_space_files.folder.root') }}</span>
       </button>
       <Button
         icon="pi pi-plus"
         size="small"
         text
         rounded
-        aria-label="Nouveau dossier"
-        v-tooltip.top="'Nouveau dossier'"
+        :aria-label="t('band_space_files.folder_edit.title_create')"
+        v-tooltip.top="t('band_space_files.folder_edit.title_create')"
         @click="openCreateRoot"
       />
     </div>
@@ -52,7 +52,9 @@
       v-if="virtualFolders.length > 0"
       class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 flex flex-col gap-1"
     >
-      <p class="px-3 text-xs uppercase tracking-wide text-surface-400 mb-1">Sources</p>
+      <p class="px-3 text-xs uppercase tracking-wide text-surface-400 mb-1">
+        {{ t('band_space_files.folder_tree.sources') }}
+      </p>
       <button
         v-for="virtual in virtualFolders"
         :key="virtual.id"
@@ -90,6 +92,7 @@
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { applyMove, canDrop } from '../../../composables/useFolderDragDrop.js'
 import { fileSourceIcon } from '../../../constants/fileSources.js'
@@ -109,6 +112,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select'])
+const { t } = useI18n()
 
 const filesStore = useBandFilesStore()
 const toast = useToast()

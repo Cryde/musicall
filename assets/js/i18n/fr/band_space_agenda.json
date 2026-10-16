@@ -1,0 +1,203 @@
+{
+  "common": {
+    "all_day": "Toute la journée",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "confirm_delete_header": "Confirmer la suppression",
+    "new_event": "Nouvel événement",
+    "absences": "Indisponibilités"
+  },
+  "source": {
+    "chip": {
+      "manual": "Manuel",
+      "task": "Tâches",
+      "finance": "Finances",
+      "absence": "Absences"
+    },
+    "badge": {
+      "manual": "Manuel",
+      "task": "Tâche",
+      "finance": "Finance",
+      "absence": "Absence"
+    }
+  },
+  "item": {
+    "expense": "Dépense",
+    "income": "Revenu",
+    "priority_high": "Priorité haute",
+    "priority_urgent": "Urgent"
+  },
+  "page": {
+    "title": "Agenda",
+    "refreshing": "Mise à jour…",
+    "sync": "Synchroniser",
+    "sync_aria": "Synchroniser l'agenda avec mon calendrier personnel",
+    "load_error": "Erreur lors du chargement de l'agenda",
+    "empty": "Aucun événement à venir dans cette période",
+    "empty_filtered": "Aucun événement avec ces filtres",
+    "event_count": "{count} événement | {count} événements",
+    "year_dots_label": "{count} événement : {sources} | {count} événements : {sources}",
+    "today": "Aujourd'hui",
+    "linked_not_found": "Événement introuvable",
+    "linked_occurrence_gone": "Cette date n'a plus lieu",
+    "saved_summary": "Événement enregistré",
+    "saved_detail": "Il a lieu le {date} : l'agenda affiche maintenant cette période."
+  },
+  "view": {
+    "list": "Planning",
+    "day": "Jour",
+    "week": "Semaine",
+    "month": "Mois",
+    "year": "Année"
+  },
+  "preset": {
+    "next_7d": "7 prochains jours",
+    "next_14d": "14 prochains jours",
+    "next_30d": "30 prochains jours",
+    "this_week": "Cette semaine",
+    "this_month": "Ce mois",
+    "next_month": "Le mois prochain"
+  },
+  "entry": {
+    "edit_title": "Modifier un événement",
+    "ask_availability": "Demander les disponibilités aux membres",
+    "ask_availability_kept": "Les réponses déjà données sont conservées et réapparaîtront si vous réactivez l’option.",
+    "ask_availability_series": "S’applique à toutes les dates de la série.",
+    "ask_availability_error": "Impossible de modifier cette option",
+    "series_notice": "Cet événement fait partie d’une série : vos modifications s’appliqueront à toutes les occurrences, passées comme futures.",
+    "series_start": "Début de la série : {date}.",
+    "title_label": "Titre",
+    "title_placeholder": "Ex : Répétition générale",
+    "date_label": "Date",
+    "datetime_label": "Date et heure",
+    "time_placeholder": "HH:MM",
+    "start_time_aria": "Heure de début",
+    "end_time_aria": "Heure de fin",
+    "occurrence_date_hint": "Date de cette occurrence. La déplacer décale toute la série d’autant.",
+    "last_day_label": "Dernier jour (optionnel)",
+    "end_label": "Fin (optionnel)",
+    "location_label": "Lieu",
+    "location_placeholder": "Ex : Studio, Zenith de Paris…",
+    "description_label": "Description",
+    "description_placeholder": "Notes complémentaires",
+    "create": "Créer",
+    "end_before_start": "La fin doit être postérieure au début",
+    "save_error": "Impossible d’enregistrer l’événement",
+    "delete_error": "Impossible de supprimer l’événement",
+    "delete_confirm": "Es-tu sûr de vouloir supprimer cet événement ?"
+  },
+  "recurrence": {
+    "label": "Répéter",
+    "none": "Ne se répète pas",
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "monthly_mode": "Mode mensuel",
+    "monthly_hint": "Calculé d'après la date de l'événement.",
+    "by_date_default": "Le même jour du mois",
+    "by_date": "Le {day} du mois",
+    "by_weekday_default": "Même jour de la semaine du mois",
+    "by_weekday": "Le {ordinal} {weekday} du mois",
+    "ordinal": {
+      "first": "premier",
+      "second": "deuxième",
+      "third": "troisième",
+      "fourth": "quatrième",
+      "fifth": "cinquième",
+      "nth": "{number}ème"
+    },
+    "weekday": {
+      "sunday": "dimanche",
+      "monday": "lundi",
+      "tuesday": "mardi",
+      "wednesday": "mercredi",
+      "thursday": "jeudi",
+      "friday": "vendredi",
+      "saturday": "samedi"
+    },
+    "until_label": "Jusqu'au",
+    "until_required": "Veuillez spécifier une date de fin de récurrence.",
+    "until_before_start": "La date de fin doit être postérieure ou égale au premier événement.",
+    "monthly_mode_required": "Veuillez préciser le mode de récurrence mensuelle."
+  },
+  "series_save": {
+    "remove_recurrence": "Supprimer la récurrence",
+    "remove_recurrence_message": "Il ne restera qu’un seul événement, le {date}.",
+    "remove_recurrence_detail": "Toutes les autres occurrences de la série seront supprimées.",
+    "shift_header": "Décaler toute la série",
+    "shift_message": "La série commencera le {date} au lieu du {start}.",
+    "shift_detail": "Toutes les occurrences seront décalées d’autant, y compris celles déjà passées.",
+    "shift_accept": "Décaler la série"
+  },
+  "delete_scope": {
+    "header": "Supprimer l’événement récurrent",
+    "question": "Cet événement fait partie d’une série. Que souhaites-tu supprimer ?",
+    "single": "Cette occurrence seulement",
+    "single_hint": "Le reste de la série reste en place.",
+    "from": "Cette occurrence et les suivantes",
+    "from_hint": "La série se termine la veille de cette occurrence.",
+    "all": "Toute la série",
+    "all_hint": "Toutes les occurrences (passées et futures) seront supprimées."
+  },
+  "absences": {
+    "intro": "Qui est absent, et quand. Chacun gère ses propres dates, un administrateur peut gérer celles de tout le groupe.",
+    "year_label": "Année",
+    "member_label": "Membre",
+    "all_members": "Tous",
+    "add": "Ajouter",
+    "member_locked_hint": "Pour changer de membre, supprimez cette indisponibilité et créez-en une autre.",
+    "start_label": "Du",
+    "end_label": "Au",
+    "reason_label": "Motif (optionnel)",
+    "reason_placeholder": "Ex : vacances, déplacement professionnel",
+    "empty": "Aucune indisponibilité enregistrée sur cette période",
+    "edit_aria": "Modifier l'indisponibilité",
+    "edit_tooltip": "Modifier",
+    "delete_aria": "Supprimer l'indisponibilité",
+    "start_required": "Veuillez spécifier une date de début",
+    "end_required": "Veuillez spécifier une date de fin",
+    "end_before_start": "La date de fin doit être postérieure ou égale à la date de début",
+    "save_error": "Impossible d'enregistrer l'indisponibilité",
+    "delete_error": "Impossible de supprimer l'indisponibilité",
+    "delete_confirm": "Supprimer l'indisponibilité de {name} ({range}) ?",
+    "load_error": "Erreur lors du chargement des indisponibilités"
+  },
+  "availability": {
+    "answer": {
+      "yes": "Disponible",
+      "no": "Indisponible",
+      "absent": "Absent",
+      "pending": "Sans réponse"
+    },
+    "summary": {
+      "yes": "{count} dispo | {count} dispos",
+      "no": "{count} indispo | {count} indispos",
+      "absent": "{count} absent | {count} absents",
+      "pending": "{count} sans réponse"
+    },
+    "title": "Disponibilités",
+    "for_date": "Pour le {date}",
+    "loading": "Chargement des disponibilités",
+    "my_availability": "Ma disponibilité",
+    "my_availability_for": "Ma disponibilité pour « {title} »",
+    "absence_declared": "Absence déclarée",
+    "quick_yes": "Dispo",
+    "quick_no": "Pas dispo",
+    "answer_failed": "Disponibilité non enregistrée",
+    "retry_soon": "Réessayez dans un instant.",
+    "past": "Cette date est passée, les disponibilités ne peuvent plus changer.",
+    "absent_notice": "Une indisponibilité est déclarée sur cette date. Répondre ici la remplace pour cet événement.",
+    "remind": "Relancer les membres sans réponse",
+    "remind_sent": "Relance envoyée",
+    "remind_sent_detail": "Les membres sans réponse ont reçu une notification.",
+    "remind_error": "Impossible de relancer les membres",
+    "load_error": "Impossible de charger les disponibilités",
+    "answer_error": "Impossible d’enregistrer votre disponibilité"
+  },
+  "chip": {
+    "recurring": "Événement récurrent",
+    "absence": "Indisponibilité"
+  }
+}

@@ -1,8 +1,8 @@
 <template>
-  <Dialog v-model:visible="visible" modal header="Nom de scène et instruments" :style="{ width: '30rem' }">
+  <Dialog v-model:visible="visible" modal :header="t('band_space.member_profile.header')" :style="{ width: '30rem' }">
     <form v-if="member" class="flex flex-col gap-4" @submit.prevent="handleSave">
       <div>
-        <label :for="`${uid}-stage-name`" class="block text-sm font-medium mb-1">Nom de scène</label>
+        <label :for="`${uid}-stage-name`" class="block text-sm font-medium mb-1">{{ t('band_space.member_profile.stage_name') }}</label>
         <InputText
           :id="`${uid}-stage-name`"
           v-model="stageName"
@@ -12,13 +12,12 @@
           autofocus
         />
         <small class="text-surface-600 dark:text-surface-300">
-          Le nom imprimé sur les documents envoyés aux salles. Sans nom de scène, c'est
-          « {{ member.username }} » qui apparaîtra.
+          {{ t('band_space.member_profile.stage_name_help', { username: member.username }) }}
         </small>
       </div>
 
       <div>
-        <label :for="`${uid}-instruments`" class="block text-sm font-medium mb-1">Instruments</label>
+        <label :for="`${uid}-instruments`" class="block text-sm font-medium mb-1">{{ t('band_space.member_profile.instruments') }}</label>
         <MultiSelect
           :id="`${uid}-instruments`"
           v-model="instrumentIds"
@@ -30,12 +29,12 @@
           filter
           display="chip"
           class="w-full"
-          placeholder="Choisir un ou plusieurs instruments"
-          empty-message="Aucun instrument"
-          empty-filter-message="Aucun instrument trouvé"
+          :placeholder="t('band_space.member_profile.instruments_placeholder')"
+          :empty-message="t('band_space.member_profile.instruments_empty')"
+          :empty-filter-message="t('band_space.member_profile.instruments_not_found')"
         />
         <small class="text-surface-600 dark:text-surface-300">
-          {{ MAX_INSTRUMENTS }} au maximum. Ils apparaissent à côté du nom sur le tech rider.
+          {{ t('band_space.member_profile.instruments_help', { max: MAX_INSTRUMENTS }) }}
         </small>
       </div>
 
@@ -44,11 +43,10 @@
         <Checkbox v-model="showEmailOnRiders" :input-id="`${uid}-show-email`" binary />
         <div>
           <label :for="`${uid}-show-email`" class="text-sm font-medium">
-            Afficher mon adresse e-mail sur les tech riders
+            {{ t('band_space.member_profile.show_email') }}
           </label>
           <small class="block text-surface-600 dark:text-surface-300">
-            Elle n'apparaît que sur les tech riders où les contacts affichent les adresses, visibles par
-            toute personne recevant le document.
+            {{ t('band_space.member_profile.show_email_help') }}
           </small>
         </div>
       </div>
@@ -56,8 +54,8 @@
       <Message v-if="error" severity="error" :closable="false" size="small">{{ error }}</Message>
 
       <div class="flex justify-end gap-2">
-        <Button label="Annuler" severity="secondary" text type="button" @click="visible = false" />
-        <Button label="Enregistrer" type="submit" :loading="isSaving" />
+        <Button :label="t('band_space.common.cancel')" severity="secondary" text type="button" @click="visible = false" />
+        <Button :label="t('band_space.general.save')" type="submit" :loading="isSaving" />
       </div>
     </form>
   </Dialog>
@@ -71,6 +69,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import { ref, useId, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import instrumentApi from '../../../api/attribute/instrument.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 
@@ -88,6 +87,7 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 const MAX_INSTRUMENTS = 6
 
 const settingsStore = useBandSpaceSettingsStore()
+const { t } = useI18n()
 
 const stageName = ref('')
 const instrumentIds = ref([])

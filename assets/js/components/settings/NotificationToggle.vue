@@ -11,7 +11,7 @@
     <div class="md:w-2/3 flex items-center gap-3">
       <ToggleSwitch :aria-label="ariaLabel || label" :modelValue="modelValue" :disabled="disabled" @update:modelValue="$emit('update:modelValue', $event)" />
       <span class="text-surface-700 dark:text-surface-300">
-        {{ modelValue ? 'Activé' : 'Désactivé' }}
+        {{ modelValue ? t('profile.settings.enabled') : t('profile.settings.disabled') }}
       </span>
     </div>
   </div>
@@ -19,6 +19,7 @@
 
 <script setup>
 import ToggleSwitch from 'primevue/toggleswitch'
+import { useI18n } from 'vue-i18n'
 
 defineProps({
   modelValue: {
@@ -45,4 +46,6 @@ defineProps({
 })
 
 defineEmits(['update:modelValue'])
+
+const { t } = useI18n()
 </script>

@@ -14,11 +14,11 @@ import {
 
 describe('greetingFor', () => {
   it('says good morning in the day and good evening from six', () => {
-    assert.equal(greetingFor(new Date(2026, 8, 27, 9, 0)), 'Bonjour')
-    assert.equal(greetingFor(new Date(2026, 8, 27, 17, 59)), 'Bonjour')
-    assert.equal(greetingFor(new Date(2026, 8, 27, 18, 0)), 'Bonsoir')
-    assert.equal(greetingFor(new Date(2026, 8, 27, 2, 0)), 'Bonsoir')
-    assert.equal(greetingFor(new Date(2026, 8, 27, 5, 0)), 'Bonjour')
+    assert.equal(greetingFor(new Date(2026, 8, 27, 9, 0), 'lea'), 'Bonjour, lea')
+    assert.equal(greetingFor(new Date(2026, 8, 27, 17, 59), 'lea'), 'Bonjour, lea')
+    assert.equal(greetingFor(new Date(2026, 8, 27, 18, 0), 'lea'), 'Bonsoir, lea')
+    assert.equal(greetingFor(new Date(2026, 8, 27, 2, 0), 'lea'), 'Bonsoir, lea')
+    assert.equal(greetingFor(new Date(2026, 8, 27, 5, 0), 'lea'), 'Bonjour, lea')
   })
 })
 

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
+import { i18n } from '../../i18n/index.js'
 import {
   hasReacted,
   rolledBackReactions,
@@ -150,7 +151,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
       if (!silent && token === loadToken) {
         messages.value = []
         totalMessages.value = 0
-        loadError.value = 'Impossible de charger la discussion'
+        loadError.value = i18n.global.t('band_space_chat.error.load_messages')
       }
     } finally {
       if (!silent && token === loadToken) {
@@ -196,7 +197,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
       totalMessages.value = knownTotal(response.totalItems)
     } catch (e) {
       console.error('Failed to load older chat messages:', e)
-      loadOlderError.value = 'Impossible de charger les messages plus anciens.'
+      loadOlderError.value = i18n.global.t('band_space_chat.error.load_older')
     } finally {
       isLoadingOlder.value = false
     }
@@ -230,7 +231,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
       }
     } catch (e) {
       console.error('Failed to load newer chat messages:', e)
-      loadNewerError.value = 'Impossible de charger les messages plus récents.'
+      loadNewerError.value = i18n.global.t('band_space_chat.error.load_newer')
     } finally {
       isLoadingNewer.value = false
     }
@@ -287,8 +288,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
         isAtTail.value = wasAtTail
         jumpError.value =
           e.status === 404
-            ? "Ce message n'est plus disponible."
-            : "Impossible d'afficher ce message, veuillez réessayer."
+            ? i18n.global.t('band_space_chat.error.message_unavailable')
+            : i18n.global.t('band_space_chat.error.jump_failed')
       }
     } finally {
       if (jumpingTo.value === messageId) {
@@ -444,7 +445,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
         // English one.
         reactionError.value = e.status
           ? e.message
-          : 'Impossible de mettre à jour la réaction, veuillez réessayer.'
+          : i18n.global.t('band_space_chat.error.reaction_failed')
       }
     } finally {
       const stillPending = new Set(pendingReactions.value)

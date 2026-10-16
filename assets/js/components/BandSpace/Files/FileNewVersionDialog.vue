@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Importer une nouvelle version"
+    :header="t('band_space_files.new_version_dialog.title')"
     :style="{ width: '32rem' }"
     :closable="!isUploading"
     :close-on-escape="!isUploading"
@@ -21,10 +21,15 @@
 
         <template v-if="!selectedFile">
           <i class="pi pi-cloud-upload text-3xl text-surface-400 mb-2"></i>
-          <p class="text-sm text-surface-600 dark:text-surface-300">
-            Glissez-déposez le fichier ou
-            <span class="text-primary-500 underline">cliquez pour parcourir</span>
-          </p>
+          <i18n-t
+            keypath="band_space_files.new_version_dialog.drop_zone"
+            tag="p"
+            class="text-sm text-surface-600 dark:text-surface-300"
+          >
+            <template #browse>
+              <span class="text-primary-500 underline">{{ t('band_space_files.common.browse') }}</span>
+            </template>
+          </i18n-t>
         </template>
 
         <template v-else>
@@ -36,7 +41,7 @@
             </div>
             <Button
               icon="pi pi-times"
-              aria-label="Retirer le fichier"
+              :aria-label="t('band_space_files.common.remove_file')"
               text
               rounded
               size="small"
@@ -50,13 +55,12 @@
       <small v-if="fieldErrors.uploadedFile" class="text-red-500">{{ fieldErrors.uploadedFile }}</small>
 
       <p class="text-xs text-surface-400 italic">
-        La nouvelle version remplacera la version actuelle. Les versions précédentes restent
-        accessibles.
+        {{ t('band_space_files.new_version_dialog.replace_notice') }}
       </p>
 
       <div v-if="isUploading" class="flex flex-col gap-1">
         <ProgressBar :value="uploadProgress" />
-        <p class="text-xs text-surface-500 text-center">Import… {{ uploadProgress }} %</p>
+        <p class="text-xs text-surface-500 text-center">{{ t('band_space_files.common.upload_progress', { percent: uploadProgress }) }}</p>
       </div>
 
       <Message v-if="globalError" severity="error" :closable="false">{{ globalError }}</Message>
@@ -64,14 +68,14 @@
 
     <template #footer>
       <Button
-        label="Annuler"
+        :label="t('band_space_files.common.cancel')"
         severity="secondary"
         text
         :disabled="isUploading"
         @click="visible = false"
       />
       <Button
-        label="Importer"
+        :label="t('band_space_files.new_version_dialog.submit')"
         icon="pi pi-cloud-upload"
         :disabled="!selectedFile || isUploading"
         :loading="isUploading"
@@ -87,6 +91,7 @@ import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
 import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { uploadRejectionReason } from '../../../utils/fileUploadQueue.js'
 
@@ -99,6 +104,7 @@ const emit = defineEmits(['uploaded'])
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 
 const fileInput = ref(null)
@@ -161,7 +167,7 @@ function clearFile() {
 
 async function handleUpload() {
   if (!selectedFile.value || !props.fileId) {
-    fieldErrors.uploadedFile = 'Veuillez sélectionner un fichier'
+    fieldErrors.uploadedFile = t('band_space_files.new_version_dialog.select_required')
     return
   }
 

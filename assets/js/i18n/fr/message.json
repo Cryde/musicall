@@ -1,0 +1,64 @@
+{
+  "index": {
+    "title": "Messages",
+    "new_message": "Nouveau message",
+    "new_conversation": "Nouvelle conversation"
+  },
+  "avatar": {
+    "channel": "Discussion du groupe {name}",
+    "photo": "Photo de {name}",
+    "initial": "Avatar de {name}"
+  },
+  "conversation": {
+    "band_fallback": "Groupe",
+    "unknown_user": "Utilisateur inconnu"
+  },
+  "thread_list": {
+    "unread_aria_label": "{count} message(s) non lu(s)",
+    "last_message_author": "{author} :",
+    "no_message": "Aucun message",
+    "empty": "Vous n'avez pas encore de message."
+  },
+  "thread": {
+    "load_older": "Charger les messages plus anciens",
+    "load_older_error": "Impossible de charger les messages plus anciens.",
+    "deleted": "Message supprimé",
+    "attachment": "Pièce jointe",
+    "report": "Signaler ce message",
+    "recipient_deleted": "Vous ne pouvez plus envoyer de message à cet utilisateur.",
+    "placeholder": "Votre message...",
+    "send": "Envoyer le message",
+    "none_selected": "Sélectionnez une conversation ou envoyez un nouveau message."
+  },
+  "send_modal": {
+    "title": "Nouveau message",
+    "subtitle": "Envoyez un message privé",
+    "recipient": "Destinataire",
+    "recipient_placeholder": "Rechercher un destinataire...",
+    "content_aria_label": "Votre message",
+    "content_placeholder": "Écrivez votre message...",
+    "cancel": "Annuler",
+    "send": "Envoyer le message",
+    "error": "Une erreur est survenue lors de l'envoi du message."
+  },
+  "error": {
+    "too_many_messages": "Trop de messages envoyés. Veuillez patienter un instant."
+  },
+  "contact_origin": {
+    "course": "Cours : {instruments}",
+    "private_lessons": "Cours particuliers",
+    "announce": "Annonce",
+    "announce_looking_for_musician": "Annonce : recherche un {instrument}",
+    "announce_looking_for_band": "Annonce : {instrument} cherche un groupe"
+  },
+  "music_link": {
+    "title": {
+      "video": "Vidéo {provider}",
+      "track": "Morceau {provider}",
+      "album": "Album {provider}",
+      "playlist": "Playlist {provider}",
+      "artist": "Artiste {provider}"
+    },
+    "open_aria_label": "{title} : ouvrir {href} dans un nouvel onglet"
+  }
+}

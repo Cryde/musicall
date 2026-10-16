@@ -5,8 +5,8 @@
       icon="pi pi-share-alt"
       severity="secondary"
       rounded
-      v-tooltip.bottom="'Partager'"
-      aria-label="Partager"
+      v-tooltip.bottom="t('publication.share.share')"
+      :aria-label="t('publication.share.share')"
       @click="handleShare"
     />
     <Menu ref="menuRef" :model="menuItems" :popup="true" />
@@ -19,12 +19,14 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   url: { type: String, required: true },
   title: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const toast = useToast()
 const menuRef = ref()
 const buttonRef = ref()
@@ -38,28 +40,28 @@ const encodedTitle = computed(() => encodeURIComponent(props.title))
 
 const menuItems = computed(() => [
   {
-    label: 'Copier le lien',
+    label: t('publication.share.copy_link'),
     icon: 'pi pi-link',
     command: copyLink
   },
   { separator: true },
   {
-    label: 'Twitter / X',
+    label: t('publication.share.twitter_x'),
     icon: 'pi pi-twitter',
     command: () => shareToTwitter()
   },
   {
-    label: 'Facebook',
+    label: t('publication.share.facebook'),
     icon: 'pi pi-facebook',
     command: () => shareToFacebook()
   },
   {
-    label: 'LinkedIn',
+    label: t('publication.share.linkedin'),
     icon: 'pi pi-linkedin',
     command: () => shareToLinkedIn()
   },
   {
-    label: 'WhatsApp',
+    label: t('publication.share.whatsapp'),
     icon: 'pi pi-whatsapp',
     command: () => shareToWhatsApp()
   }
@@ -88,15 +90,15 @@ async function copyLink() {
     await navigator.clipboard.writeText(props.url)
     toast.add({
       severity: 'success',
-      summary: 'Lien copié',
-      detail: 'Le lien a été copié dans le presse-papiers',
+      summary: t('publication.share.link_copied'),
+      detail: t('publication.share.link_copied_detail'),
       life: 3000
     })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de copier le lien',
+      summary: t('publication.common.error'),
+      detail: t('publication.share.link_copy_failed'),
       life: 3000
     })
   }

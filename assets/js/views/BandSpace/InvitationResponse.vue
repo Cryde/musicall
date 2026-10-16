@@ -11,31 +11,31 @@
         <template v-else-if="!isProcessing && !error && !result && invitationInfo">
           <i class="pi pi-envelope text-4xl text-primary mb-4"></i>
           <h2 class="text-xl font-semibold text-surface-800 dark:text-surface-100 mb-2">
-            Invitation à rejoindre {{ invitationInfo.band_space_name }}
+            {{ t('band_space.invitation.title', { name: invitationInfo.band_space_name }) }}
           </h2>
           <p class="text-surface-500 dark:text-surface-400 mb-6">
-            Souhaitez-vous accepter ou décliner cette invitation ?
+            {{ t('band_space.invitation.question') }}
           </p>
           <div class="flex gap-3 justify-center">
-            <Button label="Décliner" severity="secondary" outlined @click="handleDecline" />
-            <Button label="Accepter" @click="handleAccept" />
+            <Button :label="t('band_space.invitation.decline')" severity="secondary" outlined @click="handleDecline" />
+            <Button :label="t('band_space.invitation.accept')" @click="handleAccept" />
           </div>
         </template>
 
         <template v-if="result === 'declined'">
           <i class="pi pi-times-circle text-4xl text-surface-400 mb-4"></i>
           <h2 class="text-xl font-semibold text-surface-800 dark:text-surface-100 mb-2">
-            Invitation déclinée
+            {{ t('band_space.invitation.declined_title') }}
           </h2>
           <p class="text-surface-500 dark:text-surface-400 mb-6">
-            Vous avez décliné cette invitation.
+            {{ t('band_space.invitation.declined_text') }}
           </p>
         </template>
 
         <template v-if="error">
           <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
           <h2 class="text-xl font-semibold text-surface-800 dark:text-surface-100 mb-2">
-            Erreur
+            {{ t('band_space.common.error') }}
           </h2>
           <p class="text-red-500 mb-6">{{ error }}</p>
         </template>
@@ -48,6 +48,7 @@
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
@@ -56,6 +57,7 @@ import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 const route = useRoute()
 const router = useRouter()
 const bandSpaceStore = useBandSpaceStore()
+const { t } = useI18n()
 const token = route.params.token
 
 const isLoading = ref(true)

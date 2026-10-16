@@ -4,7 +4,7 @@
     :suggestions="suggestions"
     optionLabel="name"
     :input-id="inputId"
-    :placeholder="placeholder"
+    :placeholder="placeholder ?? t('shared.city.placeholder')"
     :delay="0"
     fluid
     @complete="search"
@@ -25,6 +25,7 @@
 import { useDebounceFn } from '@vueuse/core'
 import AutoComplete from 'primevue/autocomplete'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import geocodingApi from '../../api/geocoding.js'
 import { MIN_CITY_QUERY_LENGTH, resolveTypedCity } from '../../utils/cityPick.js'
 
@@ -35,9 +36,10 @@ import { MIN_CITY_QUERY_LENGTH, resolveTypedCity } from '../../utils/cityPick.js
  */
 defineProps({
   inputId: { type: String, default: undefined },
-  placeholder: { type: String, default: 'Ville' }
+  placeholder: { type: String, default: null }
 })
 
+const { t } = useI18n()
 const city = defineModel({ type: [Object, String], default: null })
 const isLoading = defineModel('loading', { type: Boolean, default: false })
 const suggestions = ref([])

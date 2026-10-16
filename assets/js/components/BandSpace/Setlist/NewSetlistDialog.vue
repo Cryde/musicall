@@ -1,28 +1,28 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    header="Nouvelle setlist"
+    :header="t('band_space_setlist.new_setlist_dialog.header')"
     modal
     :style="{ width: '28rem' }"
     @hide="resetForm"
   >
     <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
       <div>
-        <label class="block text-sm font-medium mb-1">Nom <span class="text-red-500">*</span></label>
+        <label class="block text-sm font-medium mb-1">{{ t('band_space_setlist.new_setlist_dialog.name_label') }} <span class="text-red-500">*</span></label>
         <InputText
           v-model="name"
           autofocus
-          placeholder="ex. Tour d'été 2026"
+          :placeholder="t('band_space_setlist.new_setlist_dialog.name_placeholder')"
           class="w-full"
           :invalid="!!violation"
-          aria-label="Nom"
+          :aria-label="t('band_space_setlist.new_setlist_dialog.name_label')"
         />
         <small v-if="violation" class="text-red-500">{{ violation }}</small>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
-        <Button label="Annuler" severity="secondary" text type="button" @click="visible = false" />
-        <Button label="Créer" type="submit" :loading="isSubmitting" />
+        <Button :label="t('band_space_setlist.common.cancel')" severity="secondary" text type="button" @click="visible = false" />
+        <Button :label="t('band_space_setlist.common.create')" type="submit" :loading="isSubmitting" />
       </div>
     </form>
   </Dialog>
@@ -34,6 +34,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 
 const props = defineProps({
@@ -43,6 +44,7 @@ const props = defineProps({
 const emit = defineEmits(['created'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const setlistsStore = useBandSetlistsStore()
 const toast = useToast()
 
@@ -65,21 +67,30 @@ function resetForm() {
 async function handleSubmit() {
   const trimmed = name.value.trim()
   if (!trimmed) {
-    violation.value = 'Veuillez spécifier un nom'
+    violation.value = t('band_space_setlist.new_setlist_dialog.name_required')
     return
   }
   isSubmitting.value = true
   violation.value = null
   try {
     const created = await setlistsStore.createSetlist(props.bandSpaceId, { name: trimmed })
-    toast.add({ severity: 'success', summary: 'Setlist créée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.new_setlist_dialog.created'),
+      life: 3000
+    })
     emit('created', created)
     visible.value = false
   } catch (e) {
     if (e.isValidationError && e.violationsByField?.name?.[0]?.message) {
       violation.value = e.violationsByField.name[0].message
     } else {
-      toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+      toast.add({
+        severity: 'error',
+        summary: t('band_space_setlist.common.error'),
+        detail: e.message,
+        life: 5000
+      })
     }
   } finally {
     isSubmitting.value = false

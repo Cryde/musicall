@@ -4,7 +4,7 @@
       v-if="showSuggestions"
       :id="listboxId"
       role="listbox"
-      aria-label="Suggestions de mention"
+      :aria-label="t('shared.mention.suggestions')"
       class="absolute bottom-full left-0 mb-1 w-56 max-h-40 overflow-y-auto z-50 rounded-lg shadow-lg bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 list-none m-0 p-0"
     >
       <li
@@ -66,12 +66,15 @@
 
 <script setup>
 import { computed, nextTick, onMounted, ref, useId, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMentionParser } from '../../composables/useMentionParser.js'
 import {
   buildEditorNodes,
   MENTION_ID_ATTRIBUTE,
   serializeEditor
 } from '../../utils/mentionEditor.js'
+
+const { t } = useI18n()
 
 /** What the caller reads and writes: the stored `@[uuid]` format, never what is on screen. */
 const content = defineModel({ type: String, default: '' })

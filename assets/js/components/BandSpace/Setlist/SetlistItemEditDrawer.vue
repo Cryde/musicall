@@ -3,56 +3,56 @@
     v-model:visible="visible"
     position="right"
     :style="{ width: '400px' }"
-    :header="item?.song?.title || item?.label || 'Élément'"
+    :header="item?.song?.title || item?.label || t('band_space_setlist.item_drawer.header_fallback')"
   >
     <div v-if="item" class="flex flex-col gap-4">
       <div class="text-xs text-surface-500 uppercase tracking-wide">
-        Type : {{ typeLabel }}
+        {{ t('band_space_setlist.item_drawer.type', { type: typeLabel }) }}
       </div>
 
       <div v-if="item.type !== 'song'">
-        <label class="block text-sm font-medium mb-1">Libellé</label>
-        <InputText v-model="form.label" class="w-full" aria-label="Libellé" />
+        <label class="block text-sm font-medium mb-1">{{ t('band_space_setlist.item_drawer.label_label') }}</label>
+        <InputText v-model="form.label" class="w-full" :aria-label="t('band_space_setlist.item_drawer.label_label')" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-1">Durée surchargée (mm:ss)</label>
+        <label class="block text-sm font-medium mb-1">{{ t('band_space_setlist.item_drawer.duration_label') }}</label>
         <InputText
           v-model="durationInput"
           placeholder="3:47"
           class="w-full"
           :invalid="!!durationError"
-          aria-label="Durée surchargée au format mm:ss"
+          :aria-label="t('band_space_setlist.item_drawer.duration_aria')"
         />
         <small v-if="durationError" class="text-red-500 block mt-1">{{ durationError }}</small>
         <small v-else class="text-surface-500 block mt-1">
-          Minutes et secondes.
+          {{ t('band_space_setlist.item_drawer.duration_hint') }}
           <template v-if="referenceDuration">
-            Vide&nbsp;: la durée de référence ({{ formatDuration(referenceDuration) }}) est utilisée.
+            {{ t('band_space_setlist.item_drawer.duration_reference_hint', { duration: formatDuration(referenceDuration) }) }}
           </template>
         </small>
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-1">Transition</label>
+        <label class="block text-sm font-medium mb-1">{{ t('band_space_setlist.item_drawer.transition_label') }}</label>
         <InputText
           v-model="form.transition"
-          placeholder="ex. segue, gap 5s, talk 30s…"
+          :placeholder="t('band_space_setlist.item_drawer.transition_placeholder')"
           class="w-full"
-          aria-label="Transition"
+          :aria-label="t('band_space_setlist.item_drawer.transition_label')"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-1">Note</label>
-        <Textarea v-model="form.note" rows="3" class="w-full" aria-label="Note" />
+        <label class="block text-sm font-medium mb-1">{{ t('band_space_setlist.item_drawer.note_label') }}</label>
+        <Textarea v-model="form.note" rows="3" class="w-full" :aria-label="t('band_space_setlist.item_drawer.note_label')" />
       </div>
 
       <div class="flex justify-between gap-2 pt-2">
-        <Button label="Retirer" severity="danger" outlined icon="pi pi-trash" @click="confirmRemove" />
+        <Button :label="t('band_space_setlist.common.remove')" severity="danger" outlined icon="pi pi-trash" @click="confirmRemove" />
         <div class="flex gap-2">
-          <Button label="Annuler" severity="secondary" text @click="visible = false" />
-          <Button label="Enregistrer" :loading="isSubmitting" @click="handleSave" />
+          <Button :label="t('band_space_setlist.common.cancel')" severity="secondary" text @click="visible = false" />
+          <Button :label="t('band_space_setlist.common.save')" :loading="isSubmitting" @click="handleSave" />
         </div>
       </div>
     </div>
@@ -67,6 +67,7 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import { formatDuration, parseDurationInput } from '../../../utils/setlistDuration.js'
 
@@ -79,6 +80,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'removed'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const setlistsStore = useBandSetlistsStore()
 const confirm = useConfirm()
 const toast = useToast()
@@ -93,13 +95,13 @@ const isSubmitting = ref(false)
 const typeLabel = computed(() => {
   switch (props.item?.type) {
     case 'song':
-      return 'Chanson'
+      return t('band_space_setlist.item_drawer.type_song')
     case 'interlude':
-      return 'Interlude'
+      return t('band_space_setlist.item_drawer.type_interlude')
     case 'break':
-      return 'Pause'
+      return t('band_space_setlist.item_drawer.type_break')
     case 'talk':
-      return 'MC'
+      return t('band_space_setlist.item_drawer.type_talk')
     default:
       return '—'
   }
@@ -140,11 +142,20 @@ async function handleSave() {
       transition: form.value.transition?.trim() || null,
       note: form.value.note?.trim() || null
     })
-    toast.add({ severity: 'success', summary: 'Élément mis à jour', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.item_drawer.saved'),
+      life: 3000
+    })
     emit('saved')
     visible.value = false
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   } finally {
     isSubmitting.value = false
   }
@@ -153,19 +164,28 @@ async function handleSave() {
 function confirmRemove() {
   if (!props.item) return
   confirm.require({
-    message: 'Retirer cet élément de la setlist ?',
-    header: 'Confirmer',
+    message: t('band_space_setlist.item_drawer.remove_confirm_message'),
+    header: t('band_space_setlist.common.confirm'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Retirer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.common.remove'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       try {
         await setlistsStore.removeItem(props.bandSpaceId, props.setlistId, props.item.id)
-        toast.add({ severity: 'success', summary: 'Élément retiré', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_setlist.item_drawer.removed'),
+          life: 3000
+        })
         emit('removed')
         visible.value = false
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: t('band_space_setlist.common.error'),
+          detail: e.message,
+          life: 5000
+        })
       }
     }
   })

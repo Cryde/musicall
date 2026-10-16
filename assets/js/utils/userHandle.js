@@ -1,4 +1,4 @@
-import { DELETED_DISPLAY_NAME } from '../helper/user/displayName.js'
+import { deletedDisplayName } from '../helper/user/displayName.js'
 
 /**
  * The `@username` worth showing next to a user's name, or null when it would add nothing: no name of
@@ -6,7 +6,7 @@ import { DELETED_DISPLAY_NAME } from '../helper/user/displayName.js'
  * `deleted_<uuid>` handle (#1115, #1118).
  */
 export function userHandle(username, displayName) {
-  if (!displayName || displayName === username || displayName === DELETED_DISPLAY_NAME) {
+  if (!displayName || displayName === username || displayName === deletedDisplayName()) {
     return null
   }
   return `@${username}`

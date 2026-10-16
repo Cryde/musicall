@@ -18,7 +18,7 @@
 
     <div v-else-if="financeStore.loadError" class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4">
       <Message severity="error" :closable="false">{{ financeStore.loadError }}</Message>
-      <Button label="Réessayer" icon="pi pi-refresh" severity="secondary" @click="handleRetry" />
+      <Button :label="t('band_space_finance.page.retry')" icon="pi pi-refresh" severity="secondary" @click="handleRetry" />
     </div>
 
     <FinanceBootstrap
@@ -38,7 +38,7 @@
         />
         <span v-else class="text-sm text-surface-500 dark:text-surface-400 flex items-center gap-2">
           <i class="pi pi-clock" />
-          Toutes périodes
+          {{ t('band_space_finance.page.all_periods') }}
         </span>
         <div class="flex items-center gap-1">
           <Button
@@ -47,7 +47,7 @@
             :severity="viewMode === 'categories' ? 'primary' : 'secondary'"
             :outlined="viewMode !== 'categories'"
             :text="viewMode !== 'categories'"
-            title="Vue par catégories"
+            :title="t('band_space_finance.page.view_categories')"
             @click="viewMode = 'categories'"
           />
           <Button
@@ -56,7 +56,7 @@
             :severity="viewMode === 'timeline' ? 'primary' : 'secondary'"
             :outlined="viewMode !== 'timeline'"
             :text="viewMode !== 'timeline'"
-            title="Vue chronologique"
+            :title="t('band_space_finance.page.view_timeline')"
             @click="viewMode = 'timeline'"
           />
           <Button
@@ -65,7 +65,7 @@
             :severity="viewMode === 'chart' ? 'primary' : 'secondary'"
             :outlined="viewMode !== 'chart'"
             :text="viewMode !== 'chart'"
-            title="Vue graphique (toutes périodes)"
+            :title="t('band_space_finance.page.view_chart')"
             @click="viewMode = 'chart'"
           />
         </div>
@@ -179,6 +179,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { apiErrorDetail } from '../../api/utils/apiErrorDetail.js'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
@@ -196,6 +197,7 @@ import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefre
 import { useBandSpaceFinanceStore } from '../../store/bandSpace/bandSpaceFinance.js'
 import { categoryDeleteMessage } from '../../utils/financeConfirmations.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const confirm = useConfirm()
@@ -232,43 +234,43 @@ const financePresets = computed(() => {
   return [
     {
       key: 'this_month',
-      label: 'Ce mois',
+      label: t('band_space_finance.page.presets.this_month'),
       from: () => startOfMonth(today),
       to: () => endOfMonth(today)
     },
     {
       key: 'last_month',
-      label: 'Mois dernier',
+      label: t('band_space_finance.page.presets.last_month'),
       from: () => startOfMonth(subMonths(today, 1)),
       to: () => endOfMonth(subMonths(today, 1))
     },
     {
       key: 'this_quarter',
-      label: 'Ce trimestre',
+      label: t('band_space_finance.page.presets.this_quarter'),
       from: () => quarterStart(today),
       to: () => quarterEnd(today)
     },
     {
       key: 'last_quarter',
-      label: 'Trimestre dernier',
+      label: t('band_space_finance.page.presets.last_quarter'),
       from: () => quarterStart(today, -1),
       to: () => quarterEnd(today, -1)
     },
     {
       key: 'this_year',
-      label: 'Cette année',
+      label: t('band_space_finance.page.presets.this_year'),
       from: () => startOfYear(today),
       to: () => endOfYear(today)
     },
     {
       key: 'last_year',
-      label: 'Année dernière',
+      label: t('band_space_finance.page.presets.last_year'),
       from: () => startOfYear(subYears(today, 1)),
       to: () => endOfYear(subYears(today, 1))
     },
     {
       key: 'all',
-      label: 'Depuis le début',
+      label: t('band_space_finance.page.presets.all'),
       from: () => minDate,
       to: () => (maxDate > endOfYear(today) ? maxDate : endOfYear(today))
     }
@@ -361,12 +363,19 @@ watch(
         drawerCategoryId.value = financeStore.activeEntry.category_id
         drawerVisible.value = true
       } else {
-        toast.add({ severity: 'error', summary: 'Entrée introuvable', life: 4000 })
+        toast.add({
+          severity: 'error',
+          summary: t('band_space_finance.page.entry_not_found'),
+          life: 4000
+        })
         router.replace({ query: { ...route.query, entry: undefined } })
       }
     } catch (e) {
       // A link from the activity log or the agenda can outlive the entry it names (#1159).
-      const summary = e?.status === 404 ? 'Entrée introuvable' : 'Erreur de chargement'
+      const summary =
+        e?.status === 404
+          ? t('band_space_finance.page.entry_not_found')
+          : t('band_space_finance.page.load_error')
       toast.add({ severity: 'error', summary, life: 4000 })
       router.replace({ query: { ...route.query, entry: undefined } })
     }
@@ -429,8 +438,8 @@ async function handleMoveEntry(entryId, toCategoryId) {
     // moveEntryToCategory already rolled the optimistic move back in the store.
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de déplacer cette entrée',
+      summary: t('band_space_finance.common.error'),
+      detail: t('band_space_finance.page.move_entry_error'),
       life: 5000
     })
   }
@@ -449,12 +458,16 @@ async function handleCategoryCreated({ name, parentId }) {
     }
     await financeStore.createCategory(bandSpaceId, data)
     trackUmamiEvent('finance-category-create', { has_parent: !!parentId })
-    toast.add({ severity: 'success', summary: 'Catégorie créée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_finance.page.category_created'),
+      life: 3000
+    })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de créer la catégorie',
+      summary: t('band_space_finance.common.error'),
+      detail: t('band_space_finance.page.create_category_error'),
       life: 5000
     })
   }
@@ -465,23 +478,27 @@ function handleDeleteCategory(categoryId) {
 
   confirm.require({
     message: categoryDeleteMessage(category?.entry_count, category?.has_children === true),
-    header: 'Confirmer la suppression',
+    header: t('band_space_finance.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_finance.common.cancel'),
+    acceptLabel: t('band_space_finance.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await financeStore.deleteCategory(bandSpaceId, categoryId)
         trackUmamiEvent('finance-category-delete')
-        toast.add({ severity: 'success', summary: 'Catégorie supprimée', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_finance.page.category_deleted'),
+          life: 3000
+        })
       } catch (error) {
         // The API refuses a category holding paid entries or sub-categories, and its message is the
         // only thing that says which of the two it was and what to do about it.
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: apiErrorDetail(error, 'Impossible de supprimer la catégorie'),
+          summary: t('band_space_finance.common.error'),
+          detail: apiErrorDetail(error, t('band_space_finance.page.delete_category_error')),
           life: 5000
         })
       }
@@ -493,12 +510,16 @@ async function handleRenameCategory({ id, name }) {
   try {
     await financeStore.updateCategory(bandSpaceId, id, { name })
     trackUmamiEvent('finance-category-rename')
-    toast.add({ severity: 'success', summary: 'Catégorie renommée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_finance.page.category_renamed'),
+      life: 3000
+    })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de renommer la catégorie',
+      summary: t('band_space_finance.common.error'),
+      detail: t('band_space_finance.page.rename_category_error'),
       life: 5000
     })
   }
@@ -517,20 +538,22 @@ function handleEditRecurrence(recurrence) {
 // Editing a recurrence rewrites, removes or adds the entries it had already planned, so the toast says
 // how many rather than a bare "enregistrée" that hides whether anything moved.
 const RECURRENCE_ENTRY_IMPACTS = [
-  { key: 'updated_entry_count', singular: 'mise à jour', plural: 'mises à jour' },
-  { key: 'created_entry_count', singular: 'ajoutée', plural: 'ajoutées' },
-  { key: 'removed_entry_count', singular: 'supprimée', plural: 'supprimées' }
+  { key: 'updated_entry_count', messageKey: 'band_space_finance.page.recurrence_entries_updated' },
+  { key: 'created_entry_count', messageKey: 'band_space_finance.page.recurrence_entries_created' },
+  { key: 'removed_entry_count', messageKey: 'band_space_finance.page.recurrence_entries_removed' }
 ]
 
 function buildRecurrenceImpactDetail(result) {
-  const parts = RECURRENCE_ENTRY_IMPACTS.flatMap(({ key, singular, plural }) => {
+  const parts = RECURRENCE_ENTRY_IMPACTS.flatMap(({ key, messageKey }) => {
     const count = result?.[key] ?? 0
     if (count === 0) return []
 
-    return [`${count} ${count > 1 ? `entrées ${plural}` : `entrée ${singular}`}`]
+    return [t(messageKey, count)]
   })
 
-  return parts.length > 0 ? parts.join(', ') : 'Aucune entrée modifiée'
+  return parts.length > 0
+    ? parts.join(', ')
+    : t('band_space_finance.page.recurrence_no_entry_changed')
 }
 
 function handleRecurrenceSaved(result) {
@@ -540,7 +563,7 @@ function handleRecurrenceSaved(result) {
   editingRecurrence.value = null
   toast.add({
     severity: 'success',
-    summary: 'Récurrence enregistrée',
+    summary: t('band_space_finance.page.recurrence_saved'),
     detail: isUpdate ? buildRecurrenceImpactDetail(result) : undefined,
     life: 3000
   })
@@ -550,20 +573,28 @@ function handleRecurrenceDeleted() {
   trackUmamiEvent('finance-recurrence-delete')
   recurrenceDrawerVisible.value = false
   editingRecurrence.value = null
-  toast.add({ severity: 'success', summary: 'Récurrence supprimée', life: 3000 })
+  toast.add({
+    severity: 'success',
+    summary: t('band_space_finance.page.recurrence_deleted'),
+    life: 3000
+  })
 }
 
 function handleEntrySaved() {
   trackUmamiEvent(editingEntry.value ? 'finance-entry-update' : 'finance-entry-create')
   drawerVisible.value = false
   editingEntry.value = null
-  toast.add({ severity: 'success', summary: 'Entrée enregistrée', life: 3000 })
+  toast.add({ severity: 'success', summary: t('band_space_finance.page.entry_saved'), life: 3000 })
 }
 
 function handleEntryDeleted() {
   trackUmamiEvent('finance-entry-delete')
   drawerVisible.value = false
   editingEntry.value = null
-  toast.add({ severity: 'success', summary: 'Entrée supprimée', life: 3000 })
+  toast.add({
+    severity: 'success',
+    summary: t('band_space_finance.page.entry_deleted'),
+    life: 3000
+  })
 }
 </script>

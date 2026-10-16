@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    :header="`Paroles · ${song?.title ?? ''}`"
+    :header="t('band_space_setlist.lyrics_editor.header', { title: song?.title ?? '' })"
     :style="{ width: 'min(72rem, 100vw)' }"
     :breakpoints="{ '768px': '100vw' }"
     :content-style="{ paddingBottom: '0.5rem' }"
@@ -14,11 +14,11 @@
       <div class="flex flex-wrap items-center justify-between gap-2">
         <SelectButton
           v-model="mode"
-          :options="MODES"
+          :options="modeOptions"
           option-label="label"
           option-value="value"
           :allow-empty="false"
-          aria-label="Mode d'édition"
+          :aria-label="t('band_space_setlist.lyrics_editor.mode_aria')"
         />
         <a
           href="https://www.chordpro.org/chordpro/chordpro-introduction/"
@@ -26,15 +26,15 @@
           rel="noopener"
           class="text-xs text-surface-600 dark:text-surface-300 underline"
           v-if="mode === 'advanced'"
-        >Le format ChordPro</a>
+        >{{ t('band_space_setlist.lyrics_editor.chordpro_link') }}</a>
       </div>
 
       <Message v-if="conflict" severity="warn" :closable="false">
         <div class="flex flex-col gap-2">
           <span>{{ conflict }}</span>
           <div class="flex flex-wrap gap-2">
-            <Button label="Charger leur version" size="small" severity="secondary" @click="reloadLatest" />
-            <Button label="Copier mon texte" icon="pi pi-copy" size="small" severity="secondary" text @click="copyMine" />
+            <Button :label="t('band_space_setlist.lyrics_editor.load_theirs')" size="small" severity="secondary" @click="reloadLatest" />
+            <Button :label="t('band_space_setlist.lyrics_editor.copy_mine')" icon="pi pi-copy" size="small" severity="secondary" text @click="copyMine" />
           </div>
         </div>
       </Message>
@@ -51,7 +51,7 @@
           v-model="source"
           class="font-mono text-sm min-h-[24rem] w-full"
           spellcheck="false"
-          aria-label="Paroles au format ChordPro"
+          :aria-label="t('band_space_setlist.lyrics_editor.source_aria')"
           @paste="handleRawPaste"
         />
         <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-3 overflow-auto max-h-[36rem]">
@@ -61,7 +61,7 @@
 
       <div v-else class="border border-surface-200 dark:border-surface-700 rounded-lg p-4 overflow-auto max-h-[70vh]">
         <LyricsSheet v-if="source.trim()" :lyrics="source" :singers="knownSingers" :tonality="song?.tonality" large />
-        <p v-else class="text-surface-600 dark:text-surface-300 italic m-0">Aucune parole pour le moment.</p>
+        <p v-else class="text-surface-600 dark:text-surface-300 italic m-0">{{ t('band_space_setlist.lyrics_editor.empty') }}</p>
       </div>
     </div>
 
@@ -69,8 +69,8 @@
       <span class="mr-auto text-xs text-surface-600 dark:text-surface-300 tabular-nums">
         {{ source.length }} / {{ MAX_LENGTH }}
       </span>
-      <Button label="Annuler" severity="secondary" text :disabled="isSaving" @click="requestClose" />
-      <Button label="Enregistrer" icon="pi pi-check" :loading="isSaving" :disabled="source.length > MAX_LENGTH" @click="save" />
+      <Button :label="t('band_space_setlist.common.cancel')" severity="secondary" text :disabled="isSaving" @click="requestClose" />
+      <Button :label="t('band_space_setlist.common.save')" icon="pi pi-check" :loading="isSaving" :disabled="source.length > MAX_LENGTH" @click="save" />
     </template>
   </Dialog>
 </template>
@@ -84,6 +84,7 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceSettingsApi from '../../../../api/bandSpace/band-space-settings.js'
 import bandSpaceSongsApi from '../../../../api/bandSpace/band-space-songs.js'
 import { fromChordSite, SINGER_ALL } from '../../../../utils/chordpro.js'
@@ -92,12 +93,6 @@ import LyricsVisualEditor from './LyricsVisualEditor.vue'
 
 // Mirrors SongLyrics::MAX_LENGTH.
 const MAX_LENGTH = 20000
-
-const MODES = [
-  { label: 'Simple', value: 'simple' },
-  { label: 'Avancé (ChordPro)', value: 'advanced' },
-  { label: 'Aperçu', value: 'preview' }
-]
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -110,7 +105,14 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'reloaded'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const toast = useToast()
+
+const modeOptions = computed(() => [
+  { label: t('band_space_setlist.lyrics_editor.mode_simple'), value: 'simple' },
+  { label: t('band_space_setlist.lyrics_editor.mode_advanced'), value: 'advanced' },
+  { label: t('band_space_setlist.lyrics_editor.mode_preview'), value: 'preview' }
+])
 const confirm = useConfirm()
 
 const mode = ref('simple')
@@ -137,8 +139,11 @@ const knownSingers = computed(() => {
 })
 
 function nameOf(id) {
-  if (id === SINGER_ALL) return 'Tous'
-  return knownSingers.value.find((singer) => singer.id === id)?.name ?? 'Membre inconnu'
+  if (id === SINGER_ALL) return t('band_space_setlist.singer.everyone')
+  return (
+    knownSingers.value.find((singer) => singer.id === id)?.name ??
+    t('band_space_setlist.singer.unknown_member')
+  )
 }
 
 function startFrom(lyrics) {
@@ -158,7 +163,12 @@ watch(
     try {
       roster.value = await bandSpaceSettingsApi.getMembers(props.bandSpaceId)
     } catch (error) {
-      toast.add({ severity: 'error', summary: 'Erreur', detail: error.message, life: 5000 })
+      toast.add({
+        severity: 'error',
+        summary: t('band_space_setlist.common.error'),
+        detail: error.message,
+        life: 5000
+      })
     }
   },
   { immediate: true }
@@ -184,7 +194,11 @@ async function save() {
       source.value,
       version.value
     )
-    toast.add({ severity: 'success', summary: 'Paroles enregistrées', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.lyrics_editor.saved'),
+      life: 3000
+    })
     emit('saved', saved)
     visible.value = false
   } catch (error) {
@@ -193,7 +207,7 @@ async function save() {
     } else {
       toast.add({
         severity: 'error',
-        summary: 'Enregistrement impossible',
+        summary: t('band_space_setlist.lyrics_editor.save_failed'),
         detail: error.message,
         life: 6000
       })
@@ -209,19 +223,28 @@ async function reloadLatest() {
     startFrom(latest)
     emit('reloaded', latest)
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: error.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: error.message,
+      life: 5000
+    })
   }
 }
 
 async function copyMine() {
   try {
     await navigator.clipboard.writeText(source.value)
-    toast.add({ severity: 'info', summary: 'Texte copié', life: 2500 })
+    toast.add({
+      severity: 'info',
+      summary: t('band_space_setlist.lyrics_editor.copied'),
+      life: 2500
+    })
   } catch {
     toast.add({
       severity: 'warn',
-      summary: 'Copie impossible',
-      detail: 'Passez en mode Avancé pour copier le texte.',
+      summary: t('band_space_setlist.lyrics_editor.copy_failed_summary'),
+      detail: t('band_space_setlist.lyrics_editor.copy_failed_detail'),
       life: 5000
     })
   }
@@ -234,11 +257,11 @@ function requestClose() {
     return
   }
   confirm.require({
-    message: 'Fermer sans enregistrer ? Vos modifications seront perdues.',
-    header: 'Modifications non enregistrées',
+    message: t('band_space_setlist.lyrics_editor.discard_confirm_message'),
+    header: t('band_space_setlist.lyrics_editor.discard_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Fermer sans enregistrer',
-    rejectLabel: 'Continuer',
+    acceptLabel: t('band_space_setlist.lyrics_editor.discard_confirm_accept'),
+    rejectLabel: t('band_space_setlist.lyrics_editor.discard_confirm_reject'),
     accept: () => {
       visible.value = false
     }

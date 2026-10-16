@@ -1,11 +1,11 @@
 <template>
-  <div class="flex gap-2 justify-center" role="group" aria-label="Code de vérification à 6 chiffres">
+  <div class="flex gap-2 justify-center" role="group" :aria-label="t('auth.otp.group_label')">
     <input
       v-for="(_, index) in digits"
       :key="index"
       :ref="(el) => (inputRefs[index] = el)"
       v-model="digits[index]"
-      :aria-label="`Chiffre ${index + 1}`"
+      :aria-label="t('auth.otp.digit', { position: index + 1 })"
       type="text"
       inputmode="numeric"
       maxlength="1"
@@ -21,6 +21,7 @@
 
 <script setup>
 import { nextTick, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   hasError: { type: Boolean, default: false },
@@ -28,6 +29,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['complete'])
+const { t } = useI18n()
 
 const digits = reactive(['', '', '', '', '', ''])
 const inputRefs = ref([])

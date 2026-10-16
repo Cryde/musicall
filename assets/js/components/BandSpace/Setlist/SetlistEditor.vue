@@ -9,17 +9,17 @@
       v-else-if="!setlist"
       class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 text-center text-surface-600 dark:text-surface-300"
     >
-      Sélectionnez une setlist dans la barre latérale.
+      {{ t('band_space_setlist.editor.no_selection') }}
     </div>
 
     <div v-else class="flex gap-4 items-start">
       <section
-        :aria-label="`Setlist ${setlist.name}`"
+        :aria-label="t('band_space_setlist.editor.section_aria', { name: setlist.name })"
         class="flex-1 min-w-0 flex flex-col bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700"
       >
         <div class="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 border-b border-surface-200 dark:border-surface-700">
           <Message v-if="isArchived" severity="warn" :closable="false" icon="pi pi-archive">
-            Cette setlist est archivée, elle est en lecture seule. Dupliquez-la pour repartir de son contenu.
+            {{ t('band_space_setlist.editor.archived_notice') }}
           </Message>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -28,7 +28,7 @@
                 v-if="editingName"
                 v-model="nameDraft"
                 autofocus
-                aria-label="Nom de la setlist"
+                :aria-label="t('band_space_setlist.editor.name_aria')"
                 class="font-semibold text-xl w-full"
                 @blur="commitRename"
                 @keyup.enter="commitRename"
@@ -43,42 +43,46 @@
                   text
                   rounded
                   size="small"
-                  aria-label="Renommer la setlist"
+                  :aria-label="t('band_space_setlist.editor.rename_aria')"
                   @click="startRename"
                 />
               </template>
             </div>
             <Button
               v-if="!panelInline || !panelOpen"
-              label="Répertoire"
+              :label="t('band_space_setlist.common.repertoire')"
               icon="pi pi-book"
               severity="secondary"
               size="small"
               @click="openPanel"
             />
-            <Button label="Exporter PDF" icon="pi pi-file-pdf" severity="secondary" size="small" @click="pdfPopover?.toggle($event)" />
+            <Button :label="t('band_space_setlist.editor.export_pdf')" icon="pi pi-file-pdf" severity="secondary" size="small" @click="pdfPopover?.toggle($event)" />
             <Button
-              label="Mode Live"
+              :label="t('band_space_setlist.editor.live_mode')"
               icon="pi pi-play"
               size="small"
               :disabled="setlist.items.length === 0"
-              v-tooltip.top="setlist.items.length === 0 ? 'Ajoutez au moins un titre' : null"
+              v-tooltip.top="setlist.items.length === 0 ? t('band_space_setlist.editor.live_mode_needs_song') : null"
               @click="openLiveMode"
             />
             <Button
               icon="pi pi-ellipsis-h"
               severity="secondary"
               size="small"
-              aria-label="Plus d’actions : fichiers, dupliquer, archiver"
+              :aria-label="t('band_space_setlist.editor.more_actions_aria')"
               aria-haspopup="menu"
               @click="setlistMenu?.toggle($event)"
             />
           </div>
 
-          <p v-if="rows.length === 0" class="m-0 text-sm text-surface-600 dark:text-surface-300">Aucun titre pour l’instant</p>
+          <p v-if="rows.length === 0" class="m-0 text-sm text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.editor.empty') }}</p>
           <div v-else class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
-            <span><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.songs }}</strong> {{ summary.songs > 1 ? 'titres' : 'titre' }}</span>
-            <span><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.intermissions }}</strong> {{ summary.intermissions > 1 ? 'intermèdes' : 'intermède' }}</span>
+            <i18n-t keypath="band_space_setlist.editor.song_count" tag="span" :plural="summary.songs">
+              <template #count><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.songs }}</strong></template>
+            </i18n-t>
+            <i18n-t keypath="band_space_setlist.editor.intermission_count" tag="span" :plural="summary.intermissions">
+              <template #count><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.intermissions }}</strong></template>
+            </i18n-t>
             <span class="flex items-center gap-1.5">
               <i class="pi pi-clock text-xs" aria-hidden="true" />
               <strong class="text-surface-900 dark:text-surface-0 font-semibold tabular-nums">{{ formatDuration(summary.total) || '0:00' }}</strong>
@@ -91,29 +95,30 @@
               @click="promptFirstMissingDuration"
             >
               <span class="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-              {{ summary.missingDurations }} {{ summary.missingDurations > 1 ? 'durées manquantes' : 'durée manquante' }}
+              {{ t('band_space_setlist.editor.missing_durations', summary.missingDurations) }}
             </button>
           </div>
 
           <div class="flex items-center gap-3 text-xs text-surface-600 dark:text-surface-300">
             <template v-if="progress">
-              <span class="whitespace-nowrap">
-                Objectif
-                <button
-                  type="button"
-                  class="font-semibold text-surface-900 dark:text-surface-0 underline decoration-dotted underline-offset-2 disabled:no-underline"
-                  :disabled="isArchived"
-                  :aria-label="`Objectif de durée ${formatDuration(setlist.target_duration)}, modifier`"
-                  @click="targetPrompt?.open($event, setlist.target_duration)"
-                >{{ formatDuration(setlist.target_duration) }}</button>
-              </span>
+              <i18n-t keypath="band_space_setlist.editor.target" tag="span" class="whitespace-nowrap">
+                <template #duration>
+                  <button
+                    type="button"
+                    class="font-semibold text-surface-900 dark:text-surface-0 underline decoration-dotted underline-offset-2 disabled:no-underline"
+                    :disabled="isArchived"
+                    :aria-label="t('band_space_setlist.editor.target_edit_aria', { duration: formatDuration(setlist.target_duration) })"
+                    @click="targetPrompt?.open($event, setlist.target_duration)"
+                  >{{ formatDuration(setlist.target_duration) }}</button>
+                </template>
+              </i18n-t>
               <div
                 class="flex-1 h-1.5 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden"
                 role="progressbar"
                 :aria-valuenow="Math.round(progress.ratio * 100)"
                 aria-valuemin="0"
                 aria-valuemax="100"
-                aria-label="Progression vers l’objectif de durée"
+                :aria-label="t('band_space_setlist.editor.target_progress_aria')"
               >
                 <div
                   class="h-full rounded-full"
@@ -122,12 +127,16 @@
                 />
               </div>
               <span class="whitespace-nowrap tabular-nums" :class="progress.isOver && 'text-red-700 dark:text-red-400 font-medium'">
-                {{ progress.isOver ? `dépasse de ${formatDuration(-progress.remaining)}` : `reste ${formatDuration(progress.remaining) || '0:00'}` }}
+                {{
+                  progress.isOver
+                    ? t('band_space_setlist.editor.target_over', { duration: formatDuration(-progress.remaining) })
+                    : t('band_space_setlist.editor.target_remaining', { duration: formatDuration(progress.remaining) || '0:00' })
+                }}
               </span>
             </template>
             <Button
               v-else-if="!isArchived"
-              label="Définir un objectif de durée"
+              :label="t('band_space_setlist.editor.set_target')"
               icon="pi pi-flag"
               severity="secondary"
               text
@@ -143,18 +152,18 @@
           class="flex items-center gap-2 sm:gap-3 pl-9 sm:pl-12 pr-2 sm:pr-4 pt-3 pb-1 text-[11px] font-semibold tracking-wide uppercase text-surface-600 dark:text-surface-300"
         >
           <span class="w-6">#</span>
-          <span class="flex-1">Programme</span>
-          <span v-if="columns.duration" class="w-16 text-right">Durée</span>
-          <span v-if="columns.cumulative" class="hidden sm:inline w-16 text-right">Cumul</span>
+          <span class="flex-1">{{ t('band_space_setlist.editor.column_programme') }}</span>
+          <span v-if="columns.duration" class="w-16 text-right">{{ t('band_space_setlist.column.duration') }}</span>
+          <span v-if="columns.cumulative" class="hidden sm:inline w-16 text-right">{{ t('band_space_setlist.column.cumulative') }}</span>
           <Button
             icon="pi pi-sliders-h"
             severity="secondary"
             text
             rounded
             size="small"
-            aria-label="Choisir les colonnes"
+            :aria-label="t('band_space_setlist.editor.columns_aria')"
             aria-haspopup="menu"
-            v-tooltip.top="'Colonnes'"
+            v-tooltip.top="t('band_space_setlist.editor.columns_tooltip')"
             @click="columnsPopover?.toggle($event)"
           />
         </div>
@@ -230,14 +239,14 @@
             @click="addIntermission(kind.type, insertPosition)"
           />
           <span class="ml-auto text-xs text-surface-600 dark:text-surface-300 hidden md:inline">
-            Glissez un titre du répertoire dans la liste, ou cliquez dessus
+            {{ t('band_space_setlist.editor.drag_hint') }}
           </span>
         </div>
       </section>
 
       <aside
         v-if="panelInline && panelOpen"
-        aria-label="Répertoire"
+        :aria-label="t('band_space_setlist.common.repertoire')"
         class="w-80 shrink-0 sticky top-4 h-[calc(100vh-7rem)] bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 overflow-hidden"
       >
         <SetlistRepertoirePanel
@@ -271,7 +280,7 @@
 
     <Popover ref="columnsPopover">
       <fieldset class="flex flex-col gap-2 border-0 p-0 m-0">
-        <legend class="text-sm font-semibold mb-1">Colonnes affichées</legend>
+        <legend class="text-sm font-semibold mb-1">{{ t('band_space_setlist.editor.columns_legend') }}</legend>
         <div v-for="column in COLUMNS" :key="column.key" class="flex items-center gap-2">
           <Checkbox v-model="columns[column.key]" :binary="true" :input-id="`setlist-column-${column.key}`" />
           <label :for="`setlist-column-${column.key}`" class="text-sm">{{ column.label }}</label>
@@ -280,7 +289,7 @@
     </Popover>
 
     <DurationPrompt ref="durationPrompt" :label="durationPromptLabel" :saving="isSavingDuration" @submit="saveSongDuration" />
-    <DurationPrompt ref="targetPrompt" label="Objectif de durée" :min-seconds="60" clearable :saving="isSavingTarget" @submit="saveTarget" />
+    <DurationPrompt ref="targetPrompt" :label="t('band_space_setlist.editor.target_prompt_label')" :min-seconds="60" clearable :saving="isSavingTarget" @submit="saveTarget" />
 
     <SetlistItemEditDrawer
       v-model:visible="editDrawerOpen"
@@ -329,6 +338,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
@@ -367,6 +377,7 @@ const props = defineProps({
 
 const emit = defineEmits(['archived', 'duplicated'])
 
+const { t } = useI18n()
 const setlistsStore = useBandSetlistsStore()
 const songsStore = useBandSongsStore()
 const confirm = useConfirm()
@@ -426,7 +437,12 @@ const { counts: songFileCounts, load: loadSongFileCounts } = useSongFileCounts(
 onMounted(loadSongFileCounts)
 
 function showError(e) {
-  toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+  toast.add({
+    severity: 'error',
+    summary: t('band_space_setlist.common.error'),
+    detail: e.message,
+    life: 5000
+  })
 }
 
 // --- Columns, remembered per browser --------------------------------------------------------------
@@ -452,10 +468,10 @@ function openPanel() {
 // Named after the row it follows rather than numbered: song numbers skip intermèdes, positions do not.
 const insertHint = computed(() => {
   if (insertPosition.value === null) return null
-  if (insertPosition.value === 0) return 'Les titres s’ajoutent en tête de la setlist.'
+  if (insertPosition.value === 0) return t('band_space_setlist.editor.insert_hint_first')
   const previous = localItems.value[insertPosition.value - 1]
   const name = previous?.song?.title ?? previous?.label ?? intermissionKind(previous?.type).label
-  return `Les titres s’ajoutent après « ${name} ».`
+  return t('band_space_setlist.editor.insert_hint_after', { name })
 })
 
 function startInsertingAt(position) {
@@ -533,7 +549,11 @@ async function copyFrom(source) {
   emptyStateBusy.value = 'copy'
   try {
     await setlistsStore.copyItemsFrom(props.bandSpaceId, props.setlistId, source.id)
-    toast.add({ severity: 'success', summary: `Setlist « ${source.name} » reprise`, life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.editor.copied_from', { name: source.name }),
+      life: 3000
+    })
   } catch (e) {
     showError(e)
   } finally {
@@ -580,7 +600,7 @@ async function commitRename() {
   if (!trimmed || trimmed === setlist.value?.name) return
   try {
     await setlistsStore.renameSetlist(props.bandSpaceId, props.setlistId, trimmed)
-    toast.add({ severity: 'success', summary: 'Setlist renommée', life: 3000 })
+    toast.add({ severity: 'success', summary: t('band_space_setlist.editor.renamed'), life: 3000 })
   } catch (e) {
     showError(e)
   }
@@ -591,8 +611,10 @@ async function commitRename() {
 const durationPrompt = ref(null)
 const durationTarget = ref(null)
 const isSavingDuration = ref(false)
-const durationPromptLabel = computed(
-  () => `Durée de « ${durationTarget.value?.song?.title ?? ''} »`
+const durationPromptLabel = computed(() =>
+  t('band_space_setlist.common.duration_of_song', {
+    title: durationTarget.value?.song?.title ?? ''
+  })
 )
 
 function promptSongDuration(event, item) {
@@ -668,12 +690,11 @@ function removeItem(item) {
     return
   }
   confirm.require({
-    message:
-      'Retirer cet élément de la setlist ? Sa note, sa transition et sa durée propre seront perdues.',
-    header: 'Confirmer',
+    message: t('band_space_setlist.editor.remove_confirm_message'),
+    header: t('band_space_setlist.common.confirm'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Retirer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.common.remove'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: () => confirmedRemove(item)
   })
 }
@@ -699,23 +720,39 @@ const itemMenuModel = computed(() => {
   if (!item) return []
   const index = localItems.value.findIndex((candidate) => candidate.id === item.id)
   return [
-    { label: 'Modifier', icon: 'pi pi-pencil', command: () => openItemEdit(item) },
     {
-      label: 'Monter',
+      label: t('band_space_setlist.common.edit'),
+      icon: 'pi pi-pencil',
+      command: () => openItemEdit(item)
+    },
+    {
+      label: t('band_space_setlist.editor.move_up'),
       icon: 'pi pi-arrow-up',
       disabled: index === 0,
       command: () => moveItem(item, -1)
     },
     {
-      label: 'Descendre',
+      label: t('band_space_setlist.editor.move_down'),
       icon: 'pi pi-arrow-down',
       disabled: index === localItems.value.length - 1,
       command: () => moveItem(item, +1)
     },
-    { label: 'Insérer avant', icon: 'pi pi-plus', command: () => startInsertingAt(index) },
-    { label: 'Insérer après', icon: 'pi pi-plus', command: () => startInsertingAt(index + 1) },
+    {
+      label: t('band_space_setlist.editor.insert_before'),
+      icon: 'pi pi-plus',
+      command: () => startInsertingAt(index)
+    },
+    {
+      label: t('band_space_setlist.editor.insert_after'),
+      icon: 'pi pi-plus',
+      command: () => startInsertingAt(index + 1)
+    },
     { separator: true },
-    { label: 'Retirer', icon: 'pi pi-trash', command: () => removeItem(item) }
+    {
+      label: t('band_space_setlist.common.remove'),
+      icon: 'pi pi-trash',
+      command: () => removeItem(item)
+    }
   ]
 })
 
@@ -765,20 +802,33 @@ function openLiveMode() {
 }
 
 const setlistMenuModel = computed(() => [
-  { label: 'Fichiers', icon: 'pi pi-folder', command: () => (filesDrawerOpen.value = true) },
-  { label: 'Dupliquer', icon: 'pi pi-copy', command: handleDuplicate },
+  {
+    label: t('band_space_setlist.editor.files'),
+    icon: 'pi pi-folder',
+    command: () => (filesDrawerOpen.value = true)
+  },
+  { label: t('band_space_setlist.editor.duplicate'), icon: 'pi pi-copy', command: handleDuplicate },
   ...(isArchived.value
     ? []
     : [
         { separator: true },
-        { label: 'Archiver', icon: 'pi pi-archive', class: 'text-red-600', command: confirmArchive }
+        {
+          label: t('band_space_setlist.common.archive'),
+          icon: 'pi pi-archive',
+          class: 'text-red-600',
+          command: confirmArchive
+        }
       ])
 ])
 
 async function handleDuplicate() {
   try {
     const copy = await setlistsStore.duplicateSetlist(props.bandSpaceId, props.setlistId)
-    toast.add({ severity: 'success', summary: 'Setlist dupliquée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.editor.duplicated'),
+      life: 3000
+    })
     emit('duplicated', copy.id)
   } catch (e) {
     showError(e)
@@ -787,15 +837,19 @@ async function handleDuplicate() {
 
 function confirmArchive() {
   confirm.require({
-    message: `Archiver la setlist «${setlist.value?.name}» ?`,
-    header: "Confirmer l'archivage",
+    message: t('band_space_setlist.editor.archive_confirm_message', { name: setlist.value?.name }),
+    header: t('band_space_setlist.common.archive_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Archiver',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.common.archive'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       try {
         await setlistsStore.archiveSetlist(props.bandSpaceId, props.setlistId)
-        toast.add({ severity: 'success', summary: 'Setlist archivée', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_setlist.editor.archived'),
+          life: 3000
+        })
         emit('archived')
       } catch (e) {
         showError(e)

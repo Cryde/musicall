@@ -7,7 +7,7 @@
       class="relative w-full rounded-lg border-2 border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-900 overflow-hidden select-none"
       :style="{ aspectRatio: String(aspectRatio), backgroundImage: gridImage, backgroundSize: gridSize }"
       role="application"
-      :aria-label="`Plan de scène, ${elements.length} éléments. Utilisez Tab pour parcourir les éléments et les flèches pour les déplacer.`"
+      :aria-label="t('band_space_tech_rider.stage_canvas.label', { count: elements.length })"
       @pointerdown="handleStagePointerDown"
       @dragover.prevent
       @drop.prevent="handleDrop"
@@ -69,8 +69,13 @@
           <button
             type="button"
             class="absolute -top-2 -right-2 w-4 h-4 flex items-center justify-center rounded-full bg-primary text-primary-contrast shadow focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary-500"
-            :aria-label="`Faire pivoter ${describeElement(element)}, actuellement ${element.rotation ?? 0} degrés`"
-            v-tooltip.top="'Aligner sur le prochain quart de tour'"
+            :aria-label="
+              t('band_space_tech_rider.stage_canvas.rotate', {
+                element: describeElement(element),
+                degrees: element.rotation ?? 0
+              })
+            "
+            v-tooltip.top="t('band_space_tech_rider.stage_canvas.rotate_tooltip')"
             @pointerdown.stop
             @click.stop="rotateElement(element)"
           >
@@ -118,23 +123,19 @@
       <div
         class="absolute inset-x-0 bottom-0 h-5 flex items-center justify-center bg-surface-200/80 dark:bg-surface-800/80 text-[10px] uppercase tracking-wider text-surface-700 dark:text-surface-200"
       >
-        Face public
+        {{ t('band_space_tech_rider.stage_canvas.audience') }}
       </div>
     </div>
 
     <p class="text-xs text-surface-600 dark:text-surface-300">
-      Glissez une icône depuis la liste, ou sélectionnez-la et appuyez sur Entrée. Flèches pour
-      déplacer, Maj + flèches pour aller plus vite, Alt + flèches pour un réglage fin, Alt pendant
-      un déplacement à la souris pour ignorer la grille, Suppr pour retirer. Sur l'élément
-      sélectionné, la poignée en bas à droite règle la taille, celle en haut à gauche l'orientation
-      (par pas de 15°, ou Alt pour un angle libre) et le bouton en haut à droite l'aligne sur le
-      prochain quart de tour.
+      {{ t('band_space_tech_rider.stage_canvas.help') }}
     </p>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   BASE_ICON_PERCENT,
   COARSE_NUDGE_STEP,
@@ -172,6 +173,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'place', 'edit-label', 'delete'])
+
+const { t } = useI18n()
 
 const stageRef = ref(null)
 const elementRefs = new Map()
@@ -226,7 +229,10 @@ function colourHex(value) {
  */
 function describeElement(element) {
   const name = element.label || iconFor(element.icon)?.label || element.icon
-  return `${name}, ${describePosition(element.x, element.y)}`
+  return t('band_space_tech_rider.stage_plot.element_description', {
+    name,
+    position: describePosition(element.x, element.y)
+  })
 }
 
 /** Where a pointer sits inside the stage, as fractions. */

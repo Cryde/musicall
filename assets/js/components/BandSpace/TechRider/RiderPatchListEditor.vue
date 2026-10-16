@@ -8,7 +8,7 @@
       <TabList>
         <Tab v-for="direction in PATCH_DIRECTIONS" :key="direction" :value="direction">
           <span class="flex items-center gap-2">
-            <span>{{ PATCH_LIST_DIRECTIONS[direction] }} · {{ rowsOf(direction).length }}</span>
+            <span>{{ patchDirectionLabel(direction) }} · {{ rowsOf(direction).length }}</span>
             <template v-if="errorCounts[direction] > 0">
               <i class="pi pi-exclamation-circle text-red-600 dark:text-red-400" aria-hidden="true" />
               <span class="sr-only">, {{ errorLabel(errorCounts[direction]) }}</span>
@@ -19,7 +19,7 @@
       <TabPanels class="!px-0">
         <TabPanel v-for="direction in PATCH_DIRECTIONS" :key="direction" :value="direction">
           <RiderPatchGrid
-            :label="PATCH_LIST_DIRECTIONS[direction]"
+            :label="patchDirectionLabel(direction)"
             :rows="rowsOf(direction)"
             :max-rows="MAX_ROWS_PER_DIRECTION"
             :errors="errors[direction]"
@@ -41,12 +41,10 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceTechRidersApi from '../../../api/bandSpace/band-space-tech-riders.js'
 import { useSnapshotAutosave } from '../../../composables/useSnapshotAutosave.js'
-import {
-  PATCH_LIST_DIRECTIONS,
-  PATCH_LIST_LABELS
-} from '../../../constants/techRiderPatchColumns.js'
+import { patchColumnLabel, patchDirectionLabel } from '../../../constants/techRiderPatchColumns.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import {
   directionToReveal,
@@ -68,6 +66,7 @@ const props = defineProps({
 /** Mirrors TechRiderPatchRows::MAX_ROWS_PER_DIRECTION. */
 const MAX_ROWS_PER_DIRECTION = 64
 
+const { t } = useI18n()
 const techRidersStore = useBandTechRidersStore()
 
 const inputs = reactive([])
@@ -91,7 +90,7 @@ const errorCounts = computed(() => ({
 }))
 
 function errorLabel(count) {
-  return count > 1 ? `${count} erreurs` : `${count} erreur`
+  return t('band_space_tech_rider.patch_list.error_count', count)
 }
 
 // A held or refused save must not leave its message on the hidden tab. Only when a new direction
@@ -182,7 +181,12 @@ function applyViolations(violations) {
     const existing = errors[direction].rows[rowIndex] ?? []
     errors[direction].rows[rowIndex] = [
       ...existing,
-      field ? `${PATCH_LIST_LABELS[field] ?? field} : ${violation.message}` : violation.message
+      field
+        ? t('band_space_tech_rider.patch_list.field_error', {
+            field: patchColumnLabel(field) ?? field,
+            message: violation.message
+          })
+        : violation.message
     ]
   }
 }
@@ -209,7 +213,9 @@ function validate() {
   const blank = findBlankChannel()
   if (!blank) return null
 
-  const message = `${PATCH_LIST_LABELS.channel} : ce champ est requis`
+  const message = t('band_space_tech_rider.patch_list.field_required', {
+    field: patchColumnLabel('channel')
+  })
   errors[blank.direction].rows[blank.index] = [message]
 
   return message

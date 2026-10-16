@@ -2,11 +2,11 @@
   <div>
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
-        Messages
+        {{ t('message.index.title') }}
       </h1>
       <div class="hidden sm:block">
         <Button
-          label="Nouveau message"
+          :label="t('message.index.new_message')"
           icon="pi pi-plus"
           @click="showSendModal = true"
         />
@@ -14,7 +14,7 @@
       <div class="sm:hidden">
         <Button
           icon="pi pi-plus"
-          aria-label="Nouvelle conversation"
+          :aria-label="t('message.index.new_conversation')"
           rounded
           @click="showSendModal = true"
         />
@@ -50,12 +50,14 @@
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import Thread from '../../components/Message/Thread.vue'
 import ThreadList from '../../components/Message/ThreadList.vue'
 import { useMessageStore } from '../../store/message/message.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const messageStore = useMessageStore()

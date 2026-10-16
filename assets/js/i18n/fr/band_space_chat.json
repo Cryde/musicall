@@ -1,0 +1,137 @@
+{
+  "everyone_mention": {
+    "hint": "tout le groupe"
+  },
+  "reaction": {
+    "thumbs_up": "Pouce levé",
+    "thumbs_down": "Pouce baissé",
+    "heart": "Cœur",
+    "laugh": "Rire",
+    "party": "Fête",
+    "fire": "Feu",
+    "guitar": "Guitare",
+    "check": "Validé",
+    "fallback": "Réaction",
+    "pill_remove": "{name}, {count} : retirer ma réaction",
+    "pill_add": "{name}, {count} : réagir",
+    "add": "Ajouter une réaction",
+    "choose": "Choisir une réaction"
+  },
+  "draft": {
+    "duplicate": "Cet élément est déjà joint à ce message.",
+    "full": "Un message ne peut pas référencer plus de {max} éléments.",
+    "unusable": "Cet élément ne peut pas être joint."
+  },
+  "image": {
+    "unsupported": "Format d'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF).",
+    "too_large": "L'image est trop volumineuse, la limite est de 25 Mo.",
+    "deleted": "Image supprimée",
+    "alt": "Image envoyée dans la conversation"
+  },
+  "voice_note": {
+    "microphone_denied": "L'accès au micro a été refusé. Autorisez-le dans les réglages du navigateur pour enregistrer une note vocale.",
+    "no_microphone": "Aucun micro détecté.",
+    "recording_failed": "L'enregistrement n'a pas pu démarrer.",
+    "deleted": "Note vocale supprimée",
+    "pause": "Mettre en pause la note vocale",
+    "play": "Écouter la note vocale",
+    "position": "Position dans la note vocale"
+  },
+  "read_receipt": {
+    "one": "Vu par {name}",
+    "several": "Vu par {names} et {last}",
+    "many": "Vu par {names} et {count} autres"
+  },
+  "typing": {
+    "one": "{name} écrit…",
+    "two": "{first} et {second} écrivent…",
+    "many": "{count} personnes écrivent…",
+    "unknown_member": "Un membre"
+  },
+  "pin": {
+    "pin": "Épingler ce message",
+    "unpin": "Détacher ce message"
+  },
+  "pinned_bar": {
+    "headline": "{count} messages épinglés | {count} message épinglé | {count} messages épinglés",
+    "hide": "{headline}, masquer",
+    "show": "{headline}, afficher",
+    "attachment_only": "Pièce jointe",
+    "pinned_by": "{author}, épinglé par {pinner}",
+    "go_to": "Aller au message de {author}",
+    "unpin": "Détacher le message de {author}"
+  },
+  "error": {
+    "load_messages": "Impossible de charger la discussion",
+    "load_older": "Impossible de charger les messages plus anciens.",
+    "load_newer": "Impossible de charger les messages plus récents.",
+    "message_unavailable": "Ce message n'est plus disponible.",
+    "jump_failed": "Impossible d'afficher ce message, veuillez réessayer.",
+    "reaction_failed": "Impossible de mettre à jour la réaction, veuillez réessayer."
+  },
+  "picker": {
+    "header": "Joindre un élément du Band Space",
+    "close": "Fermer",
+    "search_label": "Rechercher un élément à joindre",
+    "search_placeholder": "Agenda, tâche, note, fichier, setlist...",
+    "remove_one": "Retirez-en un pour en joindre un autre.",
+    "results_label": "Éléments à joindre",
+    "picked": "Joint",
+    "picked_count": "{count} / {max} joints"
+  },
+  "composer": {
+    "image_alt": "Image à envoyer",
+    "remove_image": "Retirer l'image",
+    "cancel_voice_note": "Annuler la note vocale",
+    "recording": "Enregistrement",
+    "send_voice_note": "Envoyer la note vocale",
+    "attach": "Joindre un élément du Band Space",
+    "add_image": "Ajouter une image",
+    "message_label": "Votre message",
+    "message_placeholder": "Votre message...",
+    "record_voice_note": "Enregistrer une note vocale",
+    "send": "Envoyer le message",
+    "rate_limited": "Trop de messages envoyés. Veuillez patienter un instant.",
+    "send_failed": "Le message n'a pas pu être envoyé."
+  },
+  "composer_attachments": {
+    "label": "Éléments joints à ce message",
+    "fallback_title": "cet élément",
+    "remove": "Retirer {title}",
+    "remove_untitled": "Retirer cet élément"
+  },
+  "message_attachments": {
+    "deleted": "(supprimé)"
+  },
+  "message_list": {
+    "label": "Messages de la discussion",
+    "load_older": "Charger les messages plus anciens",
+    "load_newer": "Charger les messages plus récents",
+    "back_to_latest": "Revenir aux messages récents",
+    "online": "(en ligne)",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "deleted": "Message supprimé",
+    "edited": "(modifié)",
+    "create_task": "Créer une tâche depuis ce message",
+    "report": "Signaler ce message",
+    "edit": "Modifier le message",
+    "delete": "Supprimer le message",
+    "delete_confirm_message": "Supprimer ce message ? Son contenu sera effacé pour tout le monde.",
+    "delete_confirm_header": "Confirmer la suppression",
+    "delete_confirm_reject": "Annuler",
+    "delete_confirm_accept": "Supprimer",
+    "delete_failed": "Le message n'a pas pu être supprimé.",
+    "task_created": "Tâche créée",
+    "task_created_detail": "« {title} ». Sa fiche est sous le message, ouvrez-la pour l'assigner.",
+    "task_failed": "La tâche n'a pas pu être créée.",
+    "edit_failed": "Le message n'a pas pu être modifié."
+  },
+  "view": {
+    "online_names": "En ligne : {names}",
+    "online": "En ligne",
+    "retry": "Réessayer",
+    "empty_title": "Aucun message",
+    "empty_text": "Écrivez le premier message du groupe, il restera ici pour tout le monde."
+  }
+}

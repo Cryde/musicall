@@ -1,7 +1,7 @@
 <template>
   <ul
     class="mb-2 flex flex-wrap list-none gap-2 p-0 m-0"
-    aria-label="Éléments joints à ce message"
+    :aria-label="t('band_space_chat.composer_attachments.label')"
   >
     <li
       v-for="attachment in attachments"
@@ -13,7 +13,7 @@
       <button
         type="button"
         class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-surface-600 hover:bg-surface-200 hover:text-surface-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-surface-300 dark:hover:bg-surface-700 dark:hover:text-surface-0"
-        :aria-label="`Retirer ${titleOf(attachment)}`"
+        :aria-label="removeLabel(attachment)"
         :disabled="disabled"
         @click="emit('remove', attachment.id)"
       >
@@ -24,10 +24,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { searchTypeFor } from '../../../utils/bandSpaceSearch.js'
 
 const FALLBACK_ICON = 'pi-link'
-const FALLBACK_TITLE = 'cet élément'
 
 /**
  * The composer's pending references, one removable chip each (#971).
@@ -45,6 +45,8 @@ defineProps({
 
 const emit = defineEmits(['remove'])
 
+const { t } = useI18n()
+
 /** The same mapping the palette and the sent card use, so one object is pictured one way. */
 function iconFor(attachment) {
   return searchTypeFor(attachment.type)?.icon ?? FALLBACK_ICON
@@ -55,6 +57,12 @@ function iconFor(attachment) {
  * its own label anyway. Without this the chip would be blank and its button would read « Retirer ».
  */
 function titleOf(attachment) {
-  return attachment.title || FALLBACK_TITLE
+  return attachment.title || t('band_space_chat.composer_attachments.fallback_title')
+}
+
+function removeLabel(attachment) {
+  return attachment.title
+    ? t('band_space_chat.composer_attachments.remove', { title: attachment.title })
+    : t('band_space_chat.composer_attachments.remove_untitled')
 }
 </script>

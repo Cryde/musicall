@@ -41,7 +41,7 @@ class FeedbackClientMirrorTest extends TestCase
 
     public function test_the_client_type_list_matches_the_enum(): void
     {
-        preg_match_all("/\{ value: '([a-z_]+)', label:/", $this->read(self::CONSTANTS_PATH), $matches);
+        preg_match_all("/option\('([a-z_]+)', '/", $this->read(self::CONSTANTS_PATH), $matches);
         self::assertNotEmpty($matches[1], sprintf('No FEEDBACK_TYPE_OPTIONS entries found in %s.', self::CONSTANTS_PATH));
 
         $this->assertSame(FeedbackType::values(), $matches[1]);

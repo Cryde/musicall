@@ -9,23 +9,23 @@
           v-if="criteria"
           :to="{ name: 'app_user_settings_profile_musician' }"
           :class="CHIP"
-          :aria-label="`Groupes cherchant : ${criteria.instrumentName}. Modifier mon profil musicien`"
+          :aria-label="t('home.member.announces.criteria_aria_label', { instrument: criteria.instrumentName })"
         >
-          Groupes cherchant : {{ criteria.instrumentName }} · Modifier
+          {{ t('home.member.announces.criteria', { instrument: criteria.instrumentName }) }}
         </router-link>
         <button
           v-if="city && !isChangingCity"
           type="button"
           :class="[CHIP, 'cursor-pointer']"
-          :aria-label="`Autour de ${city.name}. Changer de ville`"
+          :aria-label="t('home.member.announces.city_aria_label', { city: city.name })"
           @click="isChangingCity = true"
         >
           <i class="pi pi-map-marker text-xs" aria-hidden="true" />
-          Autour de {{ city.name }} · Changer
+          {{ t('home.member.announces.city', { city: city.name }) }}
         </button>
       </div>
       <router-link :to="allAnnouncesRoute" class="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline">
-        Toutes les annonces
+        {{ t('home.member.announces.see_all') }}
         <i class="pi pi-arrow-right text-sm" aria-hidden="true" />
       </router-link>
     </div>
@@ -38,11 +38,16 @@
       @cancel="isChangingCity = false"
     />
 
-    <p v-if="!isLoading && !criteria" class="m-0 text-surface-700 dark:text-surface-300">
-      Indiquez vos instruments dans votre
-      <router-link :to="{ name: 'app_user_settings_profile_musician' }" class="font-semibold text-primary hover:underline">profil musicien</router-link>
-      pour voir ici les groupes qui vous cherchent.
-    </p>
+    <i18n-t
+      v-if="!isLoading && !criteria"
+      keypath="home.member.announces.profile_nudge"
+      tag="p"
+      class="m-0 text-surface-700 dark:text-surface-300"
+    >
+      <template #link>
+        <router-link :to="{ name: 'app_user_settings_profile_musician' }" class="font-semibold text-primary hover:underline">{{ t('home.member.announces.profile_link') }}</router-link>
+      </template>
+    </i18n-t>
 
     <div :class="['grid grid-cols-1 md:grid-cols-2 gap-4', columns === 3 && 'lg:grid-cols-3']" :aria-busy="isLoading">
       <template v-if="isLoading">
@@ -57,7 +62,7 @@
         />
       </template>
       <p v-else class="col-span-full m-0 py-8 text-center text-surface-600 dark:text-surface-300">
-        Aucune annonce pour le moment.
+        {{ t('home.member.announces.empty') }}
       </p>
     </div>
   </section>
@@ -65,6 +70,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import musicianAnnounceApi from '../../../api/announce/musician.js'
 import searchApi from '../../../api/search/musician.js'
 import musicianProfileApi from '../../../api/user/musicianProfile.js'
@@ -93,6 +99,8 @@ const props = defineProps({
 
 defineEmits(['contact-announce'])
 
+const { t } = useI18n()
+
 const isLoading = ref(true)
 const criteria = ref(null)
 const city = ref(null)
@@ -100,8 +108,10 @@ const isChangingCity = ref(false)
 const announces = ref([])
 
 const title = computed(() => {
-  if (criteria.value) return 'Annonces pour vous'
-  return city.value ? 'Annonces près de chez vous' : 'Dernières annonces'
+  if (criteria.value) return t('home.member.announces.title_for_you')
+  return city.value
+    ? t('home.member.announces.title_near')
+    : t('home.member.announces.title_latest')
 })
 
 const allAnnouncesRoute = computed(() => {

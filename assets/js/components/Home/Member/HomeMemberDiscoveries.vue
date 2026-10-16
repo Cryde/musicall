@@ -1,7 +1,7 @@
 <template>
   <HomeMemberPanel
-    title="Découvertes"
-    link-label="Voir plus"
+    :title="t('home.member.discoveries.title')"
+    :link-label="t('home.member.discoveries.link')"
     :link-to="{ name: 'app_publications_by_category', params: { slug: DISCOVERIES_SLUG } }"
   >
     <div v-if="isLoading" class="flex flex-col gap-3" aria-busy="true">
@@ -21,20 +21,25 @@
           />
           <span class="flex flex-col min-w-0 flex-1">
             <span class="text-sm font-semibold line-clamp-2 text-surface-900 dark:text-surface-0">{{ discovery.title }}</span>
-            <span class="text-sm text-surface-600 dark:text-surface-300">par <UserName :username="discovery.author.username" :display-name="displayName(discovery.author)" variant="tooltip" /></span>
+            <i18n-t keypath="home.member.discoveries.by" tag="span" class="text-sm text-surface-600 dark:text-surface-300">
+              <template #author>
+                <UserName :username="discovery.author.username" :display-name="displayName(discovery.author)" variant="tooltip" />
+              </template>
+            </i18n-t>
           </span>
-          <span class="shrink-0 pr-1 text-sm font-bold text-teal-700 dark:text-teal-300" :aria-label="`${discovery.upvotes ?? 0} votes positifs`">
+          <span class="shrink-0 pr-1 text-sm font-bold text-teal-700 dark:text-teal-300" :aria-label="t('home.member.discoveries.upvotes', { count: discovery.upvotes ?? 0 })">
             ▲ {{ discovery.upvotes ?? 0 }}
           </span>
         </router-link>
       </li>
     </ul>
-    <p v-else class="m-0 text-sm text-surface-600 dark:text-surface-300">Pas encore de découverte.</p>
+    <p v-else class="m-0 text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.discoveries.empty') }}</p>
   </HomeMemberPanel>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import publicationsApi from '../../../api/publication/publications.js'
 import { displayName } from '../../../helper/user/displayName.js'
 import UserName from '../../User/UserName.vue'
@@ -44,6 +49,7 @@ import HomeMemberPanel from './HomeMemberPanel.vue'
 const DISCOVERIES_SLUG = 'decouvertes'
 const DISCOVERIES_SHOWN = 4
 
+const { t } = useI18n()
 const isLoading = ref(true)
 const discoveries = ref([])
 

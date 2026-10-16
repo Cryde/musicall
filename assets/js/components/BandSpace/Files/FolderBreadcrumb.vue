@@ -1,18 +1,18 @@
 <template>
-  <nav class="flex items-center flex-wrap gap-1 text-sm" aria-label="Fil d'Ariane">
+  <nav class="flex items-center flex-wrap gap-1 text-sm" :aria-label="t('band_space_files.breadcrumb.aria_label')">
     <button
       v-if="segments.length > 0"
       type="button"
       class="text-surface-500 hover:text-surface-800 dark:hover:text-surface-100 hover:underline"
       @click="emit('select', ROOT_FOLDER_ID)"
     >
-      Racine
+      {{ t('band_space_files.folder.root') }}
     </button>
     <span
       v-else
       class="font-medium text-surface-800 dark:text-surface-100"
     >
-      Racine
+      {{ t('band_space_files.folder.root') }}
     </span>
 
     <template v-for="(seg, index) in segments" :key="seg.id">
@@ -37,6 +37,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { isVirtualFolderId, ROOT_FOLDER_ID } from '../../../constants/folderSelection.js'
 import { folderPathOf } from '../../../utils/fileListing.js'
 
@@ -46,6 +47,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select'])
+const { t } = useI18n()
 
 // The path down from the root, so the root itself has none. Same walk the file rows use to name the
 // folder they live in, since a breadcrumb and a location label are the same question asked twice.

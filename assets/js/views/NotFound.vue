@@ -18,15 +18,15 @@
     <div class="mb-8 select-none">
       <p class="text-sm text-surface-500 dark:text-surface-400 text-center mb-3">
         <i class="pi pi-headphones mr-2" />
-        Jouez quelques notes en attendant
-        <span class="hidden sm:inline">(clavier : A Z E R T Y U I)</span>
+        {{ t('shared.not_found.play_prompt') }}
+        <span class="hidden sm:inline">{{ t('shared.not_found.keyboard_hint') }}</span>
       </p>
 
       <div
         ref="pianoRef"
         class="relative h-40 sm:h-48 touch-none"
         role="application"
-        aria-label="Piano interactif"
+        :aria-label="t('shared.not_found.piano')"
       >
         <!-- White keys -->
         <div class="flex h-full">
@@ -40,7 +40,7 @@
                 : 'bg-white dark:bg-surface-100 hover:bg-surface-50 dark:hover:bg-surface-200',
               index > 0 ? '-ml-px' : ''
             ]"
-            :aria-label="`Note ${key.note}`"
+            :aria-label="t('shared.not_found.note', { note: key.note })"
             :aria-pressed="activeKeys.has(key.note)"
             @mousedown="playNote(key.note, key.frequency)"
             @mouseup="stopNote(key.note)"
@@ -69,7 +69,7 @@
                     : 'bg-surface-900 dark:bg-surface-950 hover:bg-surface-800 dark:hover:bg-surface-900'
                 ]"
                 :style="{ left: `${getBlackKeyOffset(index)}px` }"
-                :aria-label="`Note ${key.note}`"
+                :aria-label="t('shared.not_found.note', { note: key.note })"
                 :aria-pressed="activeKeys.has(key.note)"
                 @mousedown="playNote(key.note, key.frequency)"
                 @mouseup="stopNote(key.note)"
@@ -91,15 +91,15 @@
     <div class="w-full max-w-md space-y-4">
       <!-- Explanatory text -->
       <p class="text-center text-surface-600 dark:text-surface-400">
-        La page que vous cherchez n'existe pas ou a été déplacée.<br />
-        En attendant, pourquoi ne pas :
+        {{ t('shared.not_found.explanation') }}<br />
+        {{ t('shared.not_found.meanwhile') }}
       </p>
 
       <!-- Action Buttons -->
       <div class="flex flex-col sm:flex-row gap-3">
         <router-link :to="{ name: 'app_search_musician' }" class="flex-1" @click="trackClick('musician-search')">
           <Button
-            label="Trouver un musicien"
+            :label="t('shared.not_found.find_musician')"
             icon="pi pi-users"
             severity="secondary"
             outlined
@@ -107,7 +107,7 @@
           />
         </router-link>
         <Button
-          label="Poster une annonce"
+          :label="t('shared.not_found.post_announce')"
           icon="pi pi-megaphone"
           severity="info"
           class="flex-1"
@@ -123,7 +123,7 @@
           @click="trackClick('home')"
         >
           <i class="pi pi-home" />
-          Retour à l'accueil
+          {{ t('shared.not_found.back_home') }}
         </router-link>
       </div>
     </div>
@@ -139,11 +139,14 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AuthRequiredModal from '../components/Auth/AuthRequiredModal.vue'
 import { useUserSecurityStore } from '../store/user/security.js'
 import AddAnnounceModal from './User/Announce/AddAnnounceModal.vue'
 
-useTitle('Page introuvable - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('shared.not_found.page_title')))
 
 const userSecurityStore = useUserSecurityStore()
 
@@ -164,24 +167,30 @@ let audioContext = null
 const oscillators = new Map()
 
 // Random page title (selected once on load)
-const pageTitles = [
-  'Cette page a rejoint un groupe de prog, on la revoit dans 20 minutes',
-  'Erreur 404 : partition introuvable',
-  'Oups, fausse note !',
-  'Cette page a joué en do quand il fallait jouer en ré',
-  'Ce solo était pas prévu',
-  "Quelqu'un a débranché l'ampli",
-  "Le bassiste s'est encore perdu"
+const PAGE_TITLE_KEYS = [
+  'shared.not_found.title.prog_band',
+  'shared.not_found.title.missing_score',
+  'shared.not_found.title.wrong_note',
+  'shared.not_found.title.wrong_key',
+  'shared.not_found.title.unplanned_solo',
+  'shared.not_found.title.unplugged_amp',
+  'shared.not_found.title.lost_bassist'
 ]
-const pageTitle = pageTitles[Math.floor(Math.random() * pageTitles.length)]
+const pageTitleKey = PAGE_TITLE_KEYS[Math.floor(Math.random() * PAGE_TITLE_KEYS.length)]
+const pageTitle = computed(() => t(pageTitleKey))
 
 // Messages for playing
-const playMessages = {
-  playing: ['Pas mal du tout !', 'Joli !', 'Vous avez du talent !', 'La musique adoucit les 404'],
+const PLAY_MESSAGE_KEYS = {
+  playing: [
+    'shared.not_found.playing.not_bad',
+    'shared.not_found.playing.nice',
+    'shared.not_found.playing.talent',
+    'shared.not_found.playing.soothes'
+  ],
   longPlay: [
-    'Prêt·e à trouver un groupe ?',
-    "Un vrai concert ! Mais la page n'est toujours pas là...",
-    'Vous devriez poster une annonce !'
+    'shared.not_found.long_play.find_band',
+    'shared.not_found.long_play.concert',
+    'shared.not_found.long_play.post_announce'
   ]
 }
 
@@ -189,14 +198,16 @@ function updatePlayMessage() {
   if (playStartTime.value) {
     const playDuration = (Date.now() - playStartTime.value) / 1000
     if (playDuration > 10 && notesPlayed.value >= 10) {
-      playMessage.value =
-        playMessages.longPlay[Math.floor(Math.random() * playMessages.longPlay.length)]
+      playMessage.value = t(
+        PLAY_MESSAGE_KEYS.longPlay[Math.floor(Math.random() * PLAY_MESSAGE_KEYS.longPlay.length)]
+      )
       return
     }
   }
   if (notesPlayed.value >= 5) {
-    playMessage.value =
-      playMessages.playing[Math.floor(Math.random() * playMessages.playing.length)]
+    playMessage.value = t(
+      PLAY_MESSAGE_KEYS.playing[Math.floor(Math.random() * PLAY_MESSAGE_KEYS.playing.length)]
+    )
   }
 }
 
@@ -331,7 +342,7 @@ function checkEasterEgg() {
     lastThree[1] === smokeOnTheWaterPattern[1] &&
     lastThree[2] === smokeOnTheWaterPattern[2]
   ) {
-    easterEggMessage.value = '🎸 Smoke on the Water ! Deep Purple serait fier !'
+    easterEggMessage.value = t('shared.not_found.easter_egg')
     trackUmamiEvent('404-easter-egg', { song: 'smoke-on-the-water' })
     setTimeout(() => {
       easterEggMessage.value = ''
@@ -362,7 +373,7 @@ function handleKeyUp(event) {
 function handleOpenAnnounceModal() {
   trackClick('announce-modal')
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Si vous souhaitez poster une annonce, vous devez vous connecter.'
+    authModalMessage.value = t('shared.not_found.login_to_post_announce')
     showAuthModal.value = true
     return
   }

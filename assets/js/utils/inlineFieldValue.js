@@ -1,3 +1,4 @@
+import { i18n } from '../i18n/index.js'
 import { parseDurationInput } from './setlistDuration.js'
 
 /**
@@ -9,13 +10,15 @@ import { parseDurationInput } from './setlistDuration.js'
 export function parseInlineFieldValue(text, { kind = 'text', required = false } = {}) {
   const trimmed = text.trim()
   if (trimmed === '') {
-    return required ? { error: 'Ce champ est obligatoire.' } : { value: null }
+    return required
+      ? { error: i18n.global.t('band_space_setlist.inline_field.required') }
+      : { value: null }
   }
   if (kind === 'number') {
     // Digits only, so « 1e3 » is not quietly read as 1000.
     return /^\d+$/.test(trimmed)
       ? { value: Number(trimmed) }
-      : { error: 'Indiquez un nombre entier.' }
+      : { error: i18n.global.t('band_space_setlist.inline_field.whole_number') }
   }
   if (kind === 'duration') {
     const parsed = parseDurationInput(trimmed)

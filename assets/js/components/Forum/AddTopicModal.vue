@@ -2,30 +2,30 @@
   <Dialog
     v-model:visible="visibleModel"
     modal
-    header="Ajouter un nouveau sujet"
+    :header="t('forum.add_topic.title')"
     :style="{ width: '50rem' }"
     :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
   >
     <template v-if="!isSent">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
-          <label for="title" class="font-medium">Titre du sujet</label>
+          <label for="title" class="font-medium">{{ t('forum.add_topic.title_label') }}</label>
           <InputText
             id="title"
             v-model="title"
-            placeholder="Votre titre ici"
+            :placeholder="t('forum.add_topic.title_placeholder')"
             :invalid="title.length > 0 && title.length < MIN_TITLE_LENGTH"
           />
           <small v-if="title.length > 0 && title.length < MIN_TITLE_LENGTH" class="text-red-500">
-            Le titre doit contenir au moins {{ MIN_TITLE_LENGTH }} caractères
+            {{ t('forum.add_topic.title_too_short', { min: MIN_TITLE_LENGTH }) }}
           </small>
         </div>
 
         <div class="flex flex-col gap-2">
-          <label class="font-medium">Votre message</label>
+          <label class="font-medium">{{ t('forum.add_topic.message_label') }}</label>
           <MessageEditor ref="editorRef" @content-update="handleContentUpdate" />
           <small v-if="contentText.length > 0 && contentText.length < MIN_MESSAGE_LENGTH" class="text-red-500">
-            Le message doit contenir au moins {{ MIN_MESSAGE_LENGTH }} caractères
+            {{ t('forum.add_topic.message_too_short', { min: MIN_MESSAGE_LENGTH }) }}
           </small>
         </div>
       </div>
@@ -34,7 +34,7 @@
     <template v-else>
       <div class="text-center py-8">
         <i class="pi pi-check-circle text-6xl text-green-500 mb-4" />
-        <p class="text-lg">Le sujet a été créé !</p>
+        <p class="text-lg">{{ t('forum.add_topic.created') }}</p>
       </div>
     </template>
 
@@ -42,19 +42,19 @@
       <div class="flex justify-end gap-2">
         <Button
           v-if="!isSent"
-          label="Annuler"
+          :label="t('forum.common.cancel')"
           severity="secondary"
           @click="visibleModel = false"
         />
         <Button
           v-if="isSent"
-          label="Fermer"
+          :label="t('forum.add_topic.close')"
           severity="secondary"
           @click="visibleModel = false"
         />
         <Button
           v-if="!isSent"
-          label="Créer"
+          :label="t('forum.add_topic.create')"
           icon="pi pi-send"
           :disabled="!canSubmit"
           :loading="isSending"
@@ -62,7 +62,7 @@
         />
         <Button
           v-if="isSent && createdTopic"
-          label="Aller sur le sujet"
+          :label="t('forum.add_topic.go_to_topic')"
           icon="pi pi-eye"
           @click="handleGoToTopic"
         />
@@ -78,6 +78,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useForumStore } from '../../store/forum/forum.js'
 import MessageEditor from './MessageEditor.vue'
 
@@ -97,6 +98,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'created'])
 
+const { t } = useI18n()
 const forumStore = useForumStore()
 const toast = useToast()
 
@@ -143,11 +145,11 @@ async function handleSubmit() {
     console.error('Failed to create topic:', error)
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
+      summary: t('forum.common.error'),
       detail:
         error.response?.status === 429
-          ? 'Veuillez patienter quelques minutes avant de créer un nouveau sujet.'
-          : 'Une erreur est survenue lors de la création du sujet',
+          ? t('forum.add_topic.rate_limited')
+          : t('forum.add_topic.create_failed'),
       life: 5000
     })
   } finally {

@@ -13,7 +13,7 @@
   >
     <!-- Own header rather than the Dialog's, so the input is the whole top row. PrimeVue points
          aria-labelledby at a header element that no longer exists, hence the redirection above. -->
-    <h2 :id="HEADING_ID" class="sr-only">Rechercher dans le Band Space</h2>
+    <h2 :id="HEADING_ID" class="sr-only">{{ t('band_space.palette.title') }}</h2>
 
     <div class="flex w-full items-center px-4 py-3">
       <IconField class="flex-1">
@@ -24,11 +24,11 @@
           class="w-full border-0! shadow-none! outline-0!"
           role="combobox"
           aria-autocomplete="list"
-          aria-label="Rechercher dans le Band Space"
+          :aria-label="t('band_space.palette.title')"
           :aria-expanded="flatResults.length > 0"
           :aria-controls="flatResults.length > 0 ? listboxId : undefined"
           :aria-activedescendant="activeOptionId"
-          placeholder="Rechercher dans cet espace..."
+          :placeholder="t('band_space.palette.placeholder')"
           @keydown.down.prevent="moveActive(1)"
           @keydown.up.prevent="moveActive(-1)"
           @keydown.enter.prevent="openActiveResult"
@@ -49,7 +49,7 @@
         :search-error="searchError"
         :has-searched="hasSearched"
         :listbox-id="listboxId"
-        label="Résultats de la recherche"
+        :label="t('band_space.palette.results_label')"
         @select="openResult"
         @activate="setActiveResult"
         @toggle-type="toggleType"
@@ -60,13 +60,13 @@
     <div class="flex items-center justify-between gap-3 px-4 py-3 border-t border-surface bg-surface-50 dark:bg-surface-900">
       <div class="flex items-center gap-3">
         <span class="inline-flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300">
-          <kbd :class="KBD_CLASS">⏎</kbd> Ouvrir
+          <kbd :class="KBD_CLASS">⏎</kbd> {{ t('band_space.palette.hint_open') }}
         </span>
         <span class="inline-flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300">
-          <kbd :class="KBD_CLASS">↑</kbd><kbd :class="KBD_CLASS">↓</kbd> Naviguer
+          <kbd :class="KBD_CLASS">↑</kbd><kbd :class="KBD_CLASS">↓</kbd> {{ t('band_space.palette.hint_navigate') }}
         </span>
         <span class="inline-flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300">
-          <kbd :class="KBD_CLASS">esc</kbd> Fermer
+          <kbd :class="KBD_CLASS">{{ t('band_space.palette.key_escape') }}</kbd> {{ t('band_space.palette.hint_close') }}
         </span>
       </div>
       <!-- Visible and announced: the count is the one thing a screen reader cannot infer from the
@@ -84,6 +84,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { computed, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import {
@@ -104,6 +105,7 @@ const KBD_CLASS =
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const router = useRouter()
+const { t } = useI18n()
 const { currentSpaceId } = useBandSpaceNavigation()
 
 // Per instance, because the palette and the attachment picker each own a listbox and two elements
@@ -143,22 +145,16 @@ const resultCountLabel = computed(() => {
 
     // Worded by order too, so switching it changes the text and the live region announces the swap.
     if (order.value === RECENTS_ORDER.OPENED) {
-      return count === 1
-        ? "1 élément, derniers ouverts d'abord"
-        : `${count} éléments, derniers ouverts d'abord`
+      return t('band_space.palette.count_opened_first', count)
     }
 
-    return count === 1 ? '1 élément récent' : `${count} éléments récents`
+    return t('band_space.palette.count_recents', count)
   }
   if (isSearching.value) {
     return ''
   }
-  const count = flatResults.value.length
-  if (count === 0) {
-    return 'Aucun résultat'
-  }
 
-  return count === 1 ? '1 résultat' : `${count} résultats`
+  return t('band_space.palette.count_results', flatResults.value.length)
 })
 
 function openActiveResult() {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-      <div class="text-xs uppercase text-surface-500">Paroles</div>
+      <div class="text-xs uppercase text-surface-500">{{ t('band_space_setlist.lyrics_panel.title') }}</div>
       <div v-if="lyrics?.lyrics" class="flex items-center gap-1">
         <Button
           icon="pi pi-window-maximize"
@@ -9,8 +9,8 @@
           severity="secondary"
           text
           rounded
-          aria-label="Agrandir les paroles"
-          v-tooltip.bottom="'Agrandir'"
+          :aria-label="t('band_space_setlist.lyrics_panel.enlarge_aria')"
+          v-tooltip.bottom="t('band_space_setlist.lyrics_panel.enlarge')"
           @click="isReading = true"
         />
         <Button
@@ -19,8 +19,8 @@
           severity="secondary"
           text
           rounded
-          aria-label="Exporter les paroles en PDF"
-          v-tooltip.bottom="'Exporter en PDF'"
+          :aria-label="t('band_space_setlist.lyrics_panel.export_pdf_aria')"
+          v-tooltip.bottom="t('band_space_setlist.lyrics_panel.export_pdf')"
           @click="pdfPopover?.toggle($event)"
         />
         <Button
@@ -29,8 +29,8 @@
           severity="secondary"
           text
           rounded
-          aria-label="Éditer les paroles"
-          v-tooltip.bottom="'Éditer'"
+          :aria-label="t('band_space_setlist.lyrics_panel.edit_aria')"
+          v-tooltip.bottom="t('band_space_setlist.lyrics_panel.edit')"
           :disabled="readOnly"
           @click="isEditing = true"
         />
@@ -43,13 +43,13 @@
 
     <template v-else-if="lyrics?.lyrics">
       <div class="flex flex-wrap items-center gap-2 mb-3 text-sm">
-        <span class="text-surface-600 dark:text-surface-300">Transposer</span>
-        <Button icon="pi pi-minus" size="small" severity="secondary" outlined aria-label="Descendre d'un demi-ton" @click="shift(-1)" />
+        <span class="text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.lyrics_panel.transpose') }}</span>
+        <Button icon="pi pi-minus" size="small" severity="secondary" outlined :aria-label="t('band_space_setlist.lyrics_panel.semitone_down_aria')" @click="shift(-1)" />
         <span class="min-w-24 text-center tabular-nums" aria-live="polite">{{ transposeLabel }}</span>
-        <Button icon="pi pi-plus" size="small" severity="secondary" outlined aria-label="Monter d'un demi-ton" @click="shift(1)" />
+        <Button icon="pi pi-plus" size="small" severity="secondary" outlined :aria-label="t('band_space_setlist.lyrics_panel.semitone_up_aria')" @click="shift(1)" />
         <Button
           v-if="transpose !== 0 && !readOnly"
-          label="Enregistrer dans cette tonalité"
+          :label="t('band_space_setlist.lyrics_panel.save_transposition')"
           size="small"
           severity="secondary"
           text
@@ -62,10 +62,10 @@
 
     <div v-else class="flex flex-col items-start gap-2">
       <p class="text-xs text-surface-600 dark:text-surface-300 italic m-0">
-        Pas encore de paroles. Collez-les depuis un site d'accords, les accords suivent.
+        {{ t('band_space_setlist.lyrics_panel.empty') }}
       </p>
       <Button
-        label="Ajouter les paroles"
+        :label="t('band_space_setlist.lyrics_panel.add')"
         icon="pi pi-plus"
         severity="secondary"
         size="small"
@@ -78,17 +78,17 @@
       <div class="flex flex-col gap-3 w-64">
         <div class="flex items-center gap-2">
           <Checkbox v-model="pdfOptions.chords" :binary="true" input-id="song-pdf-chords" />
-          <label for="song-pdf-chords" class="text-sm">Avec les accords</label>
+          <label for="song-pdf-chords" class="text-sm">{{ t('band_space_setlist.pdf_export.lyrics_chords') }}</label>
         </div>
         <div class="flex items-center gap-2">
           <Checkbox v-model="pdfOptions.singers" :binary="true" input-id="song-pdf-singers" />
-          <label for="song-pdf-singers" class="text-sm">Avec qui chante</label>
+          <label for="song-pdf-singers" class="text-sm">{{ t('band_space_setlist.pdf_export.lyrics_singers') }}</label>
         </div>
         <p v-if="transpose !== 0" class="text-xs text-surface-600 dark:text-surface-300 m-0">
-          Transposé de {{ transposeLabel }}, comme à l'écran.
+          {{ t('band_space_setlist.lyrics_panel.pdf_transposed', { transposition: transposeLabel }) }}
         </p>
         <Button
-          :label="isExporting ? 'Génération...' : 'Télécharger le PDF'"
+          :label="isExporting ? t('band_space_setlist.pdf_export.generating') : t('band_space_setlist.pdf_export.download')"
           :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
           :disabled="isExporting"
           @click="exportPdf"
@@ -133,6 +133,7 @@ import Popover from 'primevue/popover'
 import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceSongsApi from '../../../../api/bandSpace/band-space-songs.js'
 import { transposeKey } from '../../../../utils/chordpro.js'
 import { downloadBlob } from '../../../../utils/downloadBlob.js'
@@ -150,6 +151,7 @@ const props = defineProps({
 /** The song changed on the server: it gained or lost its lyrics, or a transposition moved its key. */
 const emit = defineEmits(['changed'])
 
+const { t } = useI18n()
 const toast = useToast()
 
 const lyrics = ref(null)
@@ -172,7 +174,12 @@ async function load() {
   try {
     lyrics.value = await bandSpaceSongsApi.getLyrics(props.bandSpaceId, props.song.id)
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: error.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: error.message,
+      life: 5000
+    })
   } finally {
     isLoading.value = false
   }
@@ -181,10 +188,13 @@ async function load() {
 watch(() => props.song.id, load, { immediate: true })
 
 const transposeLabel = computed(() => {
-  if (transpose.value === 0) return "Tonalité d'origine"
-  const steps = `${transpose.value > 0 ? '+' : ''}${transpose.value} demi-ton${Math.abs(transpose.value) > 1 ? 's' : ''}`
+  if (transpose.value === 0) return t('band_space_setlist.lyrics_panel.original_key')
+  const semitones = `${transpose.value > 0 ? '+' : ''}${transpose.value}`
+  const count = Math.abs(transpose.value)
   const key = transposeKey(lyrics.value?.tonality, transpose.value)
-  return key ? `${steps} (${key})` : steps
+  return key
+    ? t('band_space_setlist.lyrics_panel.semitones_with_key', { semitones, key }, count)
+    : t('band_space_setlist.lyrics_panel.semitones', { semitones }, count)
 })
 
 // Kept inside an octave: twelve semitones up is where it started.
@@ -203,12 +213,16 @@ async function saveTransposition() {
       lyrics.value.lyrics_version
     )
     transpose.value = 0
-    toast.add({ severity: 'success', summary: 'Tonalité enregistrée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.lyrics_panel.transposition_saved'),
+      life: 3000
+    })
     emit('changed')
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Transposition impossible',
+      summary: t('band_space_setlist.lyrics_panel.transposition_failed'),
       detail: error.message,
       life: 6000
     })
@@ -243,8 +257,8 @@ async function exportPdf() {
     if (error?.response?.status === 401) return
     toast.add({
       severity: 'error',
-      summary: 'Export impossible',
-      detail: 'Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant.',
+      summary: t('band_space_setlist.pdf_export.failed_summary'),
+      detail: t('band_space_setlist.pdf_export.failed_detail'),
       life: 6000
     })
   } finally {

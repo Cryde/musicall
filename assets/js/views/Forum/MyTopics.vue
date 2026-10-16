@@ -5,7 +5,7 @@
     </div>
 
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-semibold">Mes sujets</h1>
+      <h1 class="text-2xl font-semibold">{{ t('forum.common.my_topics') }}</h1>
     </div>
 
     <div v-if="store.isLoading && !store.participations.length" class="space-y-4">
@@ -13,7 +13,7 @@
     </div>
 
     <div v-else-if="!store.participations.length" class="text-surface-500 dark:text-surface-400 py-8 text-center">
-      Vous ne participez à aucun sujet pour le moment.
+      {{ t('forum.my_topics.empty') }}
     </div>
 
     <div v-else>
@@ -34,28 +34,28 @@
         >
           <Tag
             v-if="!item.is_read"
-            value="Non lu"
+            :value="t('forum.my_topics.unread')"
             severity="info"
             icon="pi pi-circle-fill"
             class="text-xs shrink-0"
           />
           <Tag
             v-if="item.topic.is_pinned"
-            value="Épinglé"
+            :value="t('forum.common.pinned')"
             severity="info"
             icon="pi pi-thumbtack"
             class="text-xs shrink-0"
           />
           <Tag
             v-if="item.topic.is_resolved"
-            value="Résolu"
+            :value="t('forum.common.resolved')"
             severity="success"
             icon="pi pi-check-circle"
             class="text-xs shrink-0"
           />
           <Tag
             v-if="item.topic.is_locked"
-            value="Verrouillé"
+            :value="t('forum.common.locked')"
             severity="warn"
             icon="pi pi-lock"
             class="text-xs shrink-0"
@@ -66,27 +66,30 @@
               class="text-base font-medium text-primary hover:underline"
             >{{ item.topic.title }}</router-link>
             <div class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-              Dans
-              <router-link
-                :to="{ name: 'forum_topic_list', params: { slug: item.topic.forum.slug } }"
-                class="hover:text-primary transition-colors"
-              >{{ item.topic.forum.title }}</router-link>
+              <i18n-t keypath="forum.my_topics.in_forum">
+                <template #forum>
+                  <router-link
+                    :to="{ name: 'forum_topic_list', params: { slug: item.topic.forum.slug } }"
+                    class="hover:text-primary transition-colors"
+                  >{{ item.topic.forum.title }}</router-link>
+                </template>
+              </i18n-t>
               ·
               <span v-if="item.topic.last_post">
-                Dernier message le {{ formatDate(item.topic.last_post.creation_datetime) }}
+                {{ t('forum.my_topics.last_post_on', { date: formatDate(item.topic.last_post.creation_datetime) }) }}
               </span>
-              <span v-else>Aucun message</span>
+              <span v-else>{{ t('forum.my_topics.no_post') }}</span>
             </div>
           </div>
           <Button
-            v-tooltip.left="'Retirer de mes sujets'"
+            v-tooltip.left="t('forum.my_topics.remove')"
             icon="pi pi-times"
             size="small"
             severity="secondary"
             text
             rounded
             :loading="removingId === item.id"
-            aria-label="Retirer de mes sujets"
+            :aria-label="t('forum.my_topics.remove')"
             @click="handleRemove(item.id)"
           />
         </li>
@@ -111,6 +114,7 @@ import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useForumParticipationsStore } from '../../store/forum/participations.js'
 import { formatDate } from '../../utils/date.js'
@@ -118,6 +122,7 @@ import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const ITEMS_PER_PAGE = 15
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useForumParticipationsStore()
@@ -131,23 +136,23 @@ const currentPage = computed(() => {
 })
 
 const breadcrumbItems = computed(() => [
-  { label: 'Forum', to: { name: 'app_forum_index' } },
-  { label: 'Mes sujets' }
+  { label: t('forum.common.forum'), to: { name: 'app_forum_index' } },
+  { label: t('forum.common.my_topics') }
 ])
 
-useTitle('Mes sujets - MusicAll')
+useTitle(computed(() => t('forum.my_topics.page_title')))
 
 async function handleRemove(id) {
   if (removingId.value) return
   removingId.value = id
   try {
     await store.removeParticipation(id)
-    toast.add({ severity: 'success', summary: 'Sujet retiré de votre liste', life: 3000 })
+    toast.add({ severity: 'success', summary: t('forum.my_topics.removed_toast'), life: 3000 })
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Action impossible',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('forum.common.action_failed'),
+      detail: e?.response?.data?.detail || t('forum.common.generic_error'),
       life: 4000
     })
   } finally {

@@ -4,11 +4,11 @@
       <Avatar
         v-if="comment.author.profile_picture?.small && !comment.author.deletion_datetime"
         :image="comment.author.profile_picture.small"
-        :pt="{ image: { alt: `Photo de ${authorName}` } }"
+        :pt="{ image: { alt: t('publication.comment.item.photo_alt', { name: authorName }) } }"
         shape="circle"
         :size="isReply ? 'normal' : 'large'"
         role="img"
-        :aria-label="`Photo de ${authorName}`"
+        :aria-label="t('publication.comment.item.photo_alt', { name: authorName })"
       />
       <Avatar
         v-else
@@ -17,7 +17,7 @@
         shape="circle"
         :size="isReply ? 'normal' : 'large'"
         role="img"
-        :aria-label="`Avatar de ${authorName}`"
+        :aria-label="t('publication.comment.item.avatar_label', { name: authorName })"
       />
     </div>
     <div class="flex-1 min-w-0">
@@ -29,13 +29,16 @@
             :picture-url="comment.author.profile_picture_url"
             class="font-semibold text-surface-900 dark:text-surface-0"
           />
-          <span
+          <i18n-t
             v-if="isReply && parentAuthorName"
+            keypath="publication.comment.item.in_reply_to"
+            tag="span"
             class="text-sm text-surface-500 dark:text-surface-400"
           >
-            en réponse à
-            <span class="font-medium text-surface-700 dark:text-surface-300">{{ parentAuthorName }}</span>
-          </span>
+            <template #author>
+              <span class="font-medium text-surface-700 dark:text-surface-300">{{ parentAuthorName }}</span>
+            </template>
+          </i18n-t>
           <span class="text-sm text-surface-500 dark:text-surface-400">
             {{ relativeDate(comment.creation_datetime) }}
           </span>
@@ -52,7 +55,7 @@
             size="small"
             :severity="localUserVote === 1 ? 'success' : 'secondary'"
             :loading="isVoting"
-            aria-label="J'aime"
+            :aria-label="t('publication.common.like')"
             @click="handleVote(1)"
           />
           <span class="text-sm font-semibold min-w-6 text-center">{{ score }}</span>
@@ -63,13 +66,13 @@
             size="small"
             :severity="localUserVote === -1 ? 'danger' : 'secondary'"
             :loading="isVoting"
-            aria-label="Je n'aime pas"
+            :aria-label="t('publication.common.dislike')"
             @click="handleVote(-1)"
           />
           <Button
             v-if="!isReply && userSecurityStore.isAuthenticated"
             icon="pi pi-reply"
-            label="Répondre"
+            :label="t('publication.comment.reply')"
             text
             size="small"
             severity="secondary"
@@ -80,7 +83,7 @@
             target-type="comment"
             :target-id="String(comment.id)"
             :author-username="comment.author.username"
-            :aria-label="`Signaler le commentaire de ${authorName}`"
+            :aria-label="t('publication.comment.item.report', { name: authorName })"
             class="ml-auto"
           />
         </div>
@@ -90,7 +93,7 @@
         <CommentForm
           v-if="showReplyForm"
           :parent-id="comment.id"
-          :placeholder="`Répondre à ${authorName}...`"
+          :placeholder="t('publication.comment.item.reply_placeholder', { name: authorName })"
           :autofocus="true"
           @posted="showReplyForm = false"
           @cancel="showReplyForm = false"
@@ -104,7 +107,7 @@
             @click="showAllReplies = true"
           >
             <i class="pi pi-chevron-down text-xs" />
-            Voir les {{ replies.length }} réponses
+            {{ t('publication.comment.item.show_replies', { count: replies.length }) }}
           </button>
 
           <template v-if="showAllReplies || replies.length <= REPLIES_INLINE_THRESHOLD">
@@ -124,7 +127,7 @@
               @click="showAllReplies = false"
             >
               <i class="pi pi-chevron-up text-xs" />
-              Masquer les réponses
+              {{ t('publication.comment.item.hide_replies') }}
             </button>
           </template>
         </div>
@@ -137,6 +140,7 @@
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import commentApi from '../../api/comment/comment.js'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
@@ -155,6 +159,7 @@ const props = defineProps({
   parentAuthorName: { type: String, default: null }
 })
 
+const { t } = useI18n()
 const userSecurityStore = useUserSecurityStore()
 
 const authorName = computed(() => displayName(props.comment.author))

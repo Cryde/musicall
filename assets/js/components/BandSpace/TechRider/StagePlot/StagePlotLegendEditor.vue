@@ -1,7 +1,7 @@
 <template>
-  <section class="flex flex-col gap-2 min-w-0" aria-label="Légende">
+  <section class="flex flex-col gap-2 min-w-0" :aria-label="t('band_space_tech_rider.legend.title')">
     <div class="flex items-center gap-2">
-      <h4 class="font-semibold text-sm">Légende</h4>
+      <h4 class="font-semibold text-sm">{{ t('band_space_tech_rider.legend.title') }}</h4>
       <span class="text-xs text-surface-600 dark:text-surface-300">
         {{ legend.length }} / {{ MAX_LEGEND_ENTRIES }}
       </span>
@@ -10,7 +10,7 @@
     <!-- What makes a plot readable by somebody who was not in the room, which is the whole point of
          sending it to a venue. -->
     <p v-if="legend.length === 0" class="text-xs text-surface-600 dark:text-surface-300">
-      Associez une icône à un mot pour que la salle comprenne le plan sans explication.
+      {{ t('band_space_tech_rider.legend.hint') }}
     </p>
 
     <ul v-else class="flex flex-col gap-1">
@@ -27,7 +27,7 @@
           :maxlength="MAX_LABEL_LENGTH"
           class="w-full"
           size="small"
-          :aria-label="`Libellé de légende pour ${iconLabel(entry.icon)}`"
+          :aria-label="t('band_space_tech_rider.legend.entry_label', { icon: iconLabel(entry.icon) })"
           @update:model-value="(value) => emit('update', { index, label: value })"
         />
         <Button
@@ -37,8 +37,8 @@
           text
           rounded
           size="small"
-          :aria-label="`Retirer ${iconLabel(entry.icon)} de la légende`"
-          v-tooltip.top="'Retirer'"
+          :aria-label="t('band_space_tech_rider.legend.remove_entry', { icon: iconLabel(entry.icon) })"
+          v-tooltip.top="t('band_space_tech_rider.common.remove')"
           @click="emit('remove', index)"
         />
       </li>
@@ -53,9 +53,9 @@
         filter
         class="w-full"
         size="small"
-        placeholder="Ajouter une icône"
-        aria-label="Icône à ajouter à la légende"
-        empty-filter-message="Aucune icône trouvée"
+        :placeholder="t('band_space_tech_rider.legend.add_placeholder')"
+        :aria-label="t('band_space_tech_rider.legend.add_label')"
+        :empty-filter-message="t('band_space_tech_rider.legend.no_icon_found')"
       >
         <template #option="{ option }">
           <span class="flex items-center gap-2">
@@ -70,7 +70,7 @@
         </template>
       </Select>
       <Button
-        label="Ajouter"
+        :label="t('band_space_tech_rider.common.add')"
         icon="pi pi-plus"
         severity="secondary"
         outlined
@@ -87,6 +87,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MAX_LABEL_LENGTH, MAX_LEGEND_ENTRIES } from '../../../../constants/stagePlot.js'
 import StagePlotIcon from './StagePlotIcon.vue'
 
@@ -97,6 +98,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add', 'update', 'remove'])
+
+const { t } = useI18n()
 
 const pendingIcon = ref(null)
 

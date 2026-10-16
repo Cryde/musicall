@@ -5,9 +5,9 @@
     option-label="name"
     option-group-label="label"
     option-group-children="items"
-    placeholder="Sélectionnez un tech rider"
+    :placeholder="t('band_space_tech_rider.selector.placeholder')"
     class="w-full sm:w-72"
-    aria-label="Tech rider affiché"
+    :aria-label="t('band_space_tech_rider.selector.label')"
     @change="handleChange"
   >
     <template #optiongroup="{ option }">
@@ -32,6 +32,7 @@
 <script setup>
 import Select from 'primevue/select'
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { CREATE_ACTION_ID } from '../../../constants/bandSpace.js'
 
 const props = defineProps({
@@ -41,6 +42,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'create'])
+
+const { t } = useI18n()
 
 const selected = computed(
   () =>
@@ -75,11 +78,20 @@ const selectOptions = computed(() => {
     groups.push({ label: '', items: props.liveRiders })
   }
   if (props.archivedRiders.length > 0) {
-    groups.push({ label: 'Archives', items: props.archivedRiders })
+    groups.push({
+      label: t('band_space_tech_rider.selector.archives'),
+      items: props.archivedRiders
+    })
   }
   groups.push({
     label: '',
-    items: [{ id: CREATE_ACTION_ID, name: 'Nouveau tech rider', isCreateAction: true }]
+    items: [
+      {
+        id: CREATE_ACTION_ID,
+        name: t('band_space_tech_rider.common.new_rider'),
+        isCreateAction: true
+      }
+    ]
   })
 
   return groups

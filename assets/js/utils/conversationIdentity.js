@@ -1,4 +1,5 @@
 import { displayName } from '../helper/user/displayName.js'
+import { i18n } from '../i18n/index.js'
 
 /**
  * A Band Space channel rather than a direct message (#994).
@@ -22,8 +23,8 @@ export function isChannel(threadMeta) {
  */
 export function conversationTitle(threadMeta, participant = null) {
   if (isChannel(threadMeta)) {
-    return threadMeta.thread.band_space_name || 'Groupe'
+    return threadMeta.thread.band_space_name || i18n.global.t('message.conversation.band_fallback')
   }
 
-  return participant ? displayName(participant) : 'Utilisateur inconnu'
+  return participant ? displayName(participant) : i18n.global.t('message.conversation.unknown_user')
 }

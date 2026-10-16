@@ -20,7 +20,7 @@
     <!-- Error state -->
     <div v-else-if="tasksStore.loadError" class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4">
       <Message severity="error" :closable="false">{{ tasksStore.loadError }}</Message>
-      <Button label="Réessayer" icon="pi pi-refresh" severity="secondary" @click="handleRetry" />
+      <Button :label="t('band_space_tasks.board.retry')" icon="pi pi-refresh" severity="secondary" @click="handleRetry" />
     </div>
 
     <!-- Main content -->
@@ -49,18 +49,18 @@
             <button
               type="button"
               class="flex-1 min-w-0 text-left rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
-              :aria-label="`Ouvrir la tâche archivée ${task.title}`"
+              :aria-label="t('band_space_tasks.board.open_archived', { title: task.title })"
               @click="handleOpenTask(task.id)"
             >
               <span class="block text-sm font-medium text-surface-800 dark:text-surface-100 truncate">
                 {{ task.title }}
               </span>
               <span class="block text-xs text-surface-400">
-                Archivée le {{ formatDate(task.archive_datetime) }}
+                {{ t('band_space_tasks.board.archived_on', { date: formatDate(task.archive_datetime) }) }}
               </span>
             </button>
             <Button
-              label="Désarchiver"
+              :label="t('band_space_tasks.common.unarchive')"
               icon="pi pi-replay"
               text
               size="small"
@@ -68,7 +68,7 @@
             />
           </div>
           <p v-if="tasksStore.archivedTasks.length === 0" class="text-sm text-surface-400 italic text-center py-8">
-            Aucune tâche archivée
+            {{ t('band_space_tasks.board.no_archived') }}
           </p>
         </div>
       </div>
@@ -78,14 +78,14 @@
         <div class="flex items-center gap-2 mb-4">
           <Button
             icon="pi pi-arrow-left"
-            aria-label="Retour"
+            :aria-label="t('band_space_tasks.board.back')"
             text
             rounded
             size="small"
             @click="showAllDone = false"
           />
           <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200">
-            Toutes les tâches terminées ({{ tasksStore.tasksByStatus.done.length }})
+            {{ t('band_space_tasks.board.all_done', { count: tasksStore.tasksByStatus.done.length }) }}
           </h3>
         </div>
         <div class="flex flex-col gap-2">
@@ -114,10 +114,7 @@
           :closable="false"
           class="mb-3"
         >
-          Réorganisation désactivée : la recherche, le filtre d'échéance et « En retard » masquent
-          des tâches qui ne sont pas chargées, et un déplacement décalerait ces tâches masquées.
-          Effacez ces filtres pour réordonner le tableau. Le menu d'une carte permet toujours de
-          changer son statut.
+          {{ t('band_space_tasks.board.reorder_disabled') }}
         </Message>
         <TaskBoard
           :tasks-by-status="tasksStore.tasksByStatus"
@@ -167,6 +164,7 @@ import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import TaskBoard from '../../components/BandSpace/Task/TaskBoard.vue'
 import TaskBulkActionBar from '../../components/BandSpace/Task/TaskBulkActionBar.vue'
@@ -181,6 +179,7 @@ import { useBandTasksStore } from '../../store/bandSpace/bandSpaceTasks.js'
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 const tasksStore = useBandTasksStore()
 // Wipe any previous space's board synchronously before first render. The
 // :key on <router-view> remounts this view on space switch but Pinia keeps
@@ -280,14 +279,14 @@ async function resyncAfterRejectedDrag(summary) {
   toast.add({
     severity: 'warn',
     summary,
-    detail: "Le tableau a été modifié entre temps, il vient d'être rechargé.",
+    detail: t('band_space_tasks.board.board_changed'),
     life: 5000
   })
 
   try {
     await tasksStore.fetchTasks(bandSpaceId)
   } catch {
-    toast.add({ severity: 'error', summary: 'Rechargement du tableau impossible', life: 5000 })
+    toast.add({ severity: 'error', summary: t('band_space_tasks.board.reload_failed'), life: 5000 })
   }
 }
 
@@ -295,7 +294,7 @@ async function handleReorder(status, visibleOrderedIds, movedTaskId) {
   try {
     await tasksStore.reorderTasks(bandSpaceId, status, visibleOrderedIds, movedTaskId)
   } catch {
-    await resyncAfterRejectedDrag('Impossible de réordonner les tâches')
+    await resyncAfterRejectedDrag(t('band_space_tasks.board.reorder_failed'))
   }
 }
 
@@ -303,14 +302,18 @@ async function handleStatusChange(taskId, newStatus, visibleIndex) {
   try {
     await tasksStore.moveTaskToColumn(bandSpaceId, taskId, newStatus, visibleIndex)
   } catch {
-    await resyncAfterRejectedDrag('Impossible de déplacer la tâche')
+    await resyncAfterRejectedDrag(t('band_space_tasks.common.move_failed'))
   }
 }
 
 async function handleUnarchive(taskId) {
   try {
     await tasksStore.unarchiveTask(bandSpaceId, taskId)
-    toast.add({ severity: 'success', summary: 'Tâche désarchivée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.common.task_unarchived'),
+      life: 3000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }

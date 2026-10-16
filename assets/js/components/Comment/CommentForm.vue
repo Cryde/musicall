@@ -23,8 +23,8 @@
       <Textarea
         ref="textareaRef"
         v-model="content"
-        :placeholder="placeholder"
-        aria-label="Votre commentaire"
+        :placeholder="placeholder ?? t('publication.comment.form.placeholder')"
+        :aria-label="t('publication.comment.form.aria_label')"
         :rows="parentId === null ? 3 : 2"
         :disabled="commentStore.isPosting"
         class="w-full"
@@ -33,14 +33,14 @@
       <div class="flex justify-end gap-2">
         <Button
           v-if="parentId !== null"
-          label="Annuler"
+          :label="t('publication.common.cancel')"
           severity="secondary"
           text
           :disabled="commentStore.isPosting"
           @click="$emit('cancel')"
         />
         <Button
-          :label="parentId === null ? 'Poster le commentaire' : 'Répondre'"
+          :label="parentId === null ? t('publication.comment.form.post') : t('publication.comment.reply')"
           icon="pi pi-send"
           :loading="commentStore.isPosting"
           :disabled="!canPost"
@@ -50,17 +50,23 @@
     </div>
   </div>
 
-  <div v-else-if="parentId === null" class="text-center py-4 text-surface-600 dark:text-surface-400">
-    Vous devez
-    <RouterLink :to="{ name: 'app_login' }" class="text-primary font-medium">
-      être connecté
-    </RouterLink>
-    ou
-    <RouterLink :to="{ name: 'app_register' }" class="text-primary font-medium">
-      inscrit
-    </RouterLink>
-    pour pouvoir poster un commentaire
-  </div>
+  <i18n-t
+    v-else-if="parentId === null"
+    keypath="publication.comment.form.login_required"
+    tag="div"
+    class="text-center py-4 text-surface-600 dark:text-surface-400"
+  >
+    <template #login>
+      <RouterLink :to="{ name: 'app_login' }" class="text-primary font-medium">
+        {{ t('publication.comment.form.login_link') }}
+      </RouterLink>
+    </template>
+    <template #register>
+      <RouterLink :to="{ name: 'app_register' }" class="text-primary font-medium">
+        {{ t('publication.comment.form.register_link') }}
+      </RouterLink>
+    </template>
+  </i18n-t>
 </template>
 
 <script setup>
@@ -70,18 +76,20 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useCommentStore } from '../../store/comment/comment.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 
 const props = defineProps({
   parentId: { type: Number, default: null },
-  placeholder: { type: String, default: 'Ajouter un commentaire...' },
+  placeholder: { type: String, default: null },
   autofocus: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['posted', 'cancel'])
 
+const { t } = useI18n()
 const userSecurityStore = useUserSecurityStore()
 const commentStore = useCommentStore()
 
@@ -114,9 +122,9 @@ async function handleSubmit() {
     // handleApiError normalises errors into { status, message, violations, ... };
     // e.message already carries the API's `detail` for non-validation 4xx responses.
     if (e.status === 429) {
-      error.value = 'Trop de commentaires postés. Veuillez patienter un instant.'
+      error.value = t('publication.comment.form.rate_limited')
     } else {
-      error.value = e.message || 'Une erreur est survenue'
+      error.value = e.message || t('publication.comment.form.error')
     }
   }
 }

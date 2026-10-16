@@ -33,7 +33,7 @@
             v-if="message.content === ''"
             class="text-sm italic text-surface-600 dark:text-surface-300"
           >
-            Pièce jointe
+            {{ t('band_space_chat.pinned_bar.attachment_only') }}
           </p>
           <p
             v-else
@@ -41,14 +41,14 @@
             v-html="autoLink(message.content)"
           />
           <p class="mt-0.5 text-xs text-surface-600 dark:text-surface-300">
-            {{ message.author_display_name }}, épinglé par {{ message.pinned_by_display_name }}
+            {{ t('band_space_chat.pinned_bar.pinned_by', { author: message.author_display_name, pinner: message.pinned_by_display_name }) }}
           </p>
         </div>
 
         <button
           type="button"
           class="shrink-0 rounded-full px-2 py-1 text-surface-600 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-700"
-          :aria-label="`Aller au message de ${message.author_display_name}`"
+          :aria-label="t('band_space_chat.pinned_bar.go_to', { author: message.author_display_name })"
           :aria-busy="chatStore.jumpingTo === message.id"
           :disabled="chatStore.jumpingTo === message.id"
           @click="goTo(message)"
@@ -63,7 +63,7 @@
           type="button"
           class="shrink-0 rounded-full px-2 py-1 text-surface-600 hover:bg-surface-200 disabled:opacity-50 dark:text-surface-300 dark:hover:bg-surface-700"
           :disabled="chatPin.isPending(message)"
-          :aria-label="`Détacher le message de ${message.author_display_name}`"
+          :aria-label="t('band_space_chat.pinned_bar.unpin', { author: message.author_display_name })"
           @click="chatPin.togglePin(message)"
         >
           <i class="pi pi-times text-xs" aria-hidden="true" />
@@ -75,6 +75,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useChatPin } from '../../../composables/useChatPin.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { autoLink } from '../../../utils/autoLink.js'
@@ -83,6 +84,7 @@ const props = defineProps({
   bandSpaceId: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const chatStore = useBandSpaceChatStore()
 const chatPin = useChatPin(props.bandSpaceId)
 
@@ -94,15 +96,15 @@ const manualExpansion = ref(null)
 const isExpanded = computed(() => manualExpansion.value ?? pinnedMessages.value.length <= 1)
 
 const headline = computed(() =>
-  pinnedMessages.value.length === 1
-    ? '1 message épinglé'
-    : `${pinnedMessages.value.length} messages épinglés`
+  t('band_space_chat.pinned_bar.headline', pinnedMessages.value.length)
 )
 
 // Built from the visible text rather than beside it: a speech input user says what they read, and a
 // name that reworded the label would leave them unable to reach the control (WCAG 2.5.3).
 const toggleLabel = computed(() =>
-  isExpanded.value ? `${headline.value}, masquer` : `${headline.value}, afficher`
+  isExpanded.value
+    ? t('band_space_chat.pinned_bar.hide', { headline: headline.value })
+    : t('band_space_chat.pinned_bar.show', { headline: headline.value })
 )
 
 function toggle() {

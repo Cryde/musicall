@@ -22,7 +22,7 @@
             {{ formatRelative(comment.creation_datetime) }}
           </span>
           <span v-if="comment.update_datetime" class="text-xs text-surface-400 italic">
-            (modifié)
+            {{ t('band_space_tasks.comment_list.edited') }}
           </span>
 
           <div
@@ -33,7 +33,7 @@
               v-if="canEdit(comment)"
               type="button"
               class="text-surface-400 hover:text-primary"
-              title="Modifier"
+              :title="t('band_space_tasks.comment_list.edit')"
               @click="startEdit(comment)"
             >
               <i class="pi pi-pencil text-xs" />
@@ -42,7 +42,7 @@
               v-if="canDelete(comment)"
               type="button"
               class="text-surface-400 hover:text-red-500"
-              title="Supprimer"
+              :title="t('band_space_tasks.common.delete')"
               @click="confirmDelete(comment)"
             >
               <i class="pi pi-trash text-xs" />
@@ -55,7 +55,7 @@
             ref="editor"
             v-model="editContent"
             :members="members"
-            aria-label="Modifier le commentaire"
+            :aria-label="t('band_space_tasks.comment_list.edit_aria')"
             editor-class="min-h-[4.5rem] max-h-60 rounded-lg p-3"
             submit-on="ctrl-enter"
             :disabled="isSaving"
@@ -66,7 +66,7 @@
           </Message>
           <div class="flex justify-end gap-2 mt-1">
             <Button
-              label="Annuler"
+              :label="t('band_space_tasks.common.cancel')"
               size="small"
               severity="secondary"
               text
@@ -74,7 +74,7 @@
               @click="cancelEdit"
             />
             <Button
-              label="Enregistrer"
+              :label="t('band_space_tasks.common.save')"
               size="small"
               icon="pi pi-check"
               :loading="isSaving"
@@ -92,7 +92,7 @@
       </div>
     </div>
   </div>
-  <p v-else class="text-sm text-surface-400 italic">Aucun commentaire</p>
+  <p v-else class="text-sm text-surface-400 italic">{{ t('band_space_tasks.comment_list.empty') }}</p>
 </template>
 
 <script setup>
@@ -101,6 +101,7 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMentionParser } from '../../../composables/useMentionParser.js'
 import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -126,6 +127,7 @@ const emit = defineEmits(['delete'])
 const { parseToParts } = useMentionParser()
 const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
+const { t } = useI18n()
 
 const editor = ref(null)
 const editingId = ref(null)
@@ -206,7 +208,7 @@ async function saveEdit(comment) {
     cancelEdit()
   } catch (e) {
     console.error('Failed to save the comment:', e)
-    saveError.value = e.message || "Le commentaire n'a pas pu être modifié."
+    saveError.value = e.message || t('band_space_tasks.comment_list.save_failed')
   } finally {
     isSaving.value = false
   }
@@ -214,11 +216,11 @@ async function saveEdit(comment) {
 
 function confirmDelete(comment) {
   confirm.require({
-    message: 'Supprimer ce commentaire ?',
-    header: 'Confirmer la suppression',
+    message: t('band_space_tasks.comment_list.delete_confirm'),
+    header: t('band_space_tasks.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_tasks.common.cancel'),
+    acceptLabel: t('band_space_tasks.common.delete'),
     acceptClass: 'p-button-danger',
     accept: () => emit('delete', comment.id)
   })

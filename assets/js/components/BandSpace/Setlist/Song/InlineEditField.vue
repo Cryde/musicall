@@ -9,10 +9,16 @@
           isEmpty && 'italic text-surface-600 dark:text-surface-300'
         ]"
         :disabled="readonly"
-        :aria-label="readonly ? undefined : `${label} : ${isEmpty ? 'vide' : display}. Modifier`"
+        :aria-label="
+          readonly
+            ? undefined
+            : isEmpty
+              ? t('band_space_setlist.inline_field.edit_empty_aria', { label })
+              : t('band_space_setlist.inline_field.edit_aria', { label, value: display })
+        "
         @click="startEditing"
       >
-        <slot :value="modelValue">{{ isEmpty ? (readonly ? '—' : placeholder) : display }}</slot>
+        <slot :value="modelValue">{{ isEmpty ? (readonly ? '—' : (placeholder ?? t('band_space_setlist.inline_field.placeholder'))) : display }}</slot>
         <i
           v-if="!readonly"
           class="pi pi-pencil text-xs ml-1.5 opacity-0 group-hover:opacity-60 group-focus:opacity-60"
@@ -49,8 +55,8 @@
         @blur="commit"
       />
       <small v-if="error" :id="errorId" role="alert" class="text-red-600 dark:text-red-400">{{ error }}</small>
-      <small v-else-if="kind === 'duration'" class="text-surface-600 dark:text-surface-300">Minutes et secondes, par exemple 3:47.</small>
-      <small v-else-if="multiline" class="text-surface-600 dark:text-surface-300">Ctrl + Entrée pour enregistrer, Échap pour annuler.</small>
+      <small v-else-if="kind === 'duration'" class="text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.common.duration_hint') }}</small>
+      <small v-else-if="multiline" class="text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.inline_field.multiline_hint') }}</small>
     </form>
   </div>
 </template>
@@ -59,6 +65,7 @@
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { parseInlineFieldValue } from '../../../../utils/inlineFieldValue.js'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
 
@@ -75,13 +82,15 @@ const props = defineProps({
   multiline: { type: Boolean, default: false },
   /** Refused locally when left empty, the way a title is. */
   required: { type: Boolean, default: false },
-  placeholder: { type: String, default: 'Ajouter…' },
+  /** Defaults to « Ajouter… ». */
+  placeholder: { type: String, default: null },
   inputClass: { type: String, default: '' },
   readonly: { type: Boolean, default: false },
   /** (value) => Promise; rejects with the error handleApiError builds. */
   save: { type: Function, required: true }
 })
 
+const { t } = useI18n()
 const editing = ref(false)
 const draft = ref('')
 const error = ref(null)

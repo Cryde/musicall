@@ -9,7 +9,7 @@
       <InlineEditField
         v-if="song"
         :model-value="song.title"
-        label="Titre"
+        :label="t('band_space_setlist.song_drawer.title')"
         required
         class="flex-1 mr-2"
         input-class="font-semibold text-lg"
@@ -23,30 +23,30 @@
     <div v-if="song" class="flex flex-col gap-4">
       <div class="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">Tonalité</div>
+          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">{{ t('band_space_setlist.song_drawer.tonality') }}</div>
           <InlineEditField
             :model-value="song.tonality"
-            label="Tonalité"
-            placeholder="ex. Em"
+            :label="t('band_space_setlist.song_drawer.tonality')"
+            :placeholder="t('band_space_setlist.song_drawer.tonality_placeholder')"
             :readonly="isLocked('tonality')"
             :save="(value) => saveField('tonality', value)"
           />
         </div>
         <div>
-          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">BPM</div>
+          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">{{ t('band_space_setlist.song_drawer.tempo') }}</div>
           <InlineEditField
             :model-value="song.tempo"
-            label="BPM"
+            :label="t('band_space_setlist.song_drawer.tempo')"
             kind="number"
             :readonly="isLocked('tempo')"
             :save="(value) => saveField('tempo', value)"
           />
         </div>
         <div>
-          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">Durée</div>
+          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">{{ t('band_space_setlist.song_drawer.duration') }}</div>
           <InlineEditField
             :model-value="song.reference_duration"
-            label="Durée"
+            :label="t('band_space_setlist.song_drawer.duration')"
             kind="duration"
             :readonly="isLocked('reference_duration')"
             :save="(value) => saveField('reference_duration', value)"
@@ -55,12 +55,12 @@
       </div>
 
       <div>
-        <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">Notes</div>
+        <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">{{ t('band_space_setlist.song_drawer.notes') }}</div>
         <InlineEditField
           :model-value="song.notes"
-          label="Notes"
+          :label="t('band_space_setlist.song_drawer.notes')"
           multiline
-          placeholder="Ajouter une note…"
+          :placeholder="t('band_space_setlist.song_drawer.notes_placeholder')"
           class="text-sm"
           :readonly="isLocked('notes')"
           :save="(value) => saveField('notes', value)"
@@ -80,7 +80,7 @@
 
       <div>
         <div class="flex items-center justify-between mb-2">
-          <div class="text-xs uppercase text-surface-500">Fichiers attachés</div>
+          <div class="text-xs uppercase text-surface-500">{{ t('band_space_setlist.attached_files.title') }}</div>
           <span v-if="files.length > 0" class="text-xs text-surface-400 tabular-nums">
             {{ files.length }}
           </span>
@@ -109,20 +109,20 @@
               text
               rounded
               size="small"
-              aria-label="Détacher"
-              v-tooltip.left="'Détacher ce fichier'"
+              :aria-label="t('band_space_setlist.attached_files.detach')"
+              v-tooltip.left="t('band_space_setlist.attached_files.detach_tooltip')"
               @click="confirmDetach(file)"
             />
           </li>
         </ul>
 
         <p v-else class="text-xs text-surface-400 italic mb-2">
-          Aucun fichier pour le moment.
+          {{ t('band_space_setlist.attached_files.empty') }}
         </p>
 
         <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
         <Button
-          label="Importer un fichier"
+          :label="t('band_space_setlist.attached_files.upload')"
           icon="pi pi-cloud-upload"
           severity="secondary"
           size="small"
@@ -134,7 +134,7 @@
       <Divider />
 
       <div v-if="!readOnly" class="flex gap-2">
-        <Button label="Archiver" icon="pi pi-archive" severity="danger" outlined @click="confirmArchive" />
+        <Button :label="t('band_space_setlist.common.archive')" icon="pi pi-archive" severity="danger" outlined @click="confirmArchive" />
       </div>
     </div>
   </Drawer>
@@ -148,6 +148,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
@@ -162,6 +163,7 @@ const props = defineProps({
 const emit = defineEmits(['archived', 'updated'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const songsStore = useBandSongsStore()
 const confirm = useConfirm()
 const toast = useToast()
@@ -192,7 +194,12 @@ async function loadFiles() {
   try {
     files.value = await bandSpaceSongsApi.getAttachedFiles(props.bandSpaceId, props.song.id)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   } finally {
     isLoadingFiles.value = false
   }
@@ -218,10 +225,19 @@ async function handleFileSelected(event) {
   isUploading.value = true
   try {
     await bandSpaceSongsApi.uploadFile(props.bandSpaceId, props.song.id, file)
-    toast.add({ severity: 'success', summary: 'Fichier téléversé', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_setlist.attached_files.uploaded'),
+      life: 3000
+    })
     await loadFiles()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   } finally {
     isUploading.value = false
     if (fileInput.value) fileInput.value.value = ''
@@ -231,18 +247,29 @@ async function handleFileSelected(event) {
 function confirmDetach(file) {
   if (!props.song) return
   confirm.require({
-    message: `Détacher le fichier « ${file.original_name} » de cette chanson ?`,
-    header: 'Confirmer',
+    message: t('band_space_setlist.song_drawer.detach_confirm_message', {
+      name: file.original_name
+    }),
+    header: t('band_space_setlist.common.confirm'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Détacher',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.attached_files.detach'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       try {
         await bandSpaceSongsApi.detachFile(props.bandSpaceId, props.song.id, file.id)
-        toast.add({ severity: 'success', summary: 'Fichier détaché', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_setlist.attached_files.detached'),
+          life: 3000
+        })
         await loadFiles()
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: t('band_space_setlist.common.error'),
+          detail: e.message,
+          life: 5000
+        })
       }
     }
   })
@@ -278,25 +305,41 @@ async function handleLyricsChanged() {
   try {
     emit('updated', await songsStore.refreshSong(props.bandSpaceId, props.song.id))
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_setlist.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   }
 }
 
 function confirmArchive() {
   if (!props.song) return
   confirm.require({
-    message: `Archiver le titre « ${props.song.title} » ? Il sera retiré du répertoire actif.`,
-    header: "Confirmer l'archivage",
+    message: t('band_space_setlist.common.archive_song_confirm_message', {
+      title: props.song.title
+    }),
+    header: t('band_space_setlist.common.archive_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Archiver',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.common.archive'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       try {
         await songsStore.deleteSong(props.bandSpaceId, props.song.id)
-        toast.add({ severity: 'success', summary: 'Titre archivé', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_setlist.common.song_archived'),
+          life: 3000
+        })
         emit('archived')
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: t('band_space_setlist.common.error'),
+          detail: e.message,
+          life: 5000
+        })
       }
     }
   })

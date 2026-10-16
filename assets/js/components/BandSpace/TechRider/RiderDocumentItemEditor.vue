@@ -1,8 +1,7 @@
 <template>
   <div>
     <Message v-if="file?.is_archived" severity="warn" :closable="false" class="mb-3">
-      Le fichier « {{ file.original_name }} » est dans la corbeille. Restaurez-le depuis les
-      fichiers pour que cette page réapparaisse dans le document.
+      {{ t('band_space_tech_rider.document.trashed_notice', { name: file.original_name }) }}
     </Message>
 
     <div v-if="!file || file.is_archived" class="text-center py-6">
@@ -10,13 +9,17 @@
       <p class="mt-2 text-surface-600 dark:text-surface-300">
         {{
           file
-            ? 'La page réapparaîtra si le fichier est restauré, ou choisissez-en un autre.'
-            : 'Aucun fichier choisi. Une page peut être une image ou un PDF déjà présent dans vos fichiers.'
+            ? t('band_space_tech_rider.document.trashed_hint')
+            : t('band_space_tech_rider.document.no_file')
         }}
       </p>
       <Button
         v-if="!readOnly"
-        :label="file ? 'Choisir un autre fichier' : 'Choisir un fichier'"
+        :label="
+          file
+            ? t('band_space_tech_rider.document.choose_other')
+            : t('band_space_tech_rider.document.choose')
+        "
         icon="pi pi-folder-open"
         severity="secondary"
         outlined
@@ -32,7 +35,7 @@
         <img
           v-if="isImage"
           :src="file.download_url"
-          :alt="`Aperçu de ${file.original_name}`"
+          :alt="t('band_space_tech_rider.document.preview_alt', { name: file.original_name })"
           class="max-h-96 w-full object-contain"
         />
         <!-- No inline PDF render: a preview iframe per item would load every PDF of the rider
@@ -47,7 +50,7 @@
               rel="noopener"
               class="text-sm text-primary hover:underline"
             >
-              Ouvrir le PDF
+              {{ t('band_space_tech_rider.document.open_pdf') }}
             </a>
           </div>
         </div>
@@ -55,7 +58,7 @@
 
       <div v-if="!readOnly" class="flex items-center gap-2">
         <Button
-          label="Changer de fichier"
+          :label="t('band_space_tech_rider.document.change_file')"
           icon="pi pi-folder-open"
           severity="secondary"
           text
@@ -63,7 +66,7 @@
           @click="pickerOpen = true"
         />
         <Button
-          label="Retirer"
+          :label="t('band_space_tech_rider.common.remove')"
           icon="pi pi-times"
           severity="secondary"
           text
@@ -85,6 +88,7 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RiderFilePickerDialog from './RiderFilePickerDialog.vue'
 
 const props = defineProps({
@@ -95,6 +99,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['choose'])
+
+const { t } = useI18n()
 
 const pickerOpen = ref(false)
 

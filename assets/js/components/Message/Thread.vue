@@ -16,15 +16,15 @@
         :style="getAvatarStyle(title)"
         shape="circle"
         role="img"
-        :aria-label="`Discussion du groupe ${title}`"
+        :aria-label="t('message.avatar.channel', { name: title })"
       />
       <Avatar
         v-else-if="otherParticipant?.profile_picture?.small && !otherParticipant?.deletion_datetime"
         :image="otherParticipant.profile_picture.small"
-        :pt="{ image: { alt: `Photo de ${title}` } }"
+        :pt="{ image: { alt: t('message.avatar.photo', { name: title }) } }"
         shape="circle"
         role="img"
-        :aria-label="`Photo de ${title}`"
+        :aria-label="t('message.avatar.photo', { name: title })"
       />
       <Avatar
         v-else
@@ -32,7 +32,7 @@
         :style="getAvatarStyle(otherParticipant?.username ?? title)"
         shape="circle"
         role="img"
-        :aria-label="`Avatar de ${title}`"
+        :aria-label="t('message.avatar.initial', { name: title })"
       />
       <!-- A channel points at the band's own discussion tab, the way a direct message points at the
            other party's profile: the header's name is a way back to where the conversation lives. -->
@@ -80,7 +80,7 @@
           class="flex justify-center"
         >
           <Button
-            label="Charger les messages plus anciens"
+            :label="t('message.thread.load_older')"
             severity="secondary"
             outlined
             size="small"
@@ -151,10 +151,10 @@
                 <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
                      inbox has to say so too rather than draw an empty bubble. A direct message carries no
                      such flag: there is no endpoint that deletes one. -->
-                <p v-if="message.is_deleted" class="text-sm italic">Message supprimé</p>
+                <p v-if="message.is_deleted" class="text-sm italic">{{ t('message.thread.deleted') }}</p>
                 <!-- Sent for its attachments alone (#971). This pane draws no attachment card, so it
                      names what is there rather than drawing an empty bubble. -->
-                <p v-else-if="message.content === ''" class="text-sm italic opacity-80">Pièce jointe</p>
+                <p v-else-if="message.content === ''" class="text-sm italic opacity-80">{{ t('message.thread.attachment') }}</p>
                 <div
                   v-else
                   class="text-sm break-words"
@@ -177,7 +177,7 @@
                 v-if="!isSender(message) && !message.is_deleted"
                 type="button"
                 class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
-                aria-label="Signaler ce message"
+                :aria-label="t('message.thread.report')"
                 @click="openReport(message)"
               >
                 <i class="pi pi-flag text-xs" aria-hidden="true" />
@@ -205,7 +205,7 @@
     <!-- Message input -->
     <div v-else class="border-t border-surface-200 dark:border-surface-700 p-4">
       <p v-if="isRecipientDeleted" class="text-sm text-surface-500 dark:text-surface-400 text-center">
-        Vous ne pouvez plus envoyer de message à cet utilisateur.
+        {{ t('message.thread.recipient_deleted') }}
       </p>
       <template v-else>
         <Message v-if="sendError" severity="error" :closable="true" class="mb-2" @close="sendError = ''">
@@ -216,14 +216,14 @@
           ref="messageInput"
           v-model="content"
           :disabled="messageStore.isAddingMessage"
-          placeholder="Votre message..."
+          :placeholder="t('message.thread.placeholder')"
           rows="2"
           class="flex-1"
           @keydown.enter.exact.prevent="send"
         />
         <Button
           icon="pi pi-send"
-          aria-label="Envoyer le message"
+          :aria-label="t('message.thread.send')"
           :loading="messageStore.isAddingMessage"
           :disabled="!content.trim() || messageStore.isAddingMessage"
           @click="send"
@@ -242,7 +242,7 @@
   <div v-else class="hidden md:flex h-full items-center justify-center text-surface-500 dark:text-surface-400 p-4 text-center">
     <div>
       <i class="pi pi-comments text-4xl mb-4 block" />
-      <p>Selectionnez une conversation ou envoyez un nouveau message.</p>
+      <p>{{ t('message.thread.none_selected') }}</p>
     </div>
   </div>
 </template>
@@ -255,6 +255,7 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
@@ -276,6 +277,7 @@ import MusicLinkPreview from './MusicLinkPreview.vue'
 
 const emit = defineEmits(['back'])
 
+const { t } = useI18n()
 const messageStore = useMessageStore()
 const securityStore = useUserSecurityStore()
 const notificationStore = useNotificationStore()
@@ -346,7 +348,7 @@ async function send() {
     nextTick(() => messageInput.value?.$el?.focus())
   } catch (e) {
     if (e.response?.status === 429) {
-      sendError.value = 'Trop de messages envoyés. Veuillez patienter un instant.'
+      sendError.value = t('message.error.too_many_messages')
     } else if (e.response?.status === 403 && e.response.data?.detail) {
       // A block, from either side: the server says which conversation is closed, never by whom.
       sendError.value = e.response.data.detail

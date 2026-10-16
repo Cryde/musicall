@@ -14,6 +14,7 @@
  */
 
 import { deleteBlockingAttachments, describeFileSources } from '../constants/fileSources.js'
+import { i18n } from '../i18n/index.js'
 import { isFileCreatorOrAdmin } from './bandSpaceFilePermissions.js'
 
 /**
@@ -50,7 +51,7 @@ export function deleteOwnershipReason(files, currentUserId, isAdmin) {
 
   return blocking.length === 0
     ? null
-    : `Seul le créateur ou un administrateur peut supprimer ces fichiers : ${blocking.join(', ')}`
+    : i18n.global.t('band_space_files.bulk.delete_not_owner', { files: blocking.join(', ') })
 }
 
 /**
@@ -63,7 +64,7 @@ export function restoreOwnershipReason(files, currentUserId, isAdmin) {
 
   return blocking.length === 0
     ? null
-    : `Seul le créateur ou un administrateur peut restaurer ces fichiers : ${blocking.join(', ')}`
+    : i18n.global.t('band_space_files.bulk.restore_not_owner', { files: blocking.join(', ') })
 }
 
 /**
@@ -89,9 +90,7 @@ export function attachmentReason(files) {
       .sort()
   )
 
-  return blocking.length === 1
-    ? `1 fichier sélectionné est attaché à ${sources}. Détachez-le d'abord depuis la ressource concernée.`
-    : `${blocking.length} fichiers sélectionnés sont attachés à ${sources}. Détachez-les d'abord depuis les ressources concernées.`
+  return i18n.global.t('band_space_files.bulk.delete_attached', { sources }, blocking.length)
 }
 
 /**

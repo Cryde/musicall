@@ -3,11 +3,11 @@
     ref="messagesContainer"
     class="flex-1 overflow-y-auto p-4 space-y-4"
     role="log"
-    aria-label="Messages de la discussion"
+    :aria-label="t('band_space_chat.message_list.label')"
   >
     <div v-if="chatStore.hasOlderMessages" class="flex justify-center">
       <Button
-        label="Charger les messages plus anciens"
+        :label="t('band_space_chat.message_list.load_older')"
         severity="secondary"
         outlined
         size="small"
@@ -61,7 +61,7 @@
               :display-name="block.messages[0].author_display_name"
               variant="tooltip"
             />
-            <span v-if="isOnline(block.messages[0])" class="sr-only">(en ligne)</span>
+            <span v-if="isOnline(block.messages[0])" class="sr-only">{{ t('band_space_chat.message_list.online') }}</span>
           </span>
         </div>
 
@@ -84,7 +84,7 @@
                   ref="editor"
                   v-model="editContent"
                   :members="suggestionSource"
-                  aria-label="Modifier le message"
+                  :aria-label="t('band_space_chat.message_list.edit')"
                   editor-class="min-h-[3rem] max-h-40 rounded-2xl px-3 py-2"
                   submit-on="enter"
                   :disabled="isSaving"
@@ -96,7 +96,7 @@
                 </Message>
                 <div class="mt-1 flex justify-end gap-2">
                   <Button
-                    label="Annuler"
+                    :label="t('band_space_chat.message_list.cancel')"
                     size="small"
                     severity="secondary"
                     text
@@ -104,7 +104,7 @@
                     @click="cancelEdit"
                   />
                   <Button
-                    label="Enregistrer"
+                    :label="t('band_space_chat.message_list.save')"
                     size="small"
                     icon="pi pi-check"
                     :loading="isSaving"
@@ -122,7 +122,7 @@
                   class="inline-block rounded-2xl bg-surface-100 px-4 py-2 text-sm italic text-surface-600 dark:bg-surface-800 dark:text-surface-300"
                   :class="bubbleCornerClasses(index, block.messages.length, isMine(message))"
                 >
-                  Message supprimé
+                  {{ t('band_space_chat.message_list.deleted') }}
                 </div>
                 <div
                   v-else
@@ -164,7 +164,7 @@
                     v-if="message.update_datetime && !message.is_deleted"
                     class="whitespace-nowrap text-[11px] italic text-surface-500 dark:text-surface-400"
                   >
-                    (modifié)
+                    {{ t('band_space_chat.message_list.edited') }}
                   </span>
                   <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
                        or not there is a pointer to hover with. -->
@@ -201,7 +201,7 @@
                     type="button"
                     class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary disabled:opacity-50 dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
                     :disabled="chatStore.pendingTaskMessageId === message.id"
-                    aria-label="Créer une tâche depuis ce message"
+                    :aria-label="t('band_space_chat.message_list.create_task')"
                     @click="handleCreateTask(message)"
                   >
                     <i class="pi pi-check-square text-xs" aria-hidden="true" />
@@ -210,7 +210,7 @@
                     v-if="!isMine(message) && !message.is_deleted"
                     type="button"
                     class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
-                    aria-label="Signaler ce message"
+                    :aria-label="t('band_space_chat.message_list.report')"
                     @click="openReport(message)"
                   >
                     <i class="pi pi-flag text-xs" aria-hidden="true" />
@@ -224,7 +224,7 @@
                     v-if="canEdit(message)"
                     type="button"
                     class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
-                    aria-label="Modifier le message"
+                    :aria-label="t('band_space_chat.message_list.edit')"
                     @click="startEdit(message)"
                   >
                     <i class="pi pi-pencil text-xs" aria-hidden="true" />
@@ -235,7 +235,7 @@
                     v-if="canDelete(message)"
                     type="button"
                     class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-300 dark:hover:text-red-400"
-                    aria-label="Supprimer le message"
+                    :aria-label="t('band_space_chat.message_list.delete')"
                     @click="confirmDelete(message)"
                   >
                     <i class="pi pi-trash text-xs" aria-hidden="true" />
@@ -278,7 +278,7 @@
       </Message>
       <div class="flex justify-center">
         <Button
-          label="Charger les messages plus récents"
+          :label="t('band_space_chat.message_list.load_newer')"
           severity="secondary"
           outlined
           size="small"
@@ -288,7 +288,7 @@
       </div>
       <div class="sticky bottom-0 flex justify-center pb-1">
         <Button
-          label="Revenir aux messages récents"
+          :label="t('band_space_chat.message_list.back_to_latest')"
           icon="pi pi-arrow-down"
           size="small"
           rounded
@@ -308,6 +308,7 @@ import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useChatPin } from '../../../composables/useChatPin.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
@@ -335,6 +336,7 @@ const props = defineProps({
   members: { type: Array, default: () => [] }
 })
 
+const { t } = useI18n()
 const chatStore = useBandSpaceChatStore()
 const chatPin = useChatPin(props.bandSpaceId)
 const userSecurityStore = useUserSecurityStore()
@@ -384,11 +386,11 @@ function canDelete(message) {
 
 function confirmDelete(message) {
   confirm.require({
-    message: 'Supprimer ce message ? Son contenu sera effacé pour tout le monde.',
-    header: 'Confirmer la suppression',
+    message: t('band_space_chat.message_list.delete_confirm_message'),
+    header: t('band_space_chat.message_list.delete_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_chat.message_list.delete_confirm_reject'),
+    acceptLabel: t('band_space_chat.message_list.delete_confirm_accept'),
     acceptClass: 'p-button-danger',
     accept: () => handleDelete(message)
   })
@@ -405,7 +407,7 @@ async function handleDelete(message) {
     console.error('Failed to delete the chat message:', e)
     toast.add({
       severity: 'error',
-      summary: e.message || "Le message n'a pas pu être supprimé.",
+      summary: e.message || t('band_space_chat.message_list.delete_failed'),
       life: 5000
     })
   }
@@ -420,17 +422,17 @@ async function handleCreateTask(message) {
     const task = await chatStore.createTaskFromMessage(props.bandSpaceId, message.id)
     toast.add({
       severity: 'success',
-      summary: 'Tâche créée',
+      summary: t('band_space_chat.message_list.task_created'),
       // Names the card, because the card is the way back: it opens the task, where the assignee and
       // the date are set. A toast that only congratulates leaves the member hunting the board.
-      detail: `« ${task.title} ». Sa fiche est sous le message, ouvrez-la pour l'assigner.`,
+      detail: t('band_space_chat.message_list.task_created_detail', { title: task.title }),
       life: 6000
     })
   } catch (e) {
     console.error('Failed to create a task from the chat message:', e)
     toast.add({
       severity: 'error',
-      summary: e.message || "La tâche n'a pas pu être créée.",
+      summary: e.message || t('band_space_chat.message_list.task_failed'),
       life: 5000
     })
   }
@@ -501,7 +503,7 @@ async function saveEdit(message) {
     cancelEdit()
   } catch (e) {
     console.error('Failed to edit the message:', e)
-    saveError.value = e.message || "Le message n'a pas pu être modifié."
+    saveError.value = e.message || t('band_space_chat.message_list.edit_failed')
   } finally {
     isSaving.value = false
   }

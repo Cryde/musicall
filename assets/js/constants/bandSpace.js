@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 export const LAST_BAND_SPACE_KEY = 'lastBandSpaceId'
 export const CREATE_ACTION_ID = '__create__'
 
@@ -60,53 +62,99 @@ export const BAND_SPACE_MODULES = Object.freeze([
   {
     key: 'agenda',
     icon: 'pi pi-calendar',
-    label: 'Agenda',
-    description: 'Chaque date réunit horaires, lieu, disponibilités et setlist associée.'
+    get label() {
+      return i18n.global.t('band_space.module_name.agenda')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.agenda')
+    }
   },
   {
     key: 'taches',
     icon: 'pi pi-check-square',
-    label: 'Tâches',
-    description: 'Qui réserve la salle, qui relance le programmateur, et où ça en est.'
+    get label() {
+      return i18n.global.t('band_space.module_name.tasks')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.tasks')
+    }
   },
   {
     key: 'notes',
     icon: 'pi pi-file-edit',
-    label: 'Notes',
-    description: 'Les paroles, les arrangements et les comptes rendus de répét, au même endroit.'
+    get label() {
+      return i18n.global.t('band_space.module_name.notes')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.notes')
+    }
   },
   {
     key: 'setlists',
     icon: 'pi pi-list',
-    label: 'Setlists',
-    description: "L'ordre, les transitions et les durées, prêts à imprimer ou à suivre sur scène."
+    get label() {
+      return i18n.global.t('band_space.module_name.setlist')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.setlists')
+    }
   },
   {
     key: 'files',
     icon: 'pi pi-folder-open',
-    label: 'Fichiers',
-    description: 'Maquettes, partitions, contrats et photos partagés avec tout le groupe.'
+    get label() {
+      return i18n.global.t('band_space.module_name.files')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.files')
+    }
   },
   {
     key: 'finances',
     icon: 'pi pi-wallet',
-    label: 'Finances',
-    description: "Dépenses, cachets et part de chacun, calculés au lieu d'être discutés."
+    get label() {
+      return i18n.global.t('band_space.module_name.finance')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.finances')
+    }
   }
 ])
 
 export const SECTION_NAMES = {
-  [BAND_SPACE_ROUTES.DASHBOARD]: 'Dashboard',
-  [BAND_SPACE_ROUTES.AGENDA]: 'Agenda',
-  [BAND_SPACE_ROUTES.CHAT]: 'Discussion',
-  [BAND_SPACE_ROUTES.NOTES]: 'Notes',
-  [BAND_SPACE_ROUTES.FILES]: 'Fichiers',
-  [BAND_SPACE_ROUTES.TASKS]: 'Tâches',
-  [BAND_SPACE_ROUTES.FINANCE]: 'Finances',
-  [BAND_SPACE_ROUTES.SETLIST]: 'Setlists',
-  [BAND_SPACE_ROUTES.RIDER]: 'Tech riders',
-  [BAND_SPACE_ROUTES.PARAMETERS]: 'Paramètres',
-  [BAND_SPACE_ROUTES.INDEX]: 'Band Space'
+  get [BAND_SPACE_ROUTES.DASHBOARD]() {
+    return i18n.global.t('band_space.module_name.dashboard')
+  },
+  get [BAND_SPACE_ROUTES.AGENDA]() {
+    return i18n.global.t('band_space.module_name.agenda')
+  },
+  get [BAND_SPACE_ROUTES.CHAT]() {
+    return i18n.global.t('band_space.module_name.chat')
+  },
+  get [BAND_SPACE_ROUTES.NOTES]() {
+    return i18n.global.t('band_space.module_name.notes')
+  },
+  get [BAND_SPACE_ROUTES.FILES]() {
+    return i18n.global.t('band_space.module_name.files')
+  },
+  get [BAND_SPACE_ROUTES.TASKS]() {
+    return i18n.global.t('band_space.module_name.tasks')
+  },
+  get [BAND_SPACE_ROUTES.FINANCE]() {
+    return i18n.global.t('band_space.module_name.finance')
+  },
+  get [BAND_SPACE_ROUTES.SETLIST]() {
+    return i18n.global.t('band_space.module_name.setlist')
+  },
+  get [BAND_SPACE_ROUTES.RIDER]() {
+    return i18n.global.t('band_space.module_name.rider')
+  },
+  get [BAND_SPACE_ROUTES.PARAMETERS]() {
+    return i18n.global.t('band_space.module_name.parameters')
+  },
+  get [BAND_SPACE_ROUTES.INDEX]() {
+    return i18n.global.t('band_space.module_name.band_space')
+  }
 }
 
 /**
@@ -116,13 +164,55 @@ export const SECTION_NAMES = {
  * member and not only to admins.
  */
 export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
-  { key: 'members', label: 'Membres', adminOnly: false },
-  { key: 'activity', label: "Journal d'activité", adminOnly: false },
-  { key: 'shares', label: 'Partages actifs', adminOnly: false },
-  { key: 'calendar', label: 'Synchronisation agenda', adminOnly: false },
-  { key: 'storage', label: 'Stockage', adminOnly: false },
-  { key: 'general', label: 'Général', adminOnly: false },
-  { key: 'danger', label: 'Zone de danger', adminOnly: false }
+  {
+    key: 'members',
+    get label() {
+      return i18n.global.t('band_space.settings.section.members')
+    },
+    adminOnly: false
+  },
+  {
+    key: 'activity',
+    get label() {
+      return i18n.global.t('band_space.settings.section.activity')
+    },
+    adminOnly: false
+  },
+  {
+    key: 'shares',
+    get label() {
+      return i18n.global.t('band_space.settings.section.shares')
+    },
+    adminOnly: false
+  },
+  {
+    key: 'calendar',
+    get label() {
+      return i18n.global.t('band_space.settings.section.calendar')
+    },
+    adminOnly: false
+  },
+  {
+    key: 'storage',
+    get label() {
+      return i18n.global.t('band_space.settings.section.storage')
+    },
+    adminOnly: false
+  },
+  {
+    key: 'general',
+    get label() {
+      return i18n.global.t('band_space.settings.section.general')
+    },
+    adminOnly: false
+  },
+  {
+    key: 'danger',
+    get label() {
+      return i18n.global.t('band_space.settings.section.danger')
+    },
+    adminOnly: false
+  }
 ])
 
 /**
@@ -151,24 +241,76 @@ export function resolveSettingsSection(requestedKey, isAdmin) {
 }
 
 export const NAVIGATION_ITEMS = Object.freeze([
-  { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD, icon: 'pi-th-large' },
-  { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA, icon: 'pi-calendar' },
   {
-    label: 'Discussion',
+    get label() {
+      return i18n.global.t('band_space.module_name.dashboard')
+    },
+    route: BAND_SPACE_ROUTES.DASHBOARD,
+    icon: 'pi-th-large'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.agenda')
+    },
+    route: BAND_SPACE_ROUTES.AGENDA,
+    icon: 'pi-calendar'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.chat')
+    },
     route: BAND_SPACE_ROUTES.CHAT,
     icon: 'pi-comments',
     testerOnly: CHAT_TESTER_ONLY
   },
-  { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES, icon: 'pi-file-edit' },
-  { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES, icon: 'pi-folder' },
-  { label: 'Setlists', route: BAND_SPACE_ROUTES.SETLIST, icon: 'pi-list' },
   {
-    label: 'Tech riders',
+    get label() {
+      return i18n.global.t('band_space.module_name.notes')
+    },
+    route: BAND_SPACE_ROUTES.NOTES,
+    icon: 'pi-file-edit'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.files')
+    },
+    route: BAND_SPACE_ROUTES.FILES,
+    icon: 'pi-folder'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.setlist')
+    },
+    route: BAND_SPACE_ROUTES.SETLIST,
+    icon: 'pi-list'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.rider')
+    },
     route: BAND_SPACE_ROUTES.RIDER,
     icon: 'pi-sliders-h',
     testerOnly: RIDER_TESTER_ONLY
   },
-  { label: 'Tâches', route: BAND_SPACE_ROUTES.TASKS, icon: 'pi-check-square' },
-  { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE, icon: 'pi-wallet' },
-  { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS, icon: 'pi-cog' }
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.tasks')
+    },
+    route: BAND_SPACE_ROUTES.TASKS,
+    icon: 'pi-check-square'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.finance')
+    },
+    route: BAND_SPACE_ROUTES.FINANCE,
+    icon: 'pi-wallet'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.parameters')
+    },
+    route: BAND_SPACE_ROUTES.PARAMETERS,
+    icon: 'pi-cog'
+  }
 ])

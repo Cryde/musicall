@@ -1,7 +1,7 @@
 <template>
   <!-- One kind at a time, or all of them (#1046). Buttons, so Tab reaches them while the arrow keys
        stay with the caller's input and the rows below. -->
-  <div class="flex flex-wrap gap-2 mb-3" role="group" aria-label="Filtrer par type">
+  <div class="flex flex-wrap gap-2 mb-3" role="group" :aria-label="t('band_space.search.filter_by_type')">
     <button
       v-for="searchType in SEARCH_TYPES"
       :key="searchType.type"
@@ -33,7 +33,7 @@
       @click="emit('toggle-order')"
     >
       <i class="pi pi-eye text-xs" aria-hidden="true" />
-      <span>Ouverts par moi</span>
+      <span>{{ t('band_space.search.opened_by_me') }}</span>
     </button>
   </div>
 
@@ -58,7 +58,7 @@
         :id="listboxId"
         ref="listboxRef"
         role="listbox"
-        :aria-label="`${label}, ${recentsHeading.toLowerCase()}`"
+        :aria-label="t('band_space.search.recents_listbox', { label, heading: recentsHeading.toLowerCase() })"
         class="flex flex-col max-h-[24rem] overflow-y-auto"
       >
         <BandSpaceSearchResultRow
@@ -77,12 +77,12 @@
       </div>
     </template>
     <p v-if="!isLoadingRecents" class="text-sm text-surface-600 dark:text-surface-300 m-0">
-      Tapez au moins {{ MIN_SEARCH_QUERY_LENGTH }} caractères pour chercher.
+      {{ t('band_space.search.min_length', { min: MIN_SEARCH_QUERY_LENGTH }) }}
     </p>
   </div>
 
   <p v-else-if="groups.length === 0" class="py-6 m-0 text-center text-surface-600 dark:text-surface-300">
-    Aucun résultat pour «&nbsp;{{ query.trim() }}&nbsp;»
+    {{ t('band_space.search.no_result_for', { query: query.trim() }) }}
   </p>
 
   <div
@@ -119,6 +119,7 @@
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MIN_SEARCH_QUERY_LENGTH, RECENTS_ORDER } from '../../composables/useBandSpaceSearch.js'
 import { SEARCH_TYPES } from '../../utils/bandSpaceSearch.js'
 import BandSpaceSearchResultRow from './BandSpaceSearchResultRow.vue'
@@ -163,6 +164,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'activate', 'toggle-type', 'toggle-order'])
+const { t } = useI18n()
 
 const listboxRef = ref(null)
 
@@ -171,7 +173,7 @@ const isOpenedOrder = computed(() => props.order === RECENTS_ORDER.OPENED)
 // A short history is topped up with the band's latest changes, so the list starts with what was
 // opened rather than holding only that, and the heading says so.
 const recentsHeading = computed(() =>
-  isOpenedOrder.value ? "Derniers ouverts d'abord" : 'Récents'
+  isOpenedOrder.value ? t('band_space.search.recents_opened_first') : t('band_space.search.recents')
 )
 
 function isPicked(result) {

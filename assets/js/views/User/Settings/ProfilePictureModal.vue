@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Photo de profil"
+    :header="t('profile.settings.profile_picture.title')"
     :style="{ width: '50rem' }"
     :closable="!userSettingsStore.isChangingPicture"
     :closeOnEscape="!userSettingsStore.isChangingPicture"
@@ -26,13 +26,13 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button
-          label="Annuler"
+          :label="t('profile.settings.profile_picture.cancel')"
           severity="secondary"
           @click="handleClose"
           :disabled="userSettingsStore.isChangingPicture"
         />
         <Button
-          label="Sauvegarder"
+          :label="t('profile.settings.profile_picture.save')"
           icon="pi pi-check"
           :loading="userSettingsStore.isChangingPicture"
           @click="handleSave"
@@ -49,6 +49,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 
 const props = defineProps({
@@ -63,6 +64,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved'])
+const { t } = useI18n()
 
 const userSettingsStore = useUserSettingsStore()
 
@@ -98,7 +100,7 @@ async function handleSave() {
           if (e.violations?.length) {
             error.value = e.violations.map((v) => v.message).join('. ')
           } else {
-            error.value = e.message || 'Une erreur est survenue'
+            error.value = e.message || t('profile.settings.profile_picture.error')
           }
         }
       },

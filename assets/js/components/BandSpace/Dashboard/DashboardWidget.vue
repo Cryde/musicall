@@ -16,7 +16,7 @@
         {{ error }}
       </div>
       <div v-else-if="isEmpty" class="flex-1 flex items-center justify-center text-sm text-surface-500 dark:text-surface-400 text-center py-6">
-        {{ emptyMessage }}
+        {{ emptyMessage ?? t('band_space.dashboard.empty_default') }}
       </div>
       <div v-else class="flex-1">
         <slot />
@@ -27,6 +27,7 @@
 
 <script setup>
 import Skeleton from 'primevue/skeleton'
+import { useI18n } from 'vue-i18n'
 
 defineProps({
   title: { type: String, required: true },
@@ -34,7 +35,9 @@ defineProps({
   isLoading: { type: Boolean, default: false },
   error: { type: String, default: null },
   isEmpty: { type: Boolean, default: false },
-  emptyMessage: { type: String, default: 'Aucune donnée à afficher pour le moment.' },
+  emptyMessage: { type: String, default: null },
   skeletonRows: { type: Number, default: 3 }
 })
+
+const { t } = useI18n()
 </script>

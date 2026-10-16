@@ -2,12 +2,12 @@
   <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
-        Médias
+        {{ t('profile.media.title') }}
       </h2>
       <Button
         v-if="isOwnProfile && canAddMore"
         icon="pi pi-plus"
-        label="Ajouter"
+        :label="t('profile.media.add')"
         size="small"
         @click="showAddModal = true"
       />
@@ -30,7 +30,7 @@
           class="aspect-video relative cursor-pointer"
           role="button"
           tabindex="0"
-          :aria-label="`Lire ${item.title || 'le média'}`"
+          :aria-label="item.title ? t('profile.media.play', { title: item.title }) : t('profile.media.play_untitled')"
           @click="openMedia(item)"
           @keydown.enter="openMedia(item)"
           @keydown.space.prevent="openMedia(item)"
@@ -38,7 +38,7 @@
           <img
             v-if="item.thumbnail_url"
             :src="item.thumbnail_url"
-            :alt="item.title || 'Média'"
+            :alt="item.title || t('profile.media.thumbnail_alt')"
             class="w-full h-full object-cover"
           />
           <div
@@ -66,7 +66,7 @@
           <Button
             v-if="isOwnProfile"
             icon="pi pi-trash"
-            aria-label="Supprimer ce média"
+            :aria-label="t('profile.media.delete_aria')"
             severity="danger"
             text
             rounded
@@ -80,7 +80,7 @@
             target-type="profile_media"
             :target-id="item.id"
             :author-username="ownerUsername"
-            :aria-label="`Signaler ${item.title || 'ce média'}`"
+            :aria-label="item.title ? t('profile.media.report', { title: item.title }) : t('profile.media.report_untitled')"
             icon-only
             class="shrink-0"
           />
@@ -94,11 +94,11 @@
         <i class="pi pi-video text-2xl text-surface-400" />
       </div>
       <p class="text-surface-500 dark:text-surface-400 mb-4">
-        {{ isOwnProfile ? 'Vous n\'avez pas encore ajouté de création' : 'Aucune création à afficher' }}
+        {{ isOwnProfile ? t('profile.media.empty_own') : t('profile.media.empty') }}
       </p>
       <Button
         v-if="isOwnProfile"
-        label="Ajouter une création"
+        :label="t('profile.media.add_creation')"
         icon="pi pi-plus"
         @click="showAddModal = true"
       />
@@ -108,7 +108,7 @@
     <Dialog
       v-model:visible="showPlayerModal"
       modal
-      :header="selectedMedia?.title || 'Lecteur'"
+      :header="selectedMedia?.title || t('profile.media.player')"
       :style="{ width: '90vw', maxWidth: '900px' }"
     >
       <div v-if="selectedMedia" class="aspect-video bg-black rounded-lg overflow-hidden">
@@ -116,7 +116,7 @@
         <iframe
           v-if="selectedMedia.platform === 'youtube'"
           :src="`https://www.youtube.com/embed/${selectedMedia.embed_id}?autoplay=1`"
-          :title="selectedMedia.title || 'Vidéo YouTube'"
+          :title="selectedMedia.title || t('profile.media.youtube_video')"
           class="w-full h-full"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -126,7 +126,7 @@
         <iframe
           v-else-if="selectedMedia.platform === 'spotify'"
           :src="`https://open.spotify.com/embed/${selectedMedia.embed_id}`"
-          :title="selectedMedia.title || 'Lecteur Spotify'"
+          :title="selectedMedia.title || t('profile.media.spotify_player')"
           class="w-full h-full"
           frameborder="0"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -136,7 +136,7 @@
         <iframe
           v-else-if="selectedMedia.platform === 'soundcloud'"
           :src="`https://w.soundcloud.com/player/?url=https://soundcloud.com/${selectedMedia.embed_id}&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`"
-          :title="selectedMedia.title || 'Lecteur SoundCloud'"
+          :title="selectedMedia.title || t('profile.media.soundcloud_player')"
           class="w-full h-full"
           frameborder="0"
           allow="autoplay"
@@ -149,17 +149,17 @@
     <Dialog
       v-model:visible="showAddModal"
       modal
-      header="Ajouter une création"
+      :header="t('profile.media.add_creation')"
       :style="{ width: '500px' }"
     >
       <div class="flex flex-col gap-4">
         <div>
           <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
-            Lien vers votre création
+            {{ t('profile.media.url_label') }}
           </label>
           <InputText
             v-model="newMediaUrl"
-            placeholder="https://youtube.com/watch?v=... ou soundcloud.com/..."
+            :placeholder="t('profile.media.url_placeholder')"
             class="w-full"
             :invalid="!!urlError"
           />
@@ -167,17 +167,17 @@
             {{ urlError }}
           </p>
           <p v-else class="text-xs text-surface-500 dark:text-surface-400 mt-1">
-            Plateformes supportées : YouTube, SoundCloud, Spotify
+            {{ t('profile.media.supported_platforms') }}
           </p>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
-            Titre (optionnel)
+            {{ t('profile.media.title_label') }}
           </label>
           <InputText
             v-model="newMediaTitle"
-            placeholder="Nom de votre création"
+            :placeholder="t('profile.media.title_placeholder')"
             class="w-full"
           />
         </div>
@@ -187,16 +187,16 @@
           <div class="flex items-center gap-3">
             <Tag :value="detectedPlatform" :severity="getPlatformSeverity(detectedPlatform.toLowerCase())" />
             <span class="text-sm text-surface-600 dark:text-surface-300">
-              Plateforme détectée
+              {{ t('profile.media.detected_platform') }}
             </span>
           </div>
         </div>
       </div>
 
       <template #footer>
-        <Button label="Annuler" severity="secondary" text @click="closeAddModal" />
+        <Button :label="t('profile.media.cancel')" severity="secondary" text @click="closeAddModal" />
         <Button
-          label="Ajouter"
+          :label="t('profile.media.add')"
           icon="pi pi-plus"
           :disabled="!newMediaUrl"
           :loading="isAdding"
@@ -219,6 +219,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getMediaPlatformLabel } from '../../constants/teacherProfile.js'
 import { useTeacherProfileMediaStore } from '../../store/user/teacherProfileMedia.js'
 import ReportButton from '../Report/ReportButton.vue'
@@ -242,6 +243,7 @@ const props = defineProps({
 })
 
 const confirm = useConfirm()
+const { t } = useI18n()
 const mediaStore = useTeacherProfileMediaStore()
 
 const showPlayerModal = ref(false)
@@ -316,9 +318,9 @@ async function handleAdd() {
     closeAddModal()
   } catch (error) {
     if (error.isValidationError) {
-      urlError.value = error.message || 'URL invalide'
+      urlError.value = error.message || t('profile.media.invalid_url')
     } else {
-      urlError.value = error.message || 'Une erreur est survenue'
+      urlError.value = error.message || t('profile.media.error')
     }
   }
 }
@@ -333,11 +335,11 @@ function closeAddModal() {
 function handleDelete(item) {
   confirm.require({
     group: 'teacher-media-delete',
-    message: 'Êtes-vous sûr de vouloir supprimer cette création ?',
-    header: 'Confirmation',
+    message: t('profile.media.delete_confirm_message'),
+    header: t('profile.media.delete_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('profile.media.cancel'),
+    acceptLabel: t('profile.media.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       deletingId.value = item.id

@@ -5,7 +5,7 @@
       class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4"
     >
       <Message severity="error" :closable="false">{{ techRidersStore.loadError }}</Message>
-      <Button label="Réessayer" icon="pi pi-refresh" severity="secondary" @click="load" />
+      <Button :label="t('band_space_tech_rider.common.retry')" icon="pi pi-refresh" severity="secondary" @click="load" />
     </div>
 
     <div v-else-if="techRidersStore.isLoading" class="p-8 flex justify-center">
@@ -14,9 +14,9 @@
 
     <div v-else-if="!hasAnyRider" class="flex flex-col gap-4">
       <div>
-        <h1 class="text-2xl font-bold">Tech riders</h1>
+        <h1 class="text-2xl font-bold">{{ t('band_space_tech_rider.page.title') }}</h1>
         <p class="text-surface-600 dark:text-surface-300 mt-1">
-          Les documents techniques envoyés aux salles avant un concert.
+          {{ t('band_space_tech_rider.page.intro') }}
         </p>
       </div>
       <div
@@ -26,12 +26,12 @@
           class="pi pi-sliders-h text-4xl text-surface-400 dark:text-surface-500"
           aria-hidden="true"
         />
-        <p class="mt-3 font-medium">Aucun tech rider</p>
+        <p class="mt-3 font-medium">{{ t('band_space_tech_rider.page.empty_title') }}</p>
         <p class="mt-1 text-surface-600 dark:text-surface-300">
-          Créez votre premier tech rider pour centraliser vos besoins techniques.
+          {{ t('band_space_tech_rider.page.empty_text') }}
         </p>
         <Button
-          label="Nouveau tech rider"
+          :label="t('band_space_tech_rider.common.new_rider')"
           icon="pi pi-plus"
           class="mt-4"
           @click="openCreateDialog"
@@ -42,7 +42,7 @@
     <div v-else class="flex flex-col gap-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-3 min-w-0">
-          <h1 class="text-2xl font-bold shrink-0">Tech riders</h1>
+          <h1 class="text-2xl font-bold shrink-0">{{ t('band_space_tech_rider.page.title') }}</h1>
           <TechRiderSelector
             :live-riders="[...techRidersStore.liveRiders]"
             :archived-riders="[...techRidersStore.archivedRiders]"
@@ -60,20 +60,20 @@
             <template v-if="techRidersStore.saveStatus === 'error'">
               <i class="pi pi-times text-red-600 dark:text-red-400" aria-hidden="true" />
               <span>{{ refusedLabel }}</span>
-              <Button label="Réessayer" size="small" severity="secondary" text @click="techRidersStore.retryRefusedSaves()" />
+              <Button :label="t('band_space_tech_rider.common.retry')" size="small" severity="secondary" text @click="techRidersStore.retryRefusedSaves()" />
             </template>
             <template v-else-if="techRidersStore.saveStatus === 'saving'">
               <i class="pi pi-spin pi-spinner" aria-hidden="true" />
-              <span>Enregistrement…</span>
+              <span>{{ t('band_space_tech_rider.page.saving') }}</span>
             </template>
             <template v-else>
               <i class="pi pi-check text-teal-700 dark:text-teal-300" aria-hidden="true" />
-              <span>Enregistré</span>
+              <span>{{ t('band_space_tech_rider.page.saved') }}</span>
             </template>
           </span>
           <Button
             ref="previewToggleRef"
-            label="Aperçu"
+            :label="t('band_space_tech_rider.page.preview')"
             icon="pi pi-eye"
             severity="secondary"
             outlined
@@ -83,7 +83,11 @@
           <!-- Offered on an archived rider too, like Dupliquer: last year's rider is exactly the
                thing you send when a venue asks what you used. -->
           <Button
-            :label="isExporting ? 'Génération...' : 'Télécharger le PDF'"
+            :label="
+              isExporting
+                ? t('band_space_tech_rider.page.exporting')
+                : t('band_space_tech_rider.page.download_pdf')
+            "
             :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
             :disabled="isExporting"
             @click="handleExport"
@@ -93,7 +97,7 @@
             severity="secondary"
             outlined
             aria-haspopup="menu"
-            aria-label="Plus d'actions sur ce tech rider"
+            :aria-label="t('band_space_tech_rider.page.more_actions')"
             @click="(event) => riderMenuRef.toggle(event)"
           />
           <Menu ref="riderMenuRef" :model="riderMenuItems" :popup="true" />
@@ -102,8 +106,8 @@
 
       <Message v-if="isArchived" severity="warn" :closable="false">
         <div class="flex flex-wrap items-center justify-between gap-3 w-full">
-          <span>Ce tech rider est archivé. Restaurez-le pour pouvoir le modifier.</span>
-          <Button label="Restaurer" icon="pi pi-replay" size="small" @click="handleUnarchive" />
+          <span>{{ t('band_space_tech_rider.page.archived_notice') }}</span>
+          <Button :label="t('band_space_tech_rider.common.restore')" icon="pi pi-replay" size="small" @click="handleUnarchive" />
         </div>
       </Message>
 
@@ -117,8 +121,16 @@
 
           <template v-else-if="rider">
             <p class="text-surface-600 dark:text-surface-300 text-sm mb-3">
-              Créé le {{ formatDate(rider.creation_datetime) }}
-              {{ rider.created_by_username ? `par ${rider.created_by_display_name ?? rider.created_by_username}` : '' }}
+              {{
+                rider.created_by_username
+                  ? t('band_space_tech_rider.page.created_on_by', {
+                      date: formatDate(rider.creation_datetime),
+                      name: rider.created_by_display_name ?? rider.created_by_username
+                    })
+                  : t('band_space_tech_rider.page.created_on', {
+                      date: formatDate(rider.creation_datetime)
+                    })
+              }}
             </p>
 
             <!-- Keyed per rider: switching rider remounts it, so a section's last save is sent with
@@ -137,17 +149,17 @@
         <!-- Docked beside the editor where there is room for both, a drawer otherwise. -->
         <aside
           v-if="isWide && isPreviewDocked && rider"
-          aria-label="Aperçu du PDF"
+          :aria-label="t('band_space_tech_rider.common.pdf_preview')"
           class="w-[450px] shrink-0 sticky top-4 h-[calc(100vh-2rem)] flex flex-col gap-2 bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-4"
         >
           <div class="flex items-center justify-between">
-            <h2 class="font-semibold">Aperçu du PDF</h2>
+            <h2 class="font-semibold">{{ t('band_space_tech_rider.common.pdf_preview') }}</h2>
             <Button
               icon="pi pi-times"
               severity="secondary"
               text
               rounded
-              aria-label="Fermer l’aperçu"
+              :aria-label="t('band_space_tech_rider.page.close_preview')"
               @click="closeDockedPreview"
             />
           </div>
@@ -166,7 +178,7 @@
       v-if="!isWide"
       v-model:visible="isDrawerOpen"
       position="right"
-      header="Aperçu du PDF"
+      :header="t('band_space_tech_rider.common.pdf_preview')"
       class="!w-full md:!w-[450px]"
     >
       <RiderPdfPreview
@@ -199,6 +211,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
 import RiderPdfPreview from '../../components/BandSpace/TechRider/RiderPdfPreview.vue'
@@ -213,6 +226,7 @@ import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRider
 import { downloadBlob } from '../../utils/downloadBlob.js'
 import { selectableItemId } from '../../utils/riderWorkspace.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const techRidersStore = useBandTechRidersStore()
@@ -275,20 +289,37 @@ function togglePreview() {
   }
 }
 
-const refusedLabel = computed(() => {
-  const count = techRidersStore.refusedItemIds.length
-  return count > 1 ? `Erreur sur ${count} sections` : 'Erreur'
-})
+const refusedLabel = computed(() =>
+  t('band_space_tech_rider.page.save_error', techRidersStore.refusedItemIds.length)
+)
 
 // Secondary actions, out of the header's way. Restaurer stays in the archived banner as well,
 // where it explains why the rider cannot be edited.
 const riderMenuItems = computed(() => [
-  { label: 'Dupliquer', icon: 'pi pi-copy', command: openDuplicateDialog },
+  {
+    label: t('band_space_tech_rider.common.duplicate'),
+    icon: 'pi pi-copy',
+    command: openDuplicateDialog
+  },
   ...(isArchived.value
-    ? [{ label: 'Restaurer', icon: 'pi pi-replay', command: handleUnarchive }]
+    ? [
+        {
+          label: t('band_space_tech_rider.common.restore'),
+          icon: 'pi pi-replay',
+          command: handleUnarchive
+        }
+      ]
     : [
-        { label: 'Renommer', icon: 'pi pi-pencil', command: openRenameDialog },
-        { label: 'Archiver', icon: 'pi pi-inbox', command: confirmArchive }
+        {
+          label: t('band_space_tech_rider.common.rename'),
+          icon: 'pi pi-pencil',
+          command: openRenameDialog
+        },
+        {
+          label: t('band_space_tech_rider.common.archive'),
+          icon: 'pi pi-inbox',
+          command: confirmArchive
+        }
       ])
 ])
 const formDialogOpen = ref(false)
@@ -409,8 +440,8 @@ async function handleExport() {
     if (error?.response?.status !== 401) {
       toast.add({
         severity: 'error',
-        summary: 'Export impossible',
-        detail: 'Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant.',
+        summary: t('band_space_tech_rider.page.export_failed_summary'),
+        detail: t('band_space_tech_rider.page.export_failed_detail'),
         life: 6000
       })
     }
@@ -436,17 +467,26 @@ function handleSaved(saved) {
 
 function confirmArchive() {
   confirm.require({
-    message: `« ${rider.value.name} » sera déplacé dans les archives. Vous pourrez le restaurer plus tard.`,
-    header: 'Archiver le tech rider',
+    message: t('band_space_tech_rider.page.archive_confirm_message', { name: rider.value.name }),
+    header: t('band_space_tech_rider.page.archive_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Archiver',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_tech_rider.common.archive'),
+    rejectLabel: t('band_space_tech_rider.common.cancel'),
     accept: async () => {
       try {
         await techRidersStore.archiveTechRider(bandSpaceId.value, selectedRiderId.value)
-        toast.add({ severity: 'success', summary: 'Tech rider archivé', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_tech_rider.page.archived'),
+          life: 3000
+        })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: t('band_space_tech_rider.common.error'),
+          detail: e.message,
+          life: 5000
+        })
       }
     }
   })
@@ -455,9 +495,18 @@ function confirmArchive() {
 async function handleUnarchive() {
   try {
     await techRidersStore.unarchiveTechRider(bandSpaceId.value, selectedRiderId.value)
-    toast.add({ severity: 'success', summary: 'Tech rider restauré', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tech_rider.page.restored'),
+      life: 3000
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_tech_rider.common.error'),
+      detail: e.message,
+      life: 5000
+    })
   }
 }
 

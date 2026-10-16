@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { categoryDeleteMessage, RECURRENCE_DELETE_MESSAGE } from './financeConfirmations.js'
+import { categoryDeleteMessage, recurrenceDeleteMessage } from './financeConfirmations.js'
 
 describe('categoryDeleteMessage', () => {
   it('says an empty category takes nothing with it', () => {
@@ -44,9 +44,9 @@ describe('categoryDeleteMessage', () => {
   })
 })
 
-describe('RECURRENCE_DELETE_MESSAGE', () => {
+describe('recurrenceDeleteMessage', () => {
   it('says the forecasts go and the committed or paid occurrences stay', () => {
-    assert.match(RECURRENCE_DELETE_MESSAGE, /entrées prévues/)
-    assert.match(RECURRENCE_DELETE_MESSAGE, /engagées ou payées seront conservées/)
+    assert.match(recurrenceDeleteMessage(), /entrées prévues/)
+    assert.match(recurrenceDeleteMessage(), /engagées ou payées seront conservées/)
   })
 })

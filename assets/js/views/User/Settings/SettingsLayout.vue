@@ -3,10 +3,10 @@
     <div class="flex flex-col gap-6">
       <div class="flex flex-col gap-2">
         <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
-          Paramètres
+          {{ t('profile.settings.title') }}
         </h1>
         <p class="text-surface-600 dark:text-surface-400">
-          Gérez les paramètres de votre compte
+          {{ t('profile.settings.subtitle') }}
         </p>
       </div>
 
@@ -26,7 +26,7 @@
               ]"
             >
               <i :class="tab.icon"></i>
-              <span>{{ tab.label }}</span>
+              <span>{{ t(tab.labelKey) }}</span>
             </button>
           </div>
         </div>
@@ -43,38 +43,45 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 
-useTitle('Paramètres - MusicAll')
+const { t } = useI18n()
+useTitle(() => t('profile.settings.page_title'))
 
 const route = useRoute()
 const router = useRouter()
 const userSettingsStore = useUserSettingsStore()
 
 const tabs = [
-  { value: 'general', label: 'Général', icon: 'pi pi-user', route: 'app_user_settings' },
+  {
+    value: 'general',
+    labelKey: 'profile.settings.tabs.general',
+    icon: 'pi pi-user',
+    route: 'app_user_settings'
+  },
   {
     value: 'profile',
-    label: 'Profil',
+    labelKey: 'profile.settings.tabs.profile',
     icon: 'pi pi-id-card',
     route: 'app_user_settings_profile'
   },
   {
     value: 'password',
-    label: 'Mot de passe',
+    labelKey: 'profile.settings.tabs.password',
     icon: 'pi pi-lock',
     route: 'app_user_settings_password'
   },
   {
     value: 'notifications',
-    label: 'Notifications',
+    labelKey: 'profile.settings.tabs.notifications',
     icon: 'pi pi-bell',
     route: 'app_user_settings_notifications'
   },
   {
     value: 'privacy',
-    label: 'Confidentialité',
+    labelKey: 'profile.settings.tabs.privacy',
     icon: 'pi pi-shield',
     route: 'app_user_settings_privacy'
   }

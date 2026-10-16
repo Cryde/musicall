@@ -23,15 +23,16 @@
             </div>
             <div class="self-stretch text-surface-600 dark:text-surface-200 text-sm leading-normal flex items-center gap-2">
               <i class="pi pi-images text-xs" />
-              <span>{{ imageCount }} photos</span>
+              <span>{{ t('publication.gallery.photo_count', { count: imageCount }) }}</span>
             </div>
           </div>
         </div>
 
         <div class="text-surface-500 dark:text-surface-300 text-xs md:text-sm leading-normal">
-          par <UserName :username="author.username" :display-name="authorName" variant="tooltip" /> {{ relativeDateFilter(date) }}
-
-          <Tag severity="secondary" value="Photos" class="ml-3" />
+          <i18n-t keypath="publication.common.byline">
+            <template #author><UserName :username="author.username" :display-name="authorName" variant="tooltip" /></template>
+            <template #date>{{ relativeDateFilter(date) }}</template>
+          </i18n-t> <Tag severity="secondary" :value="t('publication.gallery.photos')" class="ml-3" />
         </div>
       </div>
     </a>
@@ -41,6 +42,7 @@
 <script setup>
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import UserName from '../../components/User/UserName.vue'
 import relativeDateFilter from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
@@ -53,6 +55,8 @@ const props = defineProps({
   author: { type: Object, required: true },
   date: { type: String, default: null }
 })
+
+const { t } = useI18n()
 
 const authorName = computed(() => displayName(props.author))
 </script>

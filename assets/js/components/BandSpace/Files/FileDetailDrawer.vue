@@ -13,7 +13,7 @@
           <span class="font-semibold truncate">{{ file?.original_name }}</span>
           <Button
             icon="pi pi-pencil"
-            aria-label="Renommer"
+            :aria-label="t('band_space_files.file_list.menu.rename')"
             size="small"
             text
             rounded
@@ -32,7 +32,7 @@
           />
           <Button
             icon="pi pi-check"
-            aria-label="Valider"
+            :aria-label="t('band_space_files.detail.confirm_rename')"
             size="small"
             severity="primary"
             :loading="filesStore.isSavingFile"
@@ -40,7 +40,7 @@
           />
           <Button
             icon="pi pi-times"
-            aria-label="Annuler"
+            :aria-label="t('band_space_files.common.cancel')"
             size="small"
             text
             severity="secondary"
@@ -72,9 +72,11 @@
         />
         <div v-else class="flex flex-col items-center justify-center p-8 gap-3 bg-surface-50 dark:bg-surface-950">
           <i :class="iconForMime(file.mime_type)" class="text-5xl text-surface-400"></i>
-          <p class="text-sm text-surface-500 italic">Aperçu indisponible</p>
+          <p class="text-sm text-surface-500 italic">
+            {{ t('band_space_files.detail.preview_unavailable') }}
+          </p>
           <Button
-            label="Télécharger"
+            :label="t('band_space_files.file_list.menu.download')"
             icon="pi pi-download"
             size="small"
             severity="secondary"
@@ -85,7 +87,9 @@
 
       <div class="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <p class="text-xs text-surface-400 uppercase tracking-wide">Importé par</p>
+          <p class="text-xs text-surface-400 uppercase tracking-wide">
+            {{ t('band_space_files.detail.uploaded_by') }}
+          </p>
           <div class="flex items-center gap-2 mt-1">
             <Avatar
               v-if="file.created_by"
@@ -98,47 +102,59 @@
           </div>
         </div>
         <div>
-          <p class="text-xs text-surface-400 uppercase tracking-wide">Taille</p>
+          <p class="text-xs text-surface-400 uppercase tracking-wide">
+            {{ t('band_space_files.file_list.column.size') }}
+          </p>
           <p class="mt-1 tabular-nums">{{ formatSize(file.size) }}</p>
         </div>
         <div>
-          <p class="text-xs text-surface-400 uppercase tracking-wide">Type</p>
+          <p class="text-xs text-surface-400 uppercase tracking-wide">
+            {{ t('band_space_files.detail.type') }}
+          </p>
           <p class="mt-1 truncate">{{ file.mime_type || '—' }}</p>
         </div>
         <div>
-          <p class="text-xs text-surface-400 uppercase tracking-wide">Ajouté le</p>
+          <p class="text-xs text-surface-400 uppercase tracking-wide">
+            {{ t('band_space_files.file_list.column.added_at') }}
+          </p>
           <p class="mt-1">{{ formatDate(file.creation_datetime) }}</p>
         </div>
         <div v-if="file.update_datetime">
-          <p class="text-xs text-surface-400 uppercase tracking-wide">Modifié le</p>
+          <p class="text-xs text-surface-400 uppercase tracking-wide">
+            {{ t('band_space_files.detail.updated_at') }}
+          </p>
           <p class="mt-1">{{ formatDate(file.update_datetime) }}</p>
         </div>
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-xs text-surface-400 uppercase tracking-wide">Tags</label>
+        <label class="text-xs text-surface-400 uppercase tracking-wide">
+          {{ t('band_space_files.file_list.column.tags') }}
+        </label>
         <MultiSelect
           v-model="selectedTagIds"
-          aria-label="Tags"
+          :aria-label="t('band_space_files.file_list.column.tags')"
           :options="filesStore.tags"
           option-label="name"
           option-value="id"
-          placeholder="Aucun tag"
+          :placeholder="t('band_space_files.detail.no_tag')"
           :disabled="filesStore.isSavingFile"
           @hide="commitTagsIfChanged"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-xs text-surface-400 uppercase tracking-wide">Dossier</label>
+        <label class="text-xs text-surface-400 uppercase tracking-wide">
+          {{ t('band_space_files.detail.folder') }}
+        </label>
         <Select
           :model-value="selectedFolderId"
-          aria-label="Dossier"
+          :aria-label="t('band_space_files.detail.folder')"
           :options="folderOptions"
           option-label="label"
           option-value="value"
           option-disabled="disabled"
-          placeholder="Racine"
+          :placeholder="t('band_space_files.folder.root')"
           :disabled="filesStore.isSavingFile"
           @update:model-value="commitFolder"
         />
@@ -149,7 +165,7 @@
 
       <div v-if="attachments.length > 0" class="flex flex-col gap-1">
         <label class="text-xs text-surface-400 uppercase tracking-wide">
-          Attaché à ({{ attachments.length }})
+          {{ t('band_space_files.detail.attached_to', { count: attachments.length }) }}
         </label>
         <div class="flex flex-col gap-1">
           <component
@@ -177,7 +193,7 @@
           </component>
         </div>
         <small class="text-xs text-surface-400 italic">
-          Pour détacher ce fichier, utilisez la ressource d'origine.
+          {{ t('band_space_files.detail.detach_hint') }}
         </small>
       </div>
 
@@ -188,7 +204,7 @@
       <div class="flex flex-wrap gap-2 justify-end">
         <Button
           v-if="isAdmin"
-          label="Partager"
+          :label="t('band_space_files.file_list.menu.share')"
           icon="pi pi-share-alt"
           size="small"
           severity="secondary"
@@ -196,7 +212,7 @@
           @click="emit('share', file)"
         />
         <Button
-          label="Versions"
+          :label="t('band_space_files.file_list.menu.versions')"
           icon="pi pi-history"
           size="small"
           severity="secondary"
@@ -204,7 +220,7 @@
           @click="emit('versions', file)"
         />
         <Button
-          label="Supprimer"
+          :label="t('band_space_files.common.delete')"
           icon="pi pi-trash"
           size="small"
           severity="danger"
@@ -227,6 +243,7 @@ import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import {
   deleteBlockingAttachments,
@@ -251,6 +268,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'share', 'versions', 'deleted'])
+const { t } = useI18n()
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
@@ -290,7 +308,7 @@ const attachedSourceMessage = computed(() => {
   const list = blockingAttachments.value
   if (list.length === 0) return null
   if (list.length > 1) {
-    return `Ce fichier est attaché à ${list.length} ressources. Détachez-le d'abord depuis chacune.`
+    return t('band_space_files.detail.attached_to_several', { count: list.length })
   }
 
   return fileSourceAttachedMessage(list[0].source_type)
@@ -298,7 +316,7 @@ const attachedSourceMessage = computed(() => {
 
 const deleteDisabledReason = computed(() => {
   if (isAttachedToSource.value) return attachedSourceMessage.value
-  if (!canDelete.value) return 'Seul le créateur ou un administrateur peut supprimer ce fichier'
+  if (!canDelete.value) return t('band_space_files.detail.delete_not_owner')
   return null
 })
 
@@ -306,7 +324,13 @@ const deleteDisabledReason = computed(() => {
 const rootRefusal = computed(() => rootDestinationRefusal(file.value, filesStore.virtualFolders))
 
 const folderOptions = computed(() => {
-  const out = [{ label: 'Racine', value: null, disabled: rootRefusal.value !== null }]
+  const out = [
+    {
+      label: t('band_space_files.folder.root'),
+      value: null,
+      disabled: rootRefusal.value !== null
+    }
+  ]
   const walk = (nodes, depth) => {
     for (const node of nodes) {
       out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
@@ -414,11 +438,14 @@ function confirmDelete() {
   const name = file.value.original_name
   const fileId = file.value.id
   confirm.require({
-    message: `« ${name} » sera déplacé dans la corbeille, où vous pourrez le restaurer pendant ${filesStore.trashRetentionDays} jours. Continuer ?`,
-    header: 'Déplacer dans la corbeille',
+    message: t('band_space_files.file_list.trash_confirm.message', {
+      name,
+      days: filesStore.trashRetentionDays
+    }),
+    header: t('band_space_files.file_list.trash_confirm.header'),
     icon: 'pi pi-trash',
-    acceptLabel: 'Supprimer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_files.common.delete'),
+    rejectLabel: t('band_space_files.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       await filesStore.deleteFile(props.bandSpaceId, fileId)

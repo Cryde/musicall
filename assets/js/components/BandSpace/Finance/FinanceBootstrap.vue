@@ -3,15 +3,15 @@
     <i class="pi pi-wallet text-4xl sm:text-6xl text-surface-300 dark:text-surface-600 mb-6"></i>
 
     <h2 class="text-xl font-semibold text-surface-700 dark:text-surface-200 mb-2">
-      Aucune catégorie de finances configurée
+      {{ t('band_space_finance.bootstrap.title') }}
     </h2>
 
     <p class="text-surface-500 dark:text-surface-400 mb-6 max-w-md">
-      Veux-tu partir d'une structure suggérée ? Tu pourras la personnaliser ensuite.
+      {{ t('band_space_finance.bootstrap.intro') }}
     </p>
 
     <Button
-      label="Créer les catégories par défaut"
+      :label="t('band_space_finance.bootstrap.create_defaults')"
       icon="pi pi-sparkles"
       :loading="financeStore.isBootstrapping"
       @click="handleBootstrap"
@@ -22,7 +22,7 @@
       :disabled="financeStore.isBootstrapping"
       @click="emit('create-manual')"
     >
-      Ou crée ta première catégorie manuellement
+      {{ t('band_space_finance.bootstrap.create_manually') }}
     </button>
   </div>
 </template>
@@ -30,9 +30,11 @@
 <script setup>
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
@@ -45,12 +47,16 @@ async function handleBootstrap() {
   try {
     await financeStore.bootstrap(bandSpaceId)
     emit('bootstrapped')
-    toast.add({ severity: 'success', summary: 'Catégories créées', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_finance.bootstrap.created'),
+      life: 3000
+    })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de créer les catégories',
+      summary: t('band_space_finance.common.error'),
+      detail: t('band_space_finance.bootstrap.create_error'),
       life: 5000
     })
   }

@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The pretend Band Space a visitor configures on /band-space. Nothing here is saved: the visitor
  * plays with it, then creates the real one. Everything is keyed by member index rather than name so
@@ -9,15 +11,43 @@ export const DEMO_SIZES = Object.freeze([2, 3, 4, 5, 6])
 // How many fake dates or expenses a visitor can add: enough to see the list react, not a real tool.
 export const DEMO_ADD_LIMIT = 2
 
-const MEMBERS = ['Vous', 'Léa', 'Tom', 'Sam', 'Nico', 'Alex']
+// The visitor comes first, under a translated « Vous »; the others are first names.
+const BAND_MATES = ['Léa', 'Tom', 'Sam', 'Nico', 'Alex']
+
+const t = (key, params) => i18n.global.t(key, params)
 
 // Keys match BAND_SPACE_MODULES, so a picked pain is the module it lights up.
 export const DEMO_PAINS = Object.freeze([
-  { key: 'agenda', label: 'Trouver une date' },
-  { key: 'taches', label: 'Qui fait quoi' },
-  { key: 'setlists', label: 'Les setlists' },
-  { key: 'finances', label: "L'argent" },
-  { key: 'files', label: 'Les fichiers' }
+  {
+    key: 'agenda',
+    get label() {
+      return t('home.band_space_presentation.pains.agenda')
+    }
+  },
+  {
+    key: 'taches',
+    get label() {
+      return t('home.band_space_presentation.pains.tasks')
+    }
+  },
+  {
+    key: 'setlists',
+    get label() {
+      return t('home.band_space_presentation.pains.setlists')
+    }
+  },
+  {
+    key: 'finances',
+    get label() {
+      return t('home.band_space_presentation.pains.finances')
+    }
+  },
+  {
+    key: 'files',
+    get label() {
+      return t('home.band_space_presentation.pains.files')
+    }
+  }
 ])
 
 const DASHBOARD_SLOTS = 4
@@ -25,26 +55,26 @@ const DASHBOARD_SLOTS = 4
 const BASE_EVENTS = [
   {
     id: 'rehearsal-1',
-    day: 'JEU',
+    dayKey: 'home.band_space_presentation.demo.days.thu',
     date: 1,
-    name: 'Répétition',
-    detail: '20:00 à 23:00 · Le Local 13',
+    nameKey: 'home.band_space_presentation.demo.events.rehearsal',
+    detailKey: 'home.band_space_presentation.demo.events.rehearsal_detail',
     isGig: false
   },
   {
     id: 'gig',
-    day: 'SAM',
+    dayKey: 'home.band_space_presentation.demo.days.sat',
     date: 10,
-    name: 'Concert',
-    detail: '21:30 · Le Hangar · setlist associée',
+    nameKey: 'home.band_space_presentation.demo.events.gig',
+    detailKey: 'home.band_space_presentation.demo.events.gig_detail',
     isGig: true
   },
   {
     id: 'rehearsal-2',
-    day: 'JEU',
+    dayKey: 'home.band_space_presentation.demo.days.thu',
     date: 15,
-    name: 'Répétition',
-    detail: '20:00 à 23:00 · Le Local 13',
+    nameKey: 'home.band_space_presentation.demo.events.rehearsal',
+    detailKey: 'home.band_space_presentation.demo.events.rehearsal_detail',
     isGig: false
   }
 ]
@@ -52,18 +82,18 @@ const BASE_EVENTS = [
 const EXTRA_EVENTS = [
   {
     id: 'extra-rehearsal',
-    day: 'MAR',
+    dayKey: 'home.band_space_presentation.demo.days.tue',
     date: 6,
-    name: 'Filage avant le concert',
-    detail: '19:30 à 22:30 · Le Local 13',
+    nameKey: 'home.band_space_presentation.demo.events.run_through',
+    detailKey: 'home.band_space_presentation.demo.events.run_through_detail',
     isGig: false
   },
   {
     id: 'extra-studio',
-    day: 'SAM',
+    dayKey: 'home.band_space_presentation.demo.days.sat',
     date: 24,
-    name: 'Enregistrement démo',
-    detail: '14:00 · Studio Onde',
+    nameKey: 'home.band_space_presentation.demo.events.recording',
+    detailKey: 'home.band_space_presentation.demo.events.recording_detail',
     isGig: false
   }
 ]
@@ -72,13 +102,28 @@ const EXTRA_EVENTS = [
 const DEMO_TASKS = [
   {
     id: 'van',
-    label: 'Réserver le camion',
-    detail: 'Avant le 7 oct. · priorité haute',
+    labelKey: 'home.band_space_presentation.demo.tasks.van',
+    detailKey: 'home.band_space_presentation.demo.tasks.van_detail',
     assignee: 1
   },
-  { id: 'rider', label: 'Envoyer la fiche technique', detail: 'Avant le 3 oct.', assignee: 0 },
-  { id: 'strings', label: 'Racheter des cordes', detail: 'Matériel', assignee: -1 },
-  { id: 'rent', label: 'Payer le local', detail: 'Finances · 120 €', assignee: 2 }
+  {
+    id: 'rider',
+    labelKey: 'home.band_space_presentation.demo.tasks.rider',
+    detailKey: 'home.band_space_presentation.demo.tasks.rider_detail',
+    assignee: 0
+  },
+  {
+    id: 'strings',
+    labelKey: 'home.band_space_presentation.demo.tasks.strings',
+    detailKey: 'home.band_space_presentation.demo.tasks.strings_detail',
+    assignee: -1
+  },
+  {
+    id: 'rent',
+    labelKey: 'home.band_space_presentation.demo.tasks.rent',
+    detailKey: 'home.band_space_presentation.demo.tasks.rent_detail',
+    assignee: 2
+  }
 ]
 
 export const INITIAL_DONE_TASK_IDS = Object.freeze(['rent'])
@@ -94,42 +139,77 @@ const DEMO_SONGS = [
 export const INITIAL_SETLIST_ORDER = Object.freeze(DEMO_SONGS.map((song) => song.id))
 
 const DEMO_FILES = [
-  { id: 'rider', name: 'fiche-technique.pdf', folder: 'Concert', type: 'PDF', addedBy: 0 },
-  { id: 'demo', name: 'demo-last-train-home.mp3', folder: 'Démos', type: 'MP3', addedBy: 1 },
+  {
+    id: 'rider',
+    nameKey: 'home.band_space_presentation.demo.files.rider',
+    folderKey: 'home.band_space_presentation.demo.folders.gig',
+    type: 'PDF',
+    addedBy: 0
+  },
+  {
+    id: 'demo',
+    nameKey: 'home.band_space_presentation.demo.files.demo',
+    folderKey: 'home.band_space_presentation.demo.folders.demos',
+    type: 'MP3',
+    addedBy: 1
+  },
   {
     id: 'bass',
-    name: 'partition-basse-asphalt.pdf',
-    folder: 'Partitions',
+    nameKey: 'home.band_space_presentation.demo.files.bass',
+    folderKey: 'home.band_space_presentation.demo.folders.scores',
     type: 'PDF',
     addedBy: -1
   },
-  { id: 'press', name: 'photo-presse.jpg', folder: 'Promo', type: 'JPG', addedBy: 2 }
+  {
+    id: 'press',
+    nameKey: 'home.band_space_presentation.demo.files.press',
+    folderKey: 'home.band_space_presentation.demo.folders.promo',
+    type: 'JPG',
+    addedBy: 2
+  }
 ]
 
 const DEMO_NOTES = [
   {
     id: 'rehearsal',
-    title: 'Répète du 24 sept.',
-    body: "Ralentir le pont d'« Asphalt ».\nTester l'intro de « Neon Lights » à deux guitares.\nGarder « Shockwave » pour le rappel.",
+    titleKey: 'home.band_space_presentation.demo.notes.rehearsal_title',
+    bodyKey: 'home.band_space_presentation.demo.notes.rehearsal_body',
     author: 0
   },
   {
     id: 'covers',
-    title: 'Idées de reprises',
-    body: 'Trois propositions à voter avant jeudi.',
+    titleKey: 'home.band_space_presentation.demo.notes.covers_title',
+    bodyKey: 'home.band_space_presentation.demo.notes.covers_body',
     author: -1
   }
 ]
 
-const BASE_EXPENSES = [{ id: 'van', label: 'Location du camion', amount: 180, paidBy: 1 }]
+const BASE_EXPENSES = [
+  {
+    id: 'van',
+    labelKey: 'home.band_space_presentation.demo.expenses.van',
+    amount: 180,
+    paidBy: 1
+  }
+]
 
 const EXTRA_EXPENSES = [
-  { id: 'room', label: 'Local de répète', amount: 120, paidBy: 0 },
-  { id: 'strings', label: 'Cordes et baguettes', amount: 45, paidBy: 2 }
+  {
+    id: 'room',
+    labelKey: 'home.band_space_presentation.demo.expenses.room',
+    amount: 120,
+    paidBy: 0
+  },
+  {
+    id: 'strings',
+    labelKey: 'home.band_space_presentation.demo.expenses.strings',
+    amount: 45,
+    paidBy: 2
+  }
 ]
 
 export function demoRoster(size) {
-  return MEMBERS.slice(0, size)
+  return [t('home.band_space_presentation.demo.you'), ...BAND_MATES].slice(0, size)
 }
 
 export function memberAt(size, index) {
@@ -143,7 +223,9 @@ export function sizeLabel(size) {
 
 export function ctaLabel(name) {
   const trimmed = name.trim()
-  return trimmed ? `Créer « ${trimmed} »` : 'Créer mon Band Space'
+  return trimmed
+    ? t('home.band_space_presentation.cta.named', { name: trimmed })
+    : t('home.band_space_presentation.cta.default')
 }
 
 export function canAddMore(addedCount) {
@@ -162,16 +244,21 @@ export function dashboardModules(pickedKeys) {
 export function demoAgenda(size, addedCount) {
   return [...BASE_EVENTS, ...EXTRA_EVENTS.slice(0, addedCount)]
     .sort((a, b) => a.date - b.date)
-    .map((event) => ({
+    .map(({ dayKey, nameKey, detailKey, ...event }) => ({
       ...event,
+      day: t(dayKey),
+      name: t(nameKey),
+      detail: t(detailKey),
       date: String(event.date).padStart(2, '0'),
       available: event.isGig ? size : Math.max(1, size - 1)
     }))
 }
 
 export function demoTasks(size, doneIds) {
-  return DEMO_TASKS.map((task) => ({
+  return DEMO_TASKS.map(({ labelKey, detailKey, ...task }) => ({
     ...task,
+    label: t(labelKey),
+    detail: t(detailKey),
     who: memberAt(size, task.assignee),
     done: doneIds.includes(task.id)
   }))
@@ -202,11 +289,12 @@ export function setlistMinutes(songs) {
 
 /** An edited note is signed by the visitor, since they are the one who just typed in it. */
 export function demoNotes(size, editedBodies) {
-  return DEMO_NOTES.map((note) => {
+  return DEMO_NOTES.map(({ titleKey, bodyKey, ...note }) => {
     const isEdited = note.id in editedBodies
     return {
       ...note,
-      body: isEdited ? editedBodies[note.id] : note.body,
+      title: t(titleKey),
+      body: isEdited ? editedBodies[note.id] : t(bodyKey),
       who: isEdited ? memberAt(size, 0) : memberAt(size, note.author),
       isEdited
     }
@@ -214,17 +302,24 @@ export function demoNotes(size, editedBodies) {
 }
 
 export function demoFiles(size, deletedIds) {
-  return DEMO_FILES.filter((file) => !deletedIds.includes(file.id)).map((file) => ({
-    ...file,
-    who: memberAt(size, file.addedBy)
-  }))
+  return DEMO_FILES.filter((file) => !deletedIds.includes(file.id)).map(
+    ({ nameKey, folderKey, ...file }) => ({
+      ...file,
+      name: t(nameKey),
+      folder: t(folderKey),
+      who: memberAt(size, file.addedBy)
+    })
+  )
 }
 
 export function demoExpenses(size, addedCount) {
-  return [...BASE_EXPENSES, ...EXTRA_EXPENSES.slice(0, addedCount)].map((expense) => ({
-    ...expense,
-    payer: memberAt(size, expense.paidBy)
-  }))
+  return [...BASE_EXPENSES, ...EXTRA_EXPENSES.slice(0, addedCount)].map(
+    ({ labelKey, ...expense }) => ({
+      ...expense,
+      label: t(labelKey),
+      payer: memberAt(size, expense.paidBy)
+    })
+  )
 }
 
 /** What each member is owed (positive) or owes (negative), in cents, with every expense split evenly. */
@@ -246,9 +341,12 @@ export function formatEuros(amount) {
 
 export function describeBalance(cents) {
   if (cents === 0) {
-    return "à l'équilibre"
+    return t('home.band_space_presentation.demo.balance.even')
   }
-  return `${cents > 0 ? 'reçoit' : 'doit'} ${formatEuros(Math.abs(cents) / 100)}`
+  const amount = formatEuros(Math.abs(cents) / 100)
+  return cents > 0
+    ? t('home.band_space_presentation.demo.balance.receives', { amount })
+    : t('home.band_space_presentation.demo.balance.owes', { amount })
 }
 
 // One colour per module, used across the preview.

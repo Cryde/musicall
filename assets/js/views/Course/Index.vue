@@ -13,8 +13,8 @@
       </div>
     </div>
     <Button
-      v-tooltip.bottom="'Ajouter un cours vidéo YouTube'"
-      label="Poster un cours"
+      v-tooltip.bottom="t('publication.course.list.add_tooltip')"
+      :label="t('publication.course.list.add')"
       icon="pi pi-plus"
       severity="info"
       size="small"
@@ -31,7 +31,7 @@
   <AuthRequiredModal
     v-if="showAuthModal"
     v-model:visible="showAuthModal"
-    message="Si vous souhaitez partager un cours vidéo avec la communauté, vous devez vous connecter."
+    :message="t('publication.course.list.auth_required')"
   />
 
   <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mt-2 mb-6">
@@ -57,7 +57,7 @@
             severity="secondary"
             icon="pi pi-sort-alt"
             icon-pos="right"
-            label="Trier par"
+            :label="t('publication.common.sort_by')"
             class="px-3 py-2 border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400"
             @click="toggleSortMenu"
           />
@@ -100,7 +100,7 @@
                 :user-vote="course.user_vote ?? null"/>
           </FadeList>
           <div v-else class="text-center py-12 text-surface-500">
-            Aucun cours pour le moment.
+            {{ t('publication.course.list.empty') }}
           </div>
         </div>
       </div>
@@ -116,6 +116,7 @@ import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Menu from 'primevue/menu'
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import bassImg from '../../../image/course/basse.webp'
 import drumImg from '../../../image/course/batterie.webp'
@@ -136,6 +137,7 @@ const AuthRequiredModal = defineAsyncComponent(
   () => import('../../components/Auth/AuthRequiredModal.vue')
 )
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const coursesStore = useCoursesStore()
@@ -159,7 +161,10 @@ const mapInstrumentImage = {
 
 const breadcrumbItems = computed(() => {
   const items = [
-    { label: 'Cours', to: selectCategoryFilter.value ? { name: 'app_course' } : undefined }
+    {
+      label: t('publication.course.list.heading'),
+      to: selectCategoryFilter.value ? { name: 'app_course' } : undefined
+    }
   ]
   if (selectCategoryFilter.value) {
     items.push({ label: selectCategoryFilter.value.title })
@@ -169,23 +174,29 @@ const breadcrumbItems = computed(() => {
 
 const pageTitle = computed(() => {
   if (selectCategoryFilter.value) {
-    return `Cours de ${selectCategoryFilter.value.title} - MusicAll`
+    return t('publication.course.list.page_title_category', {
+      category: selectCategoryFilter.value.title
+    })
   }
-  return 'Liste des catégories de cours - MusicAll'
+  return t('publication.course.list.page_title')
 })
 
 const pageHeading = computed(() => {
   if (selectCategoryFilter.value) {
-    return `Cours de ${selectCategoryFilter.value.title}`
+    return t('publication.course.list.heading_category', {
+      category: selectCategoryFilter.value.title
+    })
   }
-  return 'Cours'
+  return t('publication.course.list.heading')
 })
 
 const pageDescription = computed(() => {
   if (selectCategoryFilter.value) {
-    return `Découvrez les cours de ${selectCategoryFilter.value.title.toLowerCase()} publiés sur MusicAll.`
+    return t('publication.course.list.description_category', {
+      category: selectCategoryFilter.value.title.toLowerCase()
+    })
   }
-  return 'Découvrez les cours publiés sur MusicAll.'
+  return t('publication.course.list.description')
 })
 
 useTitle(pageTitle)
@@ -281,9 +292,9 @@ const toggleSortMenu = (event) => {
   sortMenu.value.toggle(event)
 }
 
-const sortOptions = ref([
+const sortOptions = computed(() => [
   {
-    label: 'Nouveau',
+    label: t('publication.common.sort_newest'),
     icon: 'pi pi-calendar-plus',
     command: async () => {
       sortMenu.value.hide()
@@ -292,7 +303,7 @@ const sortOptions = ref([
     }
   },
   {
-    label: 'Ancien',
+    label: t('publication.common.sort_oldest'),
     icon: 'pi pi-calendar-minus',
     command: async () => {
       sortMenu.value.hide()

@@ -1,5 +1,5 @@
 <template>
-  <HomeMemberPanel title="Forum" link-label="Tout le forum" :link-to="{ name: 'app_forum_index' }">
+  <HomeMemberPanel :title="t('home.member.forum.title')" :link-label="t('home.member.forum.link')" :link-to="{ name: 'app_forum_index' }">
     <div v-if="isLoading" class="flex flex-col gap-3" aria-busy="true">
       <div v-for="i in 3" :key="i" class="h-12 rounded-lg bg-surface-100 dark:bg-surface-800 animate-pulse" />
     </div>
@@ -12,24 +12,26 @@
           <span class="flex flex-col gap-0.5 min-w-0">
             <span class="text-sm font-semibold truncate text-surface-900 dark:text-surface-0">{{ topic.title }}</span>
             <span class="text-sm text-surface-600 dark:text-surface-300">
-              {{ topic.forum_title }} · {{ topic.replies }} réponse{{ topic.replies > 1 ? 's' : '' }}
+              {{ t('home.member.forum.meta', { forum: topic.forum_title }, topic.replies) }}
             </span>
           </span>
           <span class="shrink-0 text-sm text-surface-600 dark:text-surface-300">{{ relativeDate(topic.last_activity_datetime, { showHours: false }) }}</span>
         </router-link>
       </li>
     </ul>
-    <p v-else class="m-0 text-sm text-surface-600 dark:text-surface-300">Le forum est encore calme.</p>
+    <p v-else class="m-0 text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.forum.empty') }}</p>
   </HomeMemberPanel>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import forumApi from '../../../api/forum/forum.js'
 import relativeDate from '../../../helper/date/relative-date.js'
 import HomeMemberPanel from './HomeMemberPanel.vue'
 
 /** The topics that moved last across the forums (#1078). */
+const { t } = useI18n()
 const isLoading = ref(true)
 const topics = ref([])
 

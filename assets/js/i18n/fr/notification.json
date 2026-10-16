@@ -1,0 +1,65 @@
+{
+  "title": "Notifications",
+  "mark_all_read": "Tout marquer comme lu",
+  "index": {
+    "page_title": "Notifications - MusicAll",
+    "empty": "Vous n'avez aucune notification pour le moment."
+  },
+  "bell": {
+    "aria_label_unread": "Notifications ({count} non lues)",
+    "filter_aria_label": "Filtrer les notifications",
+    "tab_unread": "Non lues",
+    "tab_all": "Toutes",
+    "loading": "Chargement...",
+    "empty_unread": "Aucune notification non lue",
+    "empty": "Aucune notification",
+    "see_all": "Voir toutes les notifications"
+  },
+  "item": {
+    "fallback_title": "Notification",
+    "accept": "Accepter",
+    "decline": "Décliner",
+    "invitation_accepted": "Invitation acceptée",
+    "invitation_declined": "Invitation déclinée",
+    "invitation_revoked": "Invitation annulée",
+    "invitation_expired": "Invitation expirée",
+    "joined_band_space": "Vous avez rejoint {band_space}.",
+    "invitation_stale": "Cette invitation a expiré ou n'est plus valide."
+  },
+  "preview": {
+    "band_space_invitation": "vous a invité à rejoindre {band_space}",
+    "band_space_invitation_accepted": "a rejoint « {band_space} »",
+    "band_space_invitation_declined": "a décliné votre invitation à « {band_space} »",
+    "band_space_task_assignment": "vous a assigné à la tâche « {task} »",
+    "forum_topic_reply": "a répondu à « {topic} »",
+    "publication_comment": "a commenté « {publication} »",
+    "comment_reply": "a répondu à un commentaire sur « {publication} »",
+    "course_approved": "Votre cours a été publié",
+    "publication_approved": "Votre publication a été publiée",
+    "course_rejected": "Votre cours n'a pas été accepté",
+    "publication_rejected": "Votre publication n'a pas été acceptée",
+    "gallery_approved": "Votre galerie a été publiée",
+    "gallery_rejected": "Votre galerie n'a pas été acceptée",
+    "band_space_role_admin": "vous a nommé administrateur de « {band_space} »",
+    "band_space_role_member": "vous a retiré les droits d'administrateur sur « {band_space} »",
+    "band_space_member_removed": "vous a retiré de « {band_space} »",
+    "band_space_member_left": "a quitté « {band_space} »",
+    "task_mention": "vous a mentionné dans la tâche « {task} »",
+    "band_space_chat_mention": "vous a mentionné dans la discussion de « {band_space} »",
+    "task_comment": "a commenté la tâche « {task} »",
+    "band_space_agenda_entry_created": "a ajouté l'événement « {entry} » le {date}",
+    "band_space_agenda_availability_requested": "demande vos disponibilités pour « {entry} » le {date}",
+    "band_space_finance_split_assigned": "vous a attribué une dépense sur « {entry} »",
+    "band_space_deletion_scheduled_on": "a programmé la suppression de « {band_space} » le {date}",
+    "band_space_deletion_scheduled": "a programmé la suppression de « {band_space} »",
+    "band_space_deletion_cancelled": "a annulé la suppression de « {band_space} »",
+    "report_received": "Votre signalement sur {subject} a été transmis à la modération.",
+    "report_dismissed": "Votre signalement sur {subject} n'a pas donné lieu à une mesure. Vous pouvez contester cette décision.",
+    "report_suspended": "Votre signalement sur {subject} a conduit à la suspension du compte. Vous pouvez contester cette décision."
+  },
+  "report": {
+    "received": "Signalement reçu",
+    "dismissed": "Signalement classé sans suite",
+    "suspended": "Signalement traité : compte suspendu"
+  }
+}

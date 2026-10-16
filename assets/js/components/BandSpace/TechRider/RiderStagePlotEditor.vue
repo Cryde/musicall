@@ -7,7 +7,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3 w-full">
         <span>{{ loadError }}</span>
         <Button
-          label="Réessayer"
+          :label="t('band_space_tech_rider.common.retry')"
           icon="pi pi-refresh"
           size="small"
           :loading="isLoadingIcons"
@@ -24,14 +24,21 @@
       <div class="flex flex-col gap-3 min-w-0">
         <div class="flex flex-wrap items-center gap-3">
           <span class="text-xs text-surface-600 dark:text-surface-300">
-            {{ elements.length }} / {{ MAX_ELEMENTS }} éléments
+            {{
+              t('band_space_tech_rider.stage_plot.element_count', {
+                count: elements.length,
+                max: MAX_ELEMENTS
+              })
+            }}
           </span>
           <span class="flex-1" />
-          <label :for="`${uid}-ratio`" class="text-xs">Format de scène</label>
+          <label :for="`${uid}-ratio`" class="text-xs">{{
+            t('band_space_tech_rider.stage_plot.ratio_label')
+          }}</label>
           <Select
             :id="`${uid}-ratio`"
             :model-value="aspectRatio"
-            :options="ASPECT_RATIO_OPTIONS"
+            :options="aspectRatioOptions"
             option-label="label"
             option-value="value"
             :disabled="readOnly"
@@ -58,12 +65,14 @@
              information exists as text rather than being locked inside the picture. -->
         <details class="text-xs">
           <summary class="cursor-pointer text-surface-600 dark:text-surface-300">
-            Description textuelle du plan ({{ elements.length }})
+            {{ t('band_space_tech_rider.stage_plot.text_description', { count: elements.length }) }}
           </summary>
           <ul v-if="elements.length > 0" class="mt-2 flex flex-col gap-0.5">
             <li v-for="element in elements" :key="element.id">{{ describeElement(element) }}</li>
           </ul>
-          <p v-else class="mt-2 text-surface-600 dark:text-surface-300">La scène est vide.</p>
+          <p v-else class="mt-2 text-surface-600 dark:text-surface-300">
+            {{ t('band_space_tech_rider.stage_plot.empty_stage') }}
+          </p>
         </details>
       </div>
 
@@ -96,6 +105,7 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
 import { computed, reactive, ref, useId, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSnapshotAutosave } from '../../../composables/useSnapshotAutosave.js'
 import {
   DEFAULT_ASPECT_RATIO,
@@ -119,12 +129,15 @@ const props = defineProps({
   readOnly: { type: Boolean, default: false }
 })
 
-const ASPECT_RATIO_OPTIONS = [
-  { value: 1.0, label: 'Carrée (1:1)' },
-  { value: 1.4, label: 'Standard (1.4:1)' },
-  { value: 1.78, label: 'Large (16:9)' },
-  { value: 2.4, label: 'Très large (2.4:1)' }
-]
+const { t } = useI18n()
+
+// One entry per line, `{ value: …, label: …`: TechRiderStagePlotLimitsTest reads the values from here.
+const aspectRatioOptions = computed(() => [
+  { value: 1.0, label: t('band_space_tech_rider.stage_plot.ratio_square') },
+  { value: 1.4, label: t('band_space_tech_rider.stage_plot.ratio_standard') },
+  { value: 1.78, label: t('band_space_tech_rider.stage_plot.ratio_wide') },
+  { value: 2.4, label: t('band_space_tech_rider.stage_plot.ratio_extra_wide') }
+])
 
 const techRidersStore = useBandTechRidersStore()
 
@@ -215,7 +228,10 @@ function describeElement(element) {
   const name =
     element.label || icons.value.find((icon) => icon.slug === element.icon)?.label || element.icon
 
-  return `${name}, ${describePosition(element.x, element.y)}`
+  return t('band_space_tech_rider.stage_plot.element_description', {
+    name,
+    position: describePosition(element.x, element.y)
+  })
 }
 
 /**
@@ -229,7 +245,9 @@ function nextElementId() {
 
 function addElement(slug, x, y) {
   if (elements.length >= MAX_ELEMENTS) {
-    globalError.value = `Un plan de scène ne peut pas dépasser ${MAX_ELEMENTS} éléments.`
+    globalError.value = t('band_space_tech_rider.stage_plot.too_many_elements', {
+      max: MAX_ELEMENTS
+    })
 
     return null
   }
@@ -332,7 +350,7 @@ async function loadIcons() {
   try {
     await techRidersStore.loadStagePlotIcons()
   } catch (e) {
-    loadError.value = `Les icônes n'ont pas pu être chargées : ${e.message}`
+    loadError.value = t('band_space_tech_rider.stage_plot.icons_failed', { message: e.message })
   } finally {
     isLoadingIcons.value = false
   }

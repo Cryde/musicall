@@ -9,7 +9,7 @@
       class="flex flex-col items-center justify-center py-16 text-center text-surface-400"
     >
       <i class="pi pi-folder-open text-5xl mb-4"></i>
-      <p class="text-sm italic">{{ emptyMessage }}</p>
+      <p class="text-sm italic">{{ emptyMessage ?? t('band_space_files.file_list.empty') }}</p>
     </div>
 
     <div v-else class="flex flex-col">
@@ -21,14 +21,14 @@
           binary
           size="small"
           class="shrink-0"
-          aria-label="Tout sélectionner"
+          :aria-label="t('band_space_files.common.select_all')"
           @update:model-value="toggleAll"
         />
         <div class="grid grid-cols-12 gap-2 flex-1 min-w-0">
-          <div class="col-span-6">Nom</div>
-          <div class="col-span-2">Taille</div>
-          <div class="col-span-2">Tags</div>
-          <div class="col-span-2">Ajouté le</div>
+          <div class="col-span-6">{{ t('band_space_files.file_list.column.name') }}</div>
+          <div class="col-span-2">{{ t('band_space_files.file_list.column.size') }}</div>
+          <div class="col-span-2">{{ t('band_space_files.file_list.column.tags') }}</div>
+          <div class="col-span-2">{{ t('band_space_files.file_list.column.added_at') }}</div>
         </div>
         <span class="shrink-0 w-7" aria-hidden="true"></span>
       </div>
@@ -41,7 +41,7 @@
         :key="folder.id"
         role="button"
         tabindex="0"
-        :aria-label="`Ouvrir le dossier ${folder.name}`"
+        :aria-label="t('band_space_files.file_list.open_folder', { name: folder.name })"
         class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-500"
         :class="dropTargetId === folder.id ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400' : ''"
         :draggable="true"
@@ -101,7 +101,7 @@
           binary
           size="small"
           class="shrink-0"
-          :aria-label="`Sélectionner ${file.original_name}`"
+          :aria-label="t('band_space_files.common.select_file', { name: file.original_name })"
           @click.stop
           @mousedown="rememberModifiers"
           @keydown="rememberModifiers"
@@ -118,7 +118,7 @@
                 v-if="showLocation"
                 type="button"
                 class="flex items-center gap-1 max-w-full text-xs text-surface-500 dark:text-surface-400 hover:underline"
-                :aria-label="`Ouvrir ${locationOf(file).label}`"
+                :aria-label="t('band_space_files.file_list.open_location', { location: locationOf(file).label })"
                 @click.stop="emit('open-location', locationOf(file).folderId)"
               >
                 <i class="pi pi-folder text-[10px] shrink-0" aria-hidden="true"></i>
@@ -149,7 +149,7 @@
         <button
           type="button"
           class="shrink-0 w-7 h-7 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
-          aria-label="Actions du fichier"
+          :aria-label="t('band_space_files.file_list.file_actions')"
           aria-haspopup="menu"
           @click.stop="(event) => openContextMenu(event, file)"
         >
@@ -170,6 +170,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import {
   applyMove,
@@ -189,10 +190,8 @@ const props = defineProps({
   bandSpaceId: { type: String, required: true },
   files: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
-  emptyMessage: {
-    type: String,
-    default: 'Aucun fichier dans ce dossier, commencez par en importer un.'
-  },
+  /** Defaults to the empty folder sentence. */
+  emptyMessage: { type: String, default: null },
   /** Direct subfolders of the folder being shown, rendered above the files. */
   folders: { type: Array, default: () => [] },
   /** Show each file's folder, for a listing whose rows can come from anywhere. */
@@ -209,6 +208,7 @@ const emit = defineEmits([
   'open-location'
 ])
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()
 const bandSpaceStore = useBandSpaceStore()
@@ -290,7 +290,7 @@ const contextFileSourceLabel = computed(() => {
   const attachments = deleteBlockingAttachments(contextMenuFile.value?.attachments)
   if (attachments.length === 0) return null
   if (attachments.length > 1) {
-    return "Détachez-le d'abord depuis chaque ressource"
+    return t('band_space_files.file_list.detach_from_each')
   }
 
   return fileSourceDetachHint(attachments[0]?.source_type)
@@ -300,22 +300,44 @@ const contextMenuItems = computed(() => {
   const f = contextMenuFile.value
   if (!f) return []
   const isAttached = deleteBlockingAttachments(f.attachments).length > 0
-  const deleteLabel = isAttached ? `Supprimer (${contextFileSourceLabel.value})` : 'Supprimer'
+  const deleteLabel = isAttached
+    ? t('band_space_files.file_list.delete_blocked', { reason: contextFileSourceLabel.value })
+    : t('band_space_files.common.delete')
   const items = [
-    { label: 'Ouvrir', icon: 'pi pi-eye', command: () => emit('select', f) },
     {
-      label: 'Télécharger',
+      label: t('band_space_files.file_list.menu.open'),
+      icon: 'pi pi-eye',
+      command: () => emit('select', f)
+    },
+    {
+      label: t('band_space_files.file_list.menu.download'),
       icon: 'pi pi-download',
       command: () => f.download_url && window.open(f.download_url, '_blank', 'noopener')
     },
-    { label: 'Renommer', icon: 'pi pi-pencil', command: () => emit('open-rename', f) }
+    {
+      label: t('band_space_files.file_list.menu.rename'),
+      icon: 'pi pi-pencil',
+      command: () => emit('open-rename', f)
+    }
   ]
   if (isAdmin.value) {
-    items.push({ label: 'Partager', icon: 'pi pi-share-alt', command: () => emit('open-share', f) })
+    items.push({
+      label: t('band_space_files.file_list.menu.share'),
+      icon: 'pi pi-share-alt',
+      command: () => emit('open-share', f)
+    })
   }
   items.push(
-    { label: 'Versions', icon: 'pi pi-history', command: () => emit('open-versions', f) },
-    { label: 'Déplacer', icon: 'pi pi-arrows-h', command: () => emit('open-move', f) },
+    {
+      label: t('band_space_files.file_list.menu.versions'),
+      icon: 'pi pi-history',
+      command: () => emit('open-versions', f)
+    },
+    {
+      label: t('band_space_files.file_move.submit'),
+      icon: 'pi pi-arrows-h',
+      command: () => emit('open-move', f)
+    },
     { separator: true },
     {
       label: deleteLabel,
@@ -336,20 +358,27 @@ function openContextMenu(event, file) {
 
 function confirmDelete(file) {
   confirm.require({
-    message: `« ${file.original_name} » sera déplacé dans la corbeille, où vous pourrez le restaurer pendant ${filesStore.trashRetentionDays} jours. Continuer ?`,
-    header: 'Déplacer dans la corbeille',
+    message: t('band_space_files.file_list.trash_confirm.message', {
+      name: file.original_name,
+      days: filesStore.trashRetentionDays
+    }),
+    header: t('band_space_files.file_list.trash_confirm.header'),
     icon: 'pi pi-trash',
-    acceptLabel: 'Supprimer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_files.common.delete'),
+    rejectLabel: t('band_space_files.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await filesStore.deleteFile(props.bandSpaceId, file.id)
-        toast.add({ severity: 'success', summary: 'Fichier déplacé dans la corbeille', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_files.file_list.trash_confirm.done'),
+          life: 3000
+        })
       } catch (e) {
         toast.add({
           severity: 'error',
-          summary: 'Suppression impossible',
+          summary: t('band_space_files.common.delete_failed'),
           detail: e.message,
           life: 5000
         })

@@ -6,7 +6,7 @@
         <InputIcon class="pi pi-search" />
         <InputText
           v-model="searchInput"
-          placeholder="Rechercher…"
+          :placeholder="t('band_space_tasks.filter_bar.search_placeholder')"
           size="small"
           class="w-full"
           @input="emitSearchDebounced"
@@ -16,7 +16,7 @@
       <DatePicker
         :model-value="dueDateRange"
         selectionMode="range"
-        placeholder="Échéance"
+        :placeholder="t('band_space_tasks.field.due')"
         dateFormat="yy-mm-dd"
         size="small"
         showIcon
@@ -29,7 +29,11 @@
       <div class="flex-1"></div>
 
       <Button
-        :label="tasksStore.isSelectionMode ? 'Annuler' : 'Sélectionner'"
+        :label="
+          tasksStore.isSelectionMode
+            ? t('band_space_tasks.common.cancel')
+            : t('band_space_tasks.filter_bar.select')
+        "
         :icon="tasksStore.isSelectionMode ? 'pi pi-times' : 'pi pi-check-square'"
         size="small"
         :severity="tasksStore.isSelectionMode ? 'secondary' : 'secondary'"
@@ -41,12 +45,12 @@
         text
         rounded
         size="small"
-        v-tooltip.bottom="'Gérer les catégories'"
-        aria-label="Gérer les catégories"
+        v-tooltip.bottom="t('band_space_tasks.common.manage_categories')"
+        :aria-label="t('band_space_tasks.common.manage_categories')"
         @click="$emit('open-categories')"
       />
       <Button
-        label="Nouvelle tâche"
+        :label="t('band_space_tasks.common.new_task')"
         icon="pi pi-plus"
         size="small"
         @click="$emit('create-task')"
@@ -114,7 +118,7 @@
         @click="$emit('update-filter', 'unassigned', !filters.unassigned)"
       >
         <i class="pi pi-user-minus text-[10px] mr-1"></i>
-        Non assignées
+        {{ t('band_space_tasks.filter_bar.unassigned') }}
       </button>
 
       <!-- Priority filters -->
@@ -130,7 +134,7 @@
           "
           @click="toggleFilter('priority', p.value)"
         >
-          {{ p.label }}
+          {{ t(p.labelKey) }}
         </button>
       </div>
 
@@ -145,7 +149,7 @@
           "
           @click="$emit('update-filter', 'myTasks', !filters.myTasks)"
         >
-          Mes tâches
+          {{ t('band_space_tasks.filter_bar.my_tasks') }}
         </button>
         <button
           class="text-xs px-2 py-1 rounded border transition-colors"
@@ -157,7 +161,7 @@
           @click="$emit('update-filter', 'overdue', !filters.overdue)"
         >
           <i class="pi pi-clock text-[10px] mr-1"></i>
-          En retard
+          {{ t('band_space_tasks.filter_bar.overdue') }}
         </button>
         <button
           class="text-xs px-2 py-1 rounded border transition-colors"
@@ -169,7 +173,7 @@
           @click="$emit('update-filter', 'showArchived', !filters.showArchived)"
         >
           <i class="pi pi-box text-[10px] mr-1"></i>
-          Archivées
+          {{ t('band_space_tasks.filter_bar.archived') }}
         </button>
       </div>
     </div>
@@ -184,10 +188,12 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
 
 const tasksStore = useBandTasksStore()
+const { t } = useI18n()
 
 function toggleSelectionMode() {
   if (tasksStore.isSelectionMode) {
@@ -221,19 +227,19 @@ const emitSearchDebounced = useDebounceFn(() => {
 const priorities = [
   {
     value: 'urgent',
-    label: 'Urgent',
+    labelKey: 'band_space_tasks.priority.urgent',
     activeClass:
       'bg-red-100 text-red-700 border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-700'
   },
   {
     value: 'high',
-    label: 'Haute',
+    labelKey: 'band_space_tasks.priority.high',
     activeClass:
       'bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900 dark:text-orange-300 dark:border-orange-700'
   },
   {
     value: 'normal',
-    label: 'Normal',
+    labelKey: 'band_space_tasks.priority.normal',
     activeClass:
       'bg-surface-200 text-surface-700 border-surface-400 dark:bg-surface-600 dark:text-surface-200'
   }

@@ -4,8 +4,8 @@
       <Card>
         <template #content>
           <div class="text-center py-4">
-            <p class="mb-4">Vous devez vous connecter pour poster un message.</p>
-            <Button label="Se connecter" icon="pi pi-sign-in" @click="handleLogin" />
+            <p class="mb-4">{{ t('forum.reply.login_to_post') }}</p>
+            <Button :label="t('common.login')" icon="pi pi-sign-in" @click="handleLogin" />
           </div>
         </template>
       </Card>
@@ -16,7 +16,7 @@
         <template #content>
           <div class="text-center py-4 text-surface-500">
             <i class="pi pi-lock text-2xl mb-2" />
-            <p>Ce sujet est verrouillé. Vous ne pouvez plus y répondre.</p>
+            <p>{{ t('forum.reply.locked') }}</p>
           </div>
         </template>
       </Card>
@@ -27,7 +27,7 @@
 
       <div class="flex justify-end mt-4">
         <Button
-          label="Envoyer"
+          :label="t('forum.reply.send')"
           icon="pi pi-send"
           :disabled="!canSubmit"
           :loading="isSending"
@@ -38,7 +38,7 @@
 
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      message="Vous devez vous connecter pour poster un message."
+      :message="t('forum.reply.login_to_post')"
     />
   </div>
 </template>
@@ -49,6 +49,7 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
@@ -69,6 +70,7 @@ const props = defineProps({
 
 const emit = defineEmits(['message-created'])
 
+const { t } = useI18n()
 const forumStore = useForumStore()
 const userSecurityStore = useUserSecurityStore()
 const toast = useToast()
@@ -113,8 +115,8 @@ async function handleSubmit() {
     contentText.value = ''
     toast.add({
       severity: 'success',
-      summary: 'Message envoyé',
-      detail: 'Votre message a été publié avec succès',
+      summary: t('forum.reply.sent_toast'),
+      detail: t('forum.reply.sent_toast_detail'),
       life: 3000
     })
     emit('message-created', post.id)
@@ -122,11 +124,11 @@ async function handleSubmit() {
     console.error('Failed to create post:', error)
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
+      summary: t('forum.common.error'),
       detail:
         error.response?.status === 429
-          ? 'Veuillez patienter avant de poster un nouveau message.'
-          : "Une erreur est survenue lors de l'envoi du message",
+          ? t('forum.reply.rate_limited')
+          : t('forum.reply.send_failed'),
       life: 5000
     })
   } finally {

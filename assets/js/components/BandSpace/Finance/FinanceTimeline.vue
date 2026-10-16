@@ -2,27 +2,27 @@
   <div class="flex justify-end gap-2 mb-4">
     <Button
       icon="pi pi-plus"
-      label="Ajouter une catégorie"
+      :label="t('band_space_finance.common.add_category')"
       size="small"
       outlined
       @click="emit('add-category')"
     />
     <Button
       icon="pi pi-plus"
-      label="Ajouter une entrée"
+      :label="t('band_space_finance.common.add_entry')"
       size="small"
       outlined
       @click="emit('add-entry')"
     />
   </div>
   <div v-if="entries.length === 0" class="text-center text-surface-400 italic py-8">
-    Aucune entrée sur cette période
+    {{ t('band_space_finance.timeline.empty') }}
   </div>
   <div v-else>
     <div v-for="group in groupedEntries" :key="group.date" class="mb-4">
       <div class="flex items-center gap-2 mb-1 px-2">
         <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">{{ formatDateLabel(group.date) }}</span>
-        <span class="text-xs text-surface-400">{{ group.entries.length }} entrée{{ group.entries.length > 1 ? 's' : '' }}</span>
+        <span class="text-xs text-surface-400">{{ t('band_space_finance.common.entry_count', group.entries.length) }}</span>
       </div>
       <div class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 px-2 py-1">
         <div
@@ -38,7 +38,7 @@
           <i
             v-if="entry.recurrence_id"
             class="pi pi-sync text-xs text-surface-400 flex-shrink-0"
-            title="Récurrence"
+            :title="t('band_space_finance.common.recurrence')"
           ></i>
 
           <!-- Label -->
@@ -54,7 +54,7 @@
             v-if="entry.scope === 'personal'"
             class="text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
           >
-            Perso
+            {{ t('band_space_finance.common.personal_badge') }}
           </span>
 
           <!-- Type badge (hidden on mobile) -->
@@ -62,7 +62,7 @@
             class="hidden sm:inline text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
             :class="typeBadgeClass(entry.type)"
           >
-            {{ entry.type === 'expense' ? 'Dépense' : 'Revenu' }}
+            {{ entry.type === 'expense' ? t('band_space_finance.type.expense') : t('band_space_finance.type.income') }}
           </span>
 
           <!-- Répartition that no longer matches the amount, against the amount it disagrees with -->
@@ -77,7 +77,7 @@
           <button
             v-if="canEdit(entry)"
             class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-surface-400 hover:text-primary flex-shrink-0 p-1"
-            title="Modifier"
+            :title="t('band_space_finance.common.edit')"
             @click.stop="emit('edit-entry', entry)"
           >
             <i class="pi pi-pencil text-sm"></i>
@@ -91,10 +91,13 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
 import FinanceSplitWarning from './FinanceSplitWarning.vue'
 import FinanceStatusDot from './FinanceStatusDot.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   entries: { type: Array, required: true },

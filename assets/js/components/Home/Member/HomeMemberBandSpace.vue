@@ -8,7 +8,7 @@
         <div class="flex items-center gap-3.5 min-w-0">
           <span class="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-primary-400 to-fuchsia-400" aria-hidden="true" />
           <div class="flex flex-col min-w-0">
-            <span class="text-xs font-bold uppercase tracking-widest text-primary">Mon Band Space</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-primary">{{ t('home.member.band_space.eyebrow') }}</span>
             <h2 id="home-member-band-space-title" class="m-0 text-xl font-bold truncate text-surface-900 dark:text-surface-0">
               {{ space.name }}
             </h2>
@@ -21,15 +21,15 @@
             :options="bandSpaceStore.spaces"
             option-label="name"
             option-value="id"
-            aria-label="Changer de groupe"
-            placeholder="Changer de groupe"
+            :aria-label="t('home.member.band_space.switch')"
+            :placeholder="t('home.member.band_space.switch')"
             class="w-48"
             @update:model-value="switchTo"
           />
           <Button
             as="router-link"
             :to="{ name: 'app_band_dashboard', params: { id: space.id } }"
-            label="Ouvrir le Band Space"
+            :label="t('home.member.band_space.open')"
             icon="pi pi-arrow-right"
             icon-pos="right"
           />
@@ -38,7 +38,7 @@
 
       <div class="grid md:grid-cols-3 gap-3">
         <router-link :to="nextEventLink" :class="TILE">
-          <span class="text-xs font-bold uppercase tracking-wide text-primary">Prochain événement</span>
+          <span class="text-xs font-bold uppercase tracking-wide text-primary">{{ t('home.member.band_space.next_event') }}</span>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <template v-else-if="nextEvents.length > 0">
             <div class="flex items-center gap-3">
@@ -52,10 +52,10 @@
               </div>
             </div>
             <span v-if="nextEvents[1]" class="text-sm text-surface-600 dark:text-surface-300 truncate">
-              Puis : {{ nextEvents[1].title }}, {{ shortDateOf(nextEvents[1]) }}
+              {{ t('home.member.band_space.then', { title: nextEvents[1].title, date: shortDateOf(nextEvents[1]) }) }}
             </span>
           </template>
-          <span v-else class="text-sm text-surface-600 dark:text-surface-300">Rien de prévu ces {{ AGENDA_DAYS }} prochains jours.</span>
+          <span v-else class="text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.band_space.nothing_planned', { days: AGENDA_DAYS }) }}</span>
         </router-link>
 
         <!-- Not one link like its neighbours: each task opens itself, and links cannot nest. -->
@@ -64,7 +64,7 @@
             :to="{ name: 'app_band_tasks', params: { id: space.id } }"
             class="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-300 hover:underline focus-visible:underline"
           >
-            Tâches ouvertes<template v-if="!isLoadingDetails"> · {{ openTaskCount }}</template>
+            {{ t('home.member.band_space.open_tasks') }}<template v-if="!isLoadingDetails"> · {{ openTaskCount }}</template>
           </router-link>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <ul v-else-if="tasks.length > 0" class="m-0 p-0 list-none flex flex-col gap-1.5">
@@ -78,27 +78,27 @@
               </router-link>
             </li>
           </ul>
-          <span v-else class="text-sm text-surface-600 dark:text-surface-300">Aucune tâche ouverte.</span>
+          <span v-else class="text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.band_space.no_open_task') }}</span>
         </div>
 
         <router-link :to="setlistLink" :class="TILE">
-          <span class="text-xs font-bold uppercase tracking-wide text-fuchsia-700 dark:text-fuchsia-300">Dernière setlist</span>
+          <span class="text-xs font-bold uppercase tracking-wide text-fuchsia-700 dark:text-fuchsia-300">{{ t('home.member.band_space.last_setlist') }}</span>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <template v-else-if="setlist">
             <span class="font-semibold truncate text-surface-900 dark:text-surface-0">{{ setlist.setlist.name }}</span>
             <span class="text-sm text-surface-600 dark:text-surface-300">
-              {{ setlist.songCount }} morceau{{ setlist.songCount > 1 ? 'x' : '' }} · {{ formatDuration(setlist.setlist.total_duration_seconds) }}
+              {{ t('home.member.band_space.setlist_meta', { duration: formatDuration(setlist.setlist.total_duration_seconds) }, setlist.songCount) }}
             </span>
-            <span class="text-sm text-surface-600 dark:text-surface-300">Modifiée {{ relativeDate(setlist.changedAt, { showHours: false }) }}</span>
+            <span class="text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.band_space.modified', { date: relativeDate(setlist.changedAt, { showHours: false }) }) }}</span>
           </template>
-          <span v-else class="text-sm text-surface-600 dark:text-surface-300">Pas encore de setlist.</span>
+          <span v-else class="text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.band_space.no_setlist') }}</span>
         </router-link>
       </div>
 
       <p v-if="detailsError" class="m-0 text-sm text-red-700 dark:text-red-400" role="alert">{{ detailsError }}</p>
       <p class="m-0 mt-auto flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
         <i class="pi pi-lock text-xs" aria-hidden="true" />
-        Visible uniquement par vous et les membres du groupe.
+        {{ t('home.member.band_space.private') }}
       </p>
     </template>
 
@@ -110,6 +110,7 @@ import { format, parseISO } from 'date-fns'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
@@ -136,6 +137,7 @@ const TILE_FRAME =
 const TILE = `${TILE_FRAME} hover:border-primary-300 dark:hover:border-surface-500 transition-colors`
 const PLACEHOLDER = 'h-10 rounded-md bg-surface-100 dark:bg-surface-800 animate-pulse'
 
+const { t } = useI18n()
 const bandSpaceStore = useBandSpaceStore()
 const { getLastSpaceId, setLastSpaceId } = useBandSpaceNavigation()
 
@@ -207,7 +209,7 @@ async function loadDetails(spaceId, { quiet = false } = {}) {
     setlist.value = lastChangedSetlist(setlists)
   } catch {
     if (request !== detailsRequest || quiet) return
-    detailsError.value = 'Impossible de charger le résumé du Band Space.'
+    detailsError.value = t('home.member.band_space.load_error')
   } finally {
     if (request === detailsRequest) isLoadingDetails.value = false
   }
@@ -233,6 +235,8 @@ function shortDateOf(item) {
 }
 
 function timeOf(item) {
-  return isAllDayItem(item) ? 'Toute la journée' : format(parseISO(item.datetime), 'HH:mm')
+  return isAllDayItem(item)
+    ? t('home.member.band_space.all_day')
+    : format(parseISO(item.datetime), 'HH:mm')
 }
 </script>

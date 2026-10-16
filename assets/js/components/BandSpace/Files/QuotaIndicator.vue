@@ -1,12 +1,14 @@
 <template>
   <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100">Stockage</h2>
+      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100">
+        {{ t('band_space_files.quota.title') }}
+      </h2>
       <RouterLink
         :to="{ name: 'app_band_files', params: { id: bandSpaceId } }"
         class="text-sm text-primary-500 hover:underline flex items-center gap-1"
       >
-        Voir les fichiers
+        {{ t('band_space_files.quota.see_files') }}
         <i class="pi pi-arrow-right text-xs"></i>
       </RouterLink>
     </div>
@@ -18,7 +20,7 @@
     </div>
 
     <div v-else-if="!quota" class="text-sm italic text-surface-400 text-center py-8">
-      Indisponible.
+      {{ t('band_space_files.quota.unavailable') }}
     </div>
 
     <div v-else class="flex flex-col gap-4">
@@ -32,7 +34,12 @@
         />
         <div class="flex items-center justify-between text-sm">
           <span class="font-medium text-surface-800 dark:text-surface-100">
-            {{ formatBytes(quota.used_bytes) }} sur {{ formatBytes(quota.quota_bytes) }} utilisés
+            {{
+              t('band_space_files.quota.used', {
+                used: formatBytes(quota.used_bytes),
+                total: formatBytes(quota.quota_bytes)
+              })
+            }}
           </span>
           <span
             v-tooltip.top="quotaHint"
@@ -51,7 +58,7 @@
             v-for="seg in segments"
             :key="seg.key"
             :style="{ width: `${seg.widthPct}%`, backgroundColor: seg.color }"
-            v-tooltip.top="`${seg.label} : ${formatBytes(seg.bytes)}`"
+            v-tooltip.top="t('band_space_files.quota.segment_tooltip', { label: seg.label, size: formatBytes(seg.bytes) })"
           />
         </div>
 
@@ -80,12 +87,14 @@
 import ProgressBar from 'primevue/progressbar'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { QUOTA_BREAKDOWN_SOURCES } from '../../../constants/fileSources.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
 const route = useRoute()
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 // Wipe previous space's files-store state synchronously before first render
 // so switching from A's Settings/Storage to B's doesn't flash A's quota.
@@ -100,7 +109,7 @@ const cappedPercentage = computed(() => {
   return Math.min(100, pct)
 })
 
-const quotaHint = 'Les versions précédentes des fichiers comptent dans le quota.'
+const quotaHint = computed(() => t('band_space_files.quota.versions_hint'))
 
 const totalBreakdownBytes = computed(() => {
   if (!quota.value) return 0

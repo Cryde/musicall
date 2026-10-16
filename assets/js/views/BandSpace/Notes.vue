@@ -25,13 +25,13 @@
       <div v-if="mobileView === 'editor'" class="md:hidden flex items-center gap-2 p-3 border-b border-surface-200 dark:border-surface-700">
         <Button
           icon="pi pi-arrow-left"
-          aria-label="Retour"
+          :aria-label="t('band_space_notes.page.back')"
           text
           rounded
           size="small"
           @click="handleBack"
         />
-        <span class="text-sm text-surface-500">Notes</span>
+        <span class="text-sm text-surface-500">{{ t('band_space_notes.page.heading') }}</span>
       </div>
 
       <div v-if="notesStore.isLoading" class="flex items-center justify-center flex-1">
@@ -64,7 +64,7 @@
       <div v-else class="hidden md:flex flex-col items-center justify-center flex-1 text-center p-8">
         <i class="pi pi-file-edit text-5xl text-surface-300 dark:text-surface-600 mb-4"></i>
         <p class="text-lg text-surface-500 dark:text-surface-400">
-          Sélectionnez une note pour commencer
+          {{ t('band_space_notes.page.select_prompt') }}
         </p>
       </div>
     </div>
@@ -86,6 +86,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import CreateNoteDialog from '../../components/BandSpace/Notes/CreateNoteDialog.vue'
 import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
@@ -98,6 +99,7 @@ const route = useRoute()
 const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 const notesStore = useBandSpaceNotesStore()
 // Wipe any previous space's notes synchronously before first render to avoid
 // flashing A's tree when switching to B (the :key on <router-view> remounts
@@ -228,7 +230,7 @@ async function handleCreateNote({ title, parentId }) {
     }
     toast.add({
       severity: 'success',
-      summary: 'Note créée',
+      summary: t('band_space_notes.page.created'),
       life: 3000
     })
     // Created either way, opened only if the note being left has nothing to lose. Same unmount,
@@ -237,8 +239,8 @@ async function handleCreateNote({ title, parentId }) {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de créer la note',
+      summary: t('band_space_notes.page.error_summary'),
+      detail: error.message || t('band_space_notes.page.create_error'),
       life: 5000
     })
   }
@@ -251,8 +253,8 @@ async function handleUpdateTitle(title) {
   if (status === 'error') {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Le titre n'a pas pu être modifié",
+      summary: t('band_space_notes.page.error_summary'),
+      detail: t('band_space_notes.page.title_update_error'),
       life: 5000
     })
   }
@@ -265,8 +267,8 @@ async function handleUpdateEmoji(emoji) {
   if (status === 'error') {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "L'emoji n'a pas pu être modifié",
+      summary: t('band_space_notes.page.error_summary'),
+      detail: t('band_space_notes.page.emoji_update_error'),
       life: 5000
     })
   }
@@ -279,8 +281,8 @@ async function handleReloadNote() {
     // The editor is untouched on failure, so the member still has their text and can retry.
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de recharger la note',
+      summary: t('band_space_notes.page.error_summary'),
+      detail: error.message || t('band_space_notes.page.reload_error'),
       life: 5000
     })
   }
@@ -288,26 +290,25 @@ async function handleReloadNote() {
 
 function handleDelete(noteId) {
   confirm.require({
-    message:
-      'Êtes-vous sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées. Les images qui s’y trouvent resteront dans Fichiers.',
-    header: 'Confirmer la suppression',
+    message: t('band_space_notes.page.delete_confirm.message'),
+    header: t('band_space_notes.page.delete_confirm.header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_notes.page.delete_confirm.reject'),
+    acceptLabel: t('band_space_notes.page.delete_confirm.accept'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await notesStore.deleteNote(bandSpaceId, noteId)
         toast.add({
           severity: 'success',
-          summary: 'Note supprimée',
+          summary: t('band_space_notes.page.deleted'),
           life: 3000
         })
       } catch (error) {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: error.message || 'Impossible de supprimer la note',
+          summary: t('band_space_notes.page.error_summary'),
+          detail: error.message || t('band_space_notes.page.delete_error'),
           life: 5000
         })
       }

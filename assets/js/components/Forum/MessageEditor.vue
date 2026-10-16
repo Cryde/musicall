@@ -3,27 +3,27 @@
     <div v-if="editor" class="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden">
       <div class="flex flex-wrap gap-1 p-2 bg-surface-50 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700">
         <Button
-          v-tooltip.bottom="'Gras'"
+          v-tooltip.bottom="t('forum.editor.bold')"
           :severity="editor.isActive('bold') ? 'info' : 'secondary'"
           text
           size="small"
           @click="editor.chain().focus().toggleBold().run()"
         >
-          <span class="font-bold text-base">B</span>
+          <span class="font-bold text-base">{{ t('forum.editor.bold_glyph') }}</span>
         </Button>
         <Button
-          v-tooltip.bottom="'Italique'"
+          v-tooltip.bottom="t('forum.editor.italic')"
           :severity="editor.isActive('italic') ? 'info' : 'secondary'"
           text
           size="small"
           @click="editor.chain().focus().toggleItalic().run()"
         >
-          <span class="italic text-base">I</span>
+          <span class="italic text-base">{{ t('forum.editor.italic_glyph') }}</span>
         </Button>
         <Divider layout="vertical" class="mx-1" />
         <Button
-          v-tooltip.bottom="'Liste à puces'"
-          aria-label="Liste à puces"
+          v-tooltip.bottom="t('forum.editor.bullet_list')"
+          :aria-label="t('forum.editor.bullet_list')"
           icon="pi pi-list"
           :severity="editor.isActive('bulletList') ? 'info' : 'secondary'"
           text
@@ -31,8 +31,8 @@
           @click="editor.chain().focus().toggleBulletList().run()"
         />
         <Button
-          v-tooltip.bottom="'Liste numérotée'"
-          aria-label="Liste numérotée"
+          v-tooltip.bottom="t('forum.editor.ordered_list')"
+          :aria-label="t('forum.editor.ordered_list')"
           :severity="editor.isActive('orderedList') ? 'info' : 'secondary'"
           text
           size="small"
@@ -42,8 +42,8 @@
         </Button>
         <Divider layout="vertical" class="mx-1" />
         <Button
-          v-tooltip.bottom="'Citation'"
-          aria-label="Citation"
+          v-tooltip.bottom="t('forum.editor.quote')"
+          :aria-label="t('forum.editor.quote')"
           icon="pi pi-comment"
           :severity="editor.isActive('blockquote') ? 'info' : 'secondary'"
           text
@@ -52,8 +52,8 @@
         />
         <Divider layout="vertical" class="mx-1" />
         <Button
-          v-tooltip.bottom="'Ajouter une image'"
-          aria-label="Ajouter une image"
+          v-tooltip.bottom="t('forum.editor.add_image')"
+          :aria-label="t('forum.editor.add_image')"
           icon="pi pi-image"
           severity="secondary"
           text
@@ -69,8 +69,8 @@
           @change="handleImageUpload"
         >
         <Button
-          v-tooltip.bottom="'Ajouter une vidéo YouTube'"
-          aria-label="Ajouter une vidéo YouTube"
+          v-tooltip.bottom="t('forum.editor.add_youtube')"
+          :aria-label="t('forum.editor.add_youtube')"
           icon="pi pi-youtube"
           severity="secondary"
           text
@@ -79,8 +79,8 @@
         />
         <Divider layout="vertical" class="mx-1" />
         <Button
-          v-tooltip.bottom="'Annuler'"
-          aria-label="Annuler"
+          v-tooltip.bottom="t('forum.editor.undo')"
+          :aria-label="t('forum.editor.undo')"
           icon="pi pi-undo"
           severity="secondary"
           text
@@ -89,8 +89,8 @@
           @click="editor.chain().focus().undo().run()"
         />
         <Button
-          v-tooltip.bottom="'Rétablir'"
-          aria-label="Rétablir"
+          v-tooltip.bottom="t('forum.editor.redo')"
+          :aria-label="t('forum.editor.redo')"
           icon="pi pi-refresh"
           severity="secondary"
           text
@@ -106,21 +106,21 @@
     <Dialog
       v-model:visible="showYoutubeDialog"
       modal
-      header="Ajouter une vidéo YouTube"
+      :header="t('forum.editor.add_youtube')"
       :style="{ width: '32rem' }"
     >
       <div class="flex flex-col gap-3">
         <InputText
           v-model="youtubeUrl"
-          placeholder="https://www.youtube.com/watch?v=…"
+          :placeholder="YOUTUBE_URL_EXAMPLE"
           autofocus
           @keyup.enter="insertYoutubeVideo"
         />
-        <small class="text-surface-500">Collez l'URL d'une vidéo YouTube</small>
+        <small class="text-surface-500">{{ t('forum.editor.youtube_hint') }}</small>
       </div>
       <template #footer>
-        <Button label="Annuler" severity="secondary" text @click="showYoutubeDialog = false" />
-        <Button label="Ajouter" icon="pi pi-plus" :disabled="!isValidYoutubeUrl" @click="insertYoutubeVideo" />
+        <Button :label="t('forum.common.cancel')" severity="secondary" text @click="showYoutubeDialog = false" />
+        <Button :label="t('forum.editor.add')" icon="pi pi-plus" :disabled="!isValidYoutubeUrl" @click="insertYoutubeVideo" />
       </template>
     </Dialog>
   </div>
@@ -138,7 +138,11 @@ import Divider from 'primevue/divider'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import forumApi from '../../api/forum/forum.js'
+
+// An example URL, the same in every language.
+const YOUTUBE_URL_EXAMPLE = 'https://www.youtube.com/watch?v=…'
 
 const props = defineProps({
   previousContent: {
@@ -147,11 +151,12 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Écrivez votre message…'
+    default: null
   }
 })
 
 const emit = defineEmits(['content-update'])
+const { t } = useI18n()
 const toast = useToast()
 
 const imageInputRef = ref(null)
@@ -170,7 +175,7 @@ const editor = useEditor({
       heading: false
     }),
     Placeholder.configure({
-      placeholder: props.placeholder
+      placeholder: props.placeholder ?? t('forum.editor.placeholder')
     }),
     Image,
     Youtube.configure({
@@ -215,13 +220,13 @@ async function handleImageUpload(event) {
     const { uri } = await forumApi.uploadImage(file)
     if (uri) {
       editor.value?.chain().focus().setImage({ src: uri }).run()
-      toast.add({ severity: 'success', summary: 'Image ajoutée', life: 3000 })
+      toast.add({ severity: 'success', summary: t('forum.editor.image_added'), life: 3000 })
     }
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Échec du téléchargement',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('forum.editor.upload_failed'),
+      detail: e?.response?.data?.detail || t('forum.common.generic_error'),
       life: 4000
     })
   } finally {
@@ -259,7 +264,10 @@ function insertQuote({ author, html }) {
       {
         type: 'blockquote',
         content: [
-          { type: 'paragraph', content: [{ type: 'text', text: `${author} a écrit :` }] },
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: t('forum.editor.quote_author', { author }) }]
+          },
           ...(text
             ? [{ type: 'paragraph', content: [{ type: 'text', text }] }]
             : [{ type: 'paragraph' }])

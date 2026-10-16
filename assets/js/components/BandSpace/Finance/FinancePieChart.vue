@@ -71,7 +71,10 @@ import { format, parseISO } from 'date-fns'
 import Chart from 'primevue/chart'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { effectiveAmount, formatAmount } from '../../../utils/currency.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   // All-time entries (finance entry resources) and the category tree (poles + children).
@@ -163,13 +166,33 @@ function buildTop(type, title, emptyLabel, key) {
 }
 
 const charts = computed(() => [
-  buildChart('income', 'Revenus par catégorie', 'Aucun revenu enregistré', 'income'),
-  buildChart('expense', 'Dépenses par catégorie', 'Aucune dépense enregistrée', 'expense')
+  buildChart(
+    'income',
+    t('band_space_finance.pie_chart.income_title'),
+    t('band_space_finance.pie_chart.no_income'),
+    'income'
+  ),
+  buildChart(
+    'expense',
+    t('band_space_finance.pie_chart.expense_title'),
+    t('band_space_finance.pie_chart.no_expense'),
+    'expense'
+  )
 ])
 
 const topLists = computed(() => [
-  buildTop('income', 'Top 10 des revenus', 'Aucun revenu enregistré', 'income'),
-  buildTop('expense', 'Top 10 des dépenses', 'Aucune dépense enregistrée', 'expense')
+  buildTop(
+    'income',
+    t('band_space_finance.pie_chart.top_income'),
+    t('band_space_finance.pie_chart.no_income'),
+    'income'
+  ),
+  buildTop(
+    'expense',
+    t('band_space_finance.pie_chart.top_expense'),
+    t('band_space_finance.pie_chart.no_expense'),
+    'expense'
+  )
 ])
 
 function percent(value, total) {
@@ -187,7 +210,8 @@ const chartOptions = {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: (ctx) => ` ${ctx.label} : ${formatAmount(ctx.parsed)}`
+        label: (ctx) =>
+          ` ${t('band_space_finance.pie_chart.tooltip', { label: ctx.label, amount: formatAmount(ctx.parsed) })}`
       }
     }
   }

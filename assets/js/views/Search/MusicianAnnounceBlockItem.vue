@@ -7,7 +7,7 @@
                     <Avatar
                         v-if="user.profile_picture_url"
                         :image="user.profile_picture_url"
-                        :pt="{ image: { alt: `Photo de ${userName}` } }"
+                        :pt="{ image: { alt: t('search.announce_card.avatar_alt', { name: userName }) } }"
                         class="!w-16 !h-16"
                         shape="circle"
                     />
@@ -41,7 +41,7 @@
                         {{ userName }}
                     </span>
                     <p class="text-surface-500 dark:text-surface-400 text-sm mt-0.5 truncate">
-                        <span v-if="type === 1">recherche un {{ instrument.toLowerCase() }}</span>
+                        <span v-if="type === 1">{{ t('search.announce_card.looking_for_instrument', { instrument: instrument.toLowerCase() }) }}</span>
                         <span v-else>{{ instrument }}</span>
                     </p>
                 </div>
@@ -57,7 +57,7 @@
                         ? 'bg-teal-100 text-teal-800 ring-1 ring-teal-300 dark:bg-teal-400/15 dark:text-teal-200 dark:ring-teal-400/40'
                         : 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300'"
                 >
-                    {{ style.name }}<span v-if="isHighlighted(style)" class="sr-only"> (recherché)</span>
+                    {{ style.name }}<span v-if="isHighlighted(style)" class="sr-only">{{ ` ${t('search.announce_card.highlighted_style')}` }}</span>
                 </span>
                 <span
                     v-if="hasMoreStyles(styles)"
@@ -84,7 +84,7 @@
                     @click="$router.push(profileRoute)"
                     class="flex-1 py-2.5 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-surface-200 dark:enabled:hover:bg-surface-700 enabled:cursor-pointer"
                 >
-                    <i class="pi pi-user mr-2" />Profil
+                    <i class="pi pi-user mr-2" />{{ t('search.announce_card.profile') }}
                 </button>
                 <button
                     v-if="!isOwnAnnounce"
@@ -92,14 +92,14 @@
                     @click="handleContact"
                     class="flex-1 py-2.5 rounded-xl bg-surface-900 dark:bg-surface-100 text-white dark:text-surface-900 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-surface-800 dark:enabled:hover:bg-surface-200 enabled:cursor-pointer"
                 >
-                    <i class="pi pi-envelope mr-2" />Contacter
+                    <i class="pi pi-envelope mr-2" />{{ t('search.announce_card.contact') }}
                 </button>
                 <ReportButton
                     v-if="announceId && !user.deletion_datetime"
                     target-type="announce"
                     :target-id="announceId"
                     :author-id="user.id"
-                    :aria-label="`Signaler l'annonce de ${userName}`"
+                    :aria-label="t('search.announce_card.report', { name: userName })"
                     icon-only
                     class="self-center"
                 />
@@ -119,6 +119,7 @@
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Avatar from 'primevue/avatar'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AnnounceNoteButton from '../../components/Announce/AnnounceNoteButton.vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
@@ -145,6 +146,7 @@ const props = defineProps({
   highlightedStyles: { type: Array, default: () => [] }
 })
 
+const { t } = useI18n()
 const userName = computed(() => displayName(props.user))
 
 function isHighlighted(style) {

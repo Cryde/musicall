@@ -4,18 +4,18 @@
     aria-labelledby="agenda-availability-title"
   >
     <div class="flex items-baseline justify-between gap-2">
-      <h3 id="agenda-availability-title" class="text-sm font-semibold">Disponibilités</h3>
+      <h3 id="agenda-availability-title" class="text-sm font-semibold">{{ t('band_space_agenda.availability.title') }}</h3>
       <span v-if="summary" class="text-xs text-surface-600 dark:text-surface-300 text-right">
         {{ summary }}
       </span>
     </div>
     <p v-if="dateLabel" class="-mt-2 text-xs text-surface-600 dark:text-surface-300">
-      Pour le {{ dateLabel }}
+      {{ t('band_space_agenda.availability.for_date', { date: dateLabel }) }}
     </p>
 
     <div v-if="isLoading" class="flex justify-center py-2" role="status">
       <i class="pi pi-spin pi-spinner text-surface-500" aria-hidden="true" />
-      <span class="sr-only">Chargement des disponibilités</span>
+      <span class="sr-only">{{ t('band_space_agenda.availability.loading') }}</span>
     </div>
 
     <Message v-else-if="loadError" severity="error" class="text-sm">{{ loadError }}</Message>
@@ -31,14 +31,14 @@
         {{ actionError }}
       </Message>
 
-      <div v-if="availability.can_answer" class="flex flex-wrap gap-2" role="group" aria-label="Ma disponibilité">
+      <div v-if="availability.can_answer" class="flex flex-wrap gap-2" role="group" :aria-label="t('band_space_agenda.availability.my_availability')">
         <Button
           v-for="choice in ANSWER_CHOICES"
           :key="choice.value"
           type="button"
           size="small"
           :icon="choice.icon"
-          :label="choice.label"
+          :label="t(choice.labelKey)"
           :severity="choice.severity"
           :outlined="availability.my_answer !== choice.value"
           :aria-pressed="availability.my_answer === choice.value"
@@ -48,7 +48,7 @@
         />
       </div>
       <p v-else class="text-xs text-surface-600 dark:text-surface-300">
-        Cette date est passée, les disponibilités ne peuvent plus changer.
+        {{ t('band_space_agenda.availability.past') }}
       </p>
 
       <!-- `absent` comes from a declared absence, not from an answer: the buttons above still apply. -->
@@ -56,7 +56,7 @@
         v-if="availability.can_answer && availability.my_answer === 'absent'"
         class="text-xs text-amber-700 dark:text-amber-300"
       >
-        Une indisponibilité est déclarée sur cette date. Répondre ici la remplace pour cet événement.
+        {{ t('band_space_agenda.availability.absent_notice') }}
       </p>
 
       <ul class="flex flex-col gap-2">
@@ -85,7 +85,7 @@
         type="button"
         size="small"
         icon="pi pi-bell"
-        label="Relancer les membres sans réponse"
+        :label="t('band_space_agenda.availability.remind')"
         severity="secondary"
         text
         class="self-start"
@@ -101,6 +101,7 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { availabilityAnswerLabel, availabilitySummary } from '../../../utils/agendaAvailability.js'
 import Avatar from '../../User/Avatar.vue'
@@ -116,8 +117,18 @@ const props = defineProps({
 const emit = defineEmits(['changed'])
 
 const ANSWER_CHOICES = [
-  { value: 'yes', label: 'Disponible', icon: 'pi pi-check', severity: 'success' },
-  { value: 'no', label: 'Indisponible', icon: 'pi pi-times', severity: 'danger' }
+  {
+    value: 'yes',
+    labelKey: 'band_space_agenda.availability.answer.yes',
+    icon: 'pi pi-check',
+    severity: 'success'
+  },
+  {
+    value: 'no',
+    labelKey: 'band_space_agenda.availability.answer.no',
+    icon: 'pi pi-times',
+    severity: 'danger'
+  }
 ]
 
 const ANSWER_BADGE_CLASSES = {
@@ -128,6 +139,7 @@ const ANSWER_BADGE_CLASSES = {
 const PENDING_BADGE_CLASS =
   'bg-surface-100 text-surface-700 dark:bg-surface-700 dark:text-surface-200'
 
+const { t } = useI18n()
 const toast = useToast()
 
 const availability = ref(null)
@@ -162,7 +174,7 @@ async function load() {
     availability.value = data
   } catch (error) {
     if (currentRequestId !== requestId) return
-    loadError.value = error?.message ?? 'Impossible de charger les disponibilités'
+    loadError.value = error?.message ?? t('band_space_agenda.availability.load_error')
   } finally {
     if (currentRequestId === requestId) isLoading.value = false
   }
@@ -184,7 +196,7 @@ async function handleAnswer(answer) {
     )
     emit('changed')
   } catch (error) {
-    actionError.value = error?.message ?? 'Impossible d’enregistrer votre disponibilité'
+    actionError.value = error?.message ?? t('band_space_agenda.availability.answer_error')
   } finally {
     savingAnswer.value = null
   }
@@ -201,12 +213,12 @@ async function handleRemind() {
     )
     toast.add({
       severity: 'success',
-      summary: 'Relance envoyée',
-      detail: 'Les membres sans réponse ont reçu une notification.',
+      summary: t('band_space_agenda.availability.remind_sent'),
+      detail: t('band_space_agenda.availability.remind_sent_detail'),
       life: 4000
     })
   } catch (error) {
-    actionError.value = error?.message ?? 'Impossible de relancer les membres'
+    actionError.value = error?.message ?? t('band_space_agenda.availability.remind_error')
   } finally {
     isReminding.value = false
   }

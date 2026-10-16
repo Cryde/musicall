@@ -20,6 +20,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import TaskColumn from './TaskColumn.vue'
 
 const props = defineProps({
@@ -30,9 +31,23 @@ const props = defineProps({
 
 defineEmits(['open-task', 'reorder', 'status-change', 'show-all-done'])
 
+const { t } = useI18n()
+
 const columns = computed(() => [
-  { status: 'todo', label: 'À faire', tasks: props.tasksByStatus.todo || [] },
-  { status: 'in_progress', label: 'En cours', tasks: props.tasksByStatus.in_progress || [] },
-  { status: 'done', label: 'Terminé', tasks: props.tasksByStatus.done || [] }
+  {
+    status: 'todo',
+    label: t('band_space_tasks.status.todo'),
+    tasks: props.tasksByStatus.todo || []
+  },
+  {
+    status: 'in_progress',
+    label: t('band_space_tasks.status.in_progress'),
+    tasks: props.tasksByStatus.in_progress || []
+  },
+  {
+    status: 'done',
+    label: t('band_space_tasks.status.done'),
+    tasks: props.tasksByStatus.done || []
+  }
 ])
 </script>

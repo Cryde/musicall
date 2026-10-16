@@ -17,13 +17,11 @@
  * See setlistDuration.test.js.
  */
 
+import { i18n } from '../i18n/index.js'
+
 /** The API's own range for a duration (Assert\Range on SongCreate and SetlistItemCreate). */
 export const MIN_DURATION_SECONDS = 1
 export const MAX_DURATION_SECONDS = 86400
-
-export const DURATION_FORMAT_MESSAGE = 'Durée invalide. Utilisez le format mm:ss, par exemple 3:47.'
-export const DURATION_RANGE_MESSAGE =
-  'La durée doit être comprise entre 1 seconde et 24 heures (24:00:00).'
 
 /**
  * Minutes are uncapped so a long break can be written 90:00, seconds are a real clock reading.
@@ -114,13 +112,13 @@ export function parseDurationInput(value) {
     return withinRange(Number(raw))
   }
 
-  return { seconds: null, error: DURATION_FORMAT_MESSAGE }
+  return { seconds: null, error: i18n.global.t('band_space_setlist.duration.invalid_format') }
 }
 
 /** Refuses what the API would refuse anyway, so a zero never travels as a duration. */
 function withinRange(seconds) {
   if (seconds < MIN_DURATION_SECONDS || seconds > MAX_DURATION_SECONDS) {
-    return { seconds: null, error: DURATION_RANGE_MESSAGE }
+    return { seconds: null, error: i18n.global.t('band_space_setlist.duration.out_of_range') }
   }
 
   return { seconds, error: null }

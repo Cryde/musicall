@@ -22,7 +22,7 @@
     <div v-if="image" class="relative mb-2 inline-block">
       <img
         :src="image.previewUrl"
-        alt="Image à envoyer"
+        :alt="t('band_space_chat.composer.image_alt')"
         class="h-20 w-20 rounded-md object-cover border border-surface-200 dark:border-surface-700"
       />
       <Button
@@ -31,7 +31,7 @@
         size="small"
         severity="secondary"
         class="absolute! -right-2 -top-2 h-6! w-6!"
-        aria-label="Retirer l'image"
+        :aria-label="t('band_space_chat.composer.remove_image')"
         :disabled="isSending"
         @click="removeImage"
       />
@@ -50,12 +50,12 @@
         icon="pi pi-trash"
         severity="secondary"
         outlined
-        aria-label="Annuler la note vocale"
+        :aria-label="t('band_space_chat.composer.cancel_voice_note')"
         @click="recorder.cancel()"
       />
       <div class="flex flex-1 items-center gap-2 rounded-md border border-surface-200 dark:border-surface-700 px-3 py-2 text-sm">
         <span class="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-red-600" aria-hidden="true" />
-        <span>Enregistrement</span>
+        <span>{{ t('band_space_chat.composer.recording') }}</span>
         <span class="tabular-nums text-surface-600 dark:text-surface-300">
           {{ formatVoiceNoteDuration(recorder.elapsedSeconds.value) }} /
           {{ formatVoiceNoteDuration(MAX_VOICE_NOTE_SECONDS) }}
@@ -63,7 +63,7 @@
       </div>
       <Button
         icon="pi pi-send"
-        aria-label="Envoyer la note vocale"
+        :aria-label="t('band_space_chat.composer.send_voice_note')"
         :loading="isSending"
         :disabled="isSending"
         @click="stopAndSendVoiceNote"
@@ -76,7 +76,7 @@
         icon="pi pi-paperclip"
         severity="secondary"
         outlined
-        aria-label="Joindre un élément du Band Space"
+        :aria-label="t('band_space_chat.composer.attach')"
         :disabled="isSending"
         @click="isPickerVisible = true"
       />
@@ -86,7 +86,7 @@
         icon="pi pi-image"
         severity="secondary"
         outlined
-        aria-label="Ajouter une image"
+        :aria-label="t('band_space_chat.composer.add_image')"
         :disabled="isSending"
         @click="imageInput?.click()"
       />
@@ -103,8 +103,8 @@
         v-model="content"
         class="flex-1"
         :members="suggestionSource"
-        aria-label="Votre message"
-        placeholder="Votre message..."
+        :aria-label="t('band_space_chat.composer.message_label')"
+        :placeholder="t('band_space_chat.composer.message_placeholder')"
         editor-class="min-h-[3.5rem] max-h-40 rounded-md px-3 py-2"
         submit-on="enter"
         :disabled="isSending"
@@ -114,14 +114,14 @@
       <Button
         v-if="canRecord && !canSend && !isResolvingLink"
         icon="pi pi-microphone"
-        aria-label="Enregistrer une note vocale"
+        :aria-label="t('band_space_chat.composer.record_voice_note')"
         :disabled="isSending"
         @click="recorder.start()"
       />
       <Button
         v-else
         icon="pi pi-send"
-        aria-label="Envoyer le message"
+        :aria-label="t('band_space_chat.composer.send')"
         :loading="isSending || isResolvingLink"
         :disabled="!canSend || isSending || isResolvingLink"
         @click="send"
@@ -142,6 +142,7 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { useVoiceRecorder } from '../../../composables/useVoiceRecorder.js'
@@ -189,6 +190,7 @@ const props = defineProps({
 const emit = defineEmits(['sent', 'typing'])
 
 const router = useRouter()
+const { t } = useI18n()
 
 /**
  * Pasted links still being resolved (#972). Sending, or starting a voice note, waits for them: the URL
@@ -389,11 +391,11 @@ async function deliver(message, attachmentIds, media) {
  */
 function errorMessageFor(error) {
   if (error.status === 429) {
-    return 'Trop de messages envoyés. Veuillez patienter un instant.'
+    return t('band_space_chat.composer.rate_limited')
   }
 
   console.error('Failed to send the message:', error)
 
-  return error.message || "Le message n'a pas pu être envoyé."
+  return error.message || t('band_space_chat.composer.send_failed')
 }
 </script>

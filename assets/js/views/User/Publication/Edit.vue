@@ -6,9 +6,9 @@
 
     <div v-else-if="!publicationEditStore.publication" class="flex flex-col items-center justify-center py-12">
       <i class="pi pi-exclamation-triangle text-4xl text-orange-500 mb-4" />
-      <p class="text-lg font-medium text-surface-700 dark:text-surface-200">Publication introuvable</p>
+      <p class="text-lg font-medium text-surface-700 dark:text-surface-200">{{ t('publication.editor.not_found') }}</p>
       <Button
-        label="Retour aux publications"
+        :label="t('publication.editor.back_to_publications')"
         icon="pi pi-arrow-left"
         class="mt-4"
         @click="router.push({ name: 'app_user_publications' })"
@@ -21,7 +21,7 @@
         <div class="flex items-center gap-4 min-w-0">
           <Button
             icon="pi pi-arrow-left"
-            aria-label="Retour"
+            :aria-label="t('publication.common.back')"
             severity="secondary"
             text
             rounded
@@ -37,22 +37,22 @@
               class="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400"
             >
               <span class="w-2 h-2 rounded-full bg-amber-500" />
-              Non enregistré
+              {{ t('publication.editor.unsaved') }}
             </span>
             <span
               v-if="isAutoSaving"
               class="inline-flex items-center gap-1.5 text-xs text-surface-500 dark:text-surface-400"
             >
               <i class="pi pi-spin pi-spinner text-xs" />
-              Enregistrement…
+              {{ t('publication.editor.saving') }}
             </span>
           </div>
         </div>
 
         <div class="flex items-center gap-2 self-end md:self-auto">
           <Button
-            v-tooltip.bottom="focusMode ? 'Quitter le mode focus' : 'Mode focus'"
-            :aria-label="focusMode ? 'Quitter le mode focus' : 'Mode focus'"
+            v-tooltip.bottom="focusMode ? t('publication.editor.exit_focus_mode') : t('publication.editor.focus_mode')"
+            :aria-label="focusMode ? t('publication.editor.exit_focus_mode') : t('publication.editor.focus_mode')"
             :icon="focusMode ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
             severity="secondary"
             text
@@ -60,7 +60,7 @@
             @click="focusMode = !focusMode"
           />
           <Button
-            label="Enregistrer"
+            :label="t('publication.common.save')"
             icon="pi pi-save"
             severity="secondary"
             size="small"
@@ -68,7 +68,7 @@
             @click="handleSave"
           />
           <Button
-            label="Soumettre"
+            :label="t('publication.common.submit')"
             icon="pi pi-send"
             severity="success"
             size="small"
@@ -84,13 +84,13 @@
           <input
             v-model="title"
             type="text"
-            placeholder="Titre de la publication"
+            :placeholder="t('publication.editor.title_placeholder')"
             class="w-full text-3xl md:text-4xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 text-surface-900 dark:text-surface-0 placeholder:text-surface-300 dark:placeholder:text-surface-600 px-1"
             :disabled="publicationEditStore.isSaving || publicationEditStore.isSubmitting"
           />
-          <p v-if="slugPreview" class="text-xs text-surface-500 dark:text-surface-400 px-1">
-            URL : <span class="font-mono">/publications/{{ slugPreview }}</span>
-          </p>
+          <i18n-t v-if="slugPreview" keypath="publication.editor.slug_preview" tag="p" class="text-xs text-surface-500 dark:text-surface-400 px-1">
+            <template #path><span class="font-mono">{{ slugPath }}</span></template>
+          </i18n-t>
 
       <!-- Editor Container (same styling as publication display) -->
       <div class="content publication-container bg-surface-0 dark:bg-surface-800 rounded-md min-w-0">
@@ -100,48 +100,48 @@
           <!-- Text formatting -->
           <div class="flex items-center gap-1 pr-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Gras'"
+              v-tooltip.bottom="t('publication.editor.toolbar.bold')"
               :severity="editor?.isActive('bold') ? 'primary' : 'secondary'"
               text
               size="small"
               class="font-bold"
               @click="editor?.chain().focus().toggleBold().run()"
             >
-              B
+              {{ t('publication.editor.toolbar.bold_short') }}
             </Button>
             <Button
-              v-tooltip.bottom="'Italique'"
+              v-tooltip.bottom="t('publication.editor.toolbar.italic')"
               :severity="editor?.isActive('italic') ? 'primary' : 'secondary'"
               text
               size="small"
               class="italic"
               @click="editor?.chain().focus().toggleItalic().run()"
             >
-              I
+              {{ t('publication.editor.toolbar.italic_short') }}
             </Button>
           </div>
 
           <!-- Headings -->
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Paragraphe'"
-              label="P"
+              v-tooltip.bottom="t('publication.editor.toolbar.paragraph')"
+              :label="t('publication.editor.toolbar.paragraph_short')"
               :severity="editor?.isActive('paragraph') ? 'primary' : 'secondary'"
               text
               size="small"
               @click="editor?.chain().focus().setParagraph().run()"
             />
             <Button
-              v-tooltip.bottom="'Titre 2'"
-              label="H2"
+              v-tooltip.bottom="t('publication.editor.toolbar.heading_2')"
+              :label="t('publication.editor.toolbar.heading_2_short')"
               :severity="editor?.isActive('heading', { level: 2 }) ? 'primary' : 'secondary'"
               text
               size="small"
               @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
             />
             <Button
-              v-tooltip.bottom="'Titre 3'"
-              label="H3"
+              v-tooltip.bottom="t('publication.editor.toolbar.heading_3')"
+              :label="t('publication.editor.toolbar.heading_3_short')"
               :severity="editor?.isActive('heading', { level: 3 }) ? 'primary' : 'secondary'"
               text
               size="small"
@@ -152,8 +152,8 @@
           <!-- Alignment -->
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Aligner à gauche'"
-              aria-label="Aligner à gauche"
+              v-tooltip.bottom="t('publication.editor.toolbar.align_left')"
+              :aria-label="t('publication.editor.toolbar.align_left')"
               icon="pi pi-align-left"
               :severity="editor?.isActive({ textAlign: 'left' }) ? 'primary' : 'secondary'"
               text
@@ -161,8 +161,8 @@
               @click="editor?.chain().focus().setTextAlign('left').run()"
             />
             <Button
-              v-tooltip.bottom="'Centrer'"
-              aria-label="Centrer"
+              v-tooltip.bottom="t('publication.editor.toolbar.align_center')"
+              :aria-label="t('publication.editor.toolbar.align_center')"
               icon="pi pi-align-center"
               :severity="editor?.isActive({ textAlign: 'center' }) ? 'primary' : 'secondary'"
               text
@@ -170,8 +170,8 @@
               @click="editor?.chain().focus().setTextAlign('center').run()"
             />
             <Button
-              v-tooltip.bottom="'Aligner à droite'"
-              aria-label="Aligner à droite"
+              v-tooltip.bottom="t('publication.editor.toolbar.align_right')"
+              :aria-label="t('publication.editor.toolbar.align_right')"
               icon="pi pi-align-right"
               :severity="editor?.isActive({ textAlign: 'right' }) ? 'primary' : 'secondary'"
               text
@@ -183,8 +183,8 @@
           <!-- Lists -->
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Liste à puces'"
-              aria-label="Liste à puces"
+              v-tooltip.bottom="t('publication.editor.toolbar.bullet_list')"
+              :aria-label="t('publication.editor.toolbar.bullet_list')"
               icon="pi pi-list"
               :severity="editor?.isActive('bulletList') ? 'primary' : 'secondary'"
               text
@@ -192,8 +192,8 @@
               @click="editor?.chain().focus().toggleBulletList().run()"
             />
             <Button
-              v-tooltip.bottom="'Liste numérotée'"
-              aria-label="Liste numérotée"
+              v-tooltip.bottom="t('publication.editor.toolbar.ordered_list')"
+              :aria-label="t('publication.editor.toolbar.ordered_list')"
               icon="pi pi-list-check"
               :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
               text
@@ -205,8 +205,8 @@
           <!-- Blocks -->
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Citation'"
-              aria-label="Citation"
+              v-tooltip.bottom="t('publication.editor.toolbar.quote')"
+              :aria-label="t('publication.editor.toolbar.quote')"
               icon="pi pi-comment"
               :severity="editor?.isActive('blockquote') ? 'primary' : 'secondary'"
               text
@@ -214,8 +214,8 @@
               @click="editor?.chain().focus().toggleBlockquote().run()"
             />
             <Button
-              v-tooltip.bottom="'Ligne horizontale'"
-              aria-label="Ligne horizontale"
+              v-tooltip.bottom="t('publication.editor.toolbar.horizontal_rule')"
+              :aria-label="t('publication.editor.toolbar.horizontal_rule')"
               icon="pi pi-minus"
               severity="secondary"
               text
@@ -223,8 +223,8 @@
               @click="editor?.chain().focus().setHorizontalRule().run()"
             />
             <Button
-              v-tooltip.bottom="'Insérer des colonnes'"
-              aria-label="Insérer des colonnes"
+              v-tooltip.bottom="t('publication.editor.toolbar.insert_columns')"
+              :aria-label="t('publication.editor.toolbar.insert_columns')"
               icon="pi pi-th-large"
               :severity="editor?.isActive('columns') ? 'primary' : 'secondary'"
               text
@@ -235,7 +235,7 @@
             <Popover ref="columnsPopover">
               <div class="flex flex-col gap-1">
                 <Button
-                  label="2 colonnes"
+                  :label="t('publication.editor.toolbar.two_columns')"
                   icon="pi pi-th-large"
                   severity="secondary"
                   text
@@ -243,7 +243,7 @@
                   @click="insertColumns(2)"
                 />
                 <Button
-                  label="3 colonnes"
+                  :label="t('publication.editor.toolbar.three_columns')"
                   icon="pi pi-th-large"
                   severity="secondary"
                   text
@@ -257,8 +257,8 @@
           <!-- Media -->
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Ajouter une image'"
-              aria-label="Ajouter une image"
+              v-tooltip.bottom="t('publication.editor.toolbar.add_image')"
+              :aria-label="t('publication.editor.toolbar.add_image')"
               icon="pi pi-image"
               severity="secondary"
               text
@@ -274,8 +274,8 @@
               @change="handleImageUpload"
             />
             <Button
-              v-tooltip.bottom="'Ajouter une vidéo YouTube'"
-              aria-label="Ajouter une vidéo YouTube"
+              v-tooltip.bottom="t('publication.editor.toolbar.add_youtube')"
+              :aria-label="t('publication.editor.toolbar.add_youtube')"
               icon="pi pi-youtube"
               severity="secondary"
               text
@@ -287,8 +287,8 @@
           <!-- Undo/Redo -->
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
-              v-tooltip.bottom="'Annuler'"
-              aria-label="Annuler"
+              v-tooltip.bottom="t('publication.editor.toolbar.undo')"
+              :aria-label="t('publication.editor.toolbar.undo')"
               icon="pi pi-undo"
               severity="secondary"
               text
@@ -297,8 +297,8 @@
               @click="editor?.chain().focus().undo().run()"
             />
             <Button
-              v-tooltip.bottom="'Rétablir'"
-              aria-label="Rétablir"
+              v-tooltip.bottom="t('publication.editor.toolbar.redo')"
+              :aria-label="t('publication.editor.toolbar.redo')"
               icon="pi pi-refresh"
               severity="secondary"
               text
@@ -345,27 +345,27 @@
     <Dialog
       v-model:visible="showYoutubeDialog"
       modal
-      header="Ajouter une vidéo YouTube"
+      :header="t('publication.editor.toolbar.add_youtube')"
       :style="{ width: '450px' }"
     >
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
           <label for="youtubeUrl" class="font-medium text-surface-700 dark:text-surface-200">
-            URL de la vidéo
+            {{ t('publication.editor.youtube_dialog.url_label') }}
           </label>
           <InputText
             id="youtubeUrl"
             v-model="youtubeUrl"
-            placeholder="https://www.youtube.com/watch?v=..."
+            :placeholder="t('publication.editor.youtube_dialog.url_placeholder')"
             class="w-full"
             @keyup.enter="insertYoutubeVideo"
           />
         </div>
-        <small class="text-surface-500">Collez l'URL d'une vidéo YouTube</small>
+        <small class="text-surface-500">{{ t('publication.editor.youtube_dialog.help') }}</small>
       </div>
       <template #footer>
-        <Button label="Annuler" severity="secondary" text @click="showYoutubeDialog = false" />
-        <Button label="Ajouter" icon="pi pi-plus" :disabled="!isValidYoutubeUrl" @click="insertYoutubeVideo" />
+        <Button :label="t('publication.common.cancel')" severity="secondary" text @click="showYoutubeDialog = false" />
+        <Button :label="t('publication.common.add')" icon="pi pi-plus" :disabled="!isValidYoutubeUrl" @click="insertYoutubeVideo" />
       </template>
     </Dialog>
   </div>
@@ -391,13 +391,16 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import ColumnsBubbleMenu from '../../../components/Editor/ColumnsBubbleMenu.vue'
 import { Column, Columns } from '../../../components/Editor/extensions/Columns.js'
 import PublicationSettingsPanel from '../../../components/Publication/PublicationSettingsPanel.vue'
 import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 
-useTitle('Édition - MusicAll')
+const { t } = useI18n()
+
+useTitle(() => t('publication.editor.page_title'))
 
 const route = useRoute()
 const router = useRouter()
@@ -425,19 +428,21 @@ let autosaveTimer = null
 const AUTOSAVE_INTERVAL_MS = 30_000
 
 const STATUS_BADGES = {
-  0: { label: 'Brouillon', severity: 'warn' },
-  1: { label: 'Publié', severity: 'success' },
-  2: { label: 'En validation', severity: 'info' }
+  0: { labelKey: 'publication.user_list.status.draft', severity: 'warn' },
+  1: { labelKey: 'publication.user_list.status.online', severity: 'success' },
+  2: { labelKey: 'publication.user_list.status.pending', severity: 'info' }
 }
 
 const statusBadge = computed(() => {
   const id = publicationEditStore.publication?.status_id
-  return (
-    STATUS_BADGES[id] ?? {
-      label: publicationEditStore.publication?.status_label ?? '—',
-      severity: 'secondary'
-    }
-  )
+  const badge = STATUS_BADGES[id]
+  if (badge) {
+    return { label: t(badge.labelKey), severity: badge.severity }
+  }
+  return {
+    label: publicationEditStore.publication?.status_label ?? '—',
+    severity: 'secondary'
+  }
 })
 
 const wordCount = computed(() => {
@@ -454,6 +459,8 @@ const slugPreview = computed(() => {
   const fromTitle = slugify(title.value)
   return fromTitle || publicationEditStore.publication?.slug || ''
 })
+
+const slugPath = computed(() => `/publications/${slugPreview.value}`)
 
 const isDirty = computed(() => {
   if (!lastSaved.value) return false
@@ -525,7 +532,7 @@ async function silentAutoSave() {
 
 onBeforeRouteLeave(() => {
   if (isDirty.value) {
-    return window.confirm('Vous avez des modifications non enregistrées. Quitter quand même ?')
+    return window.confirm(t('publication.editor.leave_confirm'))
   }
   return true
 })
@@ -553,7 +560,7 @@ const editor = useEditor({
       allowFullscreen: true
     }),
     Placeholder.configure({
-      placeholder: 'Commencez à écrire votre publication...'
+      placeholder: t('publication.editor.content_placeholder')
     }),
     DragHandle.configure({
       render: () => {
@@ -644,14 +651,14 @@ async function handleImageUpload(event) {
     editor.value?.chain().focus().setImage({ src: uri }).run()
     toast.add({
       severity: 'success',
-      summary: 'Image ajoutée',
+      summary: t('publication.editor.image_added'),
       life: 3000
     })
   } else {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible d'ajouter l'image",
+      summary: t('publication.common.error'),
+      detail: t('publication.editor.image_add_failed'),
       life: 3000
     })
   }
@@ -689,15 +696,15 @@ async function handleSave() {
     syncSettingsFromStore()
     toast.add({
       severity: 'success',
-      summary: 'Enregistré',
-      detail: 'Votre publication a été enregistrée',
+      summary: t('publication.editor.saved'),
+      detail: t('publication.editor.saved_detail'),
       life: 3000
     })
   } else {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible d'enregistrer la publication",
+      summary: t('publication.common.error'),
+      detail: t('publication.editor.save_failed'),
       life: 3000
     })
   }
@@ -705,12 +712,11 @@ async function handleSave() {
 
 function handleSubmit() {
   confirm.require({
-    message:
-      'Une fois soumise, vous ne pourrez plus modifier la publication. Voulez-vous continuer ?',
-    header: 'Confirmation',
+    message: t('publication.editor.submit_confirm'),
+    header: t('publication.common.confirmation'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Soumettre',
+    rejectLabel: t('publication.common.cancel'),
+    acceptLabel: t('publication.common.submit'),
     acceptClass: 'p-button-success',
     accept: async () => {
       // Save first
@@ -721,8 +727,8 @@ function handleSubmit() {
       if (success) {
         toast.add({
           severity: 'success',
-          summary: 'Publication soumise',
-          detail: 'Votre publication a été soumise pour validation',
+          summary: t('publication.editor.submitted'),
+          detail: t('publication.editor.submitted_detail'),
           life: 3000
         })
         setTimeout(() => {
@@ -731,8 +737,8 @@ function handleSubmit() {
       } else {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de soumettre la publication',
+          summary: t('publication.common.error'),
+          detail: t('publication.editor.submit_failed'),
           life: 5000
         })
       }

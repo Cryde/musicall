@@ -2,14 +2,14 @@
   <div class="flex flex-col gap-3">
     <div class="flex items-center justify-between">
       <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-200">
-        Pièces jointes
+        {{ t('band_space_files.attached_section.title') }}
         <span v-if="attachedFiles.length > 0" class="text-xs text-surface-400 ml-1">
           ({{ attachedFiles.length }})
         </span>
       </h4>
       <Button
         v-if="canAttach"
-        label="Joindre un fichier"
+        :label="t('band_space_files.attached_section.attach')"
         icon="pi pi-paperclip"
         size="small"
         severity="secondary"
@@ -22,7 +22,7 @@
     </div>
 
     <p v-else-if="attachedFiles.length === 0" class="text-xs italic text-surface-400">
-      Aucun fichier attaché.
+      {{ t('band_space_files.attached_section.empty') }}
     </p>
 
     <div
@@ -52,8 +52,8 @@
         size="small"
         text
         severity="secondary"
-        aria-label="Détacher"
-        v-tooltip.top="'Détacher'"
+        :aria-label="t('band_space_files.attached_section.detach')"
+        v-tooltip.top="t('band_space_files.attached_section.detach')"
         @click="confirmDetach(file)"
       />
     </div>
@@ -75,6 +75,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
@@ -90,6 +91,7 @@ const props = defineProps({
 
 const emit = defineEmits(['attached', 'detached', 'count'])
 
+const { t } = useI18n()
 const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
@@ -140,11 +142,16 @@ function openFileDrawer(file) {
 
 function confirmDetach(file) {
   confirm.require({
-    message: `Détacher « ${file.original_name} » de cette ${props.sourceType === 'task' ? 'tâche' : 'entrée'} ?`,
-    header: 'Confirmer le détachement',
+    message:
+      props.sourceType === 'task'
+        ? t('band_space_files.attached_section.detach_confirm_task', { name: file.original_name })
+        : t('band_space_files.attached_section.detach_confirm_finance', {
+            name: file.original_name
+          }),
+    header: t('band_space_files.attached_section.detach_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Détacher',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_files.attached_section.detach'),
+    rejectLabel: t('band_space_files.common.cancel'),
     accept: async () => {
       try {
         await bandSpaceFilesApi.detachFromSource(
@@ -157,13 +164,13 @@ function confirmDetach(file) {
         emit('detached', file.id)
         toast.add({
           severity: 'success',
-          summary: 'Fichier détaché',
+          summary: t('band_space_files.attached_section.detached'),
           life: 3000
         })
       } catch (e) {
         toast.add({
           severity: 'error',
-          summary: 'Détachement impossible',
+          summary: t('band_space_files.attached_section.detach_failed'),
           detail: e.message,
           life: 5000
         })

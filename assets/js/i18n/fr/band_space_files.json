@@ -1,0 +1,392 @@
+{
+  "source": {
+    "task": {
+      "label": "Tâche",
+      "indefinite": "une tâche",
+      "definite": "la tâche",
+      "quota": "Tâches"
+    },
+    "finance": {
+      "label": "Entrée financière",
+      "indefinite": "une entrée financière",
+      "definite": "l'entrée financière",
+      "quota": "Finances"
+    },
+    "note": {
+      "label": "Note",
+      "indefinite": "une note",
+      "definite": "la note",
+      "quota": "Notes"
+    },
+    "song": {
+      "label": "Chanson",
+      "indefinite": "une chanson",
+      "definite": "la chanson",
+      "quota": "Chansons"
+    },
+    "setlist": {
+      "label": "Setlist",
+      "indefinite": "une setlist",
+      "definite": "la setlist",
+      "quota": "Setlists"
+    },
+    "message": {
+      "label": "Message du chat",
+      "indefinite": "un message du chat",
+      "definite": "le message",
+      "quota": "Chat"
+    },
+    "unknown": {
+      "label": "Ressource",
+      "indefinite": "une autre ressource"
+    },
+    "manual_quota": "Manuels",
+    "detach_hint": "Détachez-le d'abord depuis {source}",
+    "detach_hint_unknown": "Détachez-le d'abord depuis la ressource concernée",
+    "attached_message": "Ce fichier est attaché à {source}. {hint}."
+  },
+  "attached_files_notice": "Le fichier attaché sera détaché mais restera dans Fichiers. | Les {count} fichiers attachés seront détachés mais resteront dans Fichiers.",
+  "bulk": {
+    "delete_not_owner": "Seul le créateur ou un administrateur peut supprimer ces fichiers : {files}",
+    "restore_not_owner": "Seul le créateur ou un administrateur peut restaurer ces fichiers : {files}",
+    "delete_attached": "{count} fichier sélectionné est attaché à {sources}. Détachez-le d'abord depuis la ressource concernée. | {count} fichiers sélectionnés sont attachés à {sources}. Détachez-les d'abord depuis les ressources concernées."
+  },
+  "count": {
+    "files": "{count} fichier | {count} fichiers",
+    "files_shown": "{count} fichier affiché sur {total} | {count} fichiers affichés sur {total}"
+  },
+  "folder": {
+    "root": "Racine"
+  },
+  "move": {
+    "root_refused": "Ce fichier est listé dans {folders} : la racine ne liste que les fichiers attachés à aucune ressource.",
+    "folder_moved": "Dossier déplacé",
+    "file_moved": "Fichier déplacé",
+    "failed": "Déplacement impossible"
+  },
+  "upload": {
+    "unexpected_response": "Le serveur a renvoyé une réponse inattendue, le fichier n'a pas été enregistré.",
+    "too_large": "Fichier trop volumineux ({size}). La taille maximale est de {max}.",
+    "rate_limit_pause": "Limite d'envoi atteinte ({limit} fichiers par minute). Reprise dans {seconds} s.",
+    "rate_limit_reached": "Limite d'envoi atteinte, fichier non envoyé",
+    "rate_limit_batch_notice": "Limite d'envoi atteinte. Les fichiers restants n'ont pas été envoyés : patientez une minute, puis réessayez.",
+    "quota_reached": "Quota de stockage atteint, fichier non envoyé",
+    "quota_batch_notice": "Le quota de stockage de l'espace est atteint. Les fichiers restants n'ont pas été envoyés : libérez de la place, puis réessayez.",
+    "cancelled": "Import interrompu",
+    "cancelled_batch_notice": "Import interrompu. Les fichiers restants n'ont pas été envoyés.",
+    "generic_error": "Une erreur est survenue",
+    "outcome_imported": "Aucun fichier importé | {count} fichier importé | {count} fichiers importés",
+    "outcome_unsent": "{count} non envoyé | {count} non envoyés",
+    "outcome_rejected": "{count} refusé | {count} refusés"
+  },
+  "detail": {
+    "not_found": "Fichier introuvable",
+    "confirm_rename": "Valider",
+    "preview_unavailable": "Aperçu indisponible",
+    "uploaded_by": "Importé par",
+    "type": "Type",
+    "updated_at": "Modifié le",
+    "no_tag": "Aucun tag",
+    "folder": "Dossier",
+    "attached_to": "Attaché à ({count})",
+    "detach_hint": "Pour détacher ce fichier, utilisez la ressource d'origine.",
+    "attached_to_several": "Ce fichier est attaché à {count} ressources. Détachez-le d'abord depuis chacune.",
+    "delete_not_owner": "Seul le créateur ou un administrateur peut supprimer ce fichier"
+  },
+  "breadcrumb": {
+    "aria_label": "Fil d'Ariane"
+  },
+  "filter": {
+    "search_placeholder": "Rechercher un fichier",
+    "tag_placeholder": "Tag",
+    "type_placeholder": "Type",
+    "sort_placeholder": "Trier",
+    "mime": {
+      "audio": "Audio",
+      "image": "Image",
+      "pdf": "PDF",
+      "video": "Vidéo"
+    },
+    "sort": {
+      "newest": "Plus récents",
+      "oldest": "Plus anciens",
+      "name_asc": "Nom (A→Z)",
+      "name_desc": "Nom (Z→A)",
+      "size_desc": "Taille (grand→petit)",
+      "size_asc": "Taille (petit→grand)"
+    }
+  },
+  "activity": {
+    "title": "Activité",
+    "empty": "Aucune activité pour ce fichier.",
+    "uploaded": "{actor} a téléversé le fichier",
+    "archived": "{actor} a archivé le fichier",
+    "archived_with_folder": "{actor} a archivé le fichier (dossier « {path} » supprimé)",
+    "restored": "{actor} a restauré le fichier",
+    "purged": "{actor} a supprimé définitivement le fichier",
+    "renamed": "{actor} a renommé le fichier",
+    "renamed_from_to": "{actor} a renommé {from} en {to}",
+    "moved": "{actor} a déplacé le fichier",
+    "moved_to": "{actor} a déplacé le fichier vers {folder}",
+    "tagged": "{actor} a ajouté un tag",
+    "tagged_named": "{actor} a ajouté le tag {tag}",
+    "untagged": "{actor} a retiré un tag",
+    "untagged_named": "{actor} a retiré le tag {tag}",
+    "version_added": "{actor} a ajouté une nouvelle version",
+    "version_added_number": "{actor} a ajouté la version {number}",
+    "rolled_back": "{actor} est revenu à une version antérieure",
+    "rolled_back_number": "{actor} est revenu à la version {number}",
+    "shared": "{actor} a créé un lien de partage",
+    "share_revoked": "{actor} a révoqué un lien de partage",
+    "public_accessed": "{actor} le lien public a été consulté",
+    "attached": "{actor} a attaché le fichier",
+    "attached_to": "{actor} a attaché le fichier à {source}",
+    "attached_to_labelled": "{actor} a attaché le fichier à {source} « {label} »",
+    "detached": "{actor} a détaché le fichier",
+    "detached_from": "{actor} a détaché le fichier de {source}",
+    "detached_from_labelled": "{actor} a détaché le fichier de {source} « {label} »",
+    "source_deleted": "{actor} a supprimé {source}, le fichier a été détaché",
+    "source_deleted_labelled": "{actor} a supprimé {source} « {label} », le fichier a été détaché",
+    "associated_resource": "la ressource associée",
+    "unknown": "{actor} {type}"
+  },
+  "quota": {
+    "title": "Stockage",
+    "see_files": "Voir les fichiers",
+    "unavailable": "Indisponible.",
+    "used": "{used} sur {total} utilisés",
+    "segment_tooltip": "{label} : {size}",
+    "versions_hint": "Les versions précédentes des fichiers comptent dans le quota."
+  },
+  "common": {
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "create": "Créer",
+    "delete_failed": "Suppression impossible",
+    "virtual_folder_hint": "Les dossiers virtuels sont remplis automatiquement par les attachements.",
+    "quota_approaching": {
+      "summary": "Quota presque atteint",
+      "detail": "Vous avez atteint 80 % de votre quota de stockage."
+    },
+    "select_all": "Tout sélectionner",
+    "select_file": "Sélectionner {name}",
+    "browse": "cliquez pour parcourir",
+    "remove_file": "Retirer le fichier",
+    "upload_progress": "Import… {percent} %",
+    "close": "Fermer",
+    "restore": "Restaurer"
+  },
+  "folder_delete": {
+    "title": "Supprimer le dossier",
+    "intro": "Vous êtes sur le point de supprimer {folder}. Choisissez ce qu'il advient des éléments qu'il contient.",
+    "quoted_name": "« {name} »",
+    "move_to_root": "Déplacer le contenu à la racine",
+    "move_to_root_help": "Les sous-dossiers et fichiers sont conservés et remontent au niveau supérieur.",
+    "cascade": "Tout supprimer",
+    "cascade_help": "Les fichiers de ce dossier et de ses sous-dossiers partent à la corbeille pendant {days} jours. Réservé aux administrateurs.",
+    "cascade_shares": "Leurs liens de partage sont révoqués : une restauration ne les réactive pas.",
+    "cascade_attached": "Si l'un d'eux est attaché à {sources}, la suppression est refusée.",
+    "cascade_subfolders": "Les sous-dossiers disparaissent : les fichiers restaurés reviennent à la racine."
+  },
+  "folder_edit": {
+    "name_label": "Nom",
+    "name_placeholder": "Ex : Live, Setlists, 2025",
+    "parent_label": "Dossier parent",
+    "title_create": "Nouveau dossier",
+    "title_create_sub": "Nouveau sous-dossier",
+    "title_edit": "Renommer / déplacer le dossier",
+    "name_required": "Le nom est requis"
+  },
+  "upload_dialog": {
+    "title": "Importer des fichiers",
+    "drop_zone": "Glissez-déposez un ou plusieurs fichiers ou {browse}",
+    "queue_label": "Fichiers à importer",
+    "progress_of": "Progression de {name}",
+    "remove_file": "Retirer {name}",
+    "folder": "Dossier",
+    "tags": "Tags",
+    "tags_placeholder": "Sélectionner des tags",
+    "new_tag_placeholder": "Créer un nouveau tag",
+    "create_tag": "Créer le tag",
+    "progress": "Import… fichier {position} sur {total}",
+    "stop": "Arrêter",
+    "retry_unsent": "Réessayer les fichiers non envoyés",
+    "submit": "Importer",
+    "status": {
+      "queued": "En attente",
+      "uploading": "Envoi en cours",
+      "uploaded": "Importé",
+      "failed": "Échec",
+      "skipped": "Non envoyé",
+      "cancelled": "Interrompu",
+      "rejected": "Refusé"
+    }
+  },
+  "share_dialog": {
+    "title": "Partager le fichier",
+    "expiry_label": "Date d'expiration",
+    "use_password": "Protéger par mot de passe",
+    "password_placeholder": "Mot de passe",
+    "link_created": "Lien créé. Le lien complet ne sera plus visible après fermeture — copiez-le maintenant.",
+    "copy": "Copier",
+    "password_required": "Mot de passe requis pour ce lien.",
+    "active_links": "Liens actifs ({count})",
+    "no_active_links": "Aucun lien de partage actif pour ce fichier.",
+    "expires_on": "Expire le {date}",
+    "protected": "protégé",
+    "access_count": "{count} accès",
+    "access_count_last": "{count} accès — dernier {when}",
+    "create": "Créer le lien",
+    "expiry_required": "Veuillez choisir une date d'expiration",
+    "revoke_confirm_message": "Révoquer ce lien de partage ? Il deviendra immédiatement inaccessible.",
+    "revoke_confirm_header": "Confirmer la révocation",
+    "revoke": "Révoquer",
+    "revoked": "Lien révoqué",
+    "copied": "Lien copié.",
+    "copy_failed": "Copie impossible",
+    "copy_failed_detail": "Sélectionnez le lien et copiez-le manuellement."
+  },
+  "attach_dialog": {
+    "title": "Joindre un fichier",
+    "tab_upload": "Importer",
+    "tab_existing": "Choisir parmi les fichiers existants",
+    "drop_zone": "Glissez-déposez un fichier ou {browse}",
+    "search_placeholder": "Rechercher un fichier",
+    "no_files": "Aucun fichier disponible.",
+    "manual_only": "Seuls les fichiers manuels (non attachés) peuvent être joints.",
+    "submit": "Importer",
+    "attached": "Fichier joint"
+  },
+  "attached_section": {
+    "title": "Pièces jointes",
+    "attach": "Joindre un fichier",
+    "empty": "Aucun fichier attaché.",
+    "detach": "Détacher",
+    "detach_confirm_task": "Détacher « {name} » de cette tâche ?",
+    "detach_confirm_finance": "Détacher « {name} » de cette entrée ?",
+    "detach_confirm_header": "Confirmer le détachement",
+    "detached": "Fichier détaché",
+    "detach_failed": "Détachement impossible"
+  },
+  "new_version_dialog": {
+    "title": "Importer une nouvelle version",
+    "drop_zone": "Glissez-déposez le fichier ou {browse}",
+    "replace_notice": "La nouvelle version remplacera la version actuelle. Les versions précédentes restent accessibles.",
+    "submit": "Importer",
+    "select_required": "Veuillez sélectionner un fichier"
+  },
+  "version_panel": {
+    "title": "Versions du fichier",
+    "title_named": "Versions de {name}",
+    "count": "{count} version | {count} versions",
+    "upload_new": "Importer une nouvelle version",
+    "empty": "Aucune version pour ce fichier.",
+    "version_number": "v{number}",
+    "current": "Actuelle",
+    "download": "Télécharger cette version",
+    "restore": "Restaurer cette version",
+    "rollback_confirm_message": "Restaurer la version v{number} comme version actuelle ?",
+    "rollback_confirm_header": "Confirmer la restauration",
+    "rollback_accept": "Restaurer",
+    "restored": "Version restaurée",
+    "restored_detail": "La version v{number} est maintenant la version actuelle.",
+    "restore_failed": "Restauration impossible",
+    "uploaded": "Nouvelle version téléversée"
+  },
+  "trash_list": {
+    "empty": "La corbeille est vide.",
+    "retention_notice": "Les fichiers supprimés restent ici {days} jours, puis sont définitivement effacés. Vous pouvez les restaurer avant cette date.",
+    "deleted_on": "supprimé le {date}",
+    "restore_not_allowed": "Seul le créateur ou un administrateur peut restaurer ce fichier",
+    "delete_permanently": "Supprimer définitivement",
+    "purge_imminent": "suppression imminente",
+    "days_left": "plus qu'un jour | encore {count} jours",
+    "restored": "Fichier restauré",
+    "error": "Erreur",
+    "restore_failed": "Impossible de restaurer le fichier",
+    "delete_confirm_message": "« {name} » sera effacé immédiatement et cette action est irréversible. Continuer ?",
+    "deleted": "Fichier supprimé définitivement",
+    "delete_failed": "Impossible de supprimer le fichier"
+  },
+  "bulk_bar": {
+    "region_label": "Actions sur la sélection",
+    "selected_count": "{count} fichier sélectionné | {count} fichiers sélectionnés",
+    "move": "Déplacer",
+    "move_target": "Dossier de destination",
+    "clear_selection": "Annuler la sélection",
+    "root_refused": "Un fichier de la sélection est attaché à une ressource : la racine ne liste que les fichiers attachés à aucune ressource. | {count} fichiers de la sélection sont attachés à une ressource : la racine ne liste que les fichiers attachés à aucune ressource.",
+    "failed": "Action en lot impossible",
+    "moved": "Fichiers déplacés",
+    "restored": "Fichiers restaurés",
+    "delete_confirm_message": "{count} fichier sera déplacé dans la corbeille, où vous pourrez le restaurer pendant {days} jours. Continuer ? | {count} fichiers seront déplacés dans la corbeille, où vous pourrez les restaurer pendant {days} jours. Continuer ?",
+    "delete_confirm_header": "Déplacer dans la corbeille",
+    "deleted": "Fichiers déplacés dans la corbeille"
+  },
+  "file_move": {
+    "title": "Déplacer le fichier",
+    "destination_label": "Dossier de destination",
+    "submit": "Déplacer"
+  },
+  "folder_tree": {
+    "sources": "Sources",
+    "file_count_hint": "{count} fichier dans ce dossier, sous-dossiers exclus | {count} fichiers dans ce dossier, sous-dossiers exclus",
+    "actions": "Actions du dossier",
+    "open": "Ouvrir",
+    "rename_move": "Renommer / déplacer"
+  },
+  "file_list": {
+    "empty": "Aucun fichier dans ce dossier, commencez par en importer un.",
+    "column": {
+      "name": "Nom",
+      "size": "Taille",
+      "tags": "Tags",
+      "added_at": "Ajouté le"
+    },
+    "open_folder": "Ouvrir le dossier {name}",
+    "open_location": "Ouvrir {location}",
+    "file_actions": "Actions du fichier",
+    "detach_from_each": "Détachez-le d'abord depuis chaque ressource",
+    "delete_blocked": "Supprimer ({reason})",
+    "menu": {
+      "open": "Ouvrir",
+      "download": "Télécharger",
+      "rename": "Renommer",
+      "share": "Partager",
+      "versions": "Versions"
+    },
+    "trash_confirm": {
+      "message": "« {name} » sera déplacé dans la corbeille, où vous pourrez le restaurer pendant {days} jours. Continuer ?",
+      "header": "Déplacer dans la corbeille",
+      "done": "Fichier déplacé dans la corbeille"
+    }
+  },
+  "page": {
+    "retry": "Réessayer",
+    "folders": "Dossiers",
+    "no_folder": "Aucun dossier pour l'instant.",
+    "all_files_hint": "Tous les fichiers du space, quel que soit leur dossier",
+    "all_files": "Tous les fichiers",
+    "trash": "Corbeille",
+    "upload": "Importer un fichier",
+    "space_wide_search": "Recherche dans tout l'espace",
+    "refreshing": "Actualisation…",
+    "load_more": "Charger plus",
+    "empty": {
+      "virtual_task": "Aucun fichier attaché à une tâche pour le moment.",
+      "virtual_finance": "Aucun fichier attaché à une entrée financière pour le moment.",
+      "virtual_note": "Aucune image attachée à une note pour le moment.",
+      "virtual_song": "Aucun fichier attaché à une chanson pour le moment.",
+      "virtual_setlist": "Aucun fichier attaché à une setlist pour le moment.",
+      "search": "Aucun fichier ne correspond à cette recherche.",
+      "filters": "Aucun fichier ne correspond à ces filtres.",
+      "virtual": "Aucun fichier attaché pour le moment.",
+      "root": "Aucun fichier à la racine, commencez par en importer un.",
+      "all": "Aucun fichier, commencez par en importer un."
+    },
+    "upload_toast": {
+      "summary": "Fichier téléversé | Fichiers téléversés",
+      "single_detail": "Le fichier a bien été ajouté."
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../constants/types.js'
+import { i18n } from '../i18n/index.js'
 
 export const LOOKING_FOR_MUSICIAN = 'musician'
 export const LOOKING_FOR_BAND = 'band'
@@ -37,8 +38,14 @@ export function musicianSearchRoute({ lookingFor, instrument = null, city = null
 export function frequentSearchLink(search) {
   const lookingForBand = search.type === TYPES_ANNOUNCE_MUSICIAN
   const label = lookingForBand
-    ? `Groupe cherchant un ${search.instrument_name.toLocaleLowerCase()} à ${search.location_name}`
-    : `${search.instrument_name} à ${search.location_name}`
+    ? i18n.global.t('home.frequent_searches.band_looking_for', {
+        instrument: search.instrument_name.toLocaleLowerCase(),
+        city: search.location_name
+      })
+    : i18n.global.t('home.frequent_searches.musician_in', {
+        instrument: search.instrument_name,
+        city: search.location_name
+      })
   return {
     label,
     route: musicianSearchRoute({
@@ -53,13 +60,17 @@ export function frequentSearchLink(search) {
 export function announceHeadline(announce) {
   const instrument = announce.instrument.musician_name
   return announce.type === TYPES_ANNOUNCE_MUSICIAN
-    ? `Groupe cherche un ${instrument.toLocaleLowerCase()}`
-    : `${instrument} cherche un groupe`
+    ? i18n.global.t('home.announce_card.band_looking_for', {
+        instrument: instrument.toLocaleLowerCase()
+      })
+    : i18n.global.t('home.announce_card.musician_looking_for', { instrument })
 }
 
 /** Who posted the announce, for the badge on its card. */
 export function announceKindLabel(announce) {
-  return announce.type === TYPES_ANNOUNCE_MUSICIAN ? 'Groupe' : 'Musicien·ne'
+  return announce.type === TYPES_ANNOUNCE_MUSICIAN
+    ? i18n.global.t('home.announce_card.kind_band')
+    : i18n.global.t('home.announce_card.kind_musician')
 }
 
 /** The first styles of an announce as the tags of a card, and the others behind its « +N ». */

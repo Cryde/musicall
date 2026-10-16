@@ -1,23 +1,108 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import { parse } from 'vue/compiler-sfc'
 
-// Components whose text lives in the catalogue. A file joins this list once it is migrated (#1182),
-// and from then on a hardcoded string in its template fails here. Strings built in <script> are
-// not seen, so those stay a review concern.
-const MIGRATED_COMPONENTS = [
+// Components whose text lives in the catalogue, by file or by folder (a trailing slash). A path joins
+// this list once it is migrated (#1182), and from then on a hardcoded string in a template fails
+// here. Strings built in <script> are not seen, so those stay a review concern.
+const MIGRATED_PATHS = [
+  'App.vue',
+  'components/Announce/',
   'components/AppAdminLayout.vue',
+  'components/AppBandLayout.vue',
   'components/AppBaseLayout.vue',
   'components/AppNavbarUserCluster.vue',
   'components/Auth/AuthRequiredModal.vue',
+  'components/Auth/OtpInput.vue',
   'components/Auth/SignupOptions.vue',
+  'components/BandSpace/Agenda/',
+  'components/BandSpace/BandSidebar.vue',
+  'components/BandSpace/BandSpaceSearchResultRow.vue',
+  'components/BandSpace/BandSpaceSearchResults.vue',
+  'components/BandSpace/BandSpaceSelector.vue',
+  'components/BandSpace/Chat/',
+  'components/BandSpace/CommandPalette.vue',
+  'components/BandSpace/CreateBandSpaceModal.vue',
+  'components/BandSpace/Dashboard/',
+  'components/BandSpace/Files/',
+  'components/BandSpace/Finance/',
+  'components/BandSpace/Notes/',
+  'components/BandSpace/Presentation/',
+  'components/BandSpace/Setlist/',
+  'components/BandSpace/Settings/',
+  'components/BandSpace/Task/',
+  'components/BandSpace/TechRider/',
+  'components/Comment/',
+  'components/Course/',
+  'components/Discover/',
+  'components/Editor/',
+  'components/Feedback/',
+  'components/Forum/',
+  'components/Global/',
+  'components/Home/',
+  'components/Icons/',
+  'components/Message/',
+  'components/Notification/',
+  'components/Publication/AddDiscoverModal.vue',
+  'components/Publication/PublicationDetailLayout.vue',
+  'components/Publication/PublicationSettingsPanel.vue',
+  'components/Publication/PublicationShareBar.vue',
+  'components/Publication/Sidebar/',
+  'components/Publication/VoteButtons.vue',
+  'components/Publication/VoteButtonsList.vue',
+  'components/RadioGroup/',
+  'components/Report/',
+  'components/Search/',
+  'components/ShareButton.vue',
+  'components/Skeleton/',
   'components/SkipLink.vue',
+  'components/Teacher/',
+  'components/User/',
+  'components/publication/',
+  'components/settings/',
+  'views/BandSpace/Agenda.vue',
+  'views/BandSpace/Chat.vue',
+  'views/BandSpace/Files.vue',
+  'views/BandSpace/Finance.vue',
+  'views/BandSpace/Index.vue',
+  'views/BandSpace/InvitationResponse.vue',
+  'views/BandSpace/NoSpace.vue',
+  'views/BandSpace/Notes.vue',
+  'views/BandSpace/Presentation.vue',
+  'views/BandSpace/Setlist.vue',
+  'views/BandSpace/SetlistLive.vue',
+  'views/BandSpace/Settings.vue',
+  'views/BandSpace/Tasks.vue',
+  'views/BandSpace/TechRider.vue',
+  'views/Contact/',
+  'views/Course/',
+  'views/Discover/',
+  'views/Forum/',
+  'views/Gallery/',
   'views/Global/Breadcrumb.vue',
   'views/Global/Footer.vue',
   'views/Global/Menu.vue',
-  'views/Global/MenuBand.vue'
+  'views/Global/MenuBand.vue',
+  'views/Home/',
+  'views/Message/',
+  'views/NotFound.vue',
+  'views/Notification/',
+  'views/PublicShare.vue',
+  'views/Publication/',
+  'views/Search/',
+  'views/User/Announce/',
+  'views/User/Course/',
+  'views/User/ForgotPassword.vue',
+  'views/User/Gallery/',
+  'views/User/Login.vue',
+  'views/User/Profile/',
+  'views/User/Publication/',
+  'views/User/Register.vue',
+  'views/User/ResetPassword.vue',
+  'views/User/Settings/',
+  'views/User/VerifyEmail.vue'
 ]
 
 // The footer wordmark is a logo spelled out in two spans, not text to translate.
@@ -86,10 +171,31 @@ describe('rawTextInComponent', () => {
   })
 })
 
+const SOURCE_ROOT = join(import.meta.dirname, '..')
+
+function isMigrated(path) {
+  return MIGRATED_PATHS.some((migrated) =>
+    migrated.endsWith('/') ? path.startsWith(migrated) : path === migrated
+  )
+}
+
+const migratedComponents = readdirSync(SOURCE_ROOT, { recursive: true })
+  .filter((path) => path.endsWith('.vue') && isMigrated(path))
+  .sort()
+
 describe('migrated components', () => {
-  for (const path of MIGRATED_COMPONENTS) {
+  it('covers every path on the list', () => {
+    const unmatched = MIGRATED_PATHS.filter(
+      (migrated) =>
+        !migratedComponents.some((path) => isMigrated(path) && path.startsWith(migrated))
+    )
+
+    assert.deepEqual(unmatched, [])
+  })
+
+  for (const path of migratedComponents) {
     it(`${path} has no hardcoded text in its template`, () => {
-      const source = readFileSync(join(import.meta.dirname, '..', path), 'utf8')
+      const source = readFileSync(join(SOURCE_ROOT, path), 'utf8')
 
       assert.deepEqual(rawTextInComponent(source), [])
     })

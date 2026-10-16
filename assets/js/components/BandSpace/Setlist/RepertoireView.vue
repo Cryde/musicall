@@ -4,11 +4,11 @@
       <div class="flex-1 min-w-[200px]">
         <IconField iconPosition="left">
           <InputIcon class="pi pi-search" />
-          <InputText v-model="query" type="search" placeholder="Rechercher un titre…" aria-label="Rechercher dans le répertoire" class="w-full" />
+          <InputText v-model="query" type="search" :placeholder="t('band_space_setlist.common.search_song_placeholder')" :aria-label="t('band_space_setlist.common.search_repertoire_aria')" class="w-full" />
         </IconField>
       </div>
       <Button
-        :label="`Sans paroles · ${counts.withoutLyrics}`"
+        :label="t('band_space_setlist.repertoire.filter_without_lyrics', { count: counts.withoutLyrics })"
         size="small"
         severity="secondary"
         :outlined="!withoutLyrics"
@@ -16,15 +16,15 @@
         @click="withoutLyrics = !withoutLyrics"
       />
       <Button
-        :label="`Infos manquantes · ${counts.missingInfo}`"
+        :label="t('band_space_setlist.repertoire.filter_missing_info', { count: counts.missingInfo })"
         size="small"
         severity="secondary"
         :outlined="!missingInfo"
         :aria-pressed="missingInfo"
-        v-tooltip.top="'Sans tonalité, BPM ou durée'"
+        v-tooltip.top="t('band_space_setlist.repertoire.filter_missing_info_tooltip')"
         @click="missingInfo = !missingInfo"
       />
-      <Button label="Ajouter un titre" icon="pi pi-plus" size="small" @click="openCreateDialog" />
+      <Button :label="t('band_space_setlist.repertoire.add_song')" icon="pi pi-plus" size="small" @click="openCreateDialog" />
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 overflow-hidden">
@@ -33,7 +33,7 @@
       </div>
       <div v-else-if="visibleSongs.length === 0" class="p-8 text-center text-surface-600 dark:text-surface-300">
         <i class="pi pi-headphones text-3xl mb-3 block" aria-hidden="true"></i>
-        {{ songsStore.songs.length > 0 ? 'Aucun titre ne correspond.' : 'Aucun titre dans le répertoire. Commencez par en ajouter un.' }}
+        {{ songsStore.songs.length > 0 ? t('band_space_setlist.common.no_matching_song') : t('band_space_setlist.repertoire.empty') }}
       </div>
       <table v-else class="w-full text-sm">
         <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-surface-600 dark:text-surface-300">
@@ -43,17 +43,17 @@
                 :model-value="allVisibleSelected"
                 :indeterminate="someVisibleSelected && !allVisibleSelected"
                 :binary="true"
-                aria-label="Sélectionner tous les titres affichés"
+                :aria-label="t('band_space_setlist.repertoire.select_all_aria')"
                 @update:model-value="toggleAllVisible"
               />
             </th>
-            <th class="text-left px-3 py-3">Titre</th>
-            <th class="text-left px-3 py-3 hidden md:table-cell">Tonalité</th>
-            <th class="text-right px-3 py-3 hidden md:table-cell">BPM</th>
-            <th class="text-right px-3 py-3">Durée</th>
-            <th class="text-left px-3 py-3 hidden lg:table-cell">Contenu</th>
-            <th class="text-left px-3 py-3 hidden lg:table-cell">Dans les setlists</th>
-            <th class="px-3 py-3 w-12"><span class="sr-only">Actions</span></th>
+            <th class="text-left px-3 py-3">{{ t('band_space_setlist.repertoire.column_title') }}</th>
+            <th class="text-left px-3 py-3 hidden md:table-cell">{{ t('band_space_setlist.repertoire.column_tonality') }}</th>
+            <th class="text-right px-3 py-3 hidden md:table-cell">{{ t('band_space_setlist.repertoire.column_tempo') }}</th>
+            <th class="text-right px-3 py-3">{{ t('band_space_setlist.repertoire.column_duration') }}</th>
+            <th class="text-left px-3 py-3 hidden lg:table-cell">{{ t('band_space_setlist.repertoire.column_content') }}</th>
+            <th class="text-left px-3 py-3 hidden lg:table-cell">{{ t('band_space_setlist.repertoire.column_setlists') }}</th>
+            <th class="px-3 py-3 w-12"><span class="sr-only">{{ t('band_space_setlist.repertoire.column_actions') }}</span></th>
           </tr>
         </thead>
         <tbody>
@@ -69,7 +69,7 @@
               <Checkbox
                 :model-value="selected.has(song.id)"
                 :binary="true"
-                :aria-label="`Sélectionner ${song.title}`"
+                :aria-label="t('band_space_setlist.repertoire.select_song_aria', { title: song.title })"
                 @update:model-value="toggleSelected(song.id)"
               />
             </td>
@@ -87,10 +87,10 @@
                 v-if="!song.reference_duration"
                 type="button"
                 class="h-7 w-16 rounded-md border border-dashed border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs"
-                :aria-label="`Ajouter la durée de ${song.title}`"
+                :aria-label="t('band_space_setlist.common.add_duration_aria', { title: song.title })"
                 @click="promptDuration($event, song)"
               >
-                + durée
+                {{ t('band_space_setlist.common.add_duration') }}
               </button>
               <template v-else>{{ formatDuration(song.reference_duration) }}</template>
             </td>
@@ -98,13 +98,13 @@
               <span class="flex items-center gap-2.5">
                 <i
                   :class="['pi pi-align-left text-sm', song.has_lyrics ? 'text-primary' : 'text-surface-400 dark:text-surface-500']"
-                  v-tooltip.top="song.has_lyrics ? 'Paroles et accords' : 'Pas encore de paroles'"
-                  :aria-label="song.has_lyrics ? 'Paroles et accords' : 'Pas encore de paroles'"
+                  v-tooltip.top="song.has_lyrics ? t('band_space_setlist.common.lyrics_present') : t('band_space_setlist.repertoire.lyrics_missing')"
+                  :aria-label="song.has_lyrics ? t('band_space_setlist.common.lyrics_present') : t('band_space_setlist.repertoire.lyrics_missing')"
                 />
                 <span
                   v-if="songFileCounts.get(song.id)"
                   class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300"
-                  :aria-label="`${songFileCounts.get(song.id)} ${songFileCounts.get(song.id) > 1 ? 'fichiers' : 'fichier'}`"
+                  :aria-label="t('band_space_setlist.common.file_count_aria', songFileCounts.get(song.id))"
                 >
                   <i class="pi pi-paperclip text-xs" aria-hidden="true" />{{ songFileCounts.get(song.id) }}
                 </span>
@@ -117,13 +117,13 @@
                   :key="setlist.id"
                   type="button"
                   class="text-xs px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 hover:bg-surface-200 dark:hover:bg-surface-700"
-                  :aria-label="`Ouvrir la setlist ${setlist.name}`"
+                  :aria-label="t('band_space_setlist.repertoire.open_setlist_aria', { name: setlist.name })"
                   @click="openSetlist(setlist.id)"
                 >
                   {{ setlist.name }}
                 </button>
               </span>
-              <span v-else class="text-xs italic text-surface-600 dark:text-surface-300">Jamais joué</span>
+              <span v-else class="text-xs italic text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.repertoire.never_played') }}</span>
             </td>
             <td class="px-3 py-2.5 text-right">
               <Button
@@ -131,7 +131,7 @@
                 severity="secondary"
                 text
                 rounded
-                :aria-label="`Actions pour ${song.title}`"
+                :aria-label="t('band_space_setlist.repertoire.song_actions_aria', { title: song.title })"
                 @click="openMenu($event, song)"
               />
             </td>
@@ -146,13 +146,13 @@
       v-if="selected.size > 0"
       class="sticky bottom-4 z-20 self-center flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-2xl shadow-lg bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700"
       role="region"
-      aria-label="Actions sur la sélection"
+      :aria-label="t('band_space_setlist.repertoire.selection_aria')"
     >
       <span class="text-sm font-medium mr-1" aria-live="polite">
-        {{ selected.size }} {{ selected.size > 1 ? 'titres sélectionnés' : 'titre sélectionné' }}
+        {{ t('band_space_setlist.repertoire.selection_count', selected.size) }}
       </span>
       <Button
-        label="Ajouter à une setlist"
+        :label="t('band_space_setlist.repertoire.add_to_setlist')"
         icon="pi pi-chevron-down"
         icon-pos="right"
         size="small"
@@ -162,14 +162,14 @@
         @click="addToMenu?.toggle($event)"
       />
       <Button
-        label="Nouvelle setlist avec ces titres"
+        :label="t('band_space_setlist.repertoire.new_setlist_with_selection')"
         size="small"
         severity="secondary"
         :disabled="isWorking"
         @click="newSetlistOpen = true"
       />
-      <Button label="Archiver" size="small" severity="danger" outlined :disabled="isWorking" @click="confirmArchiveSelection" />
-      <Button icon="pi pi-times" size="small" severity="secondary" text rounded aria-label="Tout désélectionner" @click="clearSelection" />
+      <Button :label="t('band_space_setlist.common.archive')" size="small" severity="danger" outlined :disabled="isWorking" @click="confirmArchiveSelection" />
+      <Button icon="pi pi-times" size="small" severity="secondary" text rounded :aria-label="t('band_space_setlist.repertoire.clear_selection')" @click="clearSelection" />
       <Menu id="repertoire-add-to-setlist" ref="addToMenu" :model="addToMenuItems" :popup="true" />
     </div>
 
@@ -202,6 +202,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
@@ -223,6 +224,7 @@ const props = defineProps({
   focusSongId: { type: String, default: null }
 })
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const songsStore = useBandSongsStore()
@@ -240,7 +242,12 @@ const actionsMenu = ref(null)
 const menuTargetSong = ref(null)
 
 function showError(e) {
-  toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+  toast.add({
+    severity: 'error',
+    summary: t('band_space_setlist.common.error'),
+    detail: e.message,
+    life: 5000
+  })
 }
 
 // Refreshed on mount and when the song drawer closes, where files are attached and detached.
@@ -344,7 +351,7 @@ async function addSelectionTo(setlist) {
     await setlistsStore.addSongs(props.bandSpaceId, setlist.id, ids)
     toast.add({
       severity: 'success',
-      summary: `${ids.length} ${ids.length > 1 ? 'titres ajoutés' : 'titre ajouté'} à « ${setlist.name} »`,
+      summary: t('band_space_setlist.repertoire.songs_added', { name: setlist.name }, ids.length),
       life: 3000
     })
     clearSelection()
@@ -377,18 +384,18 @@ async function fillNewSetlist(created) {
 function confirmArchiveSelection() {
   const ids = selectedSongIds()
   confirm.require({
-    message: `Archiver ${ids.length} ${ids.length > 1 ? 'titres' : 'titre'} ? Ils seront retirés du répertoire actif et restent restaurables depuis la corbeille.`,
-    header: "Confirmer l'archivage",
+    message: t('band_space_setlist.repertoire.archive_selection_confirm_message', ids.length),
+    header: t('band_space_setlist.common.archive_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Archiver',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.common.archive'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       isWorking.value = true
       try {
         await songsStore.archiveSongs(props.bandSpaceId, ids)
         toast.add({
           severity: 'success',
-          summary: ids.length > 1 ? 'Titres archivés' : 'Titre archivé',
+          summary: t('band_space_setlist.repertoire.songs_archived', ids.length),
           life: 3000
         })
         clearSelection()
@@ -410,7 +417,9 @@ function openSetlist(setlistId) {
 const durationPrompt = ref(null)
 const durationSong = ref(null)
 const isSavingDuration = ref(false)
-const durationLabel = computed(() => `Durée de « ${durationSong.value?.title ?? ''} »`)
+const durationLabel = computed(() =>
+  t('band_space_setlist.common.duration_of_song', { title: durationSong.value?.title ?? '' })
+)
 
 function promptDuration(event, song) {
   durationSong.value = song
@@ -436,12 +445,12 @@ async function saveDuration(seconds) {
 
 const menuItems = computed(() => [
   {
-    label: 'Modifier',
+    label: t('band_space_setlist.common.edit'),
     icon: 'pi pi-pencil',
     command: () => openDrawer(menuTargetSong.value)
   },
   {
-    label: 'Archiver',
+    label: t('band_space_setlist.common.archive'),
     icon: 'pi pi-archive',
     command: () => confirmArchive(menuTargetSong.value)
   }
@@ -485,15 +494,19 @@ function handleArchivedFromDrawer() {
 function confirmArchive(song) {
   if (!song) return
   confirm.require({
-    message: `Archiver le titre « ${song.title} » ? Il sera retiré du répertoire actif.`,
-    header: "Confirmer l'archivage",
+    message: t('band_space_setlist.common.archive_song_confirm_message', { title: song.title }),
+    header: t('band_space_setlist.common.archive_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Archiver',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_setlist.common.archive'),
+    rejectLabel: t('band_space_setlist.common.cancel'),
     accept: async () => {
       try {
         await songsStore.deleteSong(props.bandSpaceId, song.id)
-        toast.add({ severity: 'success', summary: 'Titre archivé', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_setlist.common.song_archived'),
+          life: 3000
+        })
       } catch (e) {
         showError(e)
       }

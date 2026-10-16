@@ -1,8 +1,8 @@
 <template>
-  <Dialog v-model:visible="visible" header="Nouveau titre" modal :style="{ width: 'min(26rem, 100vw)' }" @hide="reset">
+  <Dialog v-model:visible="visible" :header="t('band_space_setlist.new_song_dialog.header')" modal :style="{ width: 'min(26rem, 100vw)' }" @hide="reset">
     <form class="flex flex-col gap-3" @submit.prevent="submit">
       <div class="flex flex-col gap-1">
-        <label for="new-song-title" class="text-sm font-medium">Titre</label>
+        <label for="new-song-title" class="text-sm font-medium">{{ t('band_space_setlist.new_song_dialog.title_label') }}</label>
         <InputText
           id="new-song-title"
           v-model="title"
@@ -12,12 +12,12 @@
         />
         <small v-if="error" id="new-song-title-error" role="alert" class="text-red-600 dark:text-red-400">{{ error }}</small>
         <small v-else id="new-song-title-hint" class="text-surface-600 dark:text-surface-300">
-          Tonalité, BPM, durée et paroles se renseignent ensuite, dans sa fiche.
+          {{ t('band_space_setlist.new_song_dialog.hint') }}
         </small>
       </div>
       <div class="flex justify-end gap-2">
-        <Button label="Annuler" severity="secondary" text type="button" @click="visible = false" />
-        <Button label="Créer" type="submit" :loading="isSubmitting" />
+        <Button :label="t('band_space_setlist.common.cancel')" severity="secondary" text type="button" @click="visible = false" />
+        <Button :label="t('band_space_setlist.common.create')" type="submit" :loading="isSubmitting" />
       </div>
     </form>
   </Dialog>
@@ -28,6 +28,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 
 /**
@@ -41,6 +42,7 @@ const props = defineProps({
 const emit = defineEmits(['created'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const songsStore = useBandSongsStore()
 const title = ref('')
 const error = ref(null)
@@ -54,7 +56,7 @@ function reset() {
 async function submit() {
   const trimmed = title.value.trim()
   if (!trimmed) {
-    error.value = 'Indiquez un titre.'
+    error.value = t('band_space_setlist.new_song_dialog.title_required')
     return
   }
   isSubmitting.value = true

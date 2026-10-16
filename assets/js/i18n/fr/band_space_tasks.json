@@ -1,0 +1,156 @@
+{
+  "detail": {
+    "not_found": "Tâche introuvable",
+    "title": "Détail de la tâche",
+    "close": "Fermer",
+    "archived_notice": "Cette tâche est archivée, elle est en lecture seule. Désarchivez-la pour la modifier.",
+    "see_in_chat": "Voir dans la discussion",
+    "title_aria": "Titre de la tâche",
+    "unsaved_changes": "Modifications non enregistrées",
+    "no_description": "Aucune description",
+    "add_description": "Ajouter une description...",
+    "conflict_kept": "Votre texte est conservé : « Enregistrer » remplace sa version, « Annuler » affiche la sienne.",
+    "delete": "Supprimer la tâche",
+    "load_failed": "Impossible de charger les commentaires et activités",
+    "title_empty": "Le titre ne peut pas être vide",
+    "comment_deleted": "Commentaire supprimé",
+    "archived": "Tâche archivée",
+    "deleted": "Tâche supprimée",
+    "delete_confirm": "Es-tu sûr de vouloir supprimer cette tâche ?"
+  },
+  "status": {
+    "todo": "À faire",
+    "in_progress": "En cours",
+    "done": "Terminé"
+  },
+  "priority": {
+    "normal": "Normal",
+    "high": "Haute",
+    "urgent": "Urgent"
+  },
+  "field": {
+    "title": "Titre",
+    "description": "Description",
+    "status": "Statut",
+    "priority": "Priorité",
+    "category": "Catégorie",
+    "assignees": "Assignés",
+    "due_date": "Date d'échéance",
+    "due": "Échéance",
+    "no_category": "Aucune",
+    "select_members": "Sélectionner des membres"
+  },
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "archive": "Archiver",
+    "unarchive": "Désarchiver",
+    "confirm_delete_header": "Confirmer la suppression",
+    "comments": "Commentaires",
+    "new_task": "Nouvelle tâche",
+    "manage_categories": "Gérer les catégories",
+    "changes_saved": "Modifications enregistrées",
+    "task_unarchived": "Tâche désarchivée",
+    "move_failed": "Impossible de déplacer la tâche"
+  },
+  "activity_feed": {
+    "title": "Activité",
+    "status_changed": "{actor} a changé le statut de {from} à {to}",
+    "assignee_added": "{actor} a ajouté {username}",
+    "assignee_added_unknown": "{actor} a ajouté un membre",
+    "assignee_removed": "{actor} a retiré {username}",
+    "assignee_removed_unknown": "{actor} a retiré un membre",
+    "category_changed": "{actor} a modifié la catégorie",
+    "due_date_changed": "{actor} a modifié la date d'échéance",
+    "comment_added": "{actor} a ajouté un commentaire",
+    "comment_edited": "{actor} a modifié un commentaire",
+    "comment_deleted": "{actor} a supprimé un commentaire",
+    "mention": "{actor} a mentionné {username}",
+    "mention_unknown": "{actor} a mentionné un membre",
+    "unknown": "{actor} {type}"
+  },
+  "bulk_bar": {
+    "selected_count": "{count} tâche sélectionnée | {count} tâches sélectionnées",
+    "choose_category": "Choisir une catégorie",
+    "apply": "Appliquer",
+    "no_assignee": "Aucun",
+    "assignees_hint": "Remplace les assignés sur toutes les tâches sélectionnées.",
+    "exit_selection": "Annuler la sélection",
+    "archive_blocked": "Seules les tâches terminées peuvent être archivées : {tasks}",
+    "delete_blocked": "Seul le créateur ou un administrateur peut supprimer ces tâches : {tasks}",
+    "failed": "Action en lot impossible",
+    "generic_error": "Une erreur est survenue",
+    "archived": "Tâches archivées",
+    "category_updated": "Catégorie mise à jour",
+    "assignees_updated": "Assignés mis à jour",
+    "deleted": "Tâches supprimées",
+    "delete_confirm": "Supprimer {count} tâche ? Cette action est irréversible. | Supprimer {count} tâches ? Cette action est irréversible."
+  },
+  "card": {
+    "has_description": "Cette tâche a une description",
+    "attached_files": "{count} fichier attaché | {count} fichiers attachés",
+    "comments": "{count} commentaire | {count} commentaires",
+    "more_actions": "Plus d'actions",
+    "move_to": "Déplacer vers « {status} »"
+  },
+  "category_manager": {
+    "confirm_rename": "Valider",
+    "delete_aria": "Supprimer la catégorie {name}",
+    "new_title": "Nouvelle catégorie",
+    "name_placeholder": "Nom de la catégorie",
+    "create": "Créer",
+    "created": "Catégorie créée",
+    "deleted": "Catégorie supprimée",
+    "delete_confirm": "Supprimer la catégorie \"{name}\" ?",
+    "delete_confirm_with_tasks": "Supprimer la catégorie \"{name}\" ? {count} tâche(s) deviendront sans catégorie."
+  },
+  "column": {
+    "show_all_done": "Voir les {count} tâches terminées",
+    "completion_order_hint": "Classées par date de fin, les plus récentes en premier. Cette colonne ne se réordonne pas."
+  },
+  "comment_form": {
+    "aria_label": "Écrire un commentaire",
+    "placeholder": "Écrire un commentaire...",
+    "send": "Envoyer",
+    "send_failed": "Le commentaire n'a pas pu être envoyé."
+  },
+  "comment_list": {
+    "edited": "(modifié)",
+    "edit": "Modifier",
+    "edit_aria": "Modifier le commentaire",
+    "empty": "Aucun commentaire",
+    "save_failed": "Le commentaire n'a pas pu être modifié.",
+    "delete_confirm": "Supprimer ce commentaire ?"
+  },
+  "comment_popover": {
+    "open_task": "Ouvrir la tâche",
+    "load_failed": "Impossible de charger les commentaires"
+  },
+  "create_form": {
+    "title_placeholder": "Ex : Réserver la salle",
+    "description_placeholder": "Détails de la tâche...",
+    "submit": "Créer la tâche",
+    "created": "Tâche créée"
+  },
+  "filter_bar": {
+    "search_placeholder": "Rechercher…",
+    "select": "Sélectionner",
+    "unassigned": "Non assignées",
+    "my_tasks": "Mes tâches",
+    "overdue": "En retard",
+    "archived": "Archivées"
+  },
+  "board": {
+    "retry": "Réessayer",
+    "open_archived": "Ouvrir la tâche archivée {title}",
+    "archived_on": "Archivée le {date}",
+    "no_archived": "Aucune tâche archivée",
+    "back": "Retour",
+    "all_done": "Toutes les tâches terminées ({count})",
+    "reorder_disabled": "Réorganisation désactivée : la recherche, le filtre d'échéance et « En retard » masquent des tâches qui ne sont pas chargées, et un déplacement décalerait ces tâches masquées. Effacez ces filtres pour réordonner le tableau. Le menu d'une carte permet toujours de changer son statut.",
+    "board_changed": "Le tableau a été modifié entre temps, il vient d'être rechargé.",
+    "reload_failed": "Rechargement du tableau impossible",
+    "reorder_failed": "Impossible de réordonner les tâches"
+  }
+}

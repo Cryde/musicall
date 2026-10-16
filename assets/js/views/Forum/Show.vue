@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-semibold">{{ forumStore.currentForum?.title }}</h1>
       <Button
-        label="Nouveau sujet"
+        :label="t('forum.show.new_topic')"
         icon="pi pi-plus"
         severity="info"
         @click="handleOpenAddTopicModal"
@@ -31,7 +31,7 @@
       <Card class="mb-4">
         <template #content>
           <div v-if="forumStore.topics.length === 0" class="text-center py-8 text-surface-500">
-            Aucun sujet dans ce forum pour le moment.
+            {{ t('forum.show.no_topics') }}
           </div>
           <FadeList v-else>
             <TopicListItem
@@ -73,6 +73,7 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Paginator from 'primevue/paginator'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddTopicModal from '../../components/Forum/AddTopicModal.vue'
@@ -85,6 +86,7 @@ import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const TOPICS_PER_PAGE = 15
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const forumStore = useForumStore()
@@ -101,11 +103,17 @@ const currentPage = computed(() => {
 })
 
 const breadcrumbItems = computed(() => [
-  { label: 'Forum', to: { name: 'app_forum_index' } },
+  { label: t('forum.common.forum'), to: { name: 'app_forum_index' } },
   { label: forumStore.currentForum?.title || '...' }
 ])
 
-useTitle(computed(() => `${forumStore.currentForum?.title || 'Forum'} - MusicAll`))
+useTitle(
+  computed(() =>
+    t('forum.common.page_title', {
+      title: forumStore.currentForum?.title || t('forum.common.forum')
+    })
+  )
+)
 
 async function fetchData() {
   await forumStore.loadForum(forumSlug.value)
@@ -124,7 +132,7 @@ function handlePageChange(event) {
 function handleOpenAddTopicModal() {
   trackUmamiEvent('forum-new-topic-click', { forum: forumSlug.value })
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Vous devez vous connecter pour créer un nouveau sujet.'
+    authModalMessage.value = t('forum.show.login_to_create')
     showAuthModal.value = true
     return
   }

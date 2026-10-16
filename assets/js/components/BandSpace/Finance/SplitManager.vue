@@ -5,7 +5,7 @@
       class="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
       @click="expanded = !expanded"
     >
-      <span>Répartition entre membres</span>
+      <span>{{ t('band_space_finance.split_manager.title') }}</span>
       <div class="flex items-center gap-2">
         <span class="text-xs text-surface-500">{{ splitsSummaryText }}</span>
         <i
@@ -21,7 +21,7 @@
       </div>
 
       <div v-else-if="members.length === 0" class="text-sm text-surface-500 py-3">
-        Aucun membre trouvé
+        {{ t('band_space_finance.split_manager.no_member') }}
       </div>
 
       <div v-else class="flex flex-col gap-2 pt-3">
@@ -51,7 +51,7 @@
 
         <!-- Total line -->
         <div class="border-t border-surface-200 dark:border-surface-700 mt-2 pt-2 flex items-center justify-between text-sm">
-          <span class="text-surface-500">Total</span>
+          <span class="text-surface-500">{{ t('band_space_finance.split_manager.total') }}</span>
           <!-- 700 in light mode: the 500 level of both colours fails AA as text. The icon carries an
                accessible name of its own, so the mismatch is stated and not only coloured, and it says
                the same thing as the badge the row shows for the same entry. -->
@@ -85,6 +85,7 @@
 import InputNumber from 'primevue/inputnumber'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceFinanceApi from '../../../api/bandSpace/band-space-finance.js'
 import bandSpaceSettingsApi from '../../../api/bandSpace/band-space-settings.js'
 import {
@@ -94,6 +95,8 @@ import {
   MAX_AMOUNT_EUROS
 } from '../../../utils/currency.js'
 import { planSplitSync } from '../../../utils/splitReconciliation.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -142,13 +145,17 @@ const activeSplitsCount = computed(() => {
 
 const totalMatchLabel = computed(() =>
   splitsMatchAmount.value
-    ? 'Le total réparti correspond au montant de l’entrée'
-    : 'Le total réparti ne correspond pas au montant de l’entrée'
+    ? t('band_space_finance.split_manager.total_matches')
+    : t('band_space_finance.split_manager.total_mismatch')
 )
 
 const splitsSummaryText = computed(() => {
-  if (activeSplitsCount.value === 0) return 'Aucune répartition'
-  return `${activeSplitsCount.value} membre${activeSplitsCount.value > 1 ? 's' : ''} · ${formatAmount(splitsTotal.value)}`
+  if (activeSplitsCount.value === 0) return t('band_space_finance.split_manager.no_split')
+  return t(
+    'band_space_finance.split_manager.summary',
+    { amount: formatAmount(splitsTotal.value) },
+    activeSplitsCount.value
+  )
 })
 
 function memberInitial(username) {

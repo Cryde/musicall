@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Liens sociaux"
+    :header="t('profile.social_links.title')"
     :style="{ width: '40rem' }"
     :closable="!isProcessing"
     :closeOnEscape="!isProcessing"
@@ -47,13 +47,13 @@
       </div>
 
       <div v-else class="text-surface-500 dark:text-surface-400 text-sm mb-6">
-        Vous n'avez pas encore ajouté de liens sociaux.
+        {{ t('profile.social_links.empty') }}
       </div>
 
       <!-- Add new link form -->
       <div class="flex flex-col gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-800">
         <h4 class="font-medium text-surface-900 dark:text-surface-0">
-          Ajouter un lien
+          {{ t('profile.social_links.add_title') }}
         </h4>
         <div class="flex flex-col gap-3">
           <Select
@@ -61,18 +61,18 @@
             :options="availablePlatforms"
             optionLabel="label"
             optionValue="value"
-            placeholder="Plateforme"
+            :placeholder="t('profile.social_links.platform_placeholder')"
             class="w-full"
             :disabled="isProcessing"
           />
           <InputText
             v-model="newLinkUrl"
-            placeholder="https://www.example.com"
+            :placeholder="t('profile.social_links.url_placeholder')"
             class="w-full"
             :disabled="isProcessing"
           />
           <Button
-            label="Ajouter"
+            :label="t('profile.social_links.add')"
             icon="pi pi-plus"
             severity="info"
             :loading="isAddingSocialLink"
@@ -89,7 +89,7 @@
     <template #footer>
       <div class="flex justify-end">
         <Button
-          label="Fermer"
+          :label="t('profile.social_links.close')"
           severity="secondary"
           :disabled="isProcessing"
           @click="handleClose"
@@ -106,6 +106,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 
 const props = defineProps({
@@ -116,6 +117,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'changed'])
+const { t } = useI18n()
 
 const userProfileStore = useUserProfileStore()
 const confirm = useConfirm()
@@ -140,15 +142,15 @@ const isProcessing = computed(() => {
 })
 
 const platformOptions = [
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'soundcloud', label: 'SoundCloud' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'twitter', label: 'X (Twitter)' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'spotify', label: 'Spotify' },
-  { value: 'bandcamp', label: 'Bandcamp' },
-  { value: 'website', label: 'Site web' }
+  { value: 'youtube', labelKey: 'profile.platform.youtube' },
+  { value: 'soundcloud', labelKey: 'profile.platform.soundcloud' },
+  { value: 'instagram', labelKey: 'profile.platform.instagram' },
+  { value: 'facebook', labelKey: 'profile.platform.facebook' },
+  { value: 'twitter', labelKey: 'profile.platform.x_twitter' },
+  { value: 'tiktok', labelKey: 'profile.platform.tiktok' },
+  { value: 'spotify', labelKey: 'profile.platform.spotify' },
+  { value: 'bandcamp', labelKey: 'profile.platform.bandcamp' },
+  { value: 'website', labelKey: 'profile.platform.website' }
 ]
 
 const platformIcons = {
@@ -166,7 +168,9 @@ const platformIcons = {
 // Filter out platforms that are already used
 const availablePlatforms = computed(() => {
   const usedPlatforms = socialLinks.value.map((link) => link.platform)
-  return platformOptions.filter((opt) => !usedPlatforms.includes(opt.value))
+  return platformOptions
+    .filter((opt) => !usedPlatforms.includes(opt.value))
+    .map((opt) => ({ value: opt.value, label: t(opt.labelKey) }))
 })
 
 const canAddLink = computed(() => {
@@ -217,7 +221,7 @@ async function addLink() {
     newLinkUrl.value = ''
     emit('changed')
   } catch (error) {
-    addLinkError.value = error.message || "Impossible d'ajouter le lien"
+    addLinkError.value = error.message || t('profile.social_links.add_error')
   } finally {
     isAddingSocialLink.value = false
   }
@@ -225,11 +229,11 @@ async function addLink() {
 
 function confirmDeleteLink(link) {
   confirm.require({
-    message: `Êtes-vous sûr de vouloir supprimer le lien ${link.platform_label} ?`,
-    header: 'Confirmation',
+    message: t('profile.social_links.delete_confirm_message', { platform: link.platform_label }),
+    header: t('profile.social_links.delete_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('profile.social_links.cancel'),
+    acceptLabel: t('profile.social_links.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       await deleteLink(link)
@@ -244,7 +248,7 @@ async function deleteLink(link) {
     await userProfileStore.deleteSocialLink(link.id)
     emit('changed')
   } catch (error) {
-    addLinkError.value = error.message || 'Impossible de supprimer le lien'
+    addLinkError.value = error.message || t('profile.social_links.delete_error')
   } finally {
     deletingLinkId.value = null
   }

@@ -2,6 +2,7 @@ import { endOfMonth, endOfYear, format, parseISO, startOfMonth, startOfYear } fr
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceFinanceApi from '../../api/bandSpace/band-space-finance.js'
+import { i18n } from '../../i18n/index.js'
 
 function formatDate(date) {
   return format(date, 'yyyy-MM-dd')
@@ -92,7 +93,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     } catch {
       if (requestId !== categoriesRequestId || quiet) return
       categories.value = []
-      loadError.value = 'Impossible de charger les catégories'
+      loadError.value = i18n.global.t('band_space_finance.store.load_categories_error')
     } finally {
       if (isInitialLoad && requestId === categoriesRequestId) {
         isLoading.value = false

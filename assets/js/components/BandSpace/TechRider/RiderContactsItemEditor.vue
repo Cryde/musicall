@@ -2,26 +2,30 @@
   <div class="flex flex-col gap-4">
     <div class="rounded-lg border border-surface-200 dark:border-surface-700 p-3">
       <div class="flex flex-wrap items-center gap-2 mb-2">
-        <h4 class="font-semibold">Membres</h4>
+        <h4 class="font-semibold">{{ t('band_space_tech_rider.contacts.members_title') }}</h4>
         <span class="text-xs text-surface-600 dark:text-surface-300">
-          Repris automatiquement de la liste des membres.
+          {{ t('band_space_tech_rider.contacts.members_hint') }}
         </span>
       </div>
 
       <p v-if="lines.length === 0" class="text-sm text-surface-600 dark:text-surface-300 py-2">
-        Aucun membre actif à afficher.
+        {{ t('band_space_tech_rider.contacts.no_members') }}
       </p>
       <ul v-else class="flex flex-col gap-1">
         <li v-for="line in lines" :key="line" class="font-mono text-sm">{{ line }}</li>
       </ul>
 
-      <p class="text-xs text-surface-600 dark:text-surface-300 mt-3">
-        Pour changer un nom ou un instrument, passez par
-        <RouterLink :to="membersLink" class="text-primary hover:underline">
-          les paramètres du Band Space
-        </RouterLink>
-        . Le document reste ainsi à jour quand quelqu'un rejoint le groupe ou le quitte.
-      </p>
+      <i18n-t
+        keypath="band_space_tech_rider.contacts.change_hint"
+        tag="p"
+        class="text-xs text-surface-600 dark:text-surface-300 mt-3"
+      >
+        <template #link>
+          <RouterLink :to="membersLink" class="text-primary hover:underline">
+            {{ t('band_space_tech_rider.contacts.settings_link') }}
+          </RouterLink>
+        </template>
+      </i18n-t>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
@@ -35,15 +39,14 @@
         @update:model-value="handleToggleEmails"
       />
       <label :for="`${uid}-show-emails`" class="text-sm">
-        Afficher les adresses e-mail des membres
+        {{ t('band_space_tech_rider.contacts.show_emails') }}
       </label>
     </div>
 
     <!-- Stated rather than assumed. A rider goes to people outside the band, so publishing four
          addresses should be a decision somebody took on purpose. -->
     <Message v-if="showEmails" severity="warn" :closable="false" size="small">
-      Seules les adresses des membres qui l'ont accepté dans leur profil apparaissent, et elles seront
-      visibles par toute personne recevant ce document.
+      {{ t('band_space_tech_rider.contacts.emails_warning') }}
     </Message>
 
     <ul v-if="emails.length > 0" class="flex flex-col gap-1">
@@ -51,10 +54,9 @@
     </ul>
 
     <div>
-      <h4 class="font-semibold mb-1">Notes</h4>
+      <h4 class="font-semibold mb-1">{{ t('band_space_tech_rider.contacts.notes_title') }}</h4>
       <p class="text-xs text-surface-600 dark:text-surface-300 mb-2">
-        Tout ce que la liste des membres ne couvre pas : régisseur, numéros de téléphone, contact
-        de tournée.
+        {{ t('band_space_tech_rider.contacts.notes_hint') }}
       </p>
       <RiderTextItemEditor
         :item-id="itemId"
@@ -71,6 +73,7 @@
 import Message from 'primevue/message'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import RiderTextItemEditor from './RiderTextItemEditor.vue'
@@ -87,6 +90,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save'])
+
+const { t } = useI18n()
 
 const uid = useId()
 

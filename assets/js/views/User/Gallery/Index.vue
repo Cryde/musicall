@@ -3,15 +3,15 @@
     <div class="flex flex-col gap-6">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex flex-col gap-2">
-          <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">Mes galeries photos</h1>
+          <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ t('publication.gallery.user.heading') }}</h1>
           <p class="text-surface-500 dark:text-surface-400">
             <template v-if="userGalleriesStore.galleries.length > 0">
-              Vous avez {{ userGalleriesStore.galleries.length }} galerie(s)
+              {{ t('publication.gallery.user.count', { count: userGalleriesStore.galleries.length }) }}
             </template>
-            <template v-else> Gerez vos galeries photos </template>
+            <template v-else> {{ t('publication.gallery.user.subtitle') }} </template>
           </p>
         </div>
-        <Button label="Ajouter une galerie" icon="pi pi-images" severity="info" @click="openAddModal" />
+        <Button :label="t('publication.gallery.user.add')" icon="pi pi-images" severity="info" @click="openAddModal" />
       </div>
 
       <div v-if="userGalleriesStore.isLoading" class="flex justify-center py-12">
@@ -24,14 +24,14 @@
       >
         <div class="flex flex-col items-center justify-center py-12 text-surface-500 dark:text-surface-400">
           <i class="pi pi-images text-4xl mb-4" />
-          <p class="text-lg font-medium">Vous n'avez pas encore de galeries</p>
-          <p class="text-sm mt-2">Cliquez sur "Ajouter une galerie" pour en creer une</p>
+          <p class="text-lg font-medium">{{ t('publication.gallery.user.empty') }}</p>
+          <p class="text-sm mt-2">{{ t('publication.gallery.user.empty_help') }}</p>
         </div>
       </div>
 
       <template v-else>
         <DataTable :value="userGalleriesStore.galleries" stripedRows tableStyle="min-width: 50rem">
-          <Column header="Couverture" style="width: 80px">
+          <Column :header="t('publication.gallery.user.column_cover')" style="width: 80px">
             <template #body="{ data }">
               <img
                 v-if="data.cover_image_url"
@@ -48,31 +48,31 @@
             </template>
           </Column>
 
-          <Column field="title" header="Titre" style="min-width: 200px">
+          <Column field="title" :header="t('publication.common.title')" style="min-width: 200px">
             <template #body="{ data }">
               <span class="font-medium">{{ data.title }}</span>
             </template>
           </Column>
 
-          <Column field="image_count" header="Photos" style="min-width: 100px">
+          <Column field="image_count" :header="t('publication.gallery.photos')" style="min-width: 100px">
             <template #body="{ data }">
-              {{ data.image_count }} photo(s)
+              {{ t('publication.gallery.user.photo_count', { count: data.image_count }) }}
             </template>
           </Column>
 
-          <Column field="status_label" header="Statut" style="min-width: 120px">
+          <Column field="status_label" :header="t('publication.user_list.column_status')" style="min-width: 120px">
             <template #body="{ data }">
               <Tag :value="data.status_label" :severity="getStatusSeverity(data.status)" />
             </template>
           </Column>
 
-          <Column header="Actions" style="min-width: 180px">
+          <Column :header="t('publication.user_list.column_actions')" style="min-width: 180px">
             <template #body="{ data }">
               <div class="flex gap-1">
                 <Button
                   v-if="data.status === STATUS_DRAFT"
-                  v-tooltip.top="'Soumettre la galerie'"
-                  aria-label="Soumettre la galerie"
+                  v-tooltip.top="t('publication.gallery.user.submit')"
+                  :aria-label="t('publication.gallery.user.submit')"
                   icon="pi pi-send"
                   severity="success"
                   text
@@ -82,8 +82,8 @@
                 />
                 <Button
                   v-if="data.slug"
-                  v-tooltip.top="'Voir la galerie'"
-                  aria-label="Voir la galerie"
+                  v-tooltip.top="t('publication.gallery.user.view')"
+                  :aria-label="t('publication.gallery.user.view')"
                   icon="pi pi-eye"
                   severity="info"
                   text
@@ -93,8 +93,8 @@
                 />
                 <Button
                   v-if="data.status === STATUS_DRAFT"
-                  v-tooltip.top="'Modifier la galerie'"
-                  aria-label="Modifier la galerie"
+                  v-tooltip.top="t('publication.gallery.user.edit')"
+                  :aria-label="t('publication.gallery.user.edit')"
                   icon="pi pi-pencil"
                   severity="secondary"
                   text
@@ -104,8 +104,8 @@
                 />
                 <Button
                   v-if="data.status === STATUS_DRAFT"
-                  v-tooltip.top="'Supprimer la galerie'"
-                  aria-label="Supprimer la galerie"
+                  v-tooltip.top="t('publication.gallery.user.delete')"
+                  :aria-label="t('publication.gallery.user.delete')"
                   icon="pi pi-trash"
                   severity="danger"
                   text
@@ -124,23 +124,23 @@
     <Dialog
       v-model:visible="showAddModal"
       modal
-      header="Nouvelle galerie"
+      :header="t('publication.gallery.user.new_header')"
       :style="{ width: '25rem' }"
     >
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
-          <label for="title" class="font-medium">Titre de la galerie</label>
+          <label for="title" class="font-medium">{{ t('publication.gallery.user.title_label') }}</label>
           <InputText
             id="title"
             v-model="newGalleryTitle"
-            placeholder="Entrez le titre"
+            :placeholder="t('publication.gallery.user.title_placeholder')"
             :invalid="submitted && !newGalleryTitle.trim()"
           />
         </div>
       </div>
       <template #footer>
-        <Button label="Annuler" severity="secondary" text @click="closeAddModal" />
-        <Button label="Creer" icon="pi pi-check" :loading="isCreating" @click="createGallery" />
+        <Button :label="t('publication.common.cancel')" severity="secondary" text @click="closeAddModal" />
+        <Button :label="t('publication.common.create')" icon="pi pi-check" :loading="isCreating" @click="createGallery" />
       </template>
     </Dialog>
 
@@ -160,10 +160,13 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useUserGalleriesStore } from '../../../store/gallery/userGalleries.js'
 
-useTitle('Mes galeries photos - MusicAll')
+const { t } = useI18n()
+
+useTitle(() => t('publication.gallery.user.page_title'))
 
 const STATUS_DRAFT = 1
 const STATUS_ONLINE = 0
@@ -221,8 +224,8 @@ async function createGallery() {
     closeAddModal()
     toast.add({
       severity: 'success',
-      summary: 'Succes',
-      detail: 'Galerie creee avec succes',
+      summary: t('publication.common.success'),
+      detail: t('publication.gallery.user.created'),
       life: 3000
     })
     // Redirect to edit page
@@ -230,8 +233,8 @@ async function createGallery() {
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de creer la galerie',
+      summary: t('publication.common.error'),
+      detail: t('publication.gallery.user.create_failed'),
       life: 3000
     })
   } finally {
@@ -253,26 +256,25 @@ function handleEdit(gallery) {
 
 async function handleSubmit(gallery) {
   confirm.require({
-    message:
-      'Une fois mise en ligne vous ne pourrez plus modifier la galerie. Etes-vous sur de vouloir soumettre ?',
-    header: 'Confirmation',
+    message: t('publication.gallery.user.submit_confirm'),
+    header: t('publication.common.confirmation'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Soumettre',
+    rejectLabel: t('publication.common.cancel'),
+    acceptLabel: t('publication.common.submit'),
     accept: async () => {
       try {
         await userGalleriesStore.submitGallery(gallery.id)
         toast.add({
           severity: 'success',
-          summary: 'Succes',
-          detail: 'Galerie soumise pour validation',
+          summary: t('publication.common.success'),
+          detail: t('publication.gallery.user.submitted'),
           life: 3000
         })
       } catch (e) {
-        const message = e.response?.data?.detail || 'Impossible de soumettre la galerie'
+        const message = e.response?.data?.detail || t('publication.gallery.user.submit_failed')
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
+          summary: t('publication.common.error'),
           detail: message,
           life: 5000
         })
@@ -283,26 +285,26 @@ async function handleSubmit(gallery) {
 
 function confirmDelete(gallery) {
   confirm.require({
-    message: 'Etes-vous sur de vouloir supprimer cette galerie ?',
-    header: 'Confirmation',
+    message: t('publication.gallery.user.delete_confirm'),
+    header: t('publication.common.confirmation'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('publication.common.cancel'),
+    acceptLabel: t('publication.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await userGalleriesStore.deleteGallery(gallery.id)
         toast.add({
           severity: 'success',
-          summary: 'Succes',
-          detail: 'Galerie supprimee avec succes',
+          summary: t('publication.common.success'),
+          detail: t('publication.gallery.user.deleted'),
           life: 3000
         })
       } catch {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de supprimer la galerie',
+          summary: t('publication.common.error'),
+          detail: t('publication.gallery.user.delete_failed'),
           life: 3000
         })
       }

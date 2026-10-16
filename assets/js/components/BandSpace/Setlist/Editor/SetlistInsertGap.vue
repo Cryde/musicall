@@ -13,15 +13,15 @@
         active ? 'opacity-100' : 'opacity-0 group-hover/gap:opacity-100'
       ]"
       role="group"
-      :aria-label="`Insérer en position ${position + 1}`"
+      :aria-label="t('band_space_setlist.insert_gap.group_aria', { position: position + 1 })"
     >
       <template v-if="active">
-        <span class="text-xs px-2">Les titres cliqués s’insèrent ici</span>
-        <Button icon="pi pi-times" size="small" text rounded severity="secondary" aria-label="Arrêter d’insérer ici" @click="emit('cancel')" />
+        <span class="text-xs px-2">{{ t('band_space_setlist.insert_gap.active_hint') }}</span>
+        <Button icon="pi pi-times" size="small" text rounded severity="secondary" :aria-label="t('band_space_setlist.insert_gap.stop_aria')" @click="emit('cancel')" />
       </template>
       <template v-else>
-        <span class="text-xs px-2 hidden sm:inline">Insérer ici</span>
-        <Button label="Titre" size="small" tabindex="-1" class="!py-0.5 !px-2 !text-xs" @click="emit('insert-song', position)" />
+        <span class="text-xs px-2 hidden sm:inline">{{ t('band_space_setlist.insert_gap.insert_here') }}</span>
+        <Button :label="t('band_space_setlist.insert_gap.song')" size="small" tabindex="-1" class="!py-0.5 !px-2 !text-xs" @click="emit('insert-song', position)" />
         <Button
           v-for="kind in INTERMISSION_KINDS"
           :key="kind.type"
@@ -41,6 +41,7 @@
 
 <script setup>
 import Button from 'primevue/button'
+import { useI18n } from 'vue-i18n'
 import { INTERMISSION_KINDS } from './intermissionKinds.js'
 
 defineProps({
@@ -50,4 +51,5 @@ defineProps({
 })
 
 const emit = defineEmits(['insert-song', 'insert-intermission', 'cancel'])
+const { t } = useI18n()
 </script>

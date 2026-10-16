@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Joindre un fichier"
+    :header="t('band_space_files.attach_dialog.title')"
     :style="{ width: '36rem' }"
     :closable="!isUploading"
     :close-on-escape="!isUploading"
@@ -10,8 +10,8 @@
   >
     <Tabs v-model:value="activeTab">
       <TabList>
-        <Tab value="upload">Importer</Tab>
-        <Tab value="existing">Choisir parmi les fichiers existants</Tab>
+        <Tab value="upload">{{ t('band_space_files.attach_dialog.tab_upload') }}</Tab>
+        <Tab value="existing">{{ t('band_space_files.attach_dialog.tab_existing') }}</Tab>
       </TabList>
 
       <TabPanels>
@@ -29,10 +29,15 @@
 
               <template v-if="!selectedFile">
                 <i class="pi pi-cloud-upload text-3xl text-surface-400 mb-2"></i>
-                <p class="text-sm text-surface-600 dark:text-surface-300">
-                  Glissez-déposez un fichier ou
-                  <span class="text-primary-500 underline">cliquez pour parcourir</span>
-                </p>
+                <i18n-t
+                  keypath="band_space_files.attach_dialog.drop_zone"
+                  tag="p"
+                  class="text-sm text-surface-600 dark:text-surface-300"
+                >
+                  <template #browse>
+                    <span class="text-primary-500 underline">{{ t('band_space_files.common.browse') }}</span>
+                  </template>
+                </i18n-t>
               </template>
 
               <template v-else>
@@ -44,7 +49,7 @@
                   </div>
                   <Button
                     icon="pi pi-times"
-                    aria-label="Retirer le fichier"
+                    :aria-label="t('band_space_files.common.remove_file')"
                     text
                     rounded
                     size="small"
@@ -57,7 +62,7 @@
 
             <div v-if="isUploading" class="flex flex-col gap-1">
               <ProgressBar :value="uploadProgress" />
-              <p class="text-xs text-surface-500 text-center">Import… {{ uploadProgress }} %</p>
+              <p class="text-xs text-surface-500 text-center">{{ t('band_space_files.common.upload_progress', { percent: uploadProgress }) }}</p>
             </div>
 
             <Message v-if="uploadError" severity="error" :closable="false">{{ uploadError }}</Message>
@@ -70,7 +75,7 @@
               <InputIcon class="pi pi-search" />
               <InputText
                 v-model="searchQuery"
-                placeholder="Rechercher un fichier"
+                :placeholder="t('band_space_files.attach_dialog.search_placeholder')"
                 size="small"
                 class="w-full"
                 @input="searchFiles"
@@ -82,8 +87,8 @@
             </div>
 
             <p v-else-if="searchResults.length === 0" class="text-xs italic text-surface-400 text-center py-4">
-              Aucun fichier disponible.
-              <span class="block">Seuls les fichiers manuels (non attachés) peuvent être joints.</span>
+              {{ t('band_space_files.attach_dialog.no_files') }}
+              <span class="block">{{ t('band_space_files.attach_dialog.manual_only') }}</span>
             </p>
 
             <div
@@ -105,7 +110,7 @@
 
     <template #footer>
       <Button
-        label="Annuler"
+        :label="t('band_space_files.common.cancel')"
         severity="secondary"
         text
         :disabled="isUploading"
@@ -113,7 +118,7 @@
       />
       <Button
         v-if="activeTab === 'upload'"
-        label="Importer"
+        :label="t('band_space_files.attach_dialog.submit')"
         icon="pi pi-cloud-upload"
         :disabled="!selectedFile || isUploading"
         :loading="isUploading"
@@ -139,6 +144,7 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
@@ -152,6 +158,7 @@ const emit = defineEmits(['attached'])
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const toast = useToast()
 
 const activeTab = ref('upload')
@@ -228,14 +235,14 @@ async function handleUpload() {
     emit('attached', result.file)
     toast.add({
       severity: 'success',
-      summary: 'Fichier joint',
+      summary: t('band_space_files.attach_dialog.attached'),
       life: 3000
     })
     if (result.quotaApproaching) {
       toast.add({
         severity: 'warn',
-        summary: 'Quota presque atteint',
-        detail: 'Vous avez atteint 80 % de votre quota de stockage.',
+        summary: t('band_space_files.common.quota_approaching.summary'),
+        detail: t('band_space_files.common.quota_approaching.detail'),
         life: 6000
       })
     }
@@ -279,7 +286,7 @@ async function attachExisting(file) {
     emit('attached', updated)
     toast.add({
       severity: 'success',
-      summary: 'Fichier joint',
+      summary: t('band_space_files.attach_dialog.attached'),
       life: 3000
     })
     visible.value = false

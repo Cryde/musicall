@@ -4,8 +4,8 @@
       <span v-if="timeText" class="font-medium tabular-nums shrink-0">{{ timeText }}</span>
       <span v-if="priorityIcon" :class="['pi shrink-0', priorityIcon.icon, priorityIcon.color]" :title="priorityIcon.label" />
       <span v-if="financeIcon" :class="['pi text-[10px] shrink-0', financeIcon.icon]" :title="financeIcon.label" />
-      <span v-if="isRecurringOccurrence" class="pi pi-refresh text-[10px] shrink-0 opacity-90" title="Événement récurrent" />
-      <span v-if="isAbsence" class="pi pi-user-minus text-[10px] shrink-0 opacity-90" title="Indisponibilité" />
+      <span v-if="isRecurringOccurrence" class="pi pi-refresh text-[10px] shrink-0 opacity-90" :title="t('band_space_agenda.chip.recurring')" />
+      <span v-if="isAbsence" class="pi pi-user-minus text-[10px] shrink-0 opacity-90" :title="t('band_space_agenda.chip.absence')" />
       <span class="truncate font-medium" :class="{ 'font-normal italic': isAbsence }">
         {{ item.title }}
       </span>
@@ -35,6 +35,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatAmount } from '../../../utils/currency.js'
 import Avatar from '../../User/Avatar.vue'
 
@@ -44,22 +45,36 @@ const props = defineProps({
   viewType: { type: String, required: true }
 })
 
+const { t } = useI18n()
+
 const isCompact = computed(() => props.viewType === 'dayGridMonth')
 
 const priorityIcon = computed(() => {
   if (props.item.source !== 'task') return null
   const p = props.item.metadata?.priority
-  if (p === 'urgent')
-    return { icon: 'pi-exclamation-circle', color: 'text-red-200', label: 'Urgent' }
-  if (p === 'high') return { icon: 'pi-arrow-up', color: 'text-amber-100', label: 'Priorité haute' }
+  if (p === 'urgent') {
+    return {
+      icon: 'pi-exclamation-circle',
+      color: 'text-red-200',
+      label: t('band_space_agenda.item.priority_urgent')
+    }
+  }
+  if (p === 'high') {
+    return {
+      icon: 'pi-arrow-up',
+      color: 'text-amber-100',
+      label: t('band_space_agenda.item.priority_high')
+    }
+  }
   return null
 })
 
 const financeIcon = computed(() => {
   if (props.item.source !== 'finance') return null
-  const t = props.item.metadata?.type
-  if (t === 'income') return { icon: 'pi-arrow-up', label: 'Revenu' }
-  if (t === 'expense') return { icon: 'pi-arrow-down', label: 'Dépense' }
+  const type = props.item.metadata?.type
+  if (type === 'income') return { icon: 'pi-arrow-up', label: t('band_space_agenda.item.income') }
+  if (type === 'expense')
+    return { icon: 'pi-arrow-down', label: t('band_space_agenda.item.expense') }
   return null
 })
 

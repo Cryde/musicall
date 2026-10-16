@@ -65,7 +65,7 @@ class ChatReactionPaletteTest extends TestCase
         self::assertIsString($source);
 
         preg_match_all(
-            "/\{\s*key:\s*'([^']+)',\s*emoji:\s*'([^']+)',\s*label:\s*'[^']+'\s*}/u",
+            "/\{\s*key:\s*'([^']+)',\s*emoji:\s*'([^']+)',\s*labelKey:\s*'[^']+'\s*}/u",
             $source,
             $matches,
             PREG_SET_ORDER,

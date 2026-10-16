@@ -1,9 +1,9 @@
 <template>
-  <section class="flex flex-col gap-2 min-w-0" aria-label="Élément sélectionné">
-    <h4 class="font-semibold text-sm">Élément</h4>
+  <section class="flex flex-col gap-2 min-w-0" :aria-label="t('band_space_tech_rider.inspector.label')">
+    <h4 class="font-semibold text-sm">{{ t('band_space_tech_rider.inspector.title') }}</h4>
 
     <p v-if="!element" class="text-xs text-surface-600 dark:text-surface-300 py-2">
-      Sélectionnez un élément sur la scène pour le modifier.
+      {{ t('band_space_tech_rider.inspector.empty') }}
     </p>
 
     <template v-else>
@@ -12,7 +12,9 @@
       </p>
 
       <div>
-        <label :for="`${uid}-label`" class="block text-xs font-medium mb-1">Libellé</label>
+        <label :for="`${uid}-label`" class="block text-xs font-medium mb-1">{{
+          t('band_space_tech_rider.inspector.label_field')
+        }}</label>
         <InputText
           :id="`${uid}-label`"
           :model-value="element.label ?? ''"
@@ -25,7 +27,9 @@
       </div>
 
       <div>
-        <label :for="`${uid}-colour`" class="block text-xs font-medium mb-1">Couleur</label>
+        <label :for="`${uid}-colour`" class="block text-xs font-medium mb-1">{{
+          t('band_space_tech_rider.common.colour')
+        }}</label>
         <Select
           :id="`${uid}-colour`"
           :model-value="element.colour ?? null"
@@ -64,7 +68,7 @@
 
       <div>
         <label :for="`${uid}-scale`" class="block text-xs font-medium mb-1">
-          Taille ({{ (element.scale ?? 1).toFixed(2) }})
+          {{ t('band_space_tech_rider.inspector.scale', { scale: (element.scale ?? 1).toFixed(2) }) }}
         </label>
         <Slider
           :id="`${uid}-scale`"
@@ -74,14 +78,14 @@
           :step="SCALE_STEP"
           :disabled="readOnly"
           class="w-full"
-          :aria-label="`Taille de ${iconLabel}`"
+          :aria-label="t('band_space_tech_rider.inspector.scale_aria', { icon: iconLabel })"
           @update:model-value="(value) => update({ scale: value })"
         />
       </div>
 
       <div>
         <label :for="`${uid}-rotation`" class="block text-xs font-medium mb-1">
-          Rotation ({{ element.rotation ?? 0 }}°)
+          {{ t('band_space_tech_rider.inspector.rotation', { degrees: element.rotation ?? 0 }) }}
         </label>
         <!-- Whole degrees, so the slider can represent every angle the server accepts. A coarser
              step would quietly rewrite an angle placed freely on the canvas the moment anyone
@@ -94,17 +98,17 @@
           :step="FINE_ROTATION_STEP"
           :disabled="readOnly"
           class="w-full"
-          :aria-label="`Rotation de ${iconLabel}`"
+          :aria-label="t('band_space_tech_rider.inspector.rotation_aria', { icon: iconLabel })"
           @update:model-value="(value) => update({ rotation: value })"
         />
         <!-- The quarter turns kept as shortcuts beside the slider. They are one click where the
              slider is an aim, and they are the keyboard path: arrows on a 360 stop slider would
              need ninety presses to turn a corner. -->
-        <div class="flex gap-1 mt-1" role="group" aria-label="Quarts de tour">
+        <div class="flex gap-1 mt-1" role="group" :aria-label="t('band_space_tech_rider.inspector.quarter_turns')">
           <Button
             v-for="rotation in ROTATIONS"
             :key="rotation"
-            :label="`${rotation}°`"
+            :label="t('band_space_tech_rider.inspector.quarter_turn', { degrees: rotation })"
             size="small"
             :severity="(element.rotation ?? 0) === rotation ? 'primary' : 'secondary'"
             :outlined="(element.rotation ?? 0) !== rotation"
@@ -118,21 +122,21 @@
 
       <div v-if="!readOnly" class="flex gap-1 pt-1">
         <Button
-          label="Dupliquer"
+          :label="t('band_space_tech_rider.common.duplicate')"
           icon="pi pi-copy"
           severity="secondary"
           outlined
           size="small"
-          :aria-label="`Dupliquer ${iconLabel}`"
+          :aria-label="t('band_space_tech_rider.inspector.duplicate_aria', { icon: iconLabel })"
           @click="emit('duplicate', element.id)"
         />
         <Button
-          label="Retirer"
+          :label="t('band_space_tech_rider.common.remove')"
           icon="pi pi-trash"
           severity="danger"
           outlined
           size="small"
-          :aria-label="`Retirer ${iconLabel}`"
+          :aria-label="t('band_space_tech_rider.inspector.remove_aria', { icon: iconLabel })"
           @click="emit('delete', element.id)"
         />
       </div>
@@ -146,6 +150,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Slider from 'primevue/slider'
 import { computed, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   describePosition,
   FINE_ROTATION_STEP,
@@ -157,7 +162,7 @@ import {
   ROTATIONS,
   SCALE_STEP
 } from '../../../../constants/stagePlot.js'
-import { TECH_RIDER_COLOURS } from '../../../../constants/techRiderColours.js'
+import { TECH_RIDER_COLOURS, techRiderColourLabel } from '../../../../constants/techRiderColours.js'
 
 const props = defineProps({
   element: { type: Object, default: null },
@@ -167,16 +172,18 @@ const props = defineProps({
 
 const emit = defineEmits(['update', 'duplicate', 'delete'])
 
+const { t } = useI18n()
+
 const uid = useId()
 
-const colourOptions = [
-  { value: null, label: 'Aucune', hex: null },
+const colourOptions = computed(() => [
+  { value: null, label: labelFor(null), hex: null },
   ...TECH_RIDER_COLOURS.map((colour) => ({
     value: colour.value,
-    label: colour.label,
+    label: labelFor(colour.value),
     hex: colour.hex
   }))
-]
+])
 
 const iconLabel = computed(() => {
   const slug = props.element?.icon
@@ -184,11 +191,12 @@ const iconLabel = computed(() => {
 })
 
 function hexFor(value) {
-  return colourOptions.find((option) => option.value === value)?.hex ?? null
+  return TECH_RIDER_COLOURS.find((colour) => colour.value === value)?.hex ?? null
 }
 
+/** « Aucune » for no colour, as for one the palette does not know. */
 function labelFor(value) {
-  return colourOptions.find((option) => option.value === value)?.label ?? 'Aucune'
+  return techRiderColourLabel(value)
 }
 
 function update(patch) {

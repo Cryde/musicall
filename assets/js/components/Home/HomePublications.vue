@@ -2,20 +2,20 @@
   <section>
     <div class="flex justify-between items-center mb-6">
       <h2 class="m-0 text-2xl lg:text-3xl font-bold text-surface-900 dark:text-surface-0">
-        Dernières publications
+        {{ t('home.publications.title') }}
       </h2>
       <div class="flex gap-2">
         <Button
-          v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
-          label="Poster une découverte"
+          v-tooltip.bottom="t('home.publications.post_discovery_tooltip')"
+          :label="t('home.publications.post_discovery')"
           icon="pi pi-plus"
           severity="info"
           size="small"
           class="hidden md:inline-flex"
           @click="$emit('open-discover-modal')"
         />
-        <router-link :to="{ name: 'app_publications' }" aria-label="Voir plus de publications">
-          <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
+        <router-link :to="{ name: 'app_publications' }" :aria-label="t('home.publications.see_more_aria_label')">
+          <Button :label="t('home.publications.see_more')" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
         </router-link>
       </div>
     </div>
@@ -42,7 +42,7 @@
         />
       </FadeList>
       <div v-else class="col-span-full text-center py-12 text-surface-500">
-        Aucune publication pour le moment.
+        {{ t('home.publications.empty') }}
       </div>
     </div>
   </section>
@@ -50,6 +50,7 @@
 
 <script setup>
 import Button from 'primevue/button'
+import { useI18n } from 'vue-i18n'
 import PublicationListItem from '../../views/Publication/PublicationListItem.vue'
 import FadeList from '../Global/FadeList.vue'
 import PublicationListItemSkeleton from '../Skeleton/PublicationListItemSkeleton.vue'
@@ -66,4 +67,6 @@ defineProps({
 })
 
 defineEmits(['open-discover-modal'])
+
+const { t } = useI18n()
 </script>

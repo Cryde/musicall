@@ -2,7 +2,7 @@
   <Drawer
     v-model:visible="isVisible"
     position="right"
-    :header="isEditMode ? 'Modifier un événement' : 'Nouvel événement'"
+    :header="isEditMode ? t('band_space_agenda.entry.edit_title') : t('band_space_agenda.common.new_event')"
     class="w-full! md:w-[28rem]!"
   >
     <!--
@@ -19,7 +19,7 @@
           @update:modelValue="handleAskAvailabilityToggle"
         />
         <label for="agenda-ask-availability-saved" class="text-sm font-medium select-none">
-          Demander les disponibilités aux membres
+          {{ t('band_space_agenda.entry.ask_availability') }}
         </label>
         <i
           v-if="isSavingAskAvailability"
@@ -31,10 +31,10 @@
         {{ askAvailabilityError }}
       </small>
       <small v-else-if="!form.askAvailability" class="text-surface-600 dark:text-surface-300">
-        Les réponses déjà données sont conservées et réapparaîtront si vous réactivez l’option.
+        {{ t('band_space_agenda.entry.ask_availability_kept') }}
       </small>
       <small v-if="isSeriesOccurrence" class="text-surface-600 dark:text-surface-300">
-        S’applique à toutes les dates de la série.
+        {{ t('band_space_agenda.entry.ask_availability_series') }}
       </small>
     </div>
 
@@ -70,22 +70,19 @@
       >
         <i class="pi pi-info-circle mt-0.5 flex-shrink-0" aria-hidden="true" />
         <div>
-          <p>
-            Cet événement fait partie d’une série&nbsp;: vos modifications s’appliqueront à toutes
-            les occurrences, passées comme futures.
-          </p>
-          <p class="mt-1">Début de la série&nbsp;: {{ seriesStartLabel }}.</p>
+          <p>{{ t('band_space_agenda.entry.series_notice') }}</p>
+          <p class="mt-1">{{ t('band_space_agenda.entry.series_start', { date: seriesStartLabel }) }}</p>
         </div>
       </div>
 
       <div class="flex flex-col gap-1">
         <label for="agenda-title" class="text-sm font-medium">
-          Titre <span class="text-red-500">*</span>
+          {{ t('band_space_agenda.entry.title_label') }} <span class="text-red-500">*</span>
         </label>
         <InputText
           id="agenda-title"
           v-model="form.title"
-          placeholder="Ex : Répétition générale"
+          :placeholder="t('band_space_agenda.entry.title_placeholder')"
           autofocus
           :class="{ 'p-invalid': fieldErrors.title }"
         />
@@ -94,12 +91,12 @@
 
       <div class="flex items-center gap-2">
         <Checkbox v-model="form.isAllDay" inputId="agenda-all-day" binary />
-        <label for="agenda-all-day" class="text-sm font-medium select-none">Toute la journée</label>
+        <label for="agenda-all-day" class="text-sm font-medium select-none">{{ t('band_space_agenda.common.all_day') }}</label>
       </div>
 
       <div class="flex flex-col gap-1">
         <label for="agenda-datetime" class="text-sm font-medium">
-          {{ form.isAllDay ? 'Date' : 'Date et heure' }} <span class="text-red-500">*</span>
+          {{ form.isAllDay ? t('band_space_agenda.entry.date_label') : t('band_space_agenda.entry.datetime_label') }} <span class="text-red-500">*</span>
         </label>
         <div class="flex gap-2">
           <DatePicker
@@ -114,22 +111,22 @@
             v-if="!form.isAllDay"
             v-model="eventTimeText"
             mask="99:99"
-            placeholder="HH:MM"
+            :placeholder="t('band_space_agenda.entry.time_placeholder')"
             class="w-24 flex-shrink-0"
-            aria-label="Heure de début"
+            :aria-label="t('band_space_agenda.entry.start_time_aria')"
           />
         </div>
         <small v-if="fieldErrors.eventDatetime" class="text-red-500">
           {{ fieldErrors.eventDatetime }}
         </small>
         <small v-if="isSeriesOccurrence" class="text-surface-500 dark:text-surface-400">
-          Date de cette occurrence. La déplacer décale toute la série d’autant.
+          {{ t('band_space_agenda.entry.occurrence_date_hint') }}
         </small>
       </div>
 
       <div class="flex flex-col gap-1">
         <label for="agenda-end-datetime" class="text-sm font-medium">
-          {{ form.isAllDay ? 'Dernier jour (optionnel)' : 'Fin (optionnel)' }}
+          {{ form.isAllDay ? t('band_space_agenda.entry.last_day_label') : t('band_space_agenda.entry.end_label') }}
         </label>
         <div class="flex gap-2">
           <DatePicker
@@ -146,9 +143,9 @@
             v-if="!form.isAllDay"
             v-model="endTimeText"
             mask="99:99"
-            placeholder="HH:MM"
+            :placeholder="t('band_space_agenda.entry.time_placeholder')"
             class="w-24 flex-shrink-0"
-            aria-label="Heure de fin"
+            :aria-label="t('band_space_agenda.entry.end_time_aria')"
           />
         </div>
         <small v-if="fieldErrors.endDatetime" class="text-red-500">
@@ -157,35 +154,35 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="agenda-location" class="text-sm font-medium">Lieu</label>
+        <label for="agenda-location" class="text-sm font-medium">{{ t('band_space_agenda.entry.location_label') }}</label>
         <InputText
           id="agenda-location"
           v-model="form.location"
-          placeholder="Ex : Studio, Zenith de Paris…"
+          :placeholder="t('band_space_agenda.entry.location_placeholder')"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="agenda-description" class="text-sm font-medium">Description</label>
+        <label for="agenda-description" class="text-sm font-medium">{{ t('band_space_agenda.entry.description_label') }}</label>
         <Textarea
           id="agenda-description"
           v-model="form.description"
           rows="3"
           autoResize
-          placeholder="Notes complémentaires"
+          :placeholder="t('band_space_agenda.entry.description_placeholder')"
         />
       </div>
 
       <div v-if="!isEditMode" class="flex items-center gap-2">
         <Checkbox v-model="form.askAvailability" inputId="agenda-ask-availability" binary />
         <label for="agenda-ask-availability" class="text-sm font-medium select-none">
-          Demander les disponibilités aux membres
+          {{ t('band_space_agenda.entry.ask_availability') }}
         </label>
       </div>
 
       <div class="flex flex-col gap-3 border border-surface-200 dark:border-surface-700 rounded-md p-3">
         <div class="flex flex-col gap-1">
-          <label for="agenda-recurrence-frequency" class="text-sm font-medium">Répéter</label>
+          <label for="agenda-recurrence-frequency" class="text-sm font-medium">{{ t('band_space_agenda.recurrence.label') }}</label>
           <Select
             id="agenda-recurrence-frequency"
             v-model="form.recurrenceFrequency"
@@ -196,7 +193,7 @@
         </div>
 
         <div v-if="form.recurrenceFrequency === 'monthly'" class="flex flex-col gap-2">
-          <span class="text-sm font-medium">Mode mensuel</span>
+          <span class="text-sm font-medium">{{ t('band_space_agenda.recurrence.monthly_mode') }}</span>
           <div class="flex items-center gap-2">
             <RadioButton
               v-model="form.recurrenceMonthlyMode"
@@ -223,13 +220,13 @@
             {{ fieldErrors.recurrenceMonthlyMode }}
           </small>
           <small class="text-surface-500 dark:text-surface-400">
-            Calculé d'après la date de l'événement.
+            {{ t('band_space_agenda.recurrence.monthly_hint') }}
           </small>
         </div>
 
         <div v-if="form.recurrenceFrequency" class="flex flex-col gap-1">
           <label for="agenda-recurrence-until" class="text-sm font-medium">
-            Jusqu'au <span class="text-red-500">*</span>
+            {{ t('band_space_agenda.recurrence.until_label') }} <span class="text-red-500">*</span>
           </label>
           <DatePicker
             id="agenda-recurrence-until"
@@ -248,12 +245,12 @@
       <div class="flex flex-wrap items-center gap-2 mt-4">
         <Button
           type="submit"
-          :label="isEditMode ? 'Enregistrer' : 'Créer'"
+          :label="isEditMode ? t('band_space_agenda.common.save') : t('band_space_agenda.entry.create')"
           :loading="agendaStore.isSaving"
         />
         <Button
           type="button"
-          label="Annuler"
+          :label="t('band_space_agenda.common.cancel')"
           severity="secondary"
           text
           @click="isVisible = false"
@@ -261,7 +258,7 @@
         <Button
           v-if="isEditMode"
           type="button"
-          label="Supprimer"
+          :label="t('band_space_agenda.common.delete')"
           severity="danger"
           text
           class="ml-auto"
@@ -292,7 +289,7 @@
     </p>
     <template #footer>
       <Button
-        label="Annuler"
+        :label="t('band_space_agenda.common.cancel')"
         severity="secondary"
         text
         :disabled="agendaStore.isSaving"
@@ -310,46 +307,46 @@
   <Dialog
     v-model:visible="showDeleteScopeDialog"
     modal
-    header="Supprimer l’événement récurrent"
+    :header="t('band_space_agenda.delete_scope.header')"
     :style="{ width: '28rem' }"
     :closable="!agendaStore.isDeleting"
   >
     <p class="text-sm text-surface-700 dark:text-surface-200 mb-4">
-      Cet événement fait partie d’une série. Que souhaites-tu supprimer&nbsp;?
+      {{ t('band_space_agenda.delete_scope.question') }}
     </p>
     <div class="flex flex-col gap-3">
       <div class="flex items-start gap-2">
         <RadioButton v-model="deleteScope" inputId="scope-single" value="single" />
         <label for="scope-single" class="text-sm cursor-pointer select-none">
-          <span class="font-medium">Cette occurrence seulement</span>
-          <span class="block text-xs text-surface-500">Le reste de la série reste en place.</span>
+          <span class="font-medium">{{ t('band_space_agenda.delete_scope.single') }}</span>
+          <span class="block text-xs text-surface-500">{{ t('band_space_agenda.delete_scope.single_hint') }}</span>
         </label>
       </div>
       <div class="flex items-start gap-2">
         <RadioButton v-model="deleteScope" inputId="scope-from" value="from" />
         <label for="scope-from" class="text-sm cursor-pointer select-none">
-          <span class="font-medium">Cette occurrence et les suivantes</span>
-          <span class="block text-xs text-surface-500">La série se termine la veille de cette occurrence.</span>
+          <span class="font-medium">{{ t('band_space_agenda.delete_scope.from') }}</span>
+          <span class="block text-xs text-surface-500">{{ t('band_space_agenda.delete_scope.from_hint') }}</span>
         </label>
       </div>
       <div class="flex items-start gap-2">
         <RadioButton v-model="deleteScope" inputId="scope-all" value="all" />
         <label for="scope-all" class="text-sm cursor-pointer select-none">
-          <span class="font-medium">Toute la série</span>
-          <span class="block text-xs text-surface-500">Toutes les occurrences (passées et futures) seront supprimées.</span>
+          <span class="font-medium">{{ t('band_space_agenda.delete_scope.all') }}</span>
+          <span class="block text-xs text-surface-500">{{ t('band_space_agenda.delete_scope.all_hint') }}</span>
         </label>
       </div>
     </div>
     <template #footer>
       <Button
-        label="Annuler"
+        :label="t('band_space_agenda.common.cancel')"
         severity="secondary"
         text
         :disabled="agendaStore.isDeleting"
         @click="showDeleteScopeDialog = false"
       />
       <Button
-        label="Supprimer"
+        :label="t('band_space_agenda.common.delete')"
         severity="danger"
         :loading="agendaStore.isDeleting"
         @click="confirmScopedDelete"
@@ -373,6 +370,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
@@ -394,6 +392,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'deleted', 'availability-changed'])
 const isVisible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const agendaStore = useBandAgendaStore()
 const confirm = useConfirm()
 
@@ -419,27 +418,47 @@ const form = reactive({
   recurrenceMonthlyMode: null
 })
 
-const frequencyOptions = [
-  { value: null, label: 'Ne se répète pas' },
-  { value: 'daily', label: 'Quotidien' },
-  { value: 'weekly', label: 'Hebdomadaire' },
-  { value: 'monthly', label: 'Mensuel' },
-  { value: 'yearly', label: 'Annuel' }
+const frequencyOptions = computed(() => [
+  { value: null, label: t('band_space_agenda.recurrence.none') },
+  { value: 'daily', label: t('band_space_agenda.recurrence.daily') },
+  { value: 'weekly', label: t('band_space_agenda.recurrence.weekly') },
+  { value: 'monthly', label: t('band_space_agenda.recurrence.monthly') },
+  { value: 'yearly', label: t('band_space_agenda.recurrence.yearly') }
+])
+
+const WEEKDAY_LABEL_KEYS = [
+  'band_space_agenda.recurrence.weekday.sunday',
+  'band_space_agenda.recurrence.weekday.monday',
+  'band_space_agenda.recurrence.weekday.tuesday',
+  'band_space_agenda.recurrence.weekday.wednesday',
+  'band_space_agenda.recurrence.weekday.thursday',
+  'band_space_agenda.recurrence.weekday.friday',
+  'band_space_agenda.recurrence.weekday.saturday'
+]
+const ORDINAL_LABEL_KEYS = [
+  'band_space_agenda.recurrence.ordinal.first',
+  'band_space_agenda.recurrence.ordinal.second',
+  'band_space_agenda.recurrence.ordinal.third',
+  'band_space_agenda.recurrence.ordinal.fourth',
+  'band_space_agenda.recurrence.ordinal.fifth'
 ]
 
-const WEEKDAY_LABELS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
-const ORDINAL_LABELS = ['premier', 'deuxième', 'troisième', 'quatrième', 'cinquième']
-
 const monthlyByDateLabel = computed(() => {
-  if (!form.eventDatetime) return 'Le même jour du mois'
-  return `Le ${form.eventDatetime.getDate()} du mois`
+  if (!form.eventDatetime) return t('band_space_agenda.recurrence.by_date_default')
+  return t('band_space_agenda.recurrence.by_date', { day: form.eventDatetime.getDate() })
 })
 
 const monthlyByWeekdayLabel = computed(() => {
-  if (!form.eventDatetime) return 'Même jour de la semaine du mois'
+  if (!form.eventDatetime) return t('band_space_agenda.recurrence.by_weekday_default')
   const weekIndex = Math.floor((form.eventDatetime.getDate() - 1) / 7)
-  const ordinal = ORDINAL_LABELS[weekIndex] ?? `${weekIndex + 1}ème`
-  return `Le ${ordinal} ${WEEKDAY_LABELS[form.eventDatetime.getDay()]} du mois`
+  const ordinalKey = ORDINAL_LABEL_KEYS[weekIndex]
+  const ordinal = ordinalKey
+    ? t(ordinalKey)
+    : t('band_space_agenda.recurrence.ordinal.nth', { number: weekIndex + 1 })
+  return t('band_space_agenda.recurrence.by_weekday', {
+    ordinal,
+    weekday: t(WEEKDAY_LABEL_KEYS[form.eventDatetime.getDay()])
+  })
 })
 
 // Clearing the frequency must also clear dependent fields so the next submit doesn't
@@ -517,7 +536,8 @@ async function handleAskAvailabilityToggle(askAvailability) {
     form.askAvailability = askAvailability
     emit('availability-changed')
   } catch (error) {
-    askAvailabilityError.value = error?.message ?? 'Impossible de modifier cette option'
+    askAvailabilityError.value =
+      error?.message ?? t('band_space_agenda.entry.ask_availability_error')
   } finally {
     isSavingAskAvailability.value = false
   }
@@ -654,13 +674,13 @@ async function handleSubmit() {
   fieldErrors.recurrenceMonthlyMode = null
 
   if (form.endDatetime && form.eventDatetime && form.endDatetime <= form.eventDatetime) {
-    fieldErrors.endDatetime = 'La fin doit être postérieure au début'
+    fieldErrors.endDatetime = t('band_space_agenda.entry.end_before_start')
     return
   }
 
   if (form.recurrenceFrequency !== null) {
     if (!form.recurrenceUntilDate) {
-      fieldErrors.recurrenceUntilDate = 'Veuillez spécifier une date de fin de récurrence.'
+      fieldErrors.recurrenceUntilDate = t('band_space_agenda.recurrence.until_required')
       return
     }
     // Calendar days, like the server-side rule: the horizon is a date at midnight, so comparing it
@@ -670,12 +690,11 @@ async function handleSubmit() {
       form.eventDatetime &&
       differenceInCalendarDays(form.recurrenceUntilDate, form.eventDatetime) < 0
     ) {
-      fieldErrors.recurrenceUntilDate =
-        'La date de fin doit être postérieure ou égale au premier événement.'
+      fieldErrors.recurrenceUntilDate = t('band_space_agenda.recurrence.until_before_start')
       return
     }
     if (form.recurrenceFrequency === 'monthly' && !form.recurrenceMonthlyMode) {
-      fieldErrors.recurrenceMonthlyMode = 'Veuillez préciser le mode de récurrence mensuelle.'
+      fieldErrors.recurrenceMonthlyMode = t('band_space_agenda.recurrence.monthly_mode_required')
       return
     }
   }
@@ -754,7 +773,7 @@ async function persistEntry(submission) {
           error.violationsByField.recurrence_monthly_mode[0].message
       }
     }
-    formError.value = error?.message ?? 'Impossible d’enregistrer l’événement'
+    formError.value = error?.message ?? t('band_space_agenda.entry.save_error')
   }
 }
 
@@ -766,19 +785,24 @@ const seriesSaveDialog = computed(() => {
 
   if (submission?.impact === SERIES_IMPACT_RECURRENCE_REMOVED) {
     return {
-      header: 'Supprimer la récurrence',
-      message: `Il ne restera qu’un seul événement, le ${formatEventMoment(submission.start)}.`,
-      detail: 'Toutes les autres occurrences de la série seront supprimées.',
-      acceptLabel: 'Supprimer la récurrence',
+      header: t('band_space_agenda.series_save.remove_recurrence'),
+      message: t('band_space_agenda.series_save.remove_recurrence_message', {
+        date: formatEventMoment(submission.start)
+      }),
+      detail: t('band_space_agenda.series_save.remove_recurrence_detail'),
+      acceptLabel: t('band_space_agenda.series_save.remove_recurrence'),
       acceptSeverity: 'danger'
     }
   }
 
   return {
-    header: 'Décaler toute la série',
-    message: `La série commencera le ${formatEventMoment(submission?.start)} au lieu du ${seriesStartLabel.value}.`,
-    detail: 'Toutes les occurrences seront décalées d’autant, y compris celles déjà passées.',
-    acceptLabel: 'Décaler la série',
+    header: t('band_space_agenda.series_save.shift_header'),
+    message: t('band_space_agenda.series_save.shift_message', {
+      date: formatEventMoment(submission?.start),
+      start: seriesStartLabel.value
+    }),
+    detail: t('band_space_agenda.series_save.shift_detail'),
+    acceptLabel: t('band_space_agenda.series_save.shift_accept'),
     acceptSeverity: null
   }
 })
@@ -803,11 +827,11 @@ function handleDelete() {
   }
 
   confirm.require({
-    message: 'Es-tu sûr de vouloir supprimer cet événement ?',
-    header: 'Confirmer la suppression',
+    message: t('band_space_agenda.entry.delete_confirm'),
+    header: t('band_space_agenda.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_agenda.common.cancel'),
+    acceptLabel: t('band_space_agenda.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
@@ -815,7 +839,7 @@ function handleDelete() {
         emit('deleted')
         isVisible.value = false
       } catch (error) {
-        formError.value = error?.message ?? 'Impossible de supprimer l’événement'
+        formError.value = error?.message ?? t('band_space_agenda.entry.delete_error')
       }
     }
   })
@@ -844,7 +868,7 @@ async function confirmScopedDelete() {
     emit('deleted')
     isVisible.value = false
   } catch (error) {
-    formError.value = error?.message ?? 'Impossible de supprimer l’événement'
+    formError.value = error?.message ?? t('band_space_agenda.entry.delete_error')
     showDeleteScopeDialog.value = false
   }
 }

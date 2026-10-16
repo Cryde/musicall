@@ -1,28 +1,29 @@
 <template>
   <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
     <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 mb-2">
-      Synchronisation agenda
+      {{ t('band_space.settings.section.calendar') }}
     </h2>
     <p class="text-sm text-surface-600 dark:text-surface-300 mb-4">
-      Recevez les dates du groupe directement dans Google Agenda, Apple Calendrier ou Outlook. Le
-      lien est personnel : il vous appartient et ne concerne que ce Band Space.
+      {{ t('band_space.calendar_sync.intro') }}
     </p>
 
     <Message severity="secondary" :closable="false" class="mb-4">
       <ul class="list-disc pl-4 text-sm space-y-1">
-        <li>
-          L'agenda du groupe apparaît comme un <strong>calendrier séparé</strong>, en lecture seule,
-          avec sa propre couleur et sa propre case pour l'afficher ou le masquer.
-        </li>
-        <li>
-          Seuls les <strong>événements de l'agenda</strong> sont publiés. Les tâches, les finances
-          et les absences restent dans l'application.
-        </li>
-        <li>
-          Google actualise ce type de calendrier <strong>toutes les 8 à 24 heures</strong> et ne
-          propose aucun bouton pour forcer la mise à jour. Une date ajoutée aujourd'hui peut donc
-          n'apparaître que demain sur votre téléphone.
-        </li>
+        <i18n-t keypath="band_space.calendar_sync.separate_calendar" tag="li">
+          <template #separate>
+            <strong>{{ t('band_space.calendar_sync.separate_calendar_strong') }}</strong>
+          </template>
+        </i18n-t>
+        <i18n-t keypath="band_space.calendar_sync.events_only" tag="li">
+          <template #events>
+            <strong>{{ t('band_space.calendar_sync.events_only_strong') }}</strong>
+          </template>
+        </i18n-t>
+        <i18n-t keypath="band_space.calendar_sync.google_refresh" tag="li">
+          <template #frequency>
+            <strong>{{ t('band_space.calendar_sync.google_refresh_strong') }}</strong>
+          </template>
+        </i18n-t>
       </ul>
     </Message>
 
@@ -38,19 +39,19 @@
         class="mb-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/40 p-4"
       >
         <p class="text-sm font-medium text-surface-800 dark:text-surface-100 mb-2">
-          Votre lien d'abonnement
+          {{ t('band_space.calendar_sync.your_link') }}
         </p>
         <div class="flex flex-col sm:flex-row gap-2 mb-3">
           <InputText
             :model-value="generatedUrl"
             readonly
             class="flex-1 font-mono text-xs"
-            aria-label="Lien d'abonnement à l'agenda"
+            :aria-label="t('band_space.calendar_sync.link_aria')"
             @focus="selectAll"
           />
           <Button
             :icon="hasCopied ? 'pi pi-check' : 'pi pi-copy'"
-            :label="hasCopied ? 'Copié' : 'Copier'"
+            :label="hasCopied ? t('band_space.calendar_sync.copied') : t('band_space.calendar_sync.copy')"
             size="small"
             @click="copyUrl"
           />
@@ -58,7 +59,7 @@
 
         <div class="flex flex-wrap gap-2 mb-3">
           <Button
-            label="Ajouter à Google Agenda"
+            :label="t('band_space.calendar_sync.add_google')"
             icon="pi pi-google"
             size="small"
             severity="secondary"
@@ -69,7 +70,7 @@
             rel="noopener"
           />
           <Button
-            label="Apple Calendrier ou Outlook"
+            :label="t('band_space.calendar_sync.add_apple_outlook')"
             icon="pi pi-calendar-plus"
             size="small"
             severity="secondary"
@@ -80,32 +81,31 @@
         </div>
 
         <p class="text-xs text-surface-600 dark:text-surface-400">
-          Conservez ce lien : il ne pourra plus être affiché. Toute personne qui le détient peut lire
-          les dates du groupe, ne le publiez pas.
+          {{ t('band_space.calendar_sync.keep_link') }}
         </p>
       </div>
 
       <div v-if="feed.is_enabled" class="flex flex-col gap-3">
         <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
           <div>
-            <dt class="text-surface-500 dark:text-surface-400">Créé le</dt>
+            <dt class="text-surface-500 dark:text-surface-400">{{ t('band_space.calendar_sync.created_at') }}</dt>
             <dd class="tabular-nums">{{ formatDateLong(feed.creation_datetime) }}</dd>
           </div>
           <div>
-            <dt class="text-surface-500 dark:text-surface-400">Dernier accès</dt>
+            <dt class="text-surface-500 dark:text-surface-400">{{ t('band_space.shares.last_access') }}</dt>
             <dd class="tabular-nums">
-              {{ feed.last_access_datetime ? formatDateLong(feed.last_access_datetime) : 'Jamais' }}
+              {{ feed.last_access_datetime ? formatDateLong(feed.last_access_datetime) : t('band_space.calendar_sync.never') }}
             </dd>
           </div>
           <div>
-            <dt class="text-surface-500 dark:text-surface-400">Accès</dt>
+            <dt class="text-surface-500 dark:text-surface-400">{{ t('band_space.shares.access_count') }}</dt>
             <dd class="tabular-nums">{{ feed.access_count }}</dd>
           </div>
         </dl>
 
         <div class="flex flex-wrap gap-2">
           <Button
-            label="Régénérer le lien"
+            :label="t('band_space.calendar_sync.regenerate_link')"
             icon="pi pi-refresh"
             size="small"
             severity="secondary"
@@ -114,7 +114,7 @@
             @click="confirmRegenerate"
           />
           <Button
-            label="Révoquer"
+            :label="t('band_space.shares.revoke')"
             icon="pi pi-trash"
             size="small"
             severity="danger"
@@ -127,7 +127,7 @@
 
       <Button
         v-else
-        label="Générer mon lien d'abonnement"
+        :label="t('band_space.calendar_sync.generate')"
         icon="pi pi-calendar-plus"
         size="small"
         :loading="isSubmitting"
@@ -145,6 +145,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import agendaFeedApi from '../../../api/bandSpace/band-space-agenda-feed.js'
 import { formatDateLong } from '../../../utils/date.js'
@@ -152,6 +153,7 @@ import { formatDateLong } from '../../../utils/date.js'
 const route = useRoute()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 
 const bandSpaceId = route.params.id
 const feed = ref({
@@ -189,8 +191,8 @@ async function loadFeed() {
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible de charger l'état de la synchronisation.",
+      summary: t('band_space.common.error'),
+      detail: t('band_space.calendar_sync.load_error'),
       life: 4000
     })
   } finally {
@@ -208,8 +210,8 @@ async function generate() {
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'La génération du lien a échoué.',
+      summary: t('band_space.common.error'),
+      detail: t('band_space.calendar_sync.generate_error'),
       life: 4000
     })
   } finally {
@@ -219,24 +221,22 @@ async function generate() {
 
 function confirmRegenerate() {
   confirm.require({
-    message:
-      "Un nouveau lien sera créé et l'ancien cessera immédiatement de fonctionner. Les calendriers déjà abonnés ne se mettront plus à jour.",
-    header: 'Régénérer le lien',
+    message: t('band_space.calendar_sync.regenerate_message'),
+    header: t('band_space.calendar_sync.regenerate_link'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Régénérer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space.calendar_sync.regenerate'),
+    rejectLabel: t('band_space.common.cancel'),
     accept: generate
   })
 }
 
 function confirmRevoke() {
   confirm.require({
-    message:
-      'Le lien cessera de fonctionner et les calendriers déjà abonnés ne se mettront plus à jour.',
-    header: 'Révoquer le lien',
+    message: t('band_space.calendar_sync.revoke_message'),
+    header: t('band_space.shares.revoke_tooltip'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Révoquer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space.shares.revoke'),
+    rejectLabel: t('band_space.common.cancel'),
     acceptProps: { severity: 'danger' },
     accept: revoke
   })
@@ -250,15 +250,15 @@ async function revoke() {
     await loadFeed()
     toast.add({
       severity: 'success',
-      summary: 'Lien révoqué',
-      detail: "Le flux d'agenda a été désactivé.",
+      summary: t('band_space.shares.revoked'),
+      detail: t('band_space.calendar_sync.revoked_detail'),
       life: 3000
     })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'La révocation a échoué.',
+      summary: t('band_space.common.error'),
+      detail: t('band_space.calendar_sync.revoke_error'),
       life: 4000
     })
   } finally {
@@ -273,8 +273,8 @@ async function copyUrl() {
   } catch {
     toast.add({
       severity: 'warn',
-      summary: 'Copie impossible',
-      detail: 'Sélectionnez le lien et copiez-le manuellement.',
+      summary: t('band_space.calendar_sync.copy_failed'),
+      detail: t('band_space.calendar_sync.copy_failed_detail'),
       life: 4000
     })
   }

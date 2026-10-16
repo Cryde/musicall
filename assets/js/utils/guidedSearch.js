@@ -3,12 +3,21 @@
  * search. Its rules live here so they are tested without a browser.
  */
 
+import { i18n } from '../i18n/index.js'
+
 export const GUIDED_MODE = 'guided'
 export const GUIDED_STEPS = Object.freeze(['instrument', 'location', 'styles'])
+// Getters, so each read is translated in the language of the moment.
 export const STEP_LABELS = Object.freeze({
-  instrument: 'Instrument',
-  location: 'Ville',
-  styles: 'Styles'
+  get instrument() {
+    return i18n.global.t('search.guided.step.instrument')
+  },
+  get location() {
+    return i18n.global.t('search.guided.step.location')
+  },
+  get styles() {
+    return i18n.global.t('search.guided.step.styles')
+  }
 })
 export const RADIUS_OPTIONS = Object.freeze([10, 25, 50, 100])
 export const DEFAULT_RADIUS = 25
@@ -59,28 +68,30 @@ export function pluralMusicianName(name) {
     .toLocaleLowerCase()
 }
 
-const QUESTIONS = {
+const QUESTION_KEYS = {
   musician: {
-    instrument: 'Quel musicien manque à votre groupe ?',
-    location: 'Où répète votre groupe ?',
-    styles: 'Vous jouez quoi ?'
+    instrument: 'search.guided.question.musician_instrument',
+    location: 'search.guided.question.musician_location',
+    styles: 'search.guided.question.musician_styles'
   },
   band: {
-    instrument: 'De quel instrument jouez-vous ?',
-    location: 'Où cherchez-vous un groupe ?',
-    styles: 'Quels styles vous intéressent ?'
+    instrument: 'search.guided.question.band_instrument',
+    location: 'search.guided.question.band_location',
+    styles: 'search.guided.question.band_styles'
   }
 }
 
 /** The question of a step, worded for a band looking for a musician or a musician for a band. */
 export function stepQuestion(step, lookingForBand) {
-  return QUESTIONS[lookingForBand ? 'band' : 'musician'][step]
+  return i18n.global.t(QUESTION_KEYS[lookingForBand ? 'band' : 'musician'][step])
 }
 
 /** What the member is looking for, in the plural: « batteurs / batteuses », « groupes », « musiciens ». */
 export function soughtLabel({ lookingForBand, instrument }) {
-  if (lookingForBand) return 'groupes'
-  return instrument ? pluralMusicianName(instrument.musician_name) : 'musiciens'
+  if (lookingForBand) return i18n.global.t('search.guided.sought_bands')
+  return instrument
+    ? pluralMusicianName(instrument.musician_name)
+    : i18n.global.t('search.guided.sought_musicians')
 }
 
 /** « Bruxelles · 25 km », or the city alone when every distance is kept. */
@@ -94,9 +105,14 @@ export function locationLabel(location, radius) {
  * Bruxelles », each part only when the search has it.
  */
 export function signupHeadline({ lookingForBand, instrument, styles, location }) {
-  const parts = ['Encore plus de', soughtLabel({ lookingForBand, instrument })]
-  if (styles.length > 0)
-    parts.push(styles.map((style) => style.name.toLocaleLowerCase()).join(' / '))
-  if (location?.name) parts.push(`autour de ${location.name}`)
-  return parts.join(' ')
+  const params = {
+    sought: soughtLabel({ lookingForBand, instrument }),
+    styles: styles.map((style) => style.name.toLocaleLowerCase()).join(' / '),
+    city: location?.name
+  }
+  if (styles.length > 0 && params.city)
+    return i18n.global.t('search.guided.signup_headline_styles_location', params)
+  if (styles.length > 0) return i18n.global.t('search.guided.signup_headline_styles', params)
+  if (params.city) return i18n.global.t('search.guided.signup_headline_location', params)
+  return i18n.global.t('search.guided.signup_headline', params)
 }

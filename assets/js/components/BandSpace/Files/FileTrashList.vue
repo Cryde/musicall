@@ -9,13 +9,12 @@
       class="flex flex-col items-center justify-center py-16 text-center text-surface-400"
     >
       <i class="pi pi-trash text-5xl mb-4" aria-hidden="true"></i>
-      <p class="text-sm italic">La corbeille est vide.</p>
+      <p class="text-sm italic">{{ t('band_space_files.trash_list.empty') }}</p>
     </div>
 
     <div v-else class="flex flex-col gap-2">
       <p class="text-xs text-surface-500 dark:text-surface-400 px-1">
-        Les fichiers supprimés restent ici {{ filesStore.trashRetentionDays }} jours, puis sont
-        définitivement effacés. Vous pouvez les restaurer avant cette date.
+        {{ t('band_space_files.trash_list.retention_notice', { days: filesStore.trashRetentionDays }) }}
       </p>
 
       <div class="flex items-center gap-2 px-1">
@@ -23,10 +22,10 @@
           :model-value="allSelected"
           binary
           size="small"
-          aria-label="Tout sélectionner"
+          :aria-label="t('band_space_files.common.select_all')"
           @update:model-value="toggleAll"
         />
-        <span class="text-xs text-surface-500 dark:text-surface-400">Tout sélectionner</span>
+        <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('band_space_files.common.select_all') }}</span>
       </div>
 
       <div
@@ -44,7 +43,7 @@
           binary
           size="small"
           class="shrink-0"
-          :aria-label="`Sélectionner ${file.original_name}`"
+          :aria-label="t('band_space_files.common.select_file', { name: file.original_name })"
           @mousedown="rememberModifiers"
           @keydown="rememberModifiers"
           @update:model-value="() => toggleFromCheckbox(file)"
@@ -56,19 +55,20 @@
             {{ file.original_name }}
           </p>
           <span class="text-xs text-surface-500 dark:text-surface-400">
-            {{ formatBytes(file.size) }} · supprimé le {{ formatDateLong(file.archive_datetime) }} ·
+            {{ formatBytes(file.size) }} ·
+            {{ t('band_space_files.trash_list.deleted_on', { date: formatDateLong(file.archive_datetime) }) }} ·
             <span :class="remainingClass(file)">{{ remainingLabel(file) }}</span>
           </span>
         </div>
 
         <Button
-          label="Restaurer"
+          :label="t('band_space_files.common.restore')"
           icon="pi pi-replay"
           text
           size="small"
           :disabled="!canRestore(file)"
           :loading="busyId === file.id"
-          v-tooltip.top="canRestore(file) ? null : 'Seul le créateur ou un administrateur peut restaurer ce fichier'"
+          v-tooltip.top="canRestore(file) ? null : t('band_space_files.trash_list.restore_not_allowed')"
           @click="handleRestore(file)"
         />
         <Button
@@ -77,8 +77,8 @@
           severity="danger"
           text
           size="small"
-          aria-label="Supprimer définitivement"
-          v-tooltip.top="'Supprimer définitivement'"
+          :aria-label="t('band_space_files.trash_list.delete_permanently')"
+          v-tooltip.top="t('band_space_files.trash_list.delete_permanently')"
           :loading="busyId === file.id"
           @click="handlePermanentDelete(file)"
         />
@@ -94,6 +94,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
@@ -108,6 +109,7 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false }
 })
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
@@ -178,10 +180,10 @@ function remainingLabel(file) {
     return ''
   }
   if (days <= 0) {
-    return 'suppression imminente'
+    return t('band_space_files.trash_list.purge_imminent')
   }
 
-  return days === 1 ? "plus qu'un jour" : `encore ${days} jours`
+  return t('band_space_files.trash_list.days_left', days)
 }
 
 function remainingClass(file) {
@@ -194,12 +196,16 @@ async function handleRestore(file) {
   busyId.value = file.id
   try {
     await filesStore.restoreFile(props.bandSpaceId, file.id)
-    toast.add({ severity: 'success', summary: 'Fichier restauré', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_files.trash_list.restored'),
+      life: 3000
+    })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de restaurer le fichier',
+      summary: t('band_space_files.trash_list.error'),
+      detail: error.message || t('band_space_files.trash_list.restore_failed'),
       life: 5000
     })
   } finally {
@@ -209,22 +215,26 @@ async function handleRestore(file) {
 
 function handlePermanentDelete(file) {
   confirm.require({
-    header: 'Supprimer définitivement',
-    message: `« ${file.original_name} » sera effacé immédiatement et cette action est irréversible. Continuer ?`,
+    header: t('band_space_files.trash_list.delete_permanently'),
+    message: t('band_space_files.trash_list.delete_confirm_message', { name: file.original_name }),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer définitivement',
+    rejectLabel: t('band_space_files.common.cancel'),
+    acceptLabel: t('band_space_files.trash_list.delete_permanently'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       busyId.value = file.id
       try {
         await filesStore.permanentDeleteFile(props.bandSpaceId, file.id)
-        toast.add({ severity: 'success', summary: 'Fichier supprimé définitivement', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_files.trash_list.deleted'),
+          life: 3000
+        })
       } catch (error) {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: error.message || 'Impossible de supprimer le fichier',
+          summary: t('band_space_files.trash_list.error'),
+          detail: error.message || t('band_space_files.trash_list.delete_failed'),
           life: 5000
         })
       } finally {

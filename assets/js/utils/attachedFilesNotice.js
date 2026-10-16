@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * The sentence appended to a delete confirmation when the task or entry being deleted has files
  * attached to it.
@@ -11,9 +13,6 @@
  */
 export function attachedFilesNotice(count) {
   if (!count || count < 1) return ''
-  if (count === 1) {
-    return ' Le fichier attaché sera détaché mais restera dans Fichiers.'
-  }
 
-  return ` Les ${count} fichiers attachés seront détachés mais resteront dans Fichiers.`
+  return ` ${i18n.global.t('band_space_files.attached_files_notice', count)}`
 }

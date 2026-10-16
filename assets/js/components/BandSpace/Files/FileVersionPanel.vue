@@ -10,7 +10,7 @@
       <div class="flex items-center justify-between">
         <p class="text-sm text-surface-500">{{ versionsCountLabel }}</p>
         <Button
-          label="Importer une nouvelle version"
+          :label="t('band_space_files.version_panel.upload_new')"
           icon="pi pi-cloud-upload"
           size="small"
           :disabled="filesStore.isUploadingVersion || filesStore.isRollingBack"
@@ -26,7 +26,7 @@
         v-else-if="filesStore.versions.length === 0"
         class="text-sm italic text-surface-400 text-center py-8"
       >
-        Aucune version pour ce fichier.
+        {{ t('band_space_files.version_panel.empty') }}
       </p>
 
       <div v-else class="flex flex-col gap-2">
@@ -36,10 +36,12 @@
           class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700"
         >
           <div class="flex flex-col items-center w-10">
-            <span class="font-mono text-xs text-surface-500">v{{ version.version_number }}</span>
+            <span class="font-mono text-xs text-surface-500">{{
+              t('band_space_files.version_panel.version_number', { number: version.version_number })
+            }}</span>
             <Tag
               v-if="version.is_current"
-              value="Actuelle"
+              :value="t('band_space_files.version_panel.current')"
               severity="success"
               class="text-[10px] mt-1"
             />
@@ -70,8 +72,8 @@
               size="small"
               text
               severity="secondary"
-              aria-label="Télécharger cette version"
-              v-tooltip.top="'Télécharger cette version'"
+              :aria-label="t('band_space_files.version_panel.download')"
+              v-tooltip.top="t('band_space_files.version_panel.download')"
               @click="downloadVersion(version)"
             />
             <Button
@@ -80,8 +82,8 @@
               size="small"
               text
               severity="secondary"
-              aria-label="Restaurer cette version"
-              v-tooltip.top="'Restaurer cette version'"
+              :aria-label="t('band_space_files.version_panel.restore')"
+              v-tooltip.top="t('band_space_files.version_panel.restore')"
               :disabled="filesStore.isRollingBack"
               @click="confirmRollback(version)"
             />
@@ -107,6 +109,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import Avatar from '../../User/Avatar.vue'
@@ -121,6 +124,7 @@ const props = defineProps({
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const confirm = useConfirm()
 const toast = useToast()
@@ -128,8 +132,8 @@ const toast = useToast()
 const newVersionDialogVisible = ref(false)
 
 const dialogHeader = computed(() => {
-  if (!props.fileName) return 'Versions du fichier'
-  return `Versions de ${props.fileName}`
+  if (!props.fileName) return t('band_space_files.version_panel.title')
+  return t('band_space_files.version_panel.title_named', { name: props.fileName })
 })
 
 const sortedVersions = computed(() =>
@@ -139,7 +143,7 @@ const sortedVersions = computed(() =>
 const versionsCountLabel = computed(() => {
   const n = filesStore.versions.length
   if (n === 0) return ''
-  return n === 1 ? '1 version' : `${n} versions`
+  return t('band_space_files.version_panel.count', n)
 })
 
 watch(
@@ -160,24 +164,28 @@ function downloadVersion(version) {
 
 function confirmRollback(version) {
   confirm.require({
-    message: `Restaurer la version v${version.version_number} comme version actuelle ?`,
-    header: 'Confirmer la restauration',
+    message: t('band_space_files.version_panel.rollback_confirm_message', {
+      number: version.version_number
+    }),
+    header: t('band_space_files.version_panel.rollback_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Restaurer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_files.version_panel.rollback_accept'),
+    rejectLabel: t('band_space_files.common.cancel'),
     accept: async () => {
       try {
         await filesStore.rollbackVersion(props.bandSpaceId, props.fileId, version.version_number)
         toast.add({
           severity: 'success',
-          summary: 'Version restaurée',
-          detail: `La version v${version.version_number} est maintenant la version actuelle.`,
+          summary: t('band_space_files.version_panel.restored'),
+          detail: t('band_space_files.version_panel.restored_detail', {
+            number: version.version_number
+          }),
           life: 3500
         })
       } catch (e) {
         toast.add({
           severity: 'error',
-          summary: 'Restauration impossible',
+          summary: t('band_space_files.version_panel.restore_failed'),
           detail: e.message,
           life: 5000
         })
@@ -189,14 +197,14 @@ function confirmRollback(version) {
 function handleVersionUploaded({ quotaApproaching }) {
   toast.add({
     severity: 'success',
-    summary: 'Nouvelle version téléversée',
+    summary: t('band_space_files.version_panel.uploaded'),
     life: 3000
   })
   if (quotaApproaching) {
     toast.add({
       severity: 'warn',
-      summary: 'Quota presque atteint',
-      detail: 'Vous avez atteint 80 % de votre quota de stockage.',
+      summary: t('band_space_files.common.quota_approaching.summary'),
+      detail: t('band_space_files.common.quota_approaching.detail'),
       life: 6000
     })
   }

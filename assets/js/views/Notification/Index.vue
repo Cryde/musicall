@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-semibold">Notifications</h1>
+      <h1 class="text-2xl font-semibold">{{ t('notification.title') }}</h1>
       <Button
         v-if="store.pageItems.length > 0"
-        label="Tout marquer comme lu"
+        :label="t('notification.mark_all_read')"
         link
         size="small"
         :disabled="store.unreadCount === 0"
@@ -24,7 +24,7 @@
       v-else-if="store.pageItems.length === 0"
       class="text-surface-500 dark:text-surface-400 py-12 text-center"
     >
-      Vous n'avez aucune notification pour le moment.
+      {{ t('notification.index.empty') }}
     </div>
 
     <div v-else>
@@ -53,17 +53,19 @@ import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Paginator from 'primevue/paginator'
 import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import NotificationItem from '../../components/Notification/NotificationItem.vue'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
 
 const ITEMS_PER_PAGE = 20
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useUserNotificationStore()
 
-useTitle('Notifications - MusicAll')
+useTitle(computed(() => t('notification.index.page_title')))
 
 const currentPage = computed(() => {
   const parsed = Number.parseInt(route.query.page, 10)

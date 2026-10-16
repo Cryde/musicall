@@ -40,9 +40,9 @@
       </div>
 
       <div v-else-if="isActionable" class="flex gap-2 mt-2" @click.stop>
-        <Button label="Accepter" size="small" :loading="isProcessing" @click="handleAccept" />
+        <Button :label="t('notification.item.accept')" size="small" :loading="isProcessing" @click="handleAccept" />
         <Button
-          label="Décliner"
+          :label="t('notification.item.decline')"
           size="small"
           severity="secondary"
           outlined
@@ -66,6 +66,7 @@
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
@@ -81,6 +82,7 @@ const props = defineProps({
 
 const emit = defineEmits(['navigate'])
 
+const { t } = useI18n()
 const router = useRouter()
 const toast = useToast()
 const store = useUserNotificationStore()
@@ -110,7 +112,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-users',
     avatarClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300',
     title: payload.invited_by_username,
-    preview: `vous a invité à rejoindre ${payload.band_space_name}`,
+    preview: t('notification.preview.band_space_invitation', {
+      band_space: payload.band_space_name
+    }),
     actions: 'invitation',
     target: null
   }),
@@ -118,7 +122,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-user-plus',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
     title: payload.actor_username,
-    preview: `a rejoint « ${payload.band_space_name} »`,
+    preview: t('notification.preview.band_space_invitation_accepted', {
+      band_space: payload.band_space_name
+    }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
   }),
@@ -126,7 +132,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-times-circle',
     avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     title: payload.actor_username,
-    preview: `a décliné votre invitation à « ${payload.band_space_name} »`,
+    preview: t('notification.preview.band_space_invitation_declined', {
+      band_space: payload.band_space_name
+    }),
     actions: null,
     target: null
   }),
@@ -134,7 +142,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-check-square',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
     title: payload.actor_username,
-    preview: `vous a assigné à la tâche « ${payload.task_title} »`,
+    preview: t('notification.preview.band_space_task_assignment', { task: payload.task_title }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   }),
@@ -142,7 +150,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-comments',
     avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
     title: payload.actor_username,
-    preview: `a répondu à « ${payload.topic_title} »`,
+    preview: t('notification.preview.forum_topic_reply', { topic: payload.topic_title }),
     actions: null,
     target: { name: 'forum_topic_item', params: { slug: payload.topic_slug } }
   }),
@@ -150,7 +158,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-comment',
     avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     title: payload.actor_username,
-    preview: `a commenté « ${payload.publication_title} »`,
+    preview: t('notification.preview.publication_comment', {
+      publication: payload.publication_title
+    }),
     actions: null,
     target: publicationTarget(payload)
   }),
@@ -158,7 +168,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-reply',
     avatarClass: 'bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-300',
     title: payload.actor_username,
-    preview: `a répondu à un commentaire sur « ${payload.publication_title} »`,
+    preview: t('notification.preview.comment_reply', { publication: payload.publication_title }),
     actions: null,
     target: publicationTarget(payload)
   }),
@@ -166,7 +176,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-check-circle',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
     title: payload.publication_title,
-    preview: payload.is_course ? 'Votre cours a été publié' : 'Votre publication a été publiée',
+    preview: payload.is_course
+      ? t('notification.preview.course_approved')
+      : t('notification.preview.publication_approved'),
     actions: null,
     target: publicationTarget(payload)
   }),
@@ -175,8 +187,8 @@ const TYPE_CONFIG = {
     avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     title: payload.publication_title,
     preview: payload.is_course
-      ? "Votre cours n'a pas été accepté"
-      : "Votre publication n'a pas été acceptée",
+      ? t('notification.preview.course_rejected')
+      : t('notification.preview.publication_rejected'),
     actions: null,
     target: null
   }),
@@ -184,7 +196,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-check-circle',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
     title: payload.gallery_title,
-    preview: 'Votre galerie a été publiée',
+    preview: t('notification.preview.gallery_approved'),
     actions: null,
     target: { name: 'app_gallery_show', params: { slug: payload.gallery_slug } }
   }),
@@ -192,7 +204,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-times-circle',
     avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     title: payload.gallery_title,
-    preview: "Votre galerie n'a pas été acceptée",
+    preview: t('notification.preview.gallery_rejected'),
     actions: null,
     target: null
   }),
@@ -202,8 +214,8 @@ const TYPE_CONFIG = {
     title: payload.actor_username,
     preview:
       payload.to === 'admin'
-        ? `vous a nommé administrateur de « ${payload.band_space_name} »`
-        : `vous a retiré les droits d'administrateur sur « ${payload.band_space_name} »`,
+        ? t('notification.preview.band_space_role_admin', { band_space: payload.band_space_name })
+        : t('notification.preview.band_space_role_member', { band_space: payload.band_space_name }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
   }),
@@ -211,7 +223,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-user-minus',
     avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     title: payload.actor_username,
-    preview: `vous a retiré de « ${payload.band_space_name} »`,
+    preview: t('notification.preview.band_space_member_removed', {
+      band_space: payload.band_space_name
+    }),
     actions: null,
     target: null
   }),
@@ -222,7 +236,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-sign-out',
     avatarClass: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
     title: payload.actor_username,
-    preview: `a quitté « ${payload.band_space_name} »`,
+    preview: t('notification.preview.band_space_member_left', {
+      band_space: payload.band_space_name
+    }),
     actions: null,
     target: {
       name: BAND_SPACE_ROUTES.PARAMETERS,
@@ -234,7 +250,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-at',
     avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     title: payload.actor_username,
-    preview: `vous a mentionné dans la tâche « ${payload.task_title} »`,
+    preview: t('notification.preview.task_mention', { task: payload.task_title }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   }),
@@ -245,7 +261,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-at',
     avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     title: payload.actor_username,
-    preview: `vous a mentionné dans la discussion de « ${payload.band_space_name} »`,
+    preview: t('notification.preview.band_space_chat_mention', {
+      band_space: payload.band_space_name
+    }),
     actions: null,
     // Straight to the message that names you, wherever it is in the history (#1039).
     target: {
@@ -258,7 +276,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-comment',
     avatarClass: 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300',
     title: payload.actor_username,
-    preview: `a commenté la tâche « ${payload.task_title} »`,
+    preview: t('notification.preview.task_comment', { task: payload.task_title }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   }),
@@ -266,7 +284,10 @@ const TYPE_CONFIG = {
     icon: 'pi pi-calendar-plus',
     avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
     title: payload.actor_username,
-    preview: `a ajouté l'événement « ${payload.entry_title} » le ${agendaEventDay(payload)}`,
+    preview: t('notification.preview.band_space_agenda_entry_created', {
+      entry: payload.entry_title,
+      date: agendaEventDay(payload)
+    }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
   }),
@@ -274,7 +295,10 @@ const TYPE_CONFIG = {
     icon: 'pi pi-question-circle',
     avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
     title: payload.actor_username,
-    preview: `demande vos disponibilités pour « ${payload.entry_title} » le ${agendaEventDay(payload)}`,
+    preview: t('notification.preview.band_space_agenda_availability_requested', {
+      entry: payload.entry_title,
+      date: agendaEventDay(payload)
+    }),
     actions: null,
     target: {
       name: BAND_SPACE_ROUTES.AGENDA,
@@ -286,7 +310,9 @@ const TYPE_CONFIG = {
     icon: 'pi pi-wallet',
     avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     title: payload.actor_username,
-    preview: `vous a attribué une dépense sur « ${payload.entry_label} »`,
+    preview: t('notification.preview.band_space_finance_split_assigned', {
+      entry: payload.entry_label
+    }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.FINANCE, params: { id: payload.band_space_id } }
   }),
@@ -295,8 +321,13 @@ const TYPE_CONFIG = {
     avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     title: payload.actor_username,
     preview: payload.scheduled_for
-      ? `a programmé la suppression de « ${payload.band_space_name} » le ${formatDateLong(payload.scheduled_for)}`
-      : `a programmé la suppression de « ${payload.band_space_name} »`,
+      ? t('notification.preview.band_space_deletion_scheduled_on', {
+          band_space: payload.band_space_name,
+          date: formatDateLong(payload.scheduled_for)
+        })
+      : t('notification.preview.band_space_deletion_scheduled', {
+          band_space: payload.band_space_name
+        }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
   }),
@@ -304,15 +335,19 @@ const TYPE_CONFIG = {
     icon: 'pi pi-undo',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
     title: payload.actor_username,
-    preview: `a annulé la suppression de « ${payload.band_space_name} »`,
+    preview: t('notification.preview.band_space_deletion_cancelled', {
+      band_space: payload.band_space_name
+    }),
     actions: null,
     target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
   }),
   report_received: (payload) => ({
     icon: 'pi pi-flag',
     avatarClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300',
-    title: 'Signalement reçu',
-    preview: `Votre signalement sur ${reportSubject(payload.target_type, payload.target_label)} a été transmis à la modération.`,
+    title: t('notification.report.received'),
+    preview: t('notification.preview.report_received', {
+      subject: reportSubject(payload.target_type, payload.target_label)
+    }),
     actions: null,
     target: null
   }),
@@ -326,10 +361,10 @@ const TYPE_CONFIG = {
       avatarClass: dismissed
         ? 'bg-surface-200 text-surface-600 dark:bg-surface-700 dark:text-surface-300'
         : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
-      title: dismissed ? 'Signalement classé sans suite' : 'Signalement traité : compte suspendu',
+      title: dismissed ? t('notification.report.dismissed') : t('notification.report.suspended'),
       preview: dismissed
-        ? `Votre signalement sur ${subject} n'a pas donné lieu à une mesure. Vous pouvez contester cette décision.`
-        : `Votre signalement sur ${subject} a conduit à la suspension du compte. Vous pouvez contester cette décision.`,
+        ? t('notification.preview.report_dismissed', { subject })
+        : t('notification.preview.report_suspended', { subject }),
       actions: null,
       target: { name: 'app_terms', hash: '#recours' }
     }
@@ -344,7 +379,7 @@ const config = computed(() => {
   return {
     icon: 'pi pi-bell',
     avatarClass: 'bg-surface-200 text-surface-600 dark:bg-surface-700 dark:text-surface-300',
-    title: 'Notification',
+    title: t('notification.item.fallback_title'),
     preview: '',
     actions: null,
     target: null
@@ -362,15 +397,15 @@ const resolvedLabel = computed(() => {
     return null
   }
   if (invitationStatus.value === 'accepted') {
-    return 'Invitation acceptée'
+    return t('notification.item.invitation_accepted')
   }
   if (invitationStatus.value === 'declined') {
-    return 'Invitation déclinée'
+    return t('notification.item.invitation_declined')
   }
   if (invitationStatus.value === 'revoked') {
-    return 'Invitation annulée'
+    return t('notification.item.invitation_revoked')
   }
-  return 'Invitation expirée'
+  return t('notification.item.invitation_expired')
 })
 
 function handleBodyClick() {
@@ -391,8 +426,10 @@ async function handleAccept() {
     await store.markRead(props.notification.id)
     toast.add({
       severity: 'success',
-      summary: 'Invitation acceptée',
-      detail: `Vous avez rejoint ${props.notification.payload.band_space_name}.`,
+      summary: t('notification.item.invitation_accepted'),
+      detail: t('notification.item.joined_band_space', {
+        band_space: props.notification.payload.band_space_name
+      }),
       life: 3000
     })
     emit('navigate')
@@ -410,7 +447,11 @@ async function handleDecline() {
     await bandSpaceSettingsApi.declineInvitation(props.notification.payload.invitation_token)
     store.recordInvitationAction(props.notification.payload.invitation_token, 'declined')
     await store.markRead(props.notification.id)
-    toast.add({ severity: 'info', summary: 'Invitation déclinée', life: 3000 })
+    toast.add({
+      severity: 'info',
+      summary: t('notification.item.invitation_declined'),
+      life: 3000
+    })
   } catch (e) {
     handleStale()
   } finally {
@@ -421,7 +462,7 @@ async function handleDecline() {
 // Graceful staleness (contract item 6): if the invite is no longer valid at click time
 // (race vs the feed read), the endpoint errors - surface it inline, mark read, never crash.
 function handleStale() {
-  staleMessage.value = "Cette invitation a expiré ou n'est plus valide."
+  staleMessage.value = t('notification.item.invitation_stale')
   store.markRead(props.notification.id)
 }
 </script>

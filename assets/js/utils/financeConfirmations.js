@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/index.js'
+
 /**
  * What the finance delete confirmations say, kept here because both used to describe something other
  * than what the API does.
@@ -19,23 +21,20 @@
  */
 export function categoryDeleteMessage(entryCount, hasChildren = false) {
   if (hasChildren) {
-    return 'Cette catégorie contient des sous-catégories et ne peut pas être supprimée. Supprimez ou déplacez ses sous-catégories d’abord.'
+    return i18n.global.t('band_space_finance.confirmations.category_has_children')
   }
 
-  if (!entryCount || entryCount < 1) {
-    return 'Es-tu sûr de vouloir supprimer cette catégorie ? Elle ne contient aucune entrée.'
-  }
+  const count = !entryCount || entryCount < 1 ? 0 : entryCount
 
-  if (entryCount === 1) {
-    return 'Es-tu sûr de vouloir supprimer cette catégorie ? L’entrée qu’elle contient et ses récurrences seront également supprimées.'
-  }
-
-  return `Es-tu sûr de vouloir supprimer cette catégorie ? Les ${entryCount} entrées qu’elle contient et ses récurrences seront également supprimées.`
+  return i18n.global.t('band_space_finance.confirmations.category_delete', count)
 }
 
 /**
  * Deleting a recurrence drops the entries it planned, but only those still Prévu: an occurrence that
  * was engaged or paid has stopped belonging to the series and stays in the accounts.
+ *
+ * @returns {string}
  */
-export const RECURRENCE_DELETE_MESSAGE =
-  'Es-tu sûr de vouloir supprimer cette récurrence ? Les entrées prévues qu’elle a générées seront également supprimées, les entrées engagées ou payées seront conservées.'
+export function recurrenceDeleteMessage() {
+  return i18n.global.t('band_space_finance.confirmations.recurrence_delete')
+}

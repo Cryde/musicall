@@ -2,13 +2,13 @@
   <span v-if="isVisible" class="inline-flex">
     <Button
       icon="pi pi-flag"
-      :label="iconOnly ? undefined : 'Signaler'"
+      :label="iconOnly ? undefined : t('shared.report.button')"
       text
       :rounded="iconOnly"
       size="small"
       severity="secondary"
-      :aria-label="ariaLabel"
-      v-tooltip.top="iconOnly ? 'Signaler' : undefined"
+      :aria-label="ariaLabel ?? t('shared.report.button_aria_label')"
+      v-tooltip.top="iconOnly ? t('shared.report.button') : undefined"
       @click="showDialog = true"
     />
     <ReportDialog v-model:visible="showDialog" :target-type="targetType" :target-id="targetId" />
@@ -18,6 +18,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { canReportContent } from '../../utils/reportTarget.js'
 import ReportDialog from './ReportDialog.vue'
@@ -29,10 +30,11 @@ const props = defineProps({
   /** One of the two identifies the author, so the button never shows on the viewer's own content. */
   authorId: { type: String, default: null },
   authorUsername: { type: String, default: null },
-  ariaLabel: { type: String, default: 'Signaler ce contenu' },
+  ariaLabel: { type: String, default: null },
   iconOnly: { type: Boolean, default: false }
 })
 
+const { t } = useI18n()
 const userSecurityStore = useUserSecurityStore()
 const showDialog = ref(false)
 

@@ -9,7 +9,7 @@
         </h1>
 
         <Button
-            label="Poster une annonce"
+            :label="t('search.musician.post_announce')"
             icon="pi pi-megaphone"
             severity="info"
             size="small"
@@ -49,8 +49,8 @@
             <input
                 v-model="quickSearch"
                 type="text"
-                aria-label="Décrivez votre recherche"
-                placeholder="Décrivez ce que vous cherchez..."
+                :aria-label="t('search.musician.quick_search_aria_label')"
+                :placeholder="t('search.musician.quick_search_placeholder')"
                 class="w-full pl-12 pr-16 sm:pr-36 py-3 sm:py-4 text-base sm:text-lg rounded-2xl border-2 border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all text-surface-900 dark:text-surface-0 placeholder:text-surface-400"
                 @keyup.enter="isQuickSearchParamEnough && generateQuickSearchFilters()"
             >
@@ -60,24 +60,24 @@
                 class="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-5 py-2 sm:py-2.5 bg-primary text-white rounded-xl flex items-center gap-2 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
                 <i :class="isFilterGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-search'"></i>
-                <span class="hidden sm:inline">Rechercher</span>
+                <span class="hidden sm:inline">{{ t('search.musician.search') }}</span>
             </button>
         </div>
 
         <!-- Examples -->
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-sm text-surface-600 dark:text-surface-400">
-            <span>Essayez :</span>
-            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">guitariste rock Paris</button>
+            <span>{{ t('search.musician.try') }}</span>
+            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">{{ t('search.musician.example_guitarist') }}</button>
             <span class="text-surface-300 dark:text-surface-600">•</span>
-            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">groupe de jazz cherchant bassiste</button>
+            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">{{ t('search.musician.example_band') }}</button>
             <span class="text-surface-300 dark:text-surface-600">•</span>
-            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">batteur metal Lyon</button>
+            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">{{ t('search.musician.example_drummer') }}</button>
         </div>
 
         <!-- AI Warning -->
         <Message v-if="hasAutoFilledFields" size="small" severity="warn" variant="simple" class="mt-4">
             <i class="pi pi-info-circle mr-2" />
-            Les filtres ont été générés par IA. Vérifiez et ajustez si nécessaire.
+            {{ t('search.musician.ai_warning') }}
         </Message>
     </div>
 
@@ -85,7 +85,7 @@
 
     <!-- Type selector with clear descriptions -->
     <div>
-        <p class="text-sm text-surface-600 dark:text-surface-400 mb-3">Je recherche :</p>
+        <p class="text-sm text-surface-600 dark:text-surface-400 mb-3">{{ t('search.musician.looking_for') }}</p>
         <div :class="['grid grid-cols-2 gap-3 max-w-lg transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
             <div
                 @click="selectType(selectSearchTypeOption[0])"
@@ -100,8 +100,8 @@
                     <i class="pi pi-user text-lg" />
                 </div>
                 <div>
-                    <div class="font-medium text-surface-900 dark:text-surface-0">Un musicien</div>
-                    <div class="text-xs text-surface-500 dark:text-surface-400">Pour mon groupe</div>
+                    <div class="font-medium text-surface-900 dark:text-surface-0">{{ t('search.musician.type_musician') }}</div>
+                    <div class="text-xs text-surface-500 dark:text-surface-400">{{ t('search.musician.type_musician_hint') }}</div>
                 </div>
             </div>
             <div
@@ -117,8 +117,8 @@
                     <i class="pi pi-users text-lg" />
                 </div>
                 <div>
-                    <div class="font-medium text-surface-900 dark:text-surface-0">Un groupe</div>
-                    <div class="text-xs text-surface-500 dark:text-surface-400">Pour rejoindre</div>
+                    <div class="font-medium text-surface-900 dark:text-surface-0">{{ t('search.musician.type_band') }}</div>
+                    <div class="text-xs text-surface-500 dark:text-surface-400">{{ t('search.musician.type_band_hint') }}</div>
                 </div>
             </div>
         </div>
@@ -127,7 +127,7 @@
     <!-- Mobile: Filter toggle + Search button always visible -->
     <div class="lg:hidden flex gap-2 mb-3">
         <Button
-            :label="showMobileFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
+            :label="showMobileFilters ? t('search.musician.hide_filters') : t('search.musician.show_filters')"
             :icon="showMobileFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
             icon-pos="right"
             severity="secondary"
@@ -141,7 +141,7 @@
             icon="pi pi-search"
             :disabled="isSearching || isFilterGenerating || isCityLoading"
             :loading="isCityLoading"
-            label="Rechercher"
+            :label="t('search.musician.search')"
             size="small"
             @click="handleSearchClick"
         />
@@ -156,7 +156,7 @@
                     :options="instrumentStore.instruments"
                     filter
                     optionLabel="musician_name"
-                    placeholder="Sélectionnez un instrument"
+                    :placeholder="t('search.musician.instrument_placeholder')"
                     class="w-full lg:w-56"
                 />
             </div>
@@ -164,7 +164,7 @@
                 <MultiSelect
                     v-model="selectedStyles"
                     :options="styleStore.styles"
-                    placeholder="Styles musicaux"
+                    :placeholder="t('search.musician.styles_placeholder')"
                     option-label="name"
                     filter
                     showClear
@@ -176,7 +176,7 @@
                     ref="cityField"
                     v-model="selectedLocation"
                     v-model:loading="isCityLoading"
-                    placeholder="Ville (optionnel)"
+                    :placeholder="t('search.musician.city_placeholder')"
                 />
             </div>
             <!-- Desktop: Search buttons inside filters row -->
@@ -186,15 +186,15 @@
                     icon="pi pi-search"
                     :disabled="isSearching || isFilterGenerating || isCityLoading"
                     :loading="isCityLoading"
-                    label="Rechercher"
+                    :label="t('search.musician.search')"
                     @click="handleSearchClick"
                 />
                 <Button
                     text
                     icon="pi pi-times"
                     severity="secondary"
-                    aria-label="Effacer les filtres"
-                    v-tooltip.bottom="'Effacer les filtres'"
+                    :aria-label="t('search.musician.clear_filters')"
+                    v-tooltip.bottom="t('search.musician.clear_filters')"
                     @click="clearAllFilters"
                 />
             </div>
@@ -204,7 +204,7 @@
                     text
                     icon="pi pi-times"
                     severity="secondary"
-                    label="Effacer les filtres"
+                    :label="t('search.musician.clear_filters')"
                     @click="clearAllFilters"
                 />
             </div>
@@ -213,10 +213,10 @@
 
     <!-- Active filters summary -->
     <div v-if="hasActiveFilters" ref="filtersSummary" class="flex flex-wrap items-center gap-2 mt-4 scroll-mt-4">
-        <span class="text-sm text-surface-500 dark:text-surface-400">Filtres actifs :</span>
+        <span class="text-sm text-surface-500 dark:text-surface-400">{{ t('search.musician.active_filters') }}</span>
         <Chip
             v-if="selectSearchType"
-            :label="selectSearchType.key === 2 ? 'Musicien' : 'Groupe'"
+            :label="selectSearchType.key === 2 ? t('search.musician.chip_musician') : t('search.musician.chip_band')"
             removable
             @remove="selectSearchType = null"
             class="text-sm"
@@ -254,25 +254,25 @@
                 <i class="pi pi-spin pi-sparkles text-4xl text-primary" />
             </div>
             <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-                Analyse de votre recherche...
+                {{ t('search.musician.analysing_title') }}
             </h2>
             <p class="text-surface-600 dark:text-surface-300 text-center max-w-md mb-4">
-                Notre IA analyse votre demande pour trouver les meilleurs filtres correspondants.
+                {{ t('search.musician.analysing_text') }}
             </p>
             <div class="flex items-center gap-3 text-sm text-surface-500 dark:text-surface-400">
                 <div class="flex items-center gap-2">
                     <i class="pi pi-check-circle text-green-500" />
-                    <span>Lecture de la demande</span>
+                    <span>{{ t('search.musician.analysing_step_read') }}</span>
                 </div>
                 <i class="pi pi-arrow-right" />
                 <div class="flex items-center gap-2">
                     <i class="pi pi-spin pi-spinner text-primary" />
-                    <span>Identification des critères</span>
+                    <span>{{ t('search.musician.analysing_step_criteria') }}</span>
                 </div>
                 <i class="pi pi-arrow-right hidden sm:inline" />
                 <div class="hidden sm:flex items-center gap-2 text-surface-500 dark:text-surface-400">
                     <i class="pi pi-circle" />
-                    <span>Recherche</span>
+                    <span>{{ t('search.musician.analysing_step_search') }}</span>
                 </div>
             </div>
         </div>
@@ -282,7 +282,7 @@
     <div v-else-if="isSearching" class="mt-6">
         <p class="text-surface-600 dark:text-surface-300 mb-4">
             <i class="pi pi-spin pi-spinner mr-2" />
-            Recherche en cours...
+            {{ t('search.musician.searching') }}
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div v-for="i in 8" :key="i" class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4">
@@ -298,7 +298,7 @@
     <GuidedNoResults
         v-else-if="isGuided && musicianSearchStore.announces.length === 0"
         :sought="guidedSought"
-        :where="selectedLocation?.name ? `autour de ${selectedLocation.name}` : ''"
+        :where="selectedLocation?.name ? t('search.guided.around_city', { city: selectedLocation.name }) : ''"
         :widening="guidedWidening"
         @widen-radius="handleGuidedWidenRadius"
         @all-styles="handleGuidedAllStyles"
@@ -312,21 +312,20 @@
                 <i class="pi pi-search text-4xl text-surface-500 dark:text-surface-400" />
             </div>
             <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-                Aucun résultat trouvé
+                {{ t('search.musician.no_results_title') }}
             </h2>
             <p class="text-surface-600 dark:text-surface-300 text-center max-w-md mb-6">
-                Aucune annonce ne correspond à vos critères de recherche.
-                Pourquoi ne pas créer la vôtre ?
+                {{ t('search.musician.no_results_text') }}
             </p>
             <Button
-                label="Créer une annonce avec ces critères"
+                :label="t('search.musician.create_announce_with_criteria')"
                 icon="pi pi-megaphone"
                 severity="success"
                 size="large"
                 @click="handleOpenAnnounceModalFromSearch"
             />
             <p class="text-sm text-surface-500 dark:text-surface-400 mt-4">
-                Votre annonce sera visible par tous les musiciens de la communauté
+                {{ t('search.musician.announce_visibility') }}
             </p>
         </div>
     </div>
@@ -336,11 +335,13 @@
         <!-- Guided: the list follows each answer, and says so. -->
         <p v-if="isGuided" class="mt-6 mb-0 flex items-center gap-2 text-surface-700 dark:text-surface-300">
             <span class="w-2 h-2 rounded-full bg-teal-500" aria-hidden="true" />
-            Ces <strong class="text-surface-900 dark:text-surface-0">{{ guidedSought }}</strong> correspondent{{ guidedComplete ? '' : ' déjà' }}
+            <i18n-t :keypath="guidedComplete ? 'search.guided.results_match' : 'search.guided.results_match_already'">
+                <template #sought><strong class="text-surface-900 dark:text-surface-0">{{ guidedSought }}</strong></template>
+            </i18n-t>
         </p>
         <div v-else-if="hasActiveFilters" class="flex flex-wrap items-center justify-end gap-4 mt-6">
             <Button
-                label="Créer une annonce depuis cette recherche"
+                :label="t('search.musician.create_announce_from_search')"
                 icon="pi pi-plus"
                 severity="success"
                 size="small"
@@ -368,7 +369,7 @@
         <!-- Load more button -->
         <div v-if="showLoadMoreButton && !showGuidedSignup" class="flex justify-center mt-8 mb-9">
             <Button
-                :label="userSecurityStore.isAuthenticated ? 'Voir plus de résultats' : 'Voir plus'"
+                :label="userSecurityStore.isAuthenticated ? t('search.musician.see_more_results') : t('search.musician.see_more')"
                 :icon="isLoadingMore ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-down'"
                 severity="secondary"
                 size="large"
@@ -408,6 +409,7 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import searchApi from '../../api/search/musician.js'
@@ -439,6 +441,7 @@ const AuthRequiredModal = defineAsyncComponent(
 )
 const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
 
+const { t } = useI18n()
 const route = useRoute()
 
 const styleStore = useStyleStore()
@@ -446,13 +449,13 @@ const instrumentStore = useInstrumentStore()
 const musicianSearchStore = useMusicianSearchStore()
 const userSecurityStore = useUserSecurityStore()
 
-// Instrument name mapping for page titles
-const instrumentTitles = {
-  guitare: 'guitariste',
-  batterie: 'batteur',
-  basse: 'bassiste',
-  chant: 'chanteur',
-  piano: 'pianiste'
+// The heading of each instrument landing page, by instrument slug
+const INSTRUMENT_HEADING_KEYS = {
+  guitare: 'search.musician.heading.guitarist',
+  batterie: 'search.musician.heading.drummer',
+  basse: 'search.musician.heading.bassist',
+  chant: 'search.musician.heading.singer',
+  piano: 'search.musician.heading.pianist'
 }
 
 const quickSearch = ref('')
@@ -505,24 +508,26 @@ const isLargeScreen = useMediaQuery('(min-width: 1024px)')
 const prefilledInstrumentSlug = computed(() => route.meta.instrumentSlug || null)
 
 const pageTitle = computed(() => {
-  if (prefilledInstrumentSlug.value && instrumentTitles[prefilledInstrumentSlug.value]) {
-    return `Rechercher un ${instrumentTitles[prefilledInstrumentSlug.value]} - MusicAll`
+  if (prefilledInstrumentSlug.value && INSTRUMENT_HEADING_KEYS[prefilledInstrumentSlug.value]) {
+    return t('search.musician.page_title', {
+      heading: t(INSTRUMENT_HEADING_KEYS[prefilledInstrumentSlug.value])
+    })
   }
-  return 'Rechercher un musicien ou un groupe - MusicAll'
+  return t('search.musician.page_title_default')
 })
 
 const h1Title = computed(() => {
-  if (prefilledInstrumentSlug.value && instrumentTitles[prefilledInstrumentSlug.value]) {
-    return `Rechercher un ${instrumentTitles[prefilledInstrumentSlug.value]}`
+  if (prefilledInstrumentSlug.value && INSTRUMENT_HEADING_KEYS[prefilledInstrumentSlug.value]) {
+    return t(INSTRUMENT_HEADING_KEYS[prefilledInstrumentSlug.value])
   }
-  return 'Rechercher un musicien'
+  return t('search.musician.heading.default')
 })
 
 const breadcrumbLabel = computed(() => {
-  if (prefilledInstrumentSlug.value && instrumentTitles[prefilledInstrumentSlug.value]) {
-    return `Rechercher un ${instrumentTitles[prefilledInstrumentSlug.value]}`
+  if (prefilledInstrumentSlug.value && INSTRUMENT_HEADING_KEYS[prefilledInstrumentSlug.value]) {
+    return t(INSTRUMENT_HEADING_KEYS[prefilledInstrumentSlug.value])
   }
-  return 'Rechercher un musicien'
+  return t('search.musician.heading.default')
 })
 
 useTitle(pageTitle)
@@ -991,15 +996,11 @@ async function generateQuickSearchFilters() {
     await revealSearchResults()
   } catch (e) {
     if (e?.response?.status === 429) {
-      quickSearchErrors.value = [
-        'Trop de recherches effectuées. Veuillez réessayer dans quelques minutes.'
-      ]
+      quickSearchErrors.value = [t('search.musician.error_too_many_searches')]
     } else if (e?.response?.status === 422) {
       quickSearchErrors.value = e.response.data.violations.map((violation) => violation.message)
     } else {
-      quickSearchErrors.value = [
-        'Nous ne pouvons pas répondre à cette demande. Reformulez votre recherche.'
-      ]
+      quickSearchErrors.value = [t('search.musician.error_cannot_answer')]
     }
   }
   isFilterGenerating.value = false

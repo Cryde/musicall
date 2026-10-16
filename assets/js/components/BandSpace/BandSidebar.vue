@@ -2,7 +2,7 @@
   <div v-if="currentSpaceId" class="flex flex-col h-full p-3 gap-1">
     <nav
       class="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto"
-      aria-label="Modules du Band Space"
+      :aria-label="t('band_space.sidebar.modules_aria')"
     >
       <RouterLink
         v-for="item in workItems"
@@ -48,12 +48,12 @@
         type="button"
         :disabled="disabled"
         :class="linkClasses(false)"
-        aria-label="Envoyer un retour"
-        v-tooltip.right="tooltipFor('Un retour ?')"
+        :aria-label="t('band_space.sidebar.send_feedback')"
+        v-tooltip.right="tooltipFor(t('band_space.sidebar.feedback'))"
         @click="handleFeedbackClick"
       >
         <i class="pi pi-comment text-base shrink-0" aria-hidden="true"></i>
-        <span v-if="!collapsed" class="font-medium truncate">Un retour ?</span>
+        <span v-if="!collapsed" class="font-medium truncate">{{ t('band_space.sidebar.feedback') }}</span>
       </button>
       <RouterLink
         :to="{ name: settingsItem.route, params: { id: currentSpaceId } }"
@@ -81,8 +81,8 @@
         'flex items-center mt-2 px-3 py-2 rounded-lg transition-colors duration-150 text-surface-500 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800',
         collapsed ? 'justify-center' : 'justify-end'
       ]"
-      :aria-label="collapsed ? 'Étendre le menu' : 'Réduire le menu'"
-      v-tooltip.right="collapsed ? 'Étendre le menu' : null"
+      :aria-label="collapsed ? t('band_space.sidebar.expand') : t('band_space.sidebar.collapse')"
+      v-tooltip.right="collapsed ? t('band_space.sidebar.expand') : null"
       @click="collapsed = !collapsed"
     >
       <i
@@ -96,6 +96,7 @@
 <script setup>
 import Badge from 'primevue/badge'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
 import { useFeedbackStore } from '../../store/feedback.js'
@@ -115,6 +116,7 @@ const { currentSpaceId } = useBandSpaceNavigation()
 const userSecurityStore = useUserSecurityStore()
 const feedbackStore = useFeedbackStore()
 const notificationStore = useNotificationStore()
+const { t } = useI18n()
 
 /**
  * Only the chat carries a count today. The map is keyed by band space, so the number is this space's
@@ -135,7 +137,9 @@ function unreadLabel(count) {
 function ariaLabelFor(item) {
   const unread = unreadFor(item)
 
-  return unread > 0 ? `${item.label} (${unread} non lus)` : item.label
+  return unread > 0
+    ? t('band_space.sidebar.unread_aria', { label: item.label, unread })
+    : item.label
 }
 
 function handleFeedbackClick() {
