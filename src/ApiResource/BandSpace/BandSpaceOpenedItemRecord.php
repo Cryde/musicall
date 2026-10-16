@@ -41,7 +41,7 @@ class BandSpaceOpenedItemRecord
 
     /** A BandSpaceSearchResultType value: the kinds the palette lists. */
     #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez spécifier un type'),
+        new Assert\NotBlank(message: 'common.type.required'),
         new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'Type de résultat inconnu'),
     ])]
     public ?string $type = null;

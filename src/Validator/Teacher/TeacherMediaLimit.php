@@ -11,7 +11,7 @@ class TeacherMediaLimit extends Constraint
 {
     public const int MAX_MEDIA_PER_PROFILE = 6;
 
-    public string $message = 'Vous ne pouvez pas ajouter plus de {{ limit }} médias';
+    public string $message = 'profile.media.limit_reached';
 
     public function __construct(
         ?string $message = null,

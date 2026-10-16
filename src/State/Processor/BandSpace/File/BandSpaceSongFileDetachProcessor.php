@@ -49,7 +49,7 @@ readonly class BandSpaceSongFileDetachProcessor implements ProcessorInterface
 
         $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['songId'], $bandSpace);
         if (!$song instanceof \App\Entity\BandSpace\Song) {
-            throw new NotFoundHttpException('Chanson introuvable');
+            throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);

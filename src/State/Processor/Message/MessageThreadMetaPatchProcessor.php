@@ -30,7 +30,7 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
     public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageThreadMetaResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         /** @var User $user */
         $user = $this->security->getUser();

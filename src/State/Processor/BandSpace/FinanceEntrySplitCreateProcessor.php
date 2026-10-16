@@ -54,12 +54,12 @@ readonly class FinanceEntrySplitCreateProcessor implements ProcessorInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
         if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         $existingSplit = $this->financeEntrySplitRepository->findOneByEntryAndMember($entry, $member);

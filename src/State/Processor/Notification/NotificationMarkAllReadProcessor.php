@@ -25,7 +25,7 @@ readonly class NotificationMarkAllReadProcessor implements ProcessorInterface
     {
         $user = $this->security->getUser();
         if (!$user instanceof User) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
 
         $this->notificationRepository->markAllReadForRecipient($user, new DateTimeImmutable());

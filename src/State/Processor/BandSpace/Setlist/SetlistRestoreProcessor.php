@@ -46,7 +46,7 @@ readonly class SetlistRestoreProcessor implements ProcessorInterface
         // findOneByIdAndBandSpace does not filter archived setlists, which is exactly what the trash needs.
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         if ($setlist->archiveDatetime === null) {

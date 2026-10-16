@@ -29,8 +29,8 @@ class TechRiderItemCreate
     #[Assert\Choice(callback: [TechRiderItemType::class, 'values'], message: 'Type d\'élément inconnu')]
     public string $type = 'text';
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
-    #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.title.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.title.too_long')]
     public string $title;
 
     /** @var array<string, mixed>|null */

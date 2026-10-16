@@ -57,7 +57,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         );
 
         if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];

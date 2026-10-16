@@ -26,14 +26,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 class FinanceEntryCreate
 {
     #[Assert\NotBlank(message: 'Veuillez spécifier une catégorie')]
-    #[Assert\Uuid(message: 'Identifiant de catégorie invalide')]
+    #[Assert\Uuid(message: 'common.category.invalid_identifier')]
     public string $categoryId;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public string $label;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un type')]
+    #[Assert\NotBlank(message: 'common.type.required')]
     #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]
     public string $type;
 

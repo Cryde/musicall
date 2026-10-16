@@ -66,7 +66,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         // Refused before the upload is stored or the quota is touched: this is the second door onto

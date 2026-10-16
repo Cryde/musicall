@@ -80,8 +80,8 @@ class SetlistResource
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un nom')]
-    #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.name.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.name.too_long')]
     public string $name;
 
     #[Assert\Range(min: 60, max: 86400, notInRangeMessage: 'L\'objectif doit être entre 1 minute et 24 heures')]

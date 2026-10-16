@@ -52,7 +52,7 @@ readonly class SetlistReorderProcessor implements ProcessorInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $this->setlistWriteGuard->assertWritable($setlist);

@@ -59,7 +59,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         );
 
         if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         if ($membership->user->id === $user->id) {

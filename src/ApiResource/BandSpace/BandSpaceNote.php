@@ -76,10 +76,10 @@ class BandSpaceNote
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
+    #[Assert\NotBlank(message: 'common.title.required')]
     #[Assert\Length(
         max: 255,
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'common.title.too_long'
     )]
     public string $title;
 
@@ -87,7 +87,7 @@ class BandSpaceNote
     public ?string $emoji = null;
     public ?string $parentId = null;
 
-    #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
+    #[Assert\PositiveOrZero(message: 'common.position.positive_or_zero')]
     public int $position;
     /** @var array<string, mixed>|null */
     #[NoteContent]

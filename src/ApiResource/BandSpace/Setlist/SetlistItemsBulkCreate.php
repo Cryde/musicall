@@ -41,6 +41,6 @@ class SetlistItemsBulkCreate
     public array $songIds = [];
 
     /** Where the first one goes, 0 being first. Left out, or past the end, they go last. */
-    #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
+    #[Assert\PositiveOrZero(message: 'common.position.positive_or_zero')]
     public ?int $position = null;
 }

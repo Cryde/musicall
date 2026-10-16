@@ -51,7 +51,7 @@ readonly class TaskUpdateProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];

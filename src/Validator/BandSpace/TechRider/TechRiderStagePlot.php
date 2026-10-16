@@ -63,7 +63,7 @@ class TechRiderStagePlot extends Constraint
     public string $coordinateOutOfRangeMessage = 'La position doit être comprise entre 0 et 1';
     public string $scaleOutOfRangeMessage = 'La taille doit être comprise entre {{ min }} et {{ max }}';
     public string $invalidRotationMessage = 'La rotation doit être un entier de 0 à 359 degrés';
-    public string $tooLongLabelMessage = 'Le libellé ne peut pas dépasser {{ limit }} caractères';
+    public string $tooLongLabelMessage = 'common.label.too_long';
     public string $unknownIconMessage = 'Icône inconnue';
     public string $unknownColourMessage = 'Couleur inconnue';
     public string $aspectRatioOutOfRangeMessage = 'Le format de scène doit être compris entre {{ min }} et {{ max }}';

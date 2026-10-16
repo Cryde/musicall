@@ -53,7 +53,7 @@ readonly class SetlistDuplicateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
         $source = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$source instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $copy = new Setlist();

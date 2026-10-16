@@ -39,7 +39,7 @@ readonly class FinanceEntrySplitItemProvider implements ProviderInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         $split = $this->financeEntrySplitRepository->findOneByIdAndEntry((string) $uriVariables['id'], $entry);

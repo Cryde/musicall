@@ -49,7 +49,7 @@ readonly class BandSpaceSetlistFileDetachProcessor implements ProcessorInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['setlistId'], $bandSpace);
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);

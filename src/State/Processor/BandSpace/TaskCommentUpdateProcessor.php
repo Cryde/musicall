@@ -54,7 +54,7 @@ readonly class TaskCommentUpdateProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $comment = $this->taskCommentRepository->findOneByIdAndTask((string) $uriVariables['id'], $task);

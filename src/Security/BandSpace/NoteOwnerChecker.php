@@ -31,6 +31,6 @@ readonly class NoteOwnerChecker
             return;
         }
 
-        throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer cette note');
+        throw new AccessDeniedHttpException('band_space.note.delete_not_allowed');
     }
 }

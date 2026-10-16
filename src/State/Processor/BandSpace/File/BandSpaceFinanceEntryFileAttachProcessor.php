@@ -65,11 +65,11 @@ readonly class BandSpaceFinanceEntryFileAttachProcessor implements ProcessorInte
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.update_not_owner');
         }
 
         $upload = $data->uploadedFile;

@@ -109,8 +109,8 @@ class TechRiderResource
     #[Groups([self::LIST, self::ITEM])]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un nom')]
-    #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.name.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.name.too_long')]
     #[Groups([self::LIST, self::ITEM])]
     public string $name;
 

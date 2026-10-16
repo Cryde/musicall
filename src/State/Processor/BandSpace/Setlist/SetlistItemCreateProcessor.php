@@ -60,7 +60,7 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['setlistId'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $this->setlistWriteGuard->assertWritable($setlist);

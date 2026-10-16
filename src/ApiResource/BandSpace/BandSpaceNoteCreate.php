@@ -24,11 +24,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[NoteMaxDepth]
 class BandSpaceNoteCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
+    #[Assert\NotBlank(message: 'common.title.required')]
     #[Assert\Length(
         min: 1,
         max: 255,
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'common.title.too_long'
     )]
     public string $title;
 

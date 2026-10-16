@@ -21,7 +21,7 @@ readonly class TechRiderWriteGuard
     public function assertWritable(TechRider $techRider): void
     {
         if ($techRider->isArchived()) {
-            throw new ConflictHttpException('Ce tech rider est archivé, les modifications sont désactivées');
+            throw new ConflictHttpException('band_space.tech_rider.archived_read_only');
         }
     }
 }

@@ -31,7 +31,7 @@ readonly class PostCommentProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CommentResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         /** @var User $user */
         $user = $this->security->getUser();

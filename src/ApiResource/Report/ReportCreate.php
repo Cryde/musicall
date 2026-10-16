@@ -30,7 +30,7 @@ class ReportCreate
     public string $targetType = '';
 
     #[Assert\NotBlank(message: 'Veuillez préciser ce que vous signalez')]
-    #[Assert\Length(max: 36, maxMessage: 'Identifiant invalide')]
+    #[Assert\Length(max: 36, maxMessage: 'common.invalid_identifier')]
     public string $targetId = '';
 
     #[Assert\NotBlank(message: 'Veuillez choisir un motif')]

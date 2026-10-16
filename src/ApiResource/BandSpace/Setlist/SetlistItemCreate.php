@@ -33,7 +33,7 @@ class SetlistItemCreate
     public ?string $songId = null;
 
     /** Required when type !== song; rejected when type === song. Validated by ValidSetlistItemPayload. */
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public ?string $label = null;
 
     #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} secondes')]
@@ -45,6 +45,6 @@ class SetlistItemCreate
     public ?string $transition = null;
 
     /** Where to insert, 0 being first (#1061). Left out, or past the end, the item goes last. */
-    #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
+    #[Assert\PositiveOrZero(message: 'common.position.positive_or_zero')]
     public ?int $position = null;
 }

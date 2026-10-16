@@ -32,7 +32,7 @@ class BandSpaceFolderCreate
     public string $bandSpaceId;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un nom de dossier')]
-    #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.name.too_long')]
     public string $name;
 
     public ?string $parentId = null;

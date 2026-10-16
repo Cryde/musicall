@@ -124,7 +124,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $task = $this->taskRepository->findOneByIdAndBandSpace($taskId, $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $this->taskWriteGuard->assertWritable($task);
@@ -136,11 +136,11 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.update_not_owner');
         }
 
         return $entry->labelVisibleToBand();
@@ -160,7 +160,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $song = $this->songRepository->findOneByIdAndBandSpace($songId, $bandSpace);
         if (!$song instanceof \App\Entity\BandSpace\Song) {
-            throw new NotFoundHttpException('Chanson introuvable');
+            throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         $this->songWriteGuard->assertWritable($song);
@@ -172,7 +172,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace($setlistId, $bandSpace);
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $this->setlistWriteGuard->assertWritable($setlist);

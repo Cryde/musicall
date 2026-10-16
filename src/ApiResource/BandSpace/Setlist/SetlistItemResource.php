@@ -81,7 +81,7 @@ class SetlistItemResource
     #[ApiProperty(genId: false)]
     public ?SetlistItemSongInfo $song = null;
 
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public ?string $label = null;
 
     #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} secondes')]

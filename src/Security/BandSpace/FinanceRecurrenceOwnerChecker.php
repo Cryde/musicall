@@ -33,12 +33,12 @@ readonly class FinanceRecurrenceOwnerChecker
      */
     public function checkCanUpdate(FinanceRecurrence $recurrence, BandSpaceMembership $membership): BandSpaceMembership
     {
-        return $this->checkOwner($recurrence, $membership, 'Vous ne pouvez modifier que vos propres récurrences personnelles');
+        return $this->checkOwner($recurrence, $membership, 'band_space.finance.recurrence.update_not_owner');
     }
 
     public function checkCanDelete(FinanceRecurrence $recurrence, BandSpaceMembership $membership): void
     {
-        $this->checkOwner($recurrence, $membership, 'Vous ne pouvez supprimer que vos propres récurrences personnelles');
+        $this->checkOwner($recurrence, $membership, 'band_space.finance.recurrence.delete_not_owner');
     }
 
     /**
@@ -60,7 +60,7 @@ readonly class FinanceRecurrenceOwnerChecker
         return $ownerIds === [] || in_array((string) $membership->id, $ownerIds, true);
     }
 
-    private function checkOwner(FinanceRecurrence $recurrence, BandSpaceMembership $membership, string $message): BandSpaceMembership
+    private function checkOwner(FinanceRecurrence $recurrence, BandSpaceMembership $membership, string $messageKey): BandSpaceMembership
     {
         if ($recurrence->scope !== FinanceEntryScope::Personal) {
             return $membership;
@@ -74,6 +74,6 @@ readonly class FinanceRecurrenceOwnerChecker
             return $membership;
         }
 
-        throw new AccessDeniedHttpException($message);
+        throw new AccessDeniedHttpException($messageKey);
     }
 }

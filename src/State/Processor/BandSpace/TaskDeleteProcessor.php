@@ -46,7 +46,7 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace($data->id, $membership->bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $isCreator = $task->createdBy->id === $user->id;

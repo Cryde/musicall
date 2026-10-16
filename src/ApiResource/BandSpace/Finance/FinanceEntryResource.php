@@ -95,13 +95,13 @@ class FinanceEntryResource
     public string $bandSpaceId;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier une catégorie')]
-    #[Assert\Uuid(message: 'Identifiant de catégorie invalide')]
+    #[Assert\Uuid(message: 'common.category.invalid_identifier')]
     public string $categoryId;
 
     public string $categoryName;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public string $label;
 
     #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]

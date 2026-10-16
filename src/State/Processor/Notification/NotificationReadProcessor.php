@@ -29,7 +29,7 @@ readonly class NotificationReadProcessor implements ProcessorInterface
     {
         $user = $this->security->getUser();
         if (!$user instanceof User) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
 
         $notification = $this->notificationRepository->findOneByIdAndRecipient((string) $uriVariables['id'], $user);

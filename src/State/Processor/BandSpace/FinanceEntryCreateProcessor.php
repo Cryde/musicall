@@ -70,7 +70,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
         } elseif ($data->memberId !== null) {
             $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
             if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-                throw new NotFoundHttpException('Membre introuvable');
+                throw new NotFoundHttpException('band_space.member.not_found');
             }
             $entry->member = $member;
         }

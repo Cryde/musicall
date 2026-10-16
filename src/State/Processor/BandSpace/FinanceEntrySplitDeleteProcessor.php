@@ -45,7 +45,7 @@ readonly class FinanceEntrySplitDeleteProcessor implements ProcessorInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->status === FinanceEntryStatus::Paid) {

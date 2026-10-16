@@ -80,8 +80,8 @@ class SongResource
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
-    #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.title.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.title.too_long')]
     public string $title;
 
     #[Assert\Range(min: 1, max: 400, notInRangeMessage: 'Le tempo doit être entre {{ min }} et {{ max }} BPM')]

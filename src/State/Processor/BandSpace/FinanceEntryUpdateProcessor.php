@@ -61,11 +61,11 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.update_not_owner');
         }
         $wasBandEntry = $entry->scope !== FinanceEntryScope::Personal;
 
@@ -137,7 +137,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
             if ($data->memberId !== null) {
                 $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
                 if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-                    throw new NotFoundHttpException('Membre introuvable');
+                    throw new NotFoundHttpException('band_space.member.not_found');
                 }
                 $entry->member = $member;
             } else {

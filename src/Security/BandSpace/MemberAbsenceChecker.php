@@ -22,7 +22,7 @@ readonly class MemberAbsenceChecker
     public function assertCanManage(BandSpaceMembership $target, BandSpaceMembership $actor): void
     {
         if (!$this->canManage($target, $actor)) {
-            throw new AccessDeniedHttpException('Vous ne pouvez gérer que vos propres indisponibilités');
+            throw new AccessDeniedHttpException('band_space.absence.not_owner');
         }
     }
 }

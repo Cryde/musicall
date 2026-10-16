@@ -47,7 +47,7 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {

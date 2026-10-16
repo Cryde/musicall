@@ -17,7 +17,7 @@ readonly class BandSpaceWriteGuard
     public function assertWritable(BandSpace $bandSpace): void
     {
         if ($bandSpace->isPendingDeletion()) {
-            throw new ConflictHttpException('Cet espace est en attente de suppression, les modifications sont désactivées');
+            throw new ConflictHttpException('band_space.pending_deletion_read_only');
         }
     }
 }

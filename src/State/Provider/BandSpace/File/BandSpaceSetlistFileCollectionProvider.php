@@ -43,7 +43,7 @@ readonly class BandSpaceSetlistFileCollectionProvider implements ProviderInterfa
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['setlistId'], $bandSpace);
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $page = $this->pagination->getPage($context);

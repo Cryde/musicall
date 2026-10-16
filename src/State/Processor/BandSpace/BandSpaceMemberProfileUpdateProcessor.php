@@ -61,7 +61,7 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
         if (!$membership instanceof BandSpaceMembership) {
             // 404 rather than 403 for a membership of another space: the caller has no standing to
             // learn whether that id exists.
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         $isSelf = (string) $membership->id === (string) $callerMembership->id;

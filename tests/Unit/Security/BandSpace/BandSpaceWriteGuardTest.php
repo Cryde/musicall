@@ -21,7 +21,7 @@ class BandSpaceWriteGuardTest extends TestCase
         } catch (ConflictHttpException $exception) {
             self::assertSame(Response::HTTP_CONFLICT, $exception->getStatusCode());
             self::assertSame(
-                'Cet espace est en attente de suppression, les modifications sont désactivées',
+                'band_space.pending_deletion_read_only',
                 $exception->getMessage(),
             );
         }

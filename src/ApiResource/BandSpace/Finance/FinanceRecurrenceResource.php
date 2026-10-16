@@ -85,7 +85,7 @@ class FinanceRecurrenceResource
     public string $categoryName;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public string $label;
 
     // The PATCH reads type, scope and interval straight back into an enum, so without a Choice an

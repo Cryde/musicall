@@ -52,7 +52,7 @@ readonly class BandSpaceFinanceEntryFileCollectionProvider implements ProviderIn
                 || ($entry->member instanceof BandSpaceMembership && $entry->member->id === $viewer->id));
 
         if (!$isVisible) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         $page = $this->pagination->getPage($context);
