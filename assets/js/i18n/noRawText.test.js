@@ -43,7 +43,10 @@ const MIGRATED_PATHS = [
   'components/Search/',
   'components/ShareButton.vue',
   'components/SkipLink.vue',
+  'components/Teacher/',
+  'components/User/',
   'components/publication/',
+  'components/settings/',
   'views/BandSpace/Agenda.vue',
   'views/BandSpace/Chat.vue',
   'views/BandSpace/Index.vue',
@@ -63,9 +66,12 @@ const MIGRATED_PATHS = [
   'views/Notification/',
   'views/Publication/',
   'views/Search/',
+  'views/User/Announce/',
   'views/User/Course/',
   'views/User/Gallery/',
-  'views/User/Publication/'
+  'views/User/Profile/',
+  'views/User/Publication/',
+  'views/User/Settings/'
 ]
 
 // The footer wordmark is a logo spelled out in two spans, not text to translate.

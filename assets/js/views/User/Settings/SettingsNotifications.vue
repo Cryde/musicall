@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0">
-      Notifications
+      {{ t('profile.settings.notifications.title') }}
     </h2>
 
     <div v-if="isLoading" class="flex justify-center py-8">
@@ -12,28 +12,28 @@
       <!-- Communication section -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          Communication
+          {{ t('profile.settings.notifications.section_communication') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
 
         <NotificationToggle
           v-model="form.message_received"
-          label="Messages privés"
-          description="Recevez un email lorsqu'un utilisateur vous envoie un message"
+          :label="t('profile.settings.notifications.email.message_received.label')"
+          :description="t('profile.settings.notifications.email.message_received.description')"
           :disabled="isUpdating"
         />
 
         <NotificationToggle
           v-model="form.publication_comment"
-          label="Commentaires sur mes publications"
-          description="Recevez un email lorsqu'un utilisateur commente une de vos publications"
+          :label="t('profile.settings.notifications.email.publication_comment.label')"
+          :description="t('profile.settings.notifications.email.publication_comment.description')"
           :disabled="isUpdating"
         />
 
         <NotificationToggle
           v-model="form.forum_reply"
-          label="Réponses sur le forum"
-          description="Recevez un email lorsqu'un utilisateur répond à un de vos sujets sur le forum"
+          :label="t('profile.settings.notifications.email.forum_reply.label')"
+          :description="t('profile.settings.notifications.email.forum_reply.description')"
           :disabled="isUpdating"
         />
       </div>
@@ -41,21 +41,21 @@
       <!-- Updates section -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          Mises à jour
+          {{ t('profile.settings.notifications.section_updates') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
 
         <NotificationToggle
           v-model="form.site_news"
-          label="Actualités du site"
-          description="Restez informé des nouvelles fonctionnalités et annonces importantes"
+          :label="t('profile.settings.notifications.email.site_news.label')"
+          :description="t('profile.settings.notifications.email.site_news.description')"
           :disabled="isUpdating"
         />
 
         <NotificationToggle
           v-model="form.weekly_recap"
-          label="Récapitulatif hebdomadaire"
-          description="Recevez un résumé hebdomadaire de l'activité sur le site"
+          :label="t('profile.settings.notifications.email.weekly_recap.label')"
+          :description="t('profile.settings.notifications.email.weekly_recap.description')"
           :disabled="isUpdating"
         />
       </div>
@@ -63,14 +63,14 @@
       <!-- Reminders section -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          Rappels
+          {{ t('profile.settings.notifications.section_reminders') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
 
         <NotificationToggle
           v-model="form.activity_reminder"
-          label="Rappels d'activité"
-          description="Recevez des rappels concernant vos annonces, votre profil et votre activité"
+          :label="t('profile.settings.notifications.email.activity_reminder.label')"
+          :description="t('profile.settings.notifications.email.activity_reminder.description')"
           :disabled="isUpdating"
         />
       </div>
@@ -78,14 +78,14 @@
       <!-- Band Space section -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          Band Space
+          {{ t('profile.settings.notifications.section_band_space') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
 
         <NotificationToggle
           v-model="form.show_online_presence"
-          label="Me montrer en ligne"
-          description="Les membres de vos groupes voient quand vous avez leur discussion ouverte"
+          :label="t('profile.settings.notifications.email.show_online_presence.label')"
+          :description="t('profile.settings.notifications.email.show_online_presence.description')"
           :disabled="isUpdating"
         />
       </div>
@@ -93,21 +93,20 @@
       <!-- Mobile push section (#1110) -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          Notifications mobiles
+          {{ t('profile.settings.notifications.section_push') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
         <p class="text-sm text-surface-600 dark:text-surface-400">
-          Sur l'application MusicAll, une fois les notifications autorisées sur votre téléphone. La suppression
-          programmée d'un Band Space vous est toujours signalée.
+          {{ t('profile.settings.notifications.push_help') }}
         </p>
 
         <NotificationToggle
           v-for="toggle in PUSH_TOGGLES"
           :key="toggle.key"
           v-model="form[toggle.key]"
-          :label="toggle.label"
-          :aria-label="`${toggle.label} sur le téléphone`"
-          :description="toggle.description"
+          :label="t(toggle.labelKey)"
+          :aria-label="t('profile.settings.notifications.push_aria_label', { label: t(toggle.labelKey) })"
+          :description="t(toggle.descriptionKey)"
           :disabled="isUpdating"
         />
       </div>
@@ -115,14 +114,14 @@
       <!-- Marketing section -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          Marketing
+          {{ t('profile.settings.notifications.section_marketing') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
 
         <NotificationToggle
           v-model="form.marketing"
-          label="Offres et promotions"
-          description="Recevez des informations sur les offres spéciales et promotions"
+          :label="t('profile.settings.notifications.email.marketing.label')"
+          :description="t('profile.settings.notifications.email.marketing.description')"
           :disabled="isUpdating"
         />
       </div>
@@ -130,7 +129,7 @@
       <!-- Save button -->
       <div class="flex justify-end pt-4 border-t border-surface-200 dark:border-surface-700">
         <Button
-          label="Enregistrer"
+          :label="t('profile.settings.notifications.save')"
           icon="pi pi-check"
           :loading="isUpdating"
           :disabled="!hasChanges"
@@ -146,6 +145,7 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import NotificationToggle from '../../../components/settings/NotificationToggle.vue'
 import { useNotificationPreferencesStore } from '../../../store/user/notificationPreferences.js'
 
@@ -175,58 +175,59 @@ const DEFAULTS = {
 const PUSH_TOGGLES = [
   {
     key: 'push_message_received',
-    label: 'Messages privés',
-    description: "Lorsqu'un utilisateur vous envoie un message"
+    labelKey: 'profile.settings.notifications.push.message_received.label',
+    descriptionKey: 'profile.settings.notifications.push.message_received.description'
   },
   {
     key: 'push_band_chat',
-    label: 'Discussion du groupe',
-    description: 'Chaque nouveau message dans la discussion de vos groupes'
+    labelKey: 'profile.settings.notifications.push.band_chat.label',
+    descriptionKey: 'profile.settings.notifications.push.band_chat.description'
   },
   {
     key: 'push_band_mention',
-    label: 'Mentions',
-    description: "Lorsque quelqu'un vous mentionne dans une discussion ou une tâche"
+    labelKey: 'profile.settings.notifications.push.band_mention.label',
+    descriptionKey: 'profile.settings.notifications.push.band_mention.description'
   },
   {
     key: 'push_band_tasks',
-    label: 'Tâches',
-    description: 'Une tâche qui vous est assignée, un commentaire sur une tâche que vous suivez'
+    labelKey: 'profile.settings.notifications.push.band_tasks.label',
+    descriptionKey: 'profile.settings.notifications.push.band_tasks.description'
   },
   {
     key: 'push_band_agenda',
-    label: 'Agenda',
-    description: "Un nouvel événement dans l'agenda de vos groupes"
+    labelKey: 'profile.settings.notifications.push.band_agenda.label',
+    descriptionKey: 'profile.settings.notifications.push.band_agenda.description'
   },
   {
     key: 'push_band_finance',
-    label: 'Finances',
-    description: 'Une dépense qui vous est attribuée'
+    labelKey: 'profile.settings.notifications.push.band_finance.label',
+    descriptionKey: 'profile.settings.notifications.push.band_finance.description'
   },
   {
     key: 'push_band_membership',
-    label: 'Membres et invitations',
-    description: 'Invitations, arrivées et départs, changements de rôle'
+    labelKey: 'profile.settings.notifications.push.band_membership.label',
+    descriptionKey: 'profile.settings.notifications.push.band_membership.description'
   },
   {
     key: 'push_publication_comment',
-    label: 'Commentaires',
-    description: 'Un commentaire sur vos publications, une réponse à vos commentaires'
+    labelKey: 'profile.settings.notifications.push.publication_comment.label',
+    descriptionKey: 'profile.settings.notifications.push.publication_comment.description'
   },
   {
     key: 'push_forum_reply',
-    label: 'Forum',
-    description: 'Une réponse à un sujet que vous suivez'
+    labelKey: 'profile.settings.notifications.push.forum_reply.label',
+    descriptionKey: 'profile.settings.notifications.push.forum_reply.description'
   },
   {
     key: 'push_moderation',
-    label: 'Modération',
-    description: 'La publication ou le refus de vos articles et galeries'
+    labelKey: 'profile.settings.notifications.push.moderation.label',
+    descriptionKey: 'profile.settings.notifications.push.moderation.description'
   }
 ]
 
 const notificationPreferencesStore = useNotificationPreferencesStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const isLoading = ref(true)
 const isUpdating = ref(false)
@@ -263,8 +264,8 @@ async function loadData() {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les préférences de notification',
+      summary: t('profile.settings.notifications.error'),
+      detail: t('profile.settings.notifications.load_error'),
       life: 5000
     })
   } finally {
@@ -282,15 +283,15 @@ async function savePreferences() {
     trackUmamiEvent('settings-notification-save')
     toast.add({
       severity: 'success',
-      summary: 'Préférences mises à jour',
-      detail: 'Vos préférences de notification ont été enregistrées',
+      summary: t('profile.settings.notifications.saved'),
+      detail: t('profile.settings.notifications.saved_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de mettre à jour les préférences',
+      summary: t('profile.settings.notifications.error'),
+      detail: error.message || t('profile.settings.notifications.save_error'),
       life: 5000
     })
   } finally {

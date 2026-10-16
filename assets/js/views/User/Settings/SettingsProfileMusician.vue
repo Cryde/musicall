@@ -11,13 +11,13 @@
           <MusicNotesIcon :size="32" class="text-primary-600 dark:text-primary-400" />
         </div>
         <h3 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-          Créez votre profil musicien
+          {{ t('profile.settings.musician.empty_title') }}
         </h3>
         <p class="text-surface-500 dark:text-surface-400 mb-6 max-w-md">
-          Partagez vos instruments, votre niveau et vos styles musicaux pour que d'autres musiciens puissent vous trouver.
+          {{ t('profile.settings.musician.empty_help') }}
         </p>
         <Button
-          label="Créer mon profil musicien"
+          :label="t('profile.settings.musician.create')"
           icon="pi pi-plus"
           @click="showEditModal = true"
         />
@@ -30,7 +30,7 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Disponibilité
+            {{ t('profile.settings.musician.availability') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -40,7 +40,7 @@
             :severity="getAvailabilitySeverity(profile.availability_status)"
           />
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Non renseigné
+            {{ t('profile.settings.musician.availability_empty') }}
           </span>
         </div>
       </div>
@@ -49,7 +49,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Instruments
+            {{ t('profile.settings.musician.instruments') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -70,7 +70,7 @@
             </div>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun instrument renseigné
+            {{ t('profile.settings.musician.instruments_empty') }}
           </span>
         </div>
       </div>
@@ -79,7 +79,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Styles musicaux
+            {{ t('profile.settings.musician.styles') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -92,7 +92,7 @@
             />
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun style renseigné
+            {{ t('profile.settings.musician.styles_empty') }}
           </span>
         </div>
       </div>
@@ -100,7 +100,7 @@
       <!-- Action buttons -->
       <div class="flex justify-between items-center">
         <Button
-          label="Supprimer le profil"
+          :label="t('profile.settings.musician.delete_profile')"
           icon="pi pi-trash"
           severity="danger"
           text
@@ -110,14 +110,14 @@
         <div class="flex items-center gap-2">
           <RouterLink :to="{ name: 'app_user_musician_profile', params: { username: userSecurityStore.user.username } }">
             <Button
-              label="Voir mon profil"
+              :label="t('profile.settings.musician.view_profile')"
               icon="pi pi-external-link"
               severity="secondary"
               outlined
             />
           </RouterLink>
           <Button
-            label="Modifier"
+            :label="t('profile.settings.musician.edit')"
             icon="pi pi-pencil"
             @click="showEditModal = true"
           />
@@ -134,31 +134,31 @@
     <Dialog
       v-model:visible="showDeleteConfirm"
       modal
-      header="Supprimer le profil musicien"
+      :header="t('profile.settings.musician.delete_title')"
       :style="{ width: '450px' }"
     >
       <div class="flex items-start gap-4">
         <i class="pi pi-exclamation-triangle text-4xl text-red-500 shrink-0" />
         <div class="flex flex-col gap-2">
           <span>
-            Êtes-vous sûr de vouloir supprimer votre profil musicien ?
+            {{ t('profile.settings.musician.delete_confirm') }}
           </span>
           <span class="text-surface-500 dark:text-surface-400 text-sm">
-            Vos créations seront également supprimées de MusicAll.
+            {{ t('profile.settings.musician.delete_media_notice') }}
           </span>
           <span class="text-red-500 text-sm font-medium">
-            Cette action est irréversible.
+            {{ t('profile.settings.musician.delete_irreversible') }}
           </span>
         </div>
       </div>
       <template #footer>
         <Button
-          label="Annuler"
+          :label="t('profile.settings.musician.cancel')"
           text
           @click="showDeleteConfirm = false"
         />
         <Button
-          label="Supprimer"
+          :label="t('profile.settings.musician.delete')"
           severity="danger"
           :loading="isDeleting"
           @click="handleDeleteProfile"
@@ -181,6 +181,7 @@ import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import MediaShowcase from '../../../components/User/Profile/MediaShowcase.vue'
@@ -192,6 +193,7 @@ const musicianProfileStore = useMusicianProfileStore()
 const userSecurityStore = useUserSecurityStore()
 const musicianProfileMediaStore = useMusicianProfileMediaStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const isLoading = ref(true)
 const showEditModal = ref(false)
@@ -241,8 +243,8 @@ async function loadProfile() {
     if (error.response?.status !== 404) {
       toast.add({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger le profil musicien',
+        summary: t('profile.settings.musician.error'),
+        detail: t('profile.settings.musician.load_error'),
         life: 5000
       })
     }
@@ -255,8 +257,8 @@ function handleProfileSaved() {
   loadProfile()
   toast.add({
     severity: 'success',
-    summary: 'Profil mis à jour',
-    detail: 'Votre profil musicien a été enregistré',
+    summary: t('profile.settings.musician.saved'),
+    detail: t('profile.settings.musician.saved_detail'),
     life: 5000
   })
 }
@@ -267,15 +269,15 @@ async function handleDeleteProfile() {
     showDeleteConfirm.value = false
     toast.add({
       severity: 'success',
-      summary: 'Profil supprimé',
-      detail: 'Votre profil musicien a été supprimé',
+      summary: t('profile.settings.musician.deleted'),
+      detail: t('profile.settings.musician.deleted_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de supprimer le profil musicien',
+      summary: t('profile.settings.musician.error'),
+      detail: t('profile.settings.musician.delete_error'),
       life: 5000
     })
   }

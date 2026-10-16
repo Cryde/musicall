@@ -9,13 +9,13 @@
     <div v-else-if="notFound" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
       <i class="pi pi-user-minus text-4xl text-surface-400 mb-4" />
       <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-        Profil non trouvé
+        {{ t('profile.public.not_found_title') }}
       </h2>
       <p class="text-surface-500 dark:text-surface-400 mb-4">
-        Ce profil n'existe pas ou n'est pas accessible.
+        {{ t('profile.public.not_found_help') }}
       </p>
       <Button
-        label="Retour à l'accueil"
+        :label="t('profile.public.back_home')"
         icon="pi pi-home"
         severity="info"
         @click="$router.push({ name: 'app_home' })"
@@ -26,13 +26,13 @@
     <div v-else-if="isPrivate" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
       <i class="pi pi-lock text-4xl text-surface-400 mb-4" />
       <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-        Ce profil est privé
+        {{ t('profile.public.private_title') }}
       </h2>
       <p class="text-surface-500 dark:text-surface-400 mb-4">
-        L'utilisateur a choisi de garder son profil privé.
+        {{ t('profile.public.private_help') }}
       </p>
       <Button
-        label="Retour à l'accueil"
+        :label="t('profile.public.back_home')"
         icon="pi pi-home"
         severity="info"
         @click="$router.push({ name: 'app_home' })"
@@ -54,7 +54,7 @@
             <!-- Back button: mobile only -->
             <button
               class="md:hidden absolute top-4 left-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors cursor-pointer"
-              aria-label="Retour"
+              :aria-label="t('profile.common.back')"
               @click="handleBack"
             >
               <i class="pi pi-arrow-left" aria-hidden="true" />
@@ -63,8 +63,8 @@
             <button
               v-if="isOwnProfile"
               class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors"
-              title="Modifier la photo de couverture"
-              aria-label="Modifier la photo de couverture"
+              :title="t('profile.public.edit_cover')"
+              :aria-label="t('profile.public.edit_cover')"
               @click="coverPictureInputRef?.click()"
             >
               <i class="pi pi-camera" aria-hidden="true" />
@@ -91,8 +91,8 @@
               <button
                 v-if="isOwnProfile"
                 class="absolute bottom-1 right-1 bg-primary-500 hover:bg-primary-600 text-white rounded-full p-2 transition-colors"
-                title="Modifier la photo de profil"
-                aria-label="Modifier la photo de profil"
+                :title="t('profile.public.edit_picture')"
+                :aria-label="t('profile.public.edit_picture')"
                 @click="profilePictureInputRef?.click()"
               >
                 <i class="pi pi-camera text-sm" aria-hidden="true" />
@@ -130,14 +130,14 @@
           <div class="flex items-center justify-center gap-2.5">
             <Button
               v-if="isOwnProfile"
-              label="Modifier le profil"
+              :label="t('profile.public.edit_profile')"
               icon="pi pi-pencil"
               rounded
               @click="showEditProfileModal = true"
             />
             <Button
               v-else-if="canContact"
-              label="Contacter"
+              :label="t('profile.common.contact')"
               icon="pi pi-envelope"
               rounded
               severity="info"
@@ -147,7 +147,7 @@
               target-type="user"
               :target-id="profile.user_id"
               :author-id="profile.user_id"
-              :aria-label="`Signaler le profil de ${profile.username}`"
+              :aria-label="t('profile.public.report', { username: profile.username })"
             />
             <BlockUserButton :user-id="profile.user_id" :username="profile.username" />
           </div>
@@ -155,7 +155,7 @@
           <!-- Musician profile button -->
           <Button
             v-if="profile.has_musician_profile"
-            label="Voir le profil musicien"
+            :label="t('profile.public.view_musician_profile')"
             severity="secondary"
             rounded
             @click="$router.push({ name: 'app_user_musician_profile', params: { username: profile.username }, query: { from: 'profile' } })"
@@ -167,7 +167,7 @@
           <!-- Create musician profile CTA (own profile only) -->
           <Button
             v-else-if="isOwnProfile"
-            label="Créer mon profil musicien"
+            :label="t('profile.public.create_musician_profile')"
             severity="secondary"
             rounded
             outlined
@@ -181,7 +181,7 @@
           <!-- Teacher profile button -->
           <Button
             v-if="profile.has_teacher_profile"
-            label="Voir le profil professeur"
+            :label="t('profile.public.view_teacher_profile')"
             severity="secondary"
             rounded
             icon="pi pi-graduation-cap"
@@ -190,7 +190,7 @@
           <!-- Create teacher profile CTA (own profile only) -->
           <Button
             v-else-if="isOwnProfile"
-            label="Créer mon profil professeur"
+            :label="t('profile.public.create_teacher_profile')"
             severity="secondary"
             rounded
             outlined
@@ -204,14 +204,14 @@
       <div v-if="hasSocialLinks || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
-            Liens sociaux
+            {{ t('profile.public.social_links') }}
           </h2>
           <Button
             v-if="isOwnProfile"
             icon="pi pi-pencil"
             text
             rounded
-            aria-label="Modifier les liens sociaux"
+            :aria-label="t('profile.public.edit_social_links')"
             @click="showEditSocialLinksModal = true"
           />
         </div>
@@ -223,21 +223,21 @@
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-700 dark:text-surface-300"
-            :aria-label="`Visiter ${link.platform_label}`"
+            :aria-label="t('profile.public.visit', { platform: link.platform_label })"
           >
             <i :class="['pi', getPlatformIcon(link.platform)]" aria-hidden="true" />
             <span>{{ link.platform_label }}</span>
           </a>
         </div>
         <p v-else class="text-surface-500 dark:text-surface-400 text-sm">
-          Vous n'avez pas encore ajouté de liens sociaux.
+          {{ t('profile.public.social_links_empty') }}
         </p>
       </div>
 
       <!-- Musician announces -->
       <div v-if="hasMusicianAnnounces || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
         <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
-          Annonces musicien
+          {{ t('profile.public.announces') }}
         </h2>
 
         <!-- CTA when own profile with no announces -->
@@ -246,10 +246,10 @@
             <i class="pi pi-megaphone text-2xl text-primary-600 dark:text-primary-400" />
           </div>
           <p class="text-surface-500 dark:text-surface-400 mb-4">
-            Vous n'avez pas d'annonce
+            {{ t('profile.public.announces_empty') }}
           </p>
           <Button
-            label="Ajouter une annonce"
+            :label="t('profile.public.add_announce')"
             icon="pi pi-plus"
             @click="$router.push({ name: 'app_user_announces' })"
           />
@@ -276,7 +276,7 @@
 
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      message="Vous devez vous connecter pour envoyer un message à cet utilisateur."
+      :message="t('profile.common.contact_auth_required')"
     />
 
     <!-- Profile picture view modal -->
@@ -369,6 +369,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
@@ -392,6 +393,7 @@ import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
 const userBlockStore = useUserBlockStore()
@@ -452,9 +454,9 @@ const canContact = computed(() => {
 
 const pageTitle = computed(() => {
   if (profile.value) {
-    return `${profile.value.username} - MusicAll`
+    return t('profile.public.page_title', { username: profile.value.username })
   }
-  return 'Profil - MusicAll'
+  return t('profile.public.page_title_default')
 })
 
 useTitle(pageTitle)
@@ -590,8 +592,8 @@ function handleMusicianProfileCreated() {
   musicianProfileStore.clear()
   toast.add({
     severity: 'success',
-    summary: 'Profil créé',
-    detail: 'Votre profil musicien a été créé avec succès',
+    summary: t('profile.public.profile_created'),
+    detail: t('profile.public.musician_profile_created'),
     life: 5000
   })
 }
@@ -601,8 +603,8 @@ function handleTeacherProfileCreated() {
   teacherProfileStore.clear()
   toast.add({
     severity: 'success',
-    summary: 'Profil créé',
-    detail: 'Votre profil professeur a été créé avec succès',
+    summary: t('profile.public.profile_created'),
+    detail: t('profile.public.teacher_profile_created'),
     life: 5000
   })
 }

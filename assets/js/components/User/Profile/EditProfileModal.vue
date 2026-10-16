@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Modifier le profil"
+    :header="t('profile.edit.title')"
     :style="{ width: '35rem' }"
     :closable="!isSaving"
     :closeOnEscape="!isSaving"
@@ -15,46 +15,46 @@
       <!-- Display name -->
       <div class="flex flex-col gap-2">
         <label for="displayName" class="font-medium text-surface-900 dark:text-surface-0">
-          Nom d'affichage
+          {{ t('profile.edit.display_name') }}
         </label>
         <InputText
           id="displayName"
           v-model="displayName"
-          placeholder="Votre nom ou pseudo..."
+          :placeholder="t('profile.edit.display_name_placeholder')"
           :disabled="isSaving"
           :maxlength="100"
           class="w-full"
         />
         <small class="text-surface-500">
-          Optionnel. Si vide, votre nom d'utilisateur sera affiché.
+          {{ t('profile.edit.display_name_help') }}
         </small>
       </div>
 
       <!-- Bio -->
       <div class="flex flex-col gap-2">
         <label for="bio" class="font-medium text-surface-900 dark:text-surface-0">
-          Bio
+          {{ t('profile.edit.bio') }}
         </label>
         <Textarea
           id="bio"
           v-model="bio"
-          placeholder="Parlez de vous..."
+          :placeholder="t('profile.edit.bio_placeholder')"
           :disabled="isSaving"
           rows="4"
           :maxlength="2000"
           class="w-full"
         />
-        <small class="text-surface-500">{{ bio?.length || 0 }} / 2000 caractères</small>
+        <small class="text-surface-500">{{ t('profile.edit.bio_count', { count: bio?.length || 0 }) }}</small>
       </div>
 
       <!-- Location -->
       <div class="flex flex-col gap-2">
         <label for="location" class="font-medium text-surface-900 dark:text-surface-0">
-          Localisation
+          {{ t('profile.edit.location') }}
         </label>
-        <CityAutoComplete v-model="location" input-id="location" placeholder="Votre ville" :disabled="isSaving" />
+        <CityAutoComplete v-model="location" input-id="location" :placeholder="t('profile.edit.location_placeholder')" :disabled="isSaving" />
         <small class="text-surface-500">
-          Choisissez votre ville dans la liste pour voir les annonces près de chez vous.
+          {{ t('profile.edit.location_help') }}
         </small>
       </div>
 
@@ -62,10 +62,10 @@
       <div class="flex items-center justify-between">
         <div class="flex flex-col gap-1">
           <span class="font-medium text-surface-900 dark:text-surface-0">
-            Profil public
+            {{ t('profile.edit.public') }}
           </span>
           <small class="text-surface-500">
-            Votre profil sera visible par tous les visiteurs
+            {{ t('profile.edit.public_help') }}
           </small>
         </div>
         <ToggleSwitch v-model="isPublic" :disabled="isSaving" />
@@ -75,13 +75,13 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button
-          label="Annuler"
+          :label="t('profile.edit.cancel')"
           severity="secondary"
           :disabled="isSaving"
           @click="handleClose"
         />
         <Button
-          label="Enregistrer"
+          :label="t('profile.edit.save')"
           icon="pi pi-check"
           :loading="isSaving"
           @click="handleSave"
@@ -99,6 +99,7 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import profileApi from '../../../api/user/profile.js'
 import { editedLocationPayload } from '../../../utils/profileLocation.js'
 import CityAutoComplete from '../../Global/CityAutoComplete.vue'
@@ -128,6 +129,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved'])
+const { t } = useI18n()
 
 const displayName = ref('')
 const bio = ref('')
@@ -178,7 +180,7 @@ async function handleSave() {
     if (e.violations?.length) {
       error.value = e.violations.map((v) => v.message).join('. ')
     } else {
-      error.value = e.message || 'Une erreur est survenue'
+      error.value = e.message || t('profile.edit.error')
     }
   } finally {
     isSaving.value = false

@@ -3,6 +3,7 @@ import { readonly, ref } from 'vue'
 import musicianAnnounceApi from '../../api/announce/musician.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
+import { i18n } from '../../i18n/index.js'
 
 export const useUserAnnounceStore = defineStore('userAnnounce', () => {
   const announces = ref([])
@@ -40,8 +41,7 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
       return true
     } catch (e) {
       if (e.response?.status === 429) {
-        saveError.value =
-          "Trop d'annonces créées. Veuillez patienter avant d'en publier une nouvelle."
+        saveError.value = i18n.global.t('profile.announce.rate_limited')
       } else {
         try {
           handleApiError(e)

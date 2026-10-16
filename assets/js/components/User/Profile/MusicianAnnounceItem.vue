@@ -32,9 +32,9 @@
     <!-- The message then carries this announce, so the conversation still says why it exists (#998). -->
     <Button
       v-if="contactable"
-      label="Contacter"
-      aria-label="Contacter à propos de cette annonce"
-      title="Contacter à propos de cette annonce"
+      :label="t('profile.announce_item.contact')"
+      :aria-label="t('profile.announce_item.contact_about')"
+      :title="t('profile.announce_item.contact_about')"
       icon="pi pi-envelope"
       size="small"
       outlined
@@ -48,6 +48,7 @@
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { TYPES_ANNOUNCE_BAND } from '../../../constants/types.js'
 
 const props = defineProps({
@@ -63,9 +64,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['contact'])
+const { t } = useI18n()
 
 const typeName = computed(() => {
-  return props.announce.type === TYPES_ANNOUNCE_BAND ? 'Cherche un groupe' : 'Cherche un musicien'
+  return props.announce.type === TYPES_ANNOUNCE_BAND
+    ? t('profile.announce_item.looking_for_band')
+    : t('profile.announce_item.looking_for_musician')
 })
 
 const typeSeverity = computed(() => {

@@ -9,17 +9,17 @@
       <div class="flex flex-col md:flex-row md:items-start gap-4 py-3">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Visibilité du profil
+            {{ t('profile.settings.profile_privacy.visibility') }}
           </div>
           <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-            Contrôlez qui peut voir votre profil public
+            {{ t('profile.settings.profile_privacy.visibility_help') }}
           </p>
         </div>
         <div class="md:w-2/3 flex flex-col gap-4">
           <div class="flex items-center gap-3">
-            <ToggleSwitch v-model="isPublic" :disabled="isUpdating" aria-label="Visibilité du profil" />
+            <ToggleSwitch v-model="isPublic" :disabled="isUpdating" :aria-label="t('profile.settings.profile_privacy.visibility')" />
             <span class="text-surface-700 dark:text-surface-300">
-              {{ isPublic ? 'Profil public' : 'Profil privé' }}
+              {{ isPublic ? t('profile.settings.profile_privacy.public') : t('profile.settings.profile_privacy.private') }}
             </span>
           </div>
           <div class="p-4 rounded-lg" :class="isPublic ? 'bg-green-50 dark:bg-green-900/20' : 'bg-surface-100 dark:bg-surface-800'">
@@ -27,13 +27,13 @@
               <i :class="['pi text-lg mt-0.5', isPublic ? 'pi-globe text-green-600 dark:text-green-400' : 'pi-lock text-surface-500']" />
               <div>
                 <p class="font-medium text-surface-900 dark:text-surface-0">
-                  {{ isPublic ? 'Votre profil est visible' : 'Votre profil est masqué' }}
+                  {{ isPublic ? t('profile.settings.profile_privacy.visible_title') : t('profile.settings.profile_privacy.hidden_title') }}
                 </p>
                 <p class="text-sm text-surface-600 dark:text-surface-400 mt-1">
                   {{
                     isPublic
-                      ? 'Tout le monde peut voir votre profil, vos informations et vos annonces.'
-                      : 'Seul vous pouvez voir votre profil. Les autres utilisateurs verront un message indiquant que le profil est privé.'
+                      ? t('profile.settings.profile_privacy.visible_help')
+                      : t('profile.settings.profile_privacy.hidden_help')
                   }}
                 </p>
               </div>
@@ -45,7 +45,7 @@
       <!-- Save button -->
       <div class="flex justify-end pt-4 border-t border-surface-200 dark:border-surface-700">
         <Button
-          label="Enregistrer"
+          :label="t('profile.settings.profile_privacy.save')"
           icon="pi pi-check"
           :loading="isUpdating"
           :disabled="!hasChanges"
@@ -61,10 +61,12 @@ import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 
 const userProfileStore = useUserProfileStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const isLoading = ref(true)
 const isUpdating = ref(false)
@@ -99,8 +101,8 @@ async function loadData() {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger le profil',
+      summary: t('profile.settings.profile_privacy.error'),
+      detail: t('profile.settings.profile_privacy.load_error'),
       life: 5000
     })
   } finally {
@@ -118,15 +120,15 @@ async function savePrivacy() {
     originalIsPublic.value = isPublic.value
     toast.add({
       severity: 'success',
-      summary: 'Paramètres mis à jour',
-      detail: 'La visibilité de votre profil a été modifiée',
+      summary: t('profile.settings.profile_privacy.saved'),
+      detail: t('profile.settings.profile_privacy.saved_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de mettre à jour les paramètres',
+      summary: t('profile.settings.profile_privacy.error'),
+      detail: error.message || t('profile.settings.profile_privacy.save_error'),
       life: 5000
     })
   } finally {

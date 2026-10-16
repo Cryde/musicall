@@ -9,10 +9,10 @@
       <div class="flex flex-col md:flex-row gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Photo de couverture
+            {{ t('profile.settings.profile_general.cover') }}
           </div>
           <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-            Format recommandé : 1200x400 pixels
+            {{ t('profile.settings.profile_general.cover_format') }}
           </p>
         </div>
         <div class="md:w-2/3 flex flex-col gap-3">
@@ -23,13 +23,13 @@
           >
             <img
               :src="userProfileStore.profile.cover_picture_url"
-              alt="Photo de couverture actuelle"
+              :alt="t('profile.settings.profile_general.cover_alt')"
               class="w-full"
             />
             <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
                 icon="pi pi-trash"
-                aria-label="Supprimer la photo de couverture"
+                :aria-label="t('profile.settings.profile_general.cover_delete')"
                 severity="danger"
                 rounded
                 :loading="isDeletingCoverPicture"
@@ -43,7 +43,7 @@
           >
             <div class="text-center text-surface-500 dark:text-surface-400">
               <i class="pi pi-image text-2xl mb-2" />
-              <p class="text-sm">Aucune photo de couverture</p>
+              <p class="text-sm">{{ t('profile.settings.profile_general.cover_empty') }}</p>
             </div>
           </div>
           <!-- Upload button -->
@@ -56,14 +56,14 @@
               @change="handleCoverPictureSelect"
             />
             <Button
-              label="Choisir une image"
+              :label="t('profile.settings.profile_general.cover_choose')"
               icon="pi pi-upload"
               severity="secondary"
               @click="coverPictureInputRef?.click()"
             />
           </div>
           <small class="text-surface-500 dark:text-surface-400">
-            L'image sera recadrée au format 3:1 (bannière).
+            {{ t('profile.settings.profile_general.cover_crop_help') }}
           </small>
         </div>
       </div>
@@ -72,16 +72,16 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Nom d'affichage
+            {{ t('profile.settings.profile_general.display_name') }}
           </div>
           <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-            Optionnel. Si vide, votre nom d'utilisateur sera affiché.
+            {{ t('profile.settings.profile_general.display_name_help') }}
           </p>
         </div>
         <div class="md:w-2/3">
           <InputText
             v-model="displayName"
-            placeholder="Votre nom ou pseudo..."
+            :placeholder="t('profile.settings.profile_general.display_name_placeholder')"
             :disabled="isUpdating"
             class="w-full md:w-80"
             :maxlength="100"
@@ -92,19 +92,19 @@
       <!-- Bio -->
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
-          Biographie
+          {{ t('profile.settings.profile_general.bio') }}
         </div>
         <div class="md:w-2/3 flex flex-col gap-2">
           <Textarea
             v-model="bio"
-            placeholder="Parlez de vous..."
+            :placeholder="t('profile.settings.profile_general.bio_placeholder')"
             :disabled="isUpdating"
             rows="4"
             class="w-full"
             :maxlength="2000"
           />
           <small class="text-surface-500 dark:text-surface-400">
-            {{ bio?.length || 0 }} / 2000 caractères
+            {{ t('profile.settings.profile_general.bio_count', { count: bio?.length || 0 }) }}
           </small>
         </div>
       </div>
@@ -112,18 +112,18 @@
       <!-- Location -->
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <label for="settings-location" class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
-          Localisation
+          {{ t('profile.settings.profile_general.location') }}
         </label>
         <div class="md:w-2/3">
           <CityAutoComplete
             v-model="location"
             input-id="settings-location"
-            placeholder="Votre ville"
+            :placeholder="t('profile.settings.profile_general.location_placeholder')"
             :disabled="isUpdating"
             class="w-full md:w-80"
           />
           <small class="block mt-1 text-surface-500 dark:text-surface-400">
-            Choisissez votre ville dans la liste pour voir les annonces près de chez vous.
+            {{ t('profile.settings.profile_general.location_help') }}
           </small>
         </div>
       </div>
@@ -131,7 +131,7 @@
       <!-- Save button -->
       <div class="flex justify-end">
         <Button
-          label="Enregistrer"
+          :label="t('profile.settings.profile_general.save')"
           icon="pi pi-check"
           :loading="isUpdating"
           :disabled="!hasChanges"
@@ -142,7 +142,7 @@
       <!-- Social links section -->
       <div class="pt-6 border-t border-surface-200 dark:border-surface-700">
         <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
-          Liens sociaux
+          {{ t('profile.settings.profile_general.social_links') }}
         </h3>
 
         <div v-if="isLoadingSocialLinks" class="flex justify-center py-4">
@@ -184,13 +184,13 @@
           </div>
 
           <div v-else class="text-surface-500 dark:text-surface-400 text-sm mb-4">
-            Vous n'avez pas encore ajouté de liens sociaux.
+            {{ t('profile.settings.profile_general.social_links_empty') }}
           </div>
 
           <!-- Add new link form -->
           <div class="flex flex-col gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-800">
             <h4 class="font-medium text-surface-900 dark:text-surface-0">
-              Ajouter un lien
+              {{ t('profile.settings.profile_general.social_links_add_title') }}
             </h4>
             <div class="flex flex-col md:flex-row gap-3">
               <Select
@@ -198,18 +198,18 @@
                 :options="platformOptions"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Plateforme"
+                :placeholder="t('profile.settings.profile_general.platform_placeholder')"
                 class="w-full md:w-48"
                 :disabled="isAddingSocialLink"
               />
               <InputText
                 v-model="newLinkUrl"
-                placeholder="URL du profil"
+                :placeholder="t('profile.settings.profile_general.url_placeholder')"
                 class="flex-1"
                 :disabled="isAddingSocialLink"
               />
               <Button
-                label="Ajouter"
+                :label="t('profile.settings.profile_general.add')"
                 icon="pi pi-plus"
                 severity="info"
                 :loading="isAddingSocialLink"
@@ -241,6 +241,7 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CityAutoComplete from '../../../components/Global/CityAutoComplete.vue'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { editedLocationPayload, locationFieldValue } from '../../../utils/profileLocation.js'
@@ -249,6 +250,7 @@ import CoverPictureModal from './CoverPictureModal.vue'
 const userProfileStore = useUserProfileStore()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 
 const isLoading = ref(true)
 const isUpdating = ref(false)
@@ -279,17 +281,17 @@ const addLinkError = ref('')
 
 const socialLinks = computed(() => userProfileStore.socialLinks || [])
 
-const platformOptions = [
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'soundcloud', label: 'SoundCloud' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'twitter', label: 'X (Twitter)' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'spotify', label: 'Spotify' },
-  { value: 'bandcamp', label: 'Bandcamp' },
-  { value: 'website', label: 'Site web' }
-]
+const platformOptions = computed(() => [
+  { value: 'youtube', label: t('profile.platform.youtube') },
+  { value: 'soundcloud', label: t('profile.platform.soundcloud') },
+  { value: 'instagram', label: t('profile.platform.instagram') },
+  { value: 'facebook', label: t('profile.platform.facebook') },
+  { value: 'twitter', label: t('profile.platform.x_twitter') },
+  { value: 'tiktok', label: t('profile.platform.tiktok') },
+  { value: 'spotify', label: t('profile.platform.spotify') },
+  { value: 'bandcamp', label: t('profile.platform.bandcamp') },
+  { value: 'website', label: t('profile.platform.website') }
+])
 
 const platformIcons = {
   youtube: 'pi-youtube',
@@ -347,8 +349,8 @@ async function loadData() {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger le profil',
+      summary: t('profile.settings.profile_general.error'),
+      detail: t('profile.settings.profile_general.load_error'),
       life: 5000
     })
   } finally {
@@ -360,8 +362,8 @@ async function loadData() {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de charger les liens sociaux',
+      summary: t('profile.settings.profile_general.error'),
+      detail: t('profile.settings.profile_general.social_links_load_error'),
       life: 5000
     })
   } finally {
@@ -383,15 +385,15 @@ async function saveProfile() {
     originalLocation.value = location.value
     toast.add({
       severity: 'success',
-      summary: 'Profil mis à jour',
-      detail: 'Vos informations ont été enregistrées avec succès',
+      summary: t('profile.settings.profile_general.saved'),
+      detail: t('profile.settings.profile_general.saved_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de mettre à jour le profil',
+      summary: t('profile.settings.profile_general.error'),
+      detail: error.message || t('profile.settings.profile_general.save_error'),
       life: 5000
     })
   } finally {
@@ -414,12 +416,12 @@ async function addLink() {
     newLinkUrl.value = ''
     toast.add({
       severity: 'success',
-      summary: 'Lien ajouté',
-      detail: 'Le lien a été ajouté à votre profil',
+      summary: t('profile.settings.profile_general.link_added'),
+      detail: t('profile.settings.profile_general.link_added_detail'),
       life: 5000
     })
   } catch (error) {
-    addLinkError.value = error.message || "Impossible d'ajouter le lien"
+    addLinkError.value = error.message || t('profile.settings.profile_general.link_add_error')
   } finally {
     isAddingSocialLink.value = false
   }
@@ -427,11 +429,13 @@ async function addLink() {
 
 function confirmDeleteLink(link) {
   confirm.require({
-    message: `Êtes-vous sûr de vouloir supprimer le lien ${link.platform_label} ?`,
-    header: 'Confirmation',
+    message: t('profile.settings.profile_general.link_delete_confirm', {
+      platform: link.platform_label
+    }),
+    header: t('profile.settings.profile_general.confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('profile.settings.profile_general.cancel'),
+    acceptLabel: t('profile.settings.profile_general.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       await deleteLink(link)
@@ -446,15 +450,15 @@ async function deleteLink(link) {
     await userProfileStore.deleteSocialLink(link.id)
     toast.add({
       severity: 'success',
-      summary: 'Lien supprimé',
-      detail: 'Le lien a été supprimé de votre profil',
+      summary: t('profile.settings.profile_general.link_deleted'),
+      detail: t('profile.settings.profile_general.link_deleted_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de supprimer le lien',
+      summary: t('profile.settings.profile_general.error'),
+      detail: error.message || t('profile.settings.profile_general.link_delete_error'),
       life: 5000
     })
   } finally {
@@ -480,19 +484,19 @@ function handleCoverPictureSelect(event) {
 function handleCoverPictureSaved() {
   toast.add({
     severity: 'success',
-    summary: 'Photo mise à jour',
-    detail: 'Votre photo de couverture a été mise à jour',
+    summary: t('profile.settings.profile_general.cover_saved'),
+    detail: t('profile.settings.profile_general.cover_saved_detail'),
     life: 5000
   })
 }
 
 function confirmDeleteCoverPicture() {
   confirm.require({
-    message: 'Êtes-vous sûr de vouloir supprimer votre photo de couverture ?',
-    header: 'Confirmation',
+    message: t('profile.settings.profile_general.cover_delete_confirm'),
+    header: t('profile.settings.profile_general.confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('profile.settings.profile_general.cancel'),
+    acceptLabel: t('profile.settings.profile_general.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       await deleteCoverPicture()
@@ -507,15 +511,15 @@ async function deleteCoverPicture() {
     await userProfileStore.deleteCoverPicture()
     toast.add({
       severity: 'success',
-      summary: 'Photo supprimée',
-      detail: 'Votre photo de couverture a été supprimée',
+      summary: t('profile.settings.profile_general.cover_deleted'),
+      detail: t('profile.settings.profile_general.cover_deleted_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: error.message || 'Impossible de supprimer la photo de couverture',
+      summary: t('profile.settings.profile_general.error'),
+      detail: error.message || t('profile.settings.profile_general.cover_delete_error'),
       life: 5000
     })
   } finally {

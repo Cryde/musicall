@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0">
-      Changer le mot de passe
+      {{ t('profile.settings.password.title') }}
     </h2>
 
     <Message v-if="successMessage" severity="success" :closable="false" class="mb-2">
@@ -15,7 +15,7 @@
     <form @submit.prevent="handleSubmit" class="flex flex-col gap-4 max-w-md">
       <div class="flex flex-col gap-2">
         <label for="oldPassword" class="text-surface-600 dark:text-surface-400 font-medium">
-          Mot de passe actuel
+          {{ t('profile.settings.password.current') }}
         </label>
         <Password
           id="oldPassword"
@@ -31,7 +31,7 @@
 
       <div class="flex flex-col gap-2">
         <label for="newPassword" class="text-surface-600 dark:text-surface-400 font-medium">
-          Nouveau mot de passe
+          {{ t('profile.settings.password.new') }}
         </label>
         <Password
           id="newPassword"
@@ -46,7 +46,7 @@
 
       <div class="flex flex-col gap-2">
         <label for="confirmPassword" class="text-surface-600 dark:text-surface-400 font-medium">
-          Confirmer le nouveau mot de passe
+          {{ t('profile.settings.password.confirm') }}
         </label>
         <Password
           id="confirmPassword"
@@ -63,7 +63,7 @@
       <div class="pt-4">
         <Button
           type="submit"
-          label="Mettre à jour le mot de passe"
+          :label="t('profile.settings.password.submit')"
           icon="pi pi-check"
           :loading="userSettingsStore.isChangingPassword"
         />
@@ -77,9 +77,11 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 
 const userSettingsStore = useUserSettingsStore()
+const { t } = useI18n()
 
 const oldPassword = ref('')
 const newPassword = ref('')
@@ -92,19 +94,19 @@ function validate() {
   errors.value = {}
 
   if (!oldPassword.value) {
-    errors.value.oldPassword = 'Le mot de passe actuel est requis'
+    errors.value.oldPassword = t('profile.settings.password.current_required')
   }
 
   if (!newPassword.value) {
-    errors.value.newPassword = 'Le nouveau mot de passe est requis'
+    errors.value.newPassword = t('profile.settings.password.new_required')
   } else if (newPassword.value.length < 8) {
-    errors.value.newPassword = 'Le mot de passe doit contenir au moins 8 caractères'
+    errors.value.newPassword = t('profile.settings.password.too_short')
   }
 
   if (!confirmPassword.value) {
-    errors.value.confirmPassword = 'Veuillez confirmer le nouveau mot de passe'
+    errors.value.confirmPassword = t('profile.settings.password.confirm_required')
   } else if (newPassword.value !== confirmPassword.value) {
-    errors.value.confirmPassword = 'Les mots de passe ne correspondent pas'
+    errors.value.confirmPassword = t('profile.settings.password.mismatch')
   }
 
   return Object.keys(errors.value).length === 0
@@ -124,7 +126,7 @@ async function handleSubmit() {
       newPassword: newPassword.value
     })
 
-    successMessage.value = 'Votre mot de passe a été mis à jour avec succès'
+    successMessage.value = t('profile.settings.password.success')
     oldPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
@@ -134,7 +136,7 @@ async function handleSubmit() {
     } else if (e.violationsByField?.newPassword) {
       errors.value.newPassword = e.violationsByField.newPassword.map((v) => v.message).join('. ')
     } else {
-      errorMessage.value = e.message || 'Une erreur est survenue'
+      errorMessage.value = e.message || t('profile.settings.password.error')
     }
   }
 }

@@ -11,13 +11,13 @@
           <i class="pi pi-graduation-cap text-3xl text-primary-600 dark:text-primary-400" />
         </div>
         <h3 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-          Créez votre profil professeur
+          {{ t('profile.settings.teacher.empty_title') }}
         </h3>
         <p class="text-surface-500 dark:text-surface-400 mb-6 max-w-md">
-          Partagez vos compétences, votre expérience et vos tarifs pour que des élèves puissent vous trouver.
+          {{ t('profile.settings.teacher.empty_help') }}
         </p>
         <Button
-          label="Créer mon profil professeur"
+          :label="t('profile.settings.teacher.create')"
           icon="pi pi-plus"
           @click="showEditModal = true"
         />
@@ -30,7 +30,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Présentation
+            {{ t('profile.settings.teacher.description') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -38,7 +38,7 @@
             {{ truncateDescription(profile.description) }}
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Non renseigné
+            {{ t('profile.settings.teacher.not_set') }}
           </span>
         </div>
       </div>
@@ -47,15 +47,15 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Expérience
+            {{ t('profile.settings.teacher.experience') }}
           </div>
         </div>
         <div class="md:w-2/3">
           <span v-if="profile.years_of_experience" class="text-surface-900 dark:text-surface-0">
-            {{ profile.years_of_experience }} {{ profile.years_of_experience > 1 ? 'ans' : 'an' }}
+            {{ t('profile.settings.teacher.years', profile.years_of_experience) }}
           </span>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Non renseigné
+            {{ t('profile.settings.teacher.not_set') }}
           </span>
         </div>
       </div>
@@ -64,7 +64,7 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Titre du cours
+            {{ t('profile.settings.teacher.course_title') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -72,7 +72,7 @@
             {{ profile.course_title }}
           </span>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Non renseigné
+            {{ t('profile.settings.teacher.not_set') }}
           </span>
         </div>
       </div>
@@ -81,7 +81,7 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Niveaux acceptés
+            {{ t('profile.settings.teacher.student_levels') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -94,7 +94,7 @@
             />
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun niveau renseigné
+            {{ t('profile.settings.teacher.student_levels_empty') }}
           </span>
         </div>
       </div>
@@ -103,7 +103,7 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Tranches d'âge
+            {{ t('profile.settings.teacher.age_groups') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -116,7 +116,7 @@
             />
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucune tranche d'âge renseignée
+            {{ t('profile.settings.teacher.age_groups_empty') }}
           </span>
         </div>
       </div>
@@ -125,25 +125,25 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Lieux d'enseignement
+            {{ t('profile.settings.teacher.locations') }}
           </div>
         </div>
         <div class="md:w-2/3">
           <div v-if="profile.locations?.length" class="flex flex-col gap-1">
             <div v-for="(loc, index) in profile.locations" :key="index" class="text-surface-900 dark:text-surface-0">
               <span v-if="loc.type === 'teacher_place'">
-                <i class="pi pi-home mr-1 text-surface-500" />Chez le professeur<span v-if="loc.city"> ({{ loc.city }})</span>
+                <i class="pi pi-home mr-1 text-surface-500" />{{ t('profile.teacher.location_type.teacher_place') }}<span v-if="loc.city"> ({{ loc.city }})</span>
               </span>
               <span v-else-if="loc.type === 'student_place'">
-                <i class="pi pi-car mr-1 text-surface-500" />Chez l'élève<span v-if="loc.radius"> ({{ loc.radius }} km)</span><span v-if="loc.city"> - {{ loc.city }}</span>
+                <i class="pi pi-car mr-1 text-surface-500" />{{ t('profile.teacher.location_type.student_place') }}<span v-if="loc.radius"> ({{ t('profile.teacher.radius_km', { radius: loc.radius }) }})</span><span v-if="loc.city"> - {{ loc.city }}</span>
               </span>
               <span v-else-if="loc.type === 'online'">
-                <i class="pi pi-video mr-1 text-surface-500" />En ligne
+                <i class="pi pi-video mr-1 text-surface-500" />{{ t('profile.teacher.location_type.online') }}
               </span>
             </div>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Non renseigné
+            {{ t('profile.settings.teacher.not_set') }}
           </span>
         </div>
       </div>
@@ -152,7 +152,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Instruments enseignés
+            {{ t('profile.settings.teacher.instruments') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -166,7 +166,7 @@
             </div>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun instrument renseigné
+            {{ t('profile.settings.teacher.instruments_empty') }}
           </span>
         </div>
       </div>
@@ -175,7 +175,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Styles enseignés
+            {{ t('profile.settings.teacher.styles') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -188,7 +188,7 @@
             />
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun style renseigné
+            {{ t('profile.settings.teacher.styles_empty') }}
           </span>
         </div>
       </div>
@@ -197,19 +197,19 @@
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Cours d'essai
+            {{ t('profile.settings.teacher.trial') }}
           </div>
         </div>
         <div class="md:w-2/3">
           <span v-if="profile.offers_trial" class="text-surface-900 dark:text-surface-0">
             <i class="pi pi-check-circle text-green-500 mr-1" />
-            Proposé
+            {{ t('profile.settings.teacher.trial_offered') }}
             <span v-if="profile.trial_price != null">
-              - {{ profile.trial_price === 0 ? 'Gratuit' : formatPrice(profile.trial_price) }}
+              - {{ profile.trial_price === 0 ? t('profile.settings.teacher.trial_free') : formatPrice(profile.trial_price) }}
             </span>
           </span>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Non proposé
+            {{ t('profile.settings.teacher.trial_not_offered') }}
           </span>
         </div>
       </div>
@@ -218,7 +218,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Tarifs
+            {{ t('profile.settings.teacher.pricing') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -229,7 +229,7 @@
             </div>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun tarif renseigné
+            {{ t('profile.settings.teacher.pricing_empty') }}
           </span>
         </div>
       </div>
@@ -238,7 +238,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Disponibilités
+            {{ t('profile.settings.teacher.availability') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -249,7 +249,7 @@
             </div>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucune disponibilité renseignée
+            {{ t('profile.settings.teacher.availability_empty') }}
           </span>
         </div>
       </div>
@@ -258,7 +258,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Forfaits
+            {{ t('profile.settings.teacher.packages') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -266,12 +266,12 @@
             <div v-for="pkg in profile.packages" :key="pkg.id" class="text-surface-900 dark:text-surface-0">
               <span class="font-medium">{{ pkg.title }}</span>
               <span class="text-surface-500 dark:text-surface-400 ml-2">
-                {{ pkg.sessions_count }} séances - {{ formatPrice(pkg.price) }}
+                {{ t('profile.settings.teacher.package_summary', { sessions: pkg.sessions_count, price: formatPrice(pkg.price) }) }}
               </span>
             </div>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun forfait renseigné
+            {{ t('profile.settings.teacher.packages_empty') }}
           </span>
         </div>
       </div>
@@ -280,7 +280,7 @@
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3">
           <div class="text-surface-600 dark:text-surface-400 font-medium">
-            Réseaux sociaux
+            {{ t('profile.settings.teacher.social_links') }}
           </div>
         </div>
         <div class="md:w-2/3">
@@ -298,7 +298,7 @@
             </a>
           </div>
           <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
-            Aucun réseau social renseigné
+            {{ t('profile.settings.teacher.social_links_empty') }}
           </span>
         </div>
       </div>
@@ -306,7 +306,7 @@
       <!-- Action buttons -->
       <div class="flex justify-between items-center">
         <Button
-          label="Supprimer le profil"
+          :label="t('profile.settings.teacher.delete_profile')"
           icon="pi pi-trash"
           severity="danger"
           text
@@ -316,14 +316,14 @@
         <div class="flex items-center gap-2">
           <RouterLink :to="{ name: 'app_user_teacher_profile', params: { username: userSecurityStore.user.username } }">
             <Button
-              label="Voir mon profil"
+              :label="t('profile.settings.teacher.view_profile')"
               icon="pi pi-external-link"
               severity="secondary"
               outlined
             />
           </RouterLink>
           <Button
-            label="Modifier"
+            :label="t('profile.settings.teacher.edit')"
             icon="pi pi-pencil"
             @click="showEditModal = true"
           />
@@ -340,31 +340,31 @@
     <Dialog
       v-model:visible="showDeleteConfirm"
       modal
-      header="Supprimer le profil professeur"
+      :header="t('profile.settings.teacher.delete_title')"
       :style="{ width: '450px' }"
     >
       <div class="flex items-start gap-4">
         <i class="pi pi-exclamation-triangle text-4xl text-red-500 shrink-0" />
         <div class="flex flex-col gap-2">
           <span>
-            Êtes-vous sûr de vouloir supprimer votre profil professeur ?
+            {{ t('profile.settings.teacher.delete_confirm') }}
           </span>
           <span class="text-surface-500 dark:text-surface-400 text-sm">
-            Vos créations seront également supprimées de MusicAll.
+            {{ t('profile.settings.teacher.delete_media_notice') }}
           </span>
           <span class="text-red-500 text-sm font-medium">
-            Cette action est irréversible.
+            {{ t('profile.settings.teacher.delete_irreversible') }}
           </span>
         </div>
       </div>
       <template #footer>
         <Button
-          label="Annuler"
+          :label="t('profile.settings.teacher.cancel')"
           text
           @click="showDeleteConfirm = false"
         />
         <Button
-          label="Supprimer"
+          :label="t('profile.settings.teacher.delete')"
           severity="danger"
           :loading="isDeleting"
           @click="handleDeleteProfile"
@@ -387,6 +387,7 @@ import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
 import {
@@ -405,6 +406,7 @@ const teacherProfileStore = useTeacherProfileStore()
 const userSecurityStore = useUserSecurityStore()
 const teacherProfileMediaStore = useTeacherProfileMediaStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const isLoading = ref(true)
 const showEditModal = ref(false)
@@ -434,8 +436,8 @@ async function loadProfile() {
     if (error.response?.status !== 404) {
       toast.add({
         severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger le profil professeur',
+        summary: t('profile.settings.teacher.error'),
+        detail: t('profile.settings.teacher.load_error'),
         life: 5000
       })
     }
@@ -448,8 +450,8 @@ function handleProfileSaved() {
   loadProfile()
   toast.add({
     severity: 'success',
-    summary: 'Profil mis à jour',
-    detail: 'Votre profil professeur a été enregistré',
+    summary: t('profile.settings.teacher.saved'),
+    detail: t('profile.settings.teacher.saved_detail'),
     life: 5000
   })
 }
@@ -460,15 +462,15 @@ async function handleDeleteProfile() {
     showDeleteConfirm.value = false
     toast.add({
       severity: 'success',
-      summary: 'Profil supprimé',
-      detail: 'Votre profil professeur a été supprimé',
+      summary: t('profile.settings.teacher.deleted'),
+      detail: t('profile.settings.teacher.deleted_detail'),
       life: 5000
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de supprimer le profil professeur',
+      summary: t('profile.settings.teacher.error'),
+      detail: t('profile.settings.teacher.delete_error'),
       life: 5000
     })
   }

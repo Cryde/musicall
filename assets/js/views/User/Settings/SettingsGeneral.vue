@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0">
-      Paramètres généraux du compte
+      {{ t('profile.settings.general.title') }}
     </h2>
 
     <div v-if="userSettingsStore.isLoading" class="flex justify-center py-8">
@@ -13,7 +13,7 @@
         <!-- Username -->
         <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
-            Nom d'utilisateur
+            {{ t('profile.settings.general.username') }}
           </div>
           <div class="md:w-2/3">
             <template v-if="!isEditingUsername">
@@ -23,7 +23,7 @@
                 </span>
                 <Button
                   v-if="canChangeUsername"
-                  label="Modifier"
+                  :label="t('profile.settings.general.edit')"
                   icon="pi pi-pencil"
                   severity="info"
                   text
@@ -32,18 +32,18 @@
                 />
               </div>
               <p v-if="!canChangeUsername && nextUsernameChangeDate" class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-                Vous pourrez modifier votre nom d'utilisateur le {{ nextUsernameChangeDate }}
+                {{ t('profile.settings.general.username_next_change', { date: nextUsernameChangeDate }) }}
               </p>
             </template>
             <template v-else>
               <div class="flex flex-col gap-2">
                 <Message severity="warn" :closable="false" class="mb-2">
-                  Attention : vous ne pourrez pas modifier votre nom d'utilisateur pendant 30 jours après ce changement.
+                  {{ t('profile.settings.general.username_warning') }}
                 </Message>
                 <div class="flex items-center gap-2">
                   <InputText
                     v-model="newUsername"
-                    placeholder="Nouveau nom d'utilisateur"
+                    :placeholder="t('profile.settings.general.username_placeholder')"
                     class="w-full md:w-64"
                     :invalid="!!usernameError"
                   />
@@ -52,10 +52,10 @@
                   <i v-else-if="isUsernameAvailable === false" class="pi pi-times-circle text-red-500"></i>
                 </div>
                 <small v-if="usernameError" class="text-red-500">{{ usernameError }}</small>
-                <small v-else-if="isUsernameAvailable === true" class="text-green-600">Ce nom d'utilisateur est disponible</small>
+                <small v-else-if="isUsernameAvailable === true" class="text-green-600">{{ t('profile.settings.general.username_available') }}</small>
                 <div class="flex gap-2">
                   <Button
-                    label="Enregistrer"
+                    :label="t('profile.settings.general.save')"
                     icon="pi pi-check"
                     size="small"
                     :loading="userSettingsStore.isChangingUsername"
@@ -63,7 +63,7 @@
                     @click="saveUsername"
                   />
                   <Button
-                    label="Annuler"
+                    :label="t('profile.settings.general.cancel')"
                     icon="pi pi-times"
                     severity="secondary"
                     text
@@ -80,7 +80,7 @@
         <!-- Email -->
         <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
-            Adresse email
+            {{ t('profile.settings.general.email') }}
           </div>
           <div class="md:w-2/3 text-surface-900 dark:text-surface-0">
             {{ userSettingsStore.userProfile.email }}
@@ -90,7 +90,7 @@
         <!-- Profile Picture -->
         <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
-            Photo de profil
+            {{ t('profile.settings.general.picture') }}
           </div>
           <div class="md:w-2/3 flex items-center gap-4">
             <Avatar
@@ -108,7 +108,7 @@
             />
             <div class="flex gap-2">
               <Button
-                :label="userSettingsStore.userProfile.profile_picture ? 'Modifier ma photo' : 'Ajouter une photo'"
+                :label="userSettingsStore.userProfile.profile_picture ? t('profile.settings.general.picture_edit') : t('profile.settings.general.picture_add')"
                 icon="pi pi-image"
                 severity="info"
                 outlined
@@ -116,7 +116,7 @@
               />
               <Button
                 v-if="userSettingsStore.userProfile.profile_picture"
-                label="Supprimer"
+                :label="t('profile.settings.general.picture_delete')"
                 icon="pi pi-trash"
                 severity="danger"
                 outlined
@@ -137,12 +137,12 @@
         <!-- Dark Mode -->
         <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3">
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
-            Mode sombre
+            {{ t('profile.settings.general.dark_mode') }}
           </div>
           <div class="md:w-2/3 flex items-center gap-3">
-            <ToggleSwitch v-model="isDarkModeEnabled" aria-label="Mode sombre" />
+            <ToggleSwitch v-model="isDarkModeEnabled" :aria-label="t('profile.settings.general.dark_mode')" />
             <span class="text-surface-600 dark:text-surface-400 text-sm">
-              {{ isDarkModeEnabled ? 'Activé' : 'Désactivé' }}
+              {{ isDarkModeEnabled ? t('profile.settings.enabled') : t('profile.settings.disabled') }}
             </span>
           </div>
         </div>
@@ -150,13 +150,12 @@
 
       <!-- Danger Zone -->
       <div class="mt-8 border border-red-300 dark:border-red-800 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Zone de danger</h3>
+        <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">{{ t('profile.settings.general.danger_zone') }}</h3>
         <p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
-          La suppression de votre compte est irréversible. Vos publications, commentaires et messages resteront visibles
-          mais seront associés à un utilisateur anonyme.
+          {{ t('profile.settings.general.danger_zone_help') }}
         </p>
         <Button
-          label="Supprimer mon compte"
+          :label="t('profile.settings.general.delete_account.title')"
           icon="pi pi-trash"
           severity="danger"
           @click="showDeleteAccountDialog = true"
@@ -166,38 +165,36 @@
 
     <Dialog
       v-model:visible="showDeleteAccountDialog"
-      header="Supprimer mon compte"
+      :header="t('profile.settings.general.delete_account.title')"
       modal
       :style="{ width: '450px' }"
     >
       <div class="flex flex-col gap-4">
         <Message severity="warn" :closable="false">
-          Cette action est irréversible. Toutes vos données personnelles seront supprimées.
+          {{ t('profile.settings.general.delete_account.warning') }}
         </Message>
-        <p class="text-sm text-surface-600 dark:text-surface-400">
-          <span class="font-semibold">Vos Band Spaces :</span> vous quitterez tous vos espaces. Si vous êtes le seul
-          membre de l'un d'eux, sa suppression sera programmée sous 30 jours. Si vous en êtes le dernier
-          administrateur, le membre le plus ancien sera promu administrateur.
-        </p>
+        <i18n-t keypath="profile.settings.general.delete_account.band_spaces" tag="p" class="text-sm text-surface-600 dark:text-surface-400">
+          <template #label><span class="font-semibold">{{ t('profile.settings.general.delete_account.band_spaces_label') }}</span></template>
+        </i18n-t>
         <template v-if="hasPassword">
           <p class="text-sm text-surface-600 dark:text-surface-400">
-            Pour confirmer la suppression, veuillez saisir votre mot de passe.
+            {{ t('profile.settings.general.delete_account.password_help') }}
           </p>
           <InputText
             v-model="deleteAccountPassword"
             type="password"
-            placeholder="Votre mot de passe"
+            :placeholder="t('profile.settings.general.delete_account.password_placeholder')"
             class="w-full"
             :invalid="!!deleteAccountError"
           />
         </template>
         <template v-else>
-          <p class="text-sm text-surface-600 dark:text-surface-400">
-            Pour confirmer, veuillez saisir <span class="font-semibold">supprimer définitivement</span> ci-dessous.
-          </p>
+          <i18n-t keypath="profile.settings.general.delete_account.phrase_help" tag="p" class="text-sm text-surface-600 dark:text-surface-400">
+            <template #phrase><span class="font-semibold">{{ t('profile.settings.general.delete_account.confirm_phrase') }}</span></template>
+          </i18n-t>
           <InputText
             v-model="deleteAccountConfirmation"
-            placeholder="supprimer définitivement"
+            :placeholder="t('profile.settings.general.delete_account.confirm_phrase')"
             class="w-full"
           />
         </template>
@@ -205,13 +202,13 @@
       </div>
       <template #footer>
         <Button
-          label="Annuler"
+          :label="t('profile.settings.general.cancel')"
           severity="secondary"
           text
           @click="showDeleteAccountDialog = false"
         />
         <Button
-          label="Supprimer définitivement"
+          :label="t('profile.settings.general.delete_account.submit')"
           icon="pi pi-trash"
           severity="danger"
           :loading="isDeletingAccount"
@@ -239,6 +236,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import securityApi from '../../../api/user/security.js'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
@@ -253,6 +251,7 @@ const userSettingsStore = useUserSettingsStore()
 const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 const { isDarkMode, setDarkMode } = useDarkMode()
 
 const fileInput = ref(null)
@@ -310,13 +309,13 @@ const USERNAME_REGEX = /^[a-zA-Z0-9._]+$/
 
 function validateUsername(username) {
   if (!username || username.length < 3) {
-    return "Le nom d'utilisateur doit au moins contenir 3 caractères"
+    return t('profile.settings.general.username_too_short')
   }
   if (username.length > 40) {
-    return "Le nom d'utilisateur doit contenir maximum 40 caractères"
+    return t('profile.settings.general.username_too_long')
   }
   if (!USERNAME_REGEX.test(username)) {
-    return "Nom d'utilisateur invalide : seuls les lettres, chiffres, points et underscores sont autorisés."
+    return t('profile.settings.general.username_invalid')
   }
   return null
 }
@@ -347,7 +346,7 @@ watch(newUsername, (value) => {
       const result = await securityApi.checkUsernameAvailability(trimmed)
       isUsernameAvailable.value = result.available
       if (!result.available) {
-        usernameError.value = "Ce nom d'utilisateur est déjà pris"
+        usernameError.value = t('profile.settings.general.username_taken')
       }
     } catch {
       // Ignore errors, validation will happen on submit
@@ -368,7 +367,7 @@ async function saveUsername() {
   }
 
   if (trimmed === userSettingsStore.userProfile?.username) {
-    usernameError.value = "Le nouveau nom d'utilisateur doit être différent de l'actuel"
+    usernameError.value = t('profile.settings.general.username_unchanged')
     return
   }
 
@@ -378,12 +377,12 @@ async function saveUsername() {
     newUsername.value = ''
     toast.add({
       severity: 'success',
-      summary: "Nom d'utilisateur modifié",
-      detail: "Votre nom d'utilisateur a été mis à jour avec succès",
+      summary: t('profile.settings.general.username_saved'),
+      detail: t('profile.settings.general.username_saved_detail'),
       life: 5000
     })
   } catch (error) {
-    usernameError.value = error.message || 'Une erreur est survenue'
+    usernameError.value = error.message || t('profile.settings.general.error')
   }
 }
 
@@ -419,34 +418,34 @@ function handleFileSelect(event) {
 function handlePictureSaved() {
   toast.add({
     severity: 'success',
-    summary: 'Photo mise à jour',
-    detail: 'Votre photo de profil a été mise à jour avec succès',
+    summary: t('profile.settings.general.picture_saved'),
+    detail: t('profile.settings.general.picture_saved_detail'),
     life: 5000
   })
 }
 
 function confirmDeletePicture() {
   confirm.require({
-    message: 'Êtes-vous sûr de vouloir supprimer votre photo de profil ?',
-    header: 'Confirmation',
+    message: t('profile.settings.general.picture_delete_confirm_message'),
+    header: t('profile.settings.general.picture_delete_confirm_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('profile.settings.general.cancel'),
+    acceptLabel: t('profile.settings.general.picture_delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await userSettingsStore.deleteProfilePicture()
         toast.add({
           severity: 'success',
-          summary: 'Photo supprimée',
-          detail: 'Votre photo de profil a été supprimée avec succès',
+          summary: t('profile.settings.general.picture_deleted'),
+          detail: t('profile.settings.general.picture_deleted_detail'),
           life: 5000
         })
       } catch {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de supprimer la photo de profil',
+          summary: t('profile.settings.general.error_summary'),
+          detail: t('profile.settings.general.picture_delete_error'),
           life: 5000
         })
       }
@@ -471,7 +470,9 @@ function normalize(str) {
 }
 
 const isConfirmationValid = computed(
-  () => normalize(deleteAccountConfirmation.value) === 'supprimer definitivement'
+  () =>
+    normalize(deleteAccountConfirmation.value) ===
+    normalize(t('profile.settings.general.delete_account.confirm_phrase'))
 )
 
 async function handleDeleteAccount() {
@@ -483,9 +484,11 @@ async function handleDeleteAccount() {
     await userSecurityStore.logout()
   } catch (error) {
     if (error.isValidationError) {
-      deleteAccountError.value = error.violations?.[0]?.message || 'Le mot de passe est invalide'
+      deleteAccountError.value =
+        error.violations?.[0]?.message ||
+        t('profile.settings.general.delete_account.invalid_password')
     } else {
-      deleteAccountError.value = 'Une erreur est survenue'
+      deleteAccountError.value = t('profile.settings.general.error')
     }
   } finally {
     isDeletingAccount.value = false

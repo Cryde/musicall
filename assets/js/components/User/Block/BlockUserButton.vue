@@ -2,14 +2,14 @@
   <span v-if="isVisible" class="inline-flex">
     <Button
       :icon="blocked ? 'pi pi-unlock' : 'pi pi-ban'"
-      :label="iconOnly ? undefined : blocked ? 'Débloquer' : 'Bloquer'"
+      :label="iconOnly ? undefined : blocked ? t('profile.block.unblock') : t('profile.block.block')"
       text
       :rounded="iconOnly"
       size="small"
       severity="secondary"
       :loading="isWorking"
-      :aria-label="blocked ? `Débloquer ${username}` : `Bloquer ${username}`"
-      v-tooltip.top="iconOnly ? (blocked ? 'Débloquer' : 'Bloquer') : undefined"
+      :aria-label="blocked ? t('profile.block.unblock_user', { username }) : t('profile.block.block_user', { username })"
+      v-tooltip.top="iconOnly ? (blocked ? t('profile.block.unblock') : t('profile.block.block')) : undefined"
       @click="handleClick"
     />
   </span>
@@ -20,6 +20,7 @@ import Button from 'primevue/button'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserBlockStore } from '../../../store/user/block.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 
@@ -36,6 +37,7 @@ const userSecurityStore = useUserSecurityStore()
 const userBlockStore = useUserBlockStore()
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 const isWorking = ref(false)
 
 const isVisible = computed(
@@ -57,24 +59,24 @@ function handleClick() {
   if (blocked.value) {
     run(
       () => userBlockStore.unblockUser(props.userId),
-      `${props.username} est débloqué.`,
+      t('profile.block.unblocked_toast', { username: props.username }),
       'unblocked'
     )
     return
   }
   confirm.require({
-    header: `Bloquer ${props.username} ?`,
-    message: [
-      'Vous ne pourrez plus échanger de messages, votre conversation disparaîtra de votre messagerie et vous ne vous verrez plus dans les recherches ni dans les annonces.',
-      "Cette personne n'est pas prévenue. Si vous partagez un Band Space, rien n'y change : seul son administrateur peut retirer un membre.",
-      'Vous pourrez la débloquer à tout moment depuis vos paramètres, rubrique « Confidentialité ».'
-    ].join('\n\n'),
+    header: t('profile.block.confirm_header', { username: props.username }),
+    message: t('profile.block.confirm_message'),
     icon: 'pi pi-ban',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Bloquer',
+    rejectLabel: t('profile.block.cancel'),
+    acceptLabel: t('profile.block.block'),
     acceptProps: { severity: 'danger' },
     accept: () =>
-      run(() => userBlockStore.blockUser(props.userId), `${props.username} est bloqué.`, 'blocked')
+      run(
+        () => userBlockStore.blockUser(props.userId),
+        t('profile.block.blocked_toast', { username: props.username }),
+        'blocked'
+      )
   })
 }
 
@@ -87,8 +89,8 @@ async function run(action, successMessage, event) {
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Action impossible',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('profile.block.error_summary'),
+      detail: e?.response?.data?.detail || t('profile.block.error_detail'),
       life: 4000
     })
   } finally {

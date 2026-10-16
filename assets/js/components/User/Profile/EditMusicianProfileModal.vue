@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Modifier le profil musicien"
+    :header="t('profile.musician.edit.title')"
     :style="{ width: '40rem' }"
     :closable="!isSaving"
     :closeOnEscape="!isSaving"
@@ -15,7 +15,7 @@
       <!-- Availability status -->
       <div class="flex flex-col gap-2">
         <label for="availabilityStatus" class="font-medium text-surface-900 dark:text-surface-0">
-          Disponibilité
+          {{ t('profile.musician.edit.availability') }}
         </label>
         <Select
           id="availabilityStatus"
@@ -23,7 +23,7 @@
           :options="availabilityOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionnez votre disponibilité"
+          :placeholder="t('profile.musician.edit.availability_placeholder')"
           :disabled="isSaving"
           class="w-full"
           showClear
@@ -34,11 +34,11 @@
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <label class="font-medium text-surface-900 dark:text-surface-0">
-            Instruments
+            {{ t('profile.musician.edit.instruments') }}
           </label>
           <Button
             icon="pi pi-plus"
-            label="Ajouter"
+            :label="t('profile.musician.edit.add')"
             severity="secondary"
             size="small"
             :disabled="isSaving"
@@ -47,7 +47,7 @@
         </div>
 
         <div v-if="instruments.length === 0" class="text-surface-500 dark:text-surface-400 text-sm py-2">
-          Aucun instrument ajouté
+          {{ t('profile.musician.edit.no_instrument') }}
         </div>
 
         <div v-else class="flex flex-col gap-3">
@@ -61,7 +61,7 @@
               :options="instrumentOptions"
               optionLabel="musician_name"
               optionValue="id"
-              placeholder="Instrument"
+              :placeholder="t('profile.musician.edit.instrument_placeholder')"
               :disabled="isSaving"
               class="flex-1"
             />
@@ -70,7 +70,7 @@
               :options="skillLevelOptions"
               optionLabel="label"
               optionValue="value"
-              placeholder="Niveau"
+              :placeholder="t('profile.musician.edit.level_placeholder')"
               :disabled="isSaving"
               class="w-40"
             />
@@ -90,7 +90,7 @@
       <!-- Styles -->
       <div class="flex flex-col gap-2">
         <label for="styles" class="font-medium text-surface-900 dark:text-surface-0">
-          Styles musicaux
+          {{ t('profile.musician.edit.styles') }}
         </label>
         <MultiSelect
           id="styles"
@@ -98,7 +98,7 @@
           :options="styleOptions"
           optionLabel="name"
           optionValue="id"
-          placeholder="Sélectionnez vos styles"
+          :placeholder="t('profile.musician.edit.styles_placeholder')"
           :disabled="isSaving"
           class="w-full"
           display="chip"
@@ -110,13 +110,13 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button
-          label="Annuler"
+          :label="t('profile.musician.edit.cancel')"
           severity="secondary"
           :disabled="isSaving"
           @click="handleClose"
         />
         <Button
-          label="Enregistrer"
+          :label="t('profile.musician.edit.save')"
           icon="pi pi-check"
           :loading="isSaving"
           @click="handleSave"
@@ -133,6 +133,7 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
@@ -149,6 +150,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved'])
+const { t } = useI18n()
 
 const musicianProfileStore = useMusicianProfileStore()
 const instrumentStore = useInstrumentStore()
@@ -163,19 +165,25 @@ const isSaving = ref(false)
 const instrumentOptions = computed(() => instrumentStore.instruments || [])
 const styleOptions = computed(() => styleStore.styles || [])
 
-const availabilityOptions = [
-  { value: 'looking_for_band', label: 'Cherche un groupe' },
-  { value: 'available_for_sessions', label: 'Disponible pour sessions/concerts' },
-  { value: 'open_to_collaborations', label: 'Ouvert aux collaborations' },
-  { value: 'not_available', label: 'Non disponible' }
-]
+const availabilityOptions = computed(() => [
+  { value: 'looking_for_band', label: t('profile.musician.availability.looking_for_band') },
+  {
+    value: 'available_for_sessions',
+    label: t('profile.musician.availability.available_for_sessions')
+  },
+  {
+    value: 'open_to_collaborations',
+    label: t('profile.musician.availability.open_to_collaborations')
+  },
+  { value: 'not_available', label: t('profile.musician.availability.not_available') }
+])
 
-const skillLevelOptions = [
-  { value: 'beginner', label: 'Débutant' },
-  { value: 'intermediate', label: 'Intermédiaire' },
-  { value: 'advanced', label: 'Avancé' },
-  { value: 'professional', label: 'Professionnel' }
-]
+const skillLevelOptions = computed(() => [
+  { value: 'beginner', label: t('profile.musician.skill_level.beginner') },
+  { value: 'intermediate', label: t('profile.musician.skill_level.intermediate') },
+  { value: 'advanced', label: t('profile.musician.skill_level.advanced') },
+  { value: 'professional', label: t('profile.musician.skill_level.professional') }
+])
 
 const isVisible = computed({
   get: () => props.visible,
@@ -275,7 +283,7 @@ async function handleSave() {
     if (e.violations?.length) {
       error.value = e.violations.map((v) => v.message).join('. ')
     } else {
-      error.value = e.message || 'Une erreur est survenue'
+      error.value = e.message || t('profile.musician.edit.error')
     }
   } finally {
     isSaving.value = false

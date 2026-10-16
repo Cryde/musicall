@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Modifier le profil professeur"
+    :header="t('profile.teacher.edit.title')"
     :style="{ width: '60rem' }"
     :breakpoints="{ '1280px': '90vw', '768px': '95vw' }"
     :closable="!isSaving"
@@ -19,13 +19,13 @@
       <div class="flex flex-col gap-5">
         <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
           <i class="pi pi-user text-primary-500" />
-          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">Identité & Expertise</h3>
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher.edit.section_identity') }}</h3>
         </div>
 
         <!-- Instruments (required) -->
         <div class="flex flex-col gap-2">
           <label for="instruments" class="font-medium text-surface-900 dark:text-surface-0">
-            Instruments enseignés
+            {{ t('profile.teacher.edit.instruments') }}
           </label>
           <MultiSelect
             id="instruments"
@@ -33,7 +33,7 @@
             :options="instrumentOptions"
             optionLabel="name"
             optionValue="id"
-            placeholder="Sélectionnez vos instruments"
+            :placeholder="t('profile.teacher.edit.instruments_placeholder')"
             :disabled="isSaving"
             class="w-full"
             display="chip"
@@ -44,8 +44,8 @@
         <!-- Styles (optional) -->
         <div class="flex flex-col gap-2">
           <label for="styles" class="font-medium text-surface-900 dark:text-surface-0">
-            Styles enseignés
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.styles') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <MultiSelect
             id="styles"
@@ -53,7 +53,7 @@
             :options="styleOptions"
             optionLabel="name"
             optionValue="id"
-            placeholder="Sélectionnez vos styles"
+            :placeholder="t('profile.teacher.edit.styles_placeholder')"
             :disabled="isSaving"
             class="w-full"
             display="chip"
@@ -64,13 +64,13 @@
         <!-- Description (required) -->
         <div class="flex flex-col gap-2">
           <label for="description" class="font-medium text-surface-900 dark:text-surface-0">
-            Présentation
+            {{ t('profile.teacher.edit.description') }}
           </label>
           <Textarea
             id="description"
             v-model="description"
             rows="4"
-            placeholder="Présentez-vous, votre méthode d'enseignement, votre parcours..."
+            :placeholder="t('profile.teacher.edit.description_placeholder')"
             :disabled="isSaving"
             class="w-full"
           />
@@ -79,14 +79,14 @@
         <!-- Years of experience (required) -->
         <div class="flex flex-col gap-2">
           <label for="yearsOfExperience" class="font-medium text-surface-900 dark:text-surface-0">
-            Années d'expérience
+            {{ t('profile.teacher.edit.years_of_experience') }}
           </label>
           <InputNumber
             id="yearsOfExperience"
             v-model="yearsOfExperience"
             :min="0"
             :max="70"
-            placeholder="Ex: 5"
+            :placeholder="t('profile.teacher.edit.years_of_experience_placeholder')"
             :disabled="isSaving"
             class="w-48"
           />
@@ -95,13 +95,13 @@
         <!-- Course title (optional) -->
         <div class="flex flex-col gap-2">
           <label for="courseTitle" class="font-medium text-surface-900 dark:text-surface-0">
-            Titre du cours / Spécialisation
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.course_title') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <InputText
             id="courseTitle"
             v-model="courseTitle"
-            placeholder="Ex: Cours de guitare jazz pour débutants"
+            :placeholder="t('profile.teacher.edit.course_title_placeholder')"
             :disabled="isSaving"
             class="w-full"
           />
@@ -114,14 +114,14 @@
       <div class="flex flex-col gap-5">
         <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
           <i class="pi pi-users text-primary-500" />
-          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">Public cible</h3>
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher.edit.section_audience') }}</h3>
         </div>
 
         <!-- Student levels (optional) -->
         <div class="flex flex-col gap-2">
           <label for="studentLevels" class="font-medium text-surface-900 dark:text-surface-0">
-            Niveaux acceptés
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.student_levels') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <MultiSelect
             id="studentLevels"
@@ -129,7 +129,7 @@
             :options="studentLevelOptions"
             optionLabel="label"
             optionValue="value"
-            placeholder="Sélectionnez les niveaux"
+            :placeholder="t('profile.teacher.edit.student_levels_placeholder')"
             :disabled="isSaving"
             class="w-full"
             display="chip"
@@ -139,8 +139,8 @@
         <!-- Age groups (optional) -->
         <div class="flex flex-col gap-2">
           <label for="ageGroups" class="font-medium text-surface-900 dark:text-surface-0">
-            Tranches d'âge acceptées
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.age_groups') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <MultiSelect
             id="ageGroups"
@@ -148,7 +148,7 @@
             :options="ageGroupOptions"
             optionLabel="label"
             optionValue="value"
-            placeholder="Sélectionnez les tranches d'âge"
+            :placeholder="t('profile.teacher.edit.age_groups_placeholder')"
             :disabled="isSaving"
             class="w-full"
             display="chip"
@@ -162,14 +162,14 @@
       <div class="flex flex-col gap-5">
         <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
           <i class="pi pi-calendar text-primary-500" />
-          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">Organisation</h3>
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher.edit.section_organization') }}</h3>
         </div>
 
         <!-- Locations (optional) -->
         <div class="flex flex-col gap-3">
           <label class="font-medium text-surface-900 dark:text-surface-0">
-            Lieux d'enseignement
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.locations') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <div class="flex flex-col gap-2">
             <div
@@ -183,13 +183,13 @@
                   :options="locationTypeOptions"
                   optionLabel="label"
                   optionValue="value"
-                  placeholder="Type de lieu"
+                  :placeholder="t('profile.teacher.edit.location_type_placeholder')"
                   :disabled="isSaving"
                   class="w-48"
                 />
                 <Button
                   icon="pi pi-times"
-                  aria-label="Retirer ce lieu"
+                  :aria-label="t('profile.teacher.edit.remove_location')"
                   severity="danger"
                   text
                   rounded
@@ -203,7 +203,7 @@
                   v-model="loc.locationSearch"
                   :suggestions="loc.suggestions || []"
                   optionLabel="fullName"
-                  placeholder="Rechercher une ville..."
+                  :placeholder="t('profile.teacher.edit.city_placeholder')"
                   :disabled="isSaving"
                   class="w-full"
                   @complete="(event) => searchLocation(event, index)"
@@ -215,7 +215,7 @@
                 <InputText
                   v-if="loc.type === 'teacher_place'"
                   v-model="loc.address"
-                  placeholder="Adresse (optionnel) - Ex: 18 rue de la Glacière"
+                  :placeholder="t('profile.teacher.edit.address_placeholder')"
                   :disabled="isSaving"
                   class="w-full"
                 />
@@ -225,16 +225,16 @@
                   v-model="loc.radius"
                   :min="1"
                   :max="200"
-                  placeholder="Rayon"
+                  :placeholder="t('profile.teacher.edit.radius_placeholder')"
                   suffix=" km"
                   :disabled="isSaving"
                   class="w-36"
                 />
-                <span class="text-sm text-surface-500 dark:text-surface-400">autour de la ville</span>
+                <span class="text-sm text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.radius_suffix') }}</span>
               </div>
             </div>
             <Button
-              label="Ajouter un lieu"
+              :label="t('profile.teacher.edit.add_location')"
               icon="pi pi-plus"
               severity="secondary"
               size="small"
@@ -248,8 +248,8 @@
         <!-- Availability (optional) -->
         <div class="flex flex-col gap-3">
           <label class="font-medium text-surface-900 dark:text-surface-0">
-            Disponibilités
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.availability') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <div class="flex flex-col gap-2">
             <div
@@ -262,7 +262,7 @@
                 :options="dayOfWeekOptions"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Jour"
+                :placeholder="t('profile.teacher.edit.day_placeholder')"
                 :disabled="isSaving"
                 class="w-36"
               />
@@ -272,7 +272,7 @@
                 :disabled="isSaving"
                 class="w-24"
               />
-              <span class="text-surface-500">à</span>
+              <span class="text-surface-500">{{ t('profile.teacher.edit.time_separator') }}</span>
               <InputText
                 v-model="slot.endTime"
                 placeholder="18:00"
@@ -281,7 +281,7 @@
               />
               <Button
                 icon="pi pi-times"
-                aria-label="Retirer ce créneau"
+                :aria-label="t('profile.teacher.edit.remove_slot')"
                 severity="danger"
                 text
                 rounded
@@ -291,7 +291,7 @@
               />
             </div>
             <Button
-              label="Ajouter un créneau"
+              :label="t('profile.teacher.edit.add_slot')"
               icon="pi pi-plus"
               severity="secondary"
               size="small"
@@ -312,20 +312,20 @@
               :disabled="isSaving"
             />
             <label for="offersTrial" class="font-medium text-surface-900 dark:text-surface-0">
-              Je propose un cours d'essai
-              <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+              {{ t('profile.teacher.edit.offers_trial') }}
+              <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
             </label>
           </div>
           <div v-if="offersTrial" class="flex flex-col gap-2 ml-8">
             <label for="trialPrice" class="text-sm text-surface-600 dark:text-surface-400">
-              Prix du cours d'essai
+              {{ t('profile.teacher.edit.trial_price') }}
             </label>
             <InputNumber
               id="trialPrice"
               v-model="trialPriceDisplay"
               :min="0"
               :max="200"
-              placeholder="Ex: 20 (ou 0 pour gratuit)"
+              :placeholder="t('profile.teacher.edit.trial_price_placeholder')"
               suffix="€"
               :disabled="isSaving"
               class="w-48"
@@ -340,21 +340,21 @@
       <div class="flex flex-col gap-5">
         <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
           <i class="pi pi-euro text-primary-500" />
-          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">Tarifs</h3>
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher.edit.section_pricing') }}</h3>
         </div>
 
         <!-- Pricing per duration (optional) -->
         <div class="flex flex-col gap-3">
           <label class="font-medium text-surface-900 dark:text-surface-0">
-            Tarifs par durée de cours
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.pricing') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <MultiSelect
             v-model="selectedDurations"
             :options="durationOptions"
             optionLabel="label"
             optionValue="value"
-            placeholder="Sélectionnez les durées proposées"
+            :placeholder="t('profile.teacher.edit.pricing_placeholder')"
             :disabled="isSaving"
             class="w-full"
             display="chip"
@@ -381,8 +381,8 @@
         <!-- Packages (optional) -->
         <div class="flex flex-col gap-3">
           <label class="font-medium text-surface-900 dark:text-surface-0">
-            Forfaits / Abonnements
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.packages') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <div class="flex flex-col gap-2">
             <div
@@ -394,14 +394,14 @@
                 <div class="flex-1 flex flex-col gap-2">
                   <InputText
                     v-model="pkg.title"
-                    placeholder="Titre du forfait - Ex: Forfait semestre"
+                    :placeholder="t('profile.teacher.edit.package_title_placeholder')"
                     :disabled="isSaving"
                     class="w-full"
                   />
                   <Textarea
                     v-model="pkg.description"
                     rows="2"
-                    placeholder="Description (optionnel)"
+                    :placeholder="t('profile.teacher.edit.package_description_placeholder')"
                     :disabled="isSaving"
                     class="w-full"
                   />
@@ -411,18 +411,18 @@
                         v-model="pkg.sessionsCount"
                         :min="1"
                         :max="100"
-                        placeholder="Nb séances"
+                        :placeholder="t('profile.teacher.edit.package_sessions_placeholder')"
                         :disabled="isSaving"
                         class="w-32"
                       />
-                      <span class="text-sm text-surface-500 dark:text-surface-400">séances</span>
+                      <span class="text-sm text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.package_sessions_suffix') }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                       <InputNumber
                         v-model="pkg.price"
                         :min="0"
                         :max="10000"
-                        placeholder="Prix"
+                        :placeholder="t('profile.teacher.edit.package_price_placeholder')"
                         suffix="€"
                         :disabled="isSaving"
                         class="w-32"
@@ -432,7 +432,7 @@
                 </div>
                 <Button
                   icon="pi pi-times"
-                  aria-label="Retirer cette formule"
+                  :aria-label="t('profile.teacher.edit.remove_package')"
                   severity="danger"
                   text
                   rounded
@@ -443,7 +443,7 @@
               </div>
             </div>
             <Button
-              label="Ajouter un forfait"
+              :label="t('profile.teacher.edit.add_package')"
               icon="pi pi-plus"
               severity="secondary"
               size="small"
@@ -461,13 +461,13 @@
       <div class="flex flex-col gap-5">
         <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
           <i class="pi pi-share-alt text-primary-500" />
-          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">Réseaux sociaux</h3>
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher.edit.section_social') }}</h3>
         </div>
 
         <div class="flex flex-col gap-3">
           <label class="font-medium text-surface-900 dark:text-surface-0">
-            Liens vers vos réseaux
-            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+            {{ t('profile.teacher.edit.social_links') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
           </label>
           <div class="flex flex-col gap-2">
             <div
@@ -480,19 +480,19 @@
                 :options="socialPlatformOptions"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Plateforme"
+                :placeholder="t('profile.teacher.edit.platform_placeholder')"
                 :disabled="isSaving"
                 class="w-44"
               />
               <InputText
                 v-model="link.url"
-                placeholder="https://..."
+                :placeholder="t('profile.teacher.edit.url_placeholder')"
                 :disabled="isSaving"
                 class="flex-1"
               />
               <Button
                 icon="pi pi-times"
-                aria-label="Retirer ce lien"
+                :aria-label="t('profile.teacher.edit.remove_link')"
                 severity="danger"
                 text
                 rounded
@@ -502,7 +502,7 @@
               />
             </div>
             <Button
-              label="Ajouter un lien"
+              :label="t('profile.teacher.edit.add_link')"
               icon="pi pi-plus"
               severity="secondary"
               size="small"
@@ -518,13 +518,13 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button
-          label="Annuler"
+          :label="t('profile.teacher.edit.cancel')"
           severity="secondary"
           :disabled="isSaving"
           @click="handleClose"
         />
         <Button
-          label="Enregistrer"
+          :label="t('profile.teacher.edit.save')"
           icon="pi pi-check"
           :loading="isSaving"
           @click="handleSave"
@@ -546,6 +546,7 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import geocodingApi from '../../api/geocoding.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
@@ -563,6 +564,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved'])
+const { t } = useI18n()
 
 const teacherProfileStore = useTeacherProfileStore()
 const instrumentStore = useInstrumentStore()
@@ -589,56 +591,56 @@ const isSaving = ref(false)
 const instrumentOptions = computed(() => instrumentStore.instruments || [])
 const styleOptions = computed(() => styleStore.styles || [])
 const selectedDurationOptions = computed(() =>
-  durationOptions.filter((d) => selectedDurations.value.includes(d.value))
+  durationOptions.value.filter((d) => selectedDurations.value.includes(d.value))
 )
 
-const studentLevelOptions = [
-  { value: 'beginner', label: 'Débutant' },
-  { value: 'intermediate', label: 'Intermédiaire' },
-  { value: 'advanced', label: 'Avancé' }
-]
+const studentLevelOptions = computed(() => [
+  { value: 'beginner', label: t('profile.teacher.student_level.beginner') },
+  { value: 'intermediate', label: t('profile.teacher.student_level.intermediate') },
+  { value: 'advanced', label: t('profile.teacher.student_level.advanced') }
+])
 
-const ageGroupOptions = [
-  { value: 'children', label: 'Enfants' },
-  { value: 'teenagers', label: 'Adolescents' },
-  { value: 'adults', label: 'Adultes' },
-  { value: 'seniors', label: 'Seniors' }
-]
+const ageGroupOptions = computed(() => [
+  { value: 'children', label: t('profile.teacher.age_group.children') },
+  { value: 'teenagers', label: t('profile.teacher.age_group.teenagers') },
+  { value: 'adults', label: t('profile.teacher.age_group.adults') },
+  { value: 'seniors', label: t('profile.teacher.age_group.seniors') }
+])
 
-const locationTypeOptions = [
-  { value: 'teacher_place', label: 'Chez le professeur' },
-  { value: 'student_place', label: "Chez l'élève" },
-  { value: 'online', label: 'En ligne' }
-]
+const locationTypeOptions = computed(() => [
+  { value: 'teacher_place', label: t('profile.teacher.location_type.teacher_place') },
+  { value: 'student_place', label: t('profile.teacher.location_type.student_place') },
+  { value: 'online', label: t('profile.teacher.location_type.online') }
+])
 
-const durationOptions = [
-  { value: '30min', label: '30 min' },
-  { value: '1h', label: '1 heure' },
-  { value: '1h30', label: '1h30' },
-  { value: '2h', label: '2 heures' }
-]
+const durationOptions = computed(() => [
+  { value: '30min', label: t('profile.teacher.edit.duration_30min') },
+  { value: '1h', label: t('profile.teacher.session_duration.h_1') },
+  { value: '1h30', label: t('profile.teacher.session_duration.h_1_30') },
+  { value: '2h', label: t('profile.teacher.session_duration.h_2') }
+])
 
-const dayOfWeekOptions = [
-  { value: 'monday', label: 'Lundi' },
-  { value: 'tuesday', label: 'Mardi' },
-  { value: 'wednesday', label: 'Mercredi' },
-  { value: 'thursday', label: 'Jeudi' },
-  { value: 'friday', label: 'Vendredi' },
-  { value: 'saturday', label: 'Samedi' },
-  { value: 'sunday', label: 'Dimanche' }
-]
+const dayOfWeekOptions = computed(() => [
+  { value: 'monday', label: t('profile.teacher.day_of_week.monday') },
+  { value: 'tuesday', label: t('profile.teacher.day_of_week.tuesday') },
+  { value: 'wednesday', label: t('profile.teacher.day_of_week.wednesday') },
+  { value: 'thursday', label: t('profile.teacher.day_of_week.thursday') },
+  { value: 'friday', label: t('profile.teacher.day_of_week.friday') },
+  { value: 'saturday', label: t('profile.teacher.day_of_week.saturday') },
+  { value: 'sunday', label: t('profile.teacher.day_of_week.sunday') }
+])
 
-const socialPlatformOptions = [
-  { value: 'website', label: 'Site web' },
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'twitter', label: 'Twitter / X' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'spotify', label: 'Spotify' },
-  { value: 'soundcloud', label: 'SoundCloud' },
-  { value: 'bandcamp', label: 'Bandcamp' }
-]
+const socialPlatformOptions = computed(() => [
+  { value: 'website', label: t('profile.platform.website') },
+  { value: 'youtube', label: t('profile.platform.youtube') },
+  { value: 'instagram', label: t('profile.platform.instagram') },
+  { value: 'facebook', label: t('profile.platform.facebook') },
+  { value: 'twitter', label: t('profile.platform.twitter') },
+  { value: 'tiktok', label: t('profile.platform.tiktok') },
+  { value: 'spotify', label: t('profile.platform.spotify') },
+  { value: 'soundcloud', label: t('profile.platform.soundcloud') },
+  { value: 'bandcamp', label: t('profile.platform.bandcamp') }
+])
 
 const isVisible = computed({
   get: () => props.visible,
@@ -914,7 +916,7 @@ async function handleSave() {
     if (e.violations?.length) {
       error.value = e.violations.map((v) => v.message).join('. ')
     } else {
-      error.value = e.message || 'Une erreur est survenue'
+      error.value = e.message || t('profile.teacher.edit.error')
     }
   } finally {
     isSaving.value = false

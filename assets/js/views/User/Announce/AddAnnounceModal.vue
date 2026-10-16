@@ -17,10 +17,10 @@
         </div>
         <div>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 m-0">
-            Nouvelle annonce
+            {{ t('profile.announce.add.title') }}
           </h2>
           <p class="text-sm text-surface-500 dark:text-surface-400 m-0">
-            Créez une annonce pour trouver des musiciens ou un groupe
+            {{ t('profile.announce.add.subtitle') }}
           </p>
         </div>
       </div>
@@ -29,25 +29,25 @@
     <div v-if="isSuccess" class="flex flex-col items-center justify-center py-8">
       <i class="pi pi-check-circle text-6xl text-green-500 mb-4" />
       <p class="text-lg font-medium text-surface-900 dark:text-surface-0">
-        Votre annonce a été créée avec succès !
+        {{ t('profile.announce.add.success') }}
       </p>
     </div>
 
     <Stepper v-else v-model:value="currentStep" :linear="!hasInitialValues">
       <StepList>
-        <Step value="1">Type</Step>
-        <Step value="2">Instrument</Step>
-        <Step value="3">Styles</Step>
-        <Step value="4">Localisation</Step>
-        <Step value="5">Profil</Step>
-        <Step value="6">Note</Step>
+        <Step value="1">{{ t('profile.announce.add.step_type') }}</Step>
+        <Step value="2">{{ t('profile.announce.add.step_instrument') }}</Step>
+        <Step value="3">{{ t('profile.announce.add.step_styles') }}</Step>
+        <Step value="4">{{ t('profile.announce.add.step_location') }}</Step>
+        <Step value="5">{{ t('profile.announce.add.step_profile') }}</Step>
+        <Step value="6">{{ t('profile.announce.add.step_note') }}</Step>
       </StepList>
 
       <StepPanels>
         <StepPanel v-slot="{ activateCallback }" value="1">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
-              Quel type de recherche souhaitez-vous effectuer ?
+              {{ t('profile.announce.add.type_question') }}
             </p>
             <div class="flex flex-col gap-3">
               <div
@@ -59,8 +59,8 @@
               >
                 <i class="pi pi-users text-2xl" :class="selectedType === 'band' ? 'text-primary' : 'text-surface-500'" />
                 <div>
-                  <p class="font-semibold text-surface-900 dark:text-surface-0">Je recherche un groupe</p>
-                  <p class="text-sm text-surface-500 dark:text-surface-400">Vous êtes musicien et cherchez un groupe</p>
+                  <p class="font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.announce.add.type_band') }}</p>
+                  <p class="text-sm text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.type_band_hint') }}</p>
                 </div>
               </div>
               <div
@@ -72,15 +72,15 @@
               >
                 <i class="pi pi-user text-2xl" :class="selectedType === 'musician' ? 'text-primary' : 'text-surface-500'" />
                 <div>
-                  <p class="font-semibold text-surface-900 dark:text-surface-0">Je recherche un musicien</p>
-                  <p class="text-sm text-surface-500 dark:text-surface-400">Vous avez un groupe et cherchez un musicien</p>
+                  <p class="font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.announce.add.type_musician') }}</p>
+                  <p class="text-sm text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.type_musician_hint') }}</p>
                 </div>
               </div>
             </div>
           </div>
           <div class="flex justify-end pt-4">
             <Button
-              label="Suivant"
+              :label="t('profile.announce.add.next')"
               icon="pi pi-arrow-right"
               iconPos="right"
               :disabled="!selectedType"
@@ -92,27 +92,27 @@
         <StepPanel v-slot="{ activateCallback }" value="2">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
-              {{ selectedType === 'band' ? 'Quel instrument jouez-vous ?' : 'Quel instrument recherchez-vous ?' }}
+              {{ selectedType === 'band' ? t('profile.announce.add.instrument_question_band') : t('profile.announce.add.instrument_question_musician') }}
             </p>
             <Select
               v-model="selectedInstrument"
               :options="instrumentStore.instruments"
               filter
               optionLabel="musician_name"
-              placeholder="Sélectionnez un instrument"
+              :placeholder="t('profile.announce.add.instrument_placeholder')"
               class="w-full"
             />
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Précédent"
+              :label="t('profile.announce.add.previous')"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
               @click="activateCallback('1')"
             />
             <Button
-              label="Suivant"
+              :label="t('profile.announce.add.next')"
               icon="pi pi-arrow-right"
               iconPos="right"
               :disabled="!selectedInstrument"
@@ -124,32 +124,32 @@
         <StepPanel v-slot="{ activateCallback }" value="3">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
-              {{ selectedType === 'band' ? 'Quels styles jouez-vous ?' : 'Quels styles recherchez-vous ?' }}
+              {{ selectedType === 'band' ? t('profile.announce.add.styles_question_band') : t('profile.announce.add.styles_question_musician') }}
             </p>
             <MultiSelect
               v-model="selectedStyles"
               :options="styleStore.styles"
               optionLabel="name"
               filter
-              placeholder="Sélectionnez un ou plusieurs styles"
+              :placeholder="t('profile.announce.add.styles_placeholder')"
               class="w-full"
               display="chip"
               :selectionLimit="10"
             />
             <small class="text-surface-500 dark:text-surface-400">
-              {{ selectedStyles.length }}/10 styles sélectionnés
+              {{ t('profile.announce.add.styles_count', { count: selectedStyles.length }) }}
             </small>
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Précédent"
+              :label="t('profile.announce.add.previous')"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
               @click="activateCallback('2')"
             />
             <Button
-              label="Suivant"
+              :label="t('profile.announce.add.next')"
               icon="pi pi-arrow-right"
               iconPos="right"
               :disabled="selectedStyles.length === 0"
@@ -161,14 +161,14 @@
         <StepPanel v-slot="{ activateCallback }" value="4">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
-              Dans quelle zone géographique ?
+              {{ t('profile.announce.add.location_question') }}
             </p>
 
             <AutoComplete
               v-model="selectedLocation"
               :suggestions="locationSuggestions"
               optionLabel="name"
-              placeholder="Rechercher une ville..."
+              :placeholder="t('profile.announce.add.location_placeholder')"
               fluid
               @complete="searchLocation"
             >
@@ -191,19 +191,19 @@
             </div>
 
             <Message severity="info" size="small">
-              Indiquez de préférence une ville ou commune
+              {{ t('profile.announce.add.location_hint') }}
             </Message>
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Précédent"
+              :label="t('profile.announce.add.previous')"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
               @click="activateCallback('3')"
             />
             <Button
-              label="Suivant"
+              :label="t('profile.announce.add.next')"
               icon="pi pi-arrow-right"
               iconPos="right"
               :disabled="!selectedLocation || typeof selectedLocation !== 'object'"
@@ -225,32 +225,32 @@
         <StepPanel v-slot="{ activateCallback }" value="6">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
-              Ajoutez une note (optionnel)
+              {{ t('profile.announce.add.note_question') }}
             </p>
             <Textarea
               v-model="note"
               rows="4"
-              placeholder="Informations complémentaires sur votre recherche..."
+              :placeholder="t('profile.announce.add.note_placeholder')"
               class="w-full"
             />
 
             <div class="bg-surface-100 dark:bg-surface-800 rounded-xl p-4 mt-2">
-              <p class="font-semibold text-surface-900 dark:text-surface-0 mb-3">Récapitulatif</p>
+              <p class="font-semibold text-surface-900 dark:text-surface-0 mb-3">{{ t('profile.announce.add.summary') }}</p>
               <div class="flex flex-col gap-2 text-sm">
                 <div class="flex justify-between">
-                  <span class="text-surface-500 dark:text-surface-400">Type :</span>
-                  <span class="text-surface-900 dark:text-surface-0">{{ selectedType === 'band' ? 'Recherche un groupe' : 'Recherche un musicien' }}</span>
+                  <span class="text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.summary_type') }}</span>
+                  <span class="text-surface-900 dark:text-surface-0">{{ selectedType === 'band' ? t('profile.announce.add.summary_type_band') : t('profile.announce.add.summary_type_musician') }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-surface-500 dark:text-surface-400">Instrument :</span>
+                  <span class="text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.summary_instrument') }}</span>
                   <span class="text-surface-900 dark:text-surface-0">{{ selectedInstrument?.musician_name }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-surface-500 dark:text-surface-400">Styles :</span>
+                  <span class="text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.summary_styles') }}</span>
                   <span class="text-surface-900 dark:text-surface-0">{{ selectedStyles.map(s => s.name).join(', ') }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-surface-500 dark:text-surface-400">Localisation :</span>
+                  <span class="text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.summary_location') }}</span>
                   <span class="text-surface-900 dark:text-surface-0">{{ selectedLocation?.fullName }}</span>
                 </div>
               </div>
@@ -261,14 +261,14 @@
           </Message>
           <div class="flex justify-between pt-4">
             <Button
-              label="Précédent"
+              :label="t('profile.announce.add.previous')"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
               @click="activateCallback('5')"
             />
             <Button
-              label="Créer l'annonce"
+              :label="t('profile.announce.add.submit')"
               icon="pi pi-check"
               :loading="userAnnounceStore.isSaving"
               @click="save"
@@ -280,7 +280,7 @@
 
     <template #footer>
       <div v-if="isSuccess" class="flex justify-end w-full">
-        <Button label="Fermer" @click="visible = false" />
+        <Button :label="t('profile.announce.add.close')" @click="visible = false" />
       </div>
     </template>
   </Dialog>
@@ -302,6 +302,7 @@ import StepPanels from 'primevue/steppanels'
 import Stepper from 'primevue/stepper'
 import Textarea from 'primevue/textarea'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import geocodingApi from '../../../api/geocoding.js'
 import MusicianProfileStepContent from '../../../components/User/Announce/MusicianProfileStepContent.vue'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
@@ -318,6 +319,7 @@ const props = defineProps({
 
 const emit = defineEmits(['created'])
 const visible = defineModel('visible', { type: Boolean, default: false })
+const { t } = useI18n()
 
 const userAnnounceStore = useUserAnnounceStore()
 const instrumentStore = useInstrumentStore()

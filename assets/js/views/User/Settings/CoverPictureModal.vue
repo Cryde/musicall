@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Photo de couverture"
+    :header="t('profile.settings.cover_picture.title')"
     :style="{ width: '60rem' }"
     :closable="!isSaving"
     :closeOnEscape="!isSaving"
@@ -25,13 +25,13 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button
-          label="Annuler"
+          :label="t('profile.settings.cover_picture.cancel')"
           severity="secondary"
           @click="handleClose"
           :disabled="isSaving"
         />
         <Button
-          label="Sauvegarder"
+          :label="t('profile.settings.cover_picture.save')"
           icon="pi pi-check"
           :loading="isSaving"
           @click="handleSave"
@@ -48,6 +48,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 
 const props = defineProps({
@@ -62,6 +63,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'saved'])
+const { t } = useI18n()
 
 const userProfileStore = useUserProfileStore()
 
@@ -96,7 +98,7 @@ async function handleSave() {
           if (e.violations?.length) {
             error.value = e.violations.map((v) => v.message).join('. ')
           } else {
-            error.value = e.message || 'Une erreur est survenue'
+            error.value = e.message || t('profile.settings.cover_picture.error')
           }
         } finally {
           isSaving.value = false

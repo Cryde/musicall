@@ -2,10 +2,10 @@
   <div class="flex flex-col gap-6">
     <div class="flex flex-col gap-2">
       <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0">
-        Profil public
+        {{ t('profile.settings.profile.title') }}
       </h2>
       <p class="text-surface-500 dark:text-surface-400 text-sm">
-        Gérez les informations affichées sur votre profil public
+        {{ t('profile.settings.profile.subtitle') }}
       </p>
     </div>
 
@@ -23,7 +23,7 @@
               : 'border-transparent text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-300'
           ]"
         >
-          {{ tab.label }}
+          {{ t(tab.labelKey) }}
         </button>
       </nav>
     </div>
@@ -35,16 +35,34 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const tabs = [
-  { value: 'general', label: 'Général', route: 'app_user_settings_profile' },
-  { value: 'musician', label: 'Profil musicien', route: 'app_user_settings_profile_musician' },
-  { value: 'teacher', label: 'Profil professeur', route: 'app_user_settings_profile_teacher' },
-  { value: 'privacy', label: 'Confidentialité', route: 'app_user_settings_profile_privacy' }
+  {
+    value: 'general',
+    labelKey: 'profile.settings.profile.tabs.general',
+    route: 'app_user_settings_profile'
+  },
+  {
+    value: 'musician',
+    labelKey: 'profile.settings.profile.tabs.musician',
+    route: 'app_user_settings_profile_musician'
+  },
+  {
+    value: 'teacher',
+    labelKey: 'profile.settings.profile.tabs.teacher',
+    route: 'app_user_settings_profile_teacher'
+  },
+  {
+    value: 'privacy',
+    labelKey: 'profile.settings.profile.tabs.privacy',
+    route: 'app_user_settings_profile_privacy'
+  }
 ]
 
 const activeTab = computed(() => {
