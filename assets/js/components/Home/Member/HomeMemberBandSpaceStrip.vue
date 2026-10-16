@@ -7,19 +7,19 @@
       <span class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-primary-400 to-fuchsia-400" aria-hidden="true" />
       <div class="flex flex-col gap-0.5">
         <h2 id="home-member-band-strip-title" class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">
-          Vous avez trouvé votre groupe ?
+          {{ t('home.member.band_space_strip.title') }}
         </h2>
         <p class="m-0 text-sm text-surface-700 dark:text-surface-300">
-          Agenda, setlists, tâches et fichiers dans un espace réservé à ses membres.
+          {{ t('home.member.band_space_strip.intro') }}
         </p>
       </div>
     </div>
     <div class="flex flex-wrap gap-2 shrink-0">
-      <Button as="router-link" :to="{ name: 'app_band_index' }" label="Créer son espace" icon="pi pi-plus" size="small" />
+      <Button as="router-link" :to="{ name: 'app_band_index' }" :label="t('home.member.band_space_strip.create')" icon="pi pi-plus" size="small" />
       <Button
         as="router-link"
         :to="{ name: 'app_band_space_presentation' }"
-        label="Découvrir"
+        :label="t('home.member.band_space_strip.discover')"
         severity="secondary"
         outlined
         size="small"
@@ -30,6 +30,8 @@
 
 <script setup>
 import Button from 'primevue/button'
+import { useI18n } from 'vue-i18n'
 
 /** The Band Space for a member who has none yet (#1078): one line, rather than a big empty card. */
+const { t } = useI18n()
 </script>

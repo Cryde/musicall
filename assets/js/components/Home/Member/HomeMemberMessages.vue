@@ -1,8 +1,8 @@
 <template>
-  <HomeMemberPanel title="Messages" link-label="Tous les messages" :link-to="{ name: 'app_messages' }">
+  <HomeMemberPanel :title="t('home.member.messages.title')" :link-label="t('home.member.messages.link')" :link-to="{ name: 'app_messages' }">
     <template #aside>
       <span v-if="notificationStore.unreadMessages > 0" class="text-sm font-bold text-orange-700 dark:text-orange-300">
-        {{ notificationStore.unreadMessages }} non lu{{ notificationStore.unreadMessages > 1 ? 's' : '' }}
+        {{ t('home.member.messages.unread_count', notificationStore.unreadMessages) }}
       </span>
     </template>
 
@@ -23,17 +23,18 @@
             <span class="text-sm truncate text-surface-600 dark:text-surface-300">{{ threadMeta.thread.last_message?.content_preview }}</span>
           </span>
           <span v-if="threadMeta.unread_count > 0" class="w-2 h-2 shrink-0 rounded-full bg-orange-500" aria-hidden="true" />
-          <span v-if="threadMeta.unread_count > 0" class="sr-only">Non lu</span>
+          <span v-if="threadMeta.unread_count > 0" class="sr-only">{{ t('home.member.messages.unread') }}</span>
         </router-link>
       </li>
     </ul>
-    <p v-else class="m-0 text-sm text-surface-600 dark:text-surface-300">Pas encore de conversation.</p>
+    <p v-else class="m-0 text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.messages.empty') }}</p>
   </HomeMemberPanel>
 </template>
 
 <script setup>
 import Avatar from 'primevue/avatar'
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { displayName } from '../../../helper/user/displayName.js'
 import { useMessageStore } from '../../../store/message/message.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
@@ -43,6 +44,7 @@ import HomeMemberPanel from './HomeMemberPanel.vue'
 /** The latest conversations (#1078); the unread total is the navbar's, kept live by the stream. */
 const THREADS_SHOWN = 3
 
+const { t } = useI18n()
 const messageStore = useMessageStore()
 const notificationStore = useNotificationStore()
 
@@ -56,7 +58,7 @@ onMounted(() => {
 function nameOf(threadMeta) {
   if (threadMeta.thread.band_space_name) return threadMeta.thread.band_space_name
   const participant = messageStore.getOtherParticipant(threadMeta)
-  return participant ? displayName(participant) : 'Conversation'
+  return participant ? displayName(participant) : t('home.member.messages.fallback_name')
 }
 
 // Keyed on the username rather than the shown name, so a colour survives a change of name (#1118).

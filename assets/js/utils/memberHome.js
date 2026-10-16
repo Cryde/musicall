@@ -1,5 +1,6 @@
 import { TYPES_ANNOUNCE_MUSICIAN } from '../constants/types.js'
 import { intlLocale } from '../i18n/formatLocale.js'
+import { i18n } from '../i18n/index.js'
 
 /**
  * The logged in home's rules (#1078), apart from its components so they are tested without a browser.
@@ -9,9 +10,11 @@ const EVENING_FROM_HOUR = 18
 const MORNING_FROM_HOUR = 5
 
 /** « Bonjour » in the day, « Bonsoir » from the evening until the small hours. */
-export function greetingFor(date) {
+export function greetingFor(date, username) {
   const hour = date.getHours()
-  return hour >= MORNING_FROM_HOUR && hour < EVENING_FROM_HOUR ? 'Bonjour' : 'Bonsoir'
+  return hour >= MORNING_FROM_HOUR && hour < EVENING_FROM_HOUR
+    ? i18n.global.t('home.member.greeting.day', { username })
+    : i18n.global.t('home.member.greeting.evening', { username })
 }
 
 export const MEMBER_LAYOUT_BAND = 'band'

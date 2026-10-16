@@ -6,20 +6,20 @@
   >
     <div class="flex flex-col gap-1">
       <label id="home-member-city-title" for="home-member-city" class="font-semibold text-surface-900 dark:text-surface-0">
-        Où jouez-vous ?
+        {{ t('home.member.city_prompt.label') }}
       </label>
       <span class="text-sm text-surface-700 dark:text-surface-300">
-        Indiquez votre ville pour voir d'abord les annonces près de chez vous.
+        {{ t('home.member.city_prompt.intro') }}
       </span>
     </div>
     <div class="flex flex-col sm:flex-row gap-2">
-      <CityAutoComplete v-model="city" input-id="home-member-city" placeholder="Votre ville" class="sm:flex-1" />
+      <CityAutoComplete v-model="city" input-id="home-member-city" :placeholder="t('home.member.city_prompt.placeholder')" class="sm:flex-1" />
       <div class="flex gap-2">
-        <Button type="submit" label="Enregistrer" :loading="isSaving" :disabled="!isCityPicked" />
-        <Button v-if="cancellable" type="button" label="Annuler" severity="secondary" :disabled="isSaving" @click="$emit('cancel')" />
+        <Button type="submit" :label="t('home.member.city_prompt.save')" :loading="isSaving" :disabled="!isCityPicked" />
+        <Button v-if="cancellable" type="button" :label="t('home.member.city_prompt.cancel')" severity="secondary" :disabled="isSaving" @click="$emit('cancel')" />
       </div>
     </div>
-    <small class="text-surface-600 dark:text-surface-300">Elle est aussi affichée sur votre profil, vous pouvez la changer à tout moment.</small>
+    <small class="text-surface-600 dark:text-surface-300">{{ t('home.member.city_prompt.hint') }}</small>
     <small v-if="error" role="alert" class="text-red-700 dark:text-red-400">{{ error }}</small>
   </form>
 </template>
@@ -27,6 +27,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import profileApi from '../../../api/user/profile.js'
 import { profileCity, profileLocationPayload } from '../../../utils/profileLocation.js'
 import CityAutoComplete from '../../Global/CityAutoComplete.vue'
@@ -40,6 +41,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'cancel'])
+
+const { t } = useI18n()
 
 const city = ref(props.currentCity)
 const isSaving = ref(false)
@@ -57,7 +60,7 @@ async function save() {
     const profile = await profileApi.updateMyProfile(profileLocationPayload(city.value))
     emit('saved', profileCity(profile))
   } catch {
-    error.value = "Impossible d'enregistrer votre ville, réessayez."
+    error.value = t('home.member.city_prompt.error')
   } finally {
     isSaving.value = false
   }

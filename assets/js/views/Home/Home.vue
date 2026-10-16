@@ -7,12 +7,14 @@
 
 <script setup>
 import { useTitle } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import HomeMember from './HomeMember.vue'
 import HomeVisitor from './HomeVisitor.vue'
 
 /** A visitor gets the pitch (#1074), a member what moves for them (#1078). */
-useTitle('MusicAll, le site de référence au service de la musique')
+const { t } = useI18n()
+useTitle(() => t('home.title'))
 
 const userSecurityStore = useUserSecurityStore()
 </script>

@@ -47,7 +47,7 @@
 
     <h3 class="m-0 text-lg font-bold text-surface-900 dark:text-surface-0">{{ announceHeadline(announce) }}</h3>
 
-    <ul v-if="styleTags.tags.length > 0" class="m-0 p-0 list-none flex flex-wrap gap-1.5" aria-label="Styles">
+    <ul v-if="styleTags.tags.length > 0" class="m-0 p-0 list-none flex flex-wrap gap-1.5" :aria-label="t('home.announce_card.styles')">
       <li
         v-for="tag in styleTags.tags"
         :key="tag"
@@ -61,7 +61,7 @@
           v-tooltip.top="styleTags.hidden.join(', ')"
           type="button"
           class="rounded-full bg-surface-100 dark:bg-surface-800 px-2.5 py-1 text-sm text-surface-700 dark:text-surface-200 cursor-help"
-          :aria-label="`Et aussi : ${styleTags.hidden.join(', ')}`"
+          :aria-label="t('home.announce_card.more_styles', { styles: styleTags.hidden.join(', ') })"
         >
           +{{ styleTags.hidden.length }}
         </button>
@@ -81,10 +81,10 @@
           v-if="canContact"
           size="small"
           icon="pi pi-envelope"
-          label="Contacter"
+          :label="t('home.announce_card.contact')"
           severity="secondary"
           text
-          :aria-label="`Contacter ${authorName}`"
+          :aria-label="t('home.announce_card.contact_author', { name: authorName })"
           @click="$emit('contact', announce)"
         />
         <AnnounceNoteButton :note="announce.note" :author-name="authorName" />
@@ -93,7 +93,7 @@
           target-type="announce"
           :target-id="announce.id"
           :author-id="announce.author.id"
-          :aria-label="`Signaler l'annonce de ${authorName}`"
+          :aria-label="t('home.announce_card.report', { name: authorName })"
           icon-only
         />
       </div>
@@ -105,6 +105,7 @@
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
@@ -123,6 +124,7 @@ const props = defineProps({
 
 defineEmits(['contact'])
 
+const { t } = useI18n()
 const userSecurityStore = useUserSecurityStore()
 
 const authorName = computed(() => displayName(props.announce.author))

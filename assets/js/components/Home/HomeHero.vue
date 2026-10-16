@@ -15,13 +15,15 @@
     <div class="relative z-10 grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-12 items-center p-6 sm:p-10 lg:p-16 xl:p-20">
       <div class="flex flex-col gap-6">
         <h1 class="m-0 text-4xl sm:text-5xl xl:text-6xl font-extrabold leading-[1.06]">
-          <span class="text-surface-900 dark:text-white">Trouvez les musiciens</span>
-          <br />
-          <span class="text-brand-gradient">qui manquent à votre groupe.</span>
+          <i18n-t keypath="home.hero.title" tag="span" class="text-surface-900 dark:text-white">
+            <template #highlight>
+              <br />
+              <span class="text-brand-gradient">{{ t('home.hero.title_highlight') }}</span>
+            </template>
+          </i18n-t>
         </h1>
         <p class="m-0 text-lg lg:text-xl leading-relaxed text-surface-700 dark:text-surface-300 max-w-2xl">
-          Annonces de musiciens et de groupes, un espace privé pour gérer votre groupe, des cours et une
-          communauté de passionné·e·s.
+          {{ t('home.hero.intro') }}
         </p>
 
         <HomeSearchForm />
@@ -51,6 +53,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import HomeAnnounceCard from './HomeAnnounceCard.vue'
 import HomeFrequentSearches from './HomeFrequentSearches.vue'
 import HomeSearchForm from './HomeSearchForm.vue'
@@ -61,6 +64,8 @@ defineProps({
   /** What enough different people searched for lately (#1075); the row stays out when there is none. */
   frequentSearches: { type: Array, default: () => [] }
 })
+
+const { t } = useI18n()
 
 const STACK_POSITIONS = [
   // Dimmed rather than faded: a translucent card would show the text of the one behind it.

@@ -2,23 +2,23 @@
   <form
     class="flex flex-col gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0/90 dark:bg-surface-900/85 p-3 sm:p-4 shadow-xl backdrop-blur-sm"
     role="search"
-    aria-label="Rechercher un musicien ou un groupe"
+    :aria-label="t('home.search_form.aria_label')"
     @submit.prevent="submit"
   >
     <SelectButton
       v-model="lookingFor"
-      :options="LOOKING_FOR_OPTIONS"
+      :options="lookingForOptions"
       option-label="label"
       option-value="value"
       :allow-empty="false"
-      aria-label="Ce que vous cherchez"
+      :aria-label="t('home.search_form.looking_for_aria_label')"
       class="self-start max-w-full"
     />
 
     <div class="flex flex-col md:flex-row gap-3 md:items-end">
       <div class="flex flex-col gap-1 flex-1 min-w-0">
         <label id="home-search-instrument" class="text-xs font-semibold uppercase tracking-wide text-surface-600 dark:text-surface-300">
-          Instrument
+          {{ t('home.search_form.instrument') }}
         </label>
         <Select
           v-model="instrument"
@@ -26,7 +26,7 @@
           option-label="musician_name"
           filter
           show-clear
-          placeholder="Tous les instruments"
+          :placeholder="t('home.search_form.instrument_placeholder')"
           aria-labelledby="home-search-instrument"
           :loading="instrumentStore.instruments.length === 0"
           class="w-full"
@@ -34,19 +34,19 @@
       </div>
       <div class="flex flex-col gap-1 flex-1 min-w-0">
         <label for="home-search-city" class="text-xs font-semibold uppercase tracking-wide text-surface-600 dark:text-surface-300">
-          Où
+          {{ t('home.search_form.city') }}
         </label>
         <CityAutoComplete
           ref="cityField"
           v-model="city"
           v-model:loading="isCityLoading"
           input-id="home-search-city"
-          placeholder="Ville (optionnel)"
+          :placeholder="t('home.search_form.city_placeholder')"
         />
       </div>
       <Button
         type="submit"
-        label="Rechercher"
+        :label="t('home.search_form.submit')"
         icon="pi pi-search"
         severity="info"
         :loading="isCityLoading || isSubmitting"
@@ -61,7 +61,8 @@
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import {
@@ -72,10 +73,12 @@ import {
 import CityAutoComplete from '../Global/CityAutoComplete.vue'
 
 /** The homepage's way into the musician search (#1074): it only builds the search page's link. */
-const LOOKING_FOR_OPTIONS = [
-  { label: 'Je cherche un musicien', value: LOOKING_FOR_MUSICIAN },
-  { label: 'Je cherche un groupe', value: LOOKING_FOR_BAND }
-]
+const { t } = useI18n()
+
+const lookingForOptions = computed(() => [
+  { label: t('home.search_form.looking_for_musician'), value: LOOKING_FOR_MUSICIAN },
+  { label: t('home.search_form.looking_for_band'), value: LOOKING_FOR_BAND }
+])
 
 const router = useRouter()
 const instrumentStore = useInstrumentStore()

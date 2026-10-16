@@ -43,15 +43,18 @@
       <!-- Content -->
       <div class="relative z-10 text-center py-16 px-8">
         <h2 class="text-3xl md:text-4xl font-bold mb-4">
-          <span class="text-surface-900 dark:text-white">Rejoignez la communauté </span>
-          <span class="text-brand-gradient">MusicAll</span>
+          <i18n-t keypath="home.visitor.cta.title" tag="span" class="text-surface-900 dark:text-white">
+            <template #brand>
+              <span class="text-brand-gradient">{{ t('home.visitor.cta.brand') }}</span>
+            </template>
+          </i18n-t>
         </h2>
         <p class="text-lg text-surface-600 dark:text-surface-400 mb-8 max-w-md mx-auto">
-          Des milliers de passionné·e·s échangent déjà sur MusicAll
+          {{ t('home.visitor.cta.subtitle') }}
         </p>
         <router-link :to="{ name: 'app_register' }">
           <Button
-            label="Créer mon compte gratuitement"
+            :label="t('home.visitor.cta.button')"
             icon="pi pi-user-plus"
             size="large"
             rounded
@@ -73,6 +76,7 @@
 /** The homepage as a visitor sees it (#1074). */
 import Button from 'primevue/button'
 import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import musicianSearchApi from '../../api/search/musician.js'
 import teacherProfileApi from '../../api/user/teacherProfile.js'
@@ -104,6 +108,7 @@ const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
 
 const router = useRouter()
+const { t } = useI18n()
 
 const HERO_PREVIEW_COUNT = 3
 
@@ -167,7 +172,7 @@ async function loadFrequentSearches() {
 
 function handleCreateTeacherProfile() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Vous devez vous connecter pour créer votre profil professeur.'
+    authModalMessage.value = t('home.visitor.auth.teacher_profile')
     showAuthModal.value = true
     return
   }
@@ -176,8 +181,7 @@ function handleCreateTeacherProfile() {
 
 function handleOpenDiscoverModal() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value =
-      'Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter.'
+    authModalMessage.value = t('home.visitor.auth.discover')
     showAuthModal.value = true
     return
   }
@@ -186,7 +190,7 @@ function handleOpenDiscoverModal() {
 
 function handleOpenAnnounceModal() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Si vous souhaitez poster une annonce, vous devez vous connecter.'
+    authModalMessage.value = t('home.visitor.auth.announce')
     showAuthModal.value = true
     return
   }
@@ -199,7 +203,7 @@ async function handleAnnounceCreated() {
 
 function handleContactAnnounce(announce) {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Vous devez vous connecter pour envoyer un message à cet utilisateur.'
+    authModalMessage.value = t('home.visitor.auth.contact')
     showAuthModal.value = true
     return
   }

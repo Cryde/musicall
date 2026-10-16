@@ -2,14 +2,14 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Ajouter une video découverte"
+    :header="t('home.add_discover.header')"
     :style="{ width: '35rem' }"
     :closable="!videoStore.isLoadingAdd"
     :closeOnEscape="!videoStore.isLoadingAdd"
   >
     <Message severity="success" :closable="false" class="mb-4">
-      Partagez vos découvertes musicales avec la communauté.<br />
-      Pour l'instant seuls les liens Youtube fonctionnent.
+      {{ t('home.add_discover.intro_share') }}<br />
+      {{ t('home.add_discover.intro_youtube_only') }}
     </Message>
 
     <div class="flex flex-col gap-4">
@@ -17,26 +17,26 @@
         <InputText
           id="videoUrl"
           v-model="videoUrl"
-          placeholder="Url de la vidéo Youtube"
+          :placeholder="t('home.add_discover.url_placeholder')"
           :disabled="videoStore.isLoadingPreview || videoStore.isLoadingAdd"
           class="w-full"
         />
         <small v-if="!videoStore.isLoadingPreview" class="text-surface-500">
-          Avec ce lien nous pourrons récupérer quelques informations
+          {{ t('home.add_discover.url_hint') }}
         </small>
         <small v-else class="text-surface-500 flex items-center gap-2">
           <i class="pi pi-spin pi-spinner"></i>
-          Chargement de l'aperçu...
+          {{ t('home.add_discover.loading_preview') }}
         </small>
       </div>
 
       <Message v-if="isExistingVideo" severity="error" :closable="false">
-        La vidéo existe déjà.<br />
-        Vous ne pouvez pas la remettre en ligne une nouvelle fois.
+        {{ t('home.add_discover.existing') }}<br />
+        {{ t('home.add_discover.existing_detail') }}
       </Message>
 
       <Message v-if="hasGenericError" severity="error" :closable="false">
-        Une erreur est survenue. Veuillez vérifier l'URL et réessayer.
+        {{ t('home.add_discover.generic_error') }}
       </Message>
 
       <template v-if="showPreview && !isExistingVideo">
@@ -45,29 +45,29 @@
             <InputText
               id="videoTitle"
               v-model="videoTitle"
-              placeholder="Titre de la vidéo"
+              :placeholder="t('home.add_discover.title_placeholder')"
               :disabled="videoStore.isLoadingAdd"
               class="w-full"
             />
             <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
-            <small v-else class="text-surface-500">Le titre de la vidéo. Vous pouvez le changer</small>
+            <small v-else class="text-surface-500">{{ t('home.add_discover.title_hint') }}</small>
           </div>
 
           <div class="flex flex-col gap-1">
             <Textarea
               id="videoDescription"
               v-model="videoDescription"
-              placeholder="Description de la vidéo"
+              :placeholder="t('home.add_discover.description_placeholder')"
               :disabled="videoStore.isLoadingAdd"
               rows="4"
               class="w-full"
             />
             <small v-if="errors.description" class="text-red-500">{{ errors.description }}</small>
-            <small v-else class="text-surface-500">La description de la vidéo. Vous pouvez la changer</small>
+            <small v-else class="text-surface-500">{{ t('home.add_discover.description_hint') }}</small>
           </div>
 
           <div v-if="videoImage">
-            <img :src="videoImage" alt="Aperçu de la vidéo" class="w-full rounded-lg" />
+            <img :src="videoImage" :alt="t('home.add_discover.preview_alt')" class="w-full rounded-lg" />
           </div>
         </div>
       </template>
@@ -75,14 +75,14 @@
       <div class="flex justify-end gap-2 mt-4">
         <Button
           type="button"
-          label="Annuler"
+          :label="t('home.add_discover.cancel')"
           severity="secondary"
           @click="handleClose"
           :disabled="videoStore.isLoadingAdd"
         />
         <Button
           type="button"
-          label="Publier"
+          :label="t('home.add_discover.publish')"
           icon="pi pi-check"
           :loading="videoStore.isLoadingAdd"
           :disabled="!canPublish"
@@ -103,11 +103,13 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ERROR_CODES } from '../../constants/errorCodes.js'
 import { useVideoStore } from '../../store/publication/video.js'
 
 const emit = defineEmits(['published'])
 
+const { t } = useI18n()
 const videoStore = useVideoStore()
 const toast = useToast()
 
@@ -241,8 +243,8 @@ async function handlePublish() {
 
     toast.add({
       severity: 'success',
-      summary: 'Vidéo publiée',
-      detail: 'Votre vidéo a été mise en ligne',
+      summary: t('home.add_discover.published_summary'),
+      detail: t('home.add_discover.published_detail'),
       life: 5000
     })
   } catch (error) {
@@ -259,7 +261,7 @@ async function handlePublish() {
     } else {
       toast.add({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('home.add_discover.error_summary'),
         detail: error.message,
         life: 5000
       })
