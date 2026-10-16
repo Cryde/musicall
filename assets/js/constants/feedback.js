@@ -1,4 +1,24 @@
+import { i18n } from '../i18n/index.js'
 import { FEEDBACK_MODULES } from '../utils/feedbackModule.js'
+
+// Labels are getters so they are translated when shown, in whatever language is active then.
+function option(value, labelKey) {
+  return {
+    value,
+    get label() {
+      return i18n.global.t(labelKey)
+    }
+  }
+}
+
+function group(labelKey, items) {
+  return {
+    get label() {
+      return i18n.global.t(labelKey)
+    },
+    items
+  }
+}
 
 /**
  * Mirrors `App\ApiResource\Feedback\FeedbackResource`. The picker disables the send button below it,
@@ -9,10 +29,10 @@ export const MESSAGE_MAX_LENGTH = 2000
 
 /** Mirrors `App\Enum\Feedback\FeedbackType`, labels included. */
 export const FEEDBACK_TYPE_OPTIONS = Object.freeze([
-  { value: 'bug', label: 'Bug' },
-  { value: 'suggestion', label: 'Suggestion' },
-  { value: 'question', label: 'Question' },
-  { value: 'other', label: 'Autre' }
+  option('bug', 'shared.feedback.type.bug'),
+  option('suggestion', 'shared.feedback.type.suggestion'),
+  option('question', 'shared.feedback.type.question'),
+  option('other', 'shared.feedback.type.other')
 ])
 
 /**
@@ -23,33 +43,27 @@ export const FEEDBACK_TYPE_OPTIONS = Object.freeze([
  * most people never open this list, and the ones who do are correcting a wrong guess.
  */
 export const FEEDBACK_MODULE_GROUPS = Object.freeze([
-  {
-    label: 'Band Space',
-    items: [
-      { value: FEEDBACK_MODULES.DASHBOARD, label: 'Dashboard du Band Space' },
-      { value: FEEDBACK_MODULES.AGENDA, label: 'Agenda' },
-      { value: FEEDBACK_MODULES.CHAT, label: 'Discussion' },
-      { value: FEEDBACK_MODULES.NOTES, label: 'Notes' },
-      { value: FEEDBACK_MODULES.FILE, label: 'Fichiers' },
-      { value: FEEDBACK_MODULES.SETLIST, label: 'Setlists' },
-      { value: FEEDBACK_MODULES.RIDER, label: 'Tech riders' },
-      { value: FEEDBACK_MODULES.TASK, label: 'Tâches' },
-      { value: FEEDBACK_MODULES.FINANCE, label: 'Finances' },
-      { value: FEEDBACK_MODULES.SETTINGS, label: 'Paramètres du Band Space' }
-    ]
-  },
-  {
-    label: 'Le site',
-    items: [
-      { value: FEEDBACK_MODULES.FORUM, label: 'Forum' },
-      { value: FEEDBACK_MODULES.PUBLICATION, label: 'Publications' },
-      { value: FEEDBACK_MODULES.GALLERY, label: 'Galeries photo' },
-      { value: FEEDBACK_MODULES.DIRECTORY, label: 'Annuaire et recherche' },
-      { value: FEEDBACK_MODULES.COURSE, label: 'Cours' },
-      { value: FEEDBACK_MODULES.MESSAGE, label: 'Messagerie' },
-      { value: FEEDBACK_MODULES.NOTIFICATION, label: 'Notifications' },
-      { value: FEEDBACK_MODULES.ACCOUNT, label: 'Mon compte' },
-      { value: FEEDBACK_MODULES.OTHER, label: 'Autre' }
-    ]
-  }
+  group('shared.feedback.module_group.band_space', [
+    option(FEEDBACK_MODULES.DASHBOARD, 'shared.feedback.module.dashboard'),
+    option(FEEDBACK_MODULES.AGENDA, 'shared.feedback.module.agenda'),
+    option(FEEDBACK_MODULES.CHAT, 'shared.feedback.module.chat'),
+    option(FEEDBACK_MODULES.NOTES, 'shared.feedback.module.notes'),
+    option(FEEDBACK_MODULES.FILE, 'shared.feedback.module.file'),
+    option(FEEDBACK_MODULES.SETLIST, 'shared.feedback.module.setlist'),
+    option(FEEDBACK_MODULES.RIDER, 'shared.feedback.module.rider'),
+    option(FEEDBACK_MODULES.TASK, 'shared.feedback.module.task'),
+    option(FEEDBACK_MODULES.FINANCE, 'shared.feedback.module.finance'),
+    option(FEEDBACK_MODULES.SETTINGS, 'shared.feedback.module.settings')
+  ]),
+  group('shared.feedback.module_group.site', [
+    option(FEEDBACK_MODULES.FORUM, 'shared.feedback.module.forum'),
+    option(FEEDBACK_MODULES.PUBLICATION, 'shared.feedback.module.publication'),
+    option(FEEDBACK_MODULES.GALLERY, 'shared.feedback.module.gallery'),
+    option(FEEDBACK_MODULES.DIRECTORY, 'shared.feedback.module.directory'),
+    option(FEEDBACK_MODULES.COURSE, 'shared.feedback.module.course'),
+    option(FEEDBACK_MODULES.MESSAGE, 'shared.feedback.module.message'),
+    option(FEEDBACK_MODULES.NOTIFICATION, 'shared.feedback.module.notification'),
+    option(FEEDBACK_MODULES.ACCOUNT, 'shared.feedback.module.account'),
+    option(FEEDBACK_MODULES.OTHER, 'shared.feedback.module.other')
+  ])
 ])

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { DELETED_DISPLAY_NAME, displayName } from './displayName.js'
+import { displayName } from './displayName.js'
 
 describe('displayName', () => {
   it('prefers the name the API sends', () => {
@@ -17,7 +17,7 @@ describe('displayName', () => {
   it('labels a closed account', () => {
     assert.equal(
       displayName({ username: 'deleted_c7c9f2e1', deletion_datetime: '2026-06-01T09:00:00+00:00' }),
-      DELETED_DISPLAY_NAME
+      'Utilisateur supprimé'
     )
   })
 })

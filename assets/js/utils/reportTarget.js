@@ -4,36 +4,48 @@
  * The reason and type values mirror ReportReason and ReportTargetType on the server.
  */
 
+import { i18n } from '../i18n/index.js'
+
+// Labels are getters so they are translated when shown, in whatever language is active then.
+function reasonOption(value, labelKey) {
+  return {
+    value,
+    get label() {
+      return i18n.global.t(labelKey)
+    }
+  }
+}
+
 export const REPORT_REASON_OPTIONS = [
-  { value: 'spam', label: 'Spam' },
-  { value: 'harassment', label: 'Harcèlement' },
-  { value: 'inappropriate', label: 'Contenu inapproprié' },
-  { value: 'fake', label: 'Faux profil ou arnaque' },
-  { value: 'other', label: 'Autre' }
+  reasonOption('spam', 'shared.report.reason.spam'),
+  reasonOption('harassment', 'shared.report.reason.harassment'),
+  reasonOption('inappropriate', 'shared.report.reason.inappropriate'),
+  reasonOption('fake', 'shared.report.reason.fake'),
+  reasonOption('other', 'shared.report.reason.other')
 ]
 
 export const REPORT_DETAILS_MAX_LENGTH = 500
 
-const TARGET_TYPE_LABELS = {
-  user: 'Profil',
-  announce: 'Annonce',
-  message: 'Message privé',
-  band_chat_message: 'Discussion de groupe',
-  profile_media: 'Média',
-  forum_post: 'Message du forum',
-  comment: 'Commentaire',
-  publication: 'Publication'
+const TARGET_TYPE_LABEL_KEYS = {
+  user: 'shared.report.target_type.user',
+  announce: 'shared.report.target_type.announce',
+  message: 'shared.report.target_type.message',
+  band_chat_message: 'shared.report.target_type.band_chat_message',
+  profile_media: 'shared.report.target_type.profile_media',
+  forum_post: 'shared.report.target_type.forum_post',
+  comment: 'shared.report.target_type.comment',
+  publication: 'shared.report.target_type.publication'
 }
 
 const LIVE_STATES = {
-  unchanged: { label: 'Inchangé', severity: 'success' },
-  edited: { label: 'Modifié depuis', severity: 'warn' },
-  removed: { label: 'Supprimé', severity: 'danger' }
+  unchanged: { labelKey: 'shared.report.live_state.unchanged', severity: 'success' },
+  edited: { labelKey: 'shared.report.live_state.edited', severity: 'warn' },
+  removed: { labelKey: 'shared.report.live_state.removed', severity: 'danger' }
 }
 
-const OUTCOME_LABELS = {
-  dismissed: 'Classé sans suite',
-  account_suspended: 'Compte suspendu'
+const OUTCOME_LABEL_KEYS = {
+  dismissed: 'shared.report.outcome.dismissed',
+  account_suspended: 'shared.report.outcome.account_suspended'
 }
 
 export function reportReasonLabel(reason) {
@@ -41,16 +53,21 @@ export function reportReasonLabel(reason) {
 }
 
 export function reportTargetTypeLabel(type) {
-  return TARGET_TYPE_LABELS[type] ?? type
+  const labelKey = TARGET_TYPE_LABEL_KEYS[type]
+  return labelKey ? i18n.global.t(labelKey) : type
 }
 
 /** @returns {{label: string, severity: string}|null} null on the list, which does not compute it. */
 export function reportLiveState(state) {
-  return LIVE_STATES[state] ?? null
+  const liveState = LIVE_STATES[state]
+  return liveState
+    ? { label: i18n.global.t(liveState.labelKey), severity: liveState.severity }
+    : null
 }
 
 export function reportOutcomeLabel(outcome) {
-  return OUTCOME_LABELS[outcome] ?? null
+  const labelKey = OUTCOME_LABEL_KEYS[outcome]
+  return labelKey ? i18n.global.t(labelKey) : null
 }
 
 /**
@@ -58,25 +75,40 @@ export function reportOutcomeLabel(outcome) {
  * of it. A private conversation never has a label.
  */
 export function reportSubject(type, label) {
+  const { t } = i18n.global
   switch (type) {
     case 'user':
-      return label ? `le profil de ${label}` : 'un profil'
+      return label
+        ? t('shared.report.subject.user', { label })
+        : t('shared.report.subject.any_user')
     case 'announce':
-      return label ? `l'annonce de ${label}` : 'une annonce'
+      return label
+        ? t('shared.report.subject.announce', { label })
+        : t('shared.report.subject.any_announce')
     case 'profile_media':
-      return label ? `un média de ${label}` : 'un média'
+      return label
+        ? t('shared.report.subject.profile_media', { label })
+        : t('shared.report.subject.any_profile_media')
     case 'forum_post':
-      return label ? `un message du sujet « ${label} »` : 'un message du forum'
+      return label
+        ? t('shared.report.subject.forum_post', { label })
+        : t('shared.report.subject.any_forum_post')
     case 'comment':
-      return label ? `un commentaire sur « ${label} »` : 'un commentaire'
+      return label
+        ? t('shared.report.subject.comment', { label })
+        : t('shared.report.subject.any_comment')
     case 'publication':
-      return label ? `la publication « ${label} »` : 'une publication'
+      return label
+        ? t('shared.report.subject.publication', { label })
+        : t('shared.report.subject.any_publication')
     case 'band_chat_message':
-      return label ? `un message de la discussion du groupe ${label}` : 'un message de groupe'
+      return label
+        ? t('shared.report.subject.band_chat_message', { label })
+        : t('shared.report.subject.any_band_chat_message')
     case 'message':
-      return 'un message privé'
+      return t('shared.report.subject.message')
     default:
-      return 'un contenu'
+      return t('shared.report.subject.other')
   }
 }
 
@@ -161,13 +193,13 @@ export function reportContentLink(report) {
           })
         : noLink()
     case 'message':
-      return { to: null, text: 'Conversation privée' }
+      return { to: null, text: i18n.global.t('shared.report.link.private_conversation') }
     case 'band_chat_message':
       return {
         to: null,
         text: context.band_space_name
-          ? `Discussion du groupe ${context.band_space_name}`
-          : 'Discussion de groupe'
+          ? i18n.global.t('shared.report.link.band_chat', { band_space: context.band_space_name })
+          : i18n.global.t('shared.report.link.any_band_chat')
       }
     default:
       return noLink()
@@ -181,9 +213,9 @@ function forumTopicParams(slug, page) {
 }
 
 function linkTo(to) {
-  return { to, text: 'Voir le contenu' }
+  return { to, text: i18n.global.t('shared.report.link.view_content') }
 }
 
 function noLink() {
-  return { to: null, text: 'Contenu introuvable' }
+  return { to: null, text: i18n.global.t('shared.report.link.not_found') }
 }

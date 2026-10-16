@@ -1,3 +1,5 @@
+import { i18n } from '../../i18n/index.js'
+
 /**
  * @typedef {Object} Violation
  * @property {string} propertyPath - The field that has the violation
@@ -32,7 +34,10 @@ export function handleApiError(error) {
     message = violations.map((v) => v.message).join('. ')
   } else {
     message =
-      data?.['hydra:description'] || data?.detail || error.message || 'Une erreur est survenue'
+      data?.['hydra:description'] ||
+      data?.detail ||
+      error.message ||
+      i18n.global.t('errors.generic')
   }
 
   const violationsByField = violations.reduce((acc, violation) => {

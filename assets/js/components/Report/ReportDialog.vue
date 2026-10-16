@@ -2,19 +2,18 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Signaler"
+    :header="t('shared.report.dialog_title')"
     :style="{ width: '32rem' }"
     :breakpoints="{ '575px': '95vw' }"
     @hide="reset"
   >
     <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
       <p class="text-sm text-surface-600 dark:text-surface-300">
-        Votre signalement est transmis à la modération. La personne concernée ne saura pas qui l'a
-        envoyé.
+        {{ t('shared.report.intro') }}
       </p>
 
       <fieldset class="flex flex-col gap-3">
-        <legend class="text-sm font-medium text-surface-700 dark:text-surface-200 mb-2">Motif</legend>
+        <legend class="text-sm font-medium text-surface-700 dark:text-surface-200 mb-2">{{ t('shared.report.reason_legend') }}</legend>
         <label
           v-for="option in REPORT_REASON_OPTIONS"
           :key="option.value"
@@ -28,7 +27,7 @@
 
       <div class="flex flex-col gap-2">
         <label for="report-details" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-          Précisions (facultatif)
+          {{ t('shared.report.details_label') }}
         </label>
         <Textarea
           id="report-details"
@@ -54,10 +53,10 @@
       <Message v-if="errorMessage" severity="error" :closable="false">{{ errorMessage }}</Message>
 
       <div class="flex justify-end gap-2">
-        <Button label="Annuler" severity="secondary" text :disabled="isSubmitting" @click="visible = false" />
+        <Button :label="t('shared.report.cancel')" severity="secondary" text :disabled="isSubmitting" @click="visible = false" />
         <Button
           type="submit"
-          label="Envoyer le signalement"
+          :label="t('shared.report.submit')"
           icon="pi pi-flag"
           severity="danger"
           :loading="isSubmitting"
@@ -76,6 +75,7 @@ import RadioButton from 'primevue/radiobutton'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import reportApi from '../../api/report/report.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { REPORT_DETAILS_MAX_LENGTH, REPORT_REASON_OPTIONS } from '../../utils/reportTarget.js'
@@ -89,6 +89,7 @@ const props = defineProps({
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const toast = useToast()
 
 const reason = ref(null)
@@ -120,7 +121,7 @@ async function handleSubmit() {
     visible.value = false
     toast.add({
       severity: 'success',
-      summary: 'Merci, votre signalement a été transmis à la modération.',
+      summary: t('shared.report.sent_toast'),
       life: 4000
     })
   } catch (e) {
@@ -135,7 +136,7 @@ function showError(error) {
     handleApiError(error)
   } catch (normalized) {
     if (normalized.status === HTTP_TOO_MANY_REQUESTS) {
-      errorMessage.value = 'Vous avez fait trop de signalements, réessayez plus tard.'
+      errorMessage.value = t('shared.report.too_many')
       return
     }
 

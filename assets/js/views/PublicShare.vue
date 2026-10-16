@@ -39,7 +39,7 @@
             <span v-if="metadata.mime_type">{{ metadata.mime_type }}</span>
           </p>
           <p class="text-xs text-surface-400">
-            Expire le {{ formatDate(metadata.expiry_datetime) }}
+            {{ t('shared.public_share.expires_on', { date: formatDate(metadata.expiry_datetime) }) }}
           </p>
         </div>
 
@@ -48,14 +48,14 @@
             for="share-password"
             class="text-sm font-medium text-surface-700 dark:text-surface-200"
           >
-            Mot de passe requis
+            {{ t('shared.public_share.password_required') }}
           </label>
           <Password
             id="share-password"
             v-model="passwordValue"
             :feedback="false"
             toggle-mask
-            placeholder="Saisissez le mot de passe"
+            :placeholder="t('shared.public_share.password_placeholder')"
             input-class="w-full"
             class="w-full"
             :disabled="isDownloading"
@@ -72,7 +72,7 @@
         </div>
 
         <Button
-          label="Télécharger"
+          :label="t('shared.public_share.download')"
           icon="pi pi-download"
           class="w-full"
           :loading="isDownloading"
@@ -80,9 +80,11 @@
           @click="handleDownload"
         />
 
-        <p class="text-xs text-surface-400 text-center mt-4">
-          Lien partagé via <span class="font-medium">MusicAll</span>
-        </p>
+        <i18n-t keypath="shared.public_share.shared_via" tag="p" class="text-xs text-surface-400 text-center mt-4">
+          <template #brand>
+            <span class="font-medium">{{ t('shared.public_share.brand') }}</span>
+          </template>
+        </i18n-t>
       </div>
     </div>
   </div>
@@ -95,12 +97,14 @@ import Message from 'primevue/message'
 import Password from 'primevue/password'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import publicShareApi from '../api/publicShare.js'
 import { intlLocale } from '../i18n/formatLocale.js'
 import { downloadBlob } from '../utils/downloadBlob.js'
 import { formatBytes } from '../utils/formatBytes.js'
 
+const { t } = useI18n()
 const route = useRoute()
 
 const token = computed(() => route.params.token)
@@ -114,7 +118,7 @@ const passwordValue = ref('')
 const passwordError = ref(null)
 const isDownloading = ref(false)
 
-useHead({ title: 'Partage de fichier | MusicAll' })
+useHead({ title: computed(() => t('shared.public_share.page_title', { separator: '|' })) })
 
 onMounted(() => {
   loadMetadata()
@@ -150,7 +154,7 @@ async function handleDownload() {
         headers: { 'X-Share-Password': passwordValue.value }
       })
       if (probe.status === 401) {
-        passwordError.value = 'Mot de passe incorrect.'
+        passwordError.value = t('shared.public_share.wrong_password')
         isDownloading.value = false
         return
       }
@@ -160,14 +164,14 @@ async function handleDownload() {
         return
       }
       if (!probe.ok) {
-        passwordError.value = 'Téléchargement impossible.'
+        passwordError.value = t('shared.public_share.download_failed')
         isDownloading.value = false
         return
       }
       const blob = await probe.blob()
       downloadBlob(blob, metadata.value.original_name)
     } catch {
-      passwordError.value = 'Téléchargement impossible.'
+      passwordError.value = t('shared.public_share.download_failed')
     } finally {
       isDownloading.value = false
     }
@@ -181,15 +185,14 @@ async function handleDownload() {
 
 function setError(e) {
   if (e?.status === 404) {
-    errorTitle.value = 'Lien introuvable'
-    errorMessage.value = "Ce lien de partage n'existe pas ou n'est plus disponible."
+    errorTitle.value = t('shared.public_share.not_found_title')
+    errorMessage.value = t('shared.public_share.not_found_text')
   } else if (e?.status === 410) {
-    errorTitle.value = 'Lien expiré'
-    errorMessage.value =
-      'Ce lien de partage a expiré ou a été révoqué. Demandez un nouveau lien à son auteur.'
+    errorTitle.value = t('shared.public_share.expired_title')
+    errorMessage.value = t('shared.public_share.expired_text')
   } else {
-    errorTitle.value = 'Erreur'
-    errorMessage.value = e?.message || 'Une erreur est survenue.'
+    errorTitle.value = t('shared.public_share.error_title')
+    errorMessage.value = e?.message || t('shared.public_share.generic_error')
   }
 }
 
