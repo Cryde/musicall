@@ -1,3 +1,6 @@
+import { intlLocale } from '../i18n/formatLocale.js'
+import { i18n } from '../i18n/index.js'
+
 /**
  * Everything the frontend knows about the resources a band space file can be attached to.
  *
@@ -30,44 +33,76 @@
 const FILE_SOURCES = Object.freeze([
   Object.freeze({
     type: 'task',
-    label: 'Tâche',
-    indefiniteNoun: 'une tâche',
-    definiteNoun: 'la tâche',
+    get label() {
+      return i18n.global.t('band_space_files.source.task.label')
+    },
+    get indefiniteNoun() {
+      return i18n.global.t('band_space_files.source.task.indefinite')
+    },
+    get definiteNoun() {
+      return i18n.global.t('band_space_files.source.task.definite')
+    },
     icon: 'pi pi-check-square text-blue-500',
-    quotaLabel: 'Tâches',
+    get quotaLabel() {
+      return i18n.global.t('band_space_files.source.task.quota')
+    },
     color: '#8b5cf6',
     routeName: 'app_band_tasks',
     routeQueryKey: 'task'
   }),
   Object.freeze({
     type: 'finance',
-    label: 'Entrée financière',
-    indefiniteNoun: 'une entrée financière',
-    definiteNoun: "l'entrée financière",
+    get label() {
+      return i18n.global.t('band_space_files.source.finance.label')
+    },
+    get indefiniteNoun() {
+      return i18n.global.t('band_space_files.source.finance.indefinite')
+    },
+    get definiteNoun() {
+      return i18n.global.t('band_space_files.source.finance.definite')
+    },
     icon: 'pi pi-euro text-amber-600',
-    quotaLabel: 'Finances',
+    get quotaLabel() {
+      return i18n.global.t('band_space_files.source.finance.quota')
+    },
     color: '#f59e0b',
     routeName: 'app_band_finance',
     routeQueryKey: 'entry'
   }),
   Object.freeze({
     type: 'note',
-    label: 'Note',
-    indefiniteNoun: 'une note',
-    definiteNoun: 'la note',
+    get label() {
+      return i18n.global.t('band_space_files.source.note.label')
+    },
+    get indefiniteNoun() {
+      return i18n.global.t('band_space_files.source.note.indefinite')
+    },
+    get definiteNoun() {
+      return i18n.global.t('band_space_files.source.note.definite')
+    },
     icon: 'pi pi-file-edit text-purple-500',
-    quotaLabel: 'Notes',
+    get quotaLabel() {
+      return i18n.global.t('band_space_files.source.note.quota')
+    },
     color: '#06b6d4',
     routeName: 'app_band_notes',
     routeQueryKey: 'note'
   }),
   Object.freeze({
     type: 'song',
-    label: 'Chanson',
-    indefiniteNoun: 'une chanson',
-    definiteNoun: 'la chanson',
+    get label() {
+      return i18n.global.t('band_space_files.source.song.label')
+    },
+    get indefiniteNoun() {
+      return i18n.global.t('band_space_files.source.song.indefinite')
+    },
+    get definiteNoun() {
+      return i18n.global.t('band_space_files.source.song.definite')
+    },
     icon: 'pi pi-headphones text-emerald-600',
-    quotaLabel: 'Chansons',
+    get quotaLabel() {
+      return i18n.global.t('band_space_files.source.song.quota')
+    },
     color: '#10b981',
     // Songs live in the Répertoire, which opens the song's drawer from `?song=`.
     routeName: 'app_band_setlist',
@@ -75,11 +110,19 @@ const FILE_SOURCES = Object.freeze([
   }),
   Object.freeze({
     type: 'setlist',
-    label: 'Setlist',
-    indefiniteNoun: 'une setlist',
-    definiteNoun: 'la setlist',
+    get label() {
+      return i18n.global.t('band_space_files.source.setlist.label')
+    },
+    get indefiniteNoun() {
+      return i18n.global.t('band_space_files.source.setlist.indefinite')
+    },
+    get definiteNoun() {
+      return i18n.global.t('band_space_files.source.setlist.definite')
+    },
     icon: 'pi pi-list text-rose-600',
-    quotaLabel: 'Setlists',
+    get quotaLabel() {
+      return i18n.global.t('band_space_files.source.setlist.quota')
+    },
     color: '#f43f5e',
     routeName: 'app_band_setlist',
     routeQueryKey: 'setlist'
@@ -91,8 +134,12 @@ const FILE_SOURCES = Object.freeze([
  * degrades to neutral wording instead of an empty label.
  */
 const UNKNOWN_SOURCE = Object.freeze({
-  label: 'Ressource',
-  indefiniteNoun: 'une autre ressource',
+  get label() {
+    return i18n.global.t('band_space_files.source.unknown.label')
+  },
+  get indefiniteNoun() {
+    return i18n.global.t('band_space_files.source.unknown.indefinite')
+  },
   definiteNoun: null,
   icon: 'pi pi-link text-surface-500'
 })
@@ -107,11 +154,19 @@ export const CHAT_MESSAGE_SOURCE_TYPE = 'message'
 
 const CHAT_MESSAGE_SOURCE = Object.freeze({
   type: CHAT_MESSAGE_SOURCE_TYPE,
-  label: 'Message du chat',
-  indefiniteNoun: 'un message du chat',
-  definiteNoun: 'le message',
+  get label() {
+    return i18n.global.t('band_space_files.source.message.label')
+  },
+  get indefiniteNoun() {
+    return i18n.global.t('band_space_files.source.message.indefinite')
+  },
+  get definiteNoun() {
+    return i18n.global.t('band_space_files.source.message.definite')
+  },
   icon: 'pi pi-comments text-sky-600',
-  quotaLabel: 'Chat',
+  get quotaLabel() {
+    return i18n.global.t('band_space_files.source.message.quota')
+  },
   color: '#0ea5e9',
   routeName: 'app_band_chat',
   routeQueryKey: 'message'
@@ -125,10 +180,14 @@ const FILE_SOURCE_BY_TYPE = Object.freeze(
 export const FILE_SOURCE_TYPES = Object.freeze(FILE_SOURCES.map((source) => source.type))
 
 /** « une tâche », « une entrée financière », ... for prose naming the sources one by one. */
-export const FILE_SOURCE_NOUNS = Object.freeze(FILE_SOURCES.map((source) => source.indefiniteNoun))
+export function fileSourceNouns() {
+  return FILE_SOURCES.map((source) => source.indefiniteNoun)
+}
 
 /** « une tâche, une entrée financière, ... ou une setlist », for prose listing every source at once. */
-export const FILE_SOURCE_LIST_LABEL = `${FILE_SOURCE_NOUNS.slice(0, -1).join(', ')} ou ${FILE_SOURCE_NOUNS.at(-1)}`
+export function fileSourceListLabel() {
+  return new Intl.ListFormat(intlLocale(), { type: 'disjunction' }).format(fileSourceNouns())
+}
 
 /**
  * The storage breakdown the quota endpoint returns, in display order.
@@ -137,9 +196,21 @@ export const FILE_SOURCE_LIST_LABEL = `${FILE_SOURCE_NOUNS.slice(0, -1).join(', 
  * bucket for files nothing points at. It leads the list because it is usually the biggest one.
  */
 export const QUOTA_BREAKDOWN_SOURCES = Object.freeze([
-  Object.freeze({ key: 'manual', label: 'Manuels', color: '#3b82f6' }),
+  Object.freeze({
+    key: 'manual',
+    get label() {
+      return i18n.global.t('band_space_files.source.manual_quota')
+    },
+    color: '#3b82f6'
+  }),
   ...[...FILE_SOURCES, CHAT_MESSAGE_SOURCE].map((source) =>
-    Object.freeze({ key: source.type, label: source.quotaLabel, color: source.color })
+    Object.freeze({
+      key: source.type,
+      get label() {
+        return source.quotaLabel
+      },
+      color: source.color
+    })
   )
 ])
 
@@ -168,9 +239,8 @@ export function describeFileSources(sourceTypes) {
   const labels = [...new Set(sourceTypes.map((type) => sourceFor(type).indefiniteNoun))]
 
   if (labels.length === 0) return UNKNOWN_SOURCE.indefiniteNoun
-  if (labels.length === 1) return labels[0]
 
-  return `${labels.slice(0, -1).join(', ')} et ${labels.at(-1)}`
+  return new Intl.ListFormat(intlLocale(), { type: 'conjunction' }).format(labels)
 }
 
 function sourceFor(sourceType) {
@@ -209,7 +279,11 @@ export function fileSourceDefiniteNoun(sourceType) {
  * @returns {string}
  */
 export function fileSourceDetachHint(sourceType) {
-  return `Détachez-le d'abord depuis ${fileSourceDefiniteNoun(sourceType) ?? 'la ressource concernée'}`
+  const definiteNoun = fileSourceDefiniteNoun(sourceType)
+
+  return definiteNoun === null
+    ? i18n.global.t('band_space_files.source.detach_hint_unknown')
+    : i18n.global.t('band_space_files.source.detach_hint', { source: definiteNoun })
 }
 
 /**
@@ -219,7 +293,10 @@ export function fileSourceDetachHint(sourceType) {
  * @returns {string}
  */
 export function fileSourceAttachedMessage(sourceType) {
-  return `Ce fichier est attaché à ${sourceFor(sourceType).indefiniteNoun}. ${fileSourceDetachHint(sourceType)}.`
+  return i18n.global.t('band_space_files.source.attached_message', {
+    source: sourceFor(sourceType).indefiniteNoun,
+    hint: fileSourceDetachHint(sourceType)
+  })
 }
 
 /**

@@ -1,7 +1,7 @@
 <template>
   <Drawer v-model:visible="visibleModel" position="right" class="w-full md:w-[48rem]!">
     <template #header>
-      <span class="text-base font-semibold">Détail de la tâche</span>
+      <span class="text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
     </template>
 
     <div
@@ -20,12 +20,12 @@
       class="flex flex-col items-center justify-center gap-4 py-10"
     >
       <Message severity="error" :closable="false">{{ tasksStore.activeTaskError }}</Message>
-      <Button label="Fermer" severity="secondary" text @click="visibleModel = false" />
+      <Button :label="t('band_space_tasks.detail.close')" severity="secondary" text @click="visibleModel = false" />
     </div>
 
     <div v-else-if="task" class="flex flex-col gap-5">
       <Message v-if="isArchived" severity="info" :closable="false">
-        Cette tâche est archivée, elle est en lecture seule. Désarchivez-la pour la modifier.
+        {{ t('band_space_tasks.detail.archived_notice') }}
       </Message>
 
       <!-- Where this task was said out loud (#979). The attachment row that puts a card under the
@@ -36,7 +36,7 @@
         class="inline-flex w-fit items-center gap-2 text-sm text-primary-700 hover:underline dark:text-primary-300"
       >
         <i class="pi pi-comments text-xs" aria-hidden="true" />
-        Voir dans la discussion
+        {{ t('band_space_tasks.detail.see_in_chat') }}
       </RouterLink>
 
       <!-- Title (inline edit, save on Enter or via Save button) -->
@@ -44,7 +44,7 @@
         <input
           v-model="editTitle"
           :readonly="isArchived"
-          aria-label="Titre de la tâche"
+          :aria-label="t('band_space_tasks.detail.title_aria')"
           class="w-full text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1 read-only:text-surface-500 dark:read-only:text-surface-400"
           @keydown.enter.prevent="saveTextFields"
         />
@@ -53,55 +53,55 @@
       <!-- Metadata grid -->
       <div class="grid grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-500">Statut</label>
+          <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.status') }}</label>
           <Select
             v-model="editStatus"
             :options="statusOptions"
             optionLabel="label"
             optionValue="value"
             size="small"
-            aria-label="Statut"
+            :aria-label="t('band_space_tasks.field.status')"
             :disabled="isArchived"
             @change="saveField('status', editStatus)"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-500">Priorité</label>
+          <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.priority') }}</label>
           <Select
             v-model="editPriority"
             :options="priorityOptions"
             optionLabel="label"
             optionValue="value"
             size="small"
-            aria-label="Priorité"
+            :aria-label="t('band_space_tasks.field.priority')"
             :disabled="isArchived"
             @change="saveField('priority', editPriority)"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-500">Catégorie</label>
+          <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.category') }}</label>
           <Select
             v-model="editCategoryId"
             :options="categories"
             optionLabel="name"
             optionValue="id"
-            placeholder="Aucune"
+            :placeholder="t('band_space_tasks.field.no_category')"
             showClear
             size="small"
-            aria-label="Catégorie"
+            :aria-label="t('band_space_tasks.field.category')"
             :disabled="isArchived"
             @change="saveField('category_id', editCategoryId)"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-500">Échéance</label>
+          <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.due') }}</label>
           <DatePicker
             v-model="editDueDate"
             dateFormat="yy-mm-dd"
             showIcon
             showButtonBar
             size="small"
-            aria-label="Échéance"
+            :aria-label="t('band_space_tasks.field.due')"
             :disabled="isArchived"
             @date-select="saveDueDate"
             @clear-click="saveDueDate"
@@ -111,16 +111,16 @@
 
       <!-- Assignees -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-surface-500">Assignés</label>
+        <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.assignees') }}</label>
         <MultiSelect
           v-model="editAssigneeIds"
           :options="members"
           optionLabel="display_name"
           optionValue="user_id"
-          placeholder="Sélectionner des membres"
+          :placeholder="t('band_space_tasks.field.select_members')"
           display="chip"
           size="small"
-          aria-label="Assignés"
+          :aria-label="t('band_space_tasks.field.assignees')"
           :disabled="isArchived"
           @change="saveAssignees"
         />
@@ -129,37 +129,41 @@
       <!-- Description (explicit save) -->
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between">
-          <label class="text-xs font-medium text-surface-500">Description</label>
+          <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.description') }}</label>
           <span
             v-if="hasTextChanges"
             class="text-xs text-amber-600 dark:text-amber-400"
           >
-            Modifications non enregistrées
+            {{ t('band_space_tasks.detail.unsaved_changes') }}
           </span>
         </div>
         <Textarea
           v-model="editDescription"
           rows="4"
           autoResize
-          :placeholder="isArchived ? 'Aucune description' : 'Ajouter une description...'"
+          :placeholder="
+            isArchived
+              ? t('band_space_tasks.detail.no_description')
+              : t('band_space_tasks.detail.add_description')
+          "
           class="text-sm"
-          aria-label="Description"
+          :aria-label="t('band_space_tasks.field.description')"
           :disabled="isArchived"
         />
         <Message v-if="textConflict && hasTextChanges" severity="warn" :closable="false">
-          {{ textConflict }} Votre texte est conservé : « Enregistrer » remplace sa version, « Annuler » affiche la sienne.
+          {{ textConflict }} {{ t('band_space_tasks.detail.conflict_kept') }}
         </Message>
         <div v-if="!isArchived" class="flex justify-end gap-2">
           <Button
             v-if="hasTextChanges"
-            label="Annuler"
+            :label="t('band_space_tasks.common.cancel')"
             severity="secondary"
             text
             size="small"
             @click="resetTextFields"
           />
           <Button
-            label="Enregistrer"
+            :label="t('band_space_tasks.common.save')"
             size="small"
             icon="pi pi-check"
             :disabled="!hasTextChanges"
@@ -197,7 +201,7 @@
         v-else
         class="text-sm font-semibold text-surface-700 dark:text-surface-200"
       >
-        Commentaires
+        {{ t('band_space_tasks.common.comments') }}
       </h4>
       <TaskCommentList
         :comments="comments"
@@ -217,7 +221,7 @@
       >
         <Button
           v-if="canArchive"
-          label="Archiver"
+          :label="t('band_space_tasks.common.archive')"
           severity="secondary"
           text
           size="small"
@@ -226,7 +230,7 @@
         />
         <Button
           v-if="isArchived"
-          label="Désarchiver"
+          :label="t('band_space_tasks.common.unarchive')"
           severity="secondary"
           text
           size="small"
@@ -235,7 +239,7 @@
         />
         <Button
           v-if="canDelete"
-          label="Supprimer la tâche"
+          :label="t('band_space_tasks.detail.delete')"
           severity="danger"
           text
           size="small"
@@ -261,6 +265,7 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
@@ -285,6 +290,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'deleted'])
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 const tasksStore = useBandTasksStore()
 const userSecurityStore = useUserSecurityStore()
 const { isAdmin } = useBandSpaceNavigation()
@@ -345,17 +351,17 @@ const editDueDate = ref(null)
 const editAssigneeIds = ref([])
 const editDescription = ref('')
 
-const statusOptions = [
-  { label: 'À faire', value: 'todo' },
-  { label: 'En cours', value: 'in_progress' },
-  { label: 'Terminé', value: 'done' }
-]
+const statusOptions = computed(() => [
+  { label: t('band_space_tasks.status.todo'), value: 'todo' },
+  { label: t('band_space_tasks.status.in_progress'), value: 'in_progress' },
+  { label: t('band_space_tasks.status.done'), value: 'done' }
+])
 
-const priorityOptions = [
-  { label: 'Normal', value: 'normal' },
-  { label: 'Haute', value: 'high' },
-  { label: 'Urgent', value: 'urgent' }
-]
+const priorityOptions = computed(() => [
+  { label: t('band_space_tasks.priority.normal'), value: 'normal' },
+  { label: t('band_space_tasks.priority.high'), value: 'high' },
+  { label: t('band_space_tasks.priority.urgent'), value: 'urgent' }
+])
 
 // Track which task id we've loaded comments/activities for, so we don't
 // refetch on every task update (e.g. after saveField).
@@ -456,7 +462,7 @@ async function loadDetails({ quiet = false } = {}) {
     if (quiet) return
     toast.add({
       severity: 'warn',
-      summary: 'Impossible de charger les commentaires et activités',
+      summary: t('band_space_tasks.detail.load_failed'),
       life: 5000
     })
   }
@@ -465,7 +471,11 @@ async function loadDetails({ quiet = false } = {}) {
 async function saveField(field, value) {
   try {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, { [field]: value })
-    toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 2000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.common.changes_saved'),
+      life: 2000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
     populateForm()
@@ -523,7 +533,7 @@ async function saveTextFields() {
 
   const trimmedTitle = editTitle.value.trim()
   if (!trimmedTitle) {
-    toast.add({ severity: 'error', summary: 'Le titre ne peut pas être vide', life: 5000 })
+    toast.add({ severity: 'error', summary: t('band_space_tasks.detail.title_empty'), life: 5000 })
     editTitle.value = task.value.title
     return
   }
@@ -541,7 +551,11 @@ async function saveTextFields() {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, payload)
     // The fields now hold the saved revision, so they are its new base.
     resetTextFields()
-    toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.common.changes_saved'),
+      life: 3000
+    })
   } catch (e) {
     if (e.status === 409) {
       await keepTextAfterConflict(e.message)
@@ -576,7 +590,11 @@ async function saveAssignees() {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, {
       assignee_ids: editAssigneeIds.value
     })
-    toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 2000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.common.changes_saved'),
+      life: 2000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
     populateForm()
@@ -606,7 +624,11 @@ async function handleCommentDelete(commentId) {
   try {
     await tasksStore.deleteComment(props.bandSpaceId, props.taskId, commentId)
     await loadDetails()
-    toast.add({ severity: 'success', summary: 'Commentaire supprimé', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.detail.comment_deleted'),
+      life: 3000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }
@@ -616,7 +638,7 @@ async function handleArchive() {
   try {
     await tasksStore.archiveTask(props.bandSpaceId, props.taskId)
     visibleModel.value = false
-    toast.add({ severity: 'success', summary: 'Tâche archivée', life: 3000 })
+    toast.add({ severity: 'success', summary: t('band_space_tasks.detail.archived'), life: 3000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }
@@ -626,7 +648,11 @@ async function handleUnarchive() {
   try {
     await tasksStore.unarchiveTask(props.bandSpaceId, props.taskId)
     visibleModel.value = false
-    toast.add({ severity: 'success', summary: 'Tâche désarchivée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.common.task_unarchived'),
+      life: 3000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }
@@ -634,18 +660,22 @@ async function handleUnarchive() {
 
 function handleDelete() {
   confirm.require({
-    message: `Es-tu sûr de vouloir supprimer cette tâche ?${attachedFilesNotice(task.value?.file_count)}`,
-    header: 'Confirmer la suppression',
+    message: `${t('band_space_tasks.detail.delete_confirm')}${attachedFilesNotice(task.value?.file_count)}`,
+    header: t('band_space_tasks.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_tasks.common.cancel'),
+    acceptLabel: t('band_space_tasks.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await tasksStore.deleteTask(props.bandSpaceId, props.taskId)
         emit('deleted')
         visibleModel.value = false
-        toast.add({ severity: 'success', summary: 'Tâche supprimée', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_tasks.detail.deleted'),
+          life: 3000
+        })
       } catch (e) {
         toast.add({ severity: 'error', summary: e.message, life: 5000 })
       }

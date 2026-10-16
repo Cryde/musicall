@@ -20,6 +20,8 @@
  * rebuilds from the first page rather than trusting these maths to converge on their own.
  */
 
+import { i18n } from '../i18n/index.js'
+
 /**
  * Rows per request. Sent explicitly as itemsPerPage, so the server takes it from here rather than
  * the two sides having to agree on a number neither can see. Capped server side at 200.
@@ -114,10 +116,8 @@ export function fileCountLabel(loadedCount, total) {
   }
 
   if (loadedCount >= total) {
-    return total > 1 ? `${total} fichiers` : `${total} fichier`
+    return i18n.global.t('band_space_files.count.files', total)
   }
 
-  return loadedCount > 1
-    ? `${loadedCount} fichiers affichés sur ${total}`
-    : `${loadedCount} fichier affiché sur ${total}`
+  return i18n.global.t('band_space_files.count.files_shown', { total }, loadedCount)
 }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-2">Commentaires</h4>
+    <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-2">{{ t('band_space_tasks.common.comments') }}</h4>
 
     <Message v-if="submitError" severity="error" :closable="false" class="mb-2">
       {{ submitError }}
@@ -9,8 +9,8 @@
     <MentionEditor
       v-model="content"
       :members="members"
-      aria-label="Écrire un commentaire"
-      placeholder="Écrire un commentaire..."
+      :aria-label="t('band_space_tasks.comment_form.aria_label')"
+      :placeholder="t('band_space_tasks.comment_form.placeholder')"
       editor-class="min-h-[4.5rem] max-h-60 rounded-lg p-3"
       submit-on="ctrl-enter"
       :disabled="isSubmitting"
@@ -19,7 +19,7 @@
 
     <div class="flex justify-end mt-2">
       <Button
-        label="Envoyer"
+        :label="t('band_space_tasks.comment_form.send')"
         icon="pi pi-send"
         size="small"
         :loading="isSubmitting"
@@ -34,6 +34,7 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MentionEditor from '../../Global/MentionEditor.vue'
 
 const props = defineProps({
@@ -47,6 +48,8 @@ const props = defineProps({
   submitComment: { type: Function, required: true },
   isSubmitting: { type: Boolean, default: false }
 })
+
+const { t } = useI18n()
 
 const content = ref('')
 const submitError = ref('')
@@ -64,7 +67,7 @@ async function handleSubmit() {
     content.value = ''
   } catch (e) {
     console.error('Failed to post the comment:', e)
-    submitError.value = e.message || "Le commentaire n'a pas pu être envoyé."
+    submitError.value = e.message || t('band_space_tasks.comment_form.send_failed')
   }
 }
 </script>

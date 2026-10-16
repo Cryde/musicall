@@ -23,7 +23,7 @@
         <span
           v-if="fileCountLabel"
           class="shrink-0 text-xs text-surface-500 dark:text-surface-400 tabular-nums"
-          v-tooltip.top="`${fileCountLabel} dans ce dossier, sous-dossiers exclus`"
+          v-tooltip.top="t('band_space_files.folder_tree.file_count_hint', folder.file_count)"
         >
           {{ folder.file_count }}
         </span>
@@ -31,7 +31,7 @@
       <button
         type="button"
         class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
-        aria-label="Actions du dossier"
+        :aria-label="t('band_space_files.folder_tree.actions')"
         aria-haspopup="menu"
         @click.stop="openContextMenu($event)"
       >
@@ -66,6 +66,7 @@
 <script setup>
 import ContextMenu from 'primevue/contextmenu'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { canDrop, collectFolderAndDescendants } from '../../../composables/useFolderDragDrop.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { folderFileCountLabel } from '../../../utils/fileListing.js'
@@ -79,6 +80,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'create-sub', 'edit', 'delete', 'drop-on-folder'])
+const { t } = useI18n()
 
 const filesStore = useBandFilesStore()
 
@@ -89,17 +91,25 @@ const children = computed(() => props.folder.children ?? [])
 const fileCountLabel = computed(() => folderFileCountLabel(props.folder.file_count))
 
 const contextMenuItems = computed(() => [
-  { label: 'Ouvrir', icon: 'pi pi-folder-open', command: () => emit('select', props.folder.id) },
   {
-    label: 'Nouveau sous-dossier',
+    label: t('band_space_files.folder_tree.open'),
+    icon: 'pi pi-folder-open',
+    command: () => emit('select', props.folder.id)
+  },
+  {
+    label: t('band_space_files.folder_edit.title_create_sub'),
     icon: 'pi pi-plus',
     disabled: !canCreateSub.value,
     command: () => emit('create-sub', props.folder)
   },
-  { label: 'Renommer / déplacer', icon: 'pi pi-pencil', command: () => emit('edit', props.folder) },
+  {
+    label: t('band_space_files.folder_tree.rename_move'),
+    icon: 'pi pi-pencil',
+    command: () => emit('edit', props.folder)
+  },
   { separator: true },
   {
-    label: 'Supprimer',
+    label: t('band_space_files.common.delete'),
     icon: 'pi pi-trash',
     class: 'p-menuitem-danger',
     command: () => emit('delete', props.folder)

@@ -15,7 +15,7 @@
       class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4"
     >
       <Message severity="error" :closable="false">{{ filesStore.loadError }}</Message>
-      <Button label="Réessayer" icon="pi pi-refresh" severity="secondary" @click="loadAll" />
+      <Button :label="t('band_space_files.page.retry')" icon="pi pi-refresh" severity="secondary" @click="loadAll" />
     </div>
 
     <div v-else class="flex flex-col lg:flex-row gap-6">
@@ -23,7 +23,7 @@
         class="w-full lg:w-64 shrink-0 bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700"
       >
         <h2 class="text-sm font-semibold text-surface-700 dark:text-surface-200 px-3 mb-3">
-          Dossiers
+          {{ t('band_space_files.page.folders') }}
         </h2>
 
         <FolderTree
@@ -39,7 +39,7 @@
           v-if="filesStore.folders.length === 0 && filesStore.virtualFolders.length === 0"
           class="text-xs text-surface-400 italic px-3 py-4"
         >
-          Aucun dossier pour l'instant.
+          {{ t('band_space_files.page.no_folder') }}
         </p>
 
         <!-- Under the tree rather than in it: neither is a folder. One is every file in the space
@@ -56,11 +56,11 @@
                 : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
             "
             :aria-current="isAllFilesActive ? 'true' : null"
-            v-tooltip.top="'Tous les fichiers du space, quel que soit leur dossier'"
+            v-tooltip.top="t('band_space_files.page.all_files_hint')"
             @click="handleFolderSelect(null)"
           >
             <i class="pi pi-list" aria-hidden="true"></i>
-            <span class="flex-1 truncate">Tous les fichiers</span>
+            <span class="flex-1 truncate">{{ t('band_space_files.page.all_files') }}</span>
           </button>
 
           <button
@@ -75,7 +75,7 @@
             @click="handleFolderSelect(TRASH_FOLDER_ID)"
           >
             <i class="pi pi-trash" aria-hidden="true"></i>
-            <span class="flex-1 truncate">Corbeille</span>
+            <span class="flex-1 truncate">{{ t('band_space_files.page.trash') }}</span>
             <span class="text-xs text-surface-500 tabular-nums">{{ filesStore.archivedCount }}</span>
           </button>
         </div>
@@ -102,26 +102,26 @@
           <div class="flex flex-col gap-3">
             <div class="flex flex-wrap items-center justify-end gap-2">
               <Button
-                label="Nouveau dossier"
+                :label="t('band_space_files.folder_edit.title_create')"
                 icon="pi pi-folder-plus"
                 size="small"
                 severity="secondary"
                 :disabled="isVirtualFolderActive"
                 v-tooltip.top="
                   isVirtualFolderActive
-                    ? 'Les dossiers virtuels sont remplis automatiquement par les attachements.'
+                    ? t('band_space_files.common.virtual_folder_hint')
                     : null
                 "
                 @click="createFolderDialogVisible = true"
               />
               <Button
-                label="Importer un fichier"
+                :label="t('band_space_files.page.upload')"
                 icon="pi pi-cloud-upload"
                 size="small"
                 :disabled="isVirtualFolderActive"
                 v-tooltip.top="
                   isVirtualFolderActive
-                    ? 'Les dossiers virtuels sont remplis automatiquement par les attachements.'
+                    ? t('band_space_files.common.virtual_folder_hint')
                     : null
                 "
                 @click="uploadDialogVisible = true"
@@ -158,14 +158,14 @@
                 class="flex items-center gap-2 text-xs text-surface-500 dark:text-surface-400"
               >
                 <i class="pi pi-search" aria-hidden="true"></i>
-                Recherche dans tout l'espace
+                {{ t('band_space_files.page.space_wide_search') }}
               </span>
               <span
                 v-if="filesStore.isRefreshingFiles"
                 class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300"
               >
                 <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-                Actualisation…
+                {{ t('band_space_files.page.refreshing') }}
               </span>
             </div>
           </div>
@@ -204,7 +204,7 @@
               {{ filesStore.loadMoreError }}
             </Message>
             <Button
-              label="Charger plus"
+              :label="t('band_space_files.page.load_more')"
               :loading="filesStore.isLoadingMoreFiles"
               severity="secondary"
               outlined
@@ -273,6 +273,7 @@ import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import FileBulkActionBar from '../../components/BandSpace/Files/FileBulkActionBar.vue'
 import FileDetailDrawer from '../../components/BandSpace/Files/FileDetailDrawer.vue'
@@ -303,6 +304,7 @@ import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const { currentSpace } = useBandSpaceNavigation()
 // Wipe any previous space's folders/files/tags synchronously before first
@@ -369,12 +371,12 @@ const inlineFolders = computed(() =>
 const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
 
 /** A virtual folder is filled by attachments, so an empty one is phrased per source. */
-const VIRTUAL_EMPTY_MESSAGES = {
-  task: 'Aucun fichier attaché à une tâche pour le moment.',
-  finance: 'Aucun fichier attaché à une entrée financière pour le moment.',
-  note: 'Aucune image attachée à une note pour le moment.',
-  song: 'Aucun fichier attaché à une chanson pour le moment.',
-  setlist: 'Aucun fichier attaché à une setlist pour le moment.'
+const VIRTUAL_EMPTY_MESSAGE_KEYS = {
+  task: 'band_space_files.page.empty.virtual_task',
+  finance: 'band_space_files.page.empty.virtual_finance',
+  note: 'band_space_files.page.empty.virtual_note',
+  song: 'band_space_files.page.empty.virtual_song',
+  setlist: 'band_space_files.page.empty.virtual_setlist'
 }
 
 const emptyMessage = computed(() => {
@@ -383,23 +385,23 @@ const emptyMessage = computed(() => {
   // sidebar badge reads seven contradicts the badge. Telling the member to import a file is no answer to
   // a search that found nothing either.
   if (filesStore.isSearching) {
-    return 'Aucun fichier ne correspond à cette recherche.'
+    return t('band_space_files.page.empty.search')
   }
   if (filesStore.filters.tagId || filesStore.filters.mime) {
-    return 'Aucun fichier ne correspond à ces filtres.'
+    return t('band_space_files.page.empty.filters')
   }
 
   const virtualSource = virtualFolderSource(filesStore.activeFolderId)
   if (virtualSource !== null) {
-    return VIRTUAL_EMPTY_MESSAGES[virtualSource] ?? 'Aucun fichier attaché pour le moment.'
+    return t(VIRTUAL_EMPTY_MESSAGE_KEYS[virtualSource] ?? 'band_space_files.page.empty.virtual')
   }
   if (listedFolder.value === null) {
-    return 'Aucun fichier à la racine, commencez par en importer un.'
+    return t('band_space_files.page.empty.root')
   }
   if (isInTree.value) {
-    return 'Aucun fichier dans ce dossier, commencez par en importer un.'
+    return t('band_space_files.file_list.empty')
   }
-  return 'Aucun fichier, commencez par en importer un.'
+  return t('band_space_files.page.empty.all')
 })
 
 let queryDebounce = null
@@ -547,18 +549,18 @@ function handleUploadSaved({ uploadedCount, total, label, quotaApproaching, inte
   if (uploadedCount > 0) {
     toast.add({
       severity: 'success',
-      summary: uploadedCount > 1 ? 'Fichiers téléversés' : 'Fichier téléversé',
+      summary: t('band_space_files.page.upload_toast.summary', uploadedCount),
       // One file keeps the sentence it has always been given: a bare count reads as a fragment when
       // there was never a batch to count. The tally is only worth quoting for a real batch.
-      detail: total === 1 ? 'Le fichier a bien été ajouté.' : label,
+      detail: total === 1 ? t('band_space_files.page.upload_toast.single_detail') : label,
       life: 3000
     })
   }
   if (quotaApproaching) {
     toast.add({
       severity: 'warn',
-      summary: 'Quota presque atteint',
-      detail: 'Vous avez atteint 80 % de votre quota de stockage.',
+      summary: t('band_space_files.common.quota_approaching.summary'),
+      detail: t('band_space_files.common.quota_approaching.detail'),
       life: 6000
     })
   }

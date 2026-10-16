@@ -8,11 +8,13 @@
   >
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Nom</label>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">
+          {{ t('band_space_files.folder_edit.name_label') }}
+        </label>
         <InputText
           v-model="form.name"
-          aria-label="Nom"
-          placeholder="Ex : Live, Setlists, 2025"
+          :aria-label="t('band_space_files.folder_edit.name_label')"
+          :placeholder="t('band_space_files.folder_edit.name_placeholder')"
           size="small"
           class="w-full"
           :disabled="isSubmitting"
@@ -22,14 +24,16 @@
       </div>
 
       <div v-if="mode !== 'create-sub'" class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Dossier parent</label>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">
+          {{ t('band_space_files.folder_edit.parent_label') }}
+        </label>
         <Select
           v-model="form.parentId"
-          aria-label="Dossier parent"
+          :aria-label="t('band_space_files.folder_edit.parent_label')"
           :options="parentOptions"
           option-label="label"
           option-value="value"
-          placeholder="Racine"
+          :placeholder="t('band_space_files.folder.root')"
           :show-clear="true"
           :disabled="isSubmitting"
         />
@@ -40,7 +44,7 @@
 
     <template #footer>
       <Button
-        label="Annuler"
+        :label="t('band_space_files.common.cancel')"
         severity="secondary"
         text
         :disabled="isSubmitting"
@@ -63,6 +67,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const props = defineProps({
@@ -74,6 +79,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved'])
+const { t } = useI18n()
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
@@ -85,12 +91,14 @@ const fieldErrors = reactive({ name: null })
 const globalError = ref(null)
 
 const dialogHeader = computed(() => {
-  if (props.mode === 'create-root') return 'Nouveau dossier'
-  if (props.mode === 'create-sub') return 'Nouveau sous-dossier'
-  return 'Renommer / déplacer le dossier'
+  if (props.mode === 'create-root') return t('band_space_files.folder_edit.title_create')
+  if (props.mode === 'create-sub') return t('band_space_files.folder_edit.title_create_sub')
+  return t('band_space_files.folder_edit.title_edit')
 })
 
-const submitLabel = computed(() => (props.mode === 'edit' ? 'Enregistrer' : 'Créer'))
+const submitLabel = computed(() =>
+  props.mode === 'edit' ? t('band_space_files.common.save') : t('band_space_files.common.create')
+)
 
 const parentOptions = computed(() => {
   const out = []
@@ -154,7 +162,7 @@ function initFromProps() {
 async function handleSubmit() {
   const name = form.name.trim()
   if (!name) {
-    fieldErrors.name = 'Le nom est requis'
+    fieldErrors.name = t('band_space_files.folder_edit.name_required')
     return
   }
   fieldErrors.name = null

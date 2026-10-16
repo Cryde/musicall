@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col h-full">
     <div class="flex items-center justify-between p-3 border-b border-surface-200 dark:border-surface-700">
-      <span class="font-semibold text-surface-700 dark:text-surface-200">Notes</span>
+      <span class="font-semibold text-surface-700 dark:text-surface-200">{{ t('band_space_notes.tree.heading') }}</span>
       <Button
-        v-tooltip.bottom="'Nouvelle note'"
-        aria-label="Nouvelle note"
+        v-tooltip.bottom="t('band_space_notes.tree.new_note')"
+        :aria-label="t('band_space_notes.tree.new_note')"
         icon="pi pi-plus"
         severity="secondary"
         text
@@ -33,7 +33,7 @@
             <Button
               v-if="nodeActions(node).length > 0"
               icon="pi pi-ellipsis-h"
-              aria-label="Actions de la note"
+              :aria-label="t('band_space_notes.tree.note_actions')"
               severity="secondary"
               text
               rounded
@@ -45,9 +45,9 @@
       </Tree>
       <div v-else class="flex flex-col items-center justify-center py-8 text-center">
         <i class="pi pi-file-edit text-3xl text-surface-400 mb-3"></i>
-        <p class="text-sm text-surface-500 dark:text-surface-400">Aucune note</p>
+        <p class="text-sm text-surface-500 dark:text-surface-400">{{ t('band_space_notes.tree.empty') }}</p>
         <Button
-          label="Créer une note"
+          :label="t('band_space_notes.tree.create_note')"
           icon="pi pi-plus"
           severity="secondary"
           size="small"
@@ -65,11 +65,14 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Tree from 'primevue/tree'
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { canDeleteNote } from '../../../utils/noteActions.js'
 
 const MAX_DEPTH = 3
+
+const { t } = useI18n()
 
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
@@ -95,7 +98,7 @@ function nodeActions(node) {
 
   if (canCreateChild(node.key)) {
     items.push({
-      label: 'Ajouter une sous-note',
+      label: t('band_space_notes.tree.add_child'),
       icon: 'pi pi-plus',
       command: () => emit('create-child', node.key)
     })
@@ -103,7 +106,7 @@ function nodeActions(node) {
 
   if (canDeleteNote(node.data, userSecurityStore.userProfile?.id ?? null, isAdmin.value)) {
     items.push({
-      label: 'Supprimer',
+      label: t('band_space_notes.tree.delete'),
       icon: 'pi pi-trash',
       class: 'text-red-500',
       command: () => emit('delete', node.key)

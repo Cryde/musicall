@@ -8,6 +8,8 @@ import {
   virtualFolderId,
   virtualFolderSource
 } from '../constants/folderSelection.js'
+import { intlLocale } from '../i18n/formatLocale.js'
+import { i18n } from '../i18n/index.js'
 import { FILES_PAGE_SIZE } from './filePagination.js'
 
 /**
@@ -102,7 +104,7 @@ export function fileListingParams(activeFolderId, filters, page) {
 export function folderFileCountLabel(fileCount) {
   if (!fileCount || fileCount < 1) return null
 
-  return fileCount > 1 ? `${fileCount} fichiers` : `${fileCount} fichier`
+  return i18n.global.t('band_space_files.count.files', fileCount)
 }
 
 /**
@@ -193,10 +195,9 @@ export function rootDestinationRefusal(file, virtualFolders = []) {
   if (canFileSitAtRoot(file)) return null
 
   const names = fileVirtualFolders(file, virtualFolders).map((folder) => folder.label)
-  const listedIn =
-    names.length > 1 ? `${names.slice(0, -1).join(', ')} et ${names.at(-1)}` : names[0]
+  const listedIn = new Intl.ListFormat(intlLocale(), { type: 'conjunction' }).format(names)
 
-  return `Ce fichier est listé dans ${listedIn} : la racine ne liste que les fichiers attachés à aucune ressource.`
+  return i18n.global.t('band_space_files.move.root_refused', { folders: listedIn })
 }
 
 /**
@@ -220,7 +221,10 @@ export function fileLocation(file, virtualFolders = []) {
   }
 
   return (
-    fileVirtualFolders(file, virtualFolders)[0] ?? { label: 'Racine', folderId: ROOT_FOLDER_ID }
+    fileVirtualFolders(file, virtualFolders)[0] ?? {
+      label: i18n.global.t('band_space_files.folder.root'),
+      folderId: ROOT_FOLDER_ID
+    }
   )
 }
 
@@ -258,7 +262,9 @@ export function uploadBelongsInListing(activeFolderId, filters, uploadedFolderId
  * @returns {{label: string, value: ?string, disabled?: boolean}[]}
  */
 export function folderSelectOptions(tree, rootDisabled = false) {
-  const options = [{ label: 'Racine', value: null, disabled: rootDisabled }]
+  const options = [
+    { label: i18n.global.t('band_space_files.folder.root'), value: null, disabled: rootDisabled }
+  ]
 
   const walk = (nodes, depth) => {
     for (const node of nodes ?? []) {

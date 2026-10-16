@@ -3,11 +3,10 @@
     v-if="selectedFiles.length > 0"
     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-900 dark:bg-surface-800 text-white rounded-xl shadow-xl px-4 py-2 flex items-center gap-3"
     role="region"
-    aria-label="Actions sur la sélection"
+    :aria-label="t('band_space_files.bulk_bar.region_label')"
   >
     <span class="text-sm font-medium">
-      {{ selectedFiles.length }}
-      fichier{{ selectedFiles.length > 1 ? 's' : '' }} sélectionné{{ selectedFiles.length > 1 ? 's' : '' }}
+      {{ t('band_space_files.bulk_bar.selected_count', selectedFiles.length) }}
     </span>
 
     <div class="w-px h-6 bg-surface-600"></div>
@@ -17,7 +16,7 @@
            own, and a tooltip carries no accessible name either, hence the sr-only twin. -->
       <span v-tooltip.top="restoreBlockedReason">
         <Button
-          label="Restaurer"
+          :label="t('band_space_files.common.restore')"
           icon="pi pi-undo"
           size="small"
           severity="secondary"
@@ -31,7 +30,7 @@
 
     <template v-else>
       <Button
-        label="Déplacer"
+        :label="t('band_space_files.bulk_bar.move')"
         icon="pi pi-arrows-h"
         size="small"
         severity="secondary"
@@ -42,21 +41,21 @@
         <div class="flex flex-col gap-2 min-w-[18rem]">
           <Select
             v-model="folderDraft"
-            aria-label="Dossier de destination"
+            :aria-label="t('band_space_files.bulk_bar.move_target')"
             :options="folderOptions"
             option-label="label"
             option-value="value"
             option-disabled="disabled"
-            placeholder="Racine"
+            :placeholder="t('band_space_files.folder.root')"
           />
           <small v-if="rootRefusal" class="text-xs text-surface-300">{{ rootRefusal }}</small>
-          <Button label="Déplacer" size="small" :loading="busy === 'move'" @click="handleMove" />
+          <Button :label="t('band_space_files.bulk_bar.move')" size="small" :loading="busy === 'move'" @click="handleMove" />
         </div>
       </Popover>
 
       <span v-tooltip.top="deleteBlocked">
         <Button
-          label="Supprimer"
+          :label="t('band_space_files.common.delete')"
           icon="pi pi-trash"
           size="small"
           severity="danger"
@@ -76,8 +75,8 @@
       text
       severity="secondary"
       class="!text-white"
-      v-tooltip.top="'Annuler la sélection'"
-      aria-label="Annuler la sélection"
+      v-tooltip.top="t('band_space_files.bulk_bar.clear_selection')"
+      :aria-label="t('band_space_files.bulk_bar.clear_selection')"
       @click="filesStore.clearSelection"
     />
   </div>
@@ -90,6 +89,7 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
@@ -103,6 +103,7 @@ const props = defineProps({
   isTrash: { type: Boolean, default: false }
 })
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()
 const { isAdmin } = useBandSpaceNavigation()
@@ -143,9 +144,7 @@ const rootRefusal = computed(() => {
     return null
   }
 
-  return attached.length === 1
-    ? 'Un fichier de la sélection est attaché à une ressource : la racine ne liste que les fichiers attachés à aucune ressource.'
-    : `${attached.length} fichiers de la sélection sont attachés à une ressource : la racine ne liste que les fichiers attachés à aucune ressource.`
+  return t('band_space_files.bulk_bar.root_refused', attached.length)
 })
 
 const folderOptions = computed(() =>
@@ -160,8 +159,8 @@ async function runBulk(name, fn) {
     // The refusal names the files that blocked the batch, which is the only part worth reading.
     toast.add({
       severity: 'error',
-      summary: 'Action en lot impossible',
-      detail: apiErrorDetail(e, 'Une erreur est survenue'),
+      summary: t('band_space_files.bulk_bar.failed'),
+      detail: apiErrorDetail(e, t('band_space_files.upload.generic_error')),
       life: 8000
     })
   } finally {
@@ -173,7 +172,7 @@ function handleMove() {
   movePopover.value?.hide()
   runBulk('move', async () => {
     await filesStore.bulkMoveFiles(props.bandSpaceId, folderDraft.value ?? null)
-    toast.add({ severity: 'success', summary: 'Fichiers déplacés', life: 3000 })
+    toast.add({ severity: 'success', summary: t('band_space_files.bulk_bar.moved'), life: 3000 })
     folderDraft.value = null
   })
 }
@@ -181,25 +180,29 @@ function handleMove() {
 function handleRestore() {
   runBulk('restore', async () => {
     await filesStore.bulkRestoreFiles(props.bandSpaceId)
-    toast.add({ severity: 'success', summary: 'Fichiers restaurés', life: 3000 })
+    toast.add({ severity: 'success', summary: t('band_space_files.bulk_bar.restored'), life: 3000 })
   })
 }
 
 function confirmDelete() {
   const count = selectedFiles.value.length
   confirm.require({
-    message: `${count} fichier${count > 1 ? 's seront déplacés' : ' sera déplacé'} dans la corbeille, où vous pourrez ${count > 1 ? 'les' : 'le'} restaurer pendant ${filesStore.trashRetentionDays} jours. Continuer ?`,
-    header: 'Déplacer dans la corbeille',
+    message: t(
+      'band_space_files.bulk_bar.delete_confirm_message',
+      { days: filesStore.trashRetentionDays },
+      count
+    ),
+    header: t('band_space_files.bulk_bar.delete_confirm_header'),
     icon: 'pi pi-trash',
-    acceptLabel: 'Supprimer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_files.common.delete'),
+    rejectLabel: t('band_space_files.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: () => {
       runBulk('delete', async () => {
         await filesStore.bulkDeleteFiles(props.bandSpaceId)
         toast.add({
           severity: 'success',
-          summary: 'Fichiers déplacés dans la corbeille',
+          summary: t('band_space_files.bulk_bar.deleted'),
           life: 3000
         })
       })

@@ -20,6 +20,7 @@
  * Pure on purpose, so the rules are tested without a browser. See fileUploadQueue.test.js.
  */
 
+import { i18n } from '../i18n/index.js'
 import { formatBytes } from './formatBytes.js'
 
 /**
@@ -64,15 +65,6 @@ const RETRYABLE_STATUSES = [UPLOAD_STATUS.Failed, UPLOAD_STATUS.Skipped, UPLOAD_
 /** Statuses nothing more is going to happen to. */
 const TERMINAL_STATUSES = [UPLOAD_STATUS.Uploaded, UPLOAD_STATUS.Rejected, ...RETRYABLE_STATUSES]
 
-const QUOTA_REACHED_MESSAGE = 'Quota de stockage atteint, fichier non envoyé'
-const QUOTA_BATCH_NOTICE =
-  "Le quota de stockage de l'espace est atteint. Les fichiers restants n'ont pas été envoyés : libérez de la place, puis réessayez."
-const RATE_LIMIT_REACHED_MESSAGE = "Limite d'envoi atteinte, fichier non envoyé"
-const RATE_LIMIT_BATCH_NOTICE =
-  "Limite d'envoi atteinte. Les fichiers restants n'ont pas été envoyés : patientez une minute, puis réessayez."
-const CANCELLED_MESSAGE = 'Import interrompu'
-const CANCELLED_BATCH_NOTICE = "Import interrompu. Les fichiers restants n'ont pas été envoyés."
-
 /**
  * A 2xx upload response that is not actually a file resource is a failure, and has to be turned into
  * one here because nothing downstream will.
@@ -91,7 +83,7 @@ export function assertUploadedFile(data) {
     return data
   }
 
-  throw new Error("Le serveur a renvoyé une réponse inattendue, le fichier n'a pas été enregistré.")
+  throw new Error(i18n.global.t('band_space_files.upload.unexpected_response'))
 }
 
 /**
@@ -109,7 +101,10 @@ export function uploadRejectionReason(file, maxSizeBytes) {
   if (!maxSizeBytes || !Number.isFinite(file?.size)) return null
   if (file.size <= maxSizeBytes) return null
 
-  return `Fichier trop volumineux (${formatBytes(file.size)}). La taille maximale est de ${formatBytes(maxSizeBytes)}.`
+  return i18n.global.t('band_space_files.upload.too_large', {
+    size: formatBytes(file.size),
+    max: formatBytes(maxSizeBytes)
+  })
 }
 
 /**
@@ -256,7 +251,10 @@ function withinWindow(sentAt, now) {
 export function rateLimitPauseNotice(waitMs) {
   const seconds = Math.max(1, Math.ceil(waitMs / 1000))
 
-  return `Limite d'envoi atteinte (${UPLOAD_RATE_LIMIT} fichiers par minute). Reprise dans ${seconds} s.`
+  return i18n.global.t('band_space_files.upload.rate_limit_pause', {
+    limit: UPLOAD_RATE_LIMIT,
+    seconds
+  })
 }
 
 /**
@@ -324,16 +322,17 @@ export function applyUploadFailure(queue, id, error) {
       }
     }
 
+    const rateLimitReached = i18n.global.t('band_space_files.upload.rate_limit_reached')
     const failed = withQueueItem(queue, id, {
       status: UPLOAD_STATUS.Failed,
       attempts,
-      error: RATE_LIMIT_REACHED_MESSAGE
+      error: rateLimitReached
     })
 
     return {
-      queue: markUnsent(failed, UPLOAD_STATUS.Skipped, RATE_LIMIT_REACHED_MESSAGE),
+      queue: markUnsent(failed, UPLOAD_STATUS.Skipped, rateLimitReached),
       kind,
-      notice: RATE_LIMIT_BATCH_NOTICE,
+      notice: i18n.global.t('band_space_files.upload.rate_limit_batch_notice'),
       pauseMs: 0,
       stop: true
     }
@@ -349,9 +348,13 @@ export function applyUploadFailure(queue, id, error) {
     })
 
     return {
-      queue: markUnsent(failed, UPLOAD_STATUS.Skipped, QUOTA_REACHED_MESSAGE),
+      queue: markUnsent(
+        failed,
+        UPLOAD_STATUS.Skipped,
+        i18n.global.t('band_space_files.upload.quota_reached')
+      ),
       kind,
-      notice: QUOTA_BATCH_NOTICE,
+      notice: i18n.global.t('band_space_files.upload.quota_batch_notice'),
       pauseMs: 0,
       stop: true
     }
@@ -378,13 +381,15 @@ export function applyUploadFailure(queue, id, error) {
  * @returns {{queue: Object[], notice: string}}
  */
 export function cancelPendingUploads(queue) {
+  const cancelled = i18n.global.t('band_space_files.upload.cancelled')
+
   return {
     queue: queue.map((item) =>
       TERMINAL_STATUSES.includes(item.status)
         ? item
-        : { ...item, status: UPLOAD_STATUS.Cancelled, progress: 0, error: CANCELLED_MESSAGE }
+        : { ...item, status: UPLOAD_STATUS.Cancelled, progress: 0, error: cancelled }
     ),
-    notice: CANCELLED_BATCH_NOTICE
+    notice: i18n.global.t('band_space_files.upload.cancelled_batch_notice')
   }
 }
 
@@ -446,7 +451,7 @@ function markUnsent(queue, status, reason) {
 
 /** @returns {string} */
 function messageOf(error) {
-  return error?.message || 'Une erreur est survenue'
+  return error?.message || i18n.global.t('band_space_files.upload.generic_error')
 }
 
 /**
@@ -515,16 +520,13 @@ function countByStatus(queue, status) {
  * @returns {string}
  */
 function outcomeLabel(uploaded, unsent, rejected = 0) {
-  const importedPart =
-    uploaded === 0
-      ? 'Aucun fichier importé'
-      : `${uploaded} fichier${uploaded > 1 ? 's' : ''} importé${uploaded > 1 ? 's' : ''}`
+  const importedPart = i18n.global.t('band_space_files.upload.outcome_imported', uploaded)
 
   // "non envoyé" says the batch stopped before reaching it, which invites a retry. A refused file was
   // reached and turned down, and no retry will change that, so it gets its own word.
   const parts = []
-  if (unsent > 0) parts.push(`${unsent} non ${unsent > 1 ? 'envoyés' : 'envoyé'}`)
-  if (rejected > 0) parts.push(`${rejected} refusé${rejected > 1 ? 's' : ''}`)
+  if (unsent > 0) parts.push(i18n.global.t('band_space_files.upload.outcome_unsent', unsent))
+  if (rejected > 0) parts.push(i18n.global.t('band_space_files.upload.outcome_rejected', rejected))
 
   return parts.length === 0 ? importedPart : `${importedPart}, ${parts.join(', ')}`
 }

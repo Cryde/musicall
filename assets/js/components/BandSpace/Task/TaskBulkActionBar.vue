@@ -4,8 +4,7 @@
     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-900 dark:bg-surface-800 text-white rounded-xl shadow-xl px-4 py-2 flex items-center gap-3"
   >
     <span class="text-sm font-medium">
-      {{ tasksStore.selectedTaskIds.size }}
-      tâche{{ tasksStore.selectedTaskIds.size > 1 ? 's' : '' }} sélectionnée{{ tasksStore.selectedTaskIds.size > 1 ? 's' : '' }}
+      {{ t('band_space_tasks.bulk_bar.selected_count', tasksStore.selectedTaskIds.size) }}
     </span>
 
     <div class="w-px h-6 bg-surface-600"></div>
@@ -14,7 +13,7 @@
          own, and a tooltip carries no accessible name either, hence the sr-only twin. -->
     <span v-tooltip.top="archiveBlockedReason">
       <Button
-        label="Archiver"
+        :label="t('band_space_tasks.common.archive')"
         icon="pi pi-box"
         size="small"
         severity="secondary"
@@ -26,7 +25,7 @@
     </span>
 
     <Button
-      label="Catégorie"
+      :label="t('band_space_tasks.field.category')"
       icon="pi pi-tag"
       size="small"
       severity="secondary"
@@ -40,10 +39,10 @@
           :options="categoryOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Choisir une catégorie"
+          :placeholder="t('band_space_tasks.bulk_bar.choose_category')"
         />
         <Button
-          label="Appliquer"
+          :label="t('band_space_tasks.bulk_bar.apply')"
           size="small"
           :loading="busy === 'category'"
           @click="handleCategory"
@@ -52,7 +51,7 @@
     </Popover>
 
     <Button
-      label="Assignés"
+      :label="t('band_space_tasks.field.assignees')"
       icon="pi pi-users"
       size="small"
       severity="secondary"
@@ -66,14 +65,14 @@
           :options="members"
           optionLabel="display_name"
           optionValue="user_id"
-          placeholder="Aucun"
+          :placeholder="t('band_space_tasks.bulk_bar.no_assignee')"
           display="chip"
         />
         <p class="text-xs text-surface-500">
-          Remplace les assignés sur toutes les tâches sélectionnées.
+          {{ t('band_space_tasks.bulk_bar.assignees_hint') }}
         </p>
         <Button
-          label="Appliquer"
+          :label="t('band_space_tasks.bulk_bar.apply')"
           size="small"
           :loading="busy === 'assignees'"
           @click="handleAssignees"
@@ -83,7 +82,7 @@
 
     <span v-tooltip.top="deleteBlockedReason">
       <Button
-        label="Supprimer"
+        :label="t('band_space_tasks.common.delete')"
         icon="pi pi-trash"
         size="small"
         severity="danger"
@@ -102,8 +101,8 @@
       text
       severity="secondary"
       class="!text-white"
-      v-tooltip.top="'Annuler la sélection'"
-      aria-label="Annuler la sélection"
+      v-tooltip.top="t('band_space_tasks.bulk_bar.exit_selection')"
+      :aria-label="t('band_space_tasks.bulk_bar.exit_selection')"
       @click="tasksStore.exitSelectionMode"
     />
   </div>
@@ -117,6 +116,7 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
@@ -135,6 +135,7 @@ const userSecurityStore = useUserSecurityStore()
 const { isAdmin } = useBandSpaceNavigation()
 const toast = useToast()
 const confirm = useConfirm()
+const { t } = useI18n()
 
 const busy = ref(null)
 const categoryDraft = ref(null)
@@ -143,7 +144,7 @@ const categoryPopover = ref()
 const assigneePopover = ref()
 
 const categoryOptions = computed(() => [
-  { label: 'Aucune', value: null },
+  { label: t('band_space_tasks.field.no_category'), value: null },
   ...props.categories.map((c) => ({ label: c.name, value: c.id }))
 ])
 
@@ -167,13 +168,13 @@ const deleteBlockers = computed(() =>
 const archiveBlockedReason = computed(() =>
   archiveBlockers.value.length === 0
     ? null
-    : `Seules les tâches terminées peuvent être archivées : ${archiveBlockers.value.join(', ')}`
+    : t('band_space_tasks.bulk_bar.archive_blocked', { tasks: archiveBlockers.value.join(', ') })
 )
 
 const deleteBlockedReason = computed(() =>
   deleteBlockers.value.length === 0
     ? null
-    : `Seul le créateur ou un administrateur peut supprimer ces tâches : ${deleteBlockers.value.join(', ')}`
+    : t('band_space_tasks.bulk_bar.delete_blocked', { tasks: deleteBlockers.value.join(', ') })
 )
 
 async function runBulk(name, fn) {
@@ -184,8 +185,8 @@ async function runBulk(name, fn) {
     // The refusal names the tasks that blocked the batch, which is the only part worth reading.
     toast.add({
       severity: 'error',
-      summary: 'Action en lot impossible',
-      detail: apiErrorDetail(e, 'Une erreur est survenue'),
+      summary: t('band_space_tasks.bulk_bar.failed'),
+      detail: apiErrorDetail(e, t('band_space_tasks.bulk_bar.generic_error')),
       life: 8000
     })
   } finally {
@@ -196,7 +197,7 @@ async function runBulk(name, fn) {
 function handleArchive() {
   runBulk('archive', async () => {
     await tasksStore.bulkPatch(props.bandSpaceId, { archived: true })
-    toast.add({ severity: 'success', summary: 'Tâches archivées', life: 3000 })
+    toast.add({ severity: 'success', summary: t('band_space_tasks.bulk_bar.archived'), life: 3000 })
   })
 }
 
@@ -204,7 +205,11 @@ function handleCategory() {
   categoryPopover.value?.hide()
   runBulk('category', async () => {
     await tasksStore.bulkPatch(props.bandSpaceId, { category_id: categoryDraft.value })
-    toast.add({ severity: 'success', summary: 'Catégorie mise à jour', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.bulk_bar.category_updated'),
+      life: 3000
+    })
     categoryDraft.value = null
   })
 }
@@ -213,7 +218,11 @@ function handleAssignees() {
   assigneePopover.value?.hide()
   runBulk('assignees', async () => {
     await tasksStore.bulkPatch(props.bandSpaceId, { assignee_ids: assigneeDraft.value })
-    toast.add({ severity: 'success', summary: 'Assignés mis à jour', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.bulk_bar.assignees_updated'),
+      life: 3000
+    })
     assigneeDraft.value = []
   })
 }
@@ -224,16 +233,20 @@ function confirmDelete() {
     .filter((task) => tasksStore.selectedTaskIds.has(task.id))
     .reduce((total, task) => total + (task.file_count ?? 0), 0)
   confirm.require({
-    message: `Supprimer ${count} tâche${count > 1 ? 's' : ''} ? Cette action est irréversible.${attachedFilesNotice(attachedFileCount)}`,
-    header: 'Confirmer la suppression',
+    message: `${t('band_space_tasks.bulk_bar.delete_confirm', count)}${attachedFilesNotice(attachedFileCount)}`,
+    header: t('band_space_tasks.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Supprimer',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('band_space_tasks.common.delete'),
+    rejectLabel: t('band_space_tasks.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: () => {
       runBulk('delete', async () => {
         await tasksStore.bulkDelete(props.bandSpaceId)
-        toast.add({ severity: 'success', summary: 'Tâches supprimées', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_tasks.bulk_bar.deleted'),
+          life: 3000
+        })
       })
     }
   })

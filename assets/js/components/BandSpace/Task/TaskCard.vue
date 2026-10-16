@@ -26,13 +26,13 @@
         v-if="task.priority === 'urgent'"
         class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
       >
-        Urgent
+        {{ t('band_space_tasks.priority.urgent') }}
       </span>
       <span
         v-else-if="task.priority === 'high'"
         class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
       >
-        Haute
+        {{ t('band_space_tasks.priority.high') }}
       </span>
       <span
         v-if="task.category_name"
@@ -69,12 +69,12 @@
         <i
           v-if="task.description"
           class="pi pi-align-left"
-          title="Cette tâche a une description"
+          :title="t('band_space_tasks.card.has_description')"
         />
         <span
           v-if="task.file_count > 0"
           class="flex items-center gap-1"
-          :title="`${task.file_count} fichier${task.file_count > 1 ? 's' : ''} attaché${task.file_count > 1 ? 's' : ''}`"
+          :title="t('band_space_tasks.card.attached_files', task.file_count)"
         >
           <i class="pi pi-paperclip" />
           {{ task.file_count }}
@@ -83,7 +83,7 @@
           v-if="task.comment_count > 0"
           type="button"
           class="flex items-center gap-1 hover:text-primary transition-colors"
-          :title="`${task.comment_count} commentaire${task.comment_count > 1 ? 's' : ''}`"
+          :title="t('band_space_tasks.card.comments', task.comment_count)"
           @click.stop="popoverRef?.toggle($event)"
         >
           <i class="pi pi-comment" />
@@ -105,7 +105,7 @@
         <button
           type="button"
           class="ml-1 w-7 h-7 -mr-1 rounded hover:bg-surface-100 dark:hover:bg-surface-800 flex items-center justify-center text-surface-500"
-          aria-label="Plus d'actions"
+          :aria-label="t('band_space_tasks.card.more_actions')"
           aria-haspopup="menu"
           @click.stop="actionMenuRef?.toggle($event)"
         >
@@ -122,6 +122,7 @@ import Checkbox from 'primevue/checkbox'
 import Menu from 'primevue/menu'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
@@ -137,6 +138,7 @@ const emit = defineEmits(['open-task'])
 
 const tasksStore = useBandTasksStore()
 const toast = useToast()
+const { t } = useI18n()
 const popoverRef = ref()
 const actionMenuRef = ref()
 
@@ -145,14 +147,14 @@ const actionMenuRef = ref()
 // aren't the task's current one. There is no drop point, so the task goes to the end of the
 // target column.
 const STATUS_OPTIONS = [
-  { value: 'todo', label: 'À faire' },
-  { value: 'in_progress', label: 'En cours' },
-  { value: 'done', label: 'Terminé' }
+  { value: 'todo', labelKey: 'band_space_tasks.status.todo' },
+  { value: 'in_progress', labelKey: 'band_space_tasks.status.in_progress' },
+  { value: 'done', labelKey: 'band_space_tasks.status.done' }
 ]
 
 const actionMenuItems = computed(() => {
   return STATUS_OPTIONS.filter((s) => s.value !== props.task.status).map((s) => ({
-    label: `Déplacer vers « ${s.label} »`,
+    label: t('band_space_tasks.card.move_to', { status: t(s.labelKey) }),
     icon: 'pi pi-arrow-right',
     command: () => moveToStatus(s.value)
   }))
@@ -164,7 +166,7 @@ async function moveToStatus(newStatus) {
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Impossible de déplacer la tâche',
+      summary: t('band_space_tasks.common.move_failed'),
       life: 5000
     })
   }

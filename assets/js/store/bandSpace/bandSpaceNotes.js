@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceNotesApi from '../../api/bandSpace/band-space-notes.js'
+import { i18n } from '../../i18n/index.js'
 import { saveNoteContentWithRetries } from '../../utils/noteContentSave.js'
 import {
   failedSaveNoteIds,
@@ -62,9 +63,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     const unsaved = failedSaveNoteIds(saveStatusByNoteId.value)
     if (unsaved.length === 0) return true
 
-    const confirmed = window.confirm(
-      'Des modifications ne sont pas enregistrées et seront perdues. Continuer ?'
-    )
+    const confirmed = window.confirm(i18n.global.t('band_space_notes.discard_unsaved_confirm'))
     if (confirmed) {
       for (const noteId of unsaved) {
         clearSaveStatus(noteId)
@@ -121,7 +120,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     } catch {
       if (token !== notesLoadToken || quiet) return
       notes.value = []
-      loadError.value = 'Impossible de charger les notes'
+      loadError.value = i18n.global.t('band_space_notes.load_error.list')
     } finally {
       if (token === notesLoadToken) {
         isLoading.value = false
@@ -192,7 +191,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
       if (token !== selectedNoteLoadToken) return
       selectedNote.value = null
       selectedNoteId.value = null
-      loadError.value = 'Impossible de charger la note'
+      loadError.value = i18n.global.t('band_space_notes.load_error.note')
     } finally {
       if (token === selectedNoteLoadToken) {
         isLoadingNote.value = false

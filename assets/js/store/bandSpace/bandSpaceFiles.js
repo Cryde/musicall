@@ -6,6 +6,7 @@ import {
   NO_FOLDER_LISTED,
   ROOT_FOLDER_ID
 } from '../../constants/folderSelection.js'
+import { i18n } from '../../i18n/index.js'
 import {
   fileListingParams,
   folderPathOf,
@@ -297,7 +298,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       }
     } catch (e) {
       if (requestId !== activeFileRequestId) return
-      activeFileError.value = e.status === 404 ? 'Fichier introuvable' : e.message
+      activeFileError.value =
+        e.status === 404 ? i18n.global.t('band_space_files.detail.not_found') : e.message
     } finally {
       if (requestId === activeFileRequestId) {
         isLoadingActiveFile.value = false

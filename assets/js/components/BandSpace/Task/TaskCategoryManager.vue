@@ -1,5 +1,5 @@
 <template>
-  <Drawer v-model:visible="visibleModel" position="right" header="Gérer les catégories" class="w-full! md:w-[24rem]!">
+  <Drawer v-model:visible="visibleModel" position="right" :header="t('band_space_tasks.common.manage_categories')" class="w-full! md:w-[24rem]!">
     <div class="flex flex-col gap-4">
       <!-- Existing categories -->
       <div class="flex flex-col gap-2">
@@ -21,8 +21,8 @@
               @keydown.enter="saveRename(category)"
               @keydown.escape="cancelRename"
             />
-            <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(category)" />
-            <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
+            <Button icon="pi pi-check" :aria-label="t('band_space_tasks.category_manager.confirm_rename')" text rounded size="small" @click="saveRename(category)" />
+            <Button icon="pi pi-times" :aria-label="t('band_space_tasks.common.cancel')" text rounded size="small" @click="cancelRename" />
           </template>
           <template v-else>
             <span
@@ -38,8 +38,8 @@
               rounded
               size="small"
               severity="danger"
-              v-tooltip.left="`Supprimer la catégorie ${category.name}`"
-              :aria-label="`Supprimer la catégorie ${category.name}`"
+              v-tooltip.left="t('band_space_tasks.category_manager.delete_aria', { name: category.name })"
+              :aria-label="t('band_space_tasks.category_manager.delete_aria', { name: category.name })"
               @click="handleDelete(category)"
             />
           </template>
@@ -48,17 +48,17 @@
 
       <!-- Create new -->
       <div class="border-t border-surface-200 dark:border-surface-700 pt-4">
-        <h4 class="text-sm font-medium text-surface-700 dark:text-surface-200 mb-2">Nouvelle catégorie</h4>
+        <h4 class="text-sm font-medium text-surface-700 dark:text-surface-200 mb-2">{{ t('band_space_tasks.category_manager.new_title') }}</h4>
         <form @submit.prevent="handleCreate" class="flex gap-2">
           <InputText
             v-model="newName"
-            placeholder="Nom de la catégorie"
+            :placeholder="t('band_space_tasks.category_manager.name_placeholder')"
             class="flex-1"
             size="small"
           />
           <Button
             type="submit"
-            label="Créer"
+            :label="t('band_space_tasks.category_manager.create')"
             size="small"
             :disabled="!newName.trim()"
             :loading="isCreating"
@@ -77,6 +77,7 @@ import InputText from 'primevue/inputtext'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 
@@ -88,6 +89,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible'])
 const confirm = useConfirm()
 const toast = useToast()
+const { t } = useI18n()
 const tasksStore = useBandTasksStore()
 // Creating and renaming a category is any member's, deleting one is an administrator's, so the
 // trash is the only control of this drawer that comes and goes with the role.
@@ -133,7 +135,11 @@ async function handleCreate() {
   try {
     await tasksStore.createCategory(props.bandSpaceId, { name: newName.value.trim() })
     newName.value = ''
-    toast.add({ severity: 'success', summary: 'Catégorie créée', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.category_manager.created'),
+      life: 3000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   } finally {
@@ -145,20 +151,27 @@ function handleDelete(category) {
   const linkedCount = tasksStore.tasks.filter((t) => t.category_id === category.id).length
   const message =
     linkedCount > 0
-      ? `Supprimer la catégorie "${category.name}" ? ${linkedCount} tâche(s) deviendront sans catégorie.`
-      : `Supprimer la catégorie "${category.name}" ?`
+      ? t('band_space_tasks.category_manager.delete_confirm_with_tasks', {
+          name: category.name,
+          count: linkedCount
+        })
+      : t('band_space_tasks.category_manager.delete_confirm', { name: category.name })
 
   confirm.require({
     message,
-    header: 'Confirmer la suppression',
+    header: t('band_space_tasks.common.confirm_delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('band_space_tasks.common.cancel'),
+    acceptLabel: t('band_space_tasks.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await tasksStore.deleteCategory(props.bandSpaceId, category.id)
-        toast.add({ severity: 'success', summary: 'Catégorie supprimée', life: 3000 })
+        toast.add({
+          severity: 'success',
+          summary: t('band_space_tasks.category_manager.deleted'),
+          life: 3000
+        })
       } catch (e) {
         toast.add({ severity: 'error', summary: e.message, life: 5000 })
       }

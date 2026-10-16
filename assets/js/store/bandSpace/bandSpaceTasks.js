@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import bandSpaceTasksApi from '../../api/bandSpace/band-space-tasks.js'
+import { i18n } from '../../i18n/index.js'
 import { orderColumnAfterDrag, toPositions } from '../../utils/taskOrdering.js'
 import { useUserSecurityStore } from '../user/security.js'
 
@@ -148,7 +149,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
       if (requestId !== activeTaskRequestId) return false
       // A background re-read that failed leaves the task on screen as it was.
       if (quiet && e.status !== 404) return false
-      activeTaskError.value = e.status === 404 ? 'Tâche introuvable' : e.message
+      activeTaskError.value =
+        e.status === 404 ? i18n.global.t('band_space_tasks.detail.not_found') : e.message
       return false
     } finally {
       if (requestId === activeTaskRequestId) {

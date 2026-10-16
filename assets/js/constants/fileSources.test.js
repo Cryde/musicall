@@ -3,14 +3,14 @@ import { describe, it } from 'node:test'
 import {
   CHAT_MESSAGE_SOURCE_TYPE,
   deleteBlockingAttachments,
-  FILE_SOURCE_LIST_LABEL,
-  FILE_SOURCE_NOUNS,
   FILE_SOURCE_TYPES,
   fileSourceAttachedMessage,
   fileSourceDefiniteNoun,
   fileSourceDetachHint,
   fileSourceIcon,
   fileSourceLabel,
+  fileSourceListLabel,
+  fileSourceNouns,
   fileSourceRoute,
   QUOTA_BREAKDOWN_SOURCES
 } from './fileSources.js'
@@ -37,9 +37,9 @@ describe('FILE_SOURCE_TYPES', () => {
   })
 })
 
-describe('FILE_SOURCE_NOUNS', () => {
+describe('fileSourceNouns', () => {
   it('covers the five source types the API accepts', () => {
-    assert.deepEqual(FILE_SOURCE_NOUNS, [
+    assert.deepEqual(fileSourceNouns(), [
       'une tâche',
       'une entrée financière',
       'une note',
@@ -47,22 +47,18 @@ describe('FILE_SOURCE_NOUNS', () => {
       'une setlist'
     ])
   })
-
-  it('cannot be edited in place by a caller', () => {
-    assert.equal(Object.isFrozen(FILE_SOURCE_NOUNS), true)
-  })
 })
 
-describe('FILE_SOURCE_LIST_LABEL', () => {
+describe('fileSourceListLabel', () => {
   it('lists every source, the last one after « ou »', () => {
     assert.equal(
-      FILE_SOURCE_LIST_LABEL,
+      fileSourceListLabel(),
       'une tâche, une entrée financière, une note, une chanson ou une setlist'
     )
   })
 
   it('names as many sources as there are types', () => {
-    assert.equal(FILE_SOURCE_LIST_LABEL.split(/, | ou /).length, FILE_SOURCE_TYPES.length)
+    assert.equal(fileSourceListLabel().split(/, | ou /).length, FILE_SOURCE_TYPES.length)
   })
 })
 

@@ -23,49 +23,48 @@
           <InputText
             v-model="editableTitle"
             class="w-full text-xl font-semibold border-0 shadow-none bg-transparent"
-            placeholder="Titre de la note"
+            :placeholder="t('band_space_notes.editor.title_placeholder')"
             @blur="handleTitleBlur"
             @keydown.enter="$event.target.blur()"
           />
         </div>
         <span v-if="saveStatus" class="text-xs text-surface-500 whitespace-nowrap ml-3">
           <template v-if="saveStatus === 'saving'">
-            <i class="pi pi-spin pi-spinner mr-1"></i>Sauvegarde en cours...
+            <i class="pi pi-spin pi-spinner mr-1"></i>{{ t('band_space_notes.editor.save_status.saving') }}
           </template>
           <template v-else-if="saveStatus === 'saved'">
-            <i class="pi pi-check mr-1 text-green-500"></i>Sauvegardé
+            <i class="pi pi-check mr-1 text-green-500"></i>{{ t('band_space_notes.editor.save_status.saved') }}
           </template>
           <template v-else-if="saveStatus === 'conflict'">
-            <i class="pi pi-exclamation-triangle mr-1 text-orange-500"></i>Non enregistré
+            <i class="pi pi-exclamation-triangle mr-1 text-orange-500"></i>{{ t('band_space_notes.editor.save_status.conflict') }}
           </template>
           <template v-else-if="saveStatus === 'error'">
-            <i class="pi pi-times mr-1 text-red-500"></i>Erreur
+            <i class="pi pi-times mr-1 text-red-500"></i>{{ t('band_space_notes.editor.save_status.error') }}
           </template>
         </span>
       </div>
-      <p class="mt-1 ml-10 pl-2 text-xs text-surface-500 dark:text-surface-400">
-        Créée par <UserName :username="note.created_by.username" :display-name="note.created_by.display_name" />
-      </p>
+      <i18n-t keypath="band_space_notes.editor.created_by" tag="p" class="mt-1 ml-10 pl-2 text-xs text-surface-500 dark:text-surface-400">
+        <template #author>
+          <UserName :username="note.created_by.username" :display-name="note.created_by.display_name" />
+        </template>
+      </i18n-t>
     </div>
 
     <!-- Conflict notice: stays until the member acts on it, autosave is over for this editor -->
     <Message v-if="saveStatus === 'conflict'" severity="warn" :closable="false" class="m-4">
       <div class="flex flex-col gap-3">
         <p class="m-0">
-          Cette note a été modifiée par un autre membre pendant que vous écriviez. Vos modifications
-          n'ont pas été enregistrées afin de ne pas effacer les siennes, et la sauvegarde automatique
-          est arrêtée. Votre texte est toujours affiché ci-dessous : copiez-le avant de recharger la
-          note ou d'en ouvrir une autre, car il ne sera plus récupérable ensuite.
+          {{ t('band_space_notes.editor.conflict_notice.message') }}
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
-            label="Copier mon texte"
+            :label="t('band_space_notes.editor.conflict_notice.copy_my_text')"
             icon="pi pi-copy"
             size="small"
             @click="handleCopyMyText"
           />
           <Button
-            label="Recharger la note"
+            :label="t('band_space_notes.editor.conflict_notice.reload_note')"
             icon="pi pi-refresh"
             severity="secondary"
             size="small"
@@ -82,28 +81,28 @@
         <!-- Text formatting -->
         <div class="flex items-center gap-1 pr-2 border-r border-surface-200 dark:border-surface-700">
           <Button
-            v-tooltip.bottom="'Gras'"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.bold')"
             :severity="editor?.isActive('bold') ? 'primary' : 'secondary'"
             text
             size="small"
             class="font-bold"
             @click="editor?.chain().focus().toggleBold().run()"
           >
-            B
+            {{ t('band_space_notes.editor.toolbar.bold_glyph') }}
           </Button>
           <Button
-            v-tooltip.bottom="'Italique'"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.italic')"
             :severity="editor?.isActive('italic') ? 'primary' : 'secondary'"
             text
             size="small"
             class="italic"
             @click="editor?.chain().focus().toggleItalic().run()"
           >
-            I
+            {{ t('band_space_notes.editor.toolbar.italic_glyph') }}
           </Button>
           <Button
-            v-tooltip.bottom="'Lien'"
-            aria-label="Lien"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.link')"
+            :aria-label="t('band_space_notes.editor.toolbar.link')"
             icon="pi pi-link"
             :severity="editor?.isActive('link') ? 'primary' : 'secondary'"
             text
@@ -112,11 +111,11 @@
           />
           <Popover ref="linkPopover">
             <form class="flex flex-col gap-2 w-72" @submit.prevent="handleApplyLink">
-              <label for="note-link-address" class="text-sm font-medium">Adresse du lien</label>
+              <label for="note-link-address" class="text-sm font-medium">{{ t('band_space_notes.editor.link_popover.address_label') }}</label>
               <InputText
                 id="note-link-address"
                 v-model="linkAddress"
-                placeholder="https://"
+                :placeholder="t('band_space_notes.editor.link_popover.address_placeholder')"
                 size="small"
                 autofocus
                 :invalid="!!linkError"
@@ -126,13 +125,13 @@
               <div class="flex justify-end gap-2">
                 <Button
                   v-if="isEditingLink"
-                  label="Retirer le lien"
+                  :label="t('band_space_notes.editor.link_popover.remove')"
                   severity="danger"
                   text
                   size="small"
                   @click="handleRemoveLink"
                 />
-                <Button type="submit" label="Appliquer" size="small" />
+                <Button type="submit" :label="t('band_space_notes.editor.link_popover.apply')" size="small" />
               </div>
             </form>
           </Popover>
@@ -141,27 +140,27 @@
         <!-- Headings -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
-            v-tooltip.bottom="'Titre 1'"
-            aria-label="Titre 1"
-            label="H1"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.heading_1')"
+            :aria-label="t('band_space_notes.editor.toolbar.heading_1')"
+            :label="t('band_space_notes.editor.toolbar.heading_1_short')"
             :severity="editor?.isActive('heading', { level: 1 }) ? 'primary' : 'secondary'"
             text
             size="small"
             @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
           />
           <Button
-            v-tooltip.bottom="'Titre 2'"
-            aria-label="Titre 2"
-            label="H2"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.heading_2')"
+            :aria-label="t('band_space_notes.editor.toolbar.heading_2')"
+            :label="t('band_space_notes.editor.toolbar.heading_2_short')"
             :severity="editor?.isActive('heading', { level: 2 }) ? 'primary' : 'secondary'"
             text
             size="small"
             @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
           />
           <Button
-            v-tooltip.bottom="'Titre 3'"
-            aria-label="Titre 3"
-            label="H3"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.heading_3')"
+            :aria-label="t('band_space_notes.editor.toolbar.heading_3')"
+            :label="t('band_space_notes.editor.toolbar.heading_3_short')"
             :severity="editor?.isActive('heading', { level: 3 }) ? 'primary' : 'secondary'"
             text
             size="small"
@@ -172,8 +171,8 @@
         <!-- Image -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
-            v-tooltip.bottom="'Insérer une image'"
-            aria-label="Insérer une image"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.insert_image')"
+            :aria-label="t('band_space_notes.editor.toolbar.insert_image')"
             icon="pi pi-image"
             severity="secondary"
             text
@@ -193,8 +192,8 @@
         <!-- Lists -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
-            v-tooltip.bottom="'Liste à puces'"
-            aria-label="Liste à puces"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.bullet_list')"
+            :aria-label="t('band_space_notes.editor.toolbar.bullet_list')"
             icon="pi pi-list"
             :severity="editor?.isActive('bulletList') ? 'primary' : 'secondary'"
             text
@@ -202,8 +201,8 @@
             @click="editor?.chain().focus().toggleBulletList().run()"
           />
           <Button
-            v-tooltip.bottom="'Liste numérotée'"
-            aria-label="Liste numérotée"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.ordered_list')"
+            :aria-label="t('band_space_notes.editor.toolbar.ordered_list')"
             icon="pi pi-sort-numeric-down"
             :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
             text
@@ -211,8 +210,8 @@
             @click="editor?.chain().focus().toggleOrderedList().run()"
           />
           <Button
-            v-tooltip.bottom="'Check-list'"
-            aria-label="Check-list"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.checklist')"
+            :aria-label="t('band_space_notes.editor.toolbar.checklist')"
             icon="pi pi-list-check"
             :severity="editor?.isActive('taskList') ? 'primary' : 'secondary'"
             text
@@ -224,8 +223,8 @@
         <!-- Blocks -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
-            v-tooltip.bottom="'Citation'"
-            aria-label="Citation"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.quote')"
+            :aria-label="t('band_space_notes.editor.toolbar.quote')"
             icon="pi pi-comment"
             :severity="editor?.isActive('blockquote') ? 'primary' : 'secondary'"
             text
@@ -233,8 +232,8 @@
             @click="editor?.chain().focus().toggleBlockquote().run()"
           />
           <Button
-            v-tooltip.bottom="'Ligne horizontale'"
-            aria-label="Ligne horizontale"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.horizontal_rule')"
+            :aria-label="t('band_space_notes.editor.toolbar.horizontal_rule')"
             icon="pi pi-minus"
             severity="secondary"
             text
@@ -246,8 +245,8 @@
         <!-- Table -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
-            v-tooltip.bottom="'Insérer un tableau'"
-            aria-label="Insérer un tableau"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.insert_table')"
+            :aria-label="t('band_space_notes.editor.toolbar.insert_table')"
             icon="pi pi-table"
             severity="secondary"
             text
@@ -259,8 +258,8 @@
         <!-- Undo/Redo -->
         <div class="flex items-center gap-1 px-2">
           <Button
-            v-tooltip.bottom="'Annuler'"
-            aria-label="Annuler"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.undo')"
+            :aria-label="t('band_space_notes.editor.toolbar.undo')"
             icon="pi pi-undo"
             severity="secondary"
             text
@@ -269,8 +268,8 @@
             @click="editor?.chain().focus().undo().run()"
           />
           <Button
-            v-tooltip.bottom="'Rétablir'"
-            aria-label="Rétablir"
+            v-tooltip.bottom="t('band_space_notes.editor.toolbar.redo')"
+            :aria-label="t('band_space_notes.editor.toolbar.redo')"
             icon="pi pi-refresh"
             severity="secondary"
             text
@@ -291,8 +290,8 @@
     >
       <div class="flex items-center gap-0.5 bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-600 rounded-lg shadow-lg p-1">
         <Button
-          v-tooltip.top="'Colonne avant'"
-          aria-label="Colonne avant"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.column_before')"
+          :aria-label="t('band_space_notes.editor.table_menu.column_before')"
           icon="pi pi-chevron-left"
           severity="secondary"
           text
@@ -301,8 +300,8 @@
           @click="editor?.chain().focus().addColumnBefore().run()"
         />
         <Button
-          v-tooltip.top="'Colonne après'"
-          aria-label="Colonne après"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.column_after')"
+          :aria-label="t('band_space_notes.editor.table_menu.column_after')"
           icon="pi pi-chevron-right"
           severity="secondary"
           text
@@ -311,8 +310,8 @@
           @click="editor?.chain().focus().addColumnAfter().run()"
         />
         <Button
-          v-tooltip.top="'Supprimer colonne'"
-          aria-label="Supprimer colonne"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.delete_column')"
+          :aria-label="t('band_space_notes.editor.table_menu.delete_column')"
           icon="pi pi-minus"
           severity="danger"
           text
@@ -322,8 +321,8 @@
         />
         <div class="w-px h-5 bg-surface-200 dark:bg-surface-600 mx-0.5" />
         <Button
-          v-tooltip.top="'Ligne avant'"
-          aria-label="Ligne avant"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.row_before')"
+          :aria-label="t('band_space_notes.editor.table_menu.row_before')"
           icon="pi pi-chevron-up"
           severity="secondary"
           text
@@ -332,8 +331,8 @@
           @click="editor?.chain().focus().addRowBefore().run()"
         />
         <Button
-          v-tooltip.top="'Ligne après'"
-          aria-label="Ligne après"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.row_after')"
+          :aria-label="t('band_space_notes.editor.table_menu.row_after')"
           icon="pi pi-chevron-down"
           severity="secondary"
           text
@@ -342,8 +341,8 @@
           @click="editor?.chain().focus().addRowAfter().run()"
         />
         <Button
-          v-tooltip.top="'Supprimer ligne'"
-          aria-label="Supprimer ligne"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.delete_row')"
+          :aria-label="t('band_space_notes.editor.table_menu.delete_row')"
           icon="pi pi-minus-circle"
           severity="danger"
           text
@@ -353,8 +352,8 @@
         />
         <div class="w-px h-5 bg-surface-200 dark:bg-surface-600 mx-0.5" />
         <Button
-          v-tooltip.top="'Supprimer tableau'"
-          aria-label="Supprimer tableau"
+          v-tooltip.top="t('band_space_notes.editor.table_menu.delete_table')"
+          :aria-label="t('band_space_notes.editor.table_menu.delete_table')"
           icon="pi pi-trash"
           severity="danger"
           text
@@ -387,6 +386,7 @@ import UserName from '../../User/UserName.vue'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
 import { useBandSpaceNotesStore } from '../../../store/bandSpace/bandSpaceNotes.js'
@@ -402,6 +402,7 @@ const props = defineProps({
 const emit = defineEmits(['update-title', 'update-emoji', 'reload', 'pending-edits-change'])
 
 const toast = useToast()
+const { t } = useI18n()
 const notesStore = useBandSpaceNotesStore()
 
 const showEmojiPicker = ref(false)
@@ -456,14 +457,16 @@ onMounted(() => {
 function checklistItemLabel(node) {
   const text = node.firstChild?.textContent.trim()
 
-  return text ? `Élément de check-list « ${text} »` : 'Élément de check-list vide'
+  return text
+    ? t('band_space_notes.editor.checklist_item', { text })
+    : t('band_space_notes.editor.checklist_item_empty')
 }
 
 // Shared with the tech rider section editor. Images are Notes only, and so is the detach
 // pass on save, which is why it lives in the callback rather than in the composable.
 const { editor, stopSaving, hasPendingEdits } = useRichTextEditor({
   content: props.note.content,
-  placeholder: 'Commencez à écrire...',
+  placeholder: t('band_space_notes.editor.content_placeholder'),
   // « Titre 1 » and checklists are a note's only, as on the phone (#1175).
   headingLevels: [1, 2, 3],
   extensions: [
@@ -498,7 +501,6 @@ async function saveContent(noteId, content, contentVersion) {
   )
   if (status === 'saved') return
 
-  const noteName = noteTitle ? `« ${noteTitle} »` : 'La note'
   if (status === 'conflict') {
     // Ends the loop here rather than from a watcher on the status, and that placement is the whole
     // guarantee: the saver only re-checks `stopped` once this callback has been awaited, so a save
@@ -513,8 +515,10 @@ async function saveContent(noteId, content, contentVersion) {
 
     toast.add({
       severity: 'warn',
-      summary: 'Modifications non enregistrées',
-      detail: `${noteName} a été modifiée par un autre membre. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.`,
+      summary: t('band_space_notes.editor.save_conflict.summary'),
+      detail: noteTitle
+        ? t('band_space_notes.editor.save_conflict.detail_titled', { title: noteTitle })
+        : t('band_space_notes.editor.save_conflict.detail_untitled'),
       life: 8000
     })
 
@@ -523,8 +527,10 @@ async function saveContent(noteId, content, contentVersion) {
 
   toast.add({
     severity: 'error',
-    summary: 'Sauvegarde impossible',
-    detail: `${noteName} n'a pas pu être enregistrée. Ne fermez pas cet onglet : votre texte est toujours affiché et sera renvoyé à votre prochaine modification.`,
+    summary: t('band_space_notes.editor.save_error.summary'),
+    detail: noteTitle
+      ? t('band_space_notes.editor.save_error.detail_titled', { title: noteTitle })
+      : t('band_space_notes.editor.save_error.detail_untitled'),
     life: 8000
   })
 }
@@ -542,15 +548,15 @@ async function handleCopyMyText() {
     await navigator.clipboard.writeText(editor.value?.getText() ?? '')
     toast.add({
       severity: 'success',
-      summary: 'Texte copié',
-      detail: 'Votre version est dans le presse-papiers.',
+      summary: t('band_space_notes.editor.copy.success_summary'),
+      detail: t('band_space_notes.editor.copy.success_detail'),
       life: 4000
     })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Copie impossible',
-      detail: 'Sélectionnez votre texte dans la note, puis copiez-le avec Ctrl+C.',
+      summary: t('band_space_notes.editor.copy.error_summary'),
+      detail: t('band_space_notes.editor.copy.error_detail'),
       life: 6000
     })
   }
@@ -670,15 +676,15 @@ async function uploadAndInsertImage(file) {
     if (result?.quotaApproaching) {
       toast.add({
         severity: 'warn',
-        summary: 'Quota presque atteint',
-        detail: 'Vous avez atteint 80 % de votre quota de stockage.',
+        summary: t('band_space_notes.editor.image.quota_summary'),
+        detail: t('band_space_notes.editor.image.quota_detail'),
         life: 6000
       })
     }
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Import impossible',
+      summary: t('band_space_notes.editor.image.import_error_summary'),
       detail: e.message,
       life: 5000
     })

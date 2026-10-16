@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Importer des fichiers"
+    :header="t('band_space_files.upload_dialog.title')"
     :style="{ width: '36rem' }"
     :close-on-escape="!isUploading"
     @hide="handleHide"
@@ -25,16 +25,21 @@
         />
 
         <i class="pi pi-cloud-upload text-3xl text-surface-400 mb-2" aria-hidden="true"></i>
-        <p class="text-sm text-surface-600 dark:text-surface-300">
-          Glissez-déposez un ou plusieurs fichiers ou
-          <span class="text-primary-500 underline">cliquez pour parcourir</span>
-        </p>
+        <i18n-t
+          keypath="band_space_files.upload_dialog.drop_zone"
+          tag="p"
+          class="text-sm text-surface-600 dark:text-surface-300"
+        >
+          <template #browse>
+            <span class="text-primary-500 underline">{{ t('band_space_files.common.browse') }}</span>
+          </template>
+        </i18n-t>
       </div>
 
       <ul
         v-if="queue.length > 0"
         class="flex flex-col gap-2 max-h-64 overflow-y-auto"
-        aria-label="Fichiers à importer"
+        :aria-label="t('band_space_files.upload_dialog.queue_label')"
       >
         <li
           v-for="item in queue"
@@ -55,7 +60,7 @@
               v-if="item.status === UPLOAD_STATUS.Uploading"
               :value="item.progress"
               :show-value="false"
-              :aria-label="`Progression de ${item.name}`"
+              :aria-label="t('band_space_files.upload_dialog.progress_of', { name: item.name })"
               class="mt-1"
               style="height: 4px"
             />
@@ -65,7 +70,7 @@
           <Button
             v-if="!isUploading"
             icon="pi pi-times"
-            :aria-label="`Retirer ${item.name}`"
+            :aria-label="t('band_space_files.upload_dialog.remove_file', { name: item.name })"
             text
             rounded
             size="small"
@@ -75,31 +80,31 @@
       </ul>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Dossier</label>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ t('band_space_files.upload_dialog.folder') }}</label>
         <Select
           v-model="form.folderId"
-          aria-label="Dossier"
+          :aria-label="t('band_space_files.upload_dialog.folder')"
           :options="folderOptions"
           option-label="label"
           option-value="value"
-          placeholder="Racine"
+          :placeholder="t('band_space_files.folder.root')"
           :show-clear="true"
           :disabled="isUploading || activeFolderIsVirtual"
         />
         <small v-if="activeFolderIsVirtual" class="text-surface-400 italic">
-          Les dossiers virtuels sont remplis automatiquement par les attachements.
+          {{ t('band_space_files.common.virtual_folder_hint') }}
         </small>
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Tags</label>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ t('band_space_files.upload_dialog.tags') }}</label>
         <MultiSelect
           v-model="form.tagIds"
-          aria-label="Tags"
+          :aria-label="t('band_space_files.upload_dialog.tags')"
           :options="tags"
           option-label="name"
           option-value="id"
-          placeholder="Sélectionner des tags"
+          :placeholder="t('band_space_files.upload_dialog.tags_placeholder')"
           :max-selected-labels="3"
           :disabled="isUploading"
         />
@@ -107,7 +112,7 @@
         <div class="flex items-center gap-2 mt-1">
           <InputText
             v-model="newTagName"
-            placeholder="Créer un nouveau tag"
+            :placeholder="t('band_space_files.upload_dialog.new_tag_placeholder')"
             size="small"
             class="flex-1"
             :disabled="isUploading || isCreatingTag"
@@ -115,7 +120,7 @@
           />
           <Button
             icon="pi pi-plus"
-            aria-label="Créer le tag"
+            :aria-label="t('band_space_files.upload_dialog.create_tag')"
             size="small"
             severity="secondary"
             :disabled="isUploading || isCreatingTag || !newTagName.trim()"
@@ -132,7 +137,12 @@
              turn the live region into a stream nobody can listen to. -->
         <p class="text-xs text-surface-500 text-center">
           <span aria-live="polite">
-            Import… fichier {{ summary.position }} sur {{ summary.total }}
+            {{
+              t('band_space_files.upload_dialog.progress', {
+                position: summary.position,
+                total: summary.total
+              })
+            }}
           </span>
           <span aria-hidden="true">({{ summary.percent }} %)</span>
         </p>
@@ -154,22 +164,22 @@
     <template #footer>
       <Button
         v-if="isUploading"
-        label="Arrêter"
+        :label="t('band_space_files.upload_dialog.stop')"
         icon="pi pi-stop"
         severity="secondary"
         @click="cancelBatch"
       />
       <template v-else>
-        <Button label="Fermer" severity="secondary" text @click="visible = false" />
+        <Button :label="t('band_space_files.common.close')" severity="secondary" text @click="visible = false" />
         <Button
           v-if="hasUnsent"
-          label="Réessayer les fichiers non envoyés"
+          :label="t('band_space_files.upload_dialog.retry_unsent')"
           icon="pi pi-refresh"
           severity="secondary"
           @click="handleRetry"
         />
         <Button
-          label="Importer"
+          :label="t('band_space_files.upload_dialog.submit')"
           icon="pi pi-cloud-upload"
           :disabled="!hasQueuedFiles"
           @click="handleUpload"
@@ -188,6 +198,7 @@ import MultiSelect from 'primevue/multiselect'
 import ProgressBar from 'primevue/progressbar'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   isVirtualFolderId,
   listedFolderId,
@@ -221,6 +232,7 @@ const emit = defineEmits(['saved'])
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
+const { t } = useI18n()
 const filesStore = useBandFilesStore()
 
 const fileInput = ref(null)
@@ -542,14 +554,14 @@ const STATUS_ICONS = {
   [UPLOAD_STATUS.Rejected]: 'pi pi-ban text-red-600'
 }
 
-const STATUS_LABELS = {
-  [UPLOAD_STATUS.Queued]: 'En attente',
-  [UPLOAD_STATUS.Uploading]: 'Envoi en cours',
-  [UPLOAD_STATUS.Uploaded]: 'Importé',
-  [UPLOAD_STATUS.Failed]: 'Échec',
-  [UPLOAD_STATUS.Skipped]: 'Non envoyé',
-  [UPLOAD_STATUS.Cancelled]: 'Interrompu',
-  [UPLOAD_STATUS.Rejected]: 'Refusé'
+const STATUS_LABEL_KEYS = {
+  [UPLOAD_STATUS.Queued]: 'band_space_files.upload_dialog.status.queued',
+  [UPLOAD_STATUS.Uploading]: 'band_space_files.upload_dialog.status.uploading',
+  [UPLOAD_STATUS.Uploaded]: 'band_space_files.upload_dialog.status.uploaded',
+  [UPLOAD_STATUS.Failed]: 'band_space_files.upload_dialog.status.failed',
+  [UPLOAD_STATUS.Skipped]: 'band_space_files.upload_dialog.status.skipped',
+  [UPLOAD_STATUS.Cancelled]: 'band_space_files.upload_dialog.status.cancelled',
+  [UPLOAD_STATUS.Rejected]: 'band_space_files.upload_dialog.status.rejected'
 }
 
 function statusIconClass(status) {
@@ -557,6 +569,6 @@ function statusIconClass(status) {
 }
 
 function statusLabel(status) {
-  return STATUS_LABELS[status]
+  return t(STATUS_LABEL_KEYS[status])
 }
 </script>

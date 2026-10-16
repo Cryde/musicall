@@ -6,10 +6,10 @@
         <span
           v-if="isDoneColumn"
           class="text-surface-500 dark:text-surface-400"
-          v-tooltip.top="COMPLETION_ORDER_HINT"
+          v-tooltip.top="completionOrderHint"
         >
           <i class="pi pi-sort-amount-down text-xs" aria-hidden="true" />
-          <span class="sr-only">{{ COMPLETION_ORDER_HINT }}</span>
+          <span class="sr-only">{{ completionOrderHint }}</span>
         </span>
       </div>
       <span class="text-xs text-surface-400 bg-surface-200 dark:bg-surface-700 rounded-full px-2 py-0.5">
@@ -43,7 +43,7 @@
       class="w-full mt-2 text-xs text-primary font-medium py-2 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
       @click="$emit('show-all-done')"
     >
-      Voir les {{ tasks.length }} tâches terminées
+      {{ t('band_space_tasks.column.show_all_done', { count: tasks.length }) }}
     </button>
   </div>
 </template>
@@ -51,16 +51,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useI18n } from 'vue-i18n'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { dropIndexForColumn, isCompletionOrderedColumn } from '../../../utils/taskOrdering.js'
 import TaskCard from './TaskCard.vue'
 
 const tasksStore = useBandTasksStore()
+const { t } = useI18n()
 
 const MAX_DONE_VISIBLE = 5
 
-const COMPLETION_ORDER_HINT =
-  'Classées par date de fin, les plus récentes en premier. Cette colonne ne se réordonne pas.'
+const completionOrderHint = computed(() => t('band_space_tasks.column.completion_order_hint'))
 
 const props = defineProps({
   status: { type: String, required: true },

@@ -4,7 +4,7 @@
       <InputIcon class="pi pi-search" />
       <InputText
         :model-value="filters.query"
-        placeholder="Rechercher un fichier"
+        :placeholder="t('band_space_files.filter.search_placeholder')"
         size="small"
         class="w-full"
         @update:model-value="(v) => emit('update-filter', { key: 'query', value: v })"
@@ -16,7 +16,7 @@
       :options="tagOptions"
       option-label="label"
       option-value="value"
-      placeholder="Tag"
+      :placeholder="t('band_space_files.filter.tag_placeholder')"
       size="small"
       :show-clear="true"
       class="min-w-[160px]"
@@ -28,7 +28,7 @@
       :options="mimeOptions"
       option-label="label"
       option-value="value"
-      placeholder="Type"
+      :placeholder="t('band_space_files.filter.type_placeholder')"
       size="small"
       :show-clear="true"
       class="min-w-[140px]"
@@ -40,7 +40,7 @@
       :options="sortOptions"
       option-label="label"
       option-value="value"
-      placeholder="Trier"
+      :placeholder="t('band_space_files.filter.sort_placeholder')"
       size="small"
       class="min-w-[160px]"
       @update:model-value="handleSortChange"
@@ -54,6 +54,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   filters: { type: Object, required: true },
@@ -61,24 +62,25 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update-filter'])
+const { t } = useI18n()
 
-const tagOptions = computed(() => props.tags.map((t) => ({ label: t.name, value: t.id })))
+const tagOptions = computed(() => props.tags.map((tag) => ({ label: tag.name, value: tag.id })))
 
-const mimeOptions = [
-  { label: 'Audio', value: 'audio/' },
-  { label: 'Image', value: 'image/' },
-  { label: 'PDF', value: 'application/pdf' },
-  { label: 'Vidéo', value: 'video/' }
-]
+const mimeOptions = computed(() => [
+  { label: t('band_space_files.filter.mime.audio'), value: 'audio/' },
+  { label: t('band_space_files.filter.mime.image'), value: 'image/' },
+  { label: t('band_space_files.filter.mime.pdf'), value: 'application/pdf' },
+  { label: t('band_space_files.filter.mime.video'), value: 'video/' }
+])
 
-const sortOptions = [
-  { label: 'Plus récents', value: 'date:desc' },
-  { label: 'Plus anciens', value: 'date:asc' },
-  { label: 'Nom (A→Z)', value: 'name:asc' },
-  { label: 'Nom (Z→A)', value: 'name:desc' },
-  { label: 'Taille (grand→petit)', value: 'size:desc' },
-  { label: 'Taille (petit→grand)', value: 'size:asc' }
-]
+const sortOptions = computed(() => [
+  { label: t('band_space_files.filter.sort.newest'), value: 'date:desc' },
+  { label: t('band_space_files.filter.sort.oldest'), value: 'date:asc' },
+  { label: t('band_space_files.filter.sort.name_asc'), value: 'name:asc' },
+  { label: t('band_space_files.filter.sort.name_desc'), value: 'name:desc' },
+  { label: t('band_space_files.filter.sort.size_desc'), value: 'size:desc' },
+  { label: t('band_space_files.filter.sort.size_asc'), value: 'size:asc' }
+])
 
 const sortValue = computed(() => `${props.filters.sort}:${props.filters.order}`)
 
