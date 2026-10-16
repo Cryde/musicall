@@ -6,7 +6,7 @@
       rounded
       size="small"
       severity="secondary"
-      :aria-label="`Lire la note de ${authorName}`"
+      :aria-label="t('search.announce_note.read', { name: authorName })"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
       @pointerenter="handlePointerEnter"
@@ -29,6 +29,7 @@
 import Button from 'primevue/button'
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 /**
  * The note an author left on their announce (#1139), behind a « comment » icon: shown while a mouse
@@ -40,6 +41,7 @@ const props = defineProps({
   authorName: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const popover = ref(null)
 const noteText = ref(null)
 const isOpen = ref(false)

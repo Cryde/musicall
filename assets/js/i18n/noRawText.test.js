@@ -8,16 +8,19 @@ import { parse } from 'vue/compiler-sfc'
 // this list once it is migrated (#1182), and from then on a hardcoded string in a template fails
 // here. Strings built in <script> are not seen, so those stay a review concern.
 const MIGRATED_PATHS = [
+  'components/Announce/',
   'components/AppAdminLayout.vue',
   'components/AppBaseLayout.vue',
   'components/AppNavbarUserCluster.vue',
   'components/Auth/AuthRequiredModal.vue',
   'components/Auth/SignupOptions.vue',
+  'components/Search/',
   'components/SkipLink.vue',
   'views/Global/Breadcrumb.vue',
   'views/Global/Footer.vue',
   'views/Global/Menu.vue',
-  'views/Global/MenuBand.vue'
+  'views/Global/MenuBand.vue',
+  'views/Search/'
 ]
 
 // The footer wordmark is a logo spelled out in two spans, not text to translate.

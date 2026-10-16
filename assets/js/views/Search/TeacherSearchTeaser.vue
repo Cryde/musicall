@@ -16,29 +16,29 @@
           <div class="flex-1 text-center lg:text-left">
             <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 dark:bg-primary/20 rounded-full text-primary-600 dark:text-primary-400 text-sm font-medium mb-6">
               <i class="pi pi-clock" aria-hidden="true" />
-              Bientôt disponible
+              {{ t('search.teacher_teaser.coming_soon') }}
             </div>
 
             <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              <span class="text-surface-900 dark:text-white">Trouvez votre</span>
+              <span class="text-surface-900 dark:text-white">{{ t('search.teacher_teaser.title_lead') }}</span>
               <br />
-              <span class="text-brand-gradient">professeur de musique</span>
+              <span class="text-brand-gradient">{{ t('search.teacher_teaser.title_highlight') }}</span>
             </h1>
 
             <p class="text-lg text-surface-600 dark:text-surface-400 mb-8 max-w-lg mx-auto lg:mx-0">
-              La recherche de professeurs arrive bientôt sur MusicAll. Trouvez le prof idéal près de chez vous.
+              {{ t('search.teacher_teaser.intro') }}
             </p>
 
             <!-- Features pills -->
             <div class="flex flex-wrap justify-center lg:justify-start gap-3">
               <div class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm backdrop-blur-sm">
-                <i class="pi pi-map-marker mr-2 text-primary-600 dark:text-primary-400" aria-hidden="true" />Recherche par localisation
+                <i class="pi pi-map-marker mr-2 text-primary-600 dark:text-primary-400" aria-hidden="true" />{{ t('search.teacher_teaser.feature_location') }}
               </div>
               <div class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm backdrop-blur-sm">
-                <i class="pi pi-volume-up mr-2 text-fuchsia-600 dark:text-fuchsia-400" aria-hidden="true" />Tous les instruments
+                <i class="pi pi-volume-up mr-2 text-fuchsia-600 dark:text-fuchsia-400" aria-hidden="true" />{{ t('search.teacher_teaser.feature_instruments') }}
               </div>
               <div class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm backdrop-blur-sm">
-                <i class="pi pi-users mr-2 text-cyan-600 dark:text-cyan-400" aria-hidden="true" />Tous les niveaux
+                <i class="pi pi-users mr-2 text-cyan-600 dark:text-cyan-400" aria-hidden="true" />{{ t('search.teacher_teaser.feature_levels') }}
               </div>
             </div>
           </div>
@@ -49,7 +49,7 @@
               <div class="absolute -inset-4 bg-gradient-to-r from-primary-500/20 via-fuchsia-500/20 to-cyan-500/20 rounded-3xl blur-2xl" />
               <img
                 :src="heroImage"
-                alt="Cours de musique"
+                :alt="t('search.teacher_teaser.hero_alt')"
                 class="relative w-full h-auto rounded-2xl shadow-2xl"
               />
             </div>
@@ -62,10 +62,10 @@
     <section v-if="teachers.length" class="mb-12">
       <div class="text-center mb-8">
         <h2 class="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
-          Nos premiers professeurs
+          {{ t('search.teacher_teaser.featured_title') }}
         </h2>
         <p class="text-surface-600 dark:text-surface-400">
-          Découvrez les professeurs qui nous ont déjà rejoints
+          {{ t('search.teacher_teaser.featured_text') }}
         </p>
       </div>
 
@@ -106,7 +106,7 @@
           <div v-if="teacher.offers_trial && teacher.trial_price === 0" class="flex justify-center">
             <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
               <i class="pi pi-check-circle" aria-hidden="true" />
-              Cours d'essai gratuit
+              {{ t('search.teacher_teaser.free_trial') }}
             </span>
           </div>
         </router-link>
@@ -127,13 +127,13 @@
           <!-- Content -->
           <div class="flex-1 text-center md:text-left">
             <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0 mb-2">
-              Vous êtes professeur de musique ?
+              {{ t('search.teacher_teaser.cta_title') }}
             </h2>
             <p class="text-surface-600 dark:text-surface-400 mb-6">
-              Créez votre profil dès maintenant et soyez visible dès le lancement de la recherche. Rejoignez notre communauté de professeurs passionnés.
+              {{ t('search.teacher_teaser.cta_text') }}
             </p>
             <Button
-              label="Créer mon profil professeur"
+              :label="t('search.teacher_teaser.cta_button')"
               icon="pi pi-arrow-right"
               iconPos="right"
               size="large"
@@ -147,14 +147,14 @@
       <!-- Secondary Link -->
       <div class="text-center mt-8">
         <p class="text-surface-500 dark:text-surface-400 mb-3">
-          Vous recherchez plutôt un musicien pour votre groupe ?
+          {{ t('search.teacher_teaser.musician_question') }}
         </p>
         <router-link
           :to="{ name: 'app_search_musician' }"
           class="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline font-medium"
         >
           <i class="pi pi-users" aria-hidden="true" />
-          Rechercher un musicien
+          {{ t('search.teacher_teaser.search_musician') }}
         </router-link>
       </div>
     </section>
@@ -167,7 +167,8 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import heroImage1 from '../../../image/teacher-teaser/1.webp'
 import heroImage2 from '../../../image/teacher-teaser/2.webp'
@@ -176,7 +177,9 @@ import teacherProfileApi from '../../api/user/teacherProfile.js'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
-useTitle('Trouver un professeur de musique - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('search.teacher_teaser.page_title')))
 
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
@@ -200,7 +203,7 @@ onMounted(async () => {
 
 function handleCreateProfile() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Vous devez vous connecter pour créer votre profil professeur.'
+    authModalMessage.value = t('search.teacher_teaser.login_required')
     showAuthModal.value = true
     return
   }

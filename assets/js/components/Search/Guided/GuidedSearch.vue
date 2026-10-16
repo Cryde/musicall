@@ -1,17 +1,17 @@
 <template>
   <div class="flex flex-col gap-3">
     <p v-if="step" class="m-0 text-surface-700 dark:text-surface-300">
-      3 questions, et on vous montre les profils qui correspondent.
+      {{ t('search.guided.intro') }}
     </p>
 
     <!-- The questions, one at a time -->
     <section
       v-if="step"
       class="flex flex-col gap-5 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5 lg:p-6"
-      :aria-label="`Question ${stepNumber} sur ${GUIDED_STEPS.length}`"
+      :aria-label="t('search.guided.question_position', { number: stepNumber, total: GUIDED_STEPS.length })"
     >
       <!-- Each answered step is a way back to its question. -->
-      <nav aria-label="Étapes de la recherche">
+      <nav :aria-label="t('search.guided.steps_aria_label')">
         <ol class="m-0 p-0 list-none grid grid-cols-3 gap-2">
           <li v-for="item in GUIDED_STEPS" :key="item">
             <component
@@ -28,7 +28,7 @@
               >
                 <i v-if="answered.includes(item) && item !== step" class="pi pi-check text-[0.65rem] text-teal-700 dark:text-teal-300" aria-hidden="true" />
                 {{ STEP_LABELS[item] }}
-                <span v-if="answered.includes(item) && item !== step" class="sr-only">(modifier)</span>
+                <span v-if="answered.includes(item) && item !== step" class="sr-only">{{ t('search.guided.edit_step') }}</span>
               </span>
               <span
                 class="h-1 rounded-full"
@@ -63,26 +63,26 @@
             :options="instruments"
             option-label="musician_name"
             filter
-            placeholder="Autre instrument"
-            aria-label="Autre instrument"
+            :placeholder="t('search.guided.other_instrument')"
+            :aria-label="t('search.guided.other_instrument')"
             class="min-h-12 col-span-2 md:col-span-1"
             @update:model-value="answerInstrument"
           />
         </div>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <button type="button" class="text-sm font-semibold text-primary hover:underline cursor-pointer" @click="$emit('toggle-type')">
-            {{ lookingForBand ? 'Je cherche plutôt un musicien' : 'Je cherche plutôt à rejoindre un groupe' }}
+            {{ lookingForBand ? t('search.guided.rather_musician') : t('search.guided.rather_band') }}
             <i class="pi pi-arrow-right text-xs ml-1" aria-hidden="true" />
           </button>
-          <Button label="Peu importe" severity="secondary" text @click="answerInstrument(null)" />
+          <Button :label="t('search.guided.any')" severity="secondary" text @click="answerInstrument(null)" />
         </div>
       </template>
 
       <!-- 2. City and radius -->
       <template v-else-if="step === 'location'">
         <div class="flex flex-col gap-2">
-          <label for="guided-city" class="sr-only">Ville</label>
-          <CityAutoComplete v-model="draftLocation" input-id="guided-city" placeholder="Ville" />
+          <label for="guided-city" class="sr-only">{{ t('search.guided.city') }}</label>
+          <CityAutoComplete v-model="draftLocation" input-id="guided-city" :placeholder="t('search.guided.city')" />
           <button
             type="button"
             class="self-start inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer disabled:opacity-60"
@@ -90,12 +90,12 @@
             @click="useMyLocation"
           >
             <i :class="isLocating ? 'pi pi-spin pi-spinner' : 'pi pi-map-marker'" aria-hidden="true" />
-            Utiliser ma position
+            {{ t('search.guided.use_my_location') }}
           </button>
           <small v-if="locationError" role="alert" class="text-red-700 dark:text-red-400">{{ locationError }}</small>
         </div>
         <div class="flex flex-col gap-2">
-          <span id="guided-radius-label" class="text-sm text-surface-700 dark:text-surface-300">Jusqu'à quelle distance ?</span>
+          <span id="guided-radius-label" class="text-sm text-surface-700 dark:text-surface-300">{{ t('search.guided.radius_question') }}</span>
           <SelectButton
             v-model="draftRadius"
             :options="radiusOptions"
@@ -106,16 +106,16 @@
           />
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          <Button label="Retour" icon="pi pi-arrow-left" severity="secondary" outlined @click="goBack" />
-          <Button label="Continuer" class="w-full sm:w-auto order-first sm:order-none" :disabled="!hasDraftLocation" @click="answerLocation(true)" />
-          <Button label="Peu importe" severity="secondary" text @click="answerLocation(false)" />
+          <Button :label="t('search.guided.back')" icon="pi pi-arrow-left" severity="secondary" outlined @click="goBack" />
+          <Button :label="t('search.guided.continue')" class="w-full sm:w-auto order-first sm:order-none" :disabled="!hasDraftLocation" @click="answerLocation(true)" />
+          <Button :label="t('search.guided.any')" severity="secondary" text @click="answerLocation(false)" />
         </div>
       </template>
 
       <!-- 3. Styles -->
       <template v-else-if="step === 'styles'">
-        <span class="-mt-3 text-sm text-surface-600 dark:text-surface-300">Plusieurs choix possibles</span>
-        <div class="flex flex-wrap gap-2" role="group" aria-label="Styles">
+        <span class="-mt-3 text-sm text-surface-600 dark:text-surface-300">{{ t('search.guided.several_choices') }}</span>
+        <div class="flex flex-wrap gap-2" role="group" :aria-label="t('search.guided.styles_aria_label')">
           <ToggleButton
             v-for="style in quickStyles"
             :key="style.id"
@@ -131,15 +131,15 @@
           :options="otherStyleOptions"
           option-label="name"
           filter
-          placeholder="Autres styles"
-          aria-label="Autres styles"
+          :placeholder="t('search.guided.other_styles')"
+          :aria-label="t('search.guided.other_styles')"
           display="chip"
           class="w-full md:w-80"
         />
         <div class="flex flex-wrap items-center gap-3">
-          <Button label="Retour" icon="pi pi-arrow-left" severity="secondary" outlined @click="goBack" />
-          <Button :label="`Voir les ${sought}`" class="w-full sm:w-auto order-first sm:order-none" @click="answerStyles(true)" />
-          <Button label="Tous styles" severity="secondary" text @click="answerStyles(false)" />
+          <Button :label="t('search.guided.back')" icon="pi pi-arrow-left" severity="secondary" outlined @click="goBack" />
+          <Button :label="t('search.guided.see_sought', { sought })" class="w-full sm:w-auto order-first sm:order-none" @click="answerStyles(true)" />
+          <Button :label="t('search.guided.all_styles')" severity="secondary" text @click="answerStyles(false)" />
         </div>
       </template>
     </section>
@@ -151,8 +151,8 @@
       aria-labelledby="guided-summary-title"
     >
       <div class="flex items-center justify-between gap-3">
-        <h2 id="guided-summary-title" class="m-0 text-lg font-semibold text-surface-900 dark:text-surface-0">Vos {{ sought }}</h2>
-        <Button label="Modifier" icon="pi pi-pencil" severity="secondary" text size="small" @click="edit('instrument')" />
+        <h2 id="guided-summary-title" class="m-0 text-lg font-semibold text-surface-900 dark:text-surface-0">{{ t('search.guided.summary_title', { sought }) }}</h2>
+        <Button :label="t('search.guided.edit')" icon="pi pi-pencil" severity="secondary" text size="small" @click="edit('instrument')" />
       </div>
       <GuidedChips :chips="chips" @edit="edit" />
     </section>
@@ -166,6 +166,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import ToggleButton from 'primevue/togglebutton'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import geocodingApi from '../../../api/geocoding.js'
 import {
   DEFAULT_RADIUS,
@@ -196,6 +197,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['answer', 'toggle-type'])
+
+const { t } = useI18n()
 
 const instrument = defineModel('instrument', { type: Object, default: null })
 const location = defineModel('location', { type: Object, default: null })
@@ -253,11 +256,13 @@ const chips = computed(() =>
 )
 
 function chipLabel(item) {
-  if (item === 'instrument') return instrument.value?.musician_name ?? 'Tous les instruments'
-  if (item === 'location') return locationLabel(location.value, radius.value) ?? 'Partout'
+  if (item === 'instrument')
+    return instrument.value?.musician_name ?? t('search.guided.all_instruments')
+  if (item === 'location')
+    return locationLabel(location.value, radius.value) ?? t('search.guided.everywhere')
   return selectedStyles.value.length > 0
     ? selectedStyles.value.map((style) => style.name).join(', ')
-    : 'Tous styles'
+    : t('search.guided.all_styles')
 }
 
 // Moving to another question moves the reader to it, so a keyboard or screen reader follows along.
@@ -319,7 +324,7 @@ function answerStyles(withStyles) {
 
 function useMyLocation() {
   if (!navigator.geolocation) {
-    locationError.value = 'Votre navigateur ne donne pas accès à votre position.'
+    locationError.value = t('search.guided.error_no_geolocation')
     return
   }
   isLocating.value = true
@@ -328,16 +333,15 @@ function useMyLocation() {
     async ({ coords }) => {
       try {
         draftLocation.value = await geocodingApi.reverseGeocode(coords.latitude, coords.longitude)
-        if (!draftLocation.value)
-          locationError.value = 'Impossible de trouver votre ville, saisissez-la.'
+        if (!draftLocation.value) locationError.value = t('search.guided.error_city_not_found')
       } catch {
-        locationError.value = 'Impossible de trouver votre ville, saisissez-la.'
+        locationError.value = t('search.guided.error_city_not_found')
       } finally {
         isLocating.value = false
       }
     },
     () => {
-      locationError.value = "Votre position n'est pas accessible, saisissez votre ville."
+      locationError.value = t('search.guided.error_position_unavailable')
       isLocating.value = false
     },
     { timeout: 10000 }

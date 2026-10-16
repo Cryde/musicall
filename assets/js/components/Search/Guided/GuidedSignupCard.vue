@@ -5,13 +5,14 @@
   >
     <h2 id="guided-signup-title" class="m-0 text-xl font-semibold leading-snug text-surface-900 dark:text-surface-0">{{ headline }}</h2>
     <p class="m-0 text-surface-700 dark:text-surface-300">
-      Créez votre compte gratuit pour voir tous les profils et leur écrire directement.
+      {{ t('search.guided.signup_text') }}
     </p>
     <SignupOptions />
   </section>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import SignupOptions from '../../Auth/SignupOptions.vue'
 
 /**
@@ -21,4 +22,6 @@ import SignupOptions from '../../Auth/SignupOptions.vue'
 defineProps({
   headline: { type: String, required: true }
 })
+
+const { t } = useI18n()
 </script>
