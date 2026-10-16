@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import { parse } from 'vue/compiler-sfc'
 
-// Components whose text lives in the catalogue. A file joins this list once it is migrated (#1182),
-// and from then on a hardcoded string in its template fails here. Strings built in <script> are
-// not seen, so those stay a review concern.
-const MIGRATED_COMPONENTS = [
+// Components whose text lives in the catalogue, by file or by folder (a trailing slash). A path joins
+// this list once it is migrated (#1182), and from then on a hardcoded string in a template fails
+// here. Strings built in <script> are not seen, so those stay a review concern.
+const MIGRATED_PATHS = [
   'components/AppAdminLayout.vue',
   'components/AppBaseLayout.vue',
   'components/AppNavbarUserCluster.vue',
@@ -86,10 +86,31 @@ describe('rawTextInComponent', () => {
   })
 })
 
+const SOURCE_ROOT = join(import.meta.dirname, '..')
+
+function isMigrated(path) {
+  return MIGRATED_PATHS.some((migrated) =>
+    migrated.endsWith('/') ? path.startsWith(migrated) : path === migrated
+  )
+}
+
+const migratedComponents = readdirSync(SOURCE_ROOT, { recursive: true })
+  .filter((path) => path.endsWith('.vue') && isMigrated(path))
+  .sort()
+
 describe('migrated components', () => {
-  for (const path of MIGRATED_COMPONENTS) {
+  it('covers every path on the list', () => {
+    const unmatched = MIGRATED_PATHS.filter(
+      (migrated) =>
+        !migratedComponents.some((path) => isMigrated(path) && path.startsWith(migrated))
+    )
+
+    assert.deepEqual(unmatched, [])
+  })
+
+  for (const path of migratedComponents) {
     it(`${path} has no hardcoded text in its template`, () => {
-      const source = readFileSync(join(import.meta.dirname, '..', path), 'utf8')
+      const source = readFileSync(join(SOURCE_ROOT, path), 'utf8')
 
       assert.deepEqual(rawTextInComponent(source), [])
     })
