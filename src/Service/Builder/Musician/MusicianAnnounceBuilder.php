@@ -71,6 +71,7 @@ readonly class MusicianAnnounceBuilder
         $dto->styles = $this->buildStyles($entity->styles->toArray());
         $dto->locationName = $entity->locationName;
         $dto->note = $entity->note;
+        $dto->languages = $entity->languages;
         $dto->author = $author;
 
         return $dto;

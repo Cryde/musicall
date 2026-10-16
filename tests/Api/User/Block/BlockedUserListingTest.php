@@ -137,6 +137,7 @@ class BlockedUserListingTest extends ApiTestCase
             'styles' => [],
             'location_name' => 'Mons',
             'note' => 'Annonce de ' . $author->username,
+            'languages' => ['fr'],
             'author' => [
                 '@type' => 'Author',
                 'id' => $author->id,

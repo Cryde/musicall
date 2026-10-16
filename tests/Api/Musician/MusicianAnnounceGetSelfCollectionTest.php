@@ -85,6 +85,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     ],
                     'location_name' => 'Paris',
                     'note' => 'note announce 2',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $user1->id,
@@ -113,6 +114,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     ],
                     'location_name' => 'Mons',
                     'note' => 'note announce 1',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $user1->id,

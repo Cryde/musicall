@@ -51,6 +51,8 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
         $entity->longitude = $data->longitude;
         $entity->latitude = $data->latitude;
         $entity->note = $data->note;
+        // The author's language until the form offers a choice (#1198).
+        $entity->languages = [$user->locale];
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
