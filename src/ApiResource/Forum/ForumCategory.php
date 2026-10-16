@@ -21,6 +21,7 @@ class ForumCategory
 {
     public string $id;
     public string $title;
+    public string $locale;
 
     /** @var Forum[] */
     #[ApiProperty(genId: false)]
