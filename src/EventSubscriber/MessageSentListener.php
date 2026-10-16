@@ -46,6 +46,7 @@ readonly class MessageSentListener
                 $event->recipient->username,
                 $event->sender->username,
                 $baseUrl . 'messages/' . $event->thread->id,
+                $event->recipient->locale,
             );
         } catch (\Throwable $e) {
             $this->logger->error('Failed to send the message received email', [

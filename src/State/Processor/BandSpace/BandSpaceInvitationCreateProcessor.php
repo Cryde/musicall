@@ -26,6 +26,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -48,6 +49,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         #[Target('band_space_invitation')]
         private RateLimiterFactoryInterface $bandSpaceInvitationLimiter,
         private EventDispatcherInterface $eventDispatcher,
+        private LocaleSwitcher $localeSwitcher,
     ) {
     }
 
@@ -117,12 +119,15 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
                 $existingUser->username,
                 $bandSpace->name,
                 $baseUrl . 'band/invitation/' . $invitation->token,
+                $existingUser->locale,
             );
         } else {
             $this->newUserEmail->send(
                 $email,
                 $bandSpace->name,
                 $baseUrl . 'register?invitation_token=' . $invitation->token,
+                // No account to read a locale from: the one this request resolved (RequestLocaleListener).
+                $this->localeSwitcher->getLocale(),
             );
         }
 

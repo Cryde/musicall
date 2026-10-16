@@ -9,6 +9,8 @@ use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\Notification\NotificationRepository;
+use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationExistingUserEmail;
+use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationNewUserEmail;
 use App\Service\Notification\NotificationCreator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -526,6 +528,115 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertSame(0, self::getContainer()->get(NotificationRepository::class)->count([]));
+    }
+
+    public function test_an_invitation_without_an_account_from_an_english_inviter_gets_the_french_template(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'newuser@example.com'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $invitation = self::getContainer()->get(BandSpaceInvitationRepository::class)
+            ->findPendingByEmailAndBandSpace('newuser@example.com', $bandSpace);
+        $this->assertNotNull($invitation);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceInvitation',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
+            '@type' => 'BandSpaceInvitation',
+            'id' => $invitation->id,
+            'band_space_id' => $bandSpace->id,
+            'email' => 'newuser@example.com',
+            'status' => 'pending',
+            'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
+            'expiration_datetime' => $invitation->expirationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        $this->assertEmailCount(1);
+        $email = $this->getMailerMessage();
+        $this->assertEmailHeaderSame($email, 'templateId', '12');
+        $this->assertEmailTextBodyContains($email, 'Vous avez été invité à rejoindre The Rockers sur MusicAll');
+        $this->assertEmailAddressContains($email, 'To', 'newuser@example.com');
+    }
+
+    public function test_an_invitation_without_an_account_uses_the_request_locale_not_the_inviter_one(): void
+    {
+        // `en` is not enabled, so the request resolves to `fr` while the inviter's own locale says `en`.
+        $admin = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $newUserEmail = $this->createMock(BandSpaceInvitationNewUserEmail::class);
+        $newUserEmail->expects($this->once())->method('send')
+            ->with('newuser@example.com', 'The Rockers', $this->anything(), 'fr');
+        self::getContainer()->set(BandSpaceInvitationNewUserEmail::class, $newUserEmail);
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'newuser@example.com'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $invitation = self::getContainer()->get(BandSpaceInvitationRepository::class)
+            ->findPendingByEmailAndBandSpace('newuser@example.com', $bandSpace);
+        $this->assertNotNull($invitation);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceInvitation',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
+            '@type' => 'BandSpaceInvitation',
+            'id' => $invitation->id,
+            'band_space_id' => $bandSpace->id,
+            'email' => 'newuser@example.com',
+            'status' => 'pending',
+            'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
+            'expiration_datetime' => $invitation->expirationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_an_invitation_to_an_existing_user_uses_the_invitee_locale(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['locale' => 'fr']);
+        UserFactory::new()->create(['username' => 'existing', 'email' => 'existing@example.com', 'locale' => 'en']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $existingUserEmail = $this->createMock(BandSpaceInvitationExistingUserEmail::class);
+        $existingUserEmail->expects($this->once())->method('send')
+            ->with('existing@example.com', 'existing', 'The Rockers', $this->anything(), 'en');
+        self::getContainer()->set(BandSpaceInvitationExistingUserEmail::class, $existingUserEmail);
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'existing@example.com'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $invitation = self::getContainer()->get(BandSpaceInvitationRepository::class)
+            ->findPendingByEmailAndBandSpace('existing@example.com', $bandSpace);
+        $this->assertNotNull($invitation);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceInvitation',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
+            '@type' => 'BandSpaceInvitation',
+            'id' => $invitation->id,
+            'band_space_id' => $bandSpace->id,
+            'email' => 'existing@example.com',
+            'status' => 'pending',
+            'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
+            'expiration_datetime' => $invitation->expirationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
     }
 
     public function test_notification_failure_does_not_break_the_invitation(): void

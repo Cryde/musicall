@@ -23,6 +23,7 @@ readonly class UsernameChangedListener
             $event->oldUsername,
             $event->newUsername,
             $event->changedAt,
+            $event->user->locale,
         );
     }
 }

@@ -107,7 +107,8 @@ class SendInactivityReminderCommand extends Command
                 $this->inactivityReminderEmail->send(
                     $user->email,
                     $user->username,
-                    $lastLoginDate
+                    $lastLoginDate,
+                    $user->locale,
                 );
                 $this->userEmailLogService->log($user, UserEmailType::INACTIVITY_REMINDER);
                 $sentCount++;

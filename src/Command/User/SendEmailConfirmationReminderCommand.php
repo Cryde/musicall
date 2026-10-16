@@ -116,6 +116,7 @@ class SendEmailConfirmationReminderCommand extends Command
                     $user->username,
                     $plainCode,
                     $verificationUrl,
+                    $user->locale,
                 );
                 $this->userEmailLogService->log(
                     $user,

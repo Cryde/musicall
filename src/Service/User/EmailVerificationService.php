@@ -28,7 +28,7 @@ readonly class EmailVerificationService
     {
         $plainCode = $this->codeGenerator->generate($user);
 
-        $this->emailSender->send($user->email, $user->username, $plainCode);
+        $this->emailSender->send($user->email, $user->username, $plainCode, $user->locale);
         $this->userEmailLogService->log($user, UserEmailType::EMAIL_VERIFICATION_OTP);
     }
 

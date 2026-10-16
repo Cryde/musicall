@@ -35,7 +35,8 @@ readonly class ResetPassword
         $this->resetPasswordEmail->send(
             $user->email,
             $user->username,
-            $baseUrl . 'lost-password/' . $user->token
+            $baseUrl . 'lost-password/' . $user->token,
+            $user->locale,
         );
     }
 }
