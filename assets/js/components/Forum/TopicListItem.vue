@@ -2,9 +2,9 @@
   <div :class="containerClass">
     <div class="flex-1">
       <div class="flex items-center gap-2 mb-1">
-        <Tag v-if="isPinned" value="Epinglé" severity="info" icon="pi pi-thumbtack" class="text-xs" />
-        <Tag v-if="topic.is_resolved" value="Résolu" severity="success" icon="pi pi-check-circle" class="text-xs" />
-        <Tag v-if="topic.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" class="text-xs" />
+        <Tag v-if="isPinned" :value="t('forum.common.pinned')" severity="info" icon="pi pi-thumbtack" class="text-xs" />
+        <Tag v-if="topic.is_resolved" :value="t('forum.common.resolved')" severity="success" icon="pi pi-check-circle" class="text-xs" />
+        <Tag v-if="topic.is_locked" :value="t('forum.common.locked')" severity="warn" icon="pi pi-lock" class="text-xs" />
       </div>
       <router-link
         :to="{ name: 'forum_topic_item', params: { slug: topic.slug } }"
@@ -13,16 +13,19 @@
         {{ topic.title }}
       </router-link>
       <div class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-        Par
-        <UserName
-          v-if="!topic.author.deletion_datetime"
-          :username="topic.author.username"
-          :display-name="authorName"
-          :to="{ name: 'app_user_public_profile', params: { username: topic.author.username } }"
-          class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-        />
-        <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
-        le {{ formatDate(topic.creation_datetime) }}
+        <i18n-t keypath="forum.topic_item.created_by">
+          <template #author>
+            <UserName
+              v-if="!topic.author.deletion_datetime"
+              :username="topic.author.username"
+              :display-name="authorName"
+              :to="{ name: 'app_user_public_profile', params: { username: topic.author.username } }"
+              class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+            />
+            <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
+          </template>
+          <template #date>{{ formatDate(topic.creation_datetime) }}</template>
+        </i18n-t>
       </div>
     </div>
 
@@ -35,24 +38,25 @@
       v-if="topic.last_post"
       class="text-sm text-surface-500 dark:text-surface-400 md:w-48 shrink-0"
     >
-      <div>
-        Dernier message par
-        <UserName
-          v-if="!topic.last_post.creator.deletion_datetime"
-          :username="topic.last_post.creator.username"
-          :display-name="lastPostCreatorName"
-          :to="{ name: 'app_user_public_profile', params: { username: topic.last_post.creator.username } }"
-          class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-          @click.stop
-        />
-        <span v-else class="font-semibold text-surface-500">{{ lastPostCreatorName }}</span>
-      </div>
+      <i18n-t keypath="forum.topic_item.last_post_by" tag="div">
+        <template #author>
+          <UserName
+            v-if="!topic.last_post.creator.deletion_datetime"
+            :username="topic.last_post.creator.username"
+            :display-name="lastPostCreatorName"
+            :to="{ name: 'app_user_public_profile', params: { username: topic.last_post.creator.username } }"
+            class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+            @click.stop
+          />
+          <span v-else class="font-semibold text-surface-500">{{ lastPostCreatorName }}</span>
+        </template>
+      </i18n-t>
       <router-link :to="lastPostRoute" class="hover:text-primary transition-colors">
-        le {{ formatDate(topic.last_post.creation_datetime) }}
+        {{ t('forum.topic_item.last_post_on', { date: formatDate(topic.last_post.creation_datetime) }) }}
       </router-link>
     </div>
     <div v-else class="text-sm text-surface-500 dark:text-surface-400 md:w-48 shrink-0">
-      Aucune réponse
+      {{ t('forum.topic_item.no_reply') }}
     </div>
   </div>
 </template>
@@ -60,6 +64,7 @@
 <script setup>
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { displayName } from '../../helper/user/displayName.js'
 import { formatDate } from '../../utils/date.js'
 import UserName from '../User/UserName.vue'
@@ -72,6 +77,8 @@ const props = defineProps({
     required: true
   }
 })
+
+const { t } = useI18n()
 
 const isPinned = computed(() => props.topic.is_pinned === true)
 const authorName = computed(() => displayName(props.topic.author))

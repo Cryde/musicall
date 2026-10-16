@@ -6,11 +6,11 @@
           <Avatar
             v-if="post.creator.profile_picture?.small && !post.creator.deletion_datetime"
             :image="post.creator.profile_picture.small"
-            :pt="{ image: { alt: `Photo de ${creatorName}` } }"
+            :pt="{ image: { alt: t('forum.post.creator_photo', { name: creatorName }) } }"
             size="large"
             shape="circle"
             role="img"
-            :aria-label="`Photo de ${creatorName}`"
+            :aria-label="t('forum.post.creator_photo', { name: creatorName })"
           />
           <Avatar
             v-else
@@ -19,7 +19,7 @@
             size="large"
             shape="circle"
             role="img"
-            :aria-label="`Avatar de ${creatorName}`"
+            :aria-label="t('forum.post.creator_avatar', { name: creatorName })"
           />
           <UserName
             v-if="!post.creator.deletion_datetime"
@@ -27,7 +27,11 @@
             :display-name="creatorName"
             :to="{ name: 'app_user_public_profile', params: { username: post.creator.username } }"
             class="font-medium text-sm hover:text-primary transition-colors"
-            :aria-label="`Voir le profil de ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`"
+            :aria-label="
+              creatorHandle
+                ? t('forum.post.view_profile_with_handle', { name: creatorName, handle: creatorHandle })
+                : t('forum.post.view_profile', { name: creatorName })
+            "
           />
           <span v-else class="font-medium text-sm text-surface-500">{{ creatorName }}</span>
           <Button
@@ -37,8 +41,8 @@
             severity="secondary"
             text
             rounded
-            v-tooltip.bottom="'Contacter'"
-            :aria-label="`Contacter ${creatorName}`"
+            v-tooltip.bottom="t('forum.post.contact')"
+            :aria-label="t('forum.post.contact_user', { name: creatorName })"
             @click="handleContact"
           />
         </div>
@@ -47,18 +51,18 @@
           <div class="text-sm text-surface-500 dark:text-surface-400 mb-3 flex items-center gap-2">
             <span>{{ formatDate(post.creation_datetime) }}</span>
             <span v-if="post.update_datetime" class="italic">
-              (modifié le {{ formatDate(post.update_datetime) }})
+              {{ t('forum.post.edited_on', { date: formatDate(post.update_datetime) }) }}
             </span>
             <span v-if="canEdit" class="ml-auto">
               <Button
                 v-if="!isEditing"
-                v-tooltip.bottom="'Modifier'"
+                v-tooltip.bottom="t('forum.post.edit')"
                 icon="pi pi-pencil"
                 size="small"
                 severity="secondary"
                 text
                 rounded
-                aria-label="Modifier le message"
+                :aria-label="t('forum.post.edit_message')"
                 @click="startEdit"
               />
             </span>
@@ -68,12 +72,12 @@
             <MessageEditor
               ref="editorRef"
               :previous-content="post.content"
-              placeholder="Modifiez votre message…"
+              :placeholder="t('forum.post.edit_placeholder')"
               @content-update="handleContentUpdate"
             />
             <div class="flex justify-end gap-2 mt-3">
-              <Button label="Annuler" severity="secondary" text :disabled="isSaving" @click="cancelEdit" />
-              <Button label="Enregistrer" :loading="isSaving" :disabled="!isContentValid" @click="saveEdit" />
+              <Button :label="t('forum.common.cancel')" severity="secondary" text :disabled="isSaving" @click="cancelEdit" />
+              <Button :label="t('forum.post.save')" :loading="isSaving" :disabled="!isContentValid" @click="saveEdit" />
             </div>
           </template>
           <template v-else>
@@ -86,7 +90,7 @@
                 size="small"
                 :severity="localUserVote === 1 ? 'success' : 'secondary'"
                 :loading="isVoting"
-                aria-label="J'aime"
+                :aria-label="t('forum.post.like')"
                 @click="handleVote(1)"
               />
               <span class="text-sm font-semibold min-w-6 text-center">{{ score }}</span>
@@ -97,25 +101,25 @@
                 size="small"
                 :severity="localUserVote === -1 ? 'danger' : 'secondary'"
                 :loading="isVoting"
-                aria-label="Je n'aime pas"
+                :aria-label="t('forum.post.dislike')"
                 @click="handleVote(-1)"
               />
               <Button
                 v-if="canQuote"
                 icon="pi pi-comment"
-                label="Citer"
+                :label="t('forum.post.quote')"
                 text
                 size="small"
                 severity="secondary"
                 class="ml-2"
-                :aria-label="`Citer le message de ${creatorName}`"
+                :aria-label="t('forum.post.quote_message_of', { name: creatorName })"
                 @click="handleQuote"
               />
               <ReportButton
                 target-type="forum_post"
                 :target-id="String(post.id)"
                 :author-id="post.creator.id"
-                :aria-label="`Signaler le message de ${creatorName}`"
+                :aria-label="t('forum.post.report_message_of', { name: creatorName })"
                 class="ml-auto"
               />
             </div>
@@ -132,7 +136,7 @@
 
   <AuthRequiredModal
     v-model:visible="showAuthModal"
-    message="Vous devez vous connecter pour envoyer un message."
+    :message="t('forum.post.login_to_message')"
   />
 </template>
 
@@ -142,6 +146,7 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import forumApi from '../../api/forum/forum.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useForumStore } from '../../store/forum/forum.js'
@@ -168,6 +173,7 @@ const props = defineProps({
 
 const emit = defineEmits(['quote'])
 
+const { t } = useI18n()
 const userSecurityStore = useUserSecurityStore()
 const forumStore = useForumStore()
 const toast = useToast()
@@ -219,13 +225,13 @@ async function saveEdit() {
   isSaving.value = true
   try {
     await forumStore.editPost(props.post.id, editedHtml.value)
-    toast.add({ severity: 'success', summary: 'Message modifié', life: 3000 })
+    toast.add({ severity: 'success', summary: t('forum.post.edited_toast'), life: 3000 })
     isEditing.value = false
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Action impossible',
-      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      summary: t('forum.common.action_failed'),
+      detail: e?.response?.data?.detail || t('forum.common.generic_error'),
       life: 4000
     })
   } finally {

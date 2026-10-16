@@ -9,12 +9,12 @@
     </div>
 
     <div v-else-if="totalItems === 0" class="rounded border border-surface-200 dark:border-surface-700 p-6 text-center text-surface-500">
-      Aucun résultat pour «&nbsp;{{ term }}&nbsp;»
+      {{ t('forum.search.no_result', { term }) }}
     </div>
 
     <template v-else>
       <p class="text-sm text-surface-500 mb-4">
-        {{ totalItems }} {{ totalItems > 1 ? 'résultats trouvés' : 'résultat trouvé' }} pour «&nbsp;{{ term }}&nbsp;»
+        {{ t('forum.search.results', { term }, totalItems) }}
       </p>
 
       <ul class="flex flex-col gap-3">
@@ -72,6 +72,7 @@
 <script setup>
 import { format, parseISO } from 'date-fns'
 import Paginator from 'primevue/paginator'
+import { useI18n } from 'vue-i18n'
 import { dateFnsLocale } from '../../i18n/formatLocale.js'
 import { highlightTerm } from '../../utils/highlight.js'
 
@@ -86,6 +87,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['page-change'])
+const { t } = useI18n()
 
 function highlight(text) {
   return highlightTerm(text, props.term)

@@ -10,23 +10,23 @@
       class="inline-flex items-center gap-2 mb-4 text-sm text-primary hover:underline"
     >
       <i class="pi pi-bookmark" />
-      Mes sujets
+      {{ t('forum.common.my_topics') }}
     </router-link>
 
-    <h1 class="text-2xl font-semibold mb-6">Liste des forums</h1>
+    <h1 class="text-2xl font-semibold mb-6">{{ t('forum.index.title') }}</h1>
 
     <IconField class="mb-8 w-full max-w-xl">
       <InputIcon class="pi pi-search" />
       <InputText
         v-model="searchInput"
-        placeholder="Rechercher un sujet ou un message…"
+        :placeholder="t('forum.index.search_placeholder')"
         class="w-full"
       />
       <button
         v-if="searchInput"
         type="button"
         class="absolute right-2 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
-        aria-label="Effacer la recherche"
+        :aria-label="t('forum.index.clear_search')"
         @click="clearSearch"
       >
         <i class="pi pi-times" />
@@ -89,6 +89,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import forumApi from '../../api/forum/forum.js'
 import ForumCategorySkeleton from '../../components/Forum/ForumCategorySkeleton.vue'
 import ForumSearchResults from '../../components/Forum/ForumSearchResults.vue'
@@ -97,12 +98,14 @@ import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
-useTitle('Forum - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('forum.index.page_title')))
 
 const forumStore = useForumStore()
 const userSecurityStore = useUserSecurityStore()
 
-const breadcrumbItems = [{ label: 'Forum' }]
+const breadcrumbItems = computed(() => [{ label: t('forum.common.forum') }])
 
 const searchInput = ref('')
 const committedTerm = ref('')
@@ -150,7 +153,7 @@ async function runSearch(term, page) {
     searchTotalItems.value = data.totalItems
   } catch (error) {
     if (requestId !== lastRequestId) return
-    searchError.value = error?.response?.data?.detail ?? 'Erreur pendant la recherche'
+    searchError.value = error?.response?.data?.detail ?? t('forum.index.search_error')
     searchResults.value = []
     searchTotalItems.value = 0
   } finally {
