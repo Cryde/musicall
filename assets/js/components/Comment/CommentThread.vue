@@ -10,15 +10,7 @@
 
     <template v-else>
       <div class="text-right text-sm text-surface-600 dark:text-surface-400 mb-4">
-        <template v-if="rootComments.length === 0">
-          Il n'y a pas encore de commentaires
-        </template>
-        <template v-else-if="rootComments.length === 1">
-          1 commentaire
-        </template>
-        <template v-else>
-          {{ rootComments.length }} commentaires
-        </template>
+        {{ t('publication.comment.thread.count', rootComments.length) }}
       </div>
 
       <div class="flex flex-col gap-4">
@@ -36,6 +28,7 @@
 <script setup>
 import Divider from 'primevue/divider'
 import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useCommentStore } from '../../store/comment/comment.js'
 import CommentForm from './CommentForm.vue'
 import CommentItem from './CommentItem.vue'
@@ -47,6 +40,7 @@ const props = defineProps({
   }
 })
 
+const { t } = useI18n()
 const commentStore = useCommentStore()
 
 const rootComments = computed(() =>

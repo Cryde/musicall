@@ -8,7 +8,7 @@
       <i class="pi pi-exclamation-triangle text-4xl text-red-500 mb-4" />
       <p class="text-lg text-surface-700 dark:text-surface-300">{{ error }}</p>
       <Button
-        label="Retour a mes galeries"
+        :label="t('publication.gallery.preview.back')"
         icon="pi pi-arrow-left"
         class="mt-4"
         @click="router.push({ name: 'app_user_galleries' })"
@@ -21,17 +21,20 @@
         <div class="flex items-center justify-between w-full gap-4 flex-wrap">
           <div class="flex items-center gap-2">
             <i :class="isAdminReview ? 'pi pi-shield' : 'pi pi-eye'" />
-            <span>
-              <strong>{{ isAdminReview ? 'Validation admin' : 'Mode prévisualisation' }}</strong> -
-              Cette galerie est en
-              <Tag :value="gallery.status_label" :severity="getStatusSeverity(gallery.status)" class="mx-1" />
-            </span>
+            <i18n-t keypath="publication.gallery.preview.banner" tag="span">
+              <template #mode>
+                <strong>{{ isAdminReview ? t('publication.review.admin_review') : t('publication.review.preview_mode') }}</strong>
+              </template>
+              <template #status>
+                <Tag :value="gallery.status_label" :severity="getStatusSeverity(gallery.status)" class="mx-1" />
+              </template>
+            </i18n-t>
           </div>
           <div class="flex gap-2">
             <!-- Admin review buttons -->
             <template v-if="isAdminReview">
               <Button
-                label="Valider"
+                :label="t('publication.review.approve')"
                 icon="pi pi-check"
                 size="small"
                 severity="success"
@@ -39,7 +42,7 @@
                 @click="confirmApprove"
               />
               <Button
-                label="Rejeter"
+                :label="t('publication.review.reject')"
                 icon="pi pi-times"
                 size="small"
                 severity="danger"
@@ -47,7 +50,7 @@
                 @click="confirmReject"
               />
               <Button
-                label="Retour"
+                :label="t('publication.common.back')"
                 icon="pi pi-arrow-left"
                 size="small"
                 severity="secondary"
@@ -59,14 +62,14 @@
             <template v-else>
               <Button
                 v-if="gallery.status === STATUS_DRAFT"
-                label="Modifier"
+                :label="t('publication.common.edit')"
                 icon="pi pi-pencil"
                 size="small"
                 severity="secondary"
                 @click="router.push({ name: 'app_user_gallery_edit', params: { id: gallery.id } })"
               />
               <Button
-                label="Mes galeries"
+                :label="t('publication.gallery.preview.my_galleries')"
                 icon="pi pi-list"
                 size="small"
                 severity="secondary"
@@ -88,9 +91,9 @@
         <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
           {{ gallery.title }}
         </h1>
-        <div class="text-sm text-surface-500 dark:text-surface-400">
-          Photo de <strong>{{ gallery.author_display_name ?? gallery.author_username }}</strong>
-        </div>
+        <i18n-t keypath="publication.gallery.author" tag="div" class="text-sm text-surface-500 dark:text-surface-400">
+          <template #author><strong>{{ gallery.author_display_name ?? gallery.author_username }}</strong></template>
+        </i18n-t>
         <p v-if="gallery.description" class="text-surface-600 dark:text-surface-300 mt-2">
           {{ gallery.description }}
         </p>
@@ -99,7 +102,7 @@
       <!-- Images Grid -->
       <div v-if="gallery.images.length === 0" class="text-center py-12 text-surface-500">
         <i class="pi pi-images text-4xl mb-4" />
-        <p>Aucune image dans cette galerie</p>
+        <p>{{ t('publication.gallery.editor.empty') }}</p>
       </div>
 
       <MasonryWall
@@ -112,7 +115,7 @@
         <template #default="{ item, index }">
           <img
             :src="item.medium"
-            :alt="`${gallery.title} - Photo ${index + 1}`"
+            :alt="t('publication.gallery.photo_alt', { title: gallery.title, number: index + 1 })"
             :data-full-image="item.full"
             :data-index="index"
             class="w-full rounded-lg cursor-pointer transition-opacity duration-200 hover:opacity-80"
@@ -129,7 +132,7 @@
         tabindex="-1"
         role="dialog"
         aria-modal="true"
-        :aria-label="gallery?.title ? `Galerie : ${gallery.title}` : 'Galerie photos'"
+        :aria-label="gallery?.title ? t('publication.gallery.lightbox.label', { title: gallery.title }) : t('publication.gallery.lightbox.label_empty')"
         class="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center outline-none"
         @click.self="closeLightbox"
       >
@@ -138,14 +141,14 @@
         <img
           v-show="!imageLoading"
           :src="currentImage"
-          :alt="`${gallery.title} - Photo ${currentIndex + 1}`"
+          :alt="t('publication.gallery.photo_alt', { title: gallery.title, number: currentIndex + 1 })"
           class="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
           @load="imageLoading = false"
         />
 
         <button
           class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors cursor-pointer"
-          aria-label="Fermer la galerie"
+          :aria-label="t('publication.gallery.lightbox.close')"
           @click="closeLightbox"
         >
           <i class="pi pi-times" aria-hidden="true" />
@@ -153,7 +156,7 @@
 
         <button
           class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 transition-colors cursor-pointer"
-          aria-label="Image précédente"
+          :aria-label="t('publication.gallery.lightbox.previous')"
           @click="prevImage"
         >
           <i class="pi pi-chevron-left" aria-hidden="true" />
@@ -161,7 +164,7 @@
 
         <button
           class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 transition-colors cursor-pointer"
-          aria-label="Image suivante"
+          :aria-label="t('publication.gallery.lightbox.next')"
           @click="nextImage"
         >
           <i class="pi pi-chevron-right" aria-hidden="true" />
@@ -185,6 +188,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import adminGalleryApi from '../../../api/admin/gallery.js'
 import userGalleryApi from '../../../api/user/gallery.js'
@@ -195,6 +199,7 @@ import Breadcrumb from '../../Global/Breadcrumb.vue'
 const STATUS_DRAFT = 1
 const STATUS_PENDING = 2
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const confirm = useConfirm()
@@ -221,14 +226,17 @@ const isAdminReview = computed(() => {
 
 useTitle(() =>
   gallery.value
-    ? `Previsualisation: ${gallery.value.title} - MusicAll`
-    : 'Previsualisation - MusicAll'
+    ? t('publication.review.page_title', { title: gallery.value.title })
+    : t('publication.review.page_title_empty')
 )
 
 const breadcrumbItems = computed(() => {
   const items = [
-    { label: 'Publications', to: { name: 'app_publications' } },
-    { label: 'Photos', to: { name: 'app_publications_by_category', params: { slug: 'photos' } } }
+    { label: t('publication.common.publications'), to: { name: 'app_publications' } },
+    {
+      label: t('publication.gallery.photos'),
+      to: { name: 'app_publications_by_category', params: { slug: 'photos' } }
+    }
   ]
   if (gallery.value) {
     items.push({ label: gallery.value.title })
@@ -253,11 +261,11 @@ async function loadPreview() {
   } catch (e) {
     console.error('Failed to load preview:', e)
     if (e.response?.status === 403) {
-      error.value = "Vous n'avez pas acces a cette galerie"
+      error.value = t('publication.gallery.preview.forbidden')
     } else if (e.response?.status === 404) {
-      error.value = 'Galerie non trouvee'
+      error.value = t('publication.gallery.preview.not_found')
     } else {
-      error.value = 'Une erreur est survenue lors du chargement de la previsualisation'
+      error.value = t('publication.review.load_failed')
     }
   } finally {
     isLoading.value = false
@@ -327,11 +335,11 @@ function handleKeydown(e) {
 
 function confirmApprove() {
   confirm.require({
-    message: `Valider la galerie "${gallery.value.title}" ?`,
-    header: 'Confirmation',
+    message: t('publication.gallery.preview.approve_confirm', { title: gallery.value.title }),
+    header: t('publication.common.confirmation'),
     icon: 'pi pi-check-circle',
-    acceptLabel: 'Valider',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('publication.review.approve'),
+    rejectLabel: t('publication.common.cancel'),
     acceptClass: 'p-button-success',
     accept: async () => {
       isProcessing.value = true
@@ -340,16 +348,16 @@ function confirmApprove() {
         await notificationStore.loadNotifications()
         toast.add({
           severity: 'success',
-          summary: 'Galerie validée',
-          detail: `La galerie "${gallery.value.title}" a été validée.`,
+          summary: t('publication.gallery.preview.approved'),
+          detail: t('publication.gallery.preview.approved_detail', { title: gallery.value.title }),
           life: 3000
         })
         router.push({ name: 'admin_galleries_pending' })
       } catch (e) {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: 'Une erreur est survenue lors de la validation.',
+          summary: t('publication.common.error'),
+          detail: t('publication.review.approve_failed'),
           life: 3000
         })
       } finally {
@@ -361,11 +369,11 @@ function confirmApprove() {
 
 function confirmReject() {
   confirm.require({
-    message: `Rejeter la galerie "${gallery.value.title}" ?`,
-    header: 'Confirmation',
+    message: t('publication.gallery.preview.reject_confirm', { title: gallery.value.title }),
+    header: t('publication.common.confirmation'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Rejeter',
-    rejectLabel: 'Annuler',
+    acceptLabel: t('publication.review.reject'),
+    rejectLabel: t('publication.common.cancel'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       isProcessing.value = true
@@ -374,16 +382,16 @@ function confirmReject() {
         await notificationStore.loadNotifications()
         toast.add({
           severity: 'info',
-          summary: 'Galerie rejetée',
-          detail: `La galerie "${gallery.value.title}" a été rejetée.`,
+          summary: t('publication.gallery.preview.rejected'),
+          detail: t('publication.gallery.preview.rejected_detail', { title: gallery.value.title }),
           life: 3000
         })
         router.push({ name: 'admin_galleries_pending' })
       } catch (e) {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: 'Une erreur est survenue lors du rejet.',
+          summary: t('publication.common.error'),
+          detail: t('publication.review.reject_failed'),
           life: 3000
         })
       } finally {

@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Nouvelle publication"
+    :header="t('publication.user.add_modal.header')"
     :style="{ width: '450px' }"
     :closable="!isLoading"
     :closeOnEscape="!isLoading"
@@ -11,7 +11,7 @@
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-2">
         <label for="category" class="font-medium text-surface-700 dark:text-surface-200">
-          Catégorie
+          {{ t('publication.common.category') }}
         </label>
         <Select
           id="category"
@@ -19,7 +19,7 @@
           :options="publicationsStore.publicationCategories"
           optionLabel="title"
           optionValue="id"
-          placeholder="Choisir une catégorie"
+          :placeholder="t('publication.common.category_placeholder')"
           class="w-full"
           :disabled="isLoading"
         />
@@ -27,12 +27,12 @@
 
       <div class="flex flex-col gap-2">
         <label for="title" class="font-medium text-surface-700 dark:text-surface-200">
-          Titre
+          {{ t('publication.common.title') }}
         </label>
         <InputText
           id="title"
           v-model="title"
-          placeholder="Le titre de votre publication"
+          :placeholder="t('publication.user.add_modal.title_placeholder')"
           class="w-full"
           :disabled="isLoading"
           @keyup.enter="handleCreate"
@@ -49,14 +49,14 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button
-          label="Annuler"
+          :label="t('publication.common.cancel')"
           severity="secondary"
           text
           :disabled="isLoading"
           @click="handleClose"
         />
         <Button
-          label="Créer"
+          :label="t('publication.common.create')"
           icon="pi pi-check"
           :loading="isLoading"
           :disabled="!canCreate"
@@ -74,6 +74,7 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { usePublicationEditStore } from '../../store/publication/publicationEdit.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
@@ -87,6 +88,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'created'])
 
+const { t } = useI18n()
 const router = useRouter()
 const publicationsStore = usePublicationsStore()
 const publicationEditStore = usePublicationEditStore()

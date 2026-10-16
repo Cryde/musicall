@@ -5,7 +5,7 @@
     style="visibility: hidden; opacity: 0"
   >
     <Button
-      v-tooltip.top="'2 colonnes'"
+      v-tooltip.top="t('publication.editor.toolbar.two_columns')"
       label="2"
       :severity="currentCols === 2 ? 'primary' : 'secondary'"
       text
@@ -13,7 +13,7 @@
       @click="handleSetCount(2)"
     />
     <Button
-      v-tooltip.top="'3 colonnes'"
+      v-tooltip.top="t('publication.editor.toolbar.three_columns')"
       label="3"
       :severity="currentCols === 3 ? 'primary' : 'secondary'"
       text
@@ -22,8 +22,8 @@
     />
     <Divider layout="vertical" class="mx-1 my-0" />
     <Button
-      v-tooltip.top="'Supprimer le bloc colonnes'"
-      aria-label="Supprimer le bloc colonnes"
+      v-tooltip.top="t('publication.editor.columns_menu.delete')"
+      :aria-label="t('publication.editor.columns_menu.delete')"
       icon="pi pi-trash"
       severity="danger"
       text
@@ -38,6 +38,7 @@ import Button from 'primevue/button'
 import Divider from 'primevue/divider'
 import { useConfirm } from 'primevue/useconfirm'
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   editor: {
@@ -49,6 +50,7 @@ const props = defineProps({
 const rootEl = ref(null)
 const currentCols = ref(null)
 const confirm = useConfirm()
+const { t } = useI18n()
 
 let attachedEditor = null
 
@@ -95,11 +97,11 @@ function handleSetCount(target) {
 
   if (currentCols.value === 3 && target === 2) {
     confirm.require({
-      message: 'Le contenu de la 3e colonne sera perdu. Continuer ?',
-      header: 'Réduire à 2 colonnes',
+      message: t('publication.editor.columns_menu.reduce_confirm'),
+      header: t('publication.editor.columns_menu.reduce_header'),
       icon: 'pi pi-exclamation-triangle',
-      rejectLabel: 'Annuler',
-      acceptLabel: 'Continuer',
+      rejectLabel: t('publication.common.cancel'),
+      acceptLabel: t('publication.editor.columns_menu.continue'),
       acceptClass: 'p-button-danger',
       accept: () => {
         props.editor.chain().focus().setColumnsCount(target).run()

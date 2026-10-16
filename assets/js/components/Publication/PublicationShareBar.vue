@@ -1,13 +1,13 @@
 <template>
   <div class="flex flex-wrap items-center gap-3 bg-surface-50 dark:bg-surface-800 rounded-lg px-4 py-3">
-    <span class="text-sm font-semibold text-surface-700 dark:text-surface-200 mr-2">Partager</span>
+    <span class="text-sm font-semibold text-surface-700 dark:text-surface-200 mr-2">{{ t('publication.share.share') }}</span>
     <Button
       icon="pi pi-facebook"
       severity="secondary"
       rounded
       size="small"
-      aria-label="Partager sur Facebook"
-      v-tooltip.bottom="'Facebook'"
+      :aria-label="t('publication.share.on_facebook')"
+      v-tooltip.bottom="t('publication.share.facebook')"
       @click="shareToFacebook"
     />
     <Button
@@ -15,8 +15,8 @@
       severity="secondary"
       rounded
       size="small"
-      aria-label="Partager sur X"
-      v-tooltip.bottom="'X (Twitter)'"
+      :aria-label="t('publication.share.on_x')"
+      v-tooltip.bottom="t('publication.share.x_twitter')"
       @click="shareToTwitter"
     />
     <Button
@@ -24,8 +24,8 @@
       severity="secondary"
       rounded
       size="small"
-      aria-label="Partager sur LinkedIn"
-      v-tooltip.bottom="'LinkedIn'"
+      :aria-label="t('publication.share.on_linkedin')"
+      v-tooltip.bottom="t('publication.share.linkedin')"
       @click="shareToLinkedIn"
     />
     <Button
@@ -33,8 +33,8 @@
       severity="secondary"
       rounded
       size="small"
-      aria-label="Partager sur Reddit"
-      v-tooltip.bottom="'Reddit'"
+      :aria-label="t('publication.share.on_reddit')"
+      v-tooltip.bottom="t('publication.share.reddit')"
       @click="shareToReddit"
     />
     <Button
@@ -42,8 +42,8 @@
       severity="secondary"
       rounded
       size="small"
-      aria-label="Partager par e-mail"
-      v-tooltip.bottom="'E-mail'"
+      :aria-label="t('publication.share.by_email')"
+      v-tooltip.bottom="t('publication.share.email')"
       @click="shareByEmail"
     />
     <Button
@@ -51,8 +51,8 @@
       severity="secondary"
       rounded
       size="small"
-      aria-label="Copier le lien"
-      v-tooltip.bottom="'Copier le lien'"
+      :aria-label="t('publication.share.copy_link')"
+      v-tooltip.bottom="t('publication.share.copy_link')"
       @click="copyLink"
     />
   </div>
@@ -63,12 +63,14 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   url: { type: String, required: true },
   title: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const toast = useToast()
 const encodedUrl = computed(() => encodeURIComponent(props.url))
 const encodedTitle = computed(() => encodeURIComponent(props.title))
@@ -109,15 +111,15 @@ async function copyLink() {
     await navigator.clipboard.writeText(props.url)
     toast.add({
       severity: 'success',
-      summary: 'Lien copié',
-      detail: 'Le lien a été copié dans le presse-papiers',
+      summary: t('publication.share.link_copied'),
+      detail: t('publication.share.link_copied_detail'),
       life: 3000
     })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de copier le lien',
+      summary: t('publication.common.error'),
+      detail: t('publication.share.link_copy_failed'),
       life: 3000
     })
   }

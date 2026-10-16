@@ -37,9 +37,10 @@
 
           <div
               class="text-surface-500 dark:text-surface-300 text-xs md:text-sm leading-normal">
-              par <UserName :username="author.username" :display-name="authorName" variant="tooltip" /> {{ relativeDateFilter(date) }}
-
-          <Tag
+              <i18n-t keypath="publication.common.byline">
+                <template #author><UserName :username="author.username" :display-name="authorName" variant="tooltip" /></template>
+                <template #date>{{ relativeDateFilter(date) }}</template>
+              </i18n-t> <Tag
               severity="secondary"
               :value="category.title"
               class="ml-3"

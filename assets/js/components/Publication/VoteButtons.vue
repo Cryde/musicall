@@ -7,8 +7,8 @@
       size="small"
       :severity="userVote === 1 ? 'success' : 'secondary'"
       :loading="isVoting"
-      v-tooltip.bottom="'J\'aime'"
-      aria-label="J'aime"
+      v-tooltip.bottom="t('publication.common.like')"
+      :aria-label="t('publication.common.like')"
       @click="handleVote(1)"
     />
     <span class="text-sm font-semibold min-w-6 text-center">{{ score }}</span>
@@ -19,8 +19,8 @@
       size="small"
       :severity="userVote === -1 ? 'danger' : 'secondary'"
       :loading="isVoting"
-      v-tooltip.bottom="'Je n\'aime pas'"
-      aria-label="Je n'aime pas"
+      v-tooltip.bottom="t('publication.common.dislike')"
+      :aria-label="t('publication.common.dislike')"
       @click="handleVote(-1)"
     />
   </div>
@@ -30,12 +30,14 @@
 import { storeToRefs } from 'pinia'
 import Button from 'primevue/button'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePublicationStore } from '../../store/publication/publication.js'
 
 const props = defineProps({
   slug: { type: String, required: true }
 })
 
+const { t } = useI18n()
 const publicationStore = usePublicationStore()
 const { publication, isVoting } = storeToRefs(publicationStore)
 

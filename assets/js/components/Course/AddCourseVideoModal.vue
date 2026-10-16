@@ -2,14 +2,14 @@
   <Dialog
     v-model:visible="isVisible"
     modal
-    header="Ajouter un cours en vidéo"
+    :header="t('publication.course.add_modal.header')"
     :style="{ width: '35rem' }"
     :closable="!videoStore.isLoadingAdd"
     :closeOnEscape="!videoStore.isLoadingAdd"
   >
     <Message severity="success" :closable="false" class="mb-4">
-      Partagez à la communauté vos cours vidéos préférés ou que vous avez créés.<br />
-      Pour l'instant seuls les liens Youtube fonctionnent.
+      {{ t('publication.course.add_modal.intro_share') }}<br />
+      {{ t('publication.course.add_modal.intro_youtube_only') }}
     </Message>
 
     <div class="flex flex-col gap-4">
@@ -18,38 +18,38 @@
           v-model="selectedCategory"
           :options="categories"
           optionLabel="title"
-          placeholder="Choisissez une catégorie"
+          :placeholder="t('publication.course.add_modal.category_placeholder')"
           :disabled="videoStore.isLoadingPreview || videoStore.isLoadingAdd"
           class="w-full"
         />
         <small v-if="errors.category" class="text-red-500">{{ errors.category }}</small>
-        <small v-else class="text-surface-500">Sélectionnez la catégorie du cours</small>
+        <small v-else class="text-surface-500">{{ t('publication.course.add_modal.category_help') }}</small>
       </div>
 
       <div class="flex flex-col gap-1">
         <InputText
           id="videoUrl"
           v-model="videoUrl"
-          placeholder="Url de la vidéo Youtube"
+          :placeholder="t('publication.course.add_modal.url_placeholder')"
           :disabled="videoStore.isLoadingPreview || videoStore.isLoadingAdd"
           class="w-full"
         />
         <small v-if="!videoStore.isLoadingPreview" class="text-surface-500">
-          Avec ce lien nous pourrons récupérer quelques informations
+          {{ t('publication.course.add_modal.url_help') }}
         </small>
         <small v-else class="text-surface-500 flex items-center gap-2">
           <i class="pi pi-spin pi-spinner"></i>
-          Chargement de l'aperçu...
+          {{ t('publication.course.add_modal.loading_preview') }}
         </small>
       </div>
 
       <Message v-if="isExistingVideo" severity="error" :closable="false">
-        La vidéo existe déjà.<br />
-        Vous ne pouvez pas la remettre en ligne une nouvelle fois.
+        {{ t('publication.course.add_modal.existing_video') }}<br />
+        {{ t('publication.course.add_modal.existing_video_help') }}
       </Message>
 
       <Message v-if="hasGenericError" severity="error" :closable="false">
-        Une erreur est survenue. Veuillez vérifier l'URL et réessayer.
+        {{ t('publication.course.add_modal.generic_error') }}
       </Message>
 
       <template v-if="showPreview && !isExistingVideo">
@@ -58,29 +58,29 @@
             <InputText
               id="videoTitle"
               v-model="videoTitle"
-              placeholder="Titre de la vidéo"
+              :placeholder="t('publication.course.add_modal.title_placeholder')"
               :disabled="videoStore.isLoadingAdd"
               class="w-full"
             />
             <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
-            <small v-else class="text-surface-500">Le titre de la vidéo. Vous pouvez le changer</small>
+            <small v-else class="text-surface-500">{{ t('publication.course.add_modal.title_help') }}</small>
           </div>
 
           <div class="flex flex-col gap-1">
             <Textarea
               id="videoDescription"
               v-model="videoDescription"
-              placeholder="Description de la vidéo"
+              :placeholder="t('publication.course.add_modal.description_placeholder')"
               :disabled="videoStore.isLoadingAdd"
               rows="4"
               class="w-full"
             />
             <small v-if="errors.description" class="text-red-500">{{ errors.description }}</small>
-            <small v-else class="text-surface-500">La description de la vidéo. Vous pouvez la changer</small>
+            <small v-else class="text-surface-500">{{ t('publication.course.add_modal.description_help') }}</small>
           </div>
 
           <div v-if="videoImage">
-            <img :src="videoImage" alt="Aperçu de la vidéo" class="w-full rounded-lg" />
+            <img :src="videoImage" :alt="t('publication.course.add_modal.preview_alt')" class="w-full rounded-lg" />
           </div>
         </div>
       </template>
@@ -88,14 +88,14 @@
       <div class="flex justify-end gap-2 mt-4">
         <Button
           type="button"
-          label="Annuler"
+          :label="t('publication.common.cancel')"
           severity="secondary"
           @click="handleClose"
           :disabled="videoStore.isLoadingAdd"
         />
         <Button
           type="button"
-          label="Publier"
+          :label="t('publication.course.add_modal.publish')"
           icon="pi pi-check"
           :loading="videoStore.isLoadingAdd"
           :disabled="!canPublish"
@@ -117,6 +117,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ERROR_CODES } from '../../constants/errorCodes.js'
 import { useVideoStore } from '../../store/publication/video.js'
 
@@ -133,6 +134,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'published'])
 
+const { t } = useI18n()
 const videoStore = useVideoStore()
 const toast = useToast()
 
@@ -250,7 +252,7 @@ async function handlePublish() {
   errors.value = {}
 
   if (!selectedCategory.value) {
-    errors.value.category = 'Veuillez sélectionner une catégorie'
+    errors.value.category = t('publication.course.add_modal.category_required')
     return
   }
 
@@ -267,8 +269,8 @@ async function handlePublish() {
 
     toast.add({
       severity: 'success',
-      summary: 'Cours publié',
-      detail: 'Votre cours vidéo a été mis en ligne',
+      summary: t('publication.course.add_modal.published'),
+      detail: t('publication.course.add_modal.published_detail'),
       life: 5000
     })
 
@@ -287,7 +289,7 @@ async function handlePublish() {
     } else {
       toast.add({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('publication.common.error'),
         detail: error.message,
         life: 5000
       })

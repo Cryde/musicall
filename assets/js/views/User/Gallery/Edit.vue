@@ -10,7 +10,7 @@
           <div class="flex items-center gap-4">
             <Button
               icon="pi pi-chevron-left"
-              aria-label="Retour aux galeries"
+              :aria-label="t('publication.gallery.editor.back')"
               severity="secondary"
               text
               rounded
@@ -21,11 +21,11 @@
                 {{ userGalleryStore.gallery.title }}
               </h1>
               <p class="text-surface-500 dark:text-surface-400">
-                {{ userGalleryStore.images.length }} photo(s)
+                {{ t('publication.gallery.user.photo_count', { count: userGalleryStore.images.length }) }}
               </p>
             </div>
           </div>
-          <Button label="Parametres" icon="pi pi-cog" severity="secondary" @click="openSettingsModal" />
+          <Button :label="t('publication.gallery.editor.settings')" icon="pi pi-cog" severity="secondary" @click="openSettingsModal" />
         </div>
 
         <!-- Drop zone for upload -->
@@ -47,10 +47,10 @@
           />
           <i class="pi pi-cloud-upload text-4xl text-surface-500 dark:text-surface-400 mb-4" />
           <p class="text-lg font-medium text-surface-700 dark:text-surface-300">
-            Glissez-deposez des images ici
+            {{ t('publication.gallery.editor.drop_title') }}
           </p>
           <p class="text-sm text-surface-500 dark:text-surface-400 mt-2">
-            ou cliquez pour selectionner des fichiers
+            {{ t('publication.gallery.editor.drop_help') }}
           </p>
         </div>
 
@@ -64,14 +64,14 @@
               <i class="pi pi-upload text-xl text-primary-500" />
               <div>
                 <p class="text-sm font-medium">
-                  Upload en cours: {{ uploadedCount }}/{{ totalUploadCount }} image(s)
+                  {{ t('publication.gallery.editor.upload_progress', { uploaded: uploadedCount, total: totalUploadCount }) }}
                 </p>
                 <ProgressBar :value="overallProgress" :showValue="false" class="h-2 mt-1 w-48" />
               </div>
             </div>
             <Button
               :icon="isUploadExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              aria-label="Afficher la zone d'envoi"
+              :aria-label="t('publication.gallery.editor.toggle_upload')"
               text
               rounded
               size="small"
@@ -100,7 +100,7 @@
 
         <div v-else-if="userGalleryStore.images.length === 0" class="text-center py-12 text-surface-500">
           <i class="pi pi-images text-4xl mb-4" />
-          <p>Aucune image dans cette galerie</p>
+          <p>{{ t('publication.gallery.editor.empty') }}</p>
         </div>
 
         <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -111,7 +111,7 @@
           >
             <img
               :src="image.sizes.medium"
-              :alt="`${userGalleryStore.gallery.title} - Photo ${index + 1}`"
+              :alt="t('publication.gallery.photo_alt', { title: userGalleryStore.gallery.title, number: index + 1 })"
               class="w-full h-full object-cover rounded-lg"
               loading="lazy"
             />
@@ -120,20 +120,20 @@
             >
               <Button
                 v-if="userGalleryStore.gallery.cover_image_id !== image.id"
-                v-tooltip.bottom="'Définir comme couverture'"
-                aria-label="Définir comme couverture"
+                v-tooltip.bottom="t('publication.gallery.editor.set_cover')"
+                :aria-label="t('publication.gallery.editor.set_cover')"
                 icon="pi pi-image"
                 severity="info"
                 size="small"
                 rounded
                 @click="handleSetCover(image)"
               />
-              <Tag v-else value="Couverture" severity="info" class="text-xs" />
+              <Tag v-else :value="t('publication.gallery.editor.cover')" severity="info" class="text-xs" />
 
               <Button
                 v-if="userGalleryStore.gallery.cover_image_id !== image.id"
-                v-tooltip.bottom="'Supprimer'"
-                aria-label="Supprimer"
+                v-tooltip.bottom="t('publication.common.delete')"
+                :aria-label="t('publication.common.delete')"
                 icon="pi pi-trash"
                 severity="danger"
                 size="small"
@@ -146,25 +146,25 @@
       </div>
 
       <!-- Settings Modal -->
-      <Dialog v-model:visible="showSettingsModal" modal header="Parametres de la galerie" :style="{ width: '30rem' }">
+      <Dialog v-model:visible="showSettingsModal" modal :header="t('publication.gallery.editor.settings_header')" :style="{ width: '30rem' }">
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-2">
-            <label for="title" class="font-medium">Titre</label>
-            <InputText id="title" v-model="editTitle" placeholder="Titre de la galerie" />
+            <label for="title" class="font-medium">{{ t('publication.common.title') }}</label>
+            <InputText id="title" v-model="editTitle" :placeholder="t('publication.gallery.user.title_label')" />
           </div>
           <div class="flex flex-col gap-2">
-            <label for="description" class="font-medium">Description</label>
+            <label for="description" class="font-medium">{{ t('publication.gallery.editor.description') }}</label>
             <Textarea
               id="description"
               v-model="editDescription"
               rows="4"
-              placeholder="Description de la galerie"
+              :placeholder="t('publication.gallery.editor.description_placeholder')"
             />
           </div>
         </div>
         <template #footer>
-          <Button label="Annuler" severity="secondary" text @click="closeSettingsModal" />
-          <Button label="Enregistrer" icon="pi pi-check" :loading="isSaving" @click="saveSettings" />
+          <Button :label="t('publication.common.cancel')" severity="secondary" text @click="closeSettingsModal" />
+          <Button :label="t('publication.common.save')" icon="pi pi-check" :loading="isSaving" @click="saveSettings" />
         </template>
       </Dialog>
     </template>
@@ -183,10 +183,12 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserGalleriesStore } from '../../../store/gallery/userGalleries.js'
 import { useUserGalleryStore } from '../../../store/gallery/userGallery.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const confirm = useConfirm()
@@ -214,8 +216,8 @@ const overallProgress = computed(() => {
 
 useTitle(() =>
   userGalleryStore.gallery
-    ? `Modifier: ${userGalleryStore.gallery.title} - MusicAll`
-    : 'Modifier la galerie - MusicAll'
+    ? t('publication.gallery.editor.page_title', { title: userGalleryStore.gallery.title })
+    : t('publication.gallery.editor.page_title_empty')
 )
 
 onMounted(async () => {
@@ -264,7 +266,7 @@ function extractErrorMessage(error, fallbackFileName) {
   if (data?.detail) {
     return data.detail
   }
-  return `Impossible d'ajouter ${fallbackFileName}`
+  return t('publication.gallery.editor.upload_failed', { file: fallbackFileName })
 }
 
 async function uploadFiles(files) {
@@ -284,14 +286,14 @@ async function uploadFiles(files) {
       })
       toast.add({
         severity: 'success',
-        summary: 'Succes',
-        detail: `${file.name} ajoute`,
+        summary: t('publication.common.success'),
+        detail: t('publication.gallery.editor.uploaded', { file: file.name }),
         life: 2000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Erreur',
+        summary: t('publication.common.error'),
         detail: extractErrorMessage(error, file.name),
         life: 5000
       })
@@ -316,15 +318,15 @@ async function handleSetCover(image) {
     })
     toast.add({
       severity: 'success',
-      summary: 'Succes',
-      detail: 'Image de couverture modifiee',
+      summary: t('publication.common.success'),
+      detail: t('publication.gallery.editor.cover_updated'),
       life: 3000
     })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Impossible de modifier la couverture',
+      summary: t('publication.common.error'),
+      detail: t('publication.gallery.editor.cover_update_failed'),
       life: 3000
     })
   }
@@ -332,26 +334,26 @@ async function handleSetCover(image) {
 
 function handleDeleteImage(image) {
   confirm.require({
-    message: 'Etes-vous sur de vouloir supprimer cette image ?',
-    header: 'Confirmation',
+    message: t('publication.gallery.editor.delete_image_confirm'),
+    header: t('publication.common.confirmation'),
     icon: 'pi pi-exclamation-triangle',
-    rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    rejectLabel: t('publication.common.cancel'),
+    acceptLabel: t('publication.common.delete'),
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await userGalleryStore.deleteImage(image.id)
         toast.add({
           severity: 'success',
-          summary: 'Succes',
-          detail: 'Image supprimee',
+          summary: t('publication.common.success'),
+          detail: t('publication.gallery.editor.image_deleted'),
           life: 3000
         })
       } catch {
         toast.add({
           severity: 'error',
-          summary: 'Erreur',
-          detail: "Impossible de supprimer l'image",
+          summary: t('publication.common.error'),
+          detail: t('publication.gallery.editor.image_delete_failed'),
           life: 3000
         })
       }
@@ -373,8 +375,8 @@ async function saveSettings() {
   if (!editTitle.value.trim()) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: 'Le titre est requis',
+      summary: t('publication.common.error'),
+      detail: t('publication.gallery.editor.title_required'),
       life: 3000
     })
     return
@@ -394,15 +396,15 @@ async function saveSettings() {
     closeSettingsModal()
     toast.add({
       severity: 'success',
-      summary: 'Succes',
-      detail: 'Parametres enregistres',
+      summary: t('publication.common.success'),
+      detail: t('publication.gallery.editor.settings_saved'),
       life: 3000
     })
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible d'enregistrer les parametres",
+      summary: t('publication.common.error'),
+      detail: t('publication.gallery.editor.settings_save_failed'),
       life: 3000
     })
   } finally {

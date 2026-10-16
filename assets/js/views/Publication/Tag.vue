@@ -14,7 +14,7 @@
     </div>
 
     <div v-else-if="publications.length === 0" class="text-surface-500 dark:text-surface-400 text-center py-12">
-      Aucune publication ne porte ce tag pour le moment.
+      {{ t('publication.tag.empty') }}
     </div>
 
     <div v-else class="flex flex-col gap-4">
@@ -42,11 +42,13 @@
 <script setup>
 import { useIntersectionObserver, useTitle } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import publicationsApi from '../../api/publication/publications.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import PublicationListItem from './PublicationListItem.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 
 const slug = computed(() => route.params.slug)
@@ -65,11 +67,11 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
 })
 
 const breadcrumbItems = computed(() => [
-  { label: 'Publications', to: { name: 'app_publications' } },
+  { label: t('publication.common.publications'), to: { name: 'app_publications' } },
   { label: `#${slug.value}` }
 ])
 
-useTitle(computed(() => `#${slug.value} - MusicAll`))
+useTitle(computed(() => t('publication.tag.page_title', { tag: slug.value })))
 
 async function loadPage(page) {
   isLoading.value = true

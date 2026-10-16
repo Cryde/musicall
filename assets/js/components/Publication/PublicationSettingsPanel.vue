@@ -1,23 +1,23 @@
 <template>
   <aside class="flex flex-col gap-5 bg-surface-0 dark:bg-surface-800 rounded-md p-4 border border-surface-200 dark:border-surface-700 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
     <h2 class="text-sm font-semibold uppercase tracking-wide text-surface-700 dark:text-surface-200">
-      Paramètres
+      {{ t('publication.editor.settings.title') }}
     </h2>
 
     <div class="grid grid-cols-2 gap-3 text-center bg-surface-50 dark:bg-surface-700/50 rounded-md py-3">
       <div class="flex flex-col">
         <span class="text-lg font-semibold text-surface-900 dark:text-surface-0 tabular-nums">{{ wordCount }}</span>
-        <span class="text-xs text-surface-500 dark:text-surface-400">{{ wordCount === 1 ? 'mot' : 'mots' }}</span>
+        <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('publication.editor.settings.words', wordCount) }}</span>
       </div>
       <div class="flex flex-col">
         <span class="text-lg font-semibold text-surface-900 dark:text-surface-0 tabular-nums">{{ readingTime }}</span>
-        <span class="text-xs text-surface-500 dark:text-surface-400">{{ readingTime <= 1 ? 'min de lecture' : 'min de lecture' }}</span>
+        <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('publication.editor.settings.reading_time') }}</span>
       </div>
     </div>
 
     <div class="flex flex-col gap-2">
       <label for="panel-category" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-        Catégorie
+        {{ t('publication.common.category') }}
       </label>
       <Select
         id="panel-category"
@@ -25,7 +25,7 @@
         :options="publicationsStore.publicationCategories"
         optionLabel="title"
         optionValue="id"
-        placeholder="Choisir une catégorie"
+        :placeholder="t('publication.common.category_placeholder')"
         class="w-full"
         :disabled="disabled"
       />
@@ -33,12 +33,12 @@
 
     <div class="flex flex-col gap-2">
       <label for="panel-description" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-        Description courte
+        {{ t('publication.editor.settings.description') }}
       </label>
       <Textarea
         id="panel-description"
         v-model="shortDescription"
-        placeholder="Cette description apparaîtra sur la page d'accueil"
+        :placeholder="t('publication.editor.settings.description_placeholder')"
         rows="3"
         class="w-full"
         :disabled="disabled"
@@ -47,7 +47,7 @@
 
     <div class="flex flex-col gap-2">
       <label for="panel-tags" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-        Tags
+        {{ t('publication.editor.settings.tags') }}
       </label>
       <AutoComplete
         id="panel-tags"
@@ -56,29 +56,29 @@
         multiple
         fluid
         :disabled="disabled"
-        placeholder="Ajoutez des tags"
+        :placeholder="t('publication.editor.settings.tags_placeholder')"
         @complete="handleTagSearch"
         @keydown.enter.prevent="handleTagEnter"
       />
       <small class="text-surface-500 text-xs">
-        Genre, format, thème. Entrée pour valider.
+        {{ t('publication.editor.settings.tags_help') }}
       </small>
     </div>
 
     <div class="flex flex-col gap-2">
       <label class="text-sm font-medium text-surface-700 dark:text-surface-200">
-        Image de couverture
+        {{ t('publication.editor.settings.cover') }}
       </label>
 
       <div v-if="coverUrl" class="relative inline-block">
         <img
           :src="coverUrl"
-          alt="Image de couverture"
+          :alt="t('publication.editor.settings.cover')"
           class="w-full rounded-lg border border-surface-200 dark:border-surface-700"
         />
         <Button
           icon="pi pi-times"
-          aria-label="Retirer la couverture"
+          :aria-label="t('publication.editor.settings.remove_cover')"
           severity="danger"
           size="small"
           rounded
@@ -91,7 +91,7 @@
       <div v-else class="p-4 border-2 border-dashed border-surface-300 dark:border-surface-600 rounded-lg text-center">
         <i class="pi pi-image text-2xl text-surface-400 mb-1" />
         <p class="text-surface-500 dark:text-surface-400 text-xs">
-          Aucune image de couverture
+          {{ t('publication.editor.settings.no_cover') }}
         </p>
       </div>
 
@@ -100,7 +100,7 @@
         mode="basic"
         accept="image/*"
         :maxFileSize="4000000"
-        :chooseLabel="coverUrl ? 'Remplacer' : 'Choisir une image'"
+        :chooseLabel="coverUrl ? t('publication.editor.settings.replace_cover') : t('publication.editor.settings.choose_cover')"
         :auto="true"
         :disabled="disabled || publicationEditStore.isUploading"
         customUpload
@@ -115,7 +115,7 @@
       />
 
       <small class="text-surface-500 text-xs">
-        Max 4 Mo, 4000x4000 px
+        {{ t('publication.editor.settings.cover_limits') }}
       </small>
     </div>
   </aside>
@@ -130,6 +130,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import tagsApi from '../../api/publication/tags.js'
 import { usePublicationEditStore } from '../../store/publication/publicationEdit.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
@@ -144,6 +145,7 @@ const shortDescription = defineModel('shortDescription', { type: String, default
 const categoryId = defineModel('categoryId', { type: Number, default: null })
 const tags = defineModel('tags', { type: Array, default: () => [] })
 
+const { t } = useI18n()
 const publicationEditStore = usePublicationEditStore()
 const publicationsStore = usePublicationsStore()
 const toast = useToast()
@@ -194,8 +196,8 @@ async function handleCoverUpload(event) {
   if (!uri) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible d'envoyer l'image",
+      summary: t('publication.common.error'),
+      detail: t('publication.editor.settings.cover_upload_failed'),
       life: 3000
     })
   }
@@ -207,8 +209,8 @@ async function handleRemoveCover() {
   if (!success) {
     toast.add({
       severity: 'error',
-      summary: 'Erreur',
-      detail: "Impossible de supprimer l'image",
+      summary: t('publication.common.error'),
+      detail: t('publication.editor.settings.cover_remove_failed'),
       life: 3000
     })
   }

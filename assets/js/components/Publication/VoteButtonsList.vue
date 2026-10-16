@@ -7,7 +7,7 @@
       size="small"
       :severity="localUserVote === 1 ? 'success' : 'secondary'"
       :loading="isVoting"
-      aria-label="J'aime"
+      :aria-label="t('publication.common.like')"
       @click.prevent.stop="handleVote(1)"
     />
     <span class="text-sm font-semibold text-center">{{ score }}</span>
@@ -18,7 +18,7 @@
       size="small"
       :severity="localUserVote === -1 ? 'danger' : 'secondary'"
       :loading="isVoting"
-      aria-label="Je n'aime pas"
+      :aria-label="t('publication.common.dislike')"
       @click.prevent.stop="handleVote(-1)"
     />
   </div>
@@ -27,6 +27,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import publicationApi from '../../api/publication/publication.js'
 
 const props = defineProps({
@@ -35,6 +36,8 @@ const props = defineProps({
   downvotes: { type: Number, default: 0 },
   userVote: { type: Number, default: null }
 })
+
+const { t } = useI18n()
 
 const localUpvotes = ref(props.upvotes)
 const localDownvotes = ref(props.downvotes)

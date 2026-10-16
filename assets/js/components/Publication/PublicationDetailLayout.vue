@@ -18,28 +18,29 @@
         </h1>
 
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
-          <span>
-            Par
-            <UserName
-              v-if="!publication.author.deletion_datetime"
-              :username="publication.author.username"
-              :display-name="authorName"
-              :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
-              class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-            />
-            <span v-else class="font-semibold text-surface-600 dark:text-surface-300">{{ authorName }}</span>
-          </span>
+          <i18n-t keypath="publication.show.author" tag="span">
+            <template #author>
+              <UserName
+                v-if="!publication.author.deletion_datetime"
+                :username="publication.author.username"
+                :display-name="authorName"
+                :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
+                class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+              />
+              <span v-else class="font-semibold text-surface-600 dark:text-surface-300">{{ authorName }}</span>
+            </template>
+          </i18n-t>
           <span class="flex items-center gap-1">
             <i class="pi pi-calendar text-xs" />
             {{ relativeDate(publication.publication_datetime) }}
           </span>
           <span v-if="publication.reading_time > 0" class="flex items-center gap-1">
             <i class="pi pi-book text-xs" />
-            {{ publication.reading_time }} min de lecture
+            {{ t('publication.show.reading_time', { minutes: publication.reading_time }) }}
           </span>
           <span class="flex items-center gap-1">
             <i class="pi pi-eye text-xs" />
-            {{ publication.view_count }} vues
+            {{ t('publication.show.views', { count: publication.view_count }) }}
           </span>
           <div class="ml-auto flex items-center gap-1">
             <VoteButtons :slug="publication.slug" />
@@ -48,7 +49,7 @@
               target-type="publication"
               :target-id="String(publication.id)"
               :author-username="publication.author.username"
-              aria-label="Signaler cette publication"
+              :aria-label="t('publication.show.report')"
               icon-only
             />
           </div>
@@ -82,7 +83,7 @@
           :key="tag.slug"
           :to="{ name: 'app_publication_tag', params: { slug: tag.slug } }"
           class="inline-flex transition-opacity hover:opacity-75"
-          :aria-label="`Voir les publications avec le tag ${tag.label}`"
+          :aria-label="t('publication.common.tag_link', { tag: tag.label })"
         >
           <Tag :value="`#${tag.label}`" severity="secondary" />
         </router-link>
@@ -141,9 +142,9 @@
         :exclude-id="publication.id ?? null"
         :count="6"
         :sub-category-type="latestSubCategoryType"
-        :title="latestTitle"
+        :title="latestTitle ?? t('publication.sidebar.latest_title')"
         :icon="latestIcon"
-        :empty-message="latestEmptyMessage"
+        :empty-message="latestEmptyMessage ?? t('publication.sidebar.latest_empty')"
       />
       <PopularTagsWidget :count="8" />
     </aside>
@@ -153,6 +154,7 @@
 <script setup>
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import Breadcrumb from '../../views/Global/Breadcrumb.vue'
@@ -172,11 +174,13 @@ const props = defineProps({
   relatedSectionTitle: { type: String, required: true },
   shareUrl: { type: String, required: true },
   shareTitle: { type: String, required: true },
-  latestTitle: { type: String, default: 'Dernières publications' },
+  latestTitle: { type: String, default: null },
   latestIcon: { type: String, default: 'pi-clock' },
   latestSubCategoryType: { type: Number, default: null },
-  latestEmptyMessage: { type: String, default: 'Aucune publication récente.' }
+  latestEmptyMessage: { type: String, default: null }
 })
+
+const { t } = useI18n()
 
 const authorName = computed(() => displayName(props.publication.author))
 </script>

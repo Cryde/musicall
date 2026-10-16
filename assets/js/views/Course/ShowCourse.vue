@@ -5,13 +5,13 @@
     :related-publications="relatedPublications"
     :breadcrumb-items="breadCrumbs"
     category-route-name="app_course_by_category"
-    related-section-title="Cours similaires"
+    :related-section-title="t('publication.course.show.related_title')"
     :share-url="shareUrl"
     :share-title="shareTitle"
-    latest-title="Derniers cours"
+    :latest-title="t('publication.course.show.latest_title')"
     latest-icon="pi-graduation-cap"
     :latest-sub-category-type="2"
-    latest-empty-message="Aucun cours récent."
+    :latest-empty-message="t('publication.course.show.latest_empty')"
   />
 </template>
 
@@ -20,17 +20,23 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import PublicationDetailLayout from '../../components/Publication/PublicationDetailLayout.vue'
 import { usePublicationStore } from '../../store/publication/publication.js'
 
+const { t } = useI18n()
 const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication, relatedPublications } = storeToRefs(publicationStore)
 
-useTitle(() =>
-  publication.value ? `${publication.value.title} - Cours - MusicAll` : 'Cours - MusicAll'
+const pageTitle = computed(() =>
+  publication.value
+    ? t('publication.course.show.page_title', { title: publication.value.title })
+    : t('publication.course.show.page_title_empty')
 )
+
+useTitle(pageTitle)
 
 async function loadData(slug) {
   await publicationStore.loadPublication(slug)
@@ -52,7 +58,7 @@ watch(
 )
 
 const breadCrumbs = computed(() => [
-  { label: 'Cours', to: { name: 'app_course' } },
+  { label: t('publication.course.list.heading'), to: { name: 'app_course' } },
   {
     label: publication.value.category.title,
     to: { name: 'app_course_by_category', params: { slug: publication.value.category.slug } }
@@ -61,7 +67,5 @@ const breadCrumbs = computed(() => [
 ])
 
 const shareUrl = computed(() => window.location.href)
-const shareTitle = computed(() =>
-  publication.value ? `${publication.value.title} - Cours - MusicAll` : 'Cours - MusicAll'
-)
+const shareTitle = pageTitle
 </script>

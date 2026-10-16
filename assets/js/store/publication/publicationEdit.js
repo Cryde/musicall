@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import publicationApi from '../../api/user/publication.js'
+import { i18n } from '../../i18n/index.js'
 
 export const usePublicationEditStore = defineStore('publicationEdit', () => {
   const publication = ref(null)
@@ -170,7 +171,7 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
     if (error.response?.data?.message) {
       return [error.response.data.message]
     }
-    return ['Une erreur est survenue']
+    return [i18n.global.t('publication.editor.error_generic')]
   }
 
   return {
