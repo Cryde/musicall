@@ -2,6 +2,7 @@ import { identifyUmamiSession } from '@jaseeey/vue-umami-plugin'
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
+import { i18n } from '../../i18n/index.js'
 import router from '../../router/index.js'
 import { isSafeReturnUrl } from '../../utils/returnUrl.js'
 import { grantsAdmin, grantsTester } from '../../utils/roles.js'
@@ -60,7 +61,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
         }
         loginErrors.value = [
           data.message === 'account_suspended'
-            ? 'Votre compte a été suspendu par la modération.'
+            ? i18n.global.t('auth.session.account_suspended')
             : data.message
         ]
       }
@@ -105,7 +106,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
           return checkAuthInfo(retryCount + 1)
         } catch (e) {
           console.warn('Token refresh failed:', e.message)
-          handleAuthFailure('Votre session a expiré. Veuillez vous reconnecter.')
+          handleAuthFailure(i18n.global.t('auth.session.expired'))
         }
       }
 
@@ -149,7 +150,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
    * guard and the member never reaches the login form.
    */
   function expireSession() {
-    handleAuthFailure('Votre session a expiré. Veuillez vous reconnecter.')
+    handleAuthFailure(i18n.global.t('auth.session.expired'))
     setUnauthenticated()
   }
 

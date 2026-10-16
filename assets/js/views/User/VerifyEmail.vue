@@ -8,13 +8,13 @@
             <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Email vérifié !
+            {{ t('auth.otp.verified_title') }}
           </h1>
           <p class="text-surface-600 dark:text-surface-300">
-            Votre adresse email a été vérifiée avec succès. Vous pouvez maintenant vous connecter.
+            {{ t('auth.otp.verified_text') }}
           </p>
           <Button
-            label="Se connecter"
+            :label="t('common.login')"
             class="mt-4"
             @click="goToLogin"
           />
@@ -28,12 +28,11 @@
             <i class="pi pi-envelope text-4xl text-blue-600 dark:text-blue-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Vérifiez votre email
+            {{ t('auth.otp.check_email_title') }}
           </h1>
-          <p class="text-surface-600 dark:text-surface-300">
-            Un code à 6 chiffres a été envoyé à <strong>{{ email }}</strong>.
-            Saisissez-le ci-dessous pour vérifier votre adresse email.
-          </p>
+          <i18n-t keypath="auth.otp.code_sent" tag="p" class="text-surface-600 dark:text-surface-300">
+            <template #email><strong>{{ email }}</strong></template>
+          </i18n-t>
 
           <Message v-if="otpError" severity="error" :closable="false" class="w-full text-left">
             {{ otpError }}
@@ -47,13 +46,13 @@
           />
 
           <p v-if="expiryCountdown > 0" class="text-sm text-surface-500 dark:text-surface-400">
-            Le code expire dans {{ formattedExpiry }}
+            {{ t('auth.otp.expires_in', { time: formattedExpiry }) }}
           </p>
 
           <div class="flex flex-col items-center gap-2">
             <Button
               v-if="resendCountdown <= 0"
-              label="Renvoyer le code"
+              :label="t('auth.otp.resend')"
               severity="secondary"
               text
               :loading="isResending"
@@ -61,7 +60,7 @@
               @click="handleResendCode"
             />
             <p v-else class="text-sm text-surface-500 dark:text-surface-400">
-              Renvoyer le code dans {{ resendCountdown }}s
+              {{ t('auth.otp.resend_in', { seconds: resendCountdown }) }}
             </p>
           </div>
         </div>
@@ -75,11 +74,14 @@ import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import emailVerificationApi from '../../api/user/emailVerification.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
 
-useTitle('Vérifier votre email - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('auth.otp.page_title')))
 
 const route = useRoute()
 const router = useRouter()
@@ -103,11 +105,11 @@ const formattedExpiry = computed(() => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 })
 
-const OTP_ERROR_MESSAGES = {
-  invalid_code: 'Le code saisi est incorrect.',
-  max_attempts_reached: 'Nombre maximum de tentatives atteint. Veuillez renvoyer un nouveau code.',
-  code_expired: 'Le code a expiré. Veuillez en demander un nouveau.',
-  no_code_found: 'Aucun code en attente. Veuillez en demander un nouveau.'
+const OTP_ERROR_KEYS = {
+  invalid_code: 'auth.otp.error.invalid_code',
+  max_attempts_reached: 'auth.otp.error.max_attempts_reached',
+  code_expired: 'auth.otp.error.code_expired',
+  no_code_found: 'auth.otp.error.no_code_found'
 }
 
 function startCountdowns() {
@@ -171,7 +173,8 @@ async function handleOtpComplete(code) {
     isEmailVerified.value = true
     clearCountdowns()
   } catch (error) {
-    otpError.value = OTP_ERROR_MESSAGES[error.message] || 'Une erreur est survenue.'
+    const errorKey = OTP_ERROR_KEYS[error.message]
+    otpError.value = errorKey ? t(errorKey) : t('auth.common.generic_error')
     otpInputRef.value?.clear()
   } finally {
     isVerifying.value = false
@@ -188,7 +191,7 @@ async function handleResendCode() {
     startCountdowns()
     otpInputRef.value?.clear()
   } catch (error) {
-    otpError.value = error.message || 'Impossible de renvoyer le code.'
+    otpError.value = error.message || t('auth.otp.resend_failed')
   } finally {
     isResending.value = false
   }

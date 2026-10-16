@@ -14,6 +14,7 @@ const MIGRATED_PATHS = [
   'components/AppBaseLayout.vue',
   'components/AppNavbarUserCluster.vue',
   'components/Auth/AuthRequiredModal.vue',
+  'components/Auth/OtpInput.vue',
   'components/Auth/SignupOptions.vue',
   'components/BandSpace/Agenda/',
   'components/BandSpace/BandSidebar.vue',
@@ -70,10 +71,15 @@ const MIGRATED_PATHS = [
   'views/Search/',
   'views/User/Announce/',
   'views/User/Course/',
+  'views/User/ForgotPassword.vue',
   'views/User/Gallery/',
+  'views/User/Login.vue',
   'views/User/Profile/',
   'views/User/Publication/',
-  'views/User/Settings/'
+  'views/User/Register.vue',
+  'views/User/ResetPassword.vue',
+  'views/User/Settings/',
+  'views/User/VerifyEmail.vue'
 ]
 
 // The footer wordmark is a logo spelled out in two spans, not text to translate.

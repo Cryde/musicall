@@ -8,13 +8,13 @@
             <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Email vérifié !
+            {{ t('auth.otp.verified_title') }}
           </h1>
           <p class="text-surface-600 dark:text-surface-300">
-            Votre adresse email a été vérifiée avec succès. Vous pouvez maintenant vous connecter.
+            {{ t('auth.otp.verified_text') }}
           </p>
           <Button
-            label="Se connecter"
+            :label="t('common.login')"
             class="mt-4"
             @click="goToLogin"
           />
@@ -28,12 +28,11 @@
             <i class="pi pi-envelope text-4xl text-blue-600 dark:text-blue-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Vérifiez votre email
+            {{ t('auth.otp.check_email_title') }}
           </h1>
-          <p class="text-surface-600 dark:text-surface-300">
-            Un code à 6 chiffres a été envoyé à <strong>{{ registeredEmail }}</strong>.
-            Saisissez-le ci-dessous pour vérifier votre adresse email.
-          </p>
+          <i18n-t keypath="auth.otp.code_sent" tag="p" class="text-surface-600 dark:text-surface-300">
+            <template #email><strong>{{ registeredEmail }}</strong></template>
+          </i18n-t>
 
           <Message v-if="otpError" severity="error" :closable="false" class="w-full text-left">
             {{ otpError }}
@@ -47,13 +46,13 @@
           />
 
           <p v-if="expiryCountdown > 0" class="text-sm text-surface-500 dark:text-surface-400">
-            Le code expire dans {{ formattedExpiry }}
+            {{ t('auth.otp.expires_in', { time: formattedExpiry }) }}
           </p>
 
           <div class="flex flex-col items-center gap-2">
             <Button
               v-if="resendCountdown <= 0"
-              label="Renvoyer le code"
+              :label="t('auth.otp.resend')"
               severity="secondary"
               text
               :loading="isResending"
@@ -61,7 +60,7 @@
               @click="handleResendCode"
             />
             <p v-else class="text-sm text-surface-500 dark:text-surface-400">
-              Renvoyer le code dans {{ resendCountdown }}s
+              {{ t('auth.otp.resend_in', { seconds: resendCountdown }) }}
             </p>
           </div>
         </div>
@@ -71,15 +70,17 @@
       <template v-else>
         <div class="flex flex-col items-center gap-6 w-full">
           <h1 class="text-center text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight w-full">
-            Créer un compte
+            {{ t('auth.register.title') }}
           </h1>
           <p class="text-center text-surface-500 dark:text-surface-400">
-            Rejoignez la communauté MusicAll gratuitement
+            {{ t('auth.register.subtitle') }}
           </p>
         </div>
 
         <Message v-if="invitationBandSpaceName" severity="info" :closable="false" class="w-full">
-          Vous avez été invité à rejoindre <strong>{{ invitationBandSpaceName }}</strong>. Créez votre compte pour accepter l'invitation.
+          <i18n-t keypath="auth.register.invitation">
+            <template #band_space><strong>{{ invitationBandSpaceName }}</strong></template>
+          </i18n-t>
         </Message>
 
         <Message v-if="globalError" severity="error" :closable="false" class="w-full">
@@ -98,14 +99,14 @@
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            <span class="text-surface-700 dark:text-surface-200 font-medium">S'inscrire avec Google</span>
+            <span class="text-surface-700 dark:text-surface-200 font-medium">{{ t('auth.register.google') }}</span>
           </a>
         </div>
 
         <!-- Separator -->
         <div class="flex items-center gap-4 w-full">
           <Divider class="flex-1" />
-          <span class="text-surface-500 dark:text-surface-400 text-sm">ou</span>
+          <span class="text-surface-500 dark:text-surface-400 text-sm">{{ t('auth.common.or') }}</span>
           <Divider class="flex-1" />
         </div>
 
@@ -113,12 +114,12 @@
           <!-- Username -->
           <div class="flex flex-col gap-2">
             <label for="username" class="text-surface-900 dark:text-surface-0 font-medium">
-              Nom d'utilisateur
+              {{ t('auth.register.username') }}
             </label>
             <InputText
               id="username"
               v-model="form.username"
-              placeholder="Votre nom d'utilisateur"
+              :placeholder="t('auth.register.username_placeholder')"
               :invalid="!!errors.username"
               :aria-describedby="errors.username ? 'username-error' : undefined"
               class="p-3 shadow-sm dark:bg-surface-900!"
@@ -126,20 +127,20 @@
             />
             <small v-if="errors.username" id="username-error" role="alert" class="text-red-500">{{ errors.username }}</small>
             <small v-else class="text-surface-500 dark:text-surface-400">
-              3 à 40 caractères, lettres, chiffres, points et underscores uniquement
+              {{ t('auth.register.username_hint') }}
             </small>
           </div>
 
           <!-- Email -->
           <div class="flex flex-col gap-2">
             <label for="email" class="text-surface-900 dark:text-surface-0 font-medium">
-              Adresse email
+              {{ t('auth.register.email') }}
             </label>
             <InputText
               id="email"
               v-model="form.email"
               type="email"
-              placeholder="votre@email.com"
+              :placeholder="t('auth.register.email_placeholder', { at: '@' })"
               :invalid="!!errors.email"
               :aria-describedby="errors.email ? 'register-email-error' : undefined"
               class="p-3 shadow-sm dark:bg-surface-900!"
@@ -151,36 +152,36 @@
           <!-- Password -->
           <div class="flex flex-col gap-2">
             <label for="password" class="text-surface-900 dark:text-surface-0 font-medium">
-              Mot de passe
+              {{ t('auth.common.password') }}
             </label>
             <Password
               id="password"
               v-model="form.password"
-              placeholder="Votre mot de passe"
+              :placeholder="t('auth.register.password_placeholder')"
               :toggleMask="true"
               :invalid="!!errors.password"
               :aria-describedby="errors.password ? 'register-password-error' : undefined"
               :pt="{ pcInputText: { root: { 'aria-expanded': undefined, 'aria-haspopup': undefined } } }"
               inputClass="w-full! p-3! shadow-sm dark:bg-surface-900!"
-              :promptLabel="'Choisissez un mot de passe'"
-              :weakLabel="'Faible'"
-              :mediumLabel="'Moyen'"
-              :strongLabel="'Fort'"
+              :promptLabel="t('auth.common.password_prompt')"
+              :weakLabel="t('auth.common.password_weak')"
+              :mediumLabel="t('auth.common.password_medium')"
+              :strongLabel="t('auth.common.password_strong')"
               @blur="validatePassword"
             />
             <small v-if="errors.password" id="register-password-error" role="alert" class="text-red-500">{{ errors.password }}</small>
-            <small v-else class="text-surface-500 dark:text-surface-400">Minimum 6 caractères</small>
+            <small v-else class="text-surface-500 dark:text-surface-400">{{ t('auth.common.password_hint') }}</small>
           </div>
 
           <!-- Confirm Password -->
           <div class="flex flex-col gap-2">
             <label for="confirmPassword" class="text-surface-900 dark:text-surface-0 font-medium">
-              Confirmer le mot de passe
+              {{ t('auth.common.confirm_password') }}
             </label>
             <Password
               id="confirmPassword"
               v-model="form.confirmPassword"
-              placeholder="Confirmez votre mot de passe"
+              :placeholder="t('auth.common.confirm_password_placeholder')"
               :toggleMask="true"
               :feedback="false"
               :invalid="!!errors.confirmPassword"
@@ -201,19 +202,26 @@
               :invalid="!!errors.acceptTerms"
               :aria-describedby="errors.acceptTerms ? 'acceptTerms-error' : undefined"
             />
-            <label for="acceptTerms" class="text-surface-700 dark:text-surface-300 text-sm cursor-pointer">
-              J'accepte les
-              <RouterLink :to="{ name: 'app_terms' }" class="text-primary hover:text-primary-emphasis" target="_blank">conditions d'utilisation</RouterLink>
-              et la
-              <RouterLink :to="{ name: 'app_privacy' }" class="text-primary hover:text-primary-emphasis" target="_blank">politique de confidentialité</RouterLink>
-            </label>
+            <i18n-t
+              keypath="auth.register.accept_terms"
+              tag="label"
+              for="acceptTerms"
+              class="text-surface-700 dark:text-surface-300 text-sm cursor-pointer"
+            >
+              <template #terms>
+                <RouterLink :to="{ name: 'app_terms' }" class="text-primary hover:text-primary-emphasis" target="_blank">{{ t('auth.register.terms') }}</RouterLink>
+              </template>
+              <template #privacy>
+                <RouterLink :to="{ name: 'app_privacy' }" class="text-primary hover:text-primary-emphasis" target="_blank">{{ t('auth.register.privacy') }}</RouterLink>
+              </template>
+            </i18n-t>
           </div>
           <small v-if="errors.acceptTerms" id="acceptTerms-error" role="alert" class="text-red-500 -mt-4">{{ errors.acceptTerms }}</small>
 
           <!-- Submit Button -->
           <Button
             type="submit"
-            label="Créer mon compte"
+            :label="t('auth.register.submit')"
             class="w-full mt-2"
             :loading="isSubmitting"
             :disabled="isSubmitting"
@@ -221,12 +229,12 @@
 
           <!-- Login Link -->
           <div class="text-center w-full">
-            <span class="text-surface-900 dark:text-surface-0 font-medium">Vous avez déjà un compte ?</span>
+            <span class="text-surface-900 dark:text-surface-0 font-medium">{{ t('auth.register.has_account') }}</span>
             <RouterLink
               :to="{ name: 'app_login', query: returnUrl ? { return_url: returnUrl } : {} }"
               class="ml-3 text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
-              Connectez-vous ici
+              {{ t('auth.register.login_here') }}
             </RouterLink>
           </div>
         </form>
@@ -245,13 +253,16 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import emailVerificationApi from '../../api/user/emailVerification.js'
 import securityApi from '../../api/user/security.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
 
-useTitle('Créer un compte - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('auth.register.page_title')))
 
 const route = useRoute()
 const router = useRouter()
@@ -346,11 +357,11 @@ onBeforeUnmount(() => {
   clearCountdowns()
 })
 
-const OTP_ERROR_MESSAGES = {
-  invalid_code: 'Le code saisi est incorrect.',
-  max_attempts_reached: 'Nombre maximum de tentatives atteint. Veuillez renvoyer un nouveau code.',
-  code_expired: 'Le code a expiré. Veuillez en demander un nouveau.',
-  no_code_found: 'Aucun code en attente. Veuillez en demander un nouveau.'
+const OTP_ERROR_KEYS = {
+  invalid_code: 'auth.otp.error.invalid_code',
+  max_attempts_reached: 'auth.otp.error.max_attempts_reached',
+  code_expired: 'auth.otp.error.code_expired',
+  no_code_found: 'auth.otp.error.no_code_found'
 }
 
 async function handleOtpComplete(code) {
@@ -362,7 +373,8 @@ async function handleOtpComplete(code) {
     isEmailVerified.value = true
     clearCountdowns()
   } catch (error) {
-    otpError.value = OTP_ERROR_MESSAGES[error.message] || 'Une erreur est survenue.'
+    const errorKey = OTP_ERROR_KEYS[error.message]
+    otpError.value = errorKey ? t(errorKey) : t('auth.common.generic_error')
     otpInputRef.value?.clear()
   } finally {
     isVerifying.value = false
@@ -379,7 +391,7 @@ async function handleResendCode() {
     expiryCountdown.value = 15 * 60
     otpInputRef.value?.clear()
   } catch (error) {
-    otpError.value = error.message || 'Impossible de renvoyer le code.'
+    otpError.value = error.message || t('auth.otp.resend_failed')
   } finally {
     isResending.value = false
   }
@@ -389,22 +401,22 @@ function validateUsername() {
   errors.username = ''
 
   if (!form.username.trim()) {
-    errors.username = "Veuillez saisir un nom d'utilisateur"
+    errors.username = t('auth.register.error.username_required')
     return false
   }
 
   if (form.username.length < 3) {
-    errors.username = "Le nom d'utilisateur doit au moins contenir 3 caractères"
+    errors.username = t('auth.register.error.username_too_short')
     return false
   }
 
   if (form.username.length > 40) {
-    errors.username = "Le nom d'utilisateur doit contenir maximum 40 caractères"
+    errors.username = t('auth.register.error.username_too_long')
     return false
   }
 
   if (!/^[a-zA-Z0-9._]+$/.test(form.username)) {
-    errors.username = 'Seuls les lettres, chiffres, points et underscores sont autorisés'
+    errors.username = t('auth.register.error.username_invalid')
     return false
   }
 
@@ -415,12 +427,12 @@ function validateEmail() {
   errors.email = ''
 
   if (!form.email.trim()) {
-    errors.email = 'Veuillez saisir un email'
+    errors.email = t('auth.register.error.email_required')
     return false
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Email invalide'
+    errors.email = t('auth.register.error.email_invalid')
     return false
   }
 
@@ -431,12 +443,12 @@ function validatePassword() {
   errors.password = ''
 
   if (!form.password) {
-    errors.password = 'Veuillez saisir un mot de passe'
+    errors.password = t('auth.common.password_required')
     return false
   }
 
   if (form.password.length < 6) {
-    errors.password = 'Le mot de passe doit au moins contenir 6 caractères'
+    errors.password = t('auth.register.error.password_too_short')
     return false
   }
 
@@ -447,12 +459,12 @@ function validateConfirmPassword() {
   errors.confirmPassword = ''
 
   if (!form.confirmPassword) {
-    errors.confirmPassword = 'Veuillez confirmer votre mot de passe'
+    errors.confirmPassword = t('auth.common.confirm_password_required')
     return false
   }
 
   if (form.password !== form.confirmPassword) {
-    errors.confirmPassword = 'Les mots de passe ne correspondent pas'
+    errors.confirmPassword = t('auth.common.passwords_mismatch')
     return false
   }
 
@@ -463,7 +475,7 @@ function validateAcceptTerms() {
   errors.acceptTerms = ''
 
   if (!form.acceptTerms) {
-    errors.acceptTerms = "Vous devez accepter les conditions d'utilisation"
+    errors.acceptTerms = t('auth.register.error.terms_required')
     return false
   }
 

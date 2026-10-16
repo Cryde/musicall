@@ -8,24 +8,23 @@
             <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Email envoyé !
+            {{ t('auth.forgot_password.sent_title') }}
           </h1>
           <div class="flex flex-col gap-4 text-surface-600 dark:text-surface-300">
             <p>
-              Si un compte existe avec cette adresse, vous recevrez un email avec les instructions pour réinitialiser votre mot de passe.
+              {{ t('auth.forgot_password.sent_text') }}
             </p>
             <Message severity="info" :closable="false" class="text-left">
               <div class="flex flex-col gap-2">
-                <span class="font-semibold">Vérifiez votre boîte mail</span>
+                <span class="font-semibold">{{ t('auth.forgot_password.check_inbox') }}</span>
                 <span>
-                  Le lien de réinitialisation est valable pendant 24 heures.
-                  Si vous ne recevez pas l'email, vérifiez vos spams.
+                  {{ t('auth.forgot_password.link_validity') }}
                 </span>
               </div>
             </Message>
           </div>
           <Button
-            label="Retour à la connexion"
+            :label="t('auth.common.back_to_login')"
             class="mt-4"
             @click="goToLogin"
           />
@@ -39,10 +38,10 @@
             <i class="pi pi-lock text-3xl text-primary-600 dark:text-primary-400"></i>
           </div>
           <h1 class="text-center text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight w-full">
-            Mot de passe oublié ?
+            {{ t('auth.forgot_password.title') }}
           </h1>
           <p class="text-center text-surface-500 dark:text-surface-400">
-            Entrez votre email ou nom d'utilisateur et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+            {{ t('auth.forgot_password.subtitle') }}
           </p>
         </div>
 
@@ -53,14 +52,14 @@
         <form @submit.prevent="handleSubmit" class="flex flex-col gap-6 w-full">
           <div class="flex flex-col gap-2">
             <label for="login" class="text-surface-900 dark:text-surface-0 font-medium">
-              Email ou nom d'utilisateur
+              {{ t('auth.common.email_or_username') }}
             </label>
             <IconField>
               <InputIcon class="pi pi-user" />
               <InputText
                 id="login"
                 v-model="login"
-                placeholder="Email ou nom d'utilisateur"
+                :placeholder="t('auth.common.email_or_username')"
                 :invalid="!!errors.login"
                 class="p-3 shadow-sm dark:bg-surface-900! w-full"
                 autofocus
@@ -73,7 +72,7 @@
 
           <Button
             type="submit"
-            label="Envoyer le lien"
+            :label="t('auth.forgot_password.submit')"
             class="w-full"
             :loading="isSubmitting"
             :disabled="isSubmitting"
@@ -85,7 +84,7 @@
               class="text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
               <i class="pi pi-arrow-left mr-2"></i>
-              Retour à la connexion
+              {{ t('auth.common.back_to_login') }}
             </RouterLink>
           </div>
         </form>
@@ -101,11 +100,14 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
 
-useTitle('Mot de passe oublié - MusicAll')
+const { t } = useI18n()
+
+useTitle(computed(() => t('auth.forgot_password.page_title')))
 
 const router = useRouter()
 
@@ -121,7 +123,7 @@ const errors = reactive({
 function validateLogin() {
   errors.login = ''
   if (!login.value.trim()) {
-    errors.login = "Veuillez saisir votre email ou nom d'utilisateur"
+    errors.login = t('auth.common.email_or_username_required')
     return false
   }
   return true
@@ -145,7 +147,7 @@ async function handleSubmit() {
     isRequestSent.value = true
   } catch (error) {
     if (error.status === 429 || error.response?.status === 429) {
-      globalError.value = 'Trop de demandes effectuées. Veuillez réessayer plus tard.'
+      globalError.value = t('auth.forgot_password.too_many_requests')
     } else {
       // Always show success to prevent email enumeration
       isRequestSent.value = true
