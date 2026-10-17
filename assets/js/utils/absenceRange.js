@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { dateFnsLocale } from '../i18n/formatLocale.js'
+import { dateFnsLocale, rangeArrow } from '../i18n/formatLocale.js'
 import { toAgendaDate } from './agendaDate.js'
 
 /**
@@ -40,12 +40,12 @@ export function formatAbsenceRange(startDate, endDate) {
   const sameMonth = sameYear && start.getMonth() === end.getMonth()
 
   if (sameMonth) {
-    return `${format(start, 'd', options)} → ${format(end, 'd MMMM', options)}`
+    return `${format(start, 'd', options)} ${rangeArrow()} ${format(end, 'd MMMM', options)}`
   }
 
   const pattern = sameYear ? 'd MMMM' : 'd MMMM yyyy'
 
-  return `${format(start, pattern, options)} → ${format(end, pattern, options)}`
+  return `${format(start, pattern, options)} ${rangeArrow()} ${format(end, pattern, options)}`
 }
 
 /**

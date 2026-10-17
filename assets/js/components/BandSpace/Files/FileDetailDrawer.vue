@@ -98,20 +98,20 @@
               :picture-url="file.created_by.profile_picture_url"
               size="sm"
             />
-            <span><UserName v-if="file.created_by" :username="file.created_by.username" :display-name="file.created_by.display_name" :picture-url="file.created_by.profile_picture_url" /><template v-else>—</template></span>
+            <span><UserName v-if="file.created_by" :username="file.created_by.username" :display-name="file.created_by.display_name" :picture-url="file.created_by.profile_picture_url" /><template v-else>{{ noValue() }}</template></span>
           </div>
         </div>
         <div>
           <p class="text-xs text-surface-400 uppercase tracking-wide">
             {{ t('band_space_files.file_list.column.size') }}
           </p>
-          <p class="mt-1 tabular-nums">{{ formatSize(file.size) }}</p>
+          <p class="mt-1 tabular-nums">{{ formatBytes(file.size) }}</p>
         </div>
         <div>
           <p class="text-xs text-surface-400 uppercase tracking-wide">
             {{ t('band_space_files.detail.type') }}
           </p>
-          <p class="mt-1 truncate">{{ file.mime_type || '—' }}</p>
+          <p class="mt-1 truncate">{{ file.mime_type || noValue() }}</p>
         </div>
         <div>
           <p class="text-xs text-surface-400 uppercase tracking-wide">
@@ -252,12 +252,13 @@ import {
   fileSourceLabel,
   fileSourceRoute
 } from '../../../constants/fileSources.js'
-import { intlLocale } from '../../../i18n/formatLocale.js'
+import { intlLocale, noValue, treeIndent } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { rootDestinationRefusal } from '../../../utils/fileListing.js'
+import { formatBytes } from '../../../utils/formatBytes.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
@@ -333,7 +334,7 @@ const folderOptions = computed(() => {
   ]
   const walk = (nodes, depth) => {
     for (const node of nodes) {
-      out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
+      out.push({ label: treeIndent(depth) + node.name, value: node.id })
       if (Array.isArray(node.children) && node.children.length > 0) {
         walk(node.children, depth + 1)
       }
@@ -470,16 +471,8 @@ function iconForMime(mime) {
   return 'pi pi-file'
 }
 
-function formatSize(bytes) {
-  if (bytes === null || bytes === undefined) return '—'
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`
-}
-
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return noValue()
   const date = new Date(iso)
   return date.toLocaleDateString(intlLocale(), {
     day: '2-digit',

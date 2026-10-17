@@ -1,0 +1,283 @@
+{
+  "module_name": {
+    "dashboard": "Dashboard",
+    "agenda": "Calendar",
+    "chat": "Chat",
+    "notes": "Notes",
+    "files": "Files",
+    "tasks": "Tasks",
+    "finance": "Finances",
+    "setlist": "Setlists",
+    "rider": "Tech riders",
+    "parameters": "Settings",
+    "band_space": "Band Space"
+  },
+  "module_description": {
+    "agenda": "Every date brings together times, venue, availability and its setlist.",
+    "tasks": "Who books the rehearsal room, who chases the promoter, and where it all stands.",
+    "notes": "Lyrics, arrangements and rehearsal notes, all in one place.",
+    "setlists": "Running order, transitions and durations, ready to print or to follow on stage.",
+    "files": "Demos, sheet music, contracts and photos shared with the whole band.",
+    "finances": "Expenses, fees and everyone's share, worked out instead of argued over."
+  },
+  "settings": {
+    "section": {
+      "members": "Members",
+      "activity": "Activity log",
+      "shares": "Active shares",
+      "calendar": "Calendar sync",
+      "storage": "Storage",
+      "general": "General",
+      "danger": "Danger zone"
+    },
+    "coming_soon": "Coming soon: this feature is still in development!"
+  },
+  "search": {
+    "type": {
+      "song": "Songs"
+    },
+    "error": "Search failed",
+    "filter_by_type": "Filter by type",
+    "opened_by_me": "Opened by me",
+    "recents_listbox": "{label}, {heading}",
+    "min_length": "Type at least {min} characters to search.",
+    "no_result_for": "No results for \"{query}\"",
+    "recents_opened_first": "Last opened first",
+    "recents": "Recent"
+  },
+  "common": {
+    "error": "Error",
+    "cancel": "Cancel",
+    "system": "System"
+  },
+  "layout": {
+    "load_error": "An error occurred while loading.",
+    "retry": "Try again",
+    "deletion_banner": "This space will be permanently deleted on {date}. Editing is disabled, but you can still view and download your files. {link}",
+    "manage_deletion": "Manage deletion",
+    "navigation": "Navigation",
+    "my_account": "My account",
+    "account_settings": "Account settings",
+    "page_title_with_space": "{section} - {space} {separator} MusicAll",
+    "page_title": "{section} {separator} MusicAll",
+    "not_found_summary": "Band Space not found",
+    "not_found_detail": "This Band Space does not exist or you do not have access to it",
+    "load_spaces_error": "Could not load your Band Spaces"
+  },
+  "sidebar": {
+    "modules_aria": "Band Space modules",
+    "send_feedback": "Send feedback",
+    "feedback": "Feedback?",
+    "expand": "Expand the menu",
+    "collapse": "Collapse the menu",
+    "unread_aria": "{label} ({unread} unread)"
+  },
+  "selector": {
+    "placeholder": "Select your Band Space",
+    "create": "Create a Band Space"
+  },
+  "palette": {
+    "title": "Search the Band Space",
+    "placeholder": "Search this space...",
+    "results_label": "Search results",
+    "hint_open": "Open",
+    "hint_navigate": "Navigate",
+    "key_escape": "esc",
+    "hint_close": "Close",
+    "count_opened_first": "1 item, last opened first | {count} items, last opened first",
+    "count_recents": "1 recent item | {count} recent items",
+    "count_results": "No results | 1 result | {count} results"
+  },
+  "create_modal": {
+    "name_label": "Band Space name",
+    "name_placeholder": "e.g. My rock band",
+    "submit": "Create",
+    "name_required": "Please enter a name",
+    "created_summary": "Band Space created",
+    "created_detail": "\"{name}\" has been created"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "empty_default": "Nothing to show yet.",
+    "activity": {
+      "title": "Recent activity",
+      "empty": "No activity yet.",
+      "see_all": "See all",
+      "load_error": "Could not load recent activity."
+    },
+    "agenda": {
+      "title": "Coming up",
+      "empty": "Nothing planned in the next 7 days.",
+      "see_all": "See the calendar",
+      "load_error": "Could not load the calendar.",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    },
+    "finance": {
+      "title": "Finances - this month",
+      "see_all": "See the finances",
+      "balance": "Projected balance",
+      "income": "Income",
+      "expense": "Expenses",
+      "already_paid": "Including {amount} already paid.",
+      "load_error": "Finances unavailable."
+    },
+    "invitations": {
+      "title": "Pending invitations",
+      "empty": "No pending invitations.",
+      "manage": "Manage",
+      "pending_label": "pending invitations | pending invitation | pending invitations",
+      "load_error": "Invitations unavailable."
+    },
+    "storage": {
+      "title": "Storage",
+      "see_all": "See the files",
+      "used_aria": "Storage used",
+      "load_error": "Quota unavailable."
+    },
+    "tasks": {
+      "empty": "No tasks yet.",
+      "see_all": "See the board",
+      "todo": "To do",
+      "in_progress": "In progress",
+      "done": "Done",
+      "overdue": "{count} overdue",
+      "load_error": "Could not load the tasks."
+    }
+  },
+  "no_space": {
+    "title": "Welcome to Band Spaces",
+    "intro": "A Band Space is your band's shared workspace: calendar, tasks, notes, files and finances in one place, open to every invited member.",
+    "invitation_title": "Received an invitation?",
+    "invitation_hint": "Check your inbox and click the invitation link to join an existing Band Space."
+  },
+  "invitation": {
+    "title": "Invitation to join {name}",
+    "question": "Do you want to accept or decline this invitation?",
+    "decline": "Decline",
+    "accept": "Accept",
+    "declined_title": "Invitation declined",
+    "declined_text": "You have declined this invitation."
+  },
+  "general": {
+    "name_help": "This name appears in the menu, in notifications and on tech riders.",
+    "save": "Save",
+    "admin_only": "Only an admin can rename this space.",
+    "renamed": "Band Space renamed"
+  },
+  "danger": {
+    "scheduled_title": "Deletion scheduled",
+    "scheduled_text": "This space and all its content will be permanently deleted on {date}. Until then, members can still retrieve their files.",
+    "restore": "Restore",
+    "restored": "Deletion cancelled",
+    "delete_title": "Delete this Band Space",
+    "delete_text": "The space, its files, calendar, notes, tasks, setlists and finances will be deleted after {days} days, during which an admin can cancel the deletion.",
+    "delete": "Delete",
+    "admin_only": "Only an admin can delete this space. You can leave it from the \"Members\" section.",
+    "dialog_header": "Delete this Band Space?",
+    "dialog_intro": "You are about to schedule the deletion of {name}.",
+    "quoted_name": "\"{name}\"",
+    "dialog_grace": "The space stays accessible for {days} days, so everyone can retrieve their files.",
+    "dialog_members_notified": "The other members are notified immediately.",
+    "dialog_admin_can_cancel": "An admin can cancel until the deadline.",
+    "dialog_permanent": "After that, everything is permanently deleted and nothing can be recovered.",
+    "confirm_label": "To confirm, type {word} below.",
+    "confirmation_word": "Delete"
+  },
+  "member_profile": {
+    "header": "Stage name and instruments",
+    "stage_name": "Stage name",
+    "stage_name_help": "The name printed on documents sent to venues. Without a stage name, \"{username}\" is shown.",
+    "instruments": "Instruments",
+    "instruments_placeholder": "Choose one or more instruments",
+    "instruments_empty": "No instruments",
+    "instruments_not_found": "No instruments found",
+    "instruments_help": "{max} at most. They appear next to the name on the tech rider.",
+    "show_email": "Show my email address on tech riders",
+    "show_email_help": "It only appears on tech riders whose contacts show addresses, and anyone who receives the document can see it."
+  },
+  "shares": {
+    "empty": "No active share links for this Band Space.",
+    "file": "File",
+    "expires": "Expires on",
+    "access_count": "Accesses",
+    "last_access": "Last accessed",
+    "revoke_tooltip": "Revoke the link",
+    "revoke_aria": "Revoke the share link",
+    "revoke_message": "Revoke the share link for \"{name}\"?",
+    "revoke_header": "Confirm revocation",
+    "revoke": "Revoke",
+    "revoked": "Link revoked"
+  },
+  "activity_log": {
+    "all_modules": "All modules",
+    "all_authors": "All authors",
+    "from": "From...",
+    "to": "To...",
+    "reset": "Reset",
+    "loading": "Loading...",
+    "empty": "No activity matches these filters.",
+    "load_more": "Load more"
+  },
+  "calendar_sync": {
+    "intro": "Get the band's dates straight into Google Calendar, Apple Calendar or Outlook. The link is personal: it belongs to you and only covers this Band Space.",
+    "separate_calendar": "The band's calendar shows up as a {separate}, read only, with its own colour and its own checkbox to show or hide it.",
+    "separate_calendar_strong": "separate calendar",
+    "events_only": "Only {events} are published. Tasks, finances and absences stay in the app.",
+    "events_only_strong": "calendar events",
+    "google_refresh": "Google refreshes this type of calendar {frequency} and has no button to force an update, so a date added today may only show up on your phone tomorrow.",
+    "google_refresh_strong": "every 8 to 24 hours",
+    "your_link": "Your subscription link",
+    "link_aria": "Calendar subscription link",
+    "copied": "Copied",
+    "copy": "Copy",
+    "add_google": "Add to Google Calendar",
+    "add_apple_outlook": "Apple Calendar or Outlook",
+    "keep_link": "Keep this link safe: it cannot be shown again. Anyone who has it can read the band's dates, so do not post it anywhere.",
+    "created_at": "Created on",
+    "never": "Never",
+    "regenerate_link": "Regenerate the link",
+    "generate": "Generate my subscription link",
+    "load_error": "Could not load the sync status.",
+    "generate_error": "Could not generate the link.",
+    "regenerate_message": "A new link will be created and the old one will stop working immediately. Calendars already subscribed will no longer update.",
+    "regenerate": "Regenerate",
+    "revoke_message": "The link will stop working and calendars already subscribed will no longer update.",
+    "revoked_detail": "The calendar feed has been turned off.",
+    "revoke_error": "Could not revoke the link.",
+    "copy_failed": "Could not copy",
+    "copy_failed_detail": "Select the link and copy it manually."
+  },
+  "members": {
+    "invite_title": "Invite a member",
+    "invite_placeholder": "Email or username",
+    "invite": "Invite",
+    "expires_on": "Expires on {date}",
+    "cancel_invitation": "Cancel the invitation",
+    "you": "(you)",
+    "role_admin": "Admin",
+    "role_member": "Member",
+    "edit_profile_aria": "Edit the stage name and instruments of {name}",
+    "promote": "Make admin",
+    "demote": "Make member",
+    "kick": "Remove",
+    "leave_title": "Leave the Band Space",
+    "only_admin": "You must make another member an admin before you leave.",
+    "leave": "Leave",
+    "invite_sent": "Invitation sent to {target}",
+    "unknown_user": "a user",
+    "cancel_invitation_message": "Cancel the invitation sent to {target}?",
+    "cancel_invitation_header": "Confirm cancellation",
+    "no": "No",
+    "yes_cancel": "Yes, cancel",
+    "invitation_cancelled": "Invitation cancelled",
+    "promoted": "{username} is now an admin",
+    "demoted": "{username} is now a member",
+    "kick_message": "Are you sure you want to remove {username}?",
+    "kick_header": "Confirm removal",
+    "kicked": "{username} has been removed",
+    "leave_message": "Are you sure you want to leave this Band Space?",
+    "leave_header": "Confirm leaving",
+    "left": "You have left the Band Space"
+  }
+}

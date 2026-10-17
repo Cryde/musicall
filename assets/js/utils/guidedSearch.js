@@ -3,6 +3,7 @@
  * search. Its rules live here so they are tested without a browser.
  */
 
+import { separator } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 
 export const GUIDED_MODE = 'guided'
@@ -97,7 +98,7 @@ export function soughtLabel({ lookingForBand, instrument }) {
 /** « Bruxelles · 25 km », or the city alone when every distance is kept. */
 export function locationLabel(location, radius) {
   if (!location?.name) return null
-  return radius ? `${location.name} · ${radius} km` : location.name
+  return radius ? `${location.name} ${separator()} ${radius} km` : location.name
 }
 
 /**

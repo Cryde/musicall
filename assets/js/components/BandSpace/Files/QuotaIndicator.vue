@@ -90,6 +90,7 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { QUOTA_BREAKDOWN_SOURCES } from '../../../constants/fileSources.js'
+import { formatPercent, noValue } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
@@ -150,8 +151,8 @@ const percentageClass = computed(() => {
 })
 
 function formatPercentage(value) {
-  if (value === null || value === undefined) return '—'
-  return `${Math.round(value * 10) / 10} %`
+  if (value === null || value === undefined) return noValue()
+  return formatPercent(Math.round(value * 10) / 10)
 }
 
 onMounted(() => {

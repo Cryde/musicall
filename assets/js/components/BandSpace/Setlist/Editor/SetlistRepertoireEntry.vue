@@ -11,7 +11,7 @@
     <i v-if="song.has_lyrics" class="pi pi-align-left text-xs text-primary" aria-hidden="true" />
     <span v-if="inSet" class="text-xs tabular-nums">#{{ positions.join(', #') }}</span>
     <span v-else class="w-10 text-right text-xs tabular-nums text-surface-600 dark:text-surface-300">
-      {{ formatDuration(song.reference_duration) || '—' }}
+      {{ formatDuration(song.reference_duration) || noValue() }}
     </span>
     <span
       v-if="!readonly"
@@ -26,6 +26,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { noValue } from '../../../../i18n/formatLocale.js'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
 
 const props = defineProps({

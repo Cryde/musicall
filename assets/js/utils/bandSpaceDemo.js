@@ -1,4 +1,6 @@
+import { forActiveLocale } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
+import { formatEurosFromCentsTrimmed } from './currency.js'
 
 /**
  * The pretend Band Space a visitor configures on /band-space. Nothing here is saved: the visitor
@@ -334,9 +336,20 @@ export function demoBalances(size, expenses) {
   })
 }
 
-export function formatEuros(amount) {
+// The decimals only when there are some. French keeps the demo's own writing, without grouping;
+// another language takes Intl's.
+function frenchEuros(amount) {
   const text = Number.isInteger(amount) ? String(amount) : amount.toFixed(2).replace('.', ',')
   return `${text} €`
+}
+
+const EURO_WRITERS = {
+  fr: frenchEuros,
+  en: (amount) => formatEurosFromCentsTrimmed(Math.round(amount * 100))
+}
+
+export function formatEuros(amount) {
+  return forActiveLocale(EURO_WRITERS)(amount)
 }
 
 export function describeBalance(cents) {

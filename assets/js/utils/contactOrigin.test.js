@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { afterEach, describe, it } from 'node:test'
+import { i18n } from '../i18n/index.js'
 import { contactOriginDetails, contactOriginIcon, contactOriginLabel } from './contactOrigin.js'
 
 /**
@@ -65,6 +66,18 @@ describe('contactOriginLabel', () => {
 describe('contactOriginDetails', () => {
   it('joins the styles and the place', () => {
     assert.equal(contactOriginDetails(announce()), 'Rock, Blues · Lyon')
+  })
+
+  describe('in English', () => {
+    afterEach(() => {
+      i18n.global.locale.value = 'fr'
+    })
+
+    it('joins them with a hyphen', () => {
+      i18n.global.locale.value = 'en'
+
+      assert.equal(contactOriginDetails(announce()), 'Rock, Blues - Lyon')
+    })
   })
 
   it('leaves out what is missing', () => {

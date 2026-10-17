@@ -35,7 +35,7 @@
           </h1>
           <p class="text-sm text-surface-500">
             {{ formatBytes(metadata.size) }}
-            <span v-if="metadata.mime_type" class="mx-2">·</span>
+            <span v-if="metadata.mime_type" class="mx-2">{{ separator() }}</span>
             <span v-if="metadata.mime_type">{{ metadata.mime_type }}</span>
           </p>
           <p class="text-xs text-surface-400">
@@ -100,7 +100,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import publicShareApi from '../api/publicShare.js'
-import { intlLocale } from '../i18n/formatLocale.js'
+import { intlLocale, noValue, separator } from '../i18n/formatLocale.js'
 import { downloadBlob } from '../utils/downloadBlob.js'
 import { formatBytes } from '../utils/formatBytes.js'
 
@@ -206,7 +206,7 @@ function iconForMime(mime) {
 }
 
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return noValue()
   return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',

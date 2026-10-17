@@ -65,7 +65,7 @@
           :class="selectedSources.has(src.key) ? src.badgeClass : INACTIVE_CHIP_CLASS"
           @click="toggleSource(src.key)"
         >
-          {{ src.chipLabel }} · {{ countsBySource[src.key] }}
+          {{ src.chipLabel }} {{ separator() }} {{ countsBySource[src.key] }}
         </button>
       </div>
       <div class="flex items-center gap-1 sm:ml-auto">
@@ -140,7 +140,7 @@
                     <span class="italic text-xs">{{ t('band_space_agenda.common.all_day') }}</span>
                   </template>
                   <template v-else>
-                    {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
+                    {{ formatTime(item.datetime) }}<template v-if="item.end_datetime">{{ ` ${rangeArrow()} ${formatTime(item.end_datetime)}` }}</template>
                   </template>
                 </span>
 
@@ -266,6 +266,7 @@
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/vue3/daygrid'
 import interactionPlugin from '@fullcalendar/vue3/interaction'
+import enGbLocale from '@fullcalendar/vue3/locales/en-gb'
 import frLocale from '@fullcalendar/vue3/locales/fr'
 import multiMonthPlugin from '@fullcalendar/vue3/multimonth'
 import classicTheme from '@fullcalendar/vue3/themes/classic'
@@ -305,7 +306,7 @@ import {
   agendaSourceLabel
 } from '../../constants/agendaSources.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
-import { dateFnsLocale, forActiveLocale } from '../../i18n/formatLocale.js'
+import { dateFnsLocale, forActiveLocale, rangeArrow, separator } from '../../i18n/formatLocale.js'
 import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { availabilitySummary, canAnswerFromAgenda } from '../../utils/agendaAvailability.js'
@@ -318,7 +319,7 @@ import { isAllDayItem } from '../../utils/agendaItem.js'
 import { agendaViewForOccurrence, agendaViewForSavedEntry } from '../../utils/agendaRange.js'
 import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
 
-const FULL_CALENDAR_LOCALES = { fr: frLocale }
+const FULL_CALENDAR_LOCALES = { fr: frLocale, en: enGbLocale }
 
 const { t } = useI18n()
 const route = useRoute()
@@ -849,7 +850,7 @@ function metadataLine(item) {
       )
     }
   }
-  return parts.join(' · ')
+  return parts.join(` ${separator()} `)
 }
 
 function taskPriorityLabel(priority) {

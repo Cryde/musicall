@@ -59,7 +59,7 @@
     "related_title": "Publications similaires",
     "author": "Par {author}",
     "reading_time": "{minutes} min de lecture",
-    "views": "{count} vues",
+    "views": "{count} vue | {count} vues",
     "report": "Signaler cette publication",
     "translations": "Également disponible en : {languages}"
   },
@@ -297,7 +297,7 @@
   },
   "gallery": {
     "photos": "Photos",
-    "photo_count": "{count} photos",
+    "photo_count": "{count} photo | {count} photos",
     "photo_alt": "{title} - Photo {number}",
     "author": "Photo de {author}",
     "show": {

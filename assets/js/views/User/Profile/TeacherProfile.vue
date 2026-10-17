@@ -386,9 +386,11 @@ import {
   getSocialPlatformLabel,
   getStudentLevelLabel
 } from '../../../constants/teacherProfile.js'
+import { forActiveLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
+import { formatEurosFromCentsTrimmed } from '../../../utils/currency.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -465,8 +467,15 @@ const shareTitle = computed(() => {
 
 useTitle(pageTitle)
 
+// French as the profile always wrote it, whole euros and the sign glued on; English the Intl way,
+// the cents shown only when there are some.
+const PRICE_WRITERS = {
+  fr: (cents) => `${(cents / 100).toFixed(0)}€`,
+  en: formatEurosFromCentsTrimmed
+}
+
 function formatPrice(cents) {
-  return `${(cents / 100).toFixed(0)}€`
+  return forActiveLocale(PRICE_WRITERS)(cents)
 }
 
 function getStudentLevelSeverity(level) {

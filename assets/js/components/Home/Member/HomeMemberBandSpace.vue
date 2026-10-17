@@ -64,7 +64,7 @@
             :to="{ name: 'app_band_tasks', params: { id: space.id } }"
             class="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-300 hover:underline focus-visible:underline"
           >
-            {{ t('home.member.band_space.open_tasks') }}<template v-if="!isLoadingDetails"> · {{ openTaskCount }}</template>
+            {{ t('home.member.band_space.open_tasks') }}<template v-if="!isLoadingDetails">{{ ` ${separator()} ${openTaskCount}` }}</template>
           </router-link>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <ul v-else-if="tasks.length > 0" class="m-0 p-0 list-none flex flex-col gap-1.5">
@@ -117,7 +117,7 @@ import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import relativeDate from '../../../helper/date/relative-date.js'
-import { dateFnsLocale } from '../../../i18n/formatLocale.js'
+import { dateFnsLocale, separator } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
 import { agendaItemLink, isAllDayItem } from '../../../utils/agendaItem.js'

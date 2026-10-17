@@ -68,6 +68,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { noValue } from '../../../i18n/formatLocale.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import { formatDuration, parseDurationInput } from '../../../utils/setlistDuration.js'
 
@@ -103,7 +104,7 @@ const typeLabel = computed(() => {
     case 'talk':
       return t('band_space_setlist.item_drawer.type_talk')
     default:
-      return '—'
+      return noValue()
   }
 })
 

@@ -68,6 +68,7 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { treeIndent } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const props = defineProps({
@@ -112,7 +113,7 @@ const parentOptions = computed(() => {
   const walk = (nodes, depth) => {
     for (const node of nodes) {
       if (excludedIds.has(node.id)) continue
-      out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
+      out.push({ label: treeIndent(depth) + node.name, value: node.id })
       if (Array.isArray(node.children) && node.children.length > 0) {
         walk(node.children, depth + 1)
       }

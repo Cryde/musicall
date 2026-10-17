@@ -58,7 +58,7 @@
         </div>
 
         <div v-if="current?.transition" class="mt-4 text-lg text-rose-300">
-          → {{ current.transition }}
+          <i class="pi pi-arrow-right text-base" aria-hidden="true" /> {{ current.transition }}
         </div>
         <div v-if="current?.note" class="mt-2 text-lg text-surface-400 italic max-w-3xl">
           {{ current.note }}
@@ -133,6 +133,7 @@ import Drawer from 'primevue/drawer'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { noValue } from '../../i18n/formatLocale.js'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { formatDuration } from '../../utils/setlistDuration.js'
 import {
@@ -186,7 +187,7 @@ function iconFor(item) {
 function titleFor(item) {
   if (!item) return ''
   if (item.type === 'song' && item.song) return item.song.title
-  return item.label || '—'
+  return item.label || noValue()
 }
 
 function durationFor(item) {
