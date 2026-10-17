@@ -28,12 +28,12 @@ class ValidRecurrence extends Constraint
 
     public const int MAX_YEARS_HORIZON = 5;
 
-    public string $invalidFrequencyMessage = 'Fréquence de récurrence invalide.';
-    public string $missingUntilMessage = 'Veuillez spécifier une date de fin de récurrence.';
-    public string $untilBeforeEventMessage = 'La date de fin de récurrence doit être postérieure ou égale au premier événement.';
-    public string $untilTooFarMessage = 'La date de fin de récurrence ne peut pas dépasser 5 ans après le premier événement.';
-    public string $missingMonthlyModeMessage = 'Veuillez préciser le mode de récurrence mensuelle (par date ou par jour de la semaine).';
-    public string $invalidMonthlyModeMessage = 'Mode de récurrence mensuelle invalide.';
+    public string $invalidFrequencyMessage = 'band_space.agenda.recurrence.frequency_invalid';
+    public string $missingUntilMessage = 'band_space.agenda.recurrence.until_required';
+    public string $untilBeforeEventMessage = 'band_space.agenda.recurrence.until_before_event';
+    public string $untilTooFarMessage = 'band_space.agenda.recurrence.until_too_far';
+    public string $missingMonthlyModeMessage = 'band_space.agenda.recurrence.monthly_mode_required';
+    public string $invalidMonthlyModeMessage = 'band_space.agenda.recurrence.monthly_mode_invalid';
 
     public function getTargets(): string|array
     {

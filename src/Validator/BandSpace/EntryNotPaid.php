@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class EntryNotPaid extends Constraint
 {
-    public string $message = 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.';
+    public string $message = 'band_space.finance.entry.paid_read_only';
 
     public function getTargets(): string
     {

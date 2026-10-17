@@ -50,7 +50,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
-            throw new NotFoundHttpException('Catégorie introuvable');
+            throw new NotFoundHttpException('band_space.finance.category.not_found');
         }
 
         $entry = new FinanceEntry();

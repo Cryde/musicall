@@ -115,7 +115,7 @@ class AgendaEntryResource
 
     public ?string $description = null;
 
-    #[Assert\Length(max: 255, maxMessage: 'Le lieu ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'band_space.agenda.location_too_long')]
     public ?string $location = null;
 
     /**
@@ -126,7 +126,7 @@ class AgendaEntryResource
      * The exception is an all day entry, which is a date rather than an instant: there the offset is
      * dropped rather than applied, so the day is the one the caller wrote.
      */
-    #[Assert\NotBlank(message: 'Veuillez spécifier une date et heure')]
+    #[Assert\NotBlank(message: 'band_space.agenda.datetime_required')]
     // Line comments, not a docblock: a doc comment here would become the *last* one before the
     // property, so PHP would attach it instead of the contract above and API Platform would publish
     // it as the OpenAPI description on a docs endpoint anyone can read.
@@ -138,7 +138,7 @@ class AgendaEntryResource
     #[Context(denormalizationContext: [DateTimeNormalizer::FORMAT_KEY => null])]
     public \DateTimeImmutable $eventDatetime;
 
-    #[Assert\GreaterThan(propertyPath: 'eventDatetime', message: 'La fin doit être postérieure au début')]
+    #[Assert\GreaterThan(propertyPath: 'eventDatetime', message: 'band_space.agenda.end_before_start')]
     #[Context(denormalizationContext: [DateTimeNormalizer::FORMAT_KEY => null])]
     public ?\DateTimeImmutable $endDatetime = null;
 
@@ -152,7 +152,7 @@ class AgendaEntryResource
      * The last day the series may produce an occurrence, `Y-m-d`. No NotBlank: whether it is required
      * at all depends on recurrenceFrequency, which is ValidRecurrence's call.
      */
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\Date(message: 'band_space.agenda.date_invalid')]
     public ?string $recurrenceUntilDate = null;
 
     public ?string $recurrenceMonthlyMode = null;

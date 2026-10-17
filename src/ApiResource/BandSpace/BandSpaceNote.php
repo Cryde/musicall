@@ -83,7 +83,7 @@ class BandSpaceNote
     )]
     public string $title;
 
-    #[Assert\Length(max: 30, maxMessage: 'L\'emoji ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 30, maxMessage: 'band_space.note.emoji_too_long')]
     public ?string $emoji = null;
     public ?string $parentId = null;
 

@@ -51,7 +51,7 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$note instanceof BandSpaceNoteEntity) {
-            throw new NotFoundHttpException('Note not found');
+            throw new NotFoundHttpException('band_space.note.not_found');
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
@@ -152,13 +152,13 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
     {
         if ($expectedContentVersion === null) {
             throw new PreconditionRequiredHttpException(
-                'Indiquez la version de la note sur laquelle vous avez travaillé pour enregistrer son contenu.'
+                'band_space.note.content_version_required'
             );
         }
 
         if ($expectedContentVersion !== $note->contentVersion) {
             throw new ConflictHttpException(
-                'Cette note a été modifiée par un autre membre depuis que vous l\'avez ouverte. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.'
+                'band_space.note.content_version_conflict'
             );
         }
     }

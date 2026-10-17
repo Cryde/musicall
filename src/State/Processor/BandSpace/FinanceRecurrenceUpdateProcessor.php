@@ -78,7 +78,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$recurrence instanceof FinanceRecurrence) {
-            throw new NotFoundHttpException('Récurrence introuvable');
+            throw new NotFoundHttpException('band_space.finance.recurrence.not_found');
         }
 
         // The owner of a personal recurrence, and the caller's own membership for a band one. Everything
@@ -239,7 +239,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
             && (new DateTime($data->startDate))->format('Y-m-d') !== $recurrence->startDate->format('Y-m-d')
         ) {
             throw new UnprocessableEntityHttpException(
-                'La date de début d\'une récurrence ne peut plus être modifiée. Terminez celle-ci et créez une nouvelle récurrence.'
+                'band_space.finance.recurrence.start_date_locked'
             );
         }
 
@@ -248,7 +248,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
             && RecurrenceInterval::tryFrom($data->interval) !== $recurrence->interval
         ) {
             throw new UnprocessableEntityHttpException(
-                'L\'intervalle d\'une récurrence ne peut plus être modifié. Terminez celle-ci et créez une nouvelle récurrence.'
+                'band_space.finance.recurrence.interval_locked'
             );
         }
     }

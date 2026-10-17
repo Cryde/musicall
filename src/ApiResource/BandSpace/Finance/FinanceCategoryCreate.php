@@ -31,6 +31,6 @@ class FinanceCategoryCreate
     )]
     public string $name;
 
-    #[Assert\Uuid(message: 'Identifiant de catégorie parent invalide')]
+    #[Assert\Uuid(message: 'band_space.finance.category.parent_invalid_identifier')]
     public ?string $parentId = null;
 }

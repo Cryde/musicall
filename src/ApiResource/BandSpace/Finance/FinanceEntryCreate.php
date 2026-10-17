@@ -25,42 +25,42 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class FinanceEntryCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier une catégorie')]
+    #[Assert\NotBlank(message: 'band_space.finance.category.required')]
     #[Assert\Uuid(message: 'common.category.invalid_identifier')]
     public string $categoryId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
+    #[Assert\NotBlank(message: 'band_space.finance.label_required')]
     #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public string $label;
 
     #[Assert\NotBlank(message: 'common.type.required')]
-    #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]
+    #[Assert\Choice(choices: ['expense', 'income'], message: 'band_space.finance.type_invalid')]
     public string $type;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un statut')]
-    #[Assert\Choice(choices: ['planned', 'committed', 'paid'], message: 'Statut invalide')]
+    #[Assert\NotBlank(message: 'band_space.finance.status_required')]
+    #[Assert\Choice(choices: ['planned', 'committed', 'paid'], message: 'band_space.finance.status_invalid')]
     public string $status;
 
-    #[Assert\PositiveOrZero(message: 'Le montant doit être positif ou zéro')]
+    #[Assert\PositiveOrZero(message: 'band_space.finance.amount.positive_or_zero')]
     #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amount = null;
 
-    #[Assert\PositiveOrZero(message: 'Le montant minimum doit être positif ou zéro')]
+    #[Assert\PositiveOrZero(message: 'band_space.finance.amount.min_positive_or_zero')]
     #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amountMin = null;
 
-    #[Assert\PositiveOrZero(message: 'Le montant maximum doit être positif ou zéro')]
+    #[Assert\PositiveOrZero(message: 'band_space.finance.amount.max_positive_or_zero')]
     #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public ?int $amountMax = null;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier une date')]
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\NotBlank(message: 'band_space.finance.date_required')]
+    #[Assert\Date(message: 'band_space.finance.date_invalid')]
     public string $date;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un périmètre')]
-    #[Assert\Choice(choices: ['band', 'personal'], message: 'Périmètre invalide')]
+    #[Assert\NotBlank(message: 'band_space.finance.scope_required')]
+    #[Assert\Choice(choices: ['band', 'personal'], message: 'band_space.finance.scope_invalid')]
     public string $scope;
 
-    #[Assert\Uuid(message: 'Identifiant de membre invalide')]
+    #[Assert\Uuid(message: 'band_space.finance.member.invalid_identifier')]
     public ?string $memberId = null;
 }

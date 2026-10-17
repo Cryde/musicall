@@ -54,11 +54,11 @@ readonly class AgendaEntryAvailabilityRemindProcessor implements ProcessorInterf
         [$entry, $occurrenceDate, $occurrenceStart] = $this->occurrenceLocator->locate($bandSpace, (string) $uriVariables['entryId'], $data->occurrenceDate);
 
         if ((string) $entry->creator->id !== (string) $user->id && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul l\'auteur de l\'événement ou un administrateur peut relancer les membres');
+            throw new AccessDeniedHttpException('band_space.availability.remind_forbidden');
         }
 
         if (AgendaOccurrenceLocator::isPast($occurrenceDate)) {
-            throw new UnprocessableEntityHttpException('Cette date est passée, les disponibilités ne peuvent plus changer');
+            throw new UnprocessableEntityHttpException('band_space.availability.date_past');
         }
 
         $recipients = [];
@@ -73,7 +73,7 @@ readonly class AgendaEntryAvailabilityRemindProcessor implements ProcessorInterf
 
         // After the checks, so a refused or empty reminder does not use up the window.
         if (!$this->agendaAvailabilityReminderLimiter->create($entry->id . '|' . $occurrenceDate)->consume()->isAccepted()) {
-            throw new TooManyRequestsHttpException(null, 'Les membres ont déjà été relancés pour cette date, réessayez plus tard');
+            throw new TooManyRequestsHttpException(null, 'band_space.availability.already_reminded');
         }
 
         $this->notificationCreator->createForRecipients($recipients, NotificationType::BandSpaceAgendaAvailabilityRequested, [

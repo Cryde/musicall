@@ -64,13 +64,13 @@ readonly class FinanceEntrySplitCreateProcessor implements ProcessorInterface
 
         $existingSplit = $this->financeEntrySplitRepository->findOneByEntryAndMember($entry, $member);
         if ($existingSplit instanceof \App\Entity\BandSpace\FinanceEntrySplit) {
-            throw new ConflictHttpException('Une répartition existe déjà pour ce membre sur cette entrée');
+            throw new ConflictHttpException('band_space.finance.split.already_exists');
         }
 
         if ($entry->amount !== null) {
             $currentTotal = $this->financeEntrySplitRepository->getSumByEntry($entry);
             if ($currentTotal + $data->amount > $entry->amount) {
-                throw new BadRequestHttpException('Le total des répartitions dépasse le montant de l\'entrée');
+                throw new BadRequestHttpException('band_space.finance.split.total_exceeds_amount');
             }
         }
 

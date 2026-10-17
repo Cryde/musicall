@@ -47,7 +47,7 @@ readonly class FinanceCategoryCreateProcessor implements ProcessorInterface
         if ($data->parentId !== null) {
             $parent = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->parentId, $bandSpace);
             if (!$parent instanceof \App\Entity\BandSpace\FinanceCategory) {
-                throw new NotFoundHttpException('Catégorie parente introuvable');
+                throw new NotFoundHttpException('band_space.finance.category.parent_not_found');
             }
         }
 

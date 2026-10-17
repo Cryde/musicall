@@ -49,12 +49,12 @@ readonly class FinanceEntrySplitDeleteProcessor implements ProcessorInterface
         }
 
         if ($entry->status === FinanceEntryStatus::Paid) {
-            throw new UnprocessableEntityHttpException('Impossible de supprimer une répartition d\'une entrée payée. Repassez le statut à Engagé.');
+            throw new UnprocessableEntityHttpException('band_space.finance.split.paid_delete_forbidden');
         }
 
         $split = $this->financeEntrySplitRepository->findOneByIdAndEntry((string) $uriVariables['id'], $entry);
         if (!$split instanceof \App\Entity\BandSpace\FinanceEntrySplit) {
-            throw new NotFoundHttpException('Répartition introuvable');
+            throw new NotFoundHttpException('band_space.finance.split.not_found');
         }
 
         $this->bandSpaceActivityRecorder->record(

@@ -7,6 +7,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class AgendaEntryAvailabilityReminder
 {
     /** Optional for a one-off entry, required for an occurrence of a recurring one. */
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\Date(message: 'band_space.agenda.date_invalid')]
     public ?string $occurrenceDate = null;
 }

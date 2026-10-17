@@ -59,11 +59,11 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
 
         $entry = $this->agendaEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$entry instanceof AgendaEntry) {
-            throw new NotFoundHttpException('Événement introuvable');
+            throw new NotFoundHttpException('band_space.agenda.entry.not_found');
         }
 
         if ($entry->recurrenceFrequency === null) {
-            throw new UnprocessableEntityHttpException('Cet événement n\'est pas récurrent');
+            throw new UnprocessableEntityHttpException('band_space.agenda.entry.not_recurring');
         }
 
         // API Platform does not pass non-Link URI segments into $uriVariables;
@@ -129,7 +129,7 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
     {
         $parsed = CalendarDay::parse($raw);
         if (!$parsed instanceof DateTimeImmutable) {
-            throw new BadRequestHttpException('Date d\'occurrence invalide (format attendu: YYYY-MM-DD)');
+            throw new BadRequestHttpException('band_space.agenda.occurrence_date_invalid');
         }
 
         return $parsed;

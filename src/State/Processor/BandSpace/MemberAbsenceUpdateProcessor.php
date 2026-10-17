@@ -52,7 +52,7 @@ readonly class MemberAbsenceUpdateProcessor implements ProcessorInterface
 
         $absence = $this->memberAbsenceRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$absence instanceof MemberAbsence) {
-            throw new NotFoundHttpException('Indisponibilité introuvable');
+            throw new NotFoundHttpException('band_space.absence.not_found');
         }
 
         $this->memberAbsenceChecker->assertCanManage($absence->member, $actor);

@@ -8,12 +8,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 class AgendaEntryAvailabilityAnswer
 {
     /** Optional for a one-off entry, required for an occurrence of a recurring one. */
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\Date(message: 'band_space.agenda.date_invalid')]
     public ?string $occurrenceDate = null;
 
     #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez indiquer votre disponibilité'),
-        new Assert\Choice(callback: [self::class, 'answers'], message: 'La réponse doit être « yes » ou « no »'),
+        new Assert\NotBlank(message: 'band_space.availability.answer_required'),
+        new Assert\Choice(callback: [self::class, 'answers'], message: 'band_space.availability.answer_invalid'),
     ])]
     public ?string $answer = null;
 

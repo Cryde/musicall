@@ -365,4 +365,36 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         $this->assertNotNull($categoryRepository->find($poleId));
         $this->assertNotNull($categoryRepository->find($childId));
     }
+
+    public function test_delete_category_with_several_sub_categories_names_the_count(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $pole = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        foreach (['Mixage', 'Mastering'] as $position => $name) {
+            FinanceCategoryFactory::new([
+                'bandSpace' => $bandSpace,
+                'name' => $name,
+                'position' => $position,
+                'parent' => $pole,
+            ])->create();
+        }
+
+        $this->client->loginUser($admin);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $pole->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette catégorie contient 2 sous-catégories. Supprimez-les d\'abord.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Cette catégorie contient 2 sous-catégories. Supprimez-les d\'abord.',
+        ]);
+    }
 }

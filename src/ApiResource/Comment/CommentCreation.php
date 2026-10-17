@@ -22,7 +22,7 @@ class CommentCreation
 {
     #[Assert\NotNull]
     public CommentThread $thread;
-    #[Assert\NotBlank(message: 'Le commentaire est vide')]
+    #[Assert\NotBlank(message: 'comment.content_required')]
     public string $content;
 
     /**

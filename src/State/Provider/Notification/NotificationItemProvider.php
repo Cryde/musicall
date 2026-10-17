@@ -36,7 +36,7 @@ readonly class NotificationItemProvider implements ProviderInterface
 
         $notification = $this->notificationRepository->findOneByIdAndRecipient((string) $uriVariables['id'], $user);
         if (!$notification instanceof Notification) {
-            throw new NotFoundHttpException('Notification introuvable');
+            throw new NotFoundHttpException('notification.not_found');
         }
 
         $dto = $this->notificationBuilder->buildFromEntity($notification);

@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class RecurrenceNoOverlap extends Constraint
 {
-    public string $message = 'Une récurrence avec le même intervalle existe déjà sur cette période pour cette catégorie';
+    public string $message = 'band_space.finance.recurrence.overlap';
 
     public function getTargets(): string
     {

@@ -60,7 +60,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
 
         $entry = $this->agendaEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\AgendaEntry) {
-            throw new NotFoundHttpException('Événement introuvable');
+            throw new NotFoundHttpException('band_space.agenda.entry.not_found');
         }
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];

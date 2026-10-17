@@ -27,36 +27,36 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class FinanceRecurrenceCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier une catégorie')]
+    #[Assert\NotBlank(message: 'band_space.finance.category.required')]
     #[Assert\Uuid(message: 'common.category.invalid_identifier')]
     public string $categoryId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
+    #[Assert\NotBlank(message: 'band_space.finance.label_required')]
     #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public string $label;
 
     #[Assert\NotBlank(message: 'common.type.required')]
-    #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]
+    #[Assert\Choice(choices: ['expense', 'income'], message: 'band_space.finance.type_invalid')]
     public string $type;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un montant')]
-    #[Assert\Positive(message: 'Le montant doit être positif')]
+    #[Assert\NotBlank(message: 'band_space.finance.amount.required')]
+    #[Assert\Positive(message: 'band_space.finance.amount.positive')]
     #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public int $amount;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un périmètre')]
-    #[Assert\Choice(choices: ['band', 'personal'], message: 'Périmètre invalide')]
+    #[Assert\NotBlank(message: 'band_space.finance.scope_required')]
+    #[Assert\Choice(choices: ['band', 'personal'], message: 'band_space.finance.scope_invalid')]
     public string $scope;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un intervalle')]
-    #[Assert\Choice(choices: ['weekly', 'monthly', 'quarterly', 'yearly'], message: 'Intervalle de récurrence invalide')]
+    #[Assert\NotBlank(message: 'band_space.finance.recurrence.interval_required')]
+    #[Assert\Choice(choices: ['weekly', 'monthly', 'quarterly', 'yearly'], message: 'band_space.finance.recurrence.interval_invalid')]
     public string $interval;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier une date de début')]
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\NotBlank(message: 'band_space.finance.recurrence.start_date_required')]
+    #[Assert\Date(message: 'band_space.finance.date_invalid')]
     public string $startDate;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier une date de fin')]
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\NotBlank(message: 'band_space.finance.recurrence.end_date_required')]
+    #[Assert\Date(message: 'band_space.finance.date_invalid')]
     public string $endDate;
 }

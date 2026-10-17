@@ -13,5 +13,5 @@ namespace App\Validator\BandSpace;
 final class FinanceAmountLimit
 {
     public const int MAX_CENTS = 10_000_000_000;
-    public const string MESSAGE = 'Le montant ne peut pas dépasser 100 000 000 €';
+    public const string MESSAGE = 'band_space.finance.amount.too_high';
 }

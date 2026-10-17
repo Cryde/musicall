@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Entity\User;
+use App\Exception\TranslatableHttpException;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
@@ -15,6 +16,7 @@ use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -56,27 +58,31 @@ readonly class FinanceCategoryDeleteProcessor implements ProcessorInterface
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
-            throw new NotFoundHttpException('Catégorie introuvable');
+            throw new NotFoundHttpException('band_space.finance.category.not_found');
         }
 
         $childCount = $category->children->count();
         if ($childCount > 1) {
-            throw new UnprocessableEntityHttpException(
-                sprintf('Cette catégorie contient %d sous-catégories. Supprimez-les d\'abord.', $childCount)
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.finance.category.delete_has_children',
+                ['count' => (string) $childCount],
             );
         }
         if ($childCount === 1) {
-            throw new UnprocessableEntityHttpException('Cette catégorie contient une sous-catégorie. Supprimez-la d\'abord.');
+            throw new UnprocessableEntityHttpException('band_space.finance.category.delete_has_child');
         }
 
         $paidEntryCount = $this->financeEntryRepository->countPaidByCategory($category);
         if ($paidEntryCount > 1) {
-            throw new UnprocessableEntityHttpException(
-                sprintf('Cette catégorie contient %d entrées payées. Repassez leur statut à Engagé ou déplacez-les d\'abord.', $paidEntryCount)
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.finance.category.delete_has_paid_entries',
+                ['count' => (string) $paidEntryCount],
             );
         }
         if ($paidEntryCount === 1) {
-            throw new UnprocessableEntityHttpException('Cette catégorie contient une entrée payée. Repassez son statut à Engagé ou déplacez-la d\'abord.');
+            throw new UnprocessableEntityHttpException('band_space.finance.category.delete_has_paid_entry');
         }
 
         $this->bandSpaceActivityRecorder->record(

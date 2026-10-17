@@ -9,9 +9,9 @@ class RecurrenceEndDate extends Constraint
 {
     public const int MAX_YEARS = 3;
 
-    public string $messageBeforeStart = 'La date de fin doit être postérieure à la date de début';
-    public string $messageMaxDuration = 'La durée maximale est de {{ limit }} ans';
-    public string $messageInvalidFormat = 'Le format de la date est invalide (attendu : AAAA-MM-JJ)';
+    public string $messageBeforeStart = 'band_space.finance.recurrence.end_before_start';
+    public string $messageMaxDuration = 'band_space.finance.recurrence.max_duration';
+    public string $messageInvalidFormat = 'band_space.finance.date_invalid';
 
     public function getTargets(): string
     {

@@ -38,7 +38,7 @@ readonly class MemberAbsenceItemProvider implements ProviderInterface
 
         $absence = $this->memberAbsenceRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$absence instanceof MemberAbsence) {
-            throw new NotFoundHttpException('Indisponibilité introuvable');
+            throw new NotFoundHttpException('band_space.absence.not_found');
         }
 
         return $this->memberAbsenceBuilder->buildItem($absence, $viewer);

@@ -32,6 +32,6 @@ class BandSpaceNoteCreate
     )]
     public string $title;
 
-    #[Assert\Uuid(message: 'Identifiant de note parent invalide')]
+    #[Assert\Uuid(message: 'band_space.note.parent_invalid_identifier')]
     public ?string $parentId = null;
 }
