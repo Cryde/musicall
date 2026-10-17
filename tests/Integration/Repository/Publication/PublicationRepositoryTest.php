@@ -53,6 +53,31 @@ class PublicationRepositoryTest extends KernelTestCase
         $this->assertSame([], $repo->findTranslationSiblings($alone));
     }
 
+    public function test_find_languages_by_translation_group_reads_every_group_asked_for_at_once(): void
+    {
+        $repo = static::getContainer()->get(PublicationRepository::class);
+
+        $french = PublicationFactory::createOne(['type' => Publication::TYPE_TEXT, 'language' => 'fr']);
+        $english = PublicationFactory::createOne(['type' => Publication::TYPE_TEXT, 'language' => 'en']);
+        $english->joinTranslationGroupOf($french);
+        $otherFrench = PublicationFactory::createOne(['type' => Publication::TYPE_TEXT, 'language' => 'fr']);
+        $otherGerman = PublicationFactory::createOne(['type' => Publication::TYPE_TEXT, 'language' => 'de']);
+        $otherGerman->joinTranslationGroupOf($otherFrench);
+        $notAsked = PublicationFactory::createOne(['type' => Publication::TYPE_TEXT, 'language' => 'en']);
+        $notAsked->joinTranslationGroupOf(PublicationFactory::createOne(['type' => Publication::TYPE_TEXT, 'language' => 'fr']));
+        static::getContainer()->get(EntityManagerInterface::class)->flush();
+
+        // A map, so its key order is not part of the answer; each list is sorted by language.
+        $this->assertEquals(
+            [
+                (string) $french->translationGroup => ['en', 'fr'],
+                (string) $otherFrench->translationGroup => ['de', 'fr'],
+            ],
+            $repo->findLanguagesByTranslationGroup([(string) $french->translationGroup, (string) $otherFrench->translationGroup]),
+        );
+        $this->assertSame([], $repo->findLanguagesByTranslationGroup([]));
+    }
+
     public function test_ungrouped_publications_and_videos_share_a_language_freely(): void
     {
         PublicationFactory::createMany(2, ['type' => Publication::TYPE_TEXT, 'language' => 'fr']);

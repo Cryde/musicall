@@ -21,7 +21,7 @@ class PublicationRepository extends ServiceEntityRepository
         parent::__construct($registry, Publication::class);
     }
 
-    public function createCollectionQueryBuilder(?string $subCategorySlug, ?int $subCategoryType, string $orderDirection, ?string $tagSlug = null): QueryBuilder
+    public function createCollectionQueryBuilder(string $locale, ?string $subCategorySlug, ?int $subCategoryType, string $orderDirection, ?string $tagSlug = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('publication')
             ->select('publication, sub_category, author, author_profile, cover, vote_cache')
@@ -33,6 +33,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->leftJoin('publication.voteCache', 'vote_cache')
             ->where('publication.status = :status')
             ->setParameter('status', Publication::STATUS_ONLINE);
+        $this->shownIn($qb, $locale);
 
         if ($subCategorySlug !== null) {
             $qb->andWhere('sub_category.slug = :sub_category_slug')
@@ -101,6 +102,33 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $translationGroups
+     *
+     * @return array<string, string[]> translation group => the languages its publications are in
+     */
+    public function findLanguagesByTranslationGroup(array $translationGroups): array
+    {
+        if ($translationGroups === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('publication')
+            ->select('publication.translationGroup AS translation_group, publication.language AS language')
+            ->where('publication.translationGroup IN (:translation_groups)')
+            ->setParameter('translation_groups', $translationGroups)
+            ->orderBy('publication.language', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $languagesByGroup = [];
+        foreach ($rows as $row) {
+            $languagesByGroup[(string) $row['translation_group']][] = (string) $row['language'];
+        }
+
+        return $languagesByGroup;
+    }
+
+    /**
      * @return Publication|null
      */
     public function findOneVideo(string $videoId): ?object
@@ -148,9 +176,9 @@ class PublicationRepository extends ServiceEntityRepository
     /**
      * @return Publication[]
      */
-    public function findLastPublications(int $limit = 4): array
+    public function findLastPublications(string $locale, int $limit = 4): array
     {
-        return $this->createQueryBuilder('publication')
+        $qb = $this->createQueryBuilder('publication')
             ->select('publication, sub_category, cover, author, author_profile')
             ->join('publication.subCategory', 'sub_category')
             ->leftJoin('publication.cover', 'cover')
@@ -159,32 +187,9 @@ class PublicationRepository extends ServiceEntityRepository
             ->where('publication.status = :status')
             ->setParameter('status', Publication::STATUS_ONLINE)
             ->orderBy('publication.publicationDatetime', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
+            ->setMaxResults($limit);
 
-    /**
-     * @return Publication[]
-     */
-    public function findRelatedPublications(Publication $publication, int $limit = 4): array
-    {
-        return $this->createQueryBuilder('publication')
-            ->select('publication, sub_category, cover, author, author_profile')
-            ->join('publication.subCategory', 'sub_category')
-            ->join('publication.author', 'author')
-            ->join('author.profile', 'author_profile')
-            ->leftJoin('publication.cover', 'cover')
-            ->where('publication.status = :status')
-            ->andWhere('publication.id != :currentId')
-            ->andWhere('sub_category.id = :subCategoryId')
-            ->setParameter('status', Publication::STATUS_ONLINE)
-            ->setParameter('currentId', $publication->id)
-            ->setParameter('subCategoryId', $publication->subCategory->id)
-            ->orderBy('publication.publicationDatetime', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+        return $this->shownIn($qb, $locale)->getQuery()->getResult();
     }
 
     /**
@@ -196,13 +201,13 @@ class PublicationRepository extends ServiceEntityRepository
      *
      * @return int[]
      */
-    public function findRelatedIdsByTags(int $currentPublicationId, array $tagIds, int $limit): array
+    public function findRelatedIdsByTags(string $locale, int $currentPublicationId, array $tagIds, int $limit): array
     {
         if ($tagIds === []) {
             return [];
         }
 
-        $rows = $this->createQueryBuilder('publication')
+        $qb = $this->createQueryBuilder('publication')
             ->select('publication.id AS id, COUNT(shared_tag.id) AS shared_count, publication.publicationDatetime AS pub_datetime')
             ->innerJoin('publication.tags', 'shared_tag', 'WITH', 'shared_tag.id IN (:tagIds)')
             ->where('publication.status = :status')
@@ -213,9 +218,9 @@ class PublicationRepository extends ServiceEntityRepository
             ->groupBy('publication.id')
             ->orderBy('shared_count', 'DESC')
             ->addOrderBy('pub_datetime', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getArrayResult();
+            ->setMaxResults($limit);
+
+        $rows = $this->shownIn($qb, $locale)->getQuery()->getArrayResult();
 
         return array_map(static fn (array $row): int => (int) $row['id'], $rows);
     }
@@ -227,7 +232,7 @@ class PublicationRepository extends ServiceEntityRepository
      *
      * @return int[]
      */
-    public function findRelatedIdsBySubCategory(int $currentPublicationId, int $subCategoryId, int $limit, array $excludeIds = []): array
+    public function findRelatedIdsBySubCategory(string $locale, int $currentPublicationId, int $subCategoryId, int $limit, array $excludeIds = []): array
     {
         $qb = $this->createQueryBuilder('publication')
             ->select('publication.id')
@@ -240,6 +245,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->setParameter('subCategoryId', $subCategoryId)
             ->orderBy('publication.publicationDatetime', 'DESC')
             ->setMaxResults($limit);
+        $this->shownIn($qb, $locale);
 
         if ($excludeIds !== []) {
             $qb->andWhere('publication.id NOT IN (:exclude)')->setParameter('exclude', $excludeIds);
@@ -299,7 +305,7 @@ class PublicationRepository extends ServiceEntityRepository
      *
      * @return int[]
      */
-    public function findLatestIdsExcluding(?int $excludeId, int $limit, ?int $subCategoryType = null): array
+    public function findLatestIdsExcluding(string $locale, ?int $excludeId, int $limit, ?int $subCategoryType = null): array
     {
         $qb = $this->createQueryBuilder('publication')
             ->select('publication.id')
@@ -307,6 +313,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->setParameter('status', Publication::STATUS_ONLINE)
             ->orderBy('publication.publicationDatetime', 'DESC')
             ->setMaxResults($limit);
+        $this->shownIn($qb, $locale);
 
         if ($excludeId !== null) {
             $qb->andWhere('publication.id != :excludeId')->setParameter('excludeId', $excludeId);
@@ -533,5 +540,15 @@ class PublicationRepository extends ServiceEntityRepository
             ->orderBy('publication.id', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * What a listing in $locale shows: the text publications written in it, and every video, which has no
+     * language because it is shown in all of them.
+     */
+    private function shownIn(QueryBuilder $qb, string $locale): QueryBuilder
+    {
+        return $qb->andWhere('(publication.language = :locale OR publication.language IS NULL)')
+            ->setParameter('locale', $locale);
     }
 }

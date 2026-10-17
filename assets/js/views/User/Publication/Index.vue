@@ -107,6 +107,17 @@
             </template>
           </Column>
 
+          <Column
+            v-if="offersLanguageChoice(ENABLED_LOCALES)"
+            field="language"
+            :header="t('publication.user_list.column_language')"
+            style="min-width: 120px"
+          >
+            <template #body="{ data }">
+              <PublicationLanguageLabel :language="data.language" />
+            </template>
+          </Column>
+
           <Column field="category" :header="t('publication.common.category')" style="min-width: 150px">
             <template #body="{ data }">
               <Tag :value="data.category?.title" severity="secondary" />
@@ -168,6 +179,17 @@
                   @click="handleEdit(data)"
                 />
                 <Button
+                  v-if="translationLanguagesLeft(data, ENABLED_LOCALES).length > 0"
+                  v-tooltip.top="t('publication.user.translate')"
+                  :aria-label="t('publication.user.translate')"
+                  icon="pi pi-language"
+                  severity="secondary"
+                  text
+                  rounded
+                  size="small"
+                  @click="handleTranslate(data)"
+                />
+                <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="t('publication.user.delete')"
                   :aria-label="t('publication.user.delete')"
@@ -207,6 +229,7 @@
 
     <AddDiscoverModal @published="handleDiscoverPublished" />
     <AddPublicationModal v-model="showAddPublicationModal" @created="handlePublicationCreated" />
+    <AddTranslationModal v-model:visible="showAddTranslationModal" :publication="publicationToTranslate" />
   </div>
 </template>
 
@@ -226,12 +249,19 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import publicationApi from '../../../api/user/publication.js'
 import AddDiscoverModal from '../../../components/Publication/AddDiscoverModal.vue'
+import AddTranslationModal from '../../../components/Publication/AddTranslationModal.vue'
+import PublicationLanguageLabel from '../../../components/Publication/PublicationLanguageLabel.vue'
 import AddPublicationModal from '../../../components/publication/AddPublicationModal.vue'
 import { publicationStatusLabel } from '../../../constants/publicationStatus.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
+import { ENABLED_LOCALES } from '../../../i18n/locale.js'
 import { usePublicationsStore } from '../../../store/publication/publications.js'
 import { useUserPublicationsStore } from '../../../store/publication/userPublications.js'
 import { useVideoStore } from '../../../store/publication/video.js'
+import {
+  offersLanguageChoice,
+  translationLanguagesLeft
+} from '../../../utils/publicationLanguage.js'
 
 const { t } = useI18n()
 
@@ -253,6 +283,8 @@ const selectedStatus = ref(null)
 const sortField = ref('creation_datetime')
 const sortOrder = ref(-1)
 const showAddPublicationModal = ref(false)
+const showAddTranslationModal = ref(false)
+const publicationToTranslate = ref(null)
 
 const statusOptions = computed(() => [
   { label: t('publication.user_list.status.draft'), id: STATUS_DRAFT },
@@ -353,6 +385,11 @@ function handleView(publication) {
 
 function handleEdit(publication) {
   router.push({ name: 'app_user_publication_edit', params: { id: publication.id } })
+}
+
+function handleTranslate(publication) {
+  publicationToTranslate.value = publication
+  showAddTranslationModal.value = true
 }
 
 function handleSubmit(publication) {

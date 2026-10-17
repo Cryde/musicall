@@ -61,6 +61,7 @@ readonly class PublicationListItemBuilder
         $item->publicationDatetime = $publicationDatetime;
         $item->cover = $this->buildCoverUrl($publication->cover);
         $item->description = $publication->getDescription();
+        $item->language = $publication->language;
 
         $voteCache = $publication->voteCache;
         $item->upvotes = $voteCache->upvoteCount ?? 0;

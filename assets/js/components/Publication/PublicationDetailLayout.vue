@@ -13,7 +13,7 @@
           {{ publication.category.title }}
         </router-link>
 
-        <h1 class="text-3xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
+        <h1 :lang="publication.language ?? undefined" class="text-3xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
           {{ publication.title }}
         </h1>
 
@@ -54,10 +54,13 @@
             />
           </div>
         </div>
+
+        <PublicationTranslationLinks :translations="publication.translations" />
       </header>
 
       <template v-if="publication.type.label === 'text'">
         <div
+          :lang="publication.language ?? undefined"
           class="box content is-shadowless publication-container p-4 bg-surface-0 dark:bg-surface-800 rounded-md"
           v-html="publication.content"
         />
@@ -162,6 +165,7 @@ import CommentThread from '../Comment/CommentThread.vue'
 import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
 import PublicationShareBar from './PublicationShareBar.vue'
+import PublicationTranslationLinks from './PublicationTranslationLinks.vue'
 import LatestPublicationsWidget from './Sidebar/LatestPublicationsWidget.vue'
 import PopularTagsWidget from './Sidebar/PopularTagsWidget.vue'
 import VoteButtons from './VoteButtons.vue'

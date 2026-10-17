@@ -74,6 +74,16 @@ class UserPublication
 
     public int $typeId;
 
+    /** Null on a video, which is shown in every language. */
+    public ?string $language = null;
+
+    /**
+     * The languages its other translations are in.
+     *
+     * @var string[]
+     */
+    public array $translationLanguages = [];
+
     #[ApiProperty(genId: false)]
     public ?UserPublicationCategory $category = null;
 

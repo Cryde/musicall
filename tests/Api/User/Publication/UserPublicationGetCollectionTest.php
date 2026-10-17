@@ -74,6 +74,132 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->assertSame(Publication::STATUS_DRAFT, $response['member'][1]['status_id']);
     }
 
+    public function test_get_collection_names_each_language_and_its_translations(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $category = PublicationSubCategoryFactory::new()->asNews()->create();
+        $original = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'title' => 'Mon article',
+            'slug' => 'mon-article',
+            'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'fr',
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+            'editionDatetime' => new \DateTime('2024-01-02 10:00:00'),
+        ]);
+        $translation = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'title' => 'My article',
+            'slug' => 'my-article-',
+            'status' => Publication::STATUS_DRAFT,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'en',
+            'creationDatetime' => new \DateTime('2024-01-03 10:00:00'),
+            'editionDatetime' => new \DateTime('2024-01-04 10:00:00'),
+        ]);
+        $translation->joinTranslationGroupOf($original);
+        $video = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'title' => 'Ma video',
+            'slug' => 'v-ma-video',
+            'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO,
+            'creationDatetime' => new \DateTime('2024-01-05 10:00:00'),
+            'editionDatetime' => new \DateTime('2024-01-06 10:00:00'),
+        ]);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications?sortBy=creation_datetime&sortOrder=asc');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserPublication',
+            '@id' => '/api/user/publications',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/user_publications/' . $original->id,
+                    '@type' => 'UserPublication',
+                    'id' => $original->id,
+                    'title' => 'Mon article',
+                    'slug' => 'mon-article',
+                    'creation_datetime' => '2024-01-01T10:00:00+00:00',
+                    'edition_datetime' => '2024-01-02T10:00:00+00:00',
+                    'status_id' => Publication::STATUS_ONLINE,
+                    'type_id' => Publication::TYPE_TEXT,
+                    'language' => 'fr',
+                    'translation_languages' => ['en'],
+                    'category' => [
+                        '@type' => 'UserPublicationCategory',
+                        'id' => $category->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                    ],
+                ],
+                [
+                    '@id' => '/api/user_publications/' . $translation->id,
+                    '@type' => 'UserPublication',
+                    'id' => $translation->id,
+                    'title' => 'My article',
+                    'slug' => 'my-article-',
+                    'creation_datetime' => '2024-01-03T10:00:00+00:00',
+                    'edition_datetime' => '2024-01-04T10:00:00+00:00',
+                    'status_id' => Publication::STATUS_DRAFT,
+                    'type_id' => Publication::TYPE_TEXT,
+                    'language' => 'en',
+                    'translation_languages' => ['fr'],
+                    'category' => [
+                        '@type' => 'UserPublicationCategory',
+                        'id' => $category->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                    ],
+                ],
+                [
+                    '@id' => '/api/user_publications/' . $video->id,
+                    '@type' => 'UserPublication',
+                    'id' => $video->id,
+                    'title' => 'Ma video',
+                    'slug' => 'v-ma-video',
+                    'creation_datetime' => '2024-01-05T10:00:00+00:00',
+                    'edition_datetime' => '2024-01-06T10:00:00+00:00',
+                    'status_id' => Publication::STATUS_ONLINE,
+                    'type_id' => Publication::TYPE_VIDEO,
+                    'translation_languages' => [],
+                    'category' => [
+                        '@type' => 'UserPublicationCategory',
+                        'id' => $category->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                    ],
+                ],
+            ],
+            'totalItems' => 3,
+            'view' => [
+                '@id' => '/api/user/publications?sortBy=creation_datetime&sortOrder=asc',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/user/publications{?category}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'category',
+                        'property' => 'category',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
     public function test_get_collection_only_own_publications(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'user1', 'email' => 'user1@test.com']);

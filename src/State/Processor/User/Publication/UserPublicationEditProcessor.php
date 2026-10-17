@@ -43,6 +43,7 @@ class UserPublicationEditProcessor implements ProcessorInterface
         if ($data->content !== null) {
             $publication->content = $data->content;
         }
+        $publication->language = $data->language;
         if ($data->categoryId !== null) {
             $category = $this->subCategoryRepository->find($data->categoryId);
             if (!$category instanceof \App\Entity\PublicationSubCategory) {

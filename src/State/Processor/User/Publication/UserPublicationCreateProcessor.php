@@ -6,11 +6,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Publication\UserPublicationCreate;
 use App\ApiResource\User\Publication\UserPublicationEdit;
-use App\Entity\Publication;
 use App\Entity\User;
 use App\Repository\PublicationSubCategoryRepository;
+use App\Service\Builder\PublicationDirector;
 use App\Service\Builder\User\Publication\UserPublicationEditBuilder;
-use App\Service\Publication\PublicationSlug;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -24,7 +23,7 @@ class UserPublicationCreateProcessor implements ProcessorInterface
         private readonly Security $security,
         private readonly EntityManagerInterface $entityManager,
         private readonly PublicationSubCategoryRepository $subCategoryRepository,
-        private readonly PublicationSlug $publicationSlug,
+        private readonly PublicationDirector $publicationDirector,
         private readonly UserPublicationEditBuilder $builder,
     ) {
     }
@@ -40,13 +39,7 @@ class UserPublicationCreateProcessor implements ProcessorInterface
             throw new BadRequestHttpException('publication.user.category_not_found');
         }
 
-        $publication = new Publication();
-        $publication->title = $data->title;
-        $publication->subCategory = $category;
-        $publication->author = $user;
-        $publication->slug = $this->publicationSlug->create($data->title) . '-' . $publication->id;
-        $publication->status = Publication::STATUS_DRAFT;
-        $publication->assignType(Publication::TYPE_TEXT);
+        $publication = $this->publicationDirector->buildTextDraft($data->title, $category, $user);
 
         $this->entityManager->persist($publication);
         $this->entityManager->flush();
