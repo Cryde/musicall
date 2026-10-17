@@ -1,8 +1,9 @@
 import axios from 'axios'
-import { createApp, watch } from 'vue'
+import { computed, createApp, nextTick, watch } from 'vue'
 import '../style/style.css'
 import { VueUmamiPlugin } from '@jaseeey/vue-umami-plugin'
 import { createHead } from '@unhead/vue/client'
+import { useTitle } from '@vueuse/core'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
@@ -13,6 +14,7 @@ import facebookLogoUrl from '../image/facebook-logo.jpg'
 import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import { PRIME_VUE_CALENDAR_LOCALES } from './constants/primeVueLocale.js'
+import { DEFAULT_TITLE_KEY, refreshedDefaultTitle } from './i18n/defaultTitle.js'
 import { forActiveLocale } from './i18n/formatLocale.js'
 import { DEFAULT_LOCALE, i18n } from './i18n/index.js'
 import { setLocale } from './i18n/locale.js'
@@ -127,17 +129,10 @@ const umamiRecorderScript =
 const head = createHead({
   init: [
     {
-      title: i18n.global.t('shared.head.title'),
       // No htmlAttrs.lang: the server renders it and setLocale() switches it, while unhead would put
       // its own value back on every render.
       meta: [
-        {
-          key: 'description',
-          name: 'description',
-          content: i18n.global.t('shared.head.description')
-        },
         { property: 'og:type', content: 'website' },
-        { property: 'og:locale', content: 'fr_FR' },
         {
           property: 'og:image',
           content: `${window.location.origin}${facebookLogoUrl}`
@@ -147,6 +142,36 @@ const head = createHead({
       script: umamiRecorderScript
     }
   ]
+})
+// What `og:locale` calls each app locale. The bot pages have the same table (bot_base.html.twig).
+const OG_LOCALES = { fr: 'fr_FR', en: 'en_GB' }
+
+// The tags that follow the active locale, patched on a switch.
+const localeHead = head.push(localeHeadInput())
+
+function localeHeadInput() {
+  return {
+    meta: [
+      {
+        key: 'description',
+        name: 'description',
+        content: i18n.global.t('shared.head.description')
+      },
+      { property: 'og:locale', content: forActiveLocale(OG_LOCALES) }
+    ]
+  }
+}
+
+// The default title, until a page sets its own. Not in unhead, which writes its title again on each of its
+// renders: after a switch, this one would replace the page's (useTitle).
+useTitle(computed(() => i18n.global.t(DEFAULT_TITLE_KEY)))
+// Once the next page has rendered, the title a page put back as it went is the active locale's default.
+router.afterEach(async () => {
+  await nextTick()
+  const title = refreshedDefaultTitle(document.title, i18n.global)
+  if (title) {
+    document.title = title
+  }
 })
 app.use(head)
 app.use(i18n)
@@ -166,6 +191,7 @@ watch(i18n.global.locale, () => {
     app.config.globalProperties.$primevue.config.locale,
     forActiveLocale(PRIME_VUE_CALENDAR_LOCALES)
   )
+  localeHead.patch(localeHeadInput())
 })
 
 if (import.meta.env.VITE_UMAMI_SITE_ID) {

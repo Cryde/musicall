@@ -80,6 +80,7 @@ import AddTopicModal from '../../components/Forum/AddTopicModal.vue'
 import TopicListItem from '../../components/Forum/TopicListItem.vue'
 import TopicListItemSkeleton from '../../components/Forum/TopicListItemSkeleton.vue'
 import FadeList from '../../components/Global/FadeList.vue'
+import { useContentLanguage } from '../../composables/useContentLanguage.js'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
@@ -91,6 +92,7 @@ const route = useRoute()
 const router = useRouter()
 const forumStore = useForumStore()
 const userSecurityStore = useUserSecurityStore()
+const moveToContentLanguage = useContentLanguage()
 
 const showAddTopicModal = ref(false)
 const showAuthModal = ref(false)
@@ -116,7 +118,11 @@ useTitle(
 )
 
 async function fetchData() {
+  const loadedPath = route.path
   await forumStore.loadForum(forumSlug.value)
+  if (moveToContentLanguage(forumStore.currentForum?.locale, loadedPath)) {
+    return
+  }
   await forumStore.loadTopics({ forumSlug: forumSlug.value, page: currentPage.value })
 }
 

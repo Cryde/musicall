@@ -5,7 +5,11 @@ namespace App\Tests\Integration\Service\Bot;
 use App\Entity\Gallery;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Locale\LocalizedPath;
 use App\Service\Bot\BotMetaDataGenerator;
+use App\Service\Bot\Provider\CourseMetaDataProvider;
+use App\Service\Bot\Provider\InstrumentSearchMetaDataProvider;
+use App\Service\Bot\Provider\MusicianSearchMetaDataProvider;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
@@ -121,6 +125,57 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'description' => 'Un super cours de guitare pour débutants',
             'cover'       => 'http://localhost/media/cache/resolve/publication_image_filter/images/publication/cover/cover-course',
         ], $result);
+    }
+
+    public function test_get_metadata_for_a_course_under_its_english_path(): void
+    {
+        $course = PublicationFactory::new([
+            'status'              => Publication::STATUS_ONLINE,
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2000-01-02T02:03:04+00:00'),
+            'title'               => 'Learn the guitar',
+            'shortDescription'    => 'A guitar lesson for beginners',
+            'slug'                => 'learn-the-guitar',
+            'type'                => Publication::TYPE_TEXT,
+        ])->create();
+
+        $this->assertSame([
+            'title'       => 'Learn the guitar',
+            'description' => 'A guitar lesson for beginners',
+            'cover'       => null,
+        ], $this->botMetaDataGenerator->getMetaData('/en/lessons/learn-the-guitar'));
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/en/lessons/unknown-lesson'));
+    }
+
+    /**
+     * The providers match the French paths, so an English one reads as its French twin: the prefix goes, and a
+     * translated first segment is translated back.
+     */
+    public function test_get_metadata_for_the_english_version_of_a_page(): void
+    {
+        $this->assertSame($this->botMetaDataGenerator->getMetaData('/cours'), $this->botMetaDataGenerator->getMetaData('/en/lessons'));
+        $this->assertSame($this->botMetaDataGenerator->getMetaData('/publications'), $this->botMetaDataGenerator->getMetaData('/en/publications'));
+        $this->assertSame($this->botMetaDataGenerator->getMetaData('/band-space'), $this->botMetaDataGenerator->getMetaData('/en/band-space'));
+        $this->assertSame([
+            'title'       => 'Rechercher un guitariste - MusicAll',
+            'description' => 'Trouvez un guitariste près de chez vous pour rejoindre votre groupe ou collaborer sur vos projets musicaux.',
+        ], $this->botMetaDataGenerator->getMetaData('/en/find-a-guitarist'));
+    }
+
+    public function test_an_english_path_reads_as_nothing_while_french_is_the_only_enabled_locale(): void
+    {
+        $frenchOnly = new BotMetaDataGenerator(
+            [
+                static::getContainer()->get(CourseMetaDataProvider::class),
+                static::getContainer()->get(InstrumentSearchMetaDataProvider::class),
+                static::getContainer()->get(MusicianSearchMetaDataProvider::class),
+            ],
+            new LocalizedPath(['fr'], 'fr'),
+        );
+
+        $this->assertSame([], $frenchOnly->getMetaData('/lessons'));
+        $this->assertSame([], $frenchOnly->getMetaData('/find-a-guitarist'));
+        // Nor is a French path rewritten: a doubled slash matched no provider before #1192, and still does not.
+        $this->assertSame([], $frenchOnly->getMetaData('/rechercher-un-musicien//'));
     }
 
     public function test_get_metadata_for_courses_base(): void

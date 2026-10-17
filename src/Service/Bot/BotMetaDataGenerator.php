@@ -2,6 +2,7 @@
 
 namespace App\Service\Bot;
 
+use App\Locale\LocalizedPath;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class BotMetaDataGenerator
@@ -12,6 +13,7 @@ readonly class BotMetaDataGenerator
     public function __construct(
         #[AutowireIterator('app.bot_metadata_provider')]
         private iterable $providers,
+        private LocalizedPath $localizedPath,
     ) {
     }
 
@@ -20,6 +22,7 @@ readonly class BotMetaDataGenerator
      */
     public function getMetaData(string $uri): array
     {
+        $uri = $this->inDefaultLocale($uri);
         foreach ($this->providers as $provider) {
             if ($provider->supports($uri)) {
                 return $provider->getMetaData($uri);
@@ -27,5 +30,16 @@ readonly class BotMetaDataGenerator
         }
 
         return [];
+    }
+
+    /**
+     * The providers match the default locale's paths, so `/en/lessons/x?a=b` reads as `/cours/x?a=b`.
+     */
+    private function inDefaultLocale(string $uri): string
+    {
+        $path = explode('?', $uri, 2)[0];
+        $query = strstr($uri, '?');
+
+        return $this->localizedPath->inDefaultLocale($path) . ($query === false ? '' : $query);
     }
 }

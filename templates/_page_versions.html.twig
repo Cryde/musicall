@@ -1,0 +1,13 @@
+{#- The page's canonical URL and its version in each locale, x-default being the default locale's (#1192). Nothing at all while a single locale is enabled, so the pages stay byte for byte as they were. -#}
+{% if versions ?? null %}
+
+    <link rel="canonical" href="{{ site_origin ~ versions.canonicalPath }}"/>
+{% if versions.paths|length > 1 %}
+{% for locale, path in versions.paths %}
+    <link rel="alternate" hreflang="{{ locale }}" href="{{ site_origin ~ path }}"/>
+{% endfor %}
+{% if versions.defaultPath %}
+    <link rel="alternate" hreflang="x-default" href="{{ site_origin ~ versions.defaultPath }}"/>
+{% endif %}
+{% endif %}
+{% endif %}

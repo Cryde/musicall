@@ -4,6 +4,7 @@ namespace App\Repository\Forum;
 
 use App\Entity\Forum\ForumTopic;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -32,6 +33,21 @@ class ForumTopicRepository extends ServiceEntityRepository
             ->setParameter('forumSlug', $forumSlug)
             ->orderBy('ft.type', 'DESC')
             ->addOrderBy('ft.creationDatetime', 'DESC');
+    }
+
+    /** The locale of the topic's forum category, alone: all its hreflang links need. */
+    public function findLocaleBySlug(string $slug): ?string
+    {
+        $locale = $this->createQueryBuilder('topic')
+            ->select('category.locale')
+            ->innerJoin('topic.forum', 'forum')
+            ->innerJoin('forum.forumCategory', 'category')
+            ->where('topic.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
+
+        return is_string($locale) ? $locale : null;
     }
 
     public function countBetween(\DateTimeImmutable $from, \DateTimeImmutable $to): int

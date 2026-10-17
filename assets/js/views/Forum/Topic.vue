@@ -108,6 +108,7 @@ import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddMessageForm from '../../components/Forum/AddMessageForm.vue'
 import TopicPost from '../../components/Forum/TopicPost.vue'
 import TopicPostSkeleton from '../../components/Forum/TopicPostSkeleton.vue'
+import { useContentLanguage } from '../../composables/useContentLanguage.js'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
@@ -119,6 +120,7 @@ const route = useRoute()
 const router = useRouter()
 const forumStore = useForumStore()
 const userSecurityStore = useUserSecurityStore()
+const moveToContentLanguage = useContentLanguage()
 const toast = useToast()
 
 const showAuthModal = ref(false)
@@ -238,7 +240,11 @@ useTitle(
 )
 
 async function fetchData() {
+  const loadedPath = route.path
   await forumStore.loadTopic(topicSlug.value)
+  if (moveToContentLanguage(forumStore.currentTopic?.locale, loadedPath)) {
+    return
+  }
   trackUmamiEvent('forum-topic-view', { topic: topicSlug.value })
   await forumStore.loadPosts({ topicSlug: topicSlug.value, page: currentPage.value })
   await scrollToHash()

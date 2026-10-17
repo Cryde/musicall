@@ -20,6 +20,7 @@ readonly class TopicBuilder
         $item->id = (string) $topic->id;
         $item->title = $topic->title;
         $item->slug = $topic->slug;
+        $item->locale = $topic->forum->forumCategory->locale;
         $item->isLocked = $topic->isLocked;
         $item->isResolved = $topic->isResolved;
         $item->isPinned = $topic->type === ForumTopicEntity::TYPE_TOPIC_PINNED;

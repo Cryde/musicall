@@ -216,6 +216,12 @@ when@test:
             arguments:
                 $inner: '@.inner'
 
+        # The Vite tags read public/build, which the PHP suite has no build of in CI. Replaced, under the bundle's
+        # own id, so a test can render the page shell (base.html.twig).
+        pentatrion_vite.twig_entry_files_extension:
+            class: App\Tests\Double\StubViteEntryFilesTwigExtension
+            tags: ['twig.extension']
+
         # Don't fire UserActivityListener on every test request - it would
         # write to fos_user.last_activity_datetime ~1600 times per suite.
         # The listener's own behavior is covered directly by

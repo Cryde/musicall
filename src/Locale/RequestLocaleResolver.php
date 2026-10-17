@@ -9,9 +9,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * The locale a request wants: the web front end's active locale, then the user's own choice, then the locale
- * cookie, then Accept-Language, then the default. A value that is not an enabled locale falls through to the
- * next step.
+ * The locale a request wants: the web front end's active locale, then the page's URL prefix, then the user's own
+ * choice, then the locale cookie, then Accept-Language, then the default. A value that is not an enabled locale
+ * falls through to the next step.
  */
 readonly class RequestLocaleResolver
 {
@@ -32,6 +32,7 @@ readonly class RequestLocaleResolver
         private array $enabledLocales,
         #[Autowire(param: 'kernel.default_locale')]
         private string $defaultLocale,
+        private LocalizedPath $localizedPath,
     ) {
     }
 
@@ -41,6 +42,12 @@ readonly class RequestLocaleResolver
         $headerLocale = $request->headers->get(self::HEADER);
         if ($headerLocale !== null && $this->isEnabled($headerLocale)) {
             return $headerLocale;
+        }
+
+        // A page under `/en` is English, whatever the account, the cookie or the browser say. API calls have no prefix.
+        $pathLocale = $this->localizedPath->prefixLocale($request->getPathInfo());
+        if ($pathLocale !== null) {
+            return $pathLocale;
         }
 
         if ($user instanceof User && $this->isEnabled($user->locale)) {

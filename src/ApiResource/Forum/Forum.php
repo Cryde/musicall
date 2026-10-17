@@ -25,6 +25,8 @@ class Forum
 {
     public string $id;
     public string $title;
+    /** Its category's locale, which the forum is written in: the page moves under that locale's prefix. */
+    public string $locale;
 
     #[ApiProperty(genId: false)]
     public ForumCategory $forumCategory;

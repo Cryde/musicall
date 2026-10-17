@@ -23,12 +23,14 @@ import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import PublicationDetailLayout from '../../components/Publication/PublicationDetailLayout.vue'
+import { useContentLanguage } from '../../composables/useContentLanguage.js'
 import { usePublicationStore } from '../../store/publication/publication.js'
 
 const { t } = useI18n()
 const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication, relatedPublications } = storeToRefs(publicationStore)
+const moveToContentLanguage = useContentLanguage()
 
 const pageTitle = computed(() =>
   publication.value
@@ -39,7 +41,11 @@ const pageTitle = computed(() =>
 useTitle(pageTitle)
 
 async function loadData(slug) {
+  const loadedPath = route.path
   await publicationStore.loadPublication(slug)
+  if (moveToContentLanguage(publication.value?.language, loadedPath)) {
+    return
+  }
   trackUmamiEvent('course-view', { course: slug })
   publicationStore.loadRelatedPublications(slug)
 }

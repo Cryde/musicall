@@ -1,5 +1,8 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        # The origin canonical and hreflang links name: the site's own, never a request's Host header.
+        site_origin: '%env(DEFAULT_URI)%'
 
 when@test:
     twig:
