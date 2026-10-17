@@ -10,7 +10,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\Forum\RecentForumTopicsProvider;
 
 /**
- * The topics that moved last across every forum (#1078). Public, like the forum lists it summarizes.
+ * The topics that moved last across the forums of the request's locale (#1078). Public, like the forum lists it summarizes.
  * One object rather than a collection, since its topics already have their own addresses.
  */
 #[Get(

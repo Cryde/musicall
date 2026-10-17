@@ -11,6 +11,7 @@ use App\ApiResource\Forum\Recent\RecentForumTopics;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
 use App\Repository\Forum\ForumTopicRepository;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * @implements ProviderInterface<RecentForumTopics>
@@ -19,8 +20,10 @@ readonly class RecentForumTopicsProvider implements ProviderInterface
 {
     private const int LIMIT = 3;
 
-    public function __construct(private ForumTopicRepository $forumTopicRepository)
-    {
+    public function __construct(
+        private ForumTopicRepository $forumTopicRepository,
+        private LocaleSwitcher $localeSwitcher,
+    ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): RecentForumTopics
@@ -38,7 +41,7 @@ readonly class RecentForumTopicsProvider implements ProviderInterface
                 : $topic->creationDatetime;
 
             return $item;
-        }, $this->forumTopicRepository->findRecentlyActive(self::LIMIT)));
+        }, $this->forumTopicRepository->findRecentlyActive($this->localeSwitcher->getLocale(), self::LIMIT)));
 
         return $recent;
     }

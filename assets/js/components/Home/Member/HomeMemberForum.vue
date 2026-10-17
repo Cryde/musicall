@@ -30,7 +30,7 @@ import forumApi from '../../../api/forum/forum.js'
 import relativeDate from '../../../helper/date/relative-date.js'
 import HomeMemberPanel from './HomeMemberPanel.vue'
 
-/** The topics that moved last across the forums (#1078). */
+/** The topics that moved last across the forums of the page's locale (#1078). */
 const { t } = useI18n()
 const isLoading = ref(true)
 const topics = ref([])

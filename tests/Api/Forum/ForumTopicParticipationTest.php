@@ -12,11 +12,13 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
+use App\Tests\Factory\Forum\ForumPostFactory;
 use App\Tests\Factory\Forum\ForumSourceFactory;
 use App\Tests\Factory\Forum\ForumTopicParticipationFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
 class ForumTopicParticipationTest extends ApiTestCase
@@ -110,6 +112,119 @@ class ForumTopicParticipationTest extends ApiTestCase
         $this->assertCount(1, $resp['member'], 'List should only return current user participations');
         $this->assertSame('t', $resp['member'][0]['topic']['slug']);
         $this->assertTrue($resp['member'][0]['is_read']);
+    }
+
+    public function test_list_keeps_the_topics_of_every_locale(): void
+    {
+        // A member's own topics, not a forum listing: an English page still lists the French ones.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $author = UserFactory::new(['username' => 'topic_creator', 'email' => 'topic_creator@e.com'])->create();
+        $authorId = $author->id;
+        $englishTopic = $this->topicWithLastPost('en', 'gear', 'Gear', 'which-amp', 'Which amp', $author, '2026-09-25 10:00:00');
+        $frenchTopic = $this->topicWithLastPost('fr', 'materiel', 'Matériel', 'quel-ampli', 'Quel ampli', $author, '2026-09-20 10:00:00');
+        $englishParticipation = $this->seedParticipation($user, $englishTopic, readDatetime: new \DateTime('2026-09-26 10:00:00'));
+        $frenchParticipation = $this->seedParticipation($user, $frenchTopic, readDatetime: new \DateTime('2026-09-21 10:00:00'));
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/forums/topic-participations', [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+            'HTTP_X_LOCALE' => 'en',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumTopicParticipation',
+            '@id' => '/api/forums/topic-participations',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => '/api/forum_topic_participations/' . $englishParticipation->id,
+                    '@type' => 'ForumTopicParticipation',
+                    'id' => $englishParticipation->id,
+                    'is_read' => true,
+                    'creation_datetime' => $englishParticipation->creationDatetime->format('c'),
+                    'topic' => [
+                        '@type' => 'ForumTopicSummary',
+                        'id' => $englishTopic->id,
+                        'title' => 'Which amp',
+                        'slug' => 'which-amp',
+                        'is_locked' => false,
+                        'is_resolved' => false,
+                        'is_pinned' => false,
+                        'post_number' => 1,
+                        'creation_datetime' => '2026-09-25T10:00:00+00:00',
+                        'last_post' => [
+                            '@type' => 'ForumPost',
+                            'id' => $englishTopic->lastPost?->id,
+                            'creation_datetime' => '2026-09-25T10:00:00+00:00',
+                            'creator' => [
+                                '@type' => 'User',
+                                'id' => $authorId,
+                                'username' => 'topic_creator',
+                                'display_name' => 'topic_creator',
+                            ],
+                        ],
+                        'author' => [
+                            '@type' => 'User',
+                            'id' => $authorId,
+                            'username' => 'topic_creator',
+                            'display_name' => 'topic_creator',
+                        ],
+                        'forum' => [
+                            '@type' => 'Forum',
+                            'id' => $englishTopic->forum->id,
+                            'title' => 'Gear',
+                            'slug' => 'gear',
+                            'description' => 'Gear description',
+                        ],
+                    ],
+                ],
+                [
+                    '@id' => '/api/forum_topic_participations/' . $frenchParticipation->id,
+                    '@type' => 'ForumTopicParticipation',
+                    'id' => $frenchParticipation->id,
+                    'is_read' => true,
+                    'creation_datetime' => $frenchParticipation->creationDatetime->format('c'),
+                    'topic' => [
+                        '@type' => 'ForumTopicSummary',
+                        'id' => $frenchTopic->id,
+                        'title' => 'Quel ampli',
+                        'slug' => 'quel-ampli',
+                        'is_locked' => false,
+                        'is_resolved' => false,
+                        'is_pinned' => false,
+                        'post_number' => 1,
+                        'creation_datetime' => '2026-09-20T10:00:00+00:00',
+                        'last_post' => [
+                            '@type' => 'ForumPost',
+                            'id' => $frenchTopic->lastPost?->id,
+                            'creation_datetime' => '2026-09-20T10:00:00+00:00',
+                            'creator' => [
+                                '@type' => 'User',
+                                'id' => $authorId,
+                                'username' => 'topic_creator',
+                                'display_name' => 'topic_creator',
+                            ],
+                        ],
+                        'author' => [
+                            '@type' => 'User',
+                            'id' => $authorId,
+                            'username' => 'topic_creator',
+                            'display_name' => 'topic_creator',
+                        ],
+                        'forum' => [
+                            '@type' => 'Forum',
+                            'id' => $frenchTopic->forum->id,
+                            'title' => 'Matériel',
+                            'slug' => 'materiel',
+                            'description' => 'Matériel description',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     public function test_list_filters_out_removed(): void
@@ -243,6 +358,40 @@ class ForumTopicParticipationTest extends ApiTestCase
         );
 
         return $row === false ? null : ($row['removed_datetime'] ?? null);
+    }
+
+    private function topicWithLastPost(
+        string $locale,
+        string $forumSlug,
+        string $forumTitle,
+        string $topicSlug,
+        string $topicTitle,
+        User $author,
+        string $lastPostDatetime,
+    ): ForumTopic {
+        $forumCategory = ForumCategoryFactory::new(['position' => 1, 'locale' => $locale])->create();
+        $forum = ForumFactory::new([
+            'forumCategory' => $forumCategory,
+            'slug' => $forumSlug,
+            'title' => $forumTitle,
+            'description' => $forumTitle . ' description',
+        ])->create();
+        $topic = ForumTopicFactory::new([
+            'author' => $author,
+            'forum' => $forum,
+            'slug' => $topicSlug,
+            'title' => $topicTitle,
+            'postNumber' => 1,
+            'creationDatetime' => new \DateTime($lastPostDatetime),
+        ])->create();
+        $topic->lastPost = ForumPostFactory::new([
+            'topic' => $topic,
+            'creator' => $author,
+            'creationDatetime' => new \DateTime($lastPostDatetime),
+        ])->create();
+        \Zenstruck\Foundry\Persistence\save($topic);
+
+        return $topic;
     }
 
     private function seedParticipation(

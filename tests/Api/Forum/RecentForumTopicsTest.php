@@ -115,6 +115,56 @@ class RecentForumTopicsTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_french_page_lists_the_topics_of_the_french_forums_only(): void
+    {
+        $this->createFrenchAndEnglishTopics();
+
+        $this->client->request('GET', '/api/forums/recent-topics');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/RecentForumTopics',
+            '@id' => '/api/forums/recent-topics',
+            '@type' => 'RecentForumTopics',
+            'topics' => [
+                [
+                    '@type' => 'RecentForumTopic',
+                    'title' => 'Quel ampli pour débuter',
+                    'slug' => 'quel-ampli',
+                    'forum_title' => 'Matériel',
+                    'forum_slug' => 'materiel',
+                    'replies' => 1,
+                    'last_activity_datetime' => '2026-09-20T10:00:00+00:00',
+                ],
+            ],
+        ]);
+    }
+
+    public function test_an_english_page_lists_the_topics_of_the_english_forums_only(): void
+    {
+        $this->createFrenchAndEnglishTopics();
+
+        $this->client->request('GET', '/api/forums/recent-topics', server: ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/RecentForumTopics',
+            '@id' => '/api/forums/recent-topics',
+            '@type' => 'RecentForumTopics',
+            'topics' => [
+                [
+                    '@type' => 'RecentForumTopic',
+                    'title' => 'Which amp for a beginner',
+                    'slug' => 'which-amp',
+                    'forum_title' => 'Gear',
+                    'forum_slug' => 'gear',
+                    'replies' => 2,
+                    'last_activity_datetime' => '2026-09-25T10:00:00+00:00',
+                ],
+            ],
+        ]);
+    }
+
     public function test_no_topic_is_an_empty_list(): void
     {
         $this->client->request('GET', '/api/forums/recent-topics');
@@ -126,6 +176,18 @@ class RecentForumTopicsTest extends ApiTestCase
             '@type' => 'RecentForumTopics',
             'topics' => [],
         ]);
+    }
+
+    /** The English topic moved last, so a missing filter would put it first in the French list. */
+    private function createFrenchAndEnglishTopics(): void
+    {
+        $frenchCategory = ForumCategoryFactory::new(['position' => 1, 'locale' => 'fr'])->create();
+        $englishCategory = ForumCategoryFactory::new(['position' => 1, 'locale' => 'en'])->create();
+        $frenchForum = ForumFactory::new(['forumCategory' => $frenchCategory, 'title' => 'Matériel', 'slug' => 'materiel'])->create();
+        $englishForum = ForumFactory::new(['forumCategory' => $englishCategory, 'title' => 'Gear', 'slug' => 'gear'])->create();
+
+        $this->topic($frenchForum, 'Quel ampli pour débuter', 'quel-ampli', 2, '2026-09-20 10:00:00');
+        $this->topic($englishForum, 'Which amp for a beginner', 'which-amp', 3, '2026-09-25 10:00:00');
     }
 
     private function topic(Forum $forum, string $title, string $slug, int $posts, string $lastActivity): void

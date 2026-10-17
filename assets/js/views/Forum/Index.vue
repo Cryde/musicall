@@ -51,6 +51,15 @@
       </template>
 
       <template v-else>
+        <Message v-if="forumStore.hasCategoriesError" severity="error" :closable="false">
+          {{ t('forum.index.load_error') }}
+        </Message>
+        <p
+          v-else-if="!forumStore.categories.length"
+          class="text-surface-600 dark:text-surface-400 py-8 text-center"
+        >
+          {{ t('forum.index.empty') }}
+        </p>
         <div v-for="category in forumStore.categories" :key="category.id" class="mb-8">
           <h2 class="text-xl font-semibold mb-2">{{ category.title }}</h2>
           <p class="text-surface-500 dark:text-surface-400 mb-4">{{ category.description }}</p>
@@ -88,6 +97,7 @@ import Card from 'primevue/card'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import forumApi from '../../api/forum/forum.js'
