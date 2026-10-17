@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Locale;
 
 use App\Entity\User;
+use App\Locale\LocalizedPath;
 use App\Locale\RequestLocaleResolver;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +17,7 @@ class RequestLocaleResolverTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->resolver = new RequestLocaleResolver(['fr', 'en'], 'fr');
+        $this->resolver = self::resolver(['fr', 'en']);
     }
 
     public function test_the_front_end_locale_wins_over_the_user_the_cookie_and_accept_language(): void
@@ -45,6 +46,49 @@ class RequestLocaleResolverTest extends TestCase
         $request = self::request(acceptLanguage: 'fr', frontEndLocale: $frontEndLocale);
 
         self::assertSame('en', $this->resolver->resolve($request, $this->user('en')));
+    }
+
+    public function test_a_page_under_a_locale_prefix_wins_over_the_user_the_cookie_and_accept_language(): void
+    {
+        $request = self::request(cookie: 'fr', acceptLanguage: 'fr', path: '/en/publications');
+
+        self::assertSame('en', $this->resolver->resolve($request, $this->user('fr')));
+        self::assertFalse($request->attributes->has('_vary_by_language'));
+    }
+
+    public function test_the_front_end_locale_wins_over_the_page_prefix(): void
+    {
+        $request = self::request(frontEndLocale: 'fr', path: '/en/publications');
+
+        self::assertSame('fr', $this->resolver->resolve($request, null));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function pathsWithoutALocalePrefix(): iterable
+    {
+        yield 'a French page' => ['/publications'];
+        yield 'the home page' => ['/'];
+        yield 'a segment starting like a locale' => ['/enfants'];
+        yield 'the default locale as a prefix' => ['/fr/publications'];
+        yield 'a locale that is not enabled' => ['/de/publications'];
+        yield 'an API call' => ['/api/users/self'];
+    }
+
+    #[DataProvider('pathsWithoutALocalePrefix')]
+    public function test_a_path_without_an_enabled_locale_prefix_falls_through_to_the_user(string $path): void
+    {
+        $request = self::request(acceptLanguage: 'fr', path: $path);
+
+        self::assertSame('en', $this->resolver->resolve($request, $this->user('en')));
+    }
+
+    public function test_the_prefix_is_ignored_while_french_is_the_only_enabled_locale(): void
+    {
+        $request = self::request(acceptLanguage: 'fr', path: '/en/publications');
+
+        self::assertSame('fr', self::resolver(['fr'])->resolve($request, null));
     }
 
     public function test_the_user_locale_wins_over_the_cookie_and_accept_language(): void
@@ -96,14 +140,14 @@ class RequestLocaleResolverTest extends TestCase
 
     public function test_the_default_wins_even_when_it_is_not_listed_first(): void
     {
-        $resolver = new RequestLocaleResolver(['en', 'fr'], 'fr');
+        $resolver = self::resolver(['en', 'fr']);
 
         self::assertSame('fr', $resolver->resolve(self::request(acceptLanguage: 'de'), null));
     }
 
     public function test_only_french_is_reachable_while_french_is_the_only_enabled_locale(): void
     {
-        $resolver = new RequestLocaleResolver(['fr'], 'fr');
+        $resolver = self::resolver(['fr']);
         $request = self::request(cookie: 'en', acceptLanguage: 'en', frontEndLocale: 'en');
 
         self::assertSame('fr', $resolver->resolve($request, $this->user('en')));
@@ -165,7 +209,7 @@ class RequestLocaleResolverTest extends TestCase
 
     public function test_a_single_enabled_locale_does_not_vary_by_language(): void
     {
-        $resolver = new RequestLocaleResolver(['fr'], 'fr');
+        $resolver = self::resolver(['fr']);
         $request = self::request(acceptLanguage: 'en');
 
         $resolver->resolve($request, null);
@@ -173,9 +217,21 @@ class RequestLocaleResolverTest extends TestCase
         self::assertFalse($request->attributes->has('_vary_by_language'));
     }
 
-    private static function request(?string $cookie = null, ?string $acceptLanguage = null, ?string $frontEndLocale = null): Request
+    /**
+     * @param string[] $enabledLocales
+     */
+    private static function resolver(array $enabledLocales): RequestLocaleResolver
     {
-        $request = Request::create('/api/users/self', cookies: $cookie !== null ? [RequestLocaleResolver::COOKIE => $cookie] : []);
+        return new RequestLocaleResolver($enabledLocales, 'fr', new LocalizedPath($enabledLocales, 'fr'));
+    }
+
+    private static function request(
+        ?string $cookie = null,
+        ?string $acceptLanguage = null,
+        ?string $frontEndLocale = null,
+        string $path = '/api/users/self',
+    ): Request {
+        $request = Request::create($path, cookies: $cookie !== null ? [RequestLocaleResolver::COOKIE => $cookie] : []);
         // Request::create() sends `en-us,en;q=0.5` unless told otherwise.
         $request->headers->remove('Accept-Language');
         if ($acceptLanguage !== null) {

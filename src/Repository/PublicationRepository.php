@@ -7,6 +7,7 @@ use App\Entity\PublicationSubCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -70,6 +71,33 @@ class PublicationRepository extends ServiceEntityRepository
             ->orderBy('publication.language', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * The slug, language and section of the online publication $slug and of its online translations, $slug first,
+     * read as scalars: all its hreflang links need. Empty when $slug is not online.
+     *
+     * @return list<array{slug: string, language: ?string, subCategoryType: int}>
+     */
+    public function findOnlineVersionsBySlug(string $slug): array
+    {
+        /** @var list<array{slug: string, language: ?string, subCategoryType: int}> $versions */
+        $versions = $this->createQueryBuilder('publication')
+            ->select('version.slug', 'version.language', 'subCategory.type AS subCategoryType')
+            ->addSelect('CASE WHEN version.id = publication.id THEN 0 ELSE 1 END AS HIDDEN requestedFirst')
+            // The publication itself and the other rows of its group. A null group matches no other row.
+            ->innerJoin(Publication::class, 'version', Join::WITH, 'version.id = publication.id OR version.translationGroup = publication.translationGroup')
+            ->innerJoin('version.subCategory', 'subCategory')
+            ->where('publication.slug = :slug')
+            ->andWhere('publication.status = :online')
+            ->andWhere('version.status = :online')
+            ->setParameter('slug', $slug)
+            ->setParameter('online', Publication::STATUS_ONLINE)
+            ->orderBy('requestedFirst')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $versions;
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Locale\PageVersionsResolver;
 use App\Repository\PublicationRepository;
 use App\Service\Bot\BotDetector;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,12 +33,20 @@ class HomeController extends AbstractController
 
     #[Route('/', name: 'app_homepage')]
     #[Route('/{route}', name: 'vue_pages', requirements: ['route' => '^(?!.*_wdt|_profiler|media|api|oauth|register\/confirm\/).+'])]
-    public function index(Request $request, BotDetector $botDetector): Response
+    public function index(Request $request, BotDetector $botDetector, PageVersionsResolver $pageVersionsResolver): Response
     {
         if ($botDetector->isBot($request->headers->get('User-Agent', ''))) {
             return $this->forward('\\App\\Controller\\BotController::index');
         }
 
-        return $this->render('base.html.twig');
+        // Search engines get this page, not the bot one: BotDetector only knows the crawlers of share cards.
+        $versions = $pageVersionsResolver->resolve($request);
+        // A page with a version per locale is in its URL's locale, or its content's, as the router will show it.
+        // The others (a member's own, the sign-in flow) keep the locale the request resolved.
+        if ($versions !== null) {
+            $request->setLocale($versions->locale);
+        }
+
+        return $this->render('base.html.twig', ['versions' => $versions]);
     }
 }

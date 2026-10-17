@@ -13,6 +13,7 @@ readonly class ForumDetailBuilder
         $item = new Forum();
         $item->id = (string) $forum->id;
         $item->title = $forum->title;
+        $item->locale = $forum->forumCategory->locale;
         $item->forumCategory = $this->buildForumCategorySimple($forum);
 
         return $item;

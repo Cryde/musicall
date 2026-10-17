@@ -28,6 +28,8 @@ class Topic
 
     #[ApiProperty(identifier: true)]
     public string $slug;
+    /** Its forum's locale, which the topic is written in: the page moves under that locale's prefix. */
+    public string $locale;
 
     public bool $isLocked;
     public bool $isResolved;

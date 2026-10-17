@@ -23,10 +23,11 @@
     <meta property="og:type" content="website"/>
     <meta property="og:description"
           content="{{ description is defined ? description : 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...' }}"/>
-    <meta property="og:url" content="{{ app.request.uri() }}"/>
+    <meta property="og:url" content="{{ versions ?? null ? site_origin ~ versions.canonicalPath : app.request.uri() }}"/>
     {% set imageUrl = cover is defined ? cover : (absolute_url(asset('assets/image/facebook-logo.jpg', 'vite'))) %}
     <meta property="og:image" content="{{ imageUrl }}"/>
-    <meta property="og:locale" content="fr_FR"/>
+    {#~ What og:locale calls each app locale, the same table as assets/js/app.js. #}
+    <meta property="og:locale" content="{{ {fr: 'fr_FR', en: 'en_GB'}[app.request.locale] ?? 'fr_FR' }}"/>{{ include('_page_versions.html.twig') }}
 </head>
 <body>
 <noscript>Votre navigateur ne supporte pas le JavaScript! Activez le pour pouvoir profiter au mieux du site.</noscript>

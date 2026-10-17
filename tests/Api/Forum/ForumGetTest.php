@@ -39,10 +39,40 @@ class ForumGetTest extends ApiTestCase
             '@type' => 'Forum',
             'id' => $forum->id,
             'title' => 'Forum title',
+            'locale' => 'fr',
             'forum_category' => [
                 '@type' => 'ForumCategory',
                 'id' => $forumCategory->id,
                 'title' => 'Forum category title',
+            ],
+        ]);
+    }
+
+    public function test_get_item_names_the_locale_of_its_category(): void
+    {
+        // What the page reads to move under /en: the forum is English, whatever the language it is asked in.
+        $forumCategory = ForumCategoryFactory::new(['locale' => 'en', 'position' => 1, 'title' => 'Gear'])->create();
+        $forum = ForumFactory::new([
+            'description' => 'Guitars and amps',
+            'forumCategory' => $forumCategory,
+            'slug' => 'guitars',
+            'title' => 'Guitars',
+            'updateDatetime' => null,
+        ])->create();
+
+        $this->client->request('GET', '/api/forum/guitars');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Forum',
+            '@id' => '/api/forum/guitars',
+            '@type' => 'Forum',
+            'id' => $forum->id,
+            'title' => 'Guitars',
+            'locale' => 'en',
+            'forum_category' => [
+                '@type' => 'ForumCategory',
+                'id' => $forumCategory->id,
+                'title' => 'Gear',
             ],
         ]);
     }

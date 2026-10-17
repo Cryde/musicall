@@ -6,6 +6,7 @@ namespace App\Tests\Unit\EventListener;
 
 use App\Entity\User;
 use App\EventListener\RequestLocaleListener;
+use App\Locale\LocalizedPath;
 use App\Locale\RequestLocaleResolver;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -36,7 +37,7 @@ class RequestLocaleListenerTest extends TestCase
         $container->set('security.token_storage', $this->tokenStorage);
         $this->localeSwitcher = new LocaleSwitcher('fr', []);
         $this->listener = new RequestLocaleListener(
-            new RequestLocaleResolver(['fr', 'en'], 'fr'),
+            new RequestLocaleResolver(['fr', 'en'], 'fr', new LocalizedPath(['fr', 'en'], 'fr')),
             $this->localeSwitcher,
             new Security($container),
         );
