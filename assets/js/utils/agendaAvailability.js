@@ -3,6 +3,7 @@
  * and the member rows so the three never disagree on what `absent` or a null answer is called.
  */
 
+import { separator } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 
 const ANSWER_LABEL_KEYS = {
@@ -35,7 +36,7 @@ export function availabilitySummary(totals) {
     parts.push(t('band_space_agenda.availability.summary.pending', { count: totals.pending }))
   }
 
-  return parts.length > 0 ? parts.join(' · ') : null
+  return parts.length > 0 ? parts.join(` ${separator()} `) : null
 }
 
 /**

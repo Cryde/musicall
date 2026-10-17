@@ -398,6 +398,7 @@ import ColumnsBubbleMenu from '../../../components/Editor/ColumnsBubbleMenu.vue'
 import { Column, Columns } from '../../../components/Editor/extensions/Columns.js'
 import PublicationSettingsPanel from '../../../components/Publication/PublicationSettingsPanel.vue'
 import { publicationStatusLabel } from '../../../constants/publicationStatus.js'
+import { noValue } from '../../../i18n/formatLocale.js'
 import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 
 const { t } = useI18n()
@@ -435,7 +436,7 @@ const STATUS_SEVERITIES = { 0: 'warn', 1: 'success', 2: 'info' }
 const statusBadge = computed(() => {
   const publication = publicationEditStore.publication
   if (!publication) {
-    return { label: '—', severity: 'secondary' }
+    return { label: noValue(), severity: 'secondary' }
   }
   return {
     label: publicationStatusLabel(publication.status_id),

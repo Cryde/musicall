@@ -72,6 +72,61 @@ class QuotaExceededExceptionTest extends TestCase
         ];
     }
 
+    /**
+     * The same figures in the units the English quota bar writes them in: formatBytes.js picks its
+     * units by locale, so the sentence beside it has to follow.
+     */
+    #[DataProvider('provideEnglishRefusals')]
+    public function test_every_size_is_written_in_english_units_for_an_english_reader(int $quotaBytes, int $usedBytes, int $incomingBytes, string $expected): void
+    {
+        $exception = new QuotaExceededException($quotaBytes, $usedBytes, $incomingBytes);
+
+        self::assertSame($expected, $exception->trans(self::translator('en')));
+    }
+
+    /**
+     * @return iterable<string, array{int, int, int, string}>
+     */
+    public static function provideEnglishRefusals(): iterable
+    {
+        yield 'bytes stay whole' => [
+            1000, 900, 900,
+            'Storage quota exceeded: 900 B used out of 1000 B allowed, 800 B more is needed to add 900 B.',
+        ];
+        yield 'kilobytes keep one decimal' => [
+            1_048_576, 1_048_000, 2048,
+            'Storage quota exceeded: 1023.4 KB used out of 1.0 MB allowed, 1.4 KB more is needed to add 2.0 KB.',
+        ];
+        yield 'the real five gigabyte quota' => [
+            5_368_709_120, 5_363_000_000, 12_345_678,
+            'Storage quota exceeded: 4.99 GB used out of 5.00 GB allowed, 6.3 MB more is needed to add 11.8 MB.',
+        ];
+    }
+
+    public function test_a_locale_asked_for_wins_over_the_translator_locale(): void
+    {
+        $exception = new QuotaExceededException(1000, 900, 900);
+
+        self::assertSame(
+            'Storage quota exceeded: 900 B used out of 1000 B allowed, 800 B more is needed to add 900 B.',
+            $exception->trans(self::translator('fr'), 'en'),
+        );
+        self::assertSame(
+            'Quota de stockage dépassé : 900 o utilisés sur 1000 o autorisés, il manque 800 o pour ajouter 900 o.',
+            $exception->trans(self::translator('en'), 'fr'),
+        );
+    }
+
+    public function test_the_parameters_alone_are_in_french_units(): void
+    {
+        $exception = new QuotaExceededException(1_048_576, 1_048_000, 2048);
+
+        self::assertSame(
+            ['used' => '1023.4 Ko', 'quota' => '1.0 Mo', 'missing' => '1.4 Ko', 'incoming' => '2.0 Ko'],
+            $exception->getParameters(),
+        );
+    }
+
     public function test_no_raw_byte_count_survives_in_the_message(): void
     {
         $message = (new QuotaExceededException(5_368_709_120, 5_363_000_000, 12_345_678))->trans(self::translator());
@@ -90,13 +145,20 @@ class QuotaExceededExceptionTest extends TestCase
     }
 
     /**
-     * The real catalogue, so the sentence asserted above is the one a member reads.
+     * The real catalogues, so the sentences asserted above are the ones a member reads.
      */
-    private static function translator(): Translator
+    private static function translator(string $locale = 'fr'): Translator
     {
-        $translator = new Translator('fr');
+        $translator = new Translator($locale);
         $translator->addLoader('yaml', new YamlFileLoader());
-        $translator->addResource('yaml', __DIR__ . '/../../../../translations/messages+intl-icu.fr.yaml', 'fr', 'messages+intl-icu');
+        foreach (['fr', 'en'] as $catalogueLocale) {
+            $translator->addResource(
+                'yaml',
+                __DIR__ . '/../../../../translations/messages+intl-icu.' . $catalogueLocale . '.yaml',
+                $catalogueLocale,
+                'messages+intl-icu',
+            );
+        }
 
         return $translator;
     }

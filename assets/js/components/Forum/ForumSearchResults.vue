@@ -28,7 +28,7 @@
             class="block"
           >
             <div class="text-xs text-surface-500 mb-1">
-              {{ result.category_title }} ›
+              {{ result.category_title }}<i class="pi pi-angle-right text-xs mx-1 align-middle" aria-hidden="true" />
               <router-link
                 :to="{ name: 'forum_topic_list', params: { slug: result.forum_slug } }"
                 class="hover:underline"

@@ -6,6 +6,7 @@
  * being deleted, so nothing here may assume the announce still exists.
  */
 
+import { separator } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 
 const ANNOUNCE_LOOKING_FOR_MUSICIAN = 1
@@ -39,7 +40,7 @@ export function contactOriginDetails(origin) {
   if (origin.styles?.length) parts.push(origin.styles.join(', '))
   if (origin.location_name) parts.push(origin.location_name)
 
-  return parts.length > 0 ? parts.join(' · ') : null
+  return parts.length > 0 ? parts.join(` ${separator()} `) : null
 }
 
 export function contactOriginIcon(origin) {

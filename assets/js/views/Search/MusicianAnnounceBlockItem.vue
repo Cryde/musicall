@@ -72,7 +72,7 @@
             <div class="flex items-center justify-between gap-2 text-sm text-surface-500 dark:text-surface-400 mt-1">
                 <span class="min-w-0">
                     <i class="pi pi-map-marker mr-1" />{{ location_name }}
-                    <span v-if="distance" class="opacity-70"> · {{ formattedDistance }}</span>
+                    <span v-if="distance" class="opacity-70">{{ ` ${separator()} ${formattedDistance}` }}</span>
                 </span>
                 <AnnounceNoteButton :note="note" :author-name="userName" class="shrink-0" />
             </div>
@@ -131,6 +131,7 @@ import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import ReportButton from '../../components/Report/ReportButton.vue'
 import UserName from '../../components/User/UserName.vue'
 import { displayName } from '../../helper/user/displayName.js'
+import { separator } from '../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { languageListLabel } from '../../utils/announceLanguages.js'
 import { getAvatarStyle } from '../../utils/avatar.js'

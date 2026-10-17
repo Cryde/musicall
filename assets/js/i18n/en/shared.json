@@ -1,0 +1,196 @@
+{
+  "head": {
+    "title": "MusicAll, the go-to website for musicians",
+    "description": "A community website for musicians. Music articles and lessons, a musician directory, forums and more."
+  },
+  "city": {
+    "placeholder": "City"
+  },
+  "mention": {
+    "suggestions": "Mention suggestions"
+  },
+  "contact": {
+    "page_title": "Contact - MusicAll",
+    "title": "Contact",
+    "sent": "Your message has been sent!",
+    "back_home": "Back to home",
+    "intro_question": "A question? A suggestion?",
+    "intro_form": "Fill in the form below.",
+    "name": "Your name",
+    "name_placeholder": "Enter your name",
+    "email": "Your email",
+    "email_placeholder": "Enter your email",
+    "message": "Your message",
+    "message_placeholder": "Enter your message",
+    "message_hint": "At least 10 characters",
+    "send": "Send",
+    "too_many": "Too many messages sent. Please try again later.",
+    "generic_error": "An error occurred. Please try again."
+  },
+  "feedback": {
+    "title": "Any feedback for us?",
+    "thanks": "Thanks, we've received your feedback.",
+    "close": "Close",
+    "intro": "A bug, an idea, a question? A few words are enough. The page and section are filled in for you, change them if needed.",
+    "type_label": "Type of feedback",
+    "module_label": "Section",
+    "message_label": "Your message",
+    "message_placeholder": "Describe what you saw, and what you expected.",
+    "message_counter": "{length} / {max} characters, {min} minimum",
+    "email_label": "Your email {optional}",
+    "optional": "(optional)",
+    "email_help": "Add your email if you'd like a reply.",
+    "page_sent": "The page \"{page}\" is sent along with your message.",
+    "cancel": "Cancel",
+    "send": "Send",
+    "too_many": "You've sent several pieces of feedback recently. Try again in a moment.",
+    "type": {
+      "bug": "Bug",
+      "suggestion": "Suggestion",
+      "question": "Question",
+      "other": "Other"
+    },
+    "module_group": {
+      "band_space": "Band Space",
+      "site": "The website"
+    },
+    "module": {
+      "dashboard": "Band Space dashboard",
+      "agenda": "Calendar",
+      "chat": "Chat",
+      "notes": "Notes",
+      "file": "Files",
+      "setlist": "Setlists",
+      "rider": "Tech riders",
+      "task": "Tasks",
+      "finance": "Finances",
+      "settings": "Band Space settings",
+      "forum": "Forum",
+      "publication": "Publications",
+      "gallery": "Photo galleries",
+      "directory": "Directory and search",
+      "course": "Lessons",
+      "message": "Messages",
+      "notification": "Notifications",
+      "account": "My account",
+      "other": "Other"
+    }
+  },
+  "report": {
+    "button": "Report",
+    "button_aria_label": "Report this content",
+    "dialog_title": "Report",
+    "intro": "Your report goes to the moderators. The person concerned won't know who sent it.",
+    "reason_legend": "Reason",
+    "details_label": "Details (optional)",
+    "cancel": "Cancel",
+    "submit": "Send report",
+    "sent_toast": "Thanks, your report has been sent to the moderators.",
+    "too_many": "You've sent too many reports, please try again later.",
+    "reason": {
+      "spam": "Spam",
+      "harassment": "Harassment",
+      "inappropriate": "Inappropriate content",
+      "fake": "Fake profile or scam",
+      "other": "Other"
+    },
+    "target_type": {
+      "user": "Profile",
+      "announce": "Ad",
+      "message": "Private message",
+      "band_chat_message": "Band chat",
+      "profile_media": "Media",
+      "forum_post": "Forum post",
+      "comment": "Comment",
+      "publication": "Publication"
+    },
+    "live_state": {
+      "unchanged": "Unchanged",
+      "edited": "Edited since",
+      "removed": "Deleted"
+    },
+    "outcome": {
+      "dismissed": "Dismissed",
+      "account_suspended": "Account suspended"
+    },
+    "subject": {
+      "user": "{label}'s profile",
+      "any_user": "a profile",
+      "announce": "{label}'s ad",
+      "any_announce": "an ad",
+      "profile_media": "a media item by {label}",
+      "any_profile_media": "a media item",
+      "forum_post": "a post in the topic \"{label}\"",
+      "any_forum_post": "a forum post",
+      "comment": "a comment on \"{label}\"",
+      "any_comment": "a comment",
+      "publication": "the publication \"{label}\"",
+      "any_publication": "a publication",
+      "band_chat_message": "a message in the {label} band chat",
+      "any_band_chat_message": "a band chat message",
+      "message": "a private message",
+      "other": "some content"
+    },
+    "link": {
+      "private_conversation": "Private conversation",
+      "band_chat": "{band_space} band chat",
+      "any_band_chat": "Band chat",
+      "view_content": "View the content",
+      "not_found": "Content not found"
+    }
+  },
+  "not_found": {
+    "page_title": "Page not found - MusicAll",
+    "play_prompt": "Play a few notes while you're here",
+    "keyboard_hint": "(keyboard: A Z E R T Y U I)",
+    "piano": "Interactive piano",
+    "note": "Note {note}",
+    "explanation": "The page you're looking for doesn't exist or has been moved.",
+    "meanwhile": "In the meantime, why not:",
+    "find_musician": "Find a musician",
+    "post_announce": "Post an ad",
+    "back_home": "Back to home",
+    "login_to_post_announce": "To post an ad, you need to log in.",
+    "easter_egg": "🎸 Smoke on the Water! Deep Purple would be proud!",
+    "title": {
+      "prog_band": "This page joined a prog band, see you in 20 minutes",
+      "missing_score": "Error 404: sheet music not found",
+      "wrong_note": "Oops, wrong note!",
+      "wrong_key": "This page played in C when it should have played in D",
+      "unplanned_solo": "That solo wasn't in the setlist",
+      "unplugged_amp": "Someone unplugged the amp",
+      "lost_bassist": "The bassist got lost again"
+    },
+    "playing": {
+      "not_bad": "Not bad at all!",
+      "nice": "Nice!",
+      "talent": "You've got talent!",
+      "soothes": "Music soothes the savage 404"
+    },
+    "long_play": {
+      "find_band": "Ready to find a band?",
+      "concert": "A whole gig! But the page still isn't here...",
+      "post_announce": "You should post an ad!"
+    }
+  },
+  "public_share": {
+    "page_title": "Shared file {separator} MusicAll",
+    "expires_on": "Expires on {date}",
+    "password_required": "Password required",
+    "password_placeholder": "Enter the password",
+    "download": "Download",
+    "shared_via": "Link shared via {brand}",
+    "brand": "MusicAll",
+    "wrong_password": "Wrong password.",
+    "download_failed": "Download failed.",
+    "not_found_title": "Link not found",
+    "not_found_text": "This share link doesn't exist or is no longer available.",
+    "expired_title": "Link expired",
+    "expired_text": "This share link has expired or been revoked. Ask the person who shared it for a new link.",
+    "error_title": "Error",
+    "generic_error": "An error occurred."
+  },
+  "user": {
+    "deleted": "Deleted user"
+  }
+}

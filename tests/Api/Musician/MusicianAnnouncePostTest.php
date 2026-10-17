@@ -100,13 +100,14 @@ class MusicianAnnouncePostTest extends ApiTestCase
         ]);
     }
 
-    /** @return iterable<string, array{array<string, null>, string, list<string>}> */
+    /** @return iterable<string, array{array<string, null>, string, list<string>, string}> */
     public static function languagesLeftToTheServer(): iterable
     {
-        // What a client that does not ask for the languages sends (the mobile app).
-        yield 'no languages sent' => [[], 'en', ['en']];
-        yield 'languages sent as null' => [['languages' => null], 'en', ['en']];
-        yield 'an account language an announce cannot have' => [[], 'es', ['fr']];
+        // What a client that does not ask for the languages sends (the mobile app). The response is in the
+        // account's language too, French for one that is not enabled.
+        yield 'no languages sent' => [[], 'en', ['en'], 'Drummer'];
+        yield 'languages sent as null' => [['languages' => null], 'en', ['en'], 'Drummer'];
+        yield 'an account language an announce cannot have' => [[], 'es', ['fr'], 'Batteur'];
     }
 
     /**
@@ -114,7 +115,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
      * @param list<string> $expected
      */
     #[DataProvider('languagesLeftToTheServer')]
-    public function test_post_without_languages_takes_the_author_locale(array $languages, string $authorLocale, array $expected): void
+    public function test_post_without_languages_takes_the_author_locale(array $languages, string $authorLocale, array $expected, string $instrumentName): void
     {
         $musicianAnnounceRepository = self::getContainer()->get(MusicianAnnounceRepository::class);
         $author = UserFactory::new()->asBaseUser()->create(['locale' => $authorLocale]);
@@ -147,7 +148,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
             'instrument' => [
                 '@type' => 'Instrument',
                 'id' => $instrument->id,
-                'musician_name' => 'Batteur',
+                'musician_name' => $instrumentName,
             ],
             'styles' => [
                 [
@@ -202,7 +203,8 @@ class MusicianAnnouncePostTest extends ApiTestCase
             'instrument' => [
                 '@type' => 'Instrument',
                 'id' => $instrument->id,
-                'musician_name' => 'Batteur',
+                // The author reads English, so the response does too.
+                'musician_name' => 'Drummer',
             ],
             'styles' => [
                 [

@@ -1,0 +1,126 @@
+{
+  "common": {
+    "forum": "Forum",
+    "my_topics": "My topics",
+    "page_title": "{title} - MusicAll",
+    "pinned": "Pinned",
+    "resolved": "Resolved",
+    "locked": "Locked",
+    "cancel": "Cancel",
+    "error": "Error",
+    "action_failed": "Action failed",
+    "generic_error": "An error occurred."
+  },
+  "index": {
+    "page_title": "Forum - MusicAll",
+    "title": "All forums",
+    "search_placeholder": "Search for a topic or a post...",
+    "clear_search": "Clear search",
+    "search_error": "Error while searching",
+    "empty": "No forums yet.",
+    "load_error": "Could not load the forums."
+  },
+  "search": {
+    "no_result": "No results for \"{term}\"",
+    "results": "{count} result found for \"{term}\" | {count} results found for \"{term}\""
+  },
+  "show": {
+    "new_topic": "New topic",
+    "no_topics": "No topics in this forum yet.",
+    "login_to_create": "You need to log in to create a new topic."
+  },
+  "topic": {
+    "default_title": "Topic",
+    "mark_resolved": "Mark as resolved",
+    "mark_unresolved": "Mark as unresolved",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "reply_title": "Reply to this topic",
+    "locked_toast": "Topic locked",
+    "unlocked_toast": "Topic unlocked",
+    "pinned_toast": "Topic pinned",
+    "unpinned_toast": "Topic unpinned",
+    "resolved_toast": "Topic marked as resolved",
+    "unresolved_toast": "Topic marked as unresolved"
+  },
+  "my_topics": {
+    "page_title": "My topics - MusicAll",
+    "empty": "You haven't taken part in any topics yet.",
+    "unread": "Unread",
+    "in_forum": "In {forum}",
+    "last_post_on": "Last post on {date}",
+    "no_post": "No posts",
+    "remove": "Remove from my topics",
+    "removed_toast": "Topic removed from your list"
+  },
+  "topic_item": {
+    "created_by": "By {author} on {date}",
+    "last_post_by": "Last post by {author}",
+    "last_post_on": "on {date}",
+    "no_reply": "No replies"
+  },
+  "post": {
+    "creator_photo": "Photo of {name}",
+    "creator_avatar": "{name}'s avatar",
+    "view_profile": "View {name}'s profile",
+    "view_profile_with_handle": "View {name}'s profile ({handle})",
+    "contact": "Contact",
+    "contact_user": "Contact {name}",
+    "edited_on": "(edited on {date})",
+    "edit": "Edit",
+    "edit_message": "Edit the post",
+    "edit_placeholder": "Edit your post...",
+    "save": "Save",
+    "like": "Like",
+    "dislike": "Dislike",
+    "quote": "Quote",
+    "quote_message_of": "Quote {name}'s post",
+    "report_message_of": "Report {name}'s post",
+    "login_to_message": "You need to log in to send a message.",
+    "edited_toast": "Post edited"
+  },
+  "reply": {
+    "login_to_post": "You need to log in to post a reply.",
+    "locked": "This topic is locked. You can no longer reply to it.",
+    "send": "Send",
+    "sent_toast": "Reply posted",
+    "sent_toast_detail": "Your reply has been posted",
+    "rate_limited": "Please wait before posting another reply.",
+    "send_failed": "An error occurred while posting your reply"
+  },
+  "add_topic": {
+    "title": "Add a new topic",
+    "title_label": "Topic title",
+    "title_placeholder": "Your title here",
+    "title_too_short": "The title must be at least {min} characters long",
+    "message_label": "Your message",
+    "message_too_short": "The message must be at least {min} characters long",
+    "created": "The topic has been created!",
+    "close": "Close",
+    "create": "Create",
+    "go_to_topic": "Go to the topic",
+    "rate_limited": "Please wait a few minutes before creating a new topic.",
+    "create_failed": "An error occurred while creating the topic"
+  },
+  "editor": {
+    "placeholder": "Write your message...",
+    "bold": "Bold",
+    "bold_glyph": "B",
+    "italic": "Italic",
+    "italic_glyph": "I",
+    "bullet_list": "Bulleted list",
+    "ordered_list": "Numbered list",
+    "quote": "Quote",
+    "add_image": "Add an image",
+    "add_youtube": "Add a YouTube video",
+    "undo": "Undo",
+    "redo": "Redo",
+    "youtube_hint": "Paste the URL of a YouTube video",
+    "add": "Add",
+    "image_added": "Image added",
+    "upload_failed": "Upload failed",
+    "quote_author": "{author} wrote:"
+  }
+}

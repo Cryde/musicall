@@ -36,6 +36,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { rangeDash } from '../../../i18n/formatLocale.js'
 import { formatAmount } from '../../../utils/currency.js'
 import Avatar from '../../User/Avatar.vue'
 
@@ -83,7 +84,7 @@ const financeAmount = computed(() => {
   const m = props.item.metadata ?? {}
   if (m.amount != null) return formatAmount(m.amount)
   if (m.amount_min != null && m.amount_max != null) {
-    return `${formatAmount(m.amount_min)} – ${formatAmount(m.amount_max)}`
+    return `${formatAmount(m.amount_min)} ${rangeDash()} ${formatAmount(m.amount_max)}`
   }
   return null
 })

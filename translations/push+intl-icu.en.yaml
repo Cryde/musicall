@@ -1,0 +1,35 @@
+# Push notification text (#1110, #1191), ICU syntax. Rendered in the recipient's locale, never the request's.
+# Same keys as push+intl-icu.fr.yaml. The app's previews (AppNotification.preview) are French only for now.
+title:
+    default: "MusicAll"
+
+notification:
+    band_space_invitation: "{actor} invited you to join {band}"
+    band_space_invitation_accepted: "{actor} accepted your invitation to {band}"
+    band_space_invitation_declined: "{actor} declined your invitation to {band}"
+    band_space_task_assignment: "{actor} assigned you to the task \"{task}\""
+    task_mention: "{actor} mentioned you in the task \"{task}\""
+    band_space_chat_mention: "{actor} mentioned you in the \"{band}\" chat"
+    task_comment: "{actor} commented on the task \"{task}\""
+    band_space_agenda_entry_created: "{actor} added the event \"{event}\""
+    band_space_agenda_availability_requested: "{actor} is asking for your availability for \"{event}\""
+    band_space_finance_split_assigned: "{actor} assigned you a share of \"{expense}\""
+    band_space_role_changed:
+        promoted: "{actor} made you an admin of \"{band}\""
+        demoted: "{actor} removed your admin rights on \"{band}\""
+    band_space_member_removed: "{actor} removed you from \"{band}\""
+    band_space_member_left: "{actor} left \"{band}\""
+    band_space_deletion_scheduled: "{actor} scheduled \"{band}\" for deletion"
+    band_space_deletion_cancelled: "{actor} cancelled the deletion of \"{band}\""
+    forum_topic_reply: "{actor} replied to your forum topic"
+    publication_comment: "{actor} commented on your publication"
+    comment_reply: "{actor} replied to your comment"
+    publication_approved: "{actor} published your article"
+    publication_rejected: "{actor} rejected your article"
+    gallery_approved: "{actor} published your gallery"
+    gallery_rejected: "{actor} rejected your gallery"
+    report: "{actor} has a new notification for you"
+
+message:
+    attachment_only: "Attachment"
+    band_channel_body: "{author}: {preview}"

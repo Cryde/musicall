@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Best effort checks on the backend catalogues, the PHP twin of assets/js/i18n/fr.test.js. Keys are
  * found by pattern in src/, comments left out, so a key built at runtime is invisible here: keep every
- * key a literal.
+ * key a literal. English is checked against French from the files, not through the translator.
  */
 class TranslationCatalogueTest extends TestCase
 {
@@ -19,6 +19,16 @@ class TranslationCatalogueTest extends TestCase
     private const string VALIDATORS = 'validators.fr.yaml';
     private const string REFERENCE = 'reference+intl-icu.fr.yaml';
     private const string KEY = '[a-z0-9_]+(?:\.[a-z0-9_]+)+';
+
+    /** A reference name, translated by slug, which French has no entry for on purpose (see ReferenceNameTranslator). */
+    private const string REFERENCE_NAME = '/^(?:instrument|instrument_musician|style|publication_sub_category)\./';
+
+    /**
+     * Typography the owner rules out in English because it reads as machine written: en and em dashes,
+     * the ellipsis character, curly quotes, guillemets, the middle dot, arrows, non breaking spaces, and
+     * the French space before : ; ! ?
+     */
+    private const string NOT_PLAIN_TYPOGRAPHY = '/[\x{2013}\x{2014}\x{2026}\x{2018}\x{2019}\x{201C}\x{201D}\x{00AB}\x{00BB}\x{2039}\x{203A}\x{00B7}\x{2190}-\x{21FF}\x{00A0}\x{202F}]|\s[:;!?]/u';
 
     /**
      * What precedes a key handed to an exception: its message argument, wherever it sits among the
@@ -96,10 +106,10 @@ class TranslationCatalogueTest extends TestCase
     /**
      * ICU reads an apostrophe before `{` as the start of a quoted literal, and French is full of
      * apostrophes: `d'{name}` renders `d{name}`, `d''{name}` is how to write it. A simple message must
-     * render as written once `''` reads as `'` and each placeholder holds its value.
+     * render as written once `''` reads as `'` and each placeholder holds its value. Every locale.
      */
     #[DataProvider('icuCatalogues')]
-    public function test_every_simple_icu_message_renders_as_written(string $file): void
+    public function test_every_simple_icu_message_renders_as_written(string $file, string $locale): void
     {
         $formatter = new IntlFormatter();
         foreach (self::load($file) as $key => $message) {
@@ -111,7 +121,7 @@ class TranslationCatalogueTest extends TestCase
             $values = array_map(static fn (string $name): string => '[' . $name . ']', $matches[1]);
             $expected = str_replace($matches[0], $values, str_replace("''", "'", $message));
 
-            self::assertSame($expected, $formatter->formatIntl($message, 'fr', array_combine($matches[1], $values)), $key);
+            self::assertSame($expected, $formatter->formatIntl($message, $locale, array_combine($matches[1], $values)), $key);
         }
     }
 
@@ -119,7 +129,7 @@ class TranslationCatalogueTest extends TestCase
      * A plural or a select cannot read back as written, but a syntax error in it still throws.
      */
     #[DataProvider('icuCatalogues')]
-    public function test_every_plural_or_select_icu_message_formats(string $file): void
+    public function test_every_plural_or_select_icu_message_formats(string $file, string $locale): void
     {
         $formatter = new IntlFormatter();
         $empty = [];
@@ -129,7 +139,7 @@ class TranslationCatalogueTest extends TestCase
             }
 
             foreach ([1, 1000] as $number) {
-                if ($formatter->formatIntl($message, 'fr', array_fill_keys(self::placeholders($message), $number)) === '') {
+                if ($formatter->formatIntl($message, $locale, array_fill_keys(self::placeholders($message), $number)) === '') {
                     $empty[] = $key;
                 }
             }
@@ -174,9 +184,47 @@ class TranslationCatalogueTest extends TestCase
     /** has() walks the fallback chain, so a French name entry would shadow the database name in every locale. */
     public function test_the_french_reference_catalogue_holds_no_reference_name(): void
     {
-        $names = preg_grep('/^(?:instrument|instrument_musician|style|publication_sub_category)\./', array_keys(self::load(self::REFERENCE)));
+        $names = preg_grep(self::REFERENCE_NAME, array_keys(self::load(self::REFERENCE)));
 
         self::assertSame([], array_values($names));
+    }
+
+    /**
+     * English holds the French keys in the French order and nothing else: a key it lacks shows French to
+     * an English reader, and a key French lacks is a typo. Reference names are English only by design.
+     */
+    #[DataProvider('englishCatalogues')]
+    public function test_an_english_catalogue_has_the_keys_of_its_french_source(string $english): void
+    {
+        $keys = array_keys(self::load($english));
+        if ($english === self::englishOf(self::REFERENCE)) {
+            $keys = preg_grep(self::REFERENCE_NAME, $keys, PREG_GREP_INVERT);
+        }
+
+        self::assertSame(array_keys(self::load(self::frenchOf($english))), array_values($keys));
+    }
+
+    /** A placeholder renamed or dropped in English shows as `{name}`, or loses its value. */
+    #[DataProvider('englishCatalogues')]
+    public function test_an_english_message_has_the_placeholders_of_its_french_source(string $english): void
+    {
+        $french = self::load(self::frenchOf($english));
+        $mismatched = [];
+        foreach (self::load($english) as $key => $message) {
+            if (self::placeholders($message) !== self::placeholders($french[$key] ?? '')) {
+                $mismatched[] = $key;
+            }
+        }
+
+        self::assertSame([], $mismatched);
+    }
+
+    #[DataProvider('englishCatalogues')]
+    public function test_an_english_message_uses_plain_typography(string $english): void
+    {
+        $messages = array_filter(self::load($english), static fn (string $message): bool => preg_match(self::NOT_PLAIN_TYPOGRAPHY, $message) === 1);
+
+        self::assertSame([], array_keys($messages));
     }
 
     /**
@@ -217,7 +265,6 @@ class TranslationCatalogueTest extends TestCase
             }
 
             $placeholders = self::placeholders($messages[$key] ?? '');
-            sort($placeholders);
             sort($parameters);
             if ($placeholders !== $parameters) {
                 $mismatched[] = $key . ' (' . $path . '): [' . implode(', ', $parameters) . '] for {' . implode('}, {', $placeholders) . '}';
@@ -240,14 +287,13 @@ class TranslationCatalogueTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, string}> file, locale
      */
     public static function icuCatalogues(): iterable
     {
-        foreach (self::catalogueFiles() as $file) {
-            if (str_contains($file, '+intl-icu.')) {
-                yield $file => [$file];
-            }
+        foreach (glob(self::PROJECT_DIR . '/translations/*+intl-icu.*.yaml') ?: [] as $path) {
+            $file = basename($path);
+            yield $file => [$file, explode('.', $file)[1]];
         }
     }
 
@@ -256,8 +302,31 @@ class TranslationCatalogueTest extends TestCase
      */
     public static function sharedCatalogues(): iterable
     {
-        yield self::MESSAGES => [self::MESSAGES];
-        yield self::VALIDATORS => [self::VALIDATORS];
+        foreach ([self::MESSAGES, self::VALIDATORS, self::englishOf(self::MESSAGES), self::englishOf(self::VALIDATORS)] as $file) {
+            yield $file => [$file];
+        }
+    }
+
+    /**
+     * One per French catalogue, so a French file without its English twin fails to load.
+     *
+     * @return iterable<string, array{string}>
+     */
+    public static function englishCatalogues(): iterable
+    {
+        foreach (self::catalogueFiles() as $file) {
+            yield self::englishOf($file) => [self::englishOf($file)];
+        }
+    }
+
+    private static function englishOf(string $frenchFile): string
+    {
+        return str_replace('.fr.yaml', '.en.yaml', $frenchFile);
+    }
+
+    private static function frenchOf(string $englishFile): string
+    {
+        return str_replace('.en.yaml', '.fr.yaml', $englishFile);
     }
 
     /**
@@ -477,13 +546,17 @@ class TranslationCatalogueTest extends TestCase
     }
 
     /**
-     * @return list<string>
+     * The names of `{name}` (ICU) and `{{ name }}` (validators) placeholders.
+     *
+     * @return list<string> sorted, since word order differs between languages
      */
     private static function placeholders(string $message): array
     {
         preg_match_all('/\{\s*(\w+)\s*[,}]/', $message, $matches);
+        $names = array_values(array_unique($matches[1]));
+        sort($names);
 
-        return array_values(array_unique($matches[1]));
+        return $names;
     }
 
     private static function hasComplexArgument(string $message): bool

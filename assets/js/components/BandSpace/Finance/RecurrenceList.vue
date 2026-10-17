@@ -36,7 +36,7 @@
           {{ intervalLabel(recurrence.interval) }}
         </span>
         <span class="font-medium text-sm text-surface-700 dark:text-surface-200">{{ formatRecurrenceAmount(recurrence) }}</span>
-        <span>{{ formatDateCompactWithYear(recurrence.start_date) }} – {{ formatDateCompactWithYear(recurrence.end_date) }}</span>
+        <span>{{ formatDateCompactWithYear(recurrence.start_date) }} {{ rangeDash() }} {{ formatDateCompactWithYear(recurrence.end_date) }}</span>
       </div>
     </div>
   </div>
@@ -44,6 +44,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { rangeDash } from '../../../i18n/formatLocale.js'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
 

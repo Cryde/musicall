@@ -77,10 +77,10 @@
               <button type="button" class="text-left hover:underline" @click="openDrawer(song)">{{ song.title }}</button>
             </td>
             <td class="px-3 py-2.5 hidden md:table-cell" :class="song.tonality ? '' : 'text-surface-500 dark:text-surface-400'">
-              {{ song.tonality || '—' }}
+              {{ song.tonality || noValue() }}
             </td>
             <td class="px-3 py-2.5 hidden md:table-cell text-right tabular-nums" :class="song.tempo ? '' : 'text-surface-500 dark:text-surface-400'">
-              {{ song.tempo || '—' }}
+              {{ song.tempo || noValue() }}
             </td>
             <td class="px-3 py-2.5 text-right tabular-nums">
               <button
@@ -205,6 +205,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
+import { noValue } from '../../../i18n/formatLocale.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { filterCounts, filterSongs } from '../../../utils/repertoireFilters.js'

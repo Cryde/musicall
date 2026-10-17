@@ -215,6 +215,37 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         ]);
     }
 
+    public function test_upload_at_quota_limit_is_refused_in_english_units_for_an_english_member(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
+        $bandSpace = BandSpaceFactory::new(['quotaBytesOverride' => 100])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $existing = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileVersionFactory::new(['bandSpaceFile' => $existing, 'versionNumber' => 1, 'size' => 80])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            [],
+            ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true)],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Storage quota exceeded: 80 B used out of 100 B allowed, 10 B more is needed to add 30 B.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Storage quota exceeded: 80 B used out of 100 B allowed, 10 B more is needed to add 30 B.',
+        ]);
+    }
+
     public function test_upload_crossing_80_percent_sets_quota_approaching_header(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

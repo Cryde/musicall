@@ -55,8 +55,8 @@
             {{ file.original_name }}
           </p>
           <span class="text-xs text-surface-500 dark:text-surface-400">
-            {{ formatBytes(file.size) }} ·
-            {{ t('band_space_files.trash_list.deleted_on', { date: formatDateLong(file.archive_datetime) }) }} ·
+            {{ formatBytes(file.size) }} {{ separator() }}
+            {{ t('band_space_files.trash_list.deleted_on', { date: formatDateLong(file.archive_datetime) }) }} {{ separator() }}
             <span :class="remainingClass(file)">{{ remainingLabel(file) }}</span>
           </span>
         </div>
@@ -95,6 +95,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { separator } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'

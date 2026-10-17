@@ -8,7 +8,7 @@
 
     <template v-else>
       <p class="text-xs text-surface-600 dark:text-surface-300">
-        {{ iconLabel }} &middot; {{ describePosition(element.x, element.y) }}
+        {{ iconLabel }} {{ separator() }} {{ describePosition(element.x, element.y) }}
       </p>
 
       <div>
@@ -163,6 +163,7 @@ import {
   SCALE_STEP
 } from '../../../../constants/stagePlot.js'
 import { TECH_RIDER_COLOURS, techRiderColourLabel } from '../../../../constants/techRiderColours.js'
+import { separator } from '../../../../i18n/formatLocale.js'
 
 const props = defineProps({
   element: { type: Object, default: null },

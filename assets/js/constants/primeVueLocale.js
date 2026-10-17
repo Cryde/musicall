@@ -1,11 +1,12 @@
 /**
- * The calendar part of PrimeVue's locale, in French. PrimeVue deep merges it into its English
- * defaults, so every DatePicker starts its weeks on Monday and names its days and months in French,
- * like the agenda (FullCalendar `firstDay: 1`). Without it the pickers started on Sunday and read
- * « Su Mo Tu », « January ».
+ * The calendar part of PrimeVue's locale, per app locale. PrimeVue deep merges it into its English
+ * defaults, so every DatePicker starts its weeks on Monday and names its days and months in the
+ * language, like the agenda (FullCalendar `firstDay: 1`). Without it the pickers started on Sunday
+ * and read "Su Mo Tu", "January".
  *
  * Only the keys a DatePicker reads: the rest of PrimeVue's wording is set per component. Keyed by
- * app locale, picked with `forActiveLocale()`.
+ * app locale, picked with `forActiveLocale()`. Both entries carry the same keys, so switching from
+ * one to the other replaces every one of them.
  */
 const FRENCH = Object.freeze({
   firstDayOfWeek: 1,
@@ -61,4 +62,59 @@ const FRENCH = Object.freeze({
   nextSecond: 'Seconde suivante'
 })
 
-export const PRIME_VUE_CALENDAR_LOCALES = Object.freeze({ fr: FRENCH })
+// British English: Monday first and the day before the month, unlike PrimeVue's American defaults.
+const ENGLISH = Object.freeze({
+  firstDayOfWeek: 1,
+  dateFormat: 'dd/mm/yy',
+  dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  dayNamesMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+  monthNames: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ],
+  monthNamesShort: [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ],
+  today: 'Today',
+  clear: 'Clear',
+  weekHeader: 'Wk',
+  chooseYear: 'Choose year',
+  chooseMonth: 'Choose month',
+  chooseDate: 'Choose date',
+  prevDecade: 'Previous decade',
+  nextDecade: 'Next decade',
+  prevYear: 'Previous year',
+  nextYear: 'Next year',
+  prevMonth: 'Previous month',
+  nextMonth: 'Next month',
+  prevHour: 'Previous hour',
+  nextHour: 'Next hour',
+  prevMinute: 'Previous minute',
+  nextMinute: 'Next minute',
+  prevSecond: 'Previous second',
+  nextSecond: 'Next second'
+})
+
+export const PRIME_VUE_CALENDAR_LOCALES = Object.freeze({ fr: FRENCH, en: ENGLISH })

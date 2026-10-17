@@ -142,7 +142,7 @@ import { useI18n } from 'vue-i18n'
 import forumApi from '../../api/forum/forum.js'
 
 // An example URL, the same in every language.
-const YOUTUBE_URL_EXAMPLE = 'https://www.youtube.com/watch?v=…'
+const YOUTUBE_URL_EXAMPLE = 'https://www.youtube.com/watch?v=...'
 
 const props = defineProps({
   previousContent: {

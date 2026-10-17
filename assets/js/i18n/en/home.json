@@ -1,0 +1,500 @@
+{
+  "title": "MusicAll, the go-to website for musicians",
+  "visitor": {
+    "cta": {
+      "title": "Join the {brand} community",
+      "brand": "MusicAll",
+      "subtitle": "Thousands of music lovers already connect on MusicAll",
+      "button": "Create your free account"
+    },
+    "auth": {
+      "teacher_profile": "You need to log in to create your teacher profile.",
+      "discover": "To share a video with the community, you need to log in.",
+      "announce": "To post an ad, you need to log in.",
+      "contact": "You need to log in to send this user a message."
+    }
+  },
+  "hero": {
+    "title": "Find the musicians {highlight}",
+    "title_highlight": "your band is missing.",
+    "intro": "Musician and band ads, a private space to run your band, lessons, and a community of music lovers."
+  },
+  "search_form": {
+    "aria_label": "Find a musician or a band",
+    "looking_for_aria_label": "What you're looking for",
+    "looking_for_musician": "I'm looking for a musician",
+    "looking_for_band": "I'm looking for a band",
+    "instrument": "Instrument",
+    "instrument_placeholder": "All instruments",
+    "city": "Where",
+    "city_placeholder": "City (optional)",
+    "submit": "Search"
+  },
+  "frequent_searches": {
+    "aria_label": "Popular searches",
+    "label": "Popular searches:",
+    "band_looking_for": "Band seeking {instrument} in {city}",
+    "musician_in": "{instrument} in {city}"
+  },
+  "announces": {
+    "title": "Latest ads",
+    "filter_aria_label": "Filter the ads",
+    "filter": {
+      "all": "All",
+      "musicians": "Musicians looking for a band",
+      "musicians_short": "Musicians",
+      "bands": "Bands looking for a musician",
+      "bands_short": "Bands"
+    },
+    "post": "Post an ad",
+    "see_all": "See all ads",
+    "empty": "No ads yet."
+  },
+  "announce_card": {
+    "band_looking_for": "Band seeking {instrument}",
+    "musician_looking_for": "{instrument} seeking a band",
+    "kind_band": "Band",
+    "kind_musician": "Musician",
+    "styles": "Genres",
+    "more_styles": "Also: {styles}",
+    "contact": "Contact",
+    "contact_author": "Contact {name}",
+    "report": "Report {name}'s ad"
+  },
+  "band_space": {
+    "eyebrow": "Band Space",
+    "private": "Private to your band",
+    "title": "Found your band? {highlight}",
+    "title_highlight": "Get organised here.",
+    "intro": "A workspace for your band members only: no more details lost in group chats.",
+    "discover": "Discover Band Space",
+    "open_mine": "Open my Band Space",
+    "create": "Create my band's space",
+    "demo": {
+      "your_band": "Your band",
+      "tabs_aria_label": "Band Space modules",
+      "illustrative": "Example preview",
+      "done": "(done)",
+      "band_fund": "Band fund",
+      "agenda": {
+        "title": "This week",
+        "thu": "THU",
+        "sat": "SAT",
+        "tue": "TUE",
+        "rehearsal": "Rehearsal",
+        "rehearsal_detail": "20:00 to 23:00 - Rehearsal room",
+        "gig": "Gig",
+        "gig_detail": "21:30 - The Garage - \"Tour\" setlist",
+        "recording": "Demo recording",
+        "recording_detail": "14:00 - Studio"
+      },
+      "tasks": {
+        "title": "Tasks",
+        "send_rider": "Send the tech rider",
+        "book_room": "Book the rehearsal room",
+        "chase_venue": "Chase up the venue",
+        "pay_venue": "Pay the venue"
+      },
+      "notes": {
+        "title": "Notes",
+        "name": "Rehearsal notes",
+        "bridge": "The bridge in \"Sleepless Night\" is now 8 bars.",
+        "cover": "We're keeping the cover for the encore.",
+        "snare": "Tom is bringing the second snare on Saturday.",
+        "edited": "Edited by Léa yesterday"
+      },
+      "setlists": {
+        "title": "Setlists",
+        "name": "Tour",
+        "total": "5 songs - 21 min",
+        "songs": {
+          "nuit_blanche": "Sleepless Night",
+          "retour_de_flamme": "Old Flame",
+          "beton": "Concrete",
+          "dernier_train": "The Last Train",
+          "rappel": "Encore"
+        }
+      },
+      "files": {
+        "title": "Files",
+        "demo": "demo-sleepless-night.mp3",
+        "bass_score": "bass-score-concrete.pdf",
+        "tech_rider": "tech-rider.pdf",
+        "gig_photo": "gig-photo.jpg"
+      },
+      "finances": {
+        "title": "Finances",
+        "gig_fee": "Gig fee",
+        "room_rent": "Rehearsal room hire",
+        "strings": "Strings and sticks"
+      }
+    }
+  },
+  "publications": {
+    "title": "Latest publications",
+    "post_discovery_tooltip": "Add a YouTube video you've discovered",
+    "post_discovery": "Post a discovery",
+    "see_more_aria_label": "See more publications",
+    "see_more": "See more",
+    "empty": "No publications yet."
+  },
+  "teachers": {
+    "avatars_aria_label": "Some of our teachers",
+    "view_profile": "View {username}'s profile",
+    "title": "Find your music teacher",
+    "soon": "Coming soon",
+    "intro": "Our first teachers have already joined us. Search by instrument and city is on its way.",
+    "see_all": "See the teachers",
+    "i_am_teacher": "I'm a teacher"
+  },
+  "member": {
+    "greeting": {
+      "day": "Hello, {username}",
+      "evening": "Good evening, {username}"
+    },
+    "intro_band": "Here's what's happening for you and your band.",
+    "intro_search": "Find the musicians and bands that suit you.",
+    "post_announce": "Post an ad",
+    "post_discovery": "Post a discovery",
+    "new_topic": "New topic",
+    "activity": {
+      "title": "Activity",
+      "link": "All notifications",
+      "empty": "Nothing new for now."
+    },
+    "messages": {
+      "title": "Messages",
+      "link": "All messages",
+      "unread_count": "{count} unread | {count} unread",
+      "unread": "Unread",
+      "empty": "No conversations yet.",
+      "fallback_name": "Conversation"
+    },
+    "forum": {
+      "title": "Forum",
+      "link": "Browse the forum",
+      "meta": "{forum} - {count} reply | {forum} - {count} replies",
+      "empty": "The forum is quiet for now."
+    },
+    "teacher": {
+      "title": "Teachers",
+      "soon": "Coming soon",
+      "intro": "Search for teachers by instrument and city is coming soon.",
+      "view_profile": "View my teacher profile",
+      "create_profile": "Create my teacher profile"
+    },
+    "discoveries": {
+      "title": "Discoveries",
+      "link": "See more",
+      "by": "by {author}",
+      "upvotes": "{count} upvote | {count} upvotes",
+      "empty": "No discoveries yet."
+    },
+    "my_announces": {
+      "title": "My ads - {count} live",
+      "more": "and {count} more | and {count} more",
+      "manage": "Manage my ads"
+    },
+    "band_space_strip": {
+      "title": "Found your band?",
+      "intro": "Calendar, setlists, tasks and files in a space for its members only.",
+      "create": "Create your space",
+      "discover": "Discover"
+    },
+    "city_prompt": {
+      "label": "Where do you play?",
+      "intro": "Add your city to see ads near you first.",
+      "placeholder": "Your city",
+      "save": "Save",
+      "cancel": "Cancel",
+      "hint": "It also appears on your profile, and you can change it at any time.",
+      "error": "Could not save your city, please try again."
+    },
+    "announces": {
+      "title_for_you": "Ads for you",
+      "title_near": "Ads near you",
+      "title_latest": "Latest ads",
+      "criteria_aria_label": "Bands seeking: {instrument}. Edit my musician profile",
+      "criteria": "Bands seeking: {instrument} - Edit",
+      "city_aria_label": "Around {city}. Change city",
+      "city": "Around {city} - Change",
+      "see_all": "All ads",
+      "profile_nudge": "Add your instruments to your {link} to see the bands looking for you here.",
+      "profile_link": "musician profile",
+      "empty": "No ads yet."
+    },
+    "band_space": {
+      "eyebrow": "My Band Space",
+      "switch": "Switch band",
+      "open": "Open Band Space",
+      "next_event": "Next event",
+      "then": "Then: {title}, {date}",
+      "nothing_planned": "Nothing planned for the next {days} days.",
+      "open_tasks": "Open tasks",
+      "no_open_task": "No open tasks.",
+      "last_setlist": "Latest setlist",
+      "setlist_meta": "{count} song - {duration} | {count} songs - {duration}",
+      "modified": "Edited {date}",
+      "no_setlist": "No setlist yet.",
+      "private": "Only visible to you and your band members.",
+      "load_error": "Could not load the Band Space summary.",
+      "all_day": "All day"
+    }
+  },
+  "discover": {
+    "title": "Discover MusicAll - The community for music lovers",
+    "badge": "The platform for music lovers",
+    "heading": "Discover {brand}",
+    "brand": "MusicAll",
+    "intro": "Explore all the features that make MusicAll {community}",
+    "intro_community": "your music community",
+    "publications": {
+      "title": "Publications",
+      "body": "Read articles, tutorials and news written by the community. Music lessons, playing techniques, music theory and much more.",
+      "articles": "Articles and tutorials for every instrument",
+      "courses": "Music lessons for every level",
+      "discoveries": "Video discoveries shared by the community",
+      "news": "Music news and trends",
+      "cta": "See the publications",
+      "image_alt": "MusicAll publications"
+    },
+    "announces": {
+      "title": "Musician ads",
+      "body": "Find musicians for your band or join a line-up. Post your ad and get in touch with other music lovers.",
+      "by_instrument": "Find musicians by instrument and genre",
+      "bands_nearby": "Find bands in your area",
+      "location_filters": "Filter by location",
+      "direct_contact": "Get in touch directly through built-in messaging",
+      "cta": "See the ads",
+      "image_alt": "MusicAll musician ads"
+    },
+    "forum": {
+      "title": "Forum",
+      "body": "Talk with the community about anything music. Ask your questions, share your experience and help others out.",
+      "topics": "Discussions organised by category",
+      "help": "Advice and support between members",
+      "introductions": "A place for newcomers to introduce themselves",
+      "moderation": "Pinned topics and active moderation",
+      "cta": "Go to the forum",
+      "image_alt": "MusicAll forum"
+    },
+    "photos": {
+      "title": "Photo galleries",
+      "body": "Browse photo galleries of gigs and music events. Relive the best moments captured by the community.",
+      "concerts": "Gig and festival photos",
+      "events": "All kinds of music events",
+      "quality": "High-quality galleries",
+      "share": "Share your own photos",
+      "cta": "See the galleries",
+      "image_alt": "MusicAll photo galleries"
+    },
+    "messages": {
+      "title": "Private messaging",
+      "body": "Talk privately with other members of the community. Discuss projects, swap tips or plan to meet up.",
+      "private": "Private messages between members",
+      "realtime": "Real-time notifications",
+      "from_announces": "Get in touch straight from an ad"
+    },
+    "band": {
+      "soon": "Coming soon",
+      "title": "Band Space",
+      "body": "Run your band with collaborative tools. Organise your rehearsals and keep everyone in the loop.",
+      "members": "Band member management",
+      "calendar": "A shared rehearsal calendar",
+      "storage": "Storage space for your songs"
+    },
+    "cta": {
+      "badge": "Join an active community",
+      "title": "Ready to join in?",
+      "body": "Create your free account and start connecting with thousands of music lovers",
+      "button": "Create your free account"
+    },
+    "back_home": "Back to home"
+  },
+  "add_discover": {
+    "header": "Add a video discovery",
+    "intro_share": "Share your music discoveries with the community.",
+    "intro_youtube_only": "For now, only YouTube links work.",
+    "url_placeholder": "YouTube video URL",
+    "url_hint": "We'll use this link to fetch a few details",
+    "loading_preview": "Loading the preview...",
+    "existing": "This video already exists.",
+    "existing_detail": "You can't post it a second time.",
+    "generic_error": "An error occurred. Please check the URL and try again.",
+    "title_placeholder": "Video title",
+    "title_hint": "The title of the video. You can change it",
+    "description_placeholder": "Video description",
+    "description_hint": "The description of the video. You can change it",
+    "preview_alt": "Video preview",
+    "cancel": "Cancel",
+    "publish": "Publish",
+    "published_summary": "Video published",
+    "published_detail": "Your video is now online",
+    "error_summary": "Error"
+  },
+  "band_space_presentation": {
+    "eyebrow": "Band Space - free",
+    "title": "Your band deserves better than a group chat.",
+    "intro": "Answer three questions and we'll show you your band's space. You can already tick things off, reorder and add.",
+    "form": {
+      "name_question": "1 - Your band's name",
+      "name_placeholder": "e.g. ElectricNight",
+      "size_question": "2 - How many of you are there?",
+      "pains_question": "3 - What's not working right now?",
+      "pains_hint": "Pick as many as you like.",
+      "prefill_hint": "The name is filled in when you create the space. Nothing is saved before that.",
+      "have_account": "Already have an account? {login}"
+    },
+    "pains": {
+      "agenda": "Finding a date",
+      "tasks": "Who does what",
+      "setlists": "Setlists",
+      "finances": "Money",
+      "files": "Files"
+    },
+    "cta": {
+      "named": "Create \"{name}\"",
+      "default": "Create my Band Space"
+    },
+    "reasons_aria_label": "Why a Band Space",
+    "reasons": {
+      "invite_title": "Invite your band by email",
+      "invite_body": "Each member gets a link and sees the calendar, files and setlists straight away. You choose who's an admin.",
+      "several_bands_title": "More than one band?",
+      "several_bands_body": "One Band Space per band, and one click to switch between them. Each band only sees its own.",
+      "private_title": "Private to your band",
+      "private_body": "Nothing is public. No advertising, no selling your data. Free, and it will stay that way."
+    },
+    "closing": {
+      "title_named": "{name} is ready when you are.",
+      "title_default": "Your band is ready when you are.",
+      "body": "Create the space, invite the others, and work together from your very next rehearsal."
+    },
+    "demo": {
+      "you": "You",
+      "days": {
+        "tue": "TUE",
+        "thu": "THU",
+        "sat": "SAT"
+      },
+      "events": {
+        "rehearsal": "Rehearsal",
+        "rehearsal_detail": "20:00 to 23:00 - Room 13",
+        "gig": "Gig",
+        "gig_detail": "21:30 - The Hangar - setlist attached",
+        "run_through": "Run-through before the gig",
+        "run_through_detail": "19:30 to 22:30 - Room 13",
+        "recording": "Demo recording",
+        "recording_detail": "14:00 - Wave Studio"
+      },
+      "tasks": {
+        "van": "Book the van",
+        "van_detail": "By 7 Oct - high priority",
+        "rider": "Send the tech rider",
+        "rider_detail": "By 3 Oct",
+        "strings": "Buy new strings",
+        "strings_detail": "Gear",
+        "rent": "Pay for the rehearsal room",
+        "rent_detail": "Finances - €120"
+      },
+      "files": {
+        "rider": "tech-rider.pdf",
+        "demo": "demo-last-train-home.mp3",
+        "bass": "bass-score-asphalt.pdf",
+        "press": "press-photo.jpg"
+      },
+      "folders": {
+        "gig": "Gig",
+        "demos": "Demos",
+        "scores": "Sheet music",
+        "promo": "Promo"
+      },
+      "notes": {
+        "rehearsal_title": "Rehearsal, 24 Sept",
+        "rehearsal_body": "Slow down the bridge in \"Asphalt\".\nTry the \"Neon Lights\" intro with two guitars.\nKeep \"Shockwave\" for the encore.",
+        "covers_title": "Cover ideas",
+        "covers_body": "Three suggestions to vote on before Thursday."
+      },
+      "expenses": {
+        "van": "Van hire",
+        "room": "Rehearsal room",
+        "strings": "Strings and sticks"
+      },
+      "balance": {
+        "even": "all square",
+        "receives": "gets {amount}",
+        "owes": "owes {amount}"
+      }
+    },
+    "preview": {
+      "aria_label": "Preview of your Band Space",
+      "members": "{count} members",
+      "members_and_more": "{count} or more members",
+      "tabs_aria_label": "Preview modules",
+      "dashboard_tab": "Dashboard",
+      "priority": "PRIORITY",
+      "your_band": "Your band",
+      "welcome": "Welcome, {name}",
+      "members_invited_by_mail": "{members} - invited by email",
+      "available": "{available} of {size} members available",
+      "back_to_notes": "Back to notes",
+      "toolbar_bold": "B",
+      "toolbar_italic": "I",
+      "note_content": "Content of the note \"{title}\"",
+      "note_edited_by_you": "Edited just now by you",
+      "note_written_by": "Written by {name}",
+      "note_empty": "Empty note",
+      "just_now": "Just now",
+      "new_song": "New",
+      "move_up": "Move \"{title}\" up",
+      "move_down": "Move \"{title}\" down",
+      "file_added_by": "{folder} - added by {name}",
+      "delete_file": "Delete {name}",
+      "files_empty": "No files left. In your own space, nothing goes without your say-so.",
+      "restore_files": "Put the files back",
+      "expense_split": "Paid by {payer}, split between {size}",
+      "who_owes_what": "Who owes what",
+      "demo_limit": "That's all for the demo. In your own space, there's no limit.",
+      "footer": "Preview: click around the menu. The examples will be replaced by your real dates, tasks and songs.",
+      "panels": {
+        "agenda_title": "Calendar",
+        "agenda_subtitle": "October 2026",
+        "agenda_summary": "{available}/{size} available on Thursday",
+        "agenda_add": "Add a date",
+        "tasks_title": "Tasks",
+        "tasks_subtitle": "Every task has an owner and a date",
+        "tasks_summary": "{count} of {total} done | {count} of {total} done",
+        "notes_title": "Notes",
+        "notes_subtitle": "Rehearsal ideas, before they get lost",
+        "setlists_title": "Gig setlist",
+        "setlists_subtitle": "One version, always up to date. Change the order with the arrows.",
+        "setlists_summary": "{songs} songs - {minutes} min",
+        "files_title": "Files",
+        "files_subtitle": "Sorted into folders, shared with the band",
+        "files_summary": "{count} file | {count} files",
+        "finances_title": "Finances",
+        "finances_subtitle": "{amount} of expenses, split between {size}",
+        "finances_summary": "{amount} per member",
+        "finances_add": "Add an expense"
+      },
+      "widgets": {
+        "agenda_tag": "Calendar",
+        "agenda_title": "Next rehearsal - Thu 20:00",
+        "agenda_meta": "{available}/{size} available",
+        "tasks_tag": "Tasks",
+        "tasks_title": "{count} open tasks",
+        "tasks_next": "Next: {task}",
+        "tasks_all_done": "All done",
+        "setlists_tag": "Setlists",
+        "setlists_title": "Gig setlist",
+        "setlists_meta": "{songs} songs - {minutes} min - printable",
+        "finances_tag": "Finances",
+        "finances_title": "Expenses: {amount}",
+        "finances_meta": "{amount} per member, worked out for you",
+        "files_tag": "Files",
+        "files_title": "Sheet music and demos",
+        "files_meta": "{count} files, sorted into folders"
+      }
+    }
+  }
+}

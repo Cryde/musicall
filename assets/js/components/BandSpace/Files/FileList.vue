@@ -70,7 +70,7 @@
             </div>
           </div>
 
-          <div class="col-span-4 md:col-span-2 text-surface-400">—</div>
+          <div class="col-span-4 md:col-span-2 text-surface-400">{{ noValue() }}</div>
           <div class="col-span-4 md:col-span-2"></div>
 
           <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
@@ -128,7 +128,7 @@
           </div>
 
           <div class="col-span-4 md:col-span-2 tabular-nums text-surface-600 dark:text-surface-300">
-            {{ formatSize(file.size) }}
+            {{ formatBytes(file.size) }}
           </div>
 
           <div class="col-span-4 md:col-span-2 flex flex-wrap gap-1">
@@ -178,13 +178,14 @@ import {
   collectFolderAndDescendants
 } from '../../../composables/useFolderDragDrop.js'
 import { deleteBlockingAttachments, fileSourceDetachHint } from '../../../constants/fileSources.js'
-import { intlLocale } from '../../../i18n/formatLocale.js'
+import { intlLocale, noValue } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { fileLocation, folderFileCountLabel } from '../../../utils/fileListing.js'
 import { areAllSelected, selectionAfterClick } from '../../../utils/fileSelection.js'
+import { formatBytes } from '../../../utils/formatBytes.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -451,16 +452,8 @@ function iconForMime(mime) {
   return 'pi pi-file'
 }
 
-function formatSize(bytes) {
-  if (bytes === null || bytes === undefined) return '—'
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`
-}
-
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return noValue()
   const date = new Date(iso)
   return date.toLocaleDateString(intlLocale(), { day: '2-digit', month: 'short', year: 'numeric' })
 }

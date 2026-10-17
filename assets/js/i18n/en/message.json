@@ -1,0 +1,64 @@
+{
+  "index": {
+    "title": "Messages",
+    "new_message": "New message",
+    "new_conversation": "New conversation"
+  },
+  "avatar": {
+    "channel": "{name} band chat",
+    "photo": "Photo of {name}",
+    "initial": "{name}'s avatar"
+  },
+  "conversation": {
+    "band_fallback": "Band",
+    "unknown_user": "Unknown user"
+  },
+  "thread_list": {
+    "unread_aria_label": "{count} unread message(s)",
+    "last_message_author": "{author}:",
+    "no_message": "No messages",
+    "empty": "You don't have any messages yet."
+  },
+  "thread": {
+    "load_older": "Load older messages",
+    "load_older_error": "Could not load older messages.",
+    "deleted": "Message deleted",
+    "attachment": "Attachment",
+    "report": "Report this message",
+    "recipient_deleted": "You can no longer send messages to this user.",
+    "placeholder": "Your message...",
+    "send": "Send message",
+    "none_selected": "Select a conversation or send a new message."
+  },
+  "send_modal": {
+    "title": "New message",
+    "subtitle": "Send a private message",
+    "recipient": "Recipient",
+    "recipient_placeholder": "Search for a recipient...",
+    "content_aria_label": "Your message",
+    "content_placeholder": "Write your message...",
+    "cancel": "Cancel",
+    "send": "Send message",
+    "error": "An error occurred while sending the message."
+  },
+  "error": {
+    "too_many_messages": "Too many messages sent. Please wait a moment."
+  },
+  "contact_origin": {
+    "course": "Lessons: {instruments}",
+    "private_lessons": "Private lessons",
+    "announce": "Ad",
+    "announce_looking_for_musician": "Ad: {instrument} wanted",
+    "announce_looking_for_band": "Ad: {instrument} looking for a band"
+  },
+  "music_link": {
+    "title": {
+      "video": "{provider} video",
+      "track": "{provider} track",
+      "album": "{provider} album",
+      "playlist": "{provider} playlist",
+      "artist": "{provider} artist"
+    },
+    "open_aria_label": "{title}: open {href} in a new tab"
+  }
+}

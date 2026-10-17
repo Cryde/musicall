@@ -1,0 +1,156 @@
+{
+  "detail": {
+    "not_found": "Task not found",
+    "title": "Task details",
+    "close": "Close",
+    "archived_notice": "This task is archived, so it is read only. Unarchive it to edit it.",
+    "see_in_chat": "See in the chat",
+    "title_aria": "Task title",
+    "unsaved_changes": "Unsaved changes",
+    "no_description": "No description",
+    "add_description": "Add a description...",
+    "conflict_kept": "Your text has been kept: \"Save\" replaces their version, \"Cancel\" shows theirs.",
+    "delete": "Delete the task",
+    "load_failed": "Could not load the comments and activity",
+    "title_empty": "The title cannot be empty",
+    "comment_deleted": "Comment deleted",
+    "archived": "Task archived",
+    "deleted": "Task deleted",
+    "delete_confirm": "Are you sure you want to delete this task?"
+  },
+  "status": {
+    "todo": "To do",
+    "in_progress": "In progress",
+    "done": "Done"
+  },
+  "priority": {
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "field": {
+    "title": "Title",
+    "description": "Description",
+    "status": "Status",
+    "priority": "Priority",
+    "category": "Category",
+    "assignees": "Assignees",
+    "due_date": "Due date",
+    "due": "Due",
+    "no_category": "None",
+    "select_members": "Select members"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "confirm_delete_header": "Confirm deletion",
+    "comments": "Comments",
+    "new_task": "New task",
+    "manage_categories": "Manage categories",
+    "changes_saved": "Changes saved",
+    "task_unarchived": "Task unarchived",
+    "move_failed": "Could not move the task"
+  },
+  "activity_feed": {
+    "title": "Activity",
+    "status_changed": "{actor} changed the status from {from} to {to}",
+    "assignee_added": "{actor} added {username}",
+    "assignee_added_unknown": "{actor} added a member",
+    "assignee_removed": "{actor} removed {username}",
+    "assignee_removed_unknown": "{actor} removed a member",
+    "category_changed": "{actor} changed the category",
+    "due_date_changed": "{actor} changed the due date",
+    "comment_added": "{actor} added a comment",
+    "comment_edited": "{actor} edited a comment",
+    "comment_deleted": "{actor} deleted a comment",
+    "mention": "{actor} mentioned {username}",
+    "mention_unknown": "{actor} mentioned a member",
+    "unknown": "{actor} {type}"
+  },
+  "bulk_bar": {
+    "selected_count": "{count} task selected | {count} tasks selected",
+    "choose_category": "Choose a category",
+    "apply": "Apply",
+    "no_assignee": "None",
+    "assignees_hint": "Replaces the assignees on every selected task.",
+    "exit_selection": "Cancel selection",
+    "archive_blocked": "Only completed tasks can be archived: {tasks}",
+    "delete_blocked": "Only the creator or an admin can delete these tasks: {tasks}",
+    "failed": "Bulk action failed",
+    "generic_error": "An error occurred",
+    "archived": "Tasks archived",
+    "category_updated": "Category updated",
+    "assignees_updated": "Assignees updated",
+    "deleted": "Tasks deleted",
+    "delete_confirm": "Delete {count} task? This cannot be undone. | Delete {count} tasks? This cannot be undone."
+  },
+  "card": {
+    "has_description": "This task has a description",
+    "attached_files": "{count} attached file | {count} attached files",
+    "comments": "{count} comment | {count} comments",
+    "more_actions": "More actions",
+    "move_to": "Move to \"{status}\""
+  },
+  "category_manager": {
+    "confirm_rename": "Confirm",
+    "delete_aria": "Delete the category {name}",
+    "new_title": "New category",
+    "name_placeholder": "Category name",
+    "create": "Create",
+    "created": "Category created",
+    "deleted": "Category deleted",
+    "delete_confirm": "Delete the category \"{name}\"?",
+    "delete_confirm_with_tasks": "Delete the category \"{name}\"? {count} task(s) will be left without a category."
+  },
+  "column": {
+    "show_all_done": "Show all {count} completed tasks",
+    "completion_order_hint": "Sorted by completion date, most recent first. This column cannot be reordered."
+  },
+  "comment_form": {
+    "aria_label": "Write a comment",
+    "placeholder": "Write a comment...",
+    "send": "Send",
+    "send_failed": "The comment could not be sent."
+  },
+  "comment_list": {
+    "edited": "(edited)",
+    "edit": "Edit",
+    "edit_aria": "Edit the comment",
+    "empty": "No comments",
+    "save_failed": "The comment could not be edited.",
+    "delete_confirm": "Delete this comment?"
+  },
+  "comment_popover": {
+    "open_task": "Open the task",
+    "load_failed": "Could not load the comments"
+  },
+  "create_form": {
+    "title_placeholder": "e.g. Book the rehearsal room",
+    "description_placeholder": "Task details...",
+    "submit": "Create the task",
+    "created": "Task created"
+  },
+  "filter_bar": {
+    "search_placeholder": "Search...",
+    "select": "Select",
+    "unassigned": "Unassigned",
+    "my_tasks": "My tasks",
+    "overdue": "Overdue",
+    "archived": "Archived"
+  },
+  "board": {
+    "retry": "Try again",
+    "open_archived": "Open the archived task {title}",
+    "archived_on": "Archived on {date}",
+    "no_archived": "No archived tasks",
+    "back": "Back",
+    "all_done": "All completed tasks ({count})",
+    "reorder_disabled": "Reordering is disabled: the search, the due date filter and \"Overdue\" hide tasks that are not loaded, and moving a card would shift those hidden tasks. Clear these filters to reorder the board. A card's menu still lets you change its status.",
+    "board_changed": "The board was changed in the meantime and has just been reloaded.",
+    "reload_failed": "Could not reload the board",
+    "reorder_failed": "Could not reorder the tasks"
+  }
+}

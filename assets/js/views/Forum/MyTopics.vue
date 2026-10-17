@@ -74,7 +74,7 @@
                   >{{ item.topic.forum.title }}</router-link>
                 </template>
               </i18n-t>
-              ·
+              {{ separator() }}
               <span v-if="item.topic.last_post">
                 {{ t('forum.my_topics.last_post_on', { date: formatDate(item.topic.last_post.creation_datetime) }) }}
               </span>
@@ -116,6 +116,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { separator } from '../../i18n/formatLocale.js'
 import { useForumParticipationsStore } from '../../store/forum/participations.js'
 import { formatDate } from '../../utils/date.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'

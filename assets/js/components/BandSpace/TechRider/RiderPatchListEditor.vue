@@ -8,7 +8,7 @@
       <TabList>
         <Tab v-for="direction in PATCH_DIRECTIONS" :key="direction" :value="direction">
           <span class="flex items-center gap-2">
-            <span>{{ patchDirectionLabel(direction) }} · {{ rowsOf(direction).length }}</span>
+            <span>{{ patchDirectionLabel(direction) }} {{ separator() }} {{ rowsOf(direction).length }}</span>
             <template v-if="errorCounts[direction] > 0">
               <i class="pi pi-exclamation-circle text-red-600 dark:text-red-400" aria-hidden="true" />
               <span class="sr-only">, {{ errorLabel(errorCounts[direction]) }}</span>
@@ -45,6 +45,7 @@ import { useI18n } from 'vue-i18n'
 import bandSpaceTechRidersApi from '../../../api/bandSpace/band-space-tech-riders.js'
 import { useSnapshotAutosave } from '../../../composables/useSnapshotAutosave.js'
 import { patchColumnLabel, patchDirectionLabel } from '../../../constants/techRiderPatchColumns.js'
+import { separator } from '../../../i18n/formatLocale.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import {
   directionToReveal,

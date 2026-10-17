@@ -1,0 +1,227 @@
+{
+  "common": {
+    "error": "Error",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "edit": "Edit",
+    "confirm_delete_header": "Confirm deletion",
+    "recurrence": "Recurring",
+    "personal_badge": "Personal",
+    "add_category": "Add a category",
+    "add_entry": "Add an entry",
+    "entry_count": "{count} entry | {count} entries",
+    "label": "Description",
+    "category": "Category",
+    "type": "Type",
+    "scope": "Scope",
+    "select_category": "Select a category",
+    "select_type": "Select a type",
+    "select_scope": "Select the scope"
+  },
+  "type": {
+    "expense": "Expense",
+    "income": "Income"
+  },
+  "totals": {
+    "income": "Income",
+    "expense": "Expenses"
+  },
+  "status": {
+    "planned": "Planned",
+    "committed": "Committed",
+    "paid": "Paid"
+  },
+  "scope": {
+    "band": "Band",
+    "personal": "Personal"
+  },
+  "store": {
+    "load_categories_error": "Could not load the categories"
+  },
+  "confirmations": {
+    "category_has_children": "This category has subcategories and cannot be deleted. Delete or move its subcategories first.",
+    "category_delete": "Are you sure you want to delete this category? It contains no entries. | Are you sure you want to delete this category? The entry it contains and its recurring entries will also be deleted. | Are you sure you want to delete this category? The {count} entries it contains and its recurring entries will also be deleted.",
+    "recurrence_delete": "Are you sure you want to delete this recurring entry? The planned entries it generated will also be deleted, committed or paid entries will be kept."
+  },
+  "page": {
+    "retry": "Try again",
+    "all_periods": "All time",
+    "view_categories": "Category view",
+    "view_timeline": "Timeline view",
+    "view_chart": "Chart view (all time)",
+    "presets": {
+      "this_month": "This month",
+      "last_month": "Last month",
+      "this_quarter": "This quarter",
+      "last_quarter": "Last quarter",
+      "this_year": "This year",
+      "last_year": "Last year",
+      "all": "All time"
+    },
+    "entry_not_found": "Entry not found",
+    "load_error": "Loading error",
+    "move_entry_error": "Could not move this entry",
+    "category_created": "Category created",
+    "create_category_error": "Could not create the category",
+    "category_deleted": "Category deleted",
+    "delete_category_error": "Could not delete the category",
+    "category_renamed": "Category renamed",
+    "rename_category_error": "Could not rename the category",
+    "recurrence_entries_updated": "{count} entry updated | {count} entries updated",
+    "recurrence_entries_created": "{count} entry added | {count} entries added",
+    "recurrence_entries_removed": "{count} entry deleted | {count} entries deleted",
+    "recurrence_no_entry_changed": "No entries changed",
+    "recurrence_saved": "Recurring entry saved",
+    "recurrence_deleted": "Recurring entry deleted",
+    "entry_saved": "Entry saved",
+    "entry_deleted": "Entry deleted"
+  },
+  "bootstrap": {
+    "title": "No finance categories set up",
+    "intro": "Would you like to start from a suggested structure? You can customise it afterwards.",
+    "create_defaults": "Create the default categories",
+    "create_manually": "Or create your first category manually",
+    "created": "Categories created",
+    "create_error": "Could not create the categories"
+  },
+  "create_category_dialog": {
+    "title_child": "New subcategory",
+    "title": "New category",
+    "name": "Name",
+    "name_placeholder_child": "Subcategory name",
+    "name_placeholder": "Category name",
+    "create": "Create",
+    "name_required": "Please enter a name"
+  },
+  "metric_cards": {
+    "income_hint": "Total band income with the Paid status",
+    "expense_hint": "Total band expenses with the Paid status",
+    "committed_hint": "Total band entries with the Committed status (expenses + income). Ranges count as their average.",
+    "planned_hint": "Total band entries with the Planned status (expenses + income). Ranges count as their average.",
+    "personal": "Personal",
+    "personal_hint": "Total of your personal entries, whatever their status. Not included in the band totals."
+  },
+  "type_totals": {
+    "income": "Income:",
+    "expense": "Expenses:"
+  },
+  "split_warning": {
+    "label": "Split needs checking: the total split between members does not match the entry amount."
+  },
+  "entry_list": {
+    "drag_title": "Move to another category",
+    "drag_aria_label": "Move the entry",
+    "paid_locked_title": "Paid entry: set it back to \"Committed\" to move it",
+    "paid_locked_aria_label": "Paid entry, cannot be moved",
+    "empty": "No entries"
+  },
+  "pole_accordion": {
+    "paid_share": "{type} - {percent}% paid",
+    "validate": "Confirm",
+    "rename_child": "Rename the subcategory",
+    "delete_child": "Delete the subcategory",
+    "add_child": "Add a subcategory",
+    "rename": "Rename",
+    "delete_category": "Delete the category"
+  },
+  "timeline": {
+    "empty": "No entries in this period"
+  },
+  "sidebar": {
+    "contributions": "Member contributions",
+    "no_contribution": "No contributions",
+    "upcoming": "Upcoming due dates",
+    "no_upcoming": "Nothing due soon"
+  },
+  "recurrence_list": {
+    "title": "Recurring entries",
+    "add": "+ New recurring entry",
+    "empty": "No recurring entries",
+    "active": "Active",
+    "inactive": "Inactive",
+    "interval": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    }
+  },
+  "entry_drawer": {
+    "title_edit": "Edit entry",
+    "title_new": "New entry",
+    "locked": "This entry is locked. Set its status back to \"Committed\" to edit it.",
+    "label_placeholder": "e.g. Rehearsal room hire",
+    "status": "Status",
+    "select_status": "Select a status",
+    "amount": "Amount",
+    "amount_min": "Minimum amount",
+    "amount_max": "Maximum amount",
+    "amount_min_placeholder": "Min",
+    "amount_max_placeholder": "Max",
+    "date": "Date",
+    "generated_by_recurrence": "Created from a recurring entry",
+    "personal_files_warning": "Attached files stay visible to every member of the Band Space, even if this entry is personal.",
+    "amount_mode": {
+      "exact": "Exact amount",
+      "range": "Range"
+    },
+    "transition": {
+      "mark_committed": "Mark as Committed",
+      "mark_paid": "Mark as Paid",
+      "back_to_planned": "Back to Planned",
+      "reopen": "Reopen as Committed"
+    },
+    "status_change_error": "Could not change the status",
+    "reopen_confirm": "This entry will be marked as \"Committed\" and can be edited again. Continue?",
+    "reopen_header": "Reopen the entry",
+    "reopen_accept": "Reopen",
+    "category_required": "Please select a category",
+    "split_failed": "The entry was saved but the split failed: {error}",
+    "unknown_error": "unknown error",
+    "save_error": "Could not save the entry",
+    "delete_confirm": "Are you sure you want to delete this entry?",
+    "delete_error": "Could not delete the entry"
+  },
+  "recurrence_drawer": {
+    "title_edit": "Edit recurring entry",
+    "title_new": "New recurring entry",
+    "label_placeholder": "e.g. Rehearsal space rent",
+    "amount": "Amount (in euros)",
+    "interval": "Frequency",
+    "select_interval": "Select a frequency",
+    "frozen_schedule_hint": "Cannot be changed: end this recurring entry and create a new one.",
+    "start_date": "Start date",
+    "end_date": "End date",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "intervals": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "save_error": "Could not save the recurring entry",
+    "delete_error": "Could not delete the recurring entry",
+    "toggle_error": "Could not change the status of the recurring entry"
+  },
+  "split_manager": {
+    "title": "Split between members",
+    "no_member": "No members found",
+    "total": "Total",
+    "total_matches": "The split total matches the entry amount",
+    "total_mismatch": "The split total does not match the entry amount",
+    "no_split": "No split",
+    "summary": "{count} member - {amount} | {count} members - {amount}",
+    "total_exceeds_amount": "The split total ({total}) is more than the entry amount ({amount})."
+  },
+  "pie_chart": {
+    "income_title": "Income by category",
+    "expense_title": "Expenses by category",
+    "no_income": "No income recorded",
+    "no_expense": "No expenses recorded",
+    "top_income": "Top 10 income entries",
+    "top_expense": "Top 10 expenses",
+    "tooltip": "{label}: {amount}"
+  }
+}
