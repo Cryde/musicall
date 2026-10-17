@@ -16,13 +16,13 @@ class DisplayName extends Constraint
     public const string OWNER_MEMBERSHIP = 'membership';
 
 
-    public string $forbiddenCharacterMessage = 'Ce nom contient des caractères non autorisés';
-    public string $emojiMessage = 'Ce nom ne peut pas contenir d\'emoji';
-    public string $stackedMarksMessage = 'Ce nom contient trop d\'accents à la suite';
-    public string $noLetterOrDigitMessage = 'Ce nom doit contenir au moins une lettre ou un chiffre';
-    public string $leadingAtMessage = 'Ce nom ne peut pas commencer par @';
-    public string $reservedMessage = 'Ce nom est réservé';
-    public string $usernameTakenMessage = 'Ce nom est le nom d\'utilisateur d\'un autre membre';
+    public string $forbiddenCharacterMessage = 'profile.display_name.forbidden_character';
+    public string $emojiMessage = 'profile.display_name.emoji';
+    public string $stackedMarksMessage = 'profile.display_name.stacked_marks';
+    public string $noLetterOrDigitMessage = 'profile.display_name.no_letter_or_digit';
+    public string $leadingAtMessage = 'profile.display_name.leading_at';
+    public string $reservedMessage = 'profile.display_name.reserved';
+    public string $usernameTakenMessage = 'profile.display_name.username_taken';
 
     public function __construct(
         public string $owner = self::OWNER_EDITOR,

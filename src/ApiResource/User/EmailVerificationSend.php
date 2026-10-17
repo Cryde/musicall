@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class EmailVerificationSend
 {
-    #[Assert\NotBlank(message: 'Veuillez saisir un email')]
-    #[Assert\Email(message: 'Email invalide')]
+    #[Assert\NotBlank(message: 'user.email.required')]
+    #[Assert\Email(message: 'user.email.invalid')]
     public string $email;
 }

@@ -53,7 +53,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         }
 
         if ($user->teacherProfile) {
-            throw new BadRequestHttpException('Vous avez déjà un profil professeur');
+            throw new BadRequestHttpException('profile.teacher.already_exists');
         }
 
         $profile = new TeacherProfile();

@@ -53,11 +53,11 @@ class DeviceTokenResource
     final public const string TOKEN_PATTERN = '[A-Za-z0-9_:\-]{1,512}';
 
     #[ApiProperty(identifier: true)]
-    #[Assert\NotBlank(message: 'Veuillez fournir un jeton')]
-    #[Assert\Length(max: DeviceToken::TOKEN_MAX_LENGTH, maxMessage: 'Le jeton ne peut pas dépasser {{ limit }} caractères')]
-    #[Assert\Regex(pattern: '/^[A-Za-z0-9_:\-]+\z/', message: 'Le jeton est invalide')]
+    #[Assert\NotBlank(message: 'user.device_token.token_required')]
+    #[Assert\Length(max: DeviceToken::TOKEN_MAX_LENGTH, maxMessage: 'user.device_token.token_too_long')]
+    #[Assert\Regex(pattern: '/^[A-Za-z0-9_:\-]+\z/', message: 'user.device_token.token_invalid')]
     public string $token = '';
 
-    #[Assert\Choice(callback: [DevicePlatform::class, 'values'], message: 'Plateforme inconnue')]
+    #[Assert\Choice(callback: [DevicePlatform::class, 'values'], message: 'user.device_token.platform_unknown')]
     public string $platform = '';
 }

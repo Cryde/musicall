@@ -27,7 +27,7 @@ readonly class ForumProvider implements ProviderInterface
         $forum = $this->forumRepository->findBySlug($uriVariables['slug']);
 
         if (!$forum instanceof \App\Entity\Forum\Forum) {
-            throw new NotFoundHttpException('Forum not found');
+            throw new NotFoundHttpException('forum.not_found');
         }
 
         return $this->forumDetailBuilder->buildFromEntity($forum);

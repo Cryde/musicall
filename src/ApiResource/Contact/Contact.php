@@ -17,12 +17,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Contact
 {
     #[Assert\NotBlank]
-    #[Assert\Length(min: 2, minMessage: 'Votre nom doit contenir minimum {{ limit }} caractères.')]
+    #[Assert\Length(min: 2, minMessage: 'contact.name.too_short')]
     public string $name;
     #[Assert\NotBlank]
-    #[Assert\Email(message: "L'email est invalide")]
+    #[Assert\Email(message: 'contact.email.invalid')]
     public string $email;
     #[Assert\NotBlank]
-    #[Assert\Length(min: 10, minMessage: 'Votre message doit être de minimum {{ limit }} caractères.')]
+    #[Assert\Length(min: 10, minMessage: 'contact.message.too_short')]
     public string $message;
 }

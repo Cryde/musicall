@@ -35,8 +35,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'fos_user')]
-#[UniqueEntity(fields: ['username'], message: 'Ce login est déjà pris')]
-#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
+#[UniqueEntity(fields: ['username'], message: 'user.entity.username_already_taken')]
+#[UniqueEntity(fields: ['email'], message: 'user.email.already_used')]
 #[ApiResource(
     operations: [
         new Get(
@@ -57,18 +57,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups([User::ITEM, MessageResource::LIST, MessageThreadMetaResource::LIST, MessageResource::ITEM])]
     public string $id;
 
-    #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
+    #[Assert\NotBlank(message: 'user.username.required')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, GalleryResource::LIST])]
     public string $username;
 
-    #[Assert\NotBlank(message: 'Veuillez saisir un email')]
-    #[Assert\Email(message: 'Email invalide')]
+    #[Assert\NotBlank(message: 'user.email.required')]
+    #[Assert\Email(message: 'user.email.invalid')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     public string $email;
 
-    #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
-    #[Assert\Length(min: 3, minMessage: 'Le mot de passe doit au moins contenir 3 caractères')]
+    #[Assert\NotBlank(message: 'user.password.required')]
+    #[Assert\Length(min: 3, minMessage: 'user.entity.password_too_short')]
     public ?string $plainPassword = null;
 
     /** @var string[] */

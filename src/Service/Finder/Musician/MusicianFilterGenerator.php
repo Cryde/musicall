@@ -37,11 +37,11 @@ readonly class MusicianFilterGenerator
 
         $content = $result->getContent();
         if (empty($content)) {
-            throw new NoResultException('No result');
+            throw new NoResultException('search.musician.no_result');
         }
 
         if (!is_array($content)) {
-            throw new InvalidResultException('Invalid result');
+            throw new InvalidResultException('search.musician.invalid_result');
         }
 
         return $this->announceMusicianFilterBuilder->buildFromArray($content);

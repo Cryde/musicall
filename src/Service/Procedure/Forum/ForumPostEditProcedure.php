@@ -26,7 +26,7 @@ readonly class ForumPostEditProcedure
         /** @var User $user */
         $user = $this->security->getUser();
         if (!$this->canEdit($post, $user)) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas modifier ce message.');
+            throw new AccessDeniedHttpException('forum.post.edit_forbidden');
         }
 
         $post->content = $content;

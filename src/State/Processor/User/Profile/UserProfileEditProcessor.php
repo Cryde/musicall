@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 readonly class UserProfileEditProcessor implements ProcessorInterface
 {
-    private const string PICK_A_CITY = 'Choisissez une ville dans la liste pour enregistrer sa position';
+    private const string PICK_A_CITY = 'profile.location.pick_a_city';
 
     public function __construct(
         private Security $security,

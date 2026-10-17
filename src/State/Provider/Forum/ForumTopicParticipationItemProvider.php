@@ -24,7 +24,7 @@ readonly class ForumTopicParticipationItemProvider implements ProviderInterface
     {
         $entity = $this->repository->find($uriVariables['id']);
         if (!$entity instanceof ForumTopicParticipation) {
-            throw new NotFoundHttpException('Participation not found');
+            throw new NotFoundHttpException('forum.participation.not_found');
         }
 
         return $entity;

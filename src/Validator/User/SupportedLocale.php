@@ -10,5 +10,5 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class SupportedLocale extends Constraint
 {
-    public string $message = 'Cette langue n\'est pas disponible';
+    public string $message = 'user.locale.not_available';
 }

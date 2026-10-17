@@ -39,20 +39,20 @@ class FeedbackResource
     final public const int MESSAGE_MIN_LENGTH = 10;
     final public const int MESSAGE_MAX_LENGTH = 2000;
 
-    #[Assert\NotBlank(message: 'Veuillez choisir un type de retour')]
-    #[Assert\Choice(callback: [FeedbackType::class, 'values'], message: 'Type de retour inconnu')]
+    #[Assert\NotBlank(message: 'feedback.type.required')]
+    #[Assert\Choice(callback: [FeedbackType::class, 'values'], message: 'feedback.type.unknown')]
     public string $type;
 
-    #[Assert\NotBlank(message: 'Veuillez choisir une section')]
-    #[Assert\Choice(callback: [FeedbackModule::class, 'values'], message: 'Section inconnue')]
+    #[Assert\NotBlank(message: 'feedback.module.required')]
+    #[Assert\Choice(callback: [FeedbackModule::class, 'values'], message: 'feedback.module.unknown')]
     public string $module;
 
-    #[Assert\NotBlank(message: 'Veuillez écrire votre message')]
+    #[Assert\NotBlank(message: 'feedback.message.required')]
     #[Assert\Length(
         min: self::MESSAGE_MIN_LENGTH,
         max: self::MESSAGE_MAX_LENGTH,
-        minMessage: 'Votre message doit contenir au minimum {{ limit }} caractères',
-        maxMessage: 'Votre message ne peut pas dépasser {{ limit }} caractères',
+        minMessage: 'feedback.message.too_short',
+        maxMessage: 'feedback.message.too_long',
     )]
     public string $message;
 
@@ -60,8 +60,8 @@ class FeedbackResource
      * Optional even without an account: a report carrying a section and a page is actionable without
      * a way to reply, and demanding one costs us the quick report this feature exists for.
      */
-    #[Assert\Email(message: "L'email est invalide")]
-    #[Assert\Length(max: 255, maxMessage: "L'email ne peut pas dépasser {{ limit }} caractères")]
+    #[Assert\Email(message: 'feedback.email.invalid')]
+    #[Assert\Length(max: 255, maxMessage: 'feedback.email.too_long')]
     public ?string $email = null;
 
     /**
@@ -79,15 +79,15 @@ class FeedbackResource
      * one backslash, which escapes the `]` and leaves a regex that fails to compile, and a regex that
      * fails to compile rejects every value including the valid ones.
      */
-    #[Assert\NotBlank(message: 'La page est obligatoire')]
-    #[Assert\Length(max: 255, maxMessage: "L'adresse de la page est trop longue")]
-    #[Assert\Regex(pattern: '#^/(?![/\x5C])[^\s\x5C]*\z#', message: "L'adresse de la page est invalide")]
+    #[Assert\NotBlank(message: 'feedback.page_url.required')]
+    #[Assert\Length(max: 255, maxMessage: 'feedback.page_url.too_long')]
+    #[Assert\Regex(pattern: '#^/(?![/\x5C])[^\s\x5C]*\z#', message: 'feedback.page_url.invalid')]
     public string $pageUrl;
 
     /**
      * Attached by the processor only when the sender is an active member of that space, so a report
      * cannot be pinned onto somebody else's Band Space.
      */
-    #[Assert\Uuid(message: 'Identifiant de Band Space invalide')]
+    #[Assert\Uuid(message: 'feedback.band_space_id.invalid')]
     public ?string $bandSpaceId = null;
 }

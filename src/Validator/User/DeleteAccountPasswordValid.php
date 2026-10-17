@@ -9,8 +9,8 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class DeleteAccountPasswordValid extends Constraint
 {
-    public string $messageInvalid = 'Le mot de passe est invalide';
-    public string $messageRequired = 'Le mot de passe est requis';
+    public string $messageInvalid = 'user.delete_account.password_invalid';
+    public string $messageRequired = 'user.delete_account.password_required';
 
     public function getTargets(): string
     {

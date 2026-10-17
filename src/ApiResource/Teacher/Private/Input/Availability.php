@@ -8,18 +8,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class Availability
 {
-    #[Assert\NotBlank(message: 'Le jour est obligatoire')]
+    #[Assert\NotBlank(message: 'profile.teacher.availability.day_required')]
     #[Assert\Choice(
         choices: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
-        message: 'Jour invalide : {{ value }}',
+        message: 'profile.teacher.availability.day_invalid',
     )]
     public ?string $dayOfWeek = null;
 
-    #[Assert\NotBlank(message: 'L\'heure de début est obligatoire')]
-    #[Assert\Time(message: 'Format d\'heure de début invalide (attendu HH:MM)', withSeconds: false)]
+    #[Assert\NotBlank(message: 'profile.teacher.availability.start_time_required')]
+    #[Assert\Time(message: 'profile.teacher.availability.start_time_invalid', withSeconds: false)]
     public ?string $startTime = null;
 
-    #[Assert\NotBlank(message: 'L\'heure de fin est obligatoire')]
-    #[Assert\Time(message: 'Format d\'heure de fin invalide (attendu HH:MM)', withSeconds: false)]
+    #[Assert\NotBlank(message: 'profile.teacher.availability.end_time_required')]
+    #[Assert\Time(message: 'profile.teacher.availability.end_time_invalid', withSeconds: false)]
     public ?string $endTime = null;
 }

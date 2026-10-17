@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ResetPassword
 {
     #[Assert\NotBlank]
-    #[Assert\Length(min: 8, max: 4096, minMessage: 'Minimum 8 caractères')]
-    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'Ce mot de passe est présent dans une fuite de données, veuillez en choisir un autre.')]
+    #[Assert\Length(min: 8, max: 4096, minMessage: 'user.reset_password.too_short')]
+    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'user.password.compromised')]
     public string $password;
 }

@@ -30,13 +30,13 @@ readonly class ForumTopicParticipationRestoreProcessor implements ProcessorInter
     {
         $participation = $this->repository->find($uriVariables['id']);
         if (!$participation instanceof ForumTopicParticipation) {
-            throw new NotFoundHttpException('Participation not found');
+            throw new NotFoundHttpException('forum.participation.not_found');
         }
 
         /** @var User $user */
         $user = $this->security->getUser();
         if ($participation->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas modifier cette participation.');
+            throw new AccessDeniedHttpException('forum.participation.update_forbidden');
         }
 
         if ($participation->removedDatetime !== null) {

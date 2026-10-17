@@ -25,7 +25,7 @@ readonly class ForumTopicSlugActionProvider implements ProviderInterface
         $topic = $this->forumTopicRepository->findOneBy(['slug' => $uriVariables['slug']]);
 
         if (!$topic instanceof ForumTopic) {
-            throw new NotFoundHttpException('Topic not found');
+            throw new NotFoundHttpException('forum.topic.not_found');
         }
 
         return $topic;

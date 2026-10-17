@@ -44,7 +44,7 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
         }
 
         if ($user->musicianProfile) {
-            throw new BadRequestHttpException('Vous avez déjà un profil musicien');
+            throw new BadRequestHttpException('profile.musician.already_exists');
         }
 
         $profile = new MusicianProfile();

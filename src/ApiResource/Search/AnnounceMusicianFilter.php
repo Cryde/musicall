@@ -23,8 +23,8 @@ use Symfony\Component\Validator\Constraints\Length;
                 new Length(
                     min: 10,
                     max: 200,
-                    minMessage: 'Cette recherche est trop courte (min {{ limit }} caractères)',
-                    maxMessage: 'Cette recherche est trop longue (max {{ limit }} caractères)'
+                    minMessage: 'search.musician.query_too_short',
+                    maxMessage: 'search.musician.query_too_long'
                 )
             ],
         ),

@@ -25,19 +25,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class ReportCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez préciser ce que vous signalez')]
-    #[Assert\Choice(callback: [ReportTargetType::class, 'values'], message: 'Type de contenu inconnu')]
+    #[Assert\NotBlank(message: 'report.target.required')]
+    #[Assert\Choice(callback: [ReportTargetType::class, 'values'], message: 'report.target_type.unknown')]
     public string $targetType = '';
 
-    #[Assert\NotBlank(message: 'Veuillez préciser ce que vous signalez')]
+    #[Assert\NotBlank(message: 'report.target.required')]
     #[Assert\Length(max: 36, maxMessage: 'common.invalid_identifier')]
     public string $targetId = '';
 
-    #[Assert\NotBlank(message: 'Veuillez choisir un motif')]
-    #[Assert\Choice(callback: [ReportReason::class, 'values'], message: 'Motif inconnu')]
+    #[Assert\NotBlank(message: 'report.reason.required')]
+    #[Assert\Choice(callback: [ReportReason::class, 'values'], message: 'report.reason.unknown')]
     public string $reason = '';
 
-    #[Assert\Length(max: Report::DETAILS_MAX_LENGTH, maxMessage: 'Le détail ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: Report::DETAILS_MAX_LENGTH, maxMessage: 'report.details.too_long')]
     public ?string $details = null {
         set(?string $value) {
             $value = $value === null ? null : trim($value);

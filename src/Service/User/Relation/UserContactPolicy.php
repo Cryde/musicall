@@ -12,7 +12,7 @@ use App\Repository\User\Relation\UserBlockRepository;
  */
 readonly class UserContactPolicy
 {
-    public const string BLOCKED_MESSAGE = 'Vous ne pouvez pas échanger de messages avec cet utilisateur';
+    public const string BLOCKED_MESSAGE = 'user.block.contact_blocked';
 
     public function __construct(
         private UserBlockRepository $userBlockRepository,

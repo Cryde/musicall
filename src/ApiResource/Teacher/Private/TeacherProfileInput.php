@@ -13,19 +13,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class TeacherProfileInput
 {
-    #[Assert\NotBlank(message: 'La présentation est obligatoire', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
+    #[Assert\NotBlank(message: 'profile.teacher.description_required', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
     public ?string $description = null;
 
-    #[Assert\NotNull(message: 'Les années d\'expérience sont obligatoires', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
-    #[Assert\PositiveOrZero(message: 'Les années d\'expérience doivent être positives', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
-    #[Assert\LessThanOrEqual(value: 70, message: 'Les années d\'expérience ne peuvent pas dépasser {{ compared_value }} ans', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
+    #[Assert\NotNull(message: 'profile.teacher.years_of_experience_required', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
+    #[Assert\PositiveOrZero(message: 'profile.teacher.years_of_experience_positive', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
+    #[Assert\LessThanOrEqual(value: 70, message: 'profile.teacher.years_of_experience_too_high', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
     public ?int $yearsOfExperience = null;
 
     /** @var string[] */
     #[Assert\All([
         new Assert\Choice(
             choices: ['beginner', 'intermediate', 'advanced'],
-            message: 'Niveau invalide : {{ value }}',
+            message: 'profile.teacher.level_invalid',
         ),
     ])]
     public array $studentLevels = [];
@@ -34,7 +34,7 @@ class TeacherProfileInput
     #[Assert\All([
         new Assert\Choice(
             choices: ['children', 'teenagers', 'adults', 'seniors'],
-            message: 'Tranche d\'âge invalide : {{ value }}',
+            message: 'profile.teacher.age_group_invalid',
         ),
     ])]
     public array $ageGroups = [];
@@ -43,7 +43,7 @@ class TeacherProfileInput
 
     public bool $offersTrial = false;
 
-    #[Assert\PositiveOrZero(message: 'Le prix du cours d\'essai doit être positif ou nul')]
+    #[Assert\PositiveOrZero(message: 'profile.teacher.trial_lesson_price_positive')]
     public ?int $trialPrice = null;
 
     /** @var Location[] */
@@ -51,7 +51,7 @@ class TeacherProfileInput
     public $locations = [];
 
     /** @var string[] */
-    #[Assert\Count(min: 1, minMessage: 'Vous devez sélectionner au moins un instrument', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
+    #[Assert\Count(min: 1, minMessage: 'profile.teacher.instruments_required', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
     public array $instrumentIds = [];
 
     /** @var string[] */

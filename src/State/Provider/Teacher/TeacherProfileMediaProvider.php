@@ -64,14 +64,14 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
     private function provideItem(string $id, ?TeacherProfile $profile): TeacherProfileMedia
     {
         if (!$profile instanceof \App\Entity\Teacher\TeacherProfile) {
-            throw new NotFoundHttpException('Profil professeur non trouvé');
+            throw new NotFoundHttpException('profile.teacher.not_found');
         }
         if (!($media = $this->mediaRepository->find($id)) instanceof \App\Entity\Teacher\TeacherProfileMedia) {
-            throw new NotFoundHttpException('Média non trouvé');
+            throw new NotFoundHttpException('profile.media.not_found');
         }
 
         if ($media->teacherProfile->id !== $profile->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas accéder à ce média');
+            throw new AccessDeniedHttpException('profile.media.access_forbidden');
         }
 
         return $this->teacherProfileMediaResourceBuilder->buildFromEntity($media);

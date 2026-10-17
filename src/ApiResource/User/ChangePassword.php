@@ -18,11 +18,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ChangePassword
 {
     #[Assert\NotBlank]
-    #[SecurityAssert\UserPassword(message: 'L\'ancien mot de passe est invalide')]
+    #[SecurityAssert\UserPassword(message: 'user.change_password.old_password_invalid')]
     public string $oldPassword;
     #[Assert\NotBlank]
-    #[Assert\Length(min: 8, max: 4096, minMessage: 'Le mot de passe doit contenir au moins 8 caractères.')]
-    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'Ce mot de passe est présent dans une fuite de données, veuillez en choisir un autre.')]
+    #[Assert\Length(min: 8, max: 4096, minMessage: 'user.change_password.too_short')]
+    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'user.password.compromised')]
     #[Assert\NotEqualTo(propertyPath: 'oldPassword')]
     public string $newPassword;
 

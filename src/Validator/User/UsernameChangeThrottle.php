@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class UsernameChangeThrottle extends Constraint
 {
-    public string $message = 'Vous devez attendre 30 jours entre chaque changement de nom d\'utilisateur.';
+    public string $message = 'user.username.change_throttled';
 
     public function __construct(?string $message = null, ?array $groups = null, mixed $payload = null)
     {

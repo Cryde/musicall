@@ -38,7 +38,7 @@ readonly class ForumPostVoteProcessor implements ProcessorInterface
     {
         $forumPost = $this->forumPostRepository->find($uriVariables['id']);
         if (!$forumPost instanceof \App\Entity\Forum\ForumPost) {
-            throw new ForumPostNotFoundException('Message de forum inexistant');
+            throw new ForumPostNotFoundException('forum.post.not_found');
         }
         /** @var Request $request */
         $request = $this->requestStack->getCurrentRequest();

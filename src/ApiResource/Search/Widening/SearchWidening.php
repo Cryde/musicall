@@ -36,8 +36,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             required: false,
             extraProperties: [
                 'resource_class' => InstrumentEntity::class,
-                'invalid_message' => "L'instrument n'est pas valide",
-                'not_found_message' => 'Instrument introuvable',
+                'invalid_message' => 'search.instrument.invalid',
+                'not_found_message' => 'search.instrument.not_found',
             ],
         ),
         'styles' => new QueryParameter(
@@ -46,8 +46,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             extraProperties: [
                 'resource_class' => StyleEntity::class,
                 'list' => true,
-                'invalid_message' => "Le style n'est pas valide",
-                'not_found_message' => 'Style introuvable',
+                'invalid_message' => 'search.style.invalid',
+                'not_found_message' => 'search.style.not_found',
             ],
         ),
         'latitude' => new QueryParameter(key: 'latitude', schema: ['type' => 'number', 'format' => 'float']),
@@ -56,8 +56,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             key: 'radius',
             schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 500],
             constraints: [new Assert\Sequentially([
-                new Assert\Regex(pattern: '/^\d+\z/', message: 'La distance doit être un nombre entier de kilomètres'),
-                new Assert\Range(min: 1, max: 500, notInRangeMessage: 'La distance doit être comprise entre {{ min }} et {{ max }} km'),
+                new Assert\Regex(pattern: '/^\d+\z/', message: 'search.radius.not_integer'),
+                new Assert\Range(min: 1, max: 500, notInRangeMessage: 'search.radius.out_of_range'),
             ])],
         ),
     ],

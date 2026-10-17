@@ -29,7 +29,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
         /** @var User $user */
         $user = $this->security->getUser();
         if (!$musicianProfile = $user->musicianProfile) {
-            throw new NotFoundHttpException('Profil musicien non trouvé');
+            throw new NotFoundHttpException('profile.musician.not_found');
         }
 
         return $this->buildFromEntity($musicianProfile);

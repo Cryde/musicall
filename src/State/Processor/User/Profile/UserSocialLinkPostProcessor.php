@@ -37,13 +37,13 @@ readonly class UserSocialLinkPostProcessor implements ProcessorInterface
 
         $platform = SocialPlatform::tryFrom($data->platform);
         if (!$platform) {
-            throw new BadRequestHttpException('Plateforme invalide');
+            throw new BadRequestHttpException('profile.social_link.platform_invalid');
         }
 
         // Check if platform already exists for this profile
         foreach ($profile->socialLinks as $existingLink) {
             if ($existingLink->platform === $platform) {
-                throw new ConflictHttpException('Un lien pour cette plateforme existe déjà');
+                throw new ConflictHttpException('profile.social_link.already_exists');
             }
         }
 

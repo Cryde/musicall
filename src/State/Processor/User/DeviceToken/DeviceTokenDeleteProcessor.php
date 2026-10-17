@@ -32,7 +32,7 @@ readonly class DeviceTokenDeleteProcessor implements ProcessorInterface
         }
 
         if ($this->deviceTokenRepository->deleteOneForUser($user, (string) $uriVariables['token']) === 0) {
-            throw new NotFoundHttpException('Appareil introuvable');
+            throw new NotFoundHttpException('user.device_token.not_found');
         }
     }
 }

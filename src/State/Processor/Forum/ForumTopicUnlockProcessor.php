@@ -26,7 +26,7 @@ readonly class ForumTopicUnlockProcessor implements ProcessorInterface
     {
         $topic = $this->forumTopicRepository->findOneBy(['slug' => $uriVariables['slug']]);
         if (!$topic instanceof ForumTopic) {
-            throw new NotFoundHttpException('Topic not found');
+            throw new NotFoundHttpException('forum.topic.not_found');
         }
 
         $this->forumTopicLockProcedure->process($topic, false);

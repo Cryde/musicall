@@ -30,7 +30,7 @@ readonly class TeacherProfileDeleteProcessor implements ProcessorInterface
         $profile = $user->teacherProfile;
 
         if (!$profile) {
-            throw new NotFoundHttpException('Profil professeur non trouvé');
+            throw new NotFoundHttpException('profile.teacher.not_found');
         }
 
         $user->teacherProfile = null;

@@ -38,7 +38,7 @@ readonly class UserBlockDeleteProcessor implements ProcessorInterface
         // Checked before the query, which would coerce the id through the uuid type (see #934).
         $blockedId = (string) $uriVariables['userId'];
         if (!Uuid::isValid($blockedId) || $this->userBlockRepository->unblock($user, $blockedId) === 0) {
-            throw new NotFoundHttpException('Cet utilisateur n\'est pas bloqué');
+            throw new NotFoundHttpException('user.block.not_blocked');
         }
     }
 }

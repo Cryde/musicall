@@ -20,5 +20,5 @@ final class ImageMimeTypes
     /** @var list<string> */
     public const array ALLOWED = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-    public const string INVALID_MESSAGE = 'Le format de l\'image n\'est pas autorisé. Formats acceptés : JPEG, PNG, GIF, WebP.';
+    public const string INVALID_MESSAGE = 'upload.image.mime_type_not_allowed';
 }

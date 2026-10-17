@@ -8,15 +8,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class Package
 {
-    #[Assert\NotBlank(message: 'Le titre du forfait est obligatoire')]
+    #[Assert\NotBlank(message: 'profile.teacher.package.title_required')]
     public ?string $title = null;
 
     public ?string $description = null;
 
-    #[Assert\Positive(message: 'Le nombre de séances doit être positif')]
+    #[Assert\Positive(message: 'profile.teacher.package.sessions_count_positive')]
     public ?int $sessionsCount = null;
 
-    #[Assert\NotNull(message: 'Le prix du forfait est obligatoire')]
-    #[Assert\PositiveOrZero(message: 'Le prix doit être positif')]
+    #[Assert\NotNull(message: 'profile.teacher.package.price_required')]
+    #[Assert\PositiveOrZero(message: 'profile.teacher.package.price_positive')]
     public ?int $price = null;
 }
