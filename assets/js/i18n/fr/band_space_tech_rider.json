@@ -286,6 +286,12 @@
     "search_label": "Rechercher une icône",
     "all": "Tout",
     "no_match": "Aucune icône ne correspond.",
-    "place": "Placer {icon} au centre de la scène"
+    "place": "Placer {icon} au centre de la scène",
+    "category": {
+      "audio": "Son",
+      "instrument": "Instruments",
+      "lighting": "Lumière",
+      "other": "Divers"
+    }
   }
 }

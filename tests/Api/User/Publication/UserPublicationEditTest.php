@@ -60,7 +60,6 @@ class UserPublicationEditTest extends ApiTestCase
         $this->assertSame('Short desc', $response['short_description']);
         $this->assertSame('<p>Test content</p>', $response['content']);
         $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
-        $this->assertSame('Brouillon', $response['status_label']);
         $this->assertSame($category->id, $response['category']['id']);
         $this->assertSame('News', $response['category']['title']);
         $this->assertSame('fr', $response['language']);
@@ -189,7 +188,6 @@ class UserPublicationEditTest extends ApiTestCase
             'short_description' => 'Une description',
             'content' => 'Le contenu',
             'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
                 'id' => $category->id,

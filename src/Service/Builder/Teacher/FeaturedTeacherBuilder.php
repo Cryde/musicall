@@ -8,6 +8,7 @@ use App\ApiResource\Teacher\Public\FeaturedTeacher;
 use App\ApiResource\Teacher\Public\TeacherProfileInstrument;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\Teacher\TeacherProfileInstrument as TeacherProfileInstrumentEntity;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -16,6 +17,7 @@ readonly class FeaturedTeacherBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -43,10 +45,10 @@ readonly class FeaturedTeacherBuilder
             }
         }
 
-        $dto->instruments = array_values(array_map(static function (TeacherProfileInstrumentEntity $instrument): TeacherProfileInstrument {
+        $dto->instruments = array_values(array_map(function (TeacherProfileInstrumentEntity $instrument): TeacherProfileInstrument {
             $dto = new TeacherProfileInstrument();
             $dto->instrumentId = (string) $instrument->instrument->id;
-            $dto->instrumentName = $instrument->instrument->name;
+            $dto->instrumentName = $this->referenceNames->instrument($instrument->instrument);
 
             return $dto;
         }, $profile->instruments->toArray()));

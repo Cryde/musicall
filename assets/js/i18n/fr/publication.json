@@ -171,7 +171,8 @@
     "status": {
       "draft": "Brouillon",
       "online": "Publié",
-      "pending": "En validation"
+      "pending": "En validation",
+      "unknown": "Inconnu"
     }
   },
   "user": {
@@ -363,6 +364,12 @@
       "reject_confirm": "Rejeter la galerie \"{title}\" ?",
       "rejected": "Galerie rejetée",
       "rejected_detail": "La galerie \"{title}\" a été rejetée."
+    },
+    "status": {
+      "online": "En ligne",
+      "draft": "Brouillon",
+      "pending": "En validation",
+      "unknown": "Inconnu"
     }
   },
   "comment": {

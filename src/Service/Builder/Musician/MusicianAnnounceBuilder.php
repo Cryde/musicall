@@ -12,11 +12,13 @@ use App\Entity\Musician\MusicianAnnounce as MusicianAnnounceEntity;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\ReferenceNameTranslator;
 
 readonly class MusicianAnnounceBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
     /**
@@ -81,7 +83,7 @@ readonly class MusicianAnnounceBuilder
     {
         $dto = new Instrument();
         $dto->id = (string) $entity->id;
-        $dto->musicianName = $entity->musicianName;
+        $dto->musicianName = $this->referenceNames->instrumentMusicianName($entity);
 
         return $dto;
     }
@@ -95,7 +97,7 @@ readonly class MusicianAnnounceBuilder
         return array_map(function (StyleEntity $entity): Style {
             $dto = new Style();
             $dto->id = (string) $entity->id;
-            $dto->name = $entity->name;
+            $dto->name = $this->referenceNames->style($entity);
 
             return $dto;
         }, $entities);

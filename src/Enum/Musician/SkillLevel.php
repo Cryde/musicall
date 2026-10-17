@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace App\Enum\Musician;
 
-enum SkillLevel: string
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+enum SkillLevel: string implements TranslatableInterface
 {
     case BEGINNER = 'beginner';
     case INTERMEDIATE = 'intermediate';
     case ADVANCED = 'advanced';
     case PROFESSIONAL = 'professional';
 
-    public function getLabel(): string
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
     {
-        return match ($this) {
-            self::BEGINNER => 'Débutant',
-            self::INTERMEDIATE => 'Intermédiaire',
-            self::ADVANCED => 'Avancé',
-            self::PROFESSIONAL => 'Professionnel',
-        };
+        return $translator->trans(match ($this) {
+            self::BEGINNER => 'skill_level.beginner',
+            self::INTERMEDIATE => 'skill_level.intermediate',
+            self::ADVANCED => 'skill_level.advanced',
+            self::PROFESSIONAL => 'skill_level.professional',
+        }, [], 'reference', $locale);
     }
 
     public function getSortOrder(): int

@@ -6,11 +6,13 @@ use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\Attribute\Instrument;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\ReferenceNameTranslator;
 
 readonly class BandSpaceMemberBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -27,9 +29,9 @@ readonly class BandSpaceMemberBuilder
         // The name a document should use, resolved here so no caller has to repeat the fallback.
         $dto->displayName = $membership->displayName();
         $dto->instruments = array_map(
-            static fn (Instrument $instrument): array => [
+            fn (Instrument $instrument): array => [
                 'id' => (string) $instrument->id,
-                'name' => $instrument->name,
+                'name' => $this->referenceNames->instrument($instrument),
             ],
             array_values($membership->instruments->toArray()),
         );

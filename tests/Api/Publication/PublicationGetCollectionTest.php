@@ -112,7 +112,6 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -124,7 +123,6 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'slug'                 => 'titre-de-la-publication-2',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Petite description de la publication 2',
                     'upvotes'              => 1,
                     'downvotes'            => 2,
@@ -140,7 +138,6 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -152,7 +149,6 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'slug'                 => 'titre-de-la-publication-1',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Petite description de la publication 1',
                     'upvotes'              => 3,
                     'downvotes'            => 1,
@@ -282,7 +278,6 @@ class PublicationGetCollectionTest extends ApiTestCase
                 'id' => $sub->id,
                 'title' => 'Chroniques',
                 'slug' => 'chroniques',
-                'type_label' => 'publication',
                 'is_course' => false,
             ],
             'author' => [
@@ -294,7 +289,6 @@ class PublicationGetCollectionTest extends ApiTestCase
             'slug' => $publication->slug,
             'publication_datetime' => \DateTimeImmutable::createFromInterface($publication->publicationDatetime)->format(\DateTimeInterface::ATOM),
             'cover' => null,
-            'type_label' => 'text',
             'description' => $publication->shortDescription,
             'upvotes' => 0,
             'downvotes' => 0,

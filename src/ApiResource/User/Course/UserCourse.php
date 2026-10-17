@@ -72,11 +72,7 @@ class UserCourse
 
     public int $statusId;
 
-    public string $statusLabel;
-
     public int $typeId;
-
-    public string $typeLabel;
 
     #[ApiProperty(genId: false)]
     public ?UserCourseCategory $category = null;

@@ -20,6 +20,7 @@ use App\Entity\Teacher\TeacherProfileLocation;
 use App\Entity\Teacher\TeacherProfilePackage;
 use App\Entity\Teacher\TeacherProfilePricing;
 use App\Entity\Teacher\TeacherSocialLink;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -29,6 +30,7 @@ readonly class TeacherProfileBuilder
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
         private TeacherProfileMediaResourceBuilder $teacherProfileMediaResourceBuilder,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -82,7 +84,7 @@ readonly class TeacherProfileBuilder
         return array_values(array_map(function (TeacherProfileInstrument $instrument): PublicTeacherProfileInstrument {
             $dto = new PublicTeacherProfileInstrument();
             $dto->instrumentId = (string) $instrument->instrument->id;
-            $dto->instrumentName = $instrument->instrument->name;
+            $dto->instrumentName = $this->referenceNames->instrument($instrument->instrument);
 
             return $dto;
         }, $instruments));
@@ -97,7 +99,7 @@ readonly class TeacherProfileBuilder
         return array_values(array_map(function (Style $style): PublicTeacherProfileStyle {
             $dto = new PublicTeacherProfileStyle();
             $dto->id = (string) $style->id;
-            $dto->name = $style->name;
+            $dto->name = $this->referenceNames->style($style);
 
             return $dto;
         }, $styles));

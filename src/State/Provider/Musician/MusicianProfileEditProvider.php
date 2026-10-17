@@ -11,8 +11,10 @@ use App\ApiResource\Musician\MusicianProfileEditInstrument;
 use App\ApiResource\Musician\MusicianProfileEditStyle;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
+use App\Translation\ReferenceNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @implements ProviderInterface<MusicianProfileEdit>
@@ -21,6 +23,8 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 {
     public function __construct(
         private Security $security,
+        private TranslatorInterface $translator,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -42,15 +46,15 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
         if ($profile->availabilityStatus instanceof \App\Enum\Musician\AvailabilityStatus) {
             $dto->availabilityStatus = $profile->availabilityStatus->value;
-            $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
+            $dto->availabilityStatusLabel = $profile->availabilityStatus->trans($this->translator);
         }
 
         $dto->instruments = array_values(array_map(function (\App\Entity\Musician\MusicianProfileInstrument $instrument): MusicianProfileEditInstrument {
             $item = new MusicianProfileEditInstrument();
             $item->instrumentId = (string) $instrument->instrument->id;
-            $item->instrumentName = $instrument->instrument->musicianName;
+            $item->instrumentName = $this->referenceNames->instrumentMusicianName($instrument->instrument);
             $item->skillLevel = $instrument->skillLevel->value;
-            $item->skillLevelLabel = $instrument->skillLevel->getLabel();
+            $item->skillLevelLabel = $instrument->skillLevel->trans($this->translator);
 
             return $item;
         }, $profile->instruments->toArray()));
@@ -58,7 +62,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
         $dto->styles = array_values(array_map(function (\App\Entity\Attribute\Style $style): MusicianProfileEditStyle {
             $item = new MusicianProfileEditStyle();
             $item->id = (string) $style->id;
-            $item->name = $style->name;
+            $item->name = $this->referenceNames->style($style);
 
             return $item;
         }, $profile->styles->toArray()));

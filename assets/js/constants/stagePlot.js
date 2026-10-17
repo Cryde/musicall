@@ -111,6 +111,21 @@ const POSITION_KEYS = [
   ]
 ]
 
+// Mirrors `TechRiderStagePlotIconCategory`.
+const ICON_CATEGORY_LABEL_KEYS = {
+  audio: 'band_space_tech_rider.icon_picker.category.audio',
+  instrument: 'band_space_tech_rider.icon_picker.category.instrument',
+  lighting: 'band_space_tech_rider.icon_picker.category.lighting',
+  other: 'band_space_tech_rider.icon_picker.category.other'
+}
+
+/** A category added on the server and not here yet shows its value rather than nothing. */
+export function iconCategoryLabel(category) {
+  const key = ICON_CATEGORY_LABEL_KEYS[category]
+
+  return key ? i18n.global.t(key) : category
+}
+
 function bandIndex(value) {
   return BAND_LIMITS.findIndex((limit) => value < limit)
 }

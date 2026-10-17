@@ -6,6 +6,7 @@ use App\ApiResource\User\Publication\UserPublicationCategory;
 use App\ApiResource\User\Publication\UserPublicationPreview;
 use App\ApiResource\User\Publication\UserPublicationPreviewAuthor;
 use App\Entity\Publication;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
@@ -18,6 +19,7 @@ readonly class UserPublicationPreviewBuilder
         private CacheManager $cacheManager,
         #[Target('app.publication_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -30,13 +32,12 @@ readonly class UserPublicationPreviewBuilder
         $dto->shortDescription = $publication->shortDescription;
         $dto->content = $this->sanitizer->sanitize($publication->content ?? '');
         $dto->statusId = $publication->status;
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
 
         $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
         $category->id = (int) $subCategory->id;
-        $category->title = $subCategory->title;
+        $category->title = $this->referenceNames->subCategory($subCategory);
         $category->slug = $subCategory->slug;
         $dto->category = $category;
 

@@ -126,9 +126,9 @@
             </template>
           </Column>
 
-          <Column field="status_label" :header="t('publication.user_list.column_status')" style="min-width: 120px">
+          <Column field="status_id" :header="t('publication.user_list.column_status')" style="min-width: 120px">
             <template #body="{ data }">
-              <Tag :value="data.status_label" :severity="getStatusSeverity(data.status_id)" />
+              <Tag :value="publicationStatusLabel(data.status_id)" :severity="getStatusSeverity(data.status_id)" />
             </template>
           </Column>
 
@@ -227,6 +227,7 @@ import { useRouter } from 'vue-router'
 import publicationApi from '../../../api/user/publication.js'
 import AddDiscoverModal from '../../../components/Publication/AddDiscoverModal.vue'
 import AddPublicationModal from '../../../components/publication/AddPublicationModal.vue'
+import { publicationStatusLabel } from '../../../constants/publicationStatus.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { usePublicationsStore } from '../../../store/publication/publications.js'
 import { useUserPublicationsStore } from '../../../store/publication/userPublications.js'

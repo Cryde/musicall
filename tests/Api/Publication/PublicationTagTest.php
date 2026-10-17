@@ -54,7 +54,6 @@ class PublicationTagTest extends ApiTestCase
             'short_description' => 'Une description',
             'content' => 'Le contenu',
             'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
                 'id' => $category->id,
@@ -103,7 +102,6 @@ class PublicationTagTest extends ApiTestCase
             'short_description' => 'Une description',
             'content' => 'Le contenu',
             'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
                 'id' => $category->id,
@@ -152,7 +150,6 @@ class PublicationTagTest extends ApiTestCase
             'short_description' => 'Une description',
             'content' => 'Le contenu',
             'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
                 'id' => $category->id,
@@ -201,7 +198,6 @@ class PublicationTagTest extends ApiTestCase
             'short_description' => 'Une description',
             'content' => 'Le contenu',
             'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
                 'id' => $category->id,
@@ -340,7 +336,6 @@ class PublicationTagTest extends ApiTestCase
                         'id' => $category->id,
                         'title' => 'News',
                         'slug' => 'news',
-                        'type_label' => 'publication',
                         'is_course' => false,
                     ],
                     'author' => [
@@ -352,7 +347,6 @@ class PublicationTagTest extends ApiTestCase
                     'slug' => 'tagged-article',
                     'publication_datetime' => '2026-01-01T00:00:00+00:00',
                     'cover' => null,
-                    'type_label' => 'text',
                     'description' => 'Short description',
                     'upvotes' => 0,
                     'downvotes' => 0,

@@ -16,6 +16,7 @@ use App\ApiResource\Teacher\Private\TeacherProfileSocialLink;
 use App\ApiResource\Teacher\Private\TeacherProfileStyle;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
+use App\Translation\ReferenceNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,6 +27,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 {
     public function __construct(
         private Security $security,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -75,7 +77,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
         $dto->instruments = array_values(array_map(function (\App\Entity\Teacher\TeacherProfileInstrument $instrument): TeacherProfileInstrument {
             $item = new TeacherProfileInstrument();
             $item->instrumentId = (string) $instrument->instrument->id;
-            $item->instrumentName = $instrument->instrument->musicianName;
+            $item->instrumentName = $this->referenceNames->instrumentMusicianName($instrument->instrument);
 
             return $item;
         }, $profile->instruments->toArray()));
@@ -83,7 +85,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
         $dto->styles = array_values(array_map(function (\App\Entity\Attribute\Style $style): TeacherProfileStyle {
             $item = new TeacherProfileStyle();
             $item->id = (string) $style->id;
-            $item->name = $style->name;
+            $item->name = $this->referenceNames->style($style);
 
             return $item;
         }, $profile->styles->toArray()));

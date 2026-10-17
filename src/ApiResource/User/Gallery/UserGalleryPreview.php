@@ -32,8 +32,6 @@ class UserGalleryPreview
 
     public int $status;
 
-    public string $statusLabel;
-
     public \DateTimeInterface $creationDatetime;
 
     public string $authorUsername;

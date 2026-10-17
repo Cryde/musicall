@@ -7,14 +7,20 @@ namespace App\Service\Builder\Publication;
 use App\ApiResource\Course\CourseCategory;
 use App\ApiResource\Publication\PublicationCategory;
 use App\Entity\PublicationSubCategory;
+use App\Translation\ReferenceNameTranslator;
 
 readonly class PublicationCategoryBuilder
 {
+    public function __construct(
+        private ReferenceNameTranslator $referenceNames,
+    ) {
+    }
+
     public function buildPublicationCategory(PublicationSubCategory $entity): PublicationCategory
     {
         $dto = new PublicationCategory();
         $dto->id = (int) $entity->id;
-        $dto->title = $entity->title;
+        $dto->title = $this->referenceNames->subCategory($entity);
         $dto->slug = $entity->slug;
         $dto->position = (int) $entity->position;
 
@@ -35,7 +41,7 @@ readonly class PublicationCategoryBuilder
     {
         $dto = new CourseCategory();
         $dto->id = (int) $entity->id;
-        $dto->title = $entity->title;
+        $dto->title = $this->referenceNames->subCategory($entity);
         $dto->slug = $entity->slug;
         $dto->position = (int) $entity->position;
 

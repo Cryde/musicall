@@ -5,6 +5,7 @@ namespace App\Service\Builder\User\Course;
 use App\ApiResource\User\Course\UserCourse;
 use App\ApiResource\User\Course\UserCourseCategory;
 use App\Entity\Publication;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -13,6 +14,7 @@ readonly class UserCourseBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -28,15 +30,11 @@ readonly class UserCourseBuilder
         $dto->creationDatetime = $creationDatetime;
         $dto->editionDatetime = $publication->editionDatetime;
         $dto->statusId = $publication->status;
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->typeId = (int) $publication->type;
-        $dto->typeLabel = $publication->type === Publication::TYPE_VIDEO
-            ? Publication::TYPE_VIDEO_LABEL
-            : Publication::TYPE_TEXT_LABEL;
 
         $category = new UserCourseCategory();
         $category->id = (int) $subCategory->id;
-        $category->title = $subCategory->title;
+        $category->title = $this->referenceNames->subCategory($subCategory);
         $category->slug = $subCategory->slug;
         $dto->category = $category;
 

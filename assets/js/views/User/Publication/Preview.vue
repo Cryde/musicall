@@ -26,7 +26,7 @@
                 <strong>{{ isAdminReview ? t('publication.review.admin_review') : t('publication.review.preview_mode') }}</strong>
               </template>
               <template #status>
-                <Tag :value="publication.status_label" :severity="getStatusSeverity(publication.status_id)" class="mx-1" />
+                <Tag :value="publicationStatusLabel(publication.status_id)" :severity="getStatusSeverity(publication.status_id)" class="mx-1" />
               </template>
             </i18n-t>
           </div>
@@ -127,6 +127,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import adminPublicationApi from '../../../api/admin/publication.js'
 import publicationApi from '../../../api/user/publication.js'
+import { publicationStatusLabel } from '../../../constants/publicationStatus.js'
 import { displayName } from '../../../helper/user/displayName.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'

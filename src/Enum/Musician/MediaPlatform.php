@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace App\Enum\Musician;
 
-enum MediaPlatform: string
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+enum MediaPlatform: string implements TranslatableInterface
 {
     case YOUTUBE = 'youtube';
     case SOUNDCLOUD = 'soundcloud';
     case SPOTIFY = 'spotify';
 
-    public function getLabel(): string
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
     {
-        return match ($this) {
-            self::YOUTUBE => 'YouTube',
-            self::SOUNDCLOUD => 'SoundCloud',
-            self::SPOTIFY => 'Spotify',
-        };
+        return $translator->trans(match ($this) {
+            self::YOUTUBE => 'media_platform.youtube',
+            self::SOUNDCLOUD => 'media_platform.soundcloud',
+            self::SPOTIFY => 'media_platform.spotify',
+        }, [], 'reference', $locale);
     }
 }

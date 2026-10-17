@@ -13,7 +13,9 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\Musician\MusicianProfileInstrument;
 use App\Repository\Musician\MusicianAnnounceRepository;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class MusicianProfileBuilder
@@ -23,6 +25,8 @@ readonly class MusicianProfileBuilder
         private CacheManager $cacheManager,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private MusicianProfileMediaResourceBuilder $musicianProfileMediaResourceBuilder,
+        private TranslatorInterface $translator,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -46,7 +50,7 @@ readonly class MusicianProfileBuilder
 
         if ($profile->availabilityStatus instanceof \App\Enum\Musician\AvailabilityStatus) {
             $dto->availabilityStatus = $profile->availabilityStatus->value;
-            $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
+            $dto->availabilityStatusLabel = $profile->availabilityStatus->trans($this->translator);
         }
 
         $dto->instruments = $this->buildInstruments($profile->instruments->toArray());
@@ -70,9 +74,9 @@ readonly class MusicianProfileBuilder
             $instrumentEntity = $instrument->instrument;
             $dto = new PublicMusicianProfileInstrument();
             $dto->instrumentId = (string) $instrumentEntity->id;
-            $dto->instrumentName = $instrumentEntity->musicianName;
+            $dto->instrumentName = $this->referenceNames->instrumentMusicianName($instrumentEntity);
             $dto->skillLevel = $instrument->skillLevel->value;
-            $dto->skillLevelLabel = $instrument->skillLevel->getLabel();
+            $dto->skillLevelLabel = $instrument->skillLevel->trans($this->translator);
 
             return $dto;
         }, $instruments));
@@ -87,7 +91,7 @@ readonly class MusicianProfileBuilder
         return array_values(array_map(function (Style $style): PublicMusicianProfileStyle {
             $dto = new PublicMusicianProfileStyle();
             $dto->id = (string) $style->id;
-            $dto->name = $style->name;
+            $dto->name = $this->referenceNames->style($style);
 
             return $dto;
         }, $styles));
@@ -104,10 +108,10 @@ readonly class MusicianProfileBuilder
             $dto->id = (string) $announce->id;
             $dto->creationDatetime = $announce->creationDatetime;
             $dto->type = $announce->type;
-            $dto->instrumentName = $announce->instrument->musicianName;
+            $dto->instrumentName = $this->referenceNames->instrumentMusicianName($announce->instrument);
             $dto->locationName = $announce->locationName;
             $dto->styles = array_map(
-                fn(\App\Entity\Attribute\Style $style): string => $style->name,
+                $this->referenceNames->style(...),
                 $announce->styles->toArray()
             );
 

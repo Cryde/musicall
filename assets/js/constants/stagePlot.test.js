@@ -3,6 +3,7 @@ import { describe, it } from 'node:test'
 import {
   ALIGNMENT_TOLERANCE,
   findAlignmentGuides,
+  iconCategoryLabel,
   MAX_ROTATION,
   MIN_ROTATION,
   nextQuarterTurn,
@@ -220,5 +221,21 @@ describe('nextQuarterTurn', () => {
     assert.equal(nextQuarterTurn(47), 90)
     assert.equal(nextQuarterTurn(91), 180)
     assert.equal(nextQuarterTurn(1), 90)
+  })
+})
+
+describe('iconCategoryLabel', () => {
+  // The texts the API sent as `category_label` before #687, which the picker tabs must still show.
+  it('names each icon category', () => {
+    assert.deepEqual(['audio', 'instrument', 'lighting', 'other'].map(iconCategoryLabel), [
+      'Son',
+      'Instruments',
+      'Lumière',
+      'Divers'
+    ])
+  })
+
+  it('shows the value of a category it does not know yet', () => {
+    assert.equal(iconCategoryLabel('rigging'), 'rigging')
   })
 })
