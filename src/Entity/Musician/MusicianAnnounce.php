@@ -26,6 +26,12 @@ class MusicianAnnounce
     final const TYPE_BAND = 2; // means announce search for a band (so announce represent a musician alone)
     final const string TYPE_BAND_STR = '2';
     final const array TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
+    /**
+     * The spoken languages an announce can welcome (#1198): French and English, plus Dutch and German for
+     * Belgium. Mirrored by ANNOUNCE_LANGUAGES in assets/js/utils/announceLanguages.js.
+     */
+    final const array LANGUAGES = ['fr', 'en', 'nl', 'de'];
+    final const string DEFAULT_LANGUAGE = 'fr';
 
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
@@ -75,7 +81,7 @@ class MusicianAnnounce
      * @var list<string> lowercase ISO 639-1 codes, at least one
      */
     #[ORM\Column(type: Types::JSON)]
-    public array $languages = ['fr'];
+    public array $languages = [self::DEFAULT_LANGUAGE];
 
     public function __construct()
     {

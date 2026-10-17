@@ -73,6 +73,13 @@
                     <i class="pi pi-map-marker text-xs" />
                     {{ announce.location_name }}
                   </p>
+                  <template v-if="announce.languages?.length > 0">
+                    <p class="text-xs text-surface-500 dark:text-surface-400 mt-2 mb-1">{{ t('profile.announce.languages') }}</p>
+                    <p class="text-sm text-surface-900 dark:text-surface-0 flex items-center gap-1">
+                      <i class="pi pi-language text-xs" />
+                      {{ languageListLabel(announce.languages) }}
+                    </p>
+                  </template>
                 </div>
 
                 <!-- Date -->
@@ -126,6 +133,7 @@ import { useI18n } from 'vue-i18n'
 import { TYPES_ANNOUNCE_BAND } from '../../../constants/types.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
+import { languageListLabel } from '../../../utils/announceLanguages.js'
 import AddAnnounceModal from './AddAnnounceModal.vue'
 
 const { t } = useI18n()

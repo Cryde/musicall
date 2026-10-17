@@ -24,7 +24,7 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
     }
   }
 
-  async function createAnnounce({ type, instrument, styles, location, note }) {
+  async function createAnnounce({ type, instrument, styles, location, note, languages }) {
     isSaving.value = true
     saveError.value = null
     try {
@@ -35,7 +35,8 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
         instrument: `/api/instruments/${instrument.id}`,
         locationName: location.name,
         longitude: String(location.longitude),
-        latitude: String(location.latitude)
+        latitude: String(location.latitude),
+        languages
       })
       await loadAnnounces()
       return true

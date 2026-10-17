@@ -179,6 +179,18 @@
                     :placeholder="t('search.musician.city_placeholder')"
                 />
             </div>
+            <div class="w-full lg:w-auto">
+                <Select
+                    v-model="selectedLanguage"
+                    :options="languageChoices"
+                    optionLabel="name"
+                    optionValue="code"
+                    showClear
+                    :placeholder="t('search.musician.language_placeholder')"
+                    :aria-label="t('search.musician.language_placeholder')"
+                    class="w-full lg:w-48"
+                />
+            </div>
             <!-- Desktop: Search buttons inside filters row -->
             <div class="hidden lg:block">
                 <Button
@@ -242,6 +254,14 @@
             icon="pi pi-map-marker"
             removable
             @remove="selectedLocation = null"
+            class="text-sm"
+        />
+        <Chip
+            v-if="selectedLanguage"
+            :label="t('search.musician.chip_language', { language: languageName(selectedLanguage) })"
+            icon="pi pi-language"
+            removable
+            @remove="selectedLanguage = null"
             class="text-sm"
         />
     </div>
@@ -360,6 +380,7 @@
                 :distance="announce.distance"
                 :note="announce.note"
                 :instrument="announce.instrument.name"
+                :languages="announce.languages"
                 :highlighted-styles="isGuided ? selectedStyles.map((style) => style.name) : []"
                 from="search"
             />
@@ -387,6 +408,7 @@
         :initial-instrument="announceInitialInstrument"
         :initial-styles="announceInitialStyles"
         :initial-location="announceInitialLocation"
+        :initial-languages="announceInitialLanguages"
         @created="handleAnnounceCreated"
     />
     <AuthRequiredModal
@@ -424,6 +446,7 @@ import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { isAnnounceLanguage, languageName, languageOptions } from '../../utils/announceLanguages.js'
 import {
   DEFAULT_RADIUS,
   GUIDED_MODE,
@@ -471,6 +494,9 @@ const filtersSummary = ref(null)
 const isCityLoading = ref(false)
 // Only the guided search bounds the distance (#1084); the filters sort by it and keep every one.
 const selectedRadius = ref(null)
+// No language by default (#1198): a filter, so nothing disappears until a visitor asks for one.
+const selectedLanguage = ref(null)
+const languageChoices = computed(() => languageOptions())
 const selectSearchType = ref(null)
 const selectSearchTypeOption = [
   { key: 2, name: 'Musiciens' },
@@ -486,7 +512,16 @@ const {
   clear: clearUrlFilters,
   push: pushUrlFilters
 } = useUrlFilters(
-  { type: '', instrument: '', styles: [], lat: '', lng: '', location: '', radius: '' },
+  {
+    type: '',
+    instrument: '',
+    styles: [],
+    lat: '',
+    lng: '',
+    location: '',
+    radius: '',
+    language: ''
+  },
   // `mode` kept as it is, so a guided search stays guided whatever the search writes to the address.
   { autoSync: false, preserveKeys: ['page', 'mode'] }
 )
@@ -567,7 +602,8 @@ function hasUrlFilters() {
     !!urlFilters.type ||
     !!urlFilters.instrument ||
     urlFilters.styles.length > 0 ||
-    !!(urlFilters.lat && urlFilters.lng && urlFilters.location)
+    !!(urlFilters.lat && urlFilters.lng && urlFilters.location) ||
+    !!urlFilters.language
   )
 }
 
@@ -644,7 +680,8 @@ const hasActiveFilters = computed(() => {
     selectSearchType.value !== null ||
     selectedInstrument.value !== null ||
     selectedStyles.value.length > 0 ||
-    (selectedLocation.value && typeof selectedLocation.value === 'object')
+    (selectedLocation.value && typeof selectedLocation.value === 'object') ||
+    selectedLanguage.value !== null
   )
 })
 
@@ -798,6 +835,11 @@ const announceInitialLocation = computed(() => {
   return selectedLocation.value
 })
 
+const announceInitialLanguages = computed(() => {
+  if (!createFromSearch.value || !selectedLanguage.value) return []
+  return [selectedLanguage.value]
+})
+
 function insertExample(e) {
   quickSearch.value = e.target.textContent
 }
@@ -820,6 +862,8 @@ function buildSearchParams() {
     // Only the guided search bounds the distance, even if an address kept a radius.
     if (isGuided.value && selectedRadius.value) params.radius = selectedRadius.value
   }
+  // The guided search asks no language, so it never filters on one an address kept.
+  if (!isGuided.value && selectedLanguage.value) params.language = selectedLanguage.value
   return params
 }
 
@@ -846,6 +890,10 @@ function initializeFiltersFromUrl() {
     const radius = Number.parseInt(urlFilters.radius, 10)
     selectedRadius.value = Number.isFinite(radius) ? radius : null
   }
+  // An unknown language would only get the search refused.
+  if (isAnnounceLanguage(urlFilters.language)) {
+    selectedLanguage.value = urlFilters.language
+  }
 }
 
 function syncEntityRefsToUrlFilters() {
@@ -863,6 +911,7 @@ function syncEntityRefsToUrlFilters() {
     urlFilters.location = ''
     urlFilters.radius = ''
   }
+  urlFilters.language = selectedLanguage.value ?? ''
 }
 
 /**
@@ -881,7 +930,8 @@ async function search({ record = true } = {}) {
     type: selectSearchType.value?.name || null,
     instrument: selectedInstrument.value?.musician_name || null,
     styles: selectedStyles.value.map((s) => s.name).join(', ') || null,
-    location: selectedLocation.value?.name || null
+    location: selectedLocation.value?.name || null,
+    language: selectedLanguage.value
   }
   trackUmamiEvent(
     isGuided.value ? 'musician-guided-search' : 'musician-search-submit',
@@ -1032,6 +1082,7 @@ function clearAllFilters(skipTracking = false) {
   selectedInstrument.value = null
   selectedStyles.value = []
   selectedLocation.value = null
+  selectedLanguage.value = null
   quickSearch.value = ''
   selectSearchType.value = null
   // Reset results to initial state

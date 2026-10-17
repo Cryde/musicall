@@ -51,12 +51,20 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
         $entity->longitude = $data->longitude;
         $entity->latitude = $data->latitude;
         $entity->note = $data->note;
-        // The author's language until the form offers a choice (#1198).
-        $entity->languages = [$user->locale];
+        $entity->languages = $data->languages ?? $this->authorLanguages($user);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
         return $this->musicianAnnounceBuilder->buildItem($entity);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function authorLanguages(User $user): array
+    {
+        // An account language an announce cannot have would make it unfindable by any language filter.
+        return in_array($user->locale, MusicianAnnounceEntity::LANGUAGES, true) ? [$user->locale] : [MusicianAnnounceEntity::DEFAULT_LANGUAGE];
     }
 }
