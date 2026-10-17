@@ -372,7 +372,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
-import { dateFnsLocale } from '../../../i18n/formatLocale.js'
+import { dateFnsLocale, datePattern } from '../../../i18n/formatLocale.js'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 import { seriesCutDate, toAgendaDate } from '../../../utils/agendaDate.js'
 import {
@@ -548,14 +548,14 @@ const occurrenceDateLabel = computed(() => {
   if (!occurrenceStart.value) return null
   return isAllDayEntry.value
     ? format(occurrenceStart.value, 'EEEE d MMMM yyyy', { locale: dateFnsLocale() })
-    : format(occurrenceStart.value, "EEEE d MMMM yyyy 'à' HH:mm", { locale: dateFnsLocale() })
+    : format(occurrenceStart.value, datePattern('weekdayDateTime'), { locale: dateFnsLocale() })
 })
 
 function formatEventMoment(date) {
   if (!date) return ''
   return form.isAllDay
     ? format(date, 'EEEE d MMMM yyyy', { locale: dateFnsLocale() })
-    : format(date, "EEEE d MMMM yyyy 'à' HH:mm", { locale: dateFnsLocale() })
+    : format(date, datePattern('weekdayDateTime'), { locale: dateFnsLocale() })
 }
 
 const eventTimeText = computed({

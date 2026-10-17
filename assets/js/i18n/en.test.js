@@ -24,6 +24,11 @@ const FORBIDDEN_CHARACTERS = {
   '\u00A0': 'a non-breaking space',
   '\u202F': 'a narrow no-break space'
 }
+// The rest of what the PHP guard on the server catalogues rules out (TranslationCatalogueTest).
+const FORBIDDEN_PATTERNS = [
+  [/[\u2190-\u21FF]/, 'an arrow'],
+  [/\s[:;!?]/, 'a space before a colon, a semicolon, an exclamation or a question mark']
+]
 
 function flatten(messages, prefix = '') {
   return Object.entries(messages).flatMap(([key, value]) =>
@@ -50,7 +55,6 @@ const french = new Map(flatten(fr))
 // A key French lacks is reported once, by the first test, rather than breaking the comparisons.
 const entriesFrenchHas = entries.filter(([key]) => french.has(key))
 
-// Missing keys are expected until #1194: they show in French. What is here must be right.
 describe('the English catalogue', () => {
   before(() => {
     i18n.global.setLocaleMessage('en', en)
@@ -59,6 +63,16 @@ describe('the English catalogue', () => {
 
   after(() => {
     i18n.global.locale.value = 'fr'
+  })
+
+  // A key English lacks shows French to an English reader.
+  it('has every key the French catalogue has', () => {
+    const english = new Set(entries.map(([key]) => key))
+
+    assert.deepEqual(
+      [...french.keys()].filter((key) => !english.has(key)),
+      []
+    )
   })
 
   it('only has keys the French catalogue has', () => {
@@ -106,6 +120,11 @@ describe('the English catalogue', () => {
       Object.entries(FORBIDDEN_CHARACTERS)
         .filter(([character]) => message.includes(character))
         .map(([character, name]) => `${key}: ${name} (${character})`)
+        .concat(
+          FORBIDDEN_PATTERNS.filter(([pattern]) => pattern.test(message)).map(
+            ([, name]) => `${key}: ${name}`
+          )
+        )
     )
 
     assert.deepEqual(violations, [])

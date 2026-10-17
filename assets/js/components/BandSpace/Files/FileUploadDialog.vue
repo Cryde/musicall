@@ -144,7 +144,7 @@
               })
             }}
           </span>
-          <span aria-hidden="true">({{ summary.percent }} %)</span>
+          <span aria-hidden="true">({{ formatPercent(summary.percent) }})</span>
         </p>
       </div>
 
@@ -204,6 +204,7 @@ import {
   listedFolderId,
   NO_FOLDER_LISTED
 } from '../../../constants/folderSelection.js'
+import { formatPercent, treeIndent } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import {
   appendToQueue,
@@ -285,7 +286,7 @@ const folderOptions = computed(() => {
   const out = []
   const walk = (nodes, depth) => {
     for (const node of nodes) {
-      out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
+      out.push({ label: treeIndent(depth) + node.name, value: node.id })
       if (Array.isArray(node.children) && node.children.length > 0) {
         walk(node.children, depth + 1)
       }

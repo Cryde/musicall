@@ -72,7 +72,8 @@ class InstrumentGetCollectionTest extends ApiTestCase
     public function test_get_instruments_in_another_locale_with_the_database_name_as_fallback(): void
     {
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $drum = InstrumentFactory::new()->asDrum()->create();
+        // One an admin has just added: no catalogue names its slug.
+        $theremin = InstrumentFactory::new()->create(['name' => 'Thérémine', 'musicianName' => 'Thérémiste', 'slug' => 'theremine']);
         $this->serveIn('en_GB', ['instrument.guitare' => 'Guitar', 'instrument_musician.guitare' => 'Guitarist']);
 
         $this->client->request('GET', '/api/instruments');
@@ -84,20 +85,20 @@ class InstrumentGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/instruments/' . $drum->id,
-                    '@type' => 'Instrument',
-                    'id' => $drum->id,
-                    'name' => 'Batterie',
-                    'musician_name' => 'Batteur',
-                    'slug' => 'batterie',
-                ],
-                [
                     '@id' => '/api/instruments/' . $guitar->id,
                     '@type' => 'Instrument',
                     'id' => $guitar->id,
                     'name' => 'Guitar',
                     'musician_name' => 'Guitarist',
                     'slug' => 'guitare',
+                ],
+                [
+                    '@id' => '/api/instruments/' . $theremin->id,
+                    '@type' => 'Instrument',
+                    'id' => $theremin->id,
+                    'name' => 'Thérémine',
+                    'musician_name' => 'Thérémiste',
+                    'slug' => 'theremine',
                 ],
             ],
             'totalItems' => 2,

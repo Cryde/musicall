@@ -49,7 +49,7 @@
           <span v-if="data.last_access_datetime" class="text-surface-500">
             {{ formatRelative(data.last_access_datetime) }}
           </span>
-          <span v-else class="text-surface-400">—</span>
+          <span v-else class="text-surface-400">{{ noValue() }}</span>
         </template>
       </Column>
 
@@ -88,7 +88,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
-import { dateFnsLocale, intlLocale } from '../../../i18n/formatLocale.js'
+import { dateFnsLocale, intlLocale, noValue } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
@@ -135,7 +135,7 @@ function confirmRevoke(share) {
 }
 
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return noValue()
   return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',

@@ -32,7 +32,7 @@
     <!-- Each line opens the section it is about: the card says what to fix and gets you there. -->
     <ul v-else class="m-0 p-0 list-none flex flex-col gap-1 text-xs leading-snug text-surface-700 dark:text-surface-200">
       <li v-if="readiness.empty.length > 0" class="px-1 py-0.5">
-        <span class="font-medium">{{ t('band_space_tech_rider.readiness.empty_sections', readiness.empty.length) }}</span>&nbsp;:
+        <span class="font-medium">{{ t('band_space_tech_rider.readiness.empty_sections', readiness.empty.length) }}</span>{{ colon() }}
         <template v-for="(section, index) in readiness.empty" :key="section.itemId">
           <button
             type="button"
@@ -47,7 +47,7 @@
           class="w-full text-left rounded px-1 py-0.5 hover:bg-surface-100 dark:hover:bg-surface-700 cursor-pointer"
           @click="emit('select', problem.itemId)"
         >
-          <span class="font-medium">{{ problem.title }}</span>&nbsp;: {{ problem.messages.join(', ') }}.
+          <span class="font-medium">{{ problem.title }}</span>{{ colon() }} {{ problem.messages.join(', ') }}.
         </button>
       </li>
     </ul>
@@ -57,6 +57,7 @@
 <script setup>
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { colon } from '../../../i18n/formatLocale.js'
 import { riderReadiness } from '../../../utils/riderCompleteness.js'
 
 /** The « Prêt à envoyer » card under the outline (#1093), from the sections as last saved. */

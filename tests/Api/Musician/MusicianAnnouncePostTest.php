@@ -129,7 +129,8 @@ class MusicianAnnouncePostTest extends ApiTestCase
             'instrument' => [
                 '@type' => 'Instrument',
                 'id' => $instrument->id,
-                'musician_name' => 'Batteur',
+                // The author reads English, so the response does too.
+                'musician_name' => 'Drummer',
             ],
             'styles' => [
                 [

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { afterEach, describe, it } from 'node:test'
+import { i18n } from '../i18n/index.js'
 import {
   locationLabel,
   nextStep,
@@ -62,6 +63,18 @@ describe('texts', () => {
     assert.equal(locationLabel(brussels, 25), 'Bruxelles · 25 km')
     assert.equal(locationLabel(brussels, null), 'Bruxelles')
     assert.equal(locationLabel(null, 25), null)
+  })
+
+  describe('in English', () => {
+    afterEach(() => {
+      i18n.global.locale.value = 'fr'
+    })
+
+    it('sets a hyphen between the place and its radius', () => {
+      i18n.global.locale.value = 'en'
+
+      assert.equal(locationLabel(brussels, 25), 'Bruxelles - 25 km')
+    })
   })
 
   it('builds the registration headline from what the search has', () => {

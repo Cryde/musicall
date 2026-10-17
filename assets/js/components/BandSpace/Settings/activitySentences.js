@@ -1,3 +1,4 @@
+import { noValue } from '../../../i18n/formatLocale.js'
 import { i18n } from '../../../i18n/index.js'
 import { formatEurosFromCents } from '../../../utils/currency.js'
 import { formatDateLong } from '../../../utils/date.js'
@@ -54,7 +55,7 @@ function payloadDate(value) {
 
 function formatAmount(cents) {
   if (cents === null || cents === undefined) {
-    return '—'
+    return noValue()
   }
   return formatEurosFromCents(cents)
 }
@@ -132,7 +133,9 @@ const SENTENCES = {
   'notes.note_emoji_changed': () => t('band_space_activity.notes.note_emoji_changed'),
   'notes.note_content_updated': () => t('band_space_activity.notes.note_content_updated'),
   'notes.note_file_attached': (a) =>
-    t('band_space_activity.notes.note_file_attached', { name: a.payload?.original_name ?? '—' }),
+    t('band_space_activity.notes.note_file_attached', {
+      name: a.payload?.original_name ?? noValue()
+    }),
   // No notes.note_file_detached — note detach is automatic cleanup when an
   // image is removed from the note body; the parallel note_content_updated
   // activity already covers it in the Notes feed.
@@ -140,11 +143,11 @@ const SENTENCES = {
   // Finance — entries
   'finance.entry_created': (a) =>
     t('band_space_activity.finance.entry_created', {
-      label: a.payload?.label ?? '—',
+      label: a.payload?.label ?? noValue(),
       amount: formatAmount(a.payload?.amount)
     }),
   'finance.entry_deleted': (a) =>
-    t('band_space_activity.finance.entry_deleted', { label: a.payload?.label ?? '—' }),
+    t('band_space_activity.finance.entry_deleted', { label: a.payload?.label ?? noValue() }),
   'finance.entry_status_changed': (a) =>
     t('band_space_activity.finance.entry_status_changed', {
       from: financeStatus(a.payload?.from),
@@ -163,7 +166,7 @@ const SENTENCES = {
   'finance.entry_date_changed': () => t('band_space_activity.finance.entry_date_changed'),
   'finance.entry_category_changed': (a) =>
     t('band_space_activity.finance.entry_category_changed', {
-      category: a.payload?.to_name ?? '—'
+      category: a.payload?.to_name ?? noValue()
     }),
 
   // Finance — splits
@@ -179,14 +182,14 @@ const SENTENCES = {
 
   // Finance — categories
   'finance.category_created': (a) =>
-    t('band_space_activity.finance.category_created', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.finance.category_created', { name: a.payload?.name ?? noValue() }),
   'finance.category_renamed': (a) =>
     t('band_space_activity.finance.category_renamed', {
       from: raw(a.payload?.from),
       to: raw(a.payload?.to)
     }),
   'finance.category_deleted': (a) =>
-    t('band_space_activity.finance.category_deleted', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.finance.category_deleted', { name: a.payload?.name ?? noValue() }),
   'finance.categories_bootstrapped': (a) =>
     t('band_space_activity.finance.categories_bootstrapped', {
       count: a.payload?.count ?? '?'
@@ -195,7 +198,7 @@ const SENTENCES = {
   // Finance — recurrences
   'finance.recurrence_created': (a) =>
     t('band_space_activity.finance.recurrence_created', {
-      label: a.payload?.label ?? '—',
+      label: a.payload?.label ?? noValue(),
       generated: a.payload?.generated_entries ?? 0
     }),
   'finance.recurrence_updated': (a) =>
@@ -207,42 +210,42 @@ const SENTENCES = {
   'finance.recurrence_end_date_changed': () =>
     t('band_space_activity.finance.recurrence_end_date_changed'),
   'finance.recurrence_deleted': (a) =>
-    t('band_space_activity.finance.recurrence_deleted', { label: a.payload?.label ?? '—' }),
+    t('band_space_activity.finance.recurrence_deleted', { label: a.payload?.label ?? noValue() }),
 
   // Setlist — songs (repertoire)
   'setlist.song_added': (a) =>
-    t('band_space_activity.setlist.song_added', { title: a.payload?.title ?? '—' }),
+    t('band_space_activity.setlist.song_added', { title: a.payload?.title ?? noValue() }),
   'setlist.song_updated': (a) =>
-    t('band_space_activity.setlist.song_updated', { title: a.payload?.title ?? '—' }),
+    t('band_space_activity.setlist.song_updated', { title: a.payload?.title ?? noValue() }),
   'setlist.song_archived': (a) =>
-    t('band_space_activity.setlist.song_archived', { title: a.payload?.title ?? '—' }),
+    t('band_space_activity.setlist.song_archived', { title: a.payload?.title ?? noValue() }),
   'setlist.songs_archived': (a) => {
     if (a.payload?.count === 1) return t('band_space_activity.setlist.songs_archived_one')
     if (a.payload?.count == null) return t('band_space_activity.setlist.songs_archived_some')
     return t('band_space_activity.setlist.songs_archived', { count: a.payload.count })
   },
   'setlist.song_unarchived': (a) =>
-    t('band_space_activity.setlist.song_unarchived', { title: a.payload?.title ?? '—' }),
+    t('band_space_activity.setlist.song_unarchived', { title: a.payload?.title ?? noValue() }),
   'setlist.song_file_attached': (a) =>
     t('band_space_activity.setlist.song_file_attached', {
-      name: a.payload?.original_name ?? '—'
+      name: a.payload?.original_name ?? noValue()
     }),
   'setlist.song_file_detached': (a) =>
     t('band_space_activity.setlist.song_file_detached', {
-      name: a.payload?.original_name ?? '—'
+      name: a.payload?.original_name ?? noValue()
     }),
 
   // Setlist — setlists
   'setlist.setlist_created': (a) =>
-    t('band_space_activity.setlist.setlist_created', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.setlist.setlist_created', { name: a.payload?.name ?? noValue() }),
   'setlist.setlist_renamed': (a) =>
-    t('band_space_activity.setlist.setlist_renamed', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.setlist.setlist_renamed', { name: a.payload?.name ?? noValue() }),
   'setlist.setlist_duplicated': (a) =>
-    t('band_space_activity.setlist.setlist_duplicated', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.setlist.setlist_duplicated', { name: a.payload?.name ?? noValue() }),
   'setlist.setlist_archived': (a) =>
-    t('band_space_activity.setlist.setlist_archived', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.setlist.setlist_archived', { name: a.payload?.name ?? noValue() }),
   'setlist.setlist_unarchived': (a) =>
-    t('band_space_activity.setlist.setlist_unarchived', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.setlist.setlist_unarchived', { name: a.payload?.name ?? noValue() }),
 
   // Setlist — items
   'setlist.setlist_item_added': (a) =>
@@ -250,7 +253,7 @@ const SENTENCES = {
       ? t('band_space_activity.setlist.setlist_item_added', { label: a.payload.label })
       : t('band_space_activity.setlist.setlist_item_added_untitled'),
   'setlist.setlist_items_added': (a) => {
-    const name = a.payload?.name ?? '—'
+    const name = a.payload?.name ?? noValue()
     if (a.payload?.count === 1) {
       return t('band_space_activity.setlist.setlist_items_added_one', { name })
     }
@@ -261,8 +264,8 @@ const SENTENCES = {
   },
   'setlist.setlist_items_copied': (a) =>
     t('band_space_activity.setlist.setlist_items_copied', {
-      source: a.payload?.source_name ?? '—',
-      name: a.payload?.name ?? '—'
+      source: a.payload?.source_name ?? noValue(),
+      name: a.payload?.name ?? noValue()
     }),
   'setlist.setlist_item_removed': () => t('band_space_activity.setlist.setlist_item_removed'),
   'setlist.setlist_item_reordered': (a) =>
@@ -274,73 +277,73 @@ const SENTENCES = {
   // Setlist — files
   'setlist.setlist_file_attached': (a) =>
     t('band_space_activity.setlist.setlist_file_attached', {
-      name: a.payload?.original_name ?? '—'
+      name: a.payload?.original_name ?? noValue()
     }),
   'setlist.setlist_file_detached': (a) =>
     t('band_space_activity.setlist.setlist_file_detached', {
-      name: a.payload?.original_name ?? '—'
+      name: a.payload?.original_name ?? noValue()
     }),
 
   // Tech riders
   'rider.rider_created': (a) =>
-    t('band_space_activity.rider.rider_created', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.rider.rider_created', { name: a.payload?.name ?? noValue() }),
   'rider.rider_renamed': (a) =>
-    t('band_space_activity.rider.rider_renamed', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.rider.rider_renamed', { name: a.payload?.name ?? noValue() }),
   'rider.rider_archived': (a) =>
-    t('band_space_activity.rider.rider_archived', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.rider.rider_archived', { name: a.payload?.name ?? noValue() }),
   'rider.rider_unarchived': (a) =>
-    t('band_space_activity.rider.rider_unarchived', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.rider.rider_unarchived', { name: a.payload?.name ?? noValue() }),
   'rider.rider_duplicated': (a) =>
     t('band_space_activity.rider.rider_duplicated', {
-      source: a.payload?.source_name ?? '—',
-      name: a.payload?.name ?? '—'
+      source: a.payload?.source_name ?? noValue(),
+      name: a.payload?.name ?? noValue()
     }),
   'rider.rider_item_added': (a) =>
     t('band_space_activity.rider.rider_item_added', {
-      title: a.payload?.title ?? '—',
-      rider: a.payload?.rider_name ?? '—'
+      title: a.payload?.title ?? noValue(),
+      rider: a.payload?.rider_name ?? noValue()
     }),
   'rider.rider_item_renamed': (a) =>
     t('band_space_activity.rider.rider_item_renamed', {
-      rider: a.payload?.rider_name ?? '—',
-      title: a.payload?.title ?? '—'
+      rider: a.payload?.rider_name ?? noValue(),
+      title: a.payload?.title ?? noValue()
     }),
   'rider.rider_item_updated': (a) =>
     t('band_space_activity.rider.rider_item_updated', {
-      title: a.payload?.title ?? '—',
-      rider: a.payload?.rider_name ?? '—'
+      title: a.payload?.title ?? noValue(),
+      rider: a.payload?.rider_name ?? noValue()
     }),
   'rider.rider_item_removed': (a) =>
     t('band_space_activity.rider.rider_item_removed', {
-      title: a.payload?.title ?? '—',
-      rider: a.payload?.rider_name ?? '—'
+      title: a.payload?.title ?? noValue(),
+      rider: a.payload?.rider_name ?? noValue()
     }),
   'rider.rider_item_reordered': (a) =>
     a.payload?.count
       ? t('band_space_activity.rider.rider_item_reordered_count', {
           count: a.payload.count,
-          rider: a.payload?.rider_name ?? '—'
+          rider: a.payload?.rider_name ?? noValue()
         })
       : t('band_space_activity.rider.rider_item_reordered', {
-          rider: a.payload?.rider_name ?? '—'
+          rider: a.payload?.rider_name ?? noValue()
         }),
   'rider.rider_stage_plot_updated': (a) =>
     t('band_space_activity.rider.rider_stage_plot_updated', {
-      title: a.payload?.title ?? '—',
-      rider: a.payload?.rider_name ?? '—',
+      title: a.payload?.title ?? noValue(),
+      rider: a.payload?.rider_name ?? noValue(),
       count: a.payload?.element_count ?? 0
     }),
   'rider.rider_patch_list_updated': (a) =>
     t('band_space_activity.rider.rider_patch_list_updated', {
-      title: a.payload?.title ?? '—',
-      rider: a.payload?.rider_name ?? '—',
+      title: a.payload?.title ?? noValue(),
+      rider: a.payload?.rider_name ?? noValue(),
       inputs: a.payload?.input_count ?? 0,
       outputs: a.payload?.output_count ?? 0
     }),
 
   // Settings — band
   'settings.band_created': (a) =>
-    t('band_space_activity.settings.band_created', { name: a.payload?.name ?? '—' }),
+    t('band_space_activity.settings.band_created', { name: a.payload?.name ?? noValue() }),
   'settings.band_renamed': (a) =>
     t('band_space_activity.settings.band_renamed', {
       from: raw(a.payload?.from),

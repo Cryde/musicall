@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { NO_FOLDER_LISTED, ROOT_FOLDER_ID, TRASH_FOLDER_ID } from '../constants/folderSelection.js'
+import { i18n } from '../i18n/index.js'
 import {
   canFileSitAtRoot,
   fileListingParams,
@@ -341,6 +342,15 @@ describe('folderSelectOptions', () => {
       { label: '— 2026', value: 'a1' },
       { label: 'Maquettes', value: 'b' }
     ])
+  })
+
+  it('indents with a hyphen in English', () => {
+    i18n.global.locale.value = 'en'
+    try {
+      assert.equal(folderSelectOptions(TREE)[2].label, '- 2026')
+    } finally {
+      i18n.global.locale.value = 'fr'
+    }
   })
 
   it('can refuse Racine, which is what an attached file does to it', () => {

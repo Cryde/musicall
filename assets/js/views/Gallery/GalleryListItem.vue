@@ -23,7 +23,7 @@
             </div>
             <div class="self-stretch text-surface-600 dark:text-surface-200 text-sm leading-normal flex items-center gap-2">
               <i class="pi pi-images text-xs" />
-              <span>{{ t('publication.gallery.photo_count', { count: imageCount }) }}</span>
+              <span>{{ t('publication.gallery.photo_count', imageCount) }}</span>
             </div>
           </div>
         </div>

@@ -18,7 +18,7 @@
         "
         @click="startEditing"
       >
-        <slot :value="modelValue">{{ isEmpty ? (readonly ? '—' : (placeholder ?? t('band_space_setlist.inline_field.placeholder'))) : display }}</slot>
+        <slot :value="modelValue">{{ isEmpty ? (readonly ? noValue() : (placeholder ?? t('band_space_setlist.inline_field.placeholder'))) : display }}</slot>
         <i
           v-if="!readonly"
           class="pi pi-pencil text-xs ml-1.5 opacity-0 group-hover:opacity-60 group-focus:opacity-60"
@@ -66,6 +66,7 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { noValue } from '../../../../i18n/formatLocale.js'
 import { parseInlineFieldValue } from '../../../../utils/inlineFieldValue.js'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
 

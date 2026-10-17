@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { afterEach, describe, it } from 'node:test'
+import { i18n } from '../i18n/index.js'
 import {
   availabilityAnswerLabel,
   availabilitySummary,
@@ -25,6 +26,21 @@ describe('availabilitySummary', () => {
       availabilitySummary({ yes: 1, no: 0, absent: 0, pending: 4 }),
       '1 dispo · 4 sans réponse'
     )
+  })
+
+  describe('in English', () => {
+    afterEach(() => {
+      i18n.global.locale.value = 'fr'
+    })
+
+    // The wording comes from the catalogue: only the separator is this module's.
+    it('joins the counts with a hyphen rather than a middle dot', () => {
+      i18n.global.locale.value = 'en'
+      const summary = availabilitySummary({ yes: 3, no: 1, absent: 0, pending: 0 })
+
+      assert.equal(summary.split(' - ').length, 2)
+      assert.ok(!summary.includes('·'), summary)
+    })
   })
 
   it('says nothing when there is nothing to count', () => {

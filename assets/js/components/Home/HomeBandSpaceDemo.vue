@@ -137,6 +137,8 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
+import { byteUnits, intlLocale } from '../../i18n/formatLocale.js'
+import { formatAmount } from '../../utils/currency.js'
 import { adjacentTabKey } from '../../utils/tabNavigation.js'
 
 /**
@@ -147,6 +149,14 @@ const TILE =
   'rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 px-4 py-3'
 
 const { t } = useI18n()
+
+const KILOBYTES = 1
+const MEGABYTES = 2
+
+// A pretend size, written with the locale's own decimal mark: 4,2 Mo, 4.2 MB.
+function demoFileSize(value, unit) {
+  return `${new Intl.NumberFormat(intlLocale()).format(value)} ${byteUnits()[unit]}`
+}
 
 // Keyed by module, so a module added to BAND_SPACE_MODULES without content here fails visibly.
 const demo = computed(() => ({
@@ -210,19 +220,47 @@ const demo = computed(() => ({
   files: {
     title: t('home.band_space.demo.files.title'),
     files: [
-      { name: t('home.band_space.demo.files.demo'), size: '4,2 Mo', icon: 'pi pi-volume-up' },
-      { name: t('home.band_space.demo.files.bass_score'), size: '320 Ko', icon: 'pi pi-file-pdf' },
-      { name: t('home.band_space.demo.files.tech_rider'), size: '180 Ko', icon: 'pi pi-file-pdf' },
-      { name: t('home.band_space.demo.files.gig_photo'), size: '2,1 Mo', icon: 'pi pi-image' }
+      {
+        name: t('home.band_space.demo.files.demo'),
+        size: demoFileSize(4.2, MEGABYTES),
+        icon: 'pi pi-volume-up'
+      },
+      {
+        name: t('home.band_space.demo.files.bass_score'),
+        size: demoFileSize(320, KILOBYTES),
+        icon: 'pi pi-file-pdf'
+      },
+      {
+        name: t('home.band_space.demo.files.tech_rider'),
+        size: demoFileSize(180, KILOBYTES),
+        icon: 'pi pi-file-pdf'
+      },
+      {
+        name: t('home.band_space.demo.files.gig_photo'),
+        size: demoFileSize(2.1, MEGABYTES),
+        icon: 'pi pi-image'
+      }
     ]
   },
   finances: {
     title: t('home.band_space.demo.finances.title'),
-    balance: '420,00 €',
+    balance: formatAmount(42000),
     entries: [
-      { label: t('home.band_space.demo.finances.gig_fee'), amount: '+ 300,00 €', income: true },
-      { label: t('home.band_space.demo.finances.room_rent'), amount: '- 80,00 €', income: false },
-      { label: t('home.band_space.demo.finances.strings'), amount: '- 25,00 €', income: false }
+      {
+        label: t('home.band_space.demo.finances.gig_fee'),
+        amount: `+ ${formatAmount(30000)}`,
+        income: true
+      },
+      {
+        label: t('home.band_space.demo.finances.room_rent'),
+        amount: `- ${formatAmount(8000)}`,
+        income: false
+      },
+      {
+        label: t('home.band_space.demo.finances.strings'),
+        amount: `- ${formatAmount(2500)}`,
+        income: false
+      }
     ]
   }
 }))

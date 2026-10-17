@@ -1,0 +1,65 @@
+{
+  "title": "Notifications",
+  "mark_all_read": "Mark all as read",
+  "index": {
+    "page_title": "Notifications - MusicAll",
+    "empty": "You have no notifications yet."
+  },
+  "bell": {
+    "aria_label_unread": "Notifications ({count} unread)",
+    "filter_aria_label": "Filter notifications",
+    "tab_unread": "Unread",
+    "tab_all": "All",
+    "loading": "Loading...",
+    "empty_unread": "No unread notifications",
+    "empty": "No notifications",
+    "see_all": "See all notifications"
+  },
+  "item": {
+    "fallback_title": "Notification",
+    "accept": "Accept",
+    "decline": "Decline",
+    "invitation_accepted": "Invitation accepted",
+    "invitation_declined": "Invitation declined",
+    "invitation_revoked": "Invitation cancelled",
+    "invitation_expired": "Invitation expired",
+    "joined_band_space": "You joined {band_space}.",
+    "invitation_stale": "This invitation has expired or is no longer valid."
+  },
+  "preview": {
+    "band_space_invitation": "invited you to join {band_space}",
+    "band_space_invitation_accepted": "joined \"{band_space}\"",
+    "band_space_invitation_declined": "declined your invitation to \"{band_space}\"",
+    "band_space_task_assignment": "assigned you to the task \"{task}\"",
+    "forum_topic_reply": "replied to \"{topic}\"",
+    "publication_comment": "commented on \"{publication}\"",
+    "comment_reply": "replied to a comment on \"{publication}\"",
+    "course_approved": "Your lesson has been published",
+    "publication_approved": "Your publication has been published",
+    "course_rejected": "Your lesson was not accepted",
+    "publication_rejected": "Your publication was not accepted",
+    "gallery_approved": "Your gallery has been published",
+    "gallery_rejected": "Your gallery was not accepted",
+    "band_space_role_admin": "made you an admin of \"{band_space}\"",
+    "band_space_role_member": "removed your admin rights on \"{band_space}\"",
+    "band_space_member_removed": "removed you from \"{band_space}\"",
+    "band_space_member_left": "left \"{band_space}\"",
+    "task_mention": "mentioned you in the task \"{task}\"",
+    "band_space_chat_mention": "mentioned you in the \"{band_space}\" chat",
+    "task_comment": "commented on the task \"{task}\"",
+    "band_space_agenda_entry_created": "added the event \"{entry}\" for {date}",
+    "band_space_agenda_availability_requested": "is asking for your availability for \"{entry}\" on {date}",
+    "band_space_finance_split_assigned": "assigned you a share of \"{entry}\"",
+    "band_space_deletion_scheduled_on": "scheduled the deletion of \"{band_space}\" for {date}",
+    "band_space_deletion_scheduled": "scheduled the deletion of \"{band_space}\"",
+    "band_space_deletion_cancelled": "cancelled the deletion of \"{band_space}\"",
+    "report_received": "Your report about {subject} has been passed on to the moderators.",
+    "report_dismissed": "Your report about {subject} did not lead to any action. You can appeal this decision.",
+    "report_suspended": "Your report about {subject} led to the account being suspended. You can appeal this decision."
+  },
+  "report": {
+    "received": "Report received",
+    "dismissed": "Report closed with no action",
+    "suspended": "Report handled: account suspended"
+  }
+}

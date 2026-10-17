@@ -1,0 +1,110 @@
+{
+  "common": {
+    "login": "Log in",
+    "register": "Sign up",
+    "musicall_home": "MusicAll home",
+    "musicall_logo": "MusicAll logo",
+    "open_navigation_menu": "Open the navigation menu"
+  },
+  "skip_link": {
+    "to_content": "Skip to content"
+  },
+  "breadcrumb": {
+    "home": "Home"
+  },
+  "menu": {
+    "aria_label": "Main navigation",
+    "home": "Home",
+    "publications": "Publications",
+    "courses": "Lessons",
+    "forum": "Forum",
+    "band_space": "Band Space",
+    "search": "Search",
+    "search_musicians": "Musicians",
+    "search_teachers": "Teachers"
+  },
+  "band_menu": {
+    "search_aria_label": "Search the Band Space",
+    "search": "Search",
+    "back_to_musicall": "Back to MusicAll"
+  },
+  "user_menu": {
+    "messages": "Messages",
+    "messages_unread": "Messages ({count} unread)",
+    "feedbacks_pending": "User feedback ({count} to review)",
+    "avatar_alt": "Photo of {username}",
+    "open": "User menu for {username}",
+    "profile": "My profile",
+    "announces": "My ads",
+    "publications": "My publications",
+    "courses": "My lessons",
+    "photos": "My photos",
+    "settings": "Settings",
+    "admin": "Admin",
+    "logout": "Log out"
+  },
+  "footer": {
+    "tagline": "The free platform for musicians and bands: find, organise, learn. Since 2008.",
+    "follow_instagram": "Follow MusicAll on Instagram",
+    "follow_facebook": "Follow MusicAll on Facebook",
+    "contact_form": "Go to the contact form",
+    "post_announce": "Post an ad",
+    "copyright": "© 2008-{year} MusicAll",
+    "search": {
+      "title": "Find a musician",
+      "guitarist": "Guitarist",
+      "drummer": "Drummer",
+      "bassist": "Bassist",
+      "singer": "Singer",
+      "pianist": "Pianist"
+    },
+    "band_space": {
+      "title": "Band Space",
+      "presentation": "Overview",
+      "agenda": "Calendar",
+      "setlists": "Setlists",
+      "finances": "Band finances",
+      "create": "Create a Band Space"
+    },
+    "publications": {
+      "title": "Publications",
+      "news": "News",
+      "reviews": "Reviews",
+      "interviews": "Interviews",
+      "live_reports": "Live reviews",
+      "articles": "Articles",
+      "photos": "Photos"
+    },
+    "courses": {
+      "title": "Lessons",
+      "guitar": "Guitar",
+      "bass": "Bass",
+      "drums": "Drums",
+      "computer_music": "Music production",
+      "misc": "Other"
+    },
+    "community": {
+      "title": "Community",
+      "forum": "Forum",
+      "contact": "Contact us"
+    },
+    "legal": {
+      "privacy": "Privacy",
+      "terms": "Terms of use",
+      "legal_notice": "Legal notice",
+      "delete_account": "Delete my account"
+    }
+  },
+  "auth_modal": {
+    "title": "Sign up required",
+    "see_more": "Sign up to see all results and contact musicians",
+    "contact_musician": "Create your profile to contact {name}",
+    "contact": "Create your profile to contact this musician",
+    "post_announce": "Sign up to post your ad",
+    "default": "You need to log in to do this.",
+    "register_with_google": "Sign up with Google",
+    "no_google_account": "No Google account?",
+    "register_with_email": "Sign up with email",
+    "has_account": "Already have an account?"
+  }
+}

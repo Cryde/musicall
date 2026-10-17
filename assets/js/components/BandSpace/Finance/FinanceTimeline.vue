@@ -147,7 +147,7 @@ function formatEntryAmount(entry) {
   if (entry.amount_min != null && entry.amount_max != null) {
     return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
   }
-  return '0,00 \u20AC'
+  return formatAmount(0)
 }
 
 function typeBadgeClass(type) {

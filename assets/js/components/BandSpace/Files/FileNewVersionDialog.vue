@@ -37,7 +37,7 @@
             <i class="pi pi-file text-2xl text-surface-500"></i>
             <div class="text-left min-w-0">
               <p class="text-sm font-medium truncate">{{ selectedFile.name }}</p>
-              <p class="text-xs text-surface-400">{{ formatSize(selectedFile.size) }}</p>
+              <p class="text-xs text-surface-400">{{ formatBytes(selectedFile.size) }}</p>
             </div>
             <Button
               icon="pi pi-times"
@@ -94,6 +94,7 @@ import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { uploadRejectionReason } from '../../../utils/fileUploadQueue.js'
+import { formatBytes } from '../../../utils/formatBytes.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -210,12 +211,5 @@ function resetForm() {
   globalError.value = null
   fieldErrors.uploadedFile = null
   if (fileInput.value) fileInput.value.value = ''
-}
-
-function formatSize(bytes) {
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`
 }
 </script>

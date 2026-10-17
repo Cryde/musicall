@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { after, before, describe, it } from 'node:test'
+import { after, afterEach, before, describe, it } from 'node:test'
+import { i18n } from '../../../i18n/index.js'
 import { activitySentence } from './activitySentences.js'
 
 const invitation = (type, payload) => ({ module: 'settings', type, payload })
@@ -96,5 +97,29 @@ describe('finance activity sentences', () => {
       activitySentence(finance('entry_amount_changed', { from: 5000, to: 7500 })),
       'a changé le montant de 50,00\u00a0€ à 75,00\u00a0€'
     )
+  })
+
+  describe('with a payload that names nothing', () => {
+    afterEach(() => {
+      i18n.global.locale.value = 'fr'
+    })
+
+    it('stand in for the name with an em dash in French', () => {
+      assert.equal(activitySentence(finance('entry_deleted', {})), "a supprimé l'entrée « — »")
+    })
+
+    // The wording comes from the catalogue: only the stand-in is this module's.
+    it('stand in for the name and the amount with a hyphen in English', () => {
+      i18n.global.locale.value = 'en'
+      const sentences = [
+        activitySentence(finance('entry_deleted', {})),
+        activitySentence(finance('entry_amount_changed', { from: null, to: 7500 }))
+      ]
+
+      for (const sentence of sentences) {
+        assert.ok(!sentence.includes('—'), sentence)
+        assert.ok(sentence.includes('-'), sentence)
+      }
+    })
   })
 })

@@ -62,12 +62,12 @@ class PushRecipientLocaleTest extends KernelTestCase
             ['id' => 'notification.task_comment', 'locale' => 'fr'],
             ['id' => 'notification.task_comment', 'locale' => 'en'],
         ], $translator->calls);
-        // Queued locale by locale. Only French exists yet, so every recipient still reads the French sentence.
+        // Queued locale by locale, each recipient reading their own language.
         $this->assertSame(
             [
                 [(string) $french->id, 'alice a commenté la tâche « Répéter le pont »'],
                 [(string) $alsoFrench->id, 'alice a commenté la tâche « Répéter le pont »'],
-                [(string) $english->id, 'alice a commenté la tâche « Répéter le pont »'],
+                [(string) $english->id, 'alice commented on the task "Répéter le pont"'],
             ],
             array_map(static fn (SendPushNotification $push): array => [$push->userId, $push->body], $this->queuedPushes()),
         );
@@ -99,7 +99,7 @@ class PushRecipientLocaleTest extends KernelTestCase
 
         $this->assertSame([['id' => 'message.band_channel_body', 'locale' => 'en']], $translator->calls);
         $this->assertSame(
-            [[(string) $member->id, 'alice_drums : On répète mardi ?']],
+            [[(string) $member->id, 'alice_drums: On répète mardi ?']],
             array_map(static fn (SendPushNotification $push): array => [$push->userId, $push->body], $this->queuedPushes()),
         );
     }
@@ -111,7 +111,7 @@ class PushRecipientLocaleTest extends KernelTestCase
         $builder = $this->builder($translator);
 
         $this->assertSame('MusicAll', $builder->forNotification(NotificationType::ForumTopicReply, ['actor_username' => 'bob'], 'en')->title);
-        $this->assertSame('Pièce jointe', $builder->forMessage($attachment, 'Alice', 'en')->body);
+        $this->assertSame('Attachment', $builder->forMessage($attachment, 'Alice', 'en')->body);
         $this->assertSame([
             ['id' => 'notification.forum_topic_reply', 'locale' => 'en'],
             ['id' => 'title.default', 'locale' => 'en'],

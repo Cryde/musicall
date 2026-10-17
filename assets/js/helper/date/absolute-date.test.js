@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { after, before, describe, it } from 'node:test'
+import { after, afterEach, before, describe, it } from 'node:test'
+import { i18n } from '../../i18n/index.js'
 import absoluteDate from './absolute-date.js'
 
 /** The output names a calendar day, so the runner's timezone decides which one. Pin it. */
@@ -27,6 +28,20 @@ describe('absoluteDate', () => {
 
   it('carries the year once the moment is not in this one', () => {
     assert.equal(absoluteDate('2019-05-08T22:13:00+02:00'), '8 mai 2019 à 22:13')
+  })
+
+  describe('in English', () => {
+    afterEach(() => {
+      i18n.global.locale.value = 'fr'
+    })
+
+    it('names the day and the time with its own word', () => {
+      i18n.global.locale.value = 'en'
+      const thisYear = new Date().getFullYear()
+
+      assert.equal(absoluteDate(`${thisYear}-01-08T22:13:00+01:00`), '8 January at 22:13')
+      assert.equal(absoluteDate('2019-05-08T22:13:00+02:00'), '8 May 2019 at 22:13')
+    })
   })
 
   /**

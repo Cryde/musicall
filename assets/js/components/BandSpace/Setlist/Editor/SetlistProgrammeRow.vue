@@ -28,7 +28,7 @@
             :disabled="readonly"
             @click="emit('edit', row.item)"
           >
-            {{ row.item.song?.title ?? '—' }}
+            {{ row.item.song?.title ?? noValue() }}
           </button>
           <span
             v-if="row.item.song?.archive_datetime"
@@ -89,7 +89,7 @@
         {{ t('band_space_setlist.common.add_duration') }}
       </button>
       <span v-else class="text-sm tabular-nums" :class="row.isSong ? '' : 'text-surface-600 dark:text-surface-300'">
-        {{ formatDuration(row.duration) || '—' }}
+        {{ formatDuration(row.duration) || noValue() }}
       </span>
     </div>
 
@@ -126,8 +126,9 @@
 import Button from 'primevue/button'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { noValue } from '../../../../i18n/formatLocale.js'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
-import { intermissionKind } from './intermissionKinds.js'
+import { intermissionKind, isDefaultIntermissionLabel } from './intermissionKinds.js'
 import SetlistRowDetails from './SetlistRowDetails.vue'
 
 /** One line of the running order: a song, or a Pause / MC / Interlude drawn dashed (#1061). */
@@ -145,6 +146,6 @@ const { t } = useI18n()
 const kind = computed(() => intermissionKind(props.row.item.type))
 const intermissionLabel = computed(() => {
   const label = props.row.item.label?.trim()
-  return label && label !== kind.value.label ? label : null
+  return label && !isDefaultIntermissionLabel(props.row.item.type, label) ? label : null
 })
 </script>

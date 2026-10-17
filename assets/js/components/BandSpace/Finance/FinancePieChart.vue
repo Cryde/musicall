@@ -52,7 +52,7 @@
             <div class="flex-1 min-w-0">
               <div class="truncate font-medium text-surface-700 dark:text-surface-200">{{ entry.label }}</div>
               <div class="text-xs text-surface-500 dark:text-surface-400 truncate">
-                {{ entry.categoryName }}<template v-if="entry.categoryName && entry.dateLabel"> · </template>{{ entry.dateLabel }}
+                {{ entry.categoryName }}<template v-if="entry.categoryName && entry.dateLabel">{{ ` ${separator()} ` }}</template>{{ entry.dateLabel }}
               </div>
             </div>
             <span class="tabular-nums font-semibold shrink-0">{{ formatAmount(entry.amount) }}</span>
@@ -72,6 +72,7 @@ import Chart from 'primevue/chart'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { separator } from '../../../i18n/formatLocale.js'
 import { effectiveAmount, formatAmount } from '../../../utils/currency.js'
 
 const { t } = useI18n()
