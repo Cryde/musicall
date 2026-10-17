@@ -569,7 +569,7 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
 
     public function test_an_invitation_without_an_account_uses_the_request_locale_not_the_inviter_one(): void
     {
-        // `en` is not enabled, so the request resolves to `fr` while the inviter's own locale says `en`.
+        // A French page sends `X-Locale: fr`, so the request resolves to `fr` while the inviter's own locale says `en`.
         $admin = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
@@ -583,7 +583,7 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'POST',
             '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'newuser@example.com'],
-            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => 'fr']
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);

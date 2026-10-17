@@ -32,7 +32,6 @@ class UserLocaleEditTest extends ApiTestCase
 
     public function test_change_locale(): void
     {
-        // A locale stored before it was disabled, so the change to `fr` is observable.
         $user = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
 
         $this->client->loginUser($user);
@@ -52,12 +51,33 @@ class UserLocaleEditTest extends ApiTestCase
         $this->assertSame('fr', $reloaded->locale);
     }
 
-    public function test_change_to_a_locale_that_is_not_enabled(): void
+    public function test_change_to_english(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/users/self/locale', ['locale' => 'en'], [
+            'CONTENT_TYPE' => 'application/merge-patch+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserLocaleEdit',
+            '@id' => '/api/users/self/locale',
+            '@type' => 'UserLocaleEdit',
+            'locale' => 'en',
+        ]);
+        $reloaded = self::getContainer()->get(UserRepository::class)->find($user->id);
+        $this->assertSame('en', $reloaded->locale);
+    }
+
+    public function test_change_to_a_locale_that_is_not_enabled(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/users/self/locale', ['locale' => 'de'], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);

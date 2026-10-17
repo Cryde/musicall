@@ -1,8 +1,22 @@
+parameters:
+    # French only unless the environment opts in, so a new environment name never gets English. Going live
+    # (#1194) is making this [fr, en] and deleting the when@dev and when@test blocks. A parameter rather than an
+    # enabled_locales list per environment, because config merging appends lists.
+    app.enabled_locales: [fr]
+
 framework:
     default_locale: fr
-    enabled_locales: [fr]
+    enabled_locales: '%app.enabled_locales%'
     translator:
         default_path: '%kernel.project_dir%/translations'
         fallbacks:
             - fr
         providers:
+
+when@dev:
+    parameters:
+        app.enabled_locales: [fr, en]
+
+when@test:
+    parameters:
+        app.enabled_locales: [fr, en]
