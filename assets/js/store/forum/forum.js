@@ -11,13 +11,28 @@ export const useForumStore = defineStore('forum', () => {
   const posts = ref([])
   const postsTotalItems = ref(0)
   const isLoading = ref(false)
+  const hasCategoriesError = ref(false)
+  // Only the latest request applies its answer, so a slow one for the previous locale cannot land last.
+  let categoriesRequestId = 0
 
   async function loadCategories() {
+    const requestId = ++categoriesRequestId
     isLoading.value = true
+    hasCategoriesError.value = false
     try {
-      categories.value = await forumApi.getCategories()
+      const loaded = await forumApi.getCategories()
+      if (requestId === categoriesRequestId) {
+        categories.value = loaded
+      }
+    } catch {
+      if (requestId === categoriesRequestId) {
+        categories.value = []
+        hasCategoriesError.value = true
+      }
     } finally {
-      isLoading.value = false
+      if (requestId === categoriesRequestId) {
+        isLoading.value = false
+      }
     }
   }
 
@@ -124,6 +139,7 @@ export const useForumStore = defineStore('forum', () => {
 
   function clearCategories() {
     categories.value = []
+    hasCategoriesError.value = false
   }
 
   function clearForum() {
@@ -153,6 +169,7 @@ export const useForumStore = defineStore('forum', () => {
     posts: readonly(posts),
     postsTotalItems: readonly(postsTotalItems),
     isLoading: readonly(isLoading),
+    hasCategoriesError: readonly(hasCategoriesError),
     loadCategories,
     loadForum,
     loadTopics,

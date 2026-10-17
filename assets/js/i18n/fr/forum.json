@@ -16,7 +16,9 @@
     "title": "Liste des forums",
     "search_placeholder": "Rechercher un sujet ou un message…",
     "clear_search": "Effacer la recherche",
-    "search_error": "Erreur pendant la recherche"
+    "search_error": "Erreur pendant la recherche",
+    "empty": "Aucun forum pour le moment.",
+    "load_error": "Impossible de charger les forums."
   },
   "search": {
     "no_result": "Aucun résultat pour « {term} »",
