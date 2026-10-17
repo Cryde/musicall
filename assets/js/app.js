@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import '../style/style.css'
 import { VueUmamiPlugin } from '@jaseeey/vue-umami-plugin'
 import { createHead } from '@unhead/vue/client'
@@ -14,7 +14,8 @@ import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import { PRIME_VUE_CALENDAR_LOCALES } from './constants/primeVueLocale.js'
 import { forActiveLocale } from './i18n/formatLocale.js'
-import { i18n } from './i18n/index.js'
+import { DEFAULT_LOCALE, i18n } from './i18n/index.js'
+import { setLocale } from './i18n/locale.js'
 import router from './router/index.js'
 import { useUserSecurityStore } from './store/user/security.js'
 import MusicAllPreset from './theme/musicAllPreset.js'
@@ -24,6 +25,16 @@ import { isChunkLoadError, reloadOnceForStaleBuild } from './utils/staleBuild.js
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()
 initDarkMode()
+
+// The locale the server resolved for this page, applied before anything renders. French is in the
+// bundle, so a French page waits on nothing. A catalogue that fails to load falls back to French, page
+// language and API calls included, so the page does not show French text that it labels English.
+try {
+  await setLocale(document.documentElement.lang)
+} catch (error) {
+  console.error('Failed to load the page locale:', error)
+  await setLocale(DEFAULT_LOCALE)
+}
 
 /**
  * A 401 means the token aged out, not that the session ended (#1008).
@@ -117,9 +128,8 @@ const head = createHead({
   init: [
     {
       title: i18n.global.t('shared.head.title'),
-      htmlAttrs: {
-        lang: 'fr'
-      },
+      // No htmlAttrs.lang: the server renders it and setLocale() switches it, while unhead would put
+      // its own value back on every render.
       meta: [
         {
           key: 'description',
@@ -149,6 +159,13 @@ app.use(PrimeVue, {
       darkModeSelector: '.dark-mode'
     }
   }
+})
+// PrimeVue merges its locale in once, at install, so a later switch has to be copied into its config.
+watch(i18n.global.locale, () => {
+  Object.assign(
+    app.config.globalProperties.$primevue.config.locale,
+    forActiveLocale(PRIME_VUE_CALENDAR_LOCALES)
+  )
 })
 
 if (import.meta.env.VITE_UMAMI_SITE_ID) {

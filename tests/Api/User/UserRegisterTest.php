@@ -10,7 +10,6 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
-use Symfony\Component\Translation\LocaleSwitcher;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -59,16 +58,11 @@ class UserRegisterTest extends ApiTestCase
 
     public function test_register_stores_the_locale_the_request_resolved(): void
     {
-        // No real request can resolve to `en` while only `fr` is enabled: the switcher stands in for one that did.
-        $localeSwitcher = $this->createStub(LocaleSwitcher::class);
-        $localeSwitcher->method('getLocale')->willReturn('en');
-        self::getContainer()->set('translation.locale_switcher', $localeSwitcher);
-
         $this->client->jsonRequest('POST', '/api/users/register', [
             'username' => 'super_username',
             'password' => 'password',
             'email' => 'super_email@mail.com',
-        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_ACCEPT_LANGUAGE' => 'en']);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $user = static::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'super_username']);

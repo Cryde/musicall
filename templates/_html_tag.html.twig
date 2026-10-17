@@ -1,0 +1,2 @@
+{# The locale this request resolved, and the enabled ones for the SPA. The list is left out while French is the only locale, which the SPA reads as French only, so the page stays as it was. #}
+<html lang="{{ app.request.locale }}"{% if app.enabled_locales|length > 1 %} data-enabled-locales="{{ app.enabled_locales|join(',') }}"{% endif %}>
