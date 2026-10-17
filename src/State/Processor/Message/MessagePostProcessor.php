@@ -40,7 +40,7 @@ class MessagePostProcessor implements ProcessorInterface
     public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         /** @var User $user */
         $user = $this->security->getUser();
@@ -50,11 +50,11 @@ class MessagePostProcessor implements ProcessorInterface
         // to denormalize the IRI, so this is an identity map hit and costs no query at all (#986).
         $thread = $this->messageThreadRepository->find($data->thread->id);
         if (!$thread instanceof MessageThread) {
-            throw new NotFoundHttpException('Thread not found.');
+            throw new NotFoundHttpException('message.thread.not_found');
         }
 
         if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-            throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
+            throw new AccessDeniedException('message.thread.not_participant');
         }
 
         if (!$this->contactPolicy->canPostInThread($thread, $user)) {

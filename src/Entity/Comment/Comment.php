@@ -41,7 +41,7 @@ class Comment implements VotableInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 
-    #[Assert\NotBlank(message: 'Le commentaire est vide')]
+    #[Assert\NotBlank(message: 'comment.content_required')]
     #[ORM\Column(type: Types::TEXT)]
     public string $content {
         set(string $value) {

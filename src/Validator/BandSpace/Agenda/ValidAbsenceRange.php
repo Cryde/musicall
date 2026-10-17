@@ -28,8 +28,8 @@ class ValidAbsenceRange extends Constraint
     /** A generous year, so one bad input cannot paint the whole calendar. */
     public const int MAX_DAYS = 366;
 
-    public string $endBeforeStartMessage = 'La date de fin doit être postérieure ou égale à la date de début.';
-    public string $rangeTooLongMessage = 'Une indisponibilité ne peut pas dépasser 366 jours.';
+    public string $endBeforeStartMessage = 'band_space.absence.end_before_start';
+    public string $rangeTooLongMessage = 'band_space.absence.range_too_long';
 
     public function getTargets(): string|array
     {

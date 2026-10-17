@@ -64,14 +64,14 @@ readonly class MusicianProfileMediaProvider implements ProviderInterface
     private function provideItem(string $id, ?MusicianProfile $profile): MusicianProfileMedia
     {
         if (!$profile instanceof \App\Entity\Musician\MusicianProfile) {
-            throw new NotFoundHttpException('Profil musicien non trouvé');
+            throw new NotFoundHttpException('profile.musician.not_found');
         }
         if (!($media = $this->mediaRepository->find($id)) instanceof \App\Entity\Musician\MusicianProfileMedia) {
-            throw new NotFoundHttpException('Média non trouvé');
+            throw new NotFoundHttpException('profile.media.not_found');
         }
 
         if ($media->musicianProfile->id !== $profile->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas accéder à ce média');
+            throw new AccessDeniedHttpException('profile.media.access_forbidden');
         }
 
         return $this->musicianProfileMediaResourceBuilder->buildFromEntity($media);

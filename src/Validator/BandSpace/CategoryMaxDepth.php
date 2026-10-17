@@ -9,7 +9,7 @@ class CategoryMaxDepth extends Constraint
 {
     public const int MAX_DEPTH = 2;
 
-    public string $message = 'La profondeur maximale de {{ limit }} niveaux est atteinte';
+    public string $message = 'band_space.finance.category.max_depth_reached';
 
     public function getTargets(): string
     {

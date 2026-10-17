@@ -174,7 +174,7 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
 class BandSpaceFileUpload
 {
     #[Vich\UploadableField(mapping: 'band_space_file', fileNameProperty: 'storagePath')]
-    #[Assert\NotNull(message: 'Veuillez sélectionner un fichier')]
+    #[Assert\NotNull(message: 'band_space.file.upload_required')]
     #[Assert\File(maxSize: BandSpaceFileMimeAllowlist::MAX_UPLOAD_SIZE_BYTES)]
     public ?File $uploadedFile = null;
 

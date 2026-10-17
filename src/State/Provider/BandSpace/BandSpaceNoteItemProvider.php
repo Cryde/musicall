@@ -38,7 +38,7 @@ readonly class BandSpaceNoteItemProvider implements ProviderInterface
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
-            throw new NotFoundHttpException('Note not found');
+            throw new NotFoundHttpException('band_space.note.not_found');
         }
 
         return $this->bandSpaceNoteBuilder->buildItem($note);

@@ -34,7 +34,7 @@ class Gallery implements ViewableInterface
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $title;
 
-    #[Assert\NotBlank(message: 'Vous devez spécifier une description pour votre galerie', groups: ['publish'])]
+    #[Assert\NotBlank(message: 'publication.gallery.description_required', groups: ['publish'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $description = null;
 
@@ -62,7 +62,7 @@ class Gallery implements ViewableInterface
     #[ORM\OrderBy(['creationDatetime' => SortDirection::Descending])]
     public Collection $images;
 
-    #[Assert\NotNull(message: 'Vous devez spécifier une image de couverture', groups: ['publish'])]
+    #[Assert\NotNull(message: 'publication.gallery.cover_required', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: GalleryImage::class, cascade: ['persist', 'remove'])]
     public ?GalleryImage $coverImage = null;
 

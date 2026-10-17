@@ -7,8 +7,10 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Forum\ForumSearchResult;
+use App\Exception\TranslatableHttpException;
 use App\Repository\Forum\ForumTopicRepository;
 use App\Service\Forum\PostSnippetExtractor;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
@@ -31,13 +33,14 @@ readonly class ForumSearchProvider implements ProviderInterface
     {
         $term = trim((string) ($context['filters']['term'] ?? ''));
         if ($term === '') {
-            throw new UnprocessableEntityHttpException('Le terme de recherche est requis');
+            throw new UnprocessableEntityHttpException('forum.search.term_required');
         }
         if (mb_strlen($term) < self::MIN_TERM_LENGTH) {
-            throw new UnprocessableEntityHttpException(sprintf(
-                'Le terme de recherche doit contenir au moins %d caractères',
-                self::MIN_TERM_LENGTH,
-            ));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'forum.search.term_too_short',
+                ['min' => (string) self::MIN_TERM_LENGTH],
+            );
         }
 
         $page = $this->pagination->getPage($context);

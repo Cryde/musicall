@@ -12,6 +12,7 @@ use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Repository\BandSpace\TaskRepository;
@@ -28,10 +29,10 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 
 /**
  * @implements ProcessorInterface<BandSpaceFileUpload, BandSpaceFileResource>
@@ -66,7 +67,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         // Refused before the upload is stored or the quota is touched: this is the second door onto
@@ -75,17 +76,21 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
 
         $upload = $data->uploadedFile;
         if ($upload === null) {
-            throw new BadRequestHttpException('Aucun fichier fourni');
+            throw new BadRequestHttpException('band_space.file.not_provided');
         }
 
         $mimeType = $upload->getMimeType() ?? 'application/octet-stream';
         if (!BandSpaceFileMimeAllowlist::isAllowed($mimeType)) {
-            throw new UnsupportedMediaTypeHttpException(sprintf('Type de fichier non autorisé : %s', $mimeType));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
+                'band_space.file.type_not_allowed',
+                ['type' => $mimeType],
+            );
         }
 
         $size = $upload->getSize();
         if ($size === false) {
-            throw new BadRequestHttpException('Taille de fichier invalide');
+            throw new BadRequestHttpException('band_space.file.size_invalid');
         }
 
         $this->quotaService->assertCanUpload($bandSpace, $size);
@@ -96,7 +101,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
         if ($data->folderId !== null && $data->folderId !== '') {
             $folder = $this->folderRepository->find($data->folderId);
             if ($folder === null || $folder->bandSpace->id !== $bandSpace->id) {
-                throw new BadRequestHttpException('Dossier introuvable dans ce Band Space');
+                throw new BadRequestHttpException('band_space.folder.not_found_in_space');
             }
         }
 
@@ -104,7 +109,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
         if (count($data->tagIds) > 0) {
             $tags = $this->tagRepository->findBy(['id' => $data->tagIds, 'bandSpace' => $bandSpace]);
             if (count($tags) !== count(array_unique($data->tagIds))) {
-                throw new BadRequestHttpException('Une ou plusieurs étiquettes sont invalides pour ce Band Space');
+                throw new BadRequestHttpException('band_space.tag.invalid_in_space');
             }
         }
 

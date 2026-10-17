@@ -47,17 +47,17 @@ readonly class TaskCommentDeleteProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $membership->bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $comment = $this->taskCommentRepository->findOneByIdAndTask((string) $uriVariables['id'], $task);
         if (!$comment instanceof \App\Entity\BandSpace\TaskComment) {
-            throw new NotFoundHttpException('Commentaire introuvable');
+            throw new NotFoundHttpException('band_space.task.comment.not_found');
         }
 
         $isAuthor = $comment->author->id === $user->id;
         if (!$isAuthor && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul l\'auteur ou un administrateur peut supprimer ce commentaire');
+            throw new AccessDeniedHttpException('band_space.task.comment.delete_not_allowed');
         }
 
         $this->bandSpaceActivityRecorder->record(

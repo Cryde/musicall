@@ -35,7 +35,7 @@ readonly class GalleryProvider implements ProviderInterface
     {
         $gallery = $this->galleryRepository->findOneBy(['slug' => $uriVariables['slug']]);
         if (!$gallery instanceof \App\Entity\Gallery) {
-            throw new PublicationNotFoundException('Gallery inexistante');
+            throw new PublicationNotFoundException('publication.gallery.not_found');
         }
         if ($gallery->status === Gallery::STATUS_ONLINE) {
             /** @var User $user */

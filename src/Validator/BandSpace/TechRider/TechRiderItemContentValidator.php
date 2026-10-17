@@ -7,6 +7,7 @@ use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
 use App\Enum\BandSpace\RichTextSurface;
 use App\Enum\BandSpace\TechRiderItemType;
 use App\Service\BandSpace\RichText\TipTapDocumentChecker;
+use App\Service\BandSpace\RichText\TipTapDocumentProblem;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -62,8 +63,9 @@ class TechRiderItemContentValidator extends ConstraintValidator
         }
 
         $problem = $this->documentChecker->findProblem($value, RichTextSurface::TechRider);
-        if ($problem !== null) {
-            $this->context->buildViolation($problem)
+        if ($problem instanceof TipTapDocumentProblem) {
+            $this->context->buildViolation($problem->messageKey)
+                ->setParameters($problem->parameters)
                 ->setCode(TechRiderItemContent::ERROR_CODE)
                 ->addViolation();
         }

@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class CommentVoteInput
 {
-    #[Assert\NotNull(message: 'La valeur du vote est obligatoire.')]
-    #[Assert\Choice(choices: [1, -1], message: 'La valeur du vote doit être 1 ou -1.')]
+    #[Assert\NotNull(message: 'common.vote.required')]
+    #[Assert\Choice(choices: [1, -1], message: 'common.vote.invalid_value')]
     public int $userVote;
 }

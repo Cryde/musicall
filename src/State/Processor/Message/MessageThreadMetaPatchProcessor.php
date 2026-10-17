@@ -30,19 +30,19 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
     public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageThreadMetaResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         /** @var User $user */
         $user = $this->security->getUser();
 
         $entity = $this->messageThreadMetaRepository->find($uriVariables['id']);
         if (!$entity instanceof MessageThreadMeta) {
-            throw new NotFoundHttpException('Message thread meta introuvable');
+            throw new NotFoundHttpException('message.thread_meta.not_found');
         }
         // Unreachable while MessageThreadMetaItemProvider guards the same operation, and kept anyway:
         // this lookup is its own, so a future operation wired to a different provider still lands here.
         if ($entity->user->id !== $user->id) {
-            throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
+            throw new AccessDeniedException('message.thread_meta.update_forbidden');
         }
 
         // When the recipient catches up on the thread, reset the

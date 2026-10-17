@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Event\BandSpaceTaskAssignedEvent;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
@@ -20,7 +21,7 @@ use App\Service\BandSpace\BandSpaceChangeSignal;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -124,7 +125,7 @@ readonly class TaskUpdateProcedure
             return;
         }
 
-        throw new HttpException(422, 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne');
+        throw new HttpException(422, 'band_space.task.position_not_editable');
     }
 
     /**
@@ -147,7 +148,7 @@ readonly class TaskUpdateProcedure
         }
 
         throw new ConflictHttpException(
-            'Cette tâche a été modifiée par un autre membre depuis que vous l\'avez ouverte. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.'
+            'band_space.task.version_conflict'
         );
     }
 
@@ -194,7 +195,7 @@ readonly class TaskUpdateProcedure
         if ($newCategoryId !== null) {
             $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($newCategoryId, $bandSpace);
             if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
-                throw new NotFoundHttpException('Catégorie introuvable');
+                throw new NotFoundHttpException('band_space.task.category.not_found');
             }
             $task->category = $category;
         } else {
@@ -254,12 +255,20 @@ readonly class TaskUpdateProcedure
         foreach ($added as $addedId) {
             $assignee = $this->userRepository->find($addedId);
             if (!$assignee instanceof \App\Entity\User) {
-                throw new BadRequestHttpException(sprintf('Utilisateur %s introuvable', $addedId));
+                throw new TranslatableHttpException(
+                    Response::HTTP_BAD_REQUEST,
+                    'band_space.task.assignee.not_found',
+                    ['id' => (string) $addedId],
+                );
             }
 
             $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $assignee);
             if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-                throw new BadRequestHttpException(sprintf('L\'utilisateur %s n\'est pas membre du Band Space', $assignee->username));
+                throw new TranslatableHttpException(
+                    Response::HTTP_BAD_REQUEST,
+                    'band_space.task.assignee.not_member',
+                    ['username' => $assignee->username],
+                );
             }
 
             $task->assignees->add($assignee);
@@ -287,7 +296,7 @@ readonly class TaskUpdateProcedure
                 return;
             }
             if ($task->status !== TaskStatus::Done) {
-                throw new HttpException(422, 'Seules les tâches terminées peuvent être archivées');
+                throw new HttpException(422, 'band_space.task.archive_requires_done');
             }
             $task->archiveDatetime = new DateTimeImmutable();
             $this->bandSpaceActivityRecorder->record(

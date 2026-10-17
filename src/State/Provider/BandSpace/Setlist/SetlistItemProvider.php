@@ -38,7 +38,7 @@ readonly class SetlistItemProvider implements ProviderInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         return $this->setlistBuilder->buildItem($setlist);

@@ -8,15 +8,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class SocialLink
 {
-    #[Assert\NotBlank(message: 'La plateforme est obligatoire')]
+    #[Assert\NotBlank(message: 'profile.teacher.social_link.platform_required')]
     #[Assert\Choice(
         choices: ['youtube', 'soundcloud', 'instagram', 'facebook', 'twitter', 'tiktok', 'spotify', 'bandcamp', 'website'],
-        message: 'Plateforme invalide : {{ value }}',
+        message: 'profile.teacher.social_link.platform_invalid',
     )]
     public ?string $platform = null;
 
-    #[Assert\NotBlank(message: 'L\'URL est obligatoire')]
-    #[Assert\Url(message: 'L\'URL n\'est pas valide', requireTld: true)]
-    #[Assert\Length(max: 500, maxMessage: 'L\'URL ne doit pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'profile.teacher.social_link.url_required')]
+    #[Assert\Url(message: 'profile.teacher.social_link.url_invalid', requireTld: true)]
+    #[Assert\Length(max: 500, maxMessage: 'profile.teacher.social_link.url_too_long')]
     public ?string $url = null;
 }

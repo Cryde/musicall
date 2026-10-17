@@ -47,15 +47,15 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez supprimer que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.delete_not_owner');
         }
 
         if ($entry->status === FinanceEntryStatus::Paid) {
-            throw new UnprocessableEntityHttpException('Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.');
+            throw new UnprocessableEntityHttpException('band_space.finance.entry.paid_delete_forbidden');
         }
 
         // A personal entry writes nothing to the band wide journal: this payload carries the label and

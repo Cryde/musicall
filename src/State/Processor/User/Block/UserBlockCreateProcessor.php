@@ -44,10 +44,10 @@ readonly class UserBlockCreateProcessor implements ProcessorInterface
 
         $blocked = $this->userRepository->findOneById($data->userId);
         if (!$blocked instanceof User || $blocked->isDeleted()) {
-            throw new NotFoundHttpException('Utilisateur introuvable');
+            throw new NotFoundHttpException('user.block.user_not_found');
         }
         if ($blocked->id === $user->id) {
-            throw new UnprocessableEntityHttpException('Vous ne pouvez pas vous bloquer vous-même');
+            throw new UnprocessableEntityHttpException('user.block.cannot_block_self');
         }
 
         $this->userBlockRepository->block($user, $blocked);
@@ -56,7 +56,7 @@ readonly class UserBlockCreateProcessor implements ProcessorInterface
         $block = $this->userBlockRepository->findOneBy(['blocker' => $user, 'blocked' => $blocked]);
         if (!$block instanceof UserBlock) {
             // Lifted by a concurrent unblock between the two statements.
-            throw new NotFoundHttpException('Utilisateur introuvable');
+            throw new NotFoundHttpException('user.block.user_not_found');
         }
 
         return $this->userBlockBuilder->build($block);

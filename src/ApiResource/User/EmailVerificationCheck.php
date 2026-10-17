@@ -17,12 +17,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class EmailVerificationCheck
 {
-    #[Assert\NotBlank(message: 'Veuillez saisir un email')]
-    #[Assert\Email(message: 'Email invalide')]
+    #[Assert\NotBlank(message: 'user.email.required')]
+    #[Assert\Email(message: 'user.email.invalid')]
     public string $email;
 
-    #[Assert\NotBlank(message: 'Veuillez saisir le code')]
-    #[Assert\Length(exactly: 6, exactMessage: 'Le code doit contenir 6 chiffres')]
-    #[Assert\Regex(pattern: '/^\d{6}$/', message: 'Le code doit contenir uniquement des chiffres')]
+    #[Assert\NotBlank(message: 'user.email_verification.code_required')]
+    #[Assert\Length(exactly: 6, exactMessage: 'user.email_verification.code_length')]
+    #[Assert\Regex(pattern: '/^\d{6}$/', message: 'user.email_verification.code_digits_only')]
     public string $code;
 }

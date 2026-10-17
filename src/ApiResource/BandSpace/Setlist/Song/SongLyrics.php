@@ -60,7 +60,7 @@ class SongLyrics
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\Length(max: self::MAX_LENGTH, maxMessage: 'Les paroles ne peuvent pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: self::MAX_LENGTH, maxMessage: 'band_space.song.lyrics_too_long')]
     public ?string $lyrics = null;
 
     /** The revision of the lyrics this payload carries. The server owns it. */

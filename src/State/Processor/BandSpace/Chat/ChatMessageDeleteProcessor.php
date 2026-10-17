@@ -63,11 +63,11 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
         // is a miss rather than a second delete. Answered before the author check on purpose: every
         // member already sees the tombstone in the list, so there is nothing for a 403 to protect.
         if (!$message instanceof Message || $message->isDeleted()) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         if ($message->author->id !== $user->id && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul l\'auteur ou un administrateur peut supprimer ce message');
+            throw new AccessDeniedHttpException('band_space.chat.delete_forbidden');
         }
 
         // Two commits, not one: the mention delete is a DQL statement with a transaction of its own.

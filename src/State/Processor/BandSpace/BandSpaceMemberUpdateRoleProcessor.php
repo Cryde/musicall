@@ -57,7 +57,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         );
 
         if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
@@ -68,7 +68,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         // used to flip the status back to active with none of that, so it now says no and points there.
         // Sending the status the member already has stays a no-op, so a full-object PATCH still works.
         if (array_key_exists('status', $requestPayload) && $data->status !== $membership->status->value) {
-            throw new ConflictHttpException("Le statut d'un membre ne se modifie pas ici. Un membre exclu ou parti revient en acceptant une nouvelle invitation.");
+            throw new ConflictHttpException('band_space.member.status_not_editable');
         }
 
         $oldRole = $membership->role;
@@ -81,7 +81,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
                 && $membership->user->id === $user->id
                 && $this->bandSpaceMembershipRepository->countAdmins($bandSpace) === 1
             ) {
-                throw new ConflictHttpException('Vous ne pouvez pas vous rétrograder car vous êtes le seul administrateur');
+                throw new ConflictHttpException('band_space.member.last_admin_cannot_demote');
             }
 
             $membership->role = $newRole;

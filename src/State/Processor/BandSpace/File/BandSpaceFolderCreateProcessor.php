@@ -10,12 +10,14 @@ use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFolderActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\File\BandSpaceFolderBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -51,17 +53,21 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
         if ($data->parentId !== null && $data->parentId !== '') {
             $parent = $this->folderRepository->findOneByIdAndBandSpace($data->parentId, $bandSpace);
             if (!$parent instanceof \App\Entity\BandSpace\BandSpaceFolder) {
-                throw new BadRequestHttpException('Dossier parent introuvable dans ce Band Space');
+                throw new BadRequestHttpException('band_space.folder.parent_not_found_in_space');
             }
         }
 
         $depth = $parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? $this->folderRepository->computeDepth($parent) + 1 : 0;
         if ($depth >= self::MAX_DEPTH) {
-            throw new UnprocessableEntityHttpException(sprintf('La profondeur maximale (%d) est dépassée', self::MAX_DEPTH));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.folder.max_depth_exceeded',
+                ['max' => (string) self::MAX_DEPTH],
+            );
         }
 
         if ($this->folderRepository->siblingNameExists($bandSpace, $parent, $data->name)) {
-            throw new UnprocessableEntityHttpException('Un dossier avec ce nom existe déjà à cet emplacement');
+            throw new UnprocessableEntityHttpException('band_space.folder.already_exists');
         }
 
         $folder = new BandSpaceFolder();

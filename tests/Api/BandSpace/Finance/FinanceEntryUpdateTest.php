@@ -605,6 +605,16 @@ class FinanceEntryUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Transition de statut interdite : Payé → Prévu',
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => 'Transition de statut interdite : Payé → Prévu',
+        ]);
     }
 
     public function test_update_status_allowed_transition_paid_to_committed(): void

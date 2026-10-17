@@ -23,7 +23,7 @@ readonly class ForumTopicLockProcedure
         /** @var User $user */
         $user = $this->security->getUser();
         if (!$this->canManage($topic, $user)) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas modifier l\'état de ce sujet.');
+            throw new AccessDeniedHttpException('forum.topic.state_change_forbidden');
         }
 
         if ($topic->isLocked === $locked) {

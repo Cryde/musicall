@@ -40,7 +40,7 @@ readonly class ChatAttachmentPreviewProvider implements ProviderInterface
         // longer exists all read as not found.
         $target = $this->messageAttachmentResolver->resolveIdentifiers([$identifier], $bandSpaceId, $membership)[0] ?? null;
         if ($target === null) {
-            throw new NotFoundHttpException('Élément introuvable');
+            throw new NotFoundHttpException('band_space.chat.attachment_not_found');
         }
 
         $preview = new ChatAttachmentPreview();

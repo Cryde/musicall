@@ -48,7 +48,7 @@ readonly class FinanceRecurrenceDeleteProcessor implements ProcessorInterface
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence) {
-            throw new NotFoundHttpException('Récurrence introuvable');
+            throw new NotFoundHttpException('band_space.finance.recurrence.not_found');
         }
 
         $this->recurrenceOwnerChecker->checkCanDelete($recurrence, $currentMembership);

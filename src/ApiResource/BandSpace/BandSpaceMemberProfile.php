@@ -43,7 +43,7 @@ class BandSpaceMemberProfile
      * Capped at the column length. Normalized on the way in: blank is not "no name", it is the
      * fallback, so it becomes null and "nothing chosen" has one representation.
      */
-    #[Assert\Length(max: 60, maxMessage: 'Le nom de scène ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 60, maxMessage: 'band_space.member.stage_name_too_long')]
     #[DisplayName(owner: DisplayName::OWNER_MEMBERSHIP)]
     public ?string $stageName = null {
         set(?string $value) {
@@ -58,7 +58,7 @@ class BandSpaceMemberProfile
      *
      * @var list<mixed>
      */
-    #[Assert\Count(max: 6, maxMessage: 'Un membre ne peut pas avoir plus de {{ limit }} instruments')]
+    #[Assert\Count(max: 6, maxMessage: 'band_space.member.instruments_too_many')]
     public array $instrumentIds = [];
 
     /** Only the member themselves may set it; the processor refuses it from anyone else. */

@@ -36,11 +36,11 @@ class BandSpaceFileAttachInput
     #[ApiProperty(identifier: true)]
     public string $fileId;
 
-    #[Assert\NotBlank(message: 'Le type de source est requis')]
-    #[Assert\Choice(choices: BandSpaceFileSourceTypes::ALL, message: 'Type de source invalide')]
+    #[Assert\NotBlank(message: 'band_space.file.source_type_required')]
+    #[Assert\Choice(choices: BandSpaceFileSourceTypes::ALL, message: 'band_space.file.source_type_invalid')]
     public ?string $sourceType = null;
 
-    #[Assert\NotBlank(message: "L'identifiant de la source est requis")]
-    #[Assert\Uuid(message: 'Identifiant de source invalide')]
+    #[Assert\NotBlank(message: 'band_space.file.source_id_required')]
+    #[Assert\Uuid(message: 'band_space.file.source_id_invalid')]
     public ?string $sourceId = null;
 }

@@ -66,8 +66,8 @@ enum TechRiderItemType: string
     public function genericContentWriteRefusal(): string
     {
         return match ($this) {
-            self::StagePlot => 'Un plan de scène se modifie via son endpoint dédié',
-            default => 'Ce type d\'élément ne stocke pas de contenu rédigé',
+            self::StagePlot => 'band_space.tech_rider.item.stage_plot_dedicated_endpoint',
+            default => 'band_space.tech_rider.item.content_not_writable',
         };
     }
 

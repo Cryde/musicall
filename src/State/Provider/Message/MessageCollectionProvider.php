@@ -38,10 +38,10 @@ readonly class MessageCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         if (!($thread = $this->messageThreadRepository->find($uriVariables['threadId'])) instanceof MessageThread) {
-            throw new NotFoundHttpException('Thread not found.');
+            throw new NotFoundHttpException('message.thread.not_found');
         }
 
         /** @var User $user */
@@ -51,7 +51,7 @@ readonly class MessageCollectionProvider implements ProviderInterface
         // participant rows at all, so it is a 404 here for everyone, members included: a channel is
         // read through the chat endpoints and never through this one (#994).
         if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-            throw new NotFoundHttpException('Thread not found.');
+            throw new NotFoundHttpException('message.thread.not_found');
         }
 
         /** @var TraversablePaginator $paginator */

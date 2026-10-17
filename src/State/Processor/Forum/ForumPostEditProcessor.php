@@ -28,7 +28,7 @@ readonly class ForumPostEditProcessor implements ProcessorInterface
     {
         $post = $this->forumPostRepository->find($uriVariables['id']);
         if (!$post instanceof ForumPost) {
-            throw new NotFoundHttpException('Message de forum inexistant');
+            throw new NotFoundHttpException('forum.post.not_found');
         }
 
         return $this->forumPostEditProcedure->process($post, $data->content);

@@ -30,7 +30,7 @@ readonly class MusicianProfileDeleteProcessor implements ProcessorInterface
         $profile = $user->musicianProfile;
 
         if (!$profile) {
-            throw new NotFoundHttpException('Profil musicien non trouvé');
+            throw new NotFoundHttpException('profile.musician.not_found');
         }
 
         $user->musicianProfile = null;

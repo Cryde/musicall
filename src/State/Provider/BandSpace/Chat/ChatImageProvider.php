@@ -40,7 +40,7 @@ readonly class ChatImageProvider implements ProviderInterface
             (string) $uriVariables['id'],
             $user,
             ChatImageConverter::ACCEPTED_MIME_TYPES,
-            'Image introuvable',
+            'band_space.chat.image_not_found',
         );
 
         $response = BandSpaceFileDownloadProvider::stream($file, $version, $this->vichStorage, inline: true);

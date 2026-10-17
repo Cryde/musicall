@@ -8,10 +8,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class MusicianProfileInstrumentInput
 {
-    #[Assert\NotBlank(message: 'L\'instrument est requis')]
+    #[Assert\NotBlank(message: 'profile.musician.instrument.instrument_required')]
     public string $instrumentId;
 
-    #[Assert\NotBlank(message: 'Le niveau est requis')]
-    #[Assert\Choice(choices: ['beginner', 'intermediate', 'advanced', 'professional'], message: 'Niveau invalide')]
+    #[Assert\NotBlank(message: 'profile.musician.instrument.level_required')]
+    #[Assert\Choice(choices: ['beginner', 'intermediate', 'advanced', 'professional'], message: 'profile.musician.instrument.level_invalid')]
     public string $skillLevel;
 }

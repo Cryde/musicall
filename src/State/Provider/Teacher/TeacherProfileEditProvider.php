@@ -34,7 +34,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
         /** @var User $user */
         $user = $this->security->getUser();
         if (!$teacherProfile = $user->teacherProfile) {
-            throw new NotFoundHttpException('Profil professeur non trouvé');
+            throw new NotFoundHttpException('profile.teacher.not_found');
         }
 
         return $this->buildFromEntity($teacherProfile);

@@ -33,7 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'type' => new QueryParameter(key: 'type', constraints: [
                     new Assert\Choice(
                         choices: [MusicianAnnounceEntity::TYPE_MUSICIAN_STR, MusicianAnnounceEntity::TYPE_BAND_STR],
-                        message: 'Le type d\'annonce est invalide',
+                        message: 'announce.type.invalid',
                     ),
                 ]),
             ],

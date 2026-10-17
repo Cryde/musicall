@@ -29,7 +29,7 @@ class SongsArchive
     public const int MAX_SONGS = 200;
 
     /** @var list<string> */
-    #[Assert\Count(min: 1, max: self::MAX_SONGS, minMessage: 'Choisissez au moins un titre', maxMessage: 'Pas plus de {{ limit }} titres à la fois')]
-    #[Assert\All([new Assert\Uuid(message: 'Identifiant de titre invalide')])]
+    #[Assert\Count(min: 1, max: self::MAX_SONGS, minMessage: 'band_space.song.selection_empty', maxMessage: 'band_space.song.selection_too_large')]
+    #[Assert\All([new Assert\Uuid(message: 'band_space.song.invalid_identifier')])]
     public array $songIds = [];
 }

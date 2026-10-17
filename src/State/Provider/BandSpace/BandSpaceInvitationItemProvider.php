@@ -37,7 +37,7 @@ readonly class BandSpaceInvitationItemProvider implements ProviderInterface
         );
 
         if (!$invitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
-            throw new NotFoundHttpException('Invitation introuvable');
+            throw new NotFoundHttpException('band_space.invitation.not_found');
         }
 
         return $this->bandSpaceInvitationBuilder->buildItem($invitation);

@@ -25,7 +25,7 @@ readonly class NotificationCountProvider implements ProviderInterface
     {
         $user = $this->security->getUser();
         if (!$user instanceof User) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
 
         $count = new UserNotificationCount();

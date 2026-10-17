@@ -4,6 +4,7 @@ namespace App\Validator\BandSpace;
 
 use App\Enum\BandSpace\RichTextSurface;
 use App\Service\BandSpace\RichText\TipTapDocumentChecker;
+use App\Service\BandSpace\RichText\TipTapDocumentProblem;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -35,8 +36,9 @@ class NoteContentValidator extends ConstraintValidator
         }
 
         $problem = $this->documentChecker->findProblem($value, RichTextSurface::Note);
-        if ($problem !== null) {
-            $this->context->buildViolation($problem)
+        if ($problem instanceof TipTapDocumentProblem) {
+            $this->context->buildViolation($problem->messageKey)
+                ->setParameters($problem->parameters)
                 ->setCode(NoteContent::ERROR_CODE)
                 ->addViolation();
         }

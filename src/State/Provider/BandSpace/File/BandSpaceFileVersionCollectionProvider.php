@@ -42,7 +42,7 @@ readonly class BandSpaceFileVersionCollectionProvider implements ProviderInterfa
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $versions = $this->versionRepository->findByFileNewestFirst($file);

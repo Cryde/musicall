@@ -31,13 +31,13 @@ readonly class MessageThreadMetaItemProvider implements ProviderInterface
     {
         $user = $this->security->getUser();
         if (!$user instanceof User) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
 
         // The id is a uuid by route requirement, so nothing unconvertible reaches Doctrine here.
         $entity = $this->messageThreadMetaRepository->findOneByIdAndUser((string) $uriVariables['id'], $user);
         if (!$entity instanceof MessageThreadMeta) {
-            throw new NotFoundHttpException('Message thread meta introuvable');
+            throw new NotFoundHttpException('message.thread_meta.not_found');
         }
 
         return $this->messageThreadMetaBuilder->buildItem($entity);

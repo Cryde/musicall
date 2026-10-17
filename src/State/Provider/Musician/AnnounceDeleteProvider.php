@@ -24,11 +24,11 @@ readonly class AnnounceDeleteProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         $currentUser = $this->security->getUser();
         if (!($announce = $this->musicianAnnounceRepository->findOneBy(['id' => $uriVariables['id'], 'author' => $currentUser])) instanceof \App\Entity\Musician\MusicianAnnounce) {
-            throw new NotFoundHttpException('Announce not found.');
+            throw new NotFoundHttpException('announce.delete.not_found');
         }
 
         return $announce;

@@ -12,6 +12,7 @@ use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Event\BandSpaceTaskAssignedEvent;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
@@ -19,7 +20,7 @@ use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\BandSpaceChangeSignal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -63,7 +64,7 @@ readonly class TaskCreateProcedure
         if ($input->categoryId !== null) {
             $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($input->categoryId, $bandSpace);
             if (!$category instanceof TaskCategory) {
-                throw new NotFoundHttpException('Catégorie introuvable');
+                throw new NotFoundHttpException('band_space.task.category.not_found');
             }
             $task->category = $category;
         }
@@ -94,12 +95,20 @@ readonly class TaskCreateProcedure
         foreach ($assigneeIds as $assigneeId) {
             $assignee = $this->userRepository->find($assigneeId);
             if (!$assignee instanceof User) {
-                throw new BadRequestHttpException(sprintf('Utilisateur %s introuvable', $assigneeId));
+                throw new TranslatableHttpException(
+                    Response::HTTP_BAD_REQUEST,
+                    'band_space.task.assignee.not_found',
+                    ['id' => $assigneeId],
+                );
             }
 
             $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $assignee);
             if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-                throw new BadRequestHttpException(sprintf('L\'utilisateur %s n\'est pas membre du Band Space', $assignee->username));
+                throw new TranslatableHttpException(
+                    Response::HTTP_BAD_REQUEST,
+                    'band_space.task.assignee.not_member',
+                    ['username' => $assignee->username],
+                );
             }
 
             $task->assignees->add($assignee);

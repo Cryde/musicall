@@ -34,7 +34,7 @@ readonly class TopicProvider implements ProviderInterface
         $topic = $this->forumTopicRepository->findOneBy(['slug' => $slug]);
 
         if (!$topic instanceof \App\Entity\Forum\ForumTopic) {
-            throw new NotFoundHttpException('Topic not found');
+            throw new NotFoundHttpException('forum.topic.not_found');
         }
 
         $user = $this->security->getUser();

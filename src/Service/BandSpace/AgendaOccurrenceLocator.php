@@ -29,23 +29,23 @@ readonly class AgendaOccurrenceLocator
     {
         $entry = $this->agendaEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
         if (!$entry instanceof AgendaEntry) {
-            throw new NotFoundHttpException('Événement introuvable');
+            throw new NotFoundHttpException('band_space.agenda.entry.not_found');
         }
         // Answers given before it was turned off are kept, and come back if it is turned on again.
         if (!$entry->askAvailability) {
-            throw new NotFoundHttpException('Les disponibilités ne sont pas demandées pour cet événement');
+            throw new NotFoundHttpException('band_space.availability.not_requested');
         }
 
         if ($occurrenceDate === null || $occurrenceDate === '') {
             if ($entry->recurrenceFrequency !== null) {
-                throw new UnprocessableEntityHttpException('Précisez la date de l\'occurrence');
+                throw new UnprocessableEntityHttpException('band_space.agenda.occurrence_date_required');
             }
             $occurrenceDate = AgendaAggregator::occurrenceDateOf($entry->eventDatetime);
         }
 
         $occurrenceStart = $this->agendaAggregator->occurrenceStartOn($entry, $occurrenceDate);
         if (!$occurrenceStart instanceof DateTimeImmutable) {
-            throw new NotFoundHttpException('Cet événement n\'a pas lieu à cette date');
+            throw new NotFoundHttpException('band_space.agenda.occurrence_not_found');
         }
 
         return [$entry, $occurrenceDate, $occurrenceStart];

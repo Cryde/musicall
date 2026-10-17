@@ -60,7 +60,7 @@ readonly class SetlistItemsBulkCreateProcessor implements ProcessorInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $this->setlistWriteGuard->assertWritable($setlist);
@@ -76,7 +76,7 @@ readonly class SetlistItemsBulkCreateProcessor implements ProcessorInterface
         foreach ($data->songIds as $songId) {
             $song = $songsById[$songId] ?? null;
             if (!$song instanceof Song) {
-                throw new UnprocessableEntityHttpException('Un des titres n\'est pas dans le répertoire de ce Band Space');
+                throw new UnprocessableEntityHttpException('band_space.song.not_in_repertoire');
             }
             $this->songWriteGuard->assertWritable($song);
             $item = new SetlistItem();

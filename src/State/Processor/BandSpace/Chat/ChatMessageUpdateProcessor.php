@@ -63,11 +63,11 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
         // A tombstone takes no edit, the same 404 the delete endpoint answers with: its content is
         // already gone, so a PATCH would not be a correction but a way to write over a deletion.
         if (!$message instanceof Message || $message->isDeleted()) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         if ((string) $message->author->id !== (string) $user->id) {
-            throw new AccessDeniedHttpException('Seul l\'auteur peut modifier ce message');
+            throw new AccessDeniedHttpException('band_space.chat.update_forbidden');
         }
 
         // An identical body is not an edit. Stamping it would paint « modifié » on a message nobody

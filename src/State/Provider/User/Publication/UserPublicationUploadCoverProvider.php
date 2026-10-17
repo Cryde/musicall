@@ -34,15 +34,15 @@ readonly class UserPublicationUploadCoverProvider implements ProviderInterface
 
         $publication = $this->publicationRepository->find($uriVariables['id']);
         if (!$publication instanceof \App\Entity\Publication) {
-            throw new NotFoundHttpException('Publication not found');
+            throw new NotFoundHttpException('publication.user.not_found');
         }
 
         if ($publication->author->id !== $user->id) {
-            throw new AccessDeniedHttpException('You are not the owner of this publication');
+            throw new AccessDeniedHttpException('publication.user.not_owner');
         }
 
         if ($publication->status !== Publication::STATUS_DRAFT) {
-            throw new AccessDeniedHttpException('You can only edit draft publications');
+            throw new AccessDeniedHttpException('publication.user.edit_not_draft');
         }
 
         return $publication;

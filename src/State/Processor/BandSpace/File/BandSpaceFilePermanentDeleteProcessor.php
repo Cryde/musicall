@@ -49,13 +49,13 @@ readonly class BandSpaceFilePermanentDeleteProcessor implements ProcessorInterfa
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         // The trash is the only door to this endpoint: a live file has to be deleted normally first, so
         // nobody can skip the grace period by accident.
         if (!$file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new ConflictHttpException('Ce fichier n\'est pas dans la corbeille');
+            throw new ConflictHttpException('band_space.file.not_in_trash');
         }
 
         $originalName = $file->originalName;

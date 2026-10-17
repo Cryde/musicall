@@ -48,13 +48,13 @@ class UserSocialLinkResource
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
-    #[Assert\NotBlank(message: 'La plateforme est requise')]
+    #[Assert\NotBlank(message: 'profile.social_link.platform_required')]
     public string $platform;
 
     public ?string $platformLabel = null;
 
-    #[Assert\NotBlank(message: 'L\'URL est requise')]
-    #[Assert\Url(message: 'L\'URL n\'est pas valide', requireTld: true)]
-    #[Assert\Length(max: 500, maxMessage: 'L\'URL ne doit pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'profile.social_link.url_required')]
+    #[Assert\Url(message: 'profile.social_link.url_invalid', requireTld: true)]
+    #[Assert\Length(max: 500, maxMessage: 'profile.social_link.url_too_long')]
     public string $url;
 }

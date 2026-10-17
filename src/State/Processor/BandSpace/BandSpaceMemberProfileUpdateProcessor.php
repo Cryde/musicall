@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\Attribute\InstrumentRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -19,6 +20,7 @@ use App\Service\Builder\BandSpace\BandSpaceMemberBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -61,12 +63,12 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
         if (!$membership instanceof BandSpaceMembership) {
             // 404 rather than 403 for a membership of another space: the caller has no standing to
             // learn whether that id exists.
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         $isSelf = (string) $membership->id === (string) $callerMembership->id;
         if (!$isSelf && $callerMembership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que votre propre profil');
+            throw new AccessDeniedHttpException('band_space.member.profile_not_owner');
         }
 
         // Absent and null differ: a stage-name-only save must not wipe the instruments, and
@@ -91,7 +93,7 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
             // An email is personal: even an admin cannot change someone else's choice (#1119). An
             // unchanged value sent back by a client that round trips the profile is not a change.
             if (!$isSelf) {
-                throw new AccessDeniedHttpException('Seul le membre peut choisir d\'afficher son email sur les fiches techniques');
+                throw new AccessDeniedHttpException('band_space.member.email_visibility_owner_only');
             }
             $membership->showEmailOnRiders = $data->showEmailOnRiders;
             $changed = true;
@@ -131,7 +133,7 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
         $ids = [];
         foreach ($requestedIds as $id) {
             if (!is_string($id)) {
-                throw new UnprocessableEntityHttpException('Instrument inconnu');
+                throw new UnprocessableEntityHttpException('band_space.member.instrument_unknown');
             }
             $ids[] = $id;
         }
@@ -144,7 +146,15 @@ readonly class BandSpaceMemberProfileUpdateProcessor implements ProcessorInterfa
             $found = array_map(static fn ($instrument): string => (string) $instrument->id, $instruments);
             $missing = array_values(array_diff($ids, $found));
 
-            throw new UnprocessableEntityHttpException(sprintf('Instrument inconnu : %s', $missing[0]));
+            throw new TranslatableHttpException(
+
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+
+                'band_space.member.instrument_unknown_named',
+
+                ['id' => (string) $missing[0]],
+
+            );
         }
 
         $current = array_map(static fn ($instrument): string => (string) $instrument->id, $membership->instruments->toArray());

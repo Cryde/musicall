@@ -35,7 +35,7 @@ readonly class PublicationProvider implements ProviderInterface
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
         if (!$publication instanceof Publication) {
-            throw new PublicationNotFoundException('Publication inexistante');
+            throw new PublicationNotFoundException('publication.not_found');
         }
 
         // Check access for non-published publications
@@ -43,7 +43,7 @@ readonly class PublicationProvider implements ProviderInterface
             /** @var User|null $user */
             $user = $this->security->getUser();
             if (!$user || $publication->author->id !== $user->id) {
-                throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette publication');
+                throw new AccessDeniedHttpException('publication.access_denied');
             }
         }
 

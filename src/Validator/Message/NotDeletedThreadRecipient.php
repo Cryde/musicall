@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class NotDeletedThreadRecipient extends Constraint
 {
-    public string $message = 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.';
+    public string $message = 'message.recipient.deleted';
 
     public function getTargets(): string
     {

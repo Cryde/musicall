@@ -50,14 +50,14 @@ readonly class TechRiderItemDeleteProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['riderId'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         $this->writeGuard->assertWritable($techRider);
 
         $item = $this->itemRepository->findOneByIdAndRider((string) $uriVariables['id'], $techRider);
         if (!$item instanceof TechRiderItem) {
-            throw new NotFoundHttpException('Élément introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.item.not_found');
         }
 
         // Read before remove(): the activity outlives the row it points at, and relying on

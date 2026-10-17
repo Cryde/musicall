@@ -51,7 +51,7 @@ readonly class AgendaEntryAvailabilityAnswerProcessor implements ProcessorInterf
         [$entry, $occurrenceDate] = $this->occurrenceLocator->locate($bandSpace, (string) $uriVariables['entryId'], $data->occurrenceDate);
 
         if (AgendaOccurrenceLocator::isPast($occurrenceDate)) {
-            throw new UnprocessableEntityHttpException('Cette date est passée, les disponibilités ne peuvent plus changer');
+            throw new UnprocessableEntityHttpException('band_space.availability.date_past');
         }
 
         $this->availabilityRepository->upsert($entry, new DateTimeImmutable($occurrenceDate), $membership, AvailabilityAnswer::from((string) $data->answer));

@@ -20,9 +20,9 @@ class ValidReplyParent extends Constraint
     public const string WRONG_THREAD_CODE = 'music_all_b7a8c419-2e2d-4f3a-9c19-2f0a8c7f5b40';
     public const string ALREADY_NESTED_CODE = 'music_all_c6fa90d1-1e3f-4b18-a9d8-1ad9ee2d27a5';
 
-    public string $notFoundMessage = 'Commentaire parent introuvable.';
-    public string $wrongThreadMessage = "Le commentaire parent n'appartient pas à ce fil de discussion.";
-    public string $alreadyNestedMessage = 'Vous ne pouvez pas répondre à une réponse.';
+    public string $notFoundMessage = 'comment.reply.parent_not_found';
+    public string $wrongThreadMessage = 'comment.reply.parent_wrong_thread';
+    public string $alreadyNestedMessage = 'comment.reply.already_nested';
 
     public function getTargets(): string|array
     {

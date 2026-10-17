@@ -16,10 +16,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class UserPublicationCreate
 {
-    #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
-    #[Assert\Length(min: 3, minMessage: 'Le titre doit contenir au moins 3 caractères')]
+    #[Assert\NotBlank(message: 'publication.title_required')]
+    #[Assert\Length(min: 3, minMessage: 'publication.title_too_short')]
     public string $title;
 
-    #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
+    #[Assert\NotBlank(message: 'publication.category_required')]
     public int $categoryId;
 }

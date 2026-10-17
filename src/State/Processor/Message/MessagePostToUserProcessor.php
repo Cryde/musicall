@@ -41,7 +41,7 @@ class MessagePostToUserProcessor implements ProcessorInterface
     {
         /** @var MessageUser $data */
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
         /** @var User $currentUser */
         $currentUser = $this->security->getUser();

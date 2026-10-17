@@ -10,7 +10,7 @@ readonly class SetlistWriteGuard
     public function assertWritable(Setlist $setlist): void
     {
         if ($setlist->archiveDatetime !== null) {
-            throw new ConflictHttpException('Cette setlist est archivée, les modifications sont désactivées');
+            throw new ConflictHttpException('band_space.setlist.archived_read_only');
         }
     }
 }

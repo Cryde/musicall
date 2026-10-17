@@ -30,7 +30,7 @@ readonly class UserProfileCoverPictureDeleteProvider implements ProviderInterfac
         $coverPicture = $profile->coverPicture;
 
         if ($coverPicture === null) {
-            throw new NotFoundHttpException('Aucune photo de couverture à supprimer');
+            throw new NotFoundHttpException('profile.cover_picture.nothing_to_delete');
         }
 
         return $coverPicture;

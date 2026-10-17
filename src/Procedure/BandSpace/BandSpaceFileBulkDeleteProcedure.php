@@ -7,14 +7,13 @@ use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Service\BandSpace\File\BandSpaceFileArchiver;
 use App\Service\BandSpace\File\BandSpaceFileAttachmentLabels;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Moves a selection of files to the trash in one call.
@@ -72,7 +71,11 @@ readonly class BandSpaceFileBulkDeleteProcedure
         $missing = array_diff($fileIds, $foundIds);
 
         if (count($missing) > 0) {
-            throw new BadRequestHttpException(sprintf('Fichier %s introuvable dans ce Band Space', reset($missing)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.file.not_found_in_space',
+                ['id' => (string) reset($missing)],
+            );
         }
     }
 
@@ -91,10 +94,11 @@ readonly class BandSpaceFileBulkDeleteProcedure
             return;
         }
 
-        throw new AccessDeniedHttpException(sprintf(
-            'Seul le créateur ou un administrateur peut supprimer ces fichiers : %s',
-            implode(', ', array_map(static fn (BandSpaceFile $file): string => $file->originalName, $foreign)),
-        ));
+        throw new TranslatableHttpException(
+            Response::HTTP_FORBIDDEN,
+            'band_space.file.bulk_delete_forbidden',
+            ['files' => implode(', ', array_map(static fn (BandSpaceFile $file): string => $file->originalName, $foreign))],
+        );
     }
 
     /**
@@ -119,12 +123,16 @@ readonly class BandSpaceFileBulkDeleteProcedure
         sort($sourceTypes);
         $sources = BandSpaceFileAttachmentLabels::describe($sourceTypes);
 
-        throw new UnprocessableEntityHttpException(count($sourceTypesByFile) === 1
-            ? sprintf("1 fichier sélectionné est attaché à %s. Détachez-le d'abord depuis la ressource concernée.", $sources)
-            : sprintf(
-                "%d fichiers sélectionnés sont attachés à %s. Détachez-les d'abord depuis les ressources concernées.",
-                count($sourceTypesByFile),
-                $sources,
-            ));
+        throw count($sourceTypesByFile) === 1
+            ? new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.file.bulk_delete_attached_one',
+                ['sources' => $sources],
+            )
+            : new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.file.bulk_delete_attached_many',
+                ['count' => (string) count($sourceTypesByFile), 'sources' => $sources],
+            );
     }
 }

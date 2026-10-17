@@ -31,7 +31,7 @@ class TopicCreationProcedure
     public function process(Forum $forumDto, string $title, string $message): ForumTopic
     {
         if (!($forum = $this->forumRepository->find($forumDto->id)) instanceof \App\Entity\Forum\Forum) {
-            throw new NotFoundHttpException('Forum not found.');
+            throw new NotFoundHttpException('forum.topic.forum_not_found');
         }
         /** @var User $user */
         $user = $this->security->getUser();

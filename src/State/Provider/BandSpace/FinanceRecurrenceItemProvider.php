@@ -41,7 +41,7 @@ readonly class FinanceRecurrenceItemProvider implements ProviderInterface
 
         // Somebody else's personal recurrence answers like an id that does not exist, as its entries do.
         if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence || !$this->ownerChecker->isVisibleTo($recurrence, $viewer)) {
-            throw new NotFoundHttpException('Récurrence introuvable');
+            throw new NotFoundHttpException('band_space.finance.recurrence.not_found');
         }
 
         return $this->financeRecurrenceBuilder->buildItem($recurrence);

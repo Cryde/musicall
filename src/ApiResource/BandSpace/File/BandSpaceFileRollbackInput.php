@@ -35,7 +35,7 @@ class BandSpaceFileRollbackInput
     #[ApiProperty(identifier: true)]
     public string $fileId;
 
-    #[Assert\NotNull(message: 'Le numéro de version est requis')]
-    #[Assert\Positive(message: 'Le numéro de version doit être un entier positif')]
+    #[Assert\NotNull(message: 'band_space.file.version_number_required')]
+    #[Assert\Positive(message: 'band_space.file.version_number_positive')]
     public ?int $versionNumber = null;
 }

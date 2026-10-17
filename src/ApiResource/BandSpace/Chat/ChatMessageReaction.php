@@ -64,6 +64,6 @@ class ChatMessageReaction
      * entirely, and Choice already refuses it, so adding NotBlank would only answer an empty string
      * with two violations saying the same thing.
      */
-    #[Assert\Choice(callback: [MessageReactionEmoji::class, 'values'], message: 'Réaction inconnue')]
+    #[Assert\Choice(callback: [MessageReactionEmoji::class, 'values'], message: 'band_space.chat.reaction_unknown')]
     public string $emoji = '';
 }

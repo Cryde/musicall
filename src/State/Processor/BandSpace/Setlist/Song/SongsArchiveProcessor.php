@@ -49,7 +49,7 @@ readonly class SongsArchiveProcessor implements ProcessorInterface
         $songIds = array_values(array_unique($data->songIds));
         $songs = $this->songRepository->findByIdsAndBandSpace($songIds, $bandSpace);
         if (count($songs) !== count($songIds)) {
-            throw new UnprocessableEntityHttpException('Un des titres n\'est pas dans le répertoire de ce Band Space');
+            throw new UnprocessableEntityHttpException('band_space.song.not_in_repertoire');
         }
 
         $archived = 0;

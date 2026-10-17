@@ -51,7 +51,7 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
-            throw new NotFoundHttpException('Catégorie introuvable');
+            throw new NotFoundHttpException('band_space.finance.category.not_found');
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
@@ -72,13 +72,13 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
             } else {
                 $parent = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->parentId, $bandSpace);
                 if (!$parent instanceof \App\Entity\BandSpace\FinanceCategory) {
-                    throw new NotFoundHttpException('Catégorie parente introuvable');
+                    throw new NotFoundHttpException('band_space.finance.category.parent_not_found');
                 }
                 if ($parent->parent instanceof \App\Entity\BandSpace\FinanceCategory) {
-                    throw new BadRequestHttpException('La profondeur maximale de 2 niveaux est atteinte');
+                    throw new BadRequestHttpException('band_space.finance.category.move_max_depth_reached');
                 }
                 if ((string) $parent->id === (string) $category->id) {
-                    throw new BadRequestHttpException('Une catégorie ne peut pas être son propre parent');
+                    throw new BadRequestHttpException('band_space.finance.category.own_parent');
                 }
                 $category->parent = $parent;
             }

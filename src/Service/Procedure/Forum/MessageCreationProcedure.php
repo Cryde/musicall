@@ -34,11 +34,11 @@ readonly class MessageCreationProcedure
     public function process(Topic $topicDto, string $message): ForumPostResource
     {
         if (!($topic = $this->forumTopicRepository->find($topicDto->id)) instanceof ForumTopic) {
-            throw new NotFoundHttpException('Ce sujet n\'existe pas.');
+            throw new NotFoundHttpException('forum.post.topic_not_found');
         }
 
         if ($topic->isLocked) {
-            throw new BadRequestHttpException('Ce sujet est verrouillé. Vous ne pouvez plus y répondre.');
+            throw new BadRequestHttpException('forum.post.topic_locked');
         }
 
         /** @var User $user */

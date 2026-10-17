@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class ValidChatAttachments extends Constraint
 {
-    public string $message = 'Cet élément est introuvable dans ce Band Space';
+    public string $message = 'message.attachment.not_found';
 
-    public string $duplicateMessage = 'Cet élément est déjà référencé dans ce message';
+    public string $duplicateMessage = 'message.attachment.duplicate';
 }

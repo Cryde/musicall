@@ -68,8 +68,8 @@ class UserProfileCoverPictureUpload
         minHeight: 200,
         maxRatio: 4.1,
         minRatio: 3.9,
-        maxRatioMessage: 'L\'image doit avoir un ratio de 4:1 (largeur/hauteur)',
-        minRatioMessage: 'L\'image doit avoir un ratio de 4:1 (largeur/hauteur)',
+        maxRatioMessage: 'profile.cover_picture.ratio_invalid',
+        minRatioMessage: 'profile.cover_picture.ratio_invalid',
         mimeTypes: ImageMimeTypes::ALLOWED,
         mimeTypesMessage: ImageMimeTypes::INVALID_MESSAGE,
     )]

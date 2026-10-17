@@ -39,7 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class UserProfileEdit
 {
     /** Normalized on the way in, so the rules check what will be stored (#1118). */
-    #[Assert\Length(max: 100, maxMessage: 'Le nom d\'affichage ne doit pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 100, maxMessage: 'profile.display_name.too_long')]
     #[DisplayName]
     public ?string $displayName = null {
         set(?string $value) {
@@ -47,16 +47,16 @@ class UserProfileEdit
         }
     }
 
-    #[Assert\Length(max: 2000, maxMessage: 'La bio ne doit pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 2000, maxMessage: 'profile.bio.too_long')]
     public ?string $bio = null;
 
-    #[Assert\Length(max: 255, maxMessage: 'La localisation ne doit pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'profile.location.too_long')]
     public ?string $location = null;
 
-    #[Assert\Range(notInRangeMessage: 'La latitude doit être comprise entre {{ min }} et {{ max }}', min: -90, max: 90)]
+    #[Assert\Range(notInRangeMessage: 'profile.latitude.out_of_range', min: -90, max: 90)]
     public ?float $latitude = null;
 
-    #[Assert\Range(notInRangeMessage: 'La longitude doit être comprise entre {{ min }} et {{ max }}', min: -180, max: 180)]
+    #[Assert\Range(notInRangeMessage: 'profile.longitude.out_of_range', min: -180, max: 180)]
     public ?float $longitude = null;
 
     public bool $isPublic = true;

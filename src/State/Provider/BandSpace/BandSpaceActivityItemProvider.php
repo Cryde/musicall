@@ -43,7 +43,7 @@ readonly class BandSpaceActivityItemProvider implements ProviderInterface
 
         $activity = $this->bandSpaceActivityRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$activity instanceof BandSpaceActivity) {
-            throw new NotFoundHttpException('Activité introuvable');
+            throw new NotFoundHttpException('band_space.activity.not_found');
         }
 
         return $this->bandSpaceActivityBuilder->buildItem($activity);

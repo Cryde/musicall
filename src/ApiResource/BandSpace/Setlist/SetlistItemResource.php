@@ -81,15 +81,15 @@ class SetlistItemResource
     #[ApiProperty(genId: false)]
     public ?SetlistItemSongInfo $song = null;
 
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public ?string $label = null;
 
-    #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} secondes')]
+    #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'band_space.setlist.item.duration_out_of_range')]
     public ?int $durationOverride = null;
 
     public ?string $note = null;
 
-    #[Assert\Length(max: 50, maxMessage: 'La transition ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 50, maxMessage: 'band_space.setlist.item.transition_too_long')]
     public ?string $transition = null;
 
     public int $position = 0;

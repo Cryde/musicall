@@ -8,10 +8,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class Location
 {
-    #[Assert\NotBlank(message: 'Le type de lieu est obligatoire')]
+    #[Assert\NotBlank(message: 'profile.teacher.location.type_required')]
     #[Assert\Choice(
         choices: ['teacher_place', 'student_place', 'online'],
-        message: 'Type de lieu invalide : {{ value }}',
+        message: 'profile.teacher.location.type_invalid',
     )]
     public ?string $type = null;
 
@@ -25,6 +25,6 @@ class Location
 
     public ?float $longitude = null;
 
-    #[Assert\PositiveOrZero(message: 'Le rayon doit être positif')]
+    #[Assert\PositiveOrZero(message: 'profile.teacher.location.radius_positive')]
     public ?int $radius = null;
 }

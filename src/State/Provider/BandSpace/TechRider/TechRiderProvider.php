@@ -39,7 +39,7 @@ readonly class TechRiderProvider implements ProviderInterface
         // Archived riders stay readable: they are restored and duplicated from here.
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         return $this->techRiderBuilder->buildItem($techRider);

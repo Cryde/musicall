@@ -36,24 +36,24 @@ readonly class BandSpaceFilePublicShareMetadataProvider implements ProviderInter
         $token = (string) $uriVariables['token'];
         $share = $this->shareRepository->findOneByTokenHash($this->tokenService->hashOf($token));
         if (!$share instanceof \App\Entity\BandSpace\BandSpaceFileShare) {
-            throw new NotFoundHttpException('Lien de partage introuvable');
+            throw new NotFoundHttpException('band_space.file.share.not_found');
         }
 
         if ($share->revocationDatetime instanceof \DateTimeImmutable) {
-            throw new GoneHttpException('Ce lien de partage a été révoqué');
+            throw new GoneHttpException('band_space.file.share.revoked');
         }
 
         $now = new \DateTimeImmutable();
         if ($share->expiryDatetime instanceof \DateTimeImmutable && $share->expiryDatetime <= $now) {
-            throw new GoneHttpException('Ce lien de partage a expiré');
+            throw new GoneHttpException('band_space.file.share.expired');
         }
 
         $file = $share->bandSpaceFile;
         if ($file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
         if (!$file->currentVersion instanceof \App\Entity\BandSpace\BandSpaceFileVersion) {
-            throw new NotFoundHttpException('Aucune version disponible pour ce fichier');
+            throw new NotFoundHttpException('band_space.file.no_version');
         }
 
         $dto = new BandSpaceFilePublicShareMetadata();

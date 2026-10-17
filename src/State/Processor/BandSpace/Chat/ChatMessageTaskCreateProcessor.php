@@ -13,6 +13,7 @@ use App\Entity\Message\Message;
 use App\Entity\Message\MessageAttachment;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
+use App\Exception\TranslatableHttpException;
 use App\Procedure\BandSpace\TaskCreateProcedure;
 use App\Repository\Message\MessageAttachmentRepository;
 use App\Repository\Message\MessageRepository;
@@ -21,8 +22,8 @@ use App\Service\BandSpace\ChatMessageTaskSeed;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -61,7 +62,7 @@ readonly class ChatMessageTaskCreateProcessor implements ProcessorInterface
         // A tombstone makes no task, the same 404 the edit, delete and pin endpoints answer with:
         // its content is gone, so there is nothing left to turn into anything (#967).
         if (!$message instanceof Message || $message->isDeleted()) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         $this->assertRoomForOneMoreCard($message);
@@ -106,10 +107,11 @@ readonly class ChatMessageTaskCreateProcessor implements ProcessorInterface
     private function assertRoomForOneMoreCard(Message $message): void
     {
         if ($this->messageAttachmentRepository->countByMessage($message) >= ChatMessageCreate::MAX_ATTACHMENTS) {
-            throw new ConflictHttpException(sprintf(
-                'Ce message référence déjà %d éléments, il ne peut pas en porter davantage.',
-                ChatMessageCreate::MAX_ATTACHMENTS,
-            ));
+            throw new TranslatableHttpException(
+                Response::HTTP_CONFLICT,
+                'band_space.chat.attachment_limit_reached',
+                ['max' => (string) ChatMessageCreate::MAX_ATTACHMENTS],
+            );
         }
     }
 }

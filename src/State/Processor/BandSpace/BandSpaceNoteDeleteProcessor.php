@@ -45,7 +45,7 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
-            throw new NotFoundHttpException('Note not found');
+            throw new NotFoundHttpException('band_space.note.not_found');
         }
 
         // After the lookup on purpose: a member has no business learning from a 403 which note ids exist.

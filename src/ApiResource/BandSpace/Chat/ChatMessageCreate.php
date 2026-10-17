@@ -52,9 +52,9 @@ class ChatMessageCreate
      */
     #[Assert\When(
         expression: 'this.attachments == [] and this.image === null and this.voiceNote === null',
-        constraints: [new Assert\NotBlank(message: 'Veuillez saisir un message')],
+        constraints: [new Assert\NotBlank(message: 'band_space.chat.content_required')],
     )]
-    #[Assert\Length(max: 5000, maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 5000, maxMessage: 'band_space.chat.content_too_long')]
     public string $content = '';
 
     /**
@@ -67,7 +67,7 @@ class ChatMessageCreate
      * @var mixed[]
      */
     #[Assert\Sequentially([
-        new Assert\Count(max: self::MAX_ATTACHMENTS, maxMessage: 'Un message ne peut pas référencer plus de {{ limit }} éléments'),
+        new Assert\Count(max: self::MAX_ATTACHMENTS, maxMessage: 'band_space.chat.attachments_too_many'),
         new ValidChatAttachments(),
     ])]
     public array $attachments = [];
@@ -80,9 +80,9 @@ class ChatMessageCreate
         maxSize: ChatImageConverter::MAX_UPLOAD_SIZE,
         mimeTypes: ChatImageConverter::ACCEPTED_MIME_TYPES,
         maxPixels: ChatImageConverter::MAX_PIXELS,
-        maxSizeMessage: 'L\'image est trop volumineuse ({{ size }} {{ suffix }}), la limite est de {{ limit }} {{ suffix }}',
-        mimeTypesMessage: 'Format d\'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF)',
-        maxPixelsMessage: 'L\'image est trop grande ({{ pixels }} pixels), la limite est de {{ max_pixels }} pixels',
+        maxSizeMessage: 'band_space.chat.image_too_large',
+        mimeTypesMessage: 'band_space.chat.image_type_invalid',
+        maxPixelsMessage: 'band_space.chat.image_too_many_pixels',
     )]
     public ?File $image = null;
 
@@ -93,14 +93,14 @@ class ChatMessageCreate
     #[Assert\File(
         maxSize: ChatVoiceNoteConverter::MAX_UPLOAD_SIZE,
         mimeTypes: ChatVoiceNoteConverter::ACCEPTED_MIME_TYPES,
-        maxSizeMessage: 'La note vocale est trop volumineuse ({{ size }} {{ suffix }}), la limite est de {{ limit }} {{ suffix }}',
-        mimeTypesMessage: 'Format de note vocale non pris en charge',
+        maxSizeMessage: 'band_space.chat.voice_note_too_large',
+        mimeTypesMessage: 'band_space.chat.voice_note_type_invalid',
     )]
     #[Assert\When(
         expression: 'value !== null',
         constraints: [new Assert\Expression(
             expression: 'this.content == "" and this.image === null and this.attachments == []',
-            message: 'Une note vocale s\'envoie seule, sans texte, image ni pièce jointe',
+            message: 'band_space.chat.voice_note_must_be_alone',
         )],
     )]
     public ?File $voiceNote = null;

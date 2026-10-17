@@ -44,7 +44,7 @@ readonly class AgendaFeedRevokeProcessor implements ProcessorInterface
 
         $feedToken = $this->feedTokenRepository->findOneByMembership($membership);
         if (!$feedToken instanceof AgendaFeedToken) {
-            throw new NotFoundHttpException('Aucun flux à révoquer');
+            throw new NotFoundHttpException('band_space.agenda.feed.nothing_to_revoke');
         }
 
         // Deleted rather than flagged. There is at most one row per membership and nobody reads a

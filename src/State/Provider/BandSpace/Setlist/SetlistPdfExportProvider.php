@@ -46,7 +46,7 @@ readonly class SetlistPdfExportProvider implements ProviderInterface
         // restore/audit flows).
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $options = $this->optionsBuilder->fromRequest($this->requestStack->getCurrentRequest());

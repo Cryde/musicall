@@ -18,19 +18,19 @@ use Symfony\Component\Validator\Constraints as Assert;
     // address has an account, so trying addresses must cost something (#1119).
     validate: false,
 )]
-#[UniqueEntity(fields: ['username'], message: 'Ce nom d\'utilisateur est déjà pris', entityClass: User::class)]
-#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé', entityClass: User::class)]
+#[UniqueEntity(fields: ['username'], message: 'user.username.already_taken', entityClass: User::class)]
+#[UniqueEntity(fields: ['email'], message: 'user.email.already_used', entityClass: User::class)]
 class Register
 {
-    #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
-    #[Assert\Regex(pattern: '/^[a-zA-Z0-9\._]+$/', message: 'Nom d\'utilisateur invalide : seuls les lettres, chiffres, points et underscores sont autorisés.')]
-    #[Assert\Length(min: 3, max: 40, minMessage: 'Le nom d\'utilisateur doit au moins contenir 3 caractères', maxMessage: 'Le nom d\'utilisateur doit contenir maximum 40 caractères')]
+    #[Assert\NotBlank(message: 'user.username.required')]
+    #[Assert\Regex(pattern: '/^[a-zA-Z0-9\._]+$/', message: 'user.username.invalid_characters')]
+    #[Assert\Length(min: 3, max: 40, minMessage: 'user.username.too_short', maxMessage: 'user.username.too_long')]
     public string $username;
-    #[Assert\NotBlank(message: 'Veuillez saisir un email')]
-    #[Assert\Email(message: 'Email invalide')]
+    #[Assert\NotBlank(message: 'user.email.required')]
+    #[Assert\Email(message: 'user.email.invalid')]
     public string $email;
-    #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
-    #[Assert\Length(min: 8, max: 4096, minMessage: 'Le mot de passe doit au moins contenir 8 caractères')]
-    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'Ce mot de passe est présent dans une fuite de données, veuillez en choisir un autre.')]
+    #[Assert\NotBlank(message: 'user.password.required')]
+    #[Assert\Length(min: 8, max: 4096, minMessage: 'user.register.password_too_short')]
+    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'user.password.compromised')]
     public string $password;
 }

@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceEntryResource;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\User;
+use App\Exception\TranslatableHttpException;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
@@ -25,7 +26,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -61,11 +62,11 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.update_not_owner');
         }
         $wasBandEntry = $entry->scope !== FinanceEntryScope::Personal;
 
@@ -81,8 +82,10 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         if (array_key_exists('status', $requestPayload)) {
             $newStatus = FinanceEntryStatus::from($data->status);
             if ($newStatus !== $entry->status && !$entry->status->canTransitionTo($newStatus)) {
-                throw new BadRequestHttpException(
-                    sprintf('Transition de statut interdite : %s → %s', $entry->status->label(), $newStatus->label())
+                throw new TranslatableHttpException(
+                    Response::HTTP_BAD_REQUEST,
+                    'band_space.finance.entry.status_transition_forbidden',
+                    ['from' => $entry->status->label(), 'to' => $newStatus->label()],
                 );
             }
             $entry->status = $newStatus;
@@ -92,7 +95,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         if ($entry->status === FinanceEntryStatus::Paid) {
             foreach ($protectedFields as $field) {
                 if (array_key_exists($field, $requestPayload)) {
-                    throw new UnprocessableEntityHttpException('Impossible de modifier une entrée payée. Repassez le statut à Engagé.');
+                    throw new UnprocessableEntityHttpException('band_space.finance.entry.paid_read_only');
                 }
             }
         }
@@ -128,7 +131,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         if (array_key_exists('category_id', $requestPayload)) {
             $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
             if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
-                throw new NotFoundHttpException('Catégorie introuvable');
+                throw new NotFoundHttpException('band_space.finance.category.not_found');
             }
             $entry->category = $category;
         }
@@ -137,7 +140,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
             if ($data->memberId !== null) {
                 $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
                 if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-                    throw new NotFoundHttpException('Membre introuvable');
+                    throw new NotFoundHttpException('band_space.member.not_found');
                 }
                 $entry->member = $member;
             } else {

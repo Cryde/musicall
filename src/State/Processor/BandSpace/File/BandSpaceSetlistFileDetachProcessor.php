@@ -49,17 +49,17 @@ readonly class BandSpaceSetlistFileDetachProcessor implements ProcessorInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['setlistId'], $bandSpace);
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'setlist', (string) $setlist->id);
         if (!$attachment instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
-            throw new NotFoundHttpException("Le fichier n'est pas attaché à cette setlist");
+            throw new NotFoundHttpException('band_space.file.not_attached_to_setlist');
         }
 
         $shouldArchive = $this->requestStack->getCurrentRequest()?->query->getBoolean('archive') ?? false;

@@ -82,7 +82,7 @@ class BandSpaceMember
     public string $userId;
     public string $username;
 
-    #[Assert\Choice(choices: ['admin', 'user'], message: 'Le rôle doit être "admin" ou "user"')]
+    #[Assert\Choice(choices: ['admin', 'user'], message: 'band_space.member.role_invalid')]
     public string $role;
 
     /** Null when the member has not chosen one; display_name is what a document should print. */
@@ -99,7 +99,7 @@ class BandSpaceMember
 
     public ?string $profilePictureUrl = null;
     public \DateTimeInterface $creationDatetime;
-    #[Assert\Choice(choices: ['active', 'left', 'kicked'], message: 'Le statut doit être "active", "left" ou "kicked"')]
+    #[Assert\Choice(choices: ['active', 'left', 'kicked'], message: 'band_space.member.status_invalid')]
     public string $status;
     public ?\DateTimeInterface $leftDatetime = null;
 }

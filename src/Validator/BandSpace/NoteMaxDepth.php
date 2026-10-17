@@ -11,7 +11,7 @@ class NoteMaxDepth extends Constraint
 {
     public const int MAX_DEPTH = 3;
 
-    public string $message = 'La profondeur maximale de {{ limit }} niveaux est atteinte';
+    public string $message = 'band_space.note.max_depth_reached';
 
     public function getTargets(): string
     {

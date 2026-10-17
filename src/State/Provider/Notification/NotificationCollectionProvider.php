@@ -32,7 +32,7 @@ readonly class NotificationCollectionProvider implements ProviderInterface
     {
         $user = $this->security->getUser();
         if (!$user instanceof User) {
-            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
+            throw new AccessDeniedException('common.not_authenticated');
         }
 
         $page = $this->pagination->getPage($context);

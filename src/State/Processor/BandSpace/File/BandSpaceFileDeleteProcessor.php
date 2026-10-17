@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -18,9 +19,9 @@ use App\Service\BandSpace\File\BandSpaceFileShareRevoker;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<BandSpaceFileResource, void>
@@ -49,20 +50,21 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $membership->bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $isOwner = $file->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce fichier');
+            throw new AccessDeniedHttpException('band_space.file.delete_forbidden');
         }
 
         $sourceTypes = $this->attachmentRepository->findDeleteBlockingSourceTypesByFileIds([(string) $file->id])[(string) $file->id] ?? [];
         if ($sourceTypes !== []) {
-            throw new UnprocessableEntityHttpException(sprintf(
-                "Ce fichier est attaché à %s. Détachez-le d'abord depuis la ressource concernée.",
-                BandSpaceFileAttachmentLabels::describe($sourceTypes),
-            ));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.file.delete_attached',
+                ['sources' => BandSpaceFileAttachmentLabels::describe($sourceTypes)],
+            );
         }
 
         $file->archiveDatetime = new DateTimeImmutable();

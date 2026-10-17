@@ -34,15 +34,15 @@ readonly class UserGalleryUploadImageProvider implements ProviderInterface
 
         $gallery = $this->galleryRepository->find($uriVariables['id']);
         if (!$gallery instanceof \App\Entity\Gallery) {
-            throw new NotFoundHttpException('Galerie non trouvee');
+            throw new NotFoundHttpException('publication.user.gallery.not_found');
         }
 
         if ($gallery->author->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous n\'etes pas autorise a modifier cette galerie');
+            throw new AccessDeniedHttpException('publication.user.gallery.edit_forbidden');
         }
 
         if ($gallery->status !== Gallery::STATUS_DRAFT) {
-            throw new AccessDeniedHttpException('Cette galerie ne peut plus etre modifiee');
+            throw new AccessDeniedHttpException('publication.user.gallery.not_editable');
         }
 
         return $gallery;

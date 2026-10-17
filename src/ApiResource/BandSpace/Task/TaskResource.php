@@ -88,8 +88,8 @@ class TaskResource
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
-    #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.title.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.title.too_long')]
     public string $title;
 
     public ?string $description = null;
@@ -105,10 +105,10 @@ class TaskResource
     #[ApiProperty(readable: false)]
     public ?int $expectedTextVersion = null;
 
-    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'Le statut doit être "todo", "in_progress" ou "done"')]
+    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'band_space.task.status_invalid')]
     public string $status;
 
-    #[Assert\Choice(choices: ['normal', 'high', 'urgent'], message: 'La priorité doit être "normal", "high" ou "urgent"')]
+    #[Assert\Choice(choices: ['normal', 'high', 'urgent'], message: 'band_space.task.priority_invalid')]
     public string $priority;
 
     public ?string $dueDate = null;

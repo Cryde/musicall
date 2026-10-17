@@ -43,7 +43,7 @@ readonly class BandSpaceSongFileCollectionProvider implements ProviderInterface
 
         $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['songId'], $bandSpace);
         if (!$song instanceof \App\Entity\BandSpace\Song) {
-            throw new NotFoundHttpException('Chanson introuvable');
+            throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         $page = $this->pagination->getPage($context);

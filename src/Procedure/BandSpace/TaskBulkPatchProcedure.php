@@ -6,12 +6,12 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\TaskStatus;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 readonly class TaskBulkPatchProcedure
 {
@@ -37,7 +37,11 @@ readonly class TaskBulkPatchProcedure
         $foundIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);
         $missing = array_diff($taskIds, $foundIds);
         if (count($missing) > 0) {
-            throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missing)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.task.not_found_in_space',
+                ['id' => (string) reset($missing)],
+            );
         }
 
         if (array_key_exists('archived', $patchPayload) && (bool) $patchPayload['archived']) {
@@ -77,9 +81,10 @@ readonly class TaskBulkPatchProcedure
             return;
         }
 
-        throw new UnprocessableEntityHttpException(sprintf(
-            'Seules les tâches terminées peuvent être archivées : %s',
-            implode(', ', array_map(static fn(Task $task): string => $task->title, $blocking)),
-        ));
+        throw new TranslatableHttpException(
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            'band_space.task.bulk_archive_requires_done',
+            ['titles' => implode(', ', array_map(static fn(Task $task): string => $task->title, $blocking))],
+        );
     }
 }

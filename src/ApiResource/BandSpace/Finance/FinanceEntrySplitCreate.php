@@ -28,12 +28,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class FinanceEntrySplitCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier un membre')]
-    #[Assert\Uuid(message: 'Identifiant de membre invalide')]
+    #[Assert\NotBlank(message: 'band_space.finance.split.member_required')]
+    #[Assert\Uuid(message: 'band_space.finance.member.invalid_identifier')]
     public string $memberId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un montant')]
-    #[Assert\Positive(message: 'Le montant doit être positif')]
+    #[Assert\NotBlank(message: 'band_space.finance.amount.required')]
+    #[Assert\Positive(message: 'band_space.finance.amount.positive')]
     #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public int $amount;
 }

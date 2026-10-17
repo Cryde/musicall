@@ -8,12 +8,12 @@ use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 readonly class TaskBulkDeleteProcedure
 {
@@ -38,7 +38,11 @@ readonly class TaskBulkDeleteProcedure
         $foundIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);
         $missing = array_diff($taskIds, $foundIds);
         if (count($missing) > 0) {
-            throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missing)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.task.not_found_in_space',
+                ['id' => (string) reset($missing)],
+            );
         }
 
         if ($membership->role !== Role::Admin) {
@@ -81,9 +85,10 @@ readonly class TaskBulkDeleteProcedure
             return;
         }
 
-        throw new AccessDeniedHttpException(sprintf(
-            'Seul le créateur ou un administrateur peut supprimer ces tâches : %s',
-            implode(', ', array_map(static fn(Task $task): string => $task->title, $foreign)),
-        ));
+        throw new TranslatableHttpException(
+            Response::HTTP_FORBIDDEN,
+            'band_space.task.bulk_delete_not_allowed',
+            ['titles' => implode(', ', array_map(static fn(Task $task): string => $task->title, $foreign))],
+        );
     }
 }

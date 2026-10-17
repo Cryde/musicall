@@ -20,8 +20,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UsernameChangeThrottle]
 class ChangeUsername
 {
-    #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
-    #[Assert\Regex(pattern: '/^[a-zA-Z0-9\._]+$/', message: 'Nom d\'utilisateur invalide : seuls les lettres, chiffres, points et underscores sont autorisés.')]
-    #[Assert\Length(min: 3, max: 40, minMessage: 'Le nom d\'utilisateur doit au moins contenir 3 caractères', maxMessage: 'Le nom d\'utilisateur doit contenir maximum 40 caractères')]
+    #[Assert\NotBlank(message: 'user.username.required')]
+    #[Assert\Regex(pattern: '/^[a-zA-Z0-9\._]+$/', message: 'user.username.invalid_characters')]
+    #[Assert\Length(min: 3, max: 40, minMessage: 'user.username.too_short', maxMessage: 'user.username.too_long')]
     public string $newUsername;
 }

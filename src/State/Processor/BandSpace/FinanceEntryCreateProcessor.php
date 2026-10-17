@@ -50,7 +50,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
-            throw new NotFoundHttpException('Catégorie introuvable');
+            throw new NotFoundHttpException('band_space.finance.category.not_found');
         }
 
         $entry = new FinanceEntry();
@@ -70,7 +70,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
         } elseif ($data->memberId !== null) {
             $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
             if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-                throw new NotFoundHttpException('Membre introuvable');
+                throw new NotFoundHttpException('band_space.member.not_found');
             }
             $entry->member = $member;
         }

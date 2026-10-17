@@ -41,12 +41,12 @@ readonly class ChangeUsernameProcessor implements ProcessorInterface
         $newUsername = $data->newUsername;
 
         if ($oldUsername === $newUsername) {
-            throw new UnprocessableEntityHttpException('Le nouveau nom d\'utilisateur doit être différent de l\'actuel.');
+            throw new UnprocessableEntityHttpException('user.change_username.same_as_current');
         }
 
         $existingUser = $this->userRepository->findOneBy(['username' => $newUsername]);
         if ($existingUser !== null) {
-            throw new UnprocessableEntityHttpException('Ce nom d\'utilisateur est déjà pris.');
+            throw new UnprocessableEntityHttpException('user.change_username.already_taken');
         }
 
         $changedAt = new \DateTimeImmutable();

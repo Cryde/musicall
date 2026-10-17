@@ -60,7 +60,7 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['setlistId'], $bandSpace);
         if (!$setlist instanceof Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $this->setlistWriteGuard->assertWritable($setlist);
@@ -69,7 +69,7 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         if ($data->type === SetlistItemType::Song) {
             $song = $this->songRepository->findOneByIdAndBandSpace((string) $data->songId, $bandSpace);
             if (!$song instanceof Song) {
-                throw new UnprocessableEntityHttpException('La chanson référencée n\'appartient pas à ce Band Space');
+                throw new UnprocessableEntityHttpException('band_space.setlist.item.song_not_in_space');
             }
 
             // A song retired from the repertoire cannot start a new life as a fresh item. The
@@ -82,7 +82,7 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         // Type is non-null by Assert\NotNull on SetlistItemCreate; narrow for PHPStan.
         $type = $data->type;
         if ($type === null) {
-            throw new UnprocessableEntityHttpException('Le type est requis');
+            throw new UnprocessableEntityHttpException('band_space.setlist.item.type_required');
         }
 
         $item = new SetlistItem();

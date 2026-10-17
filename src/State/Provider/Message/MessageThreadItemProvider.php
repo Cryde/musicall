@@ -35,7 +35,7 @@ readonly class MessageThreadItemProvider implements ProviderInterface
         // NotDeletedThreadRecipientValidator reads (#986).
         $entity = $this->messageThreadRepository->findOneByIdWithParticipants((string) $uriVariables['id']);
         if (!$entity instanceof MessageThread) {
-            throw new NotFoundHttpException('Thread not found.');
+            throw new NotFoundHttpException('message.thread.not_found');
         }
 
         // Participation check: throw 404 (not 403) for non-participants so authenticated
@@ -43,7 +43,7 @@ readonly class MessageThreadItemProvider implements ProviderInterface
         // (Get operation security / processor auth) handle them.
         $user = $this->security->getUser();
         if ($user instanceof User && !$this->threadAccess->isOneOfParticipant($entity, $user)) {
-            throw new NotFoundHttpException('Thread not found.');
+            throw new NotFoundHttpException('message.thread.not_found');
         }
 
         return $this->messageThreadBuilder->buildItem($entity);

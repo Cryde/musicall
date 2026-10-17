@@ -25,7 +25,7 @@ class TechRiderItemContent extends Constraint
      * an accented French item spends closer to two bytes a letter and a character count
      * would promise roughly twice the room actually available.
      */
-    public string $tooLargeMessage = 'Le contenu de l\'élément est trop volumineux (limite : {{ limit }} Ko)';
-    public string $tooDeepMessage = 'Le contenu de l\'élément est trop imbriqué';
-    public string $invalidMessage = 'Le contenu de l\'élément est invalide';
+    public string $tooLargeMessage = 'band_space.tech_rider.item.content_too_large';
+    public string $tooDeepMessage = 'band_space.tech_rider.item.content_too_deep';
+    public string $invalidMessage = 'band_space.tech_rider.item.content_invalid';
 }

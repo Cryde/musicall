@@ -47,7 +47,7 @@ readonly class FinanceEntryItemProvider implements ProviderInterface
         // so the read rule is applied here rather than in the query. A 404 rather than a 403 because a
         // 403 would confirm the entry exists, which is itself part of what is private about it.
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry || !$this->isVisibleTo($entry, $viewer)) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         $splitWarning = false;

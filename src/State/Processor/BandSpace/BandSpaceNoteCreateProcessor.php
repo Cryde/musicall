@@ -47,7 +47,7 @@ readonly class BandSpaceNoteCreateProcessor implements ProcessorInterface
         if ($data->parentId !== null) {
             $parent = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->parentId, $bandSpace);
             if (!$parent instanceof \App\Entity\BandSpace\BandSpaceNote) {
-                throw new NotFoundHttpException('Parent note not found');
+                throw new NotFoundHttpException('band_space.note.parent_not_found');
             }
         }
 

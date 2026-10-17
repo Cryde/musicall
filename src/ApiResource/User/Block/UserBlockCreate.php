@@ -6,7 +6,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class UserBlockCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez préciser l\'utilisateur à bloquer')]
-    #[Assert\Length(max: 36, maxMessage: 'Identifiant invalide')]
+    #[Assert\NotBlank(message: 'user.block.user_required')]
+    #[Assert\Length(max: 36, maxMessage: 'common.invalid_identifier')]
     public string $userId = '';
 }

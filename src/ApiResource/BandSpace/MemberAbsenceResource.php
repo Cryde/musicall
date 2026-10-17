@@ -103,16 +103,16 @@ class MemberAbsenceResource
      * string also carries no offset, so nothing can move the day, which is what the processor used
      * to have to undo by hand.
      */
-    #[Assert\NotBlank(message: 'Veuillez spécifier une date de début')]
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\NotBlank(message: 'band_space.absence.start_date_required')]
+    #[Assert\Date(message: 'band_space.absence.date_invalid')]
     public string $startDate;
 
     /** Inclusive: the member is away for the whole of this day too. Ordering is ValidAbsenceRange's. */
-    #[Assert\NotBlank(message: 'Veuillez spécifier une date de fin')]
-    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
+    #[Assert\NotBlank(message: 'band_space.absence.end_date_required')]
+    #[Assert\Date(message: 'band_space.absence.date_invalid')]
     public string $endDate;
 
-    #[Assert\Length(max: 120, maxMessage: 'Le motif ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 120, maxMessage: 'band_space.absence.reason_too_long')]
     public ?string $reason = null;
 
     /**

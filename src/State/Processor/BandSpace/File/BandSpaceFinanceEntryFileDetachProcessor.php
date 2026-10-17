@@ -51,21 +51,21 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.update_not_owner');
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'finance', (string) $entry->id);
         if (!$attachment instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
-            throw new NotFoundHttpException("Le fichier n'est pas attaché à cette entrée");
+            throw new NotFoundHttpException('band_space.file.not_attached_to_entry');
         }
 
         $shouldArchive = $this->requestStack->getCurrentRequest()?->query->getBoolean('archive') ?? false;

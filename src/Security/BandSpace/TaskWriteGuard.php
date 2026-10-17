@@ -23,12 +23,12 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 readonly class TaskWriteGuard
 {
-    private const string ARCHIVED_MESSAGE = 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier';
+    private const string ARCHIVED_MESSAGE_KEY = 'band_space.task.archived_read_only';
 
     public function assertWritable(Task $task): void
     {
         if ($task->archiveDatetime instanceof DateTimeImmutable) {
-            throw new UnprocessableEntityHttpException(self::ARCHIVED_MESSAGE);
+            throw new UnprocessableEntityHttpException(self::ARCHIVED_MESSAGE_KEY);
         }
     }
 

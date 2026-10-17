@@ -20,13 +20,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class BandSpaceCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier un nom', normalizer: 'trim')]
+    #[Assert\NotBlank(message: 'common.name.required', normalizer: 'trim')]
     #[Assert\Length(
         min: 3,
         max: 255,
         normalizer: 'trim',
-        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
+        minMessage: 'band_space.name_too_short',
+        maxMessage: 'common.name.too_long'
     )]
     public string $name;
 }

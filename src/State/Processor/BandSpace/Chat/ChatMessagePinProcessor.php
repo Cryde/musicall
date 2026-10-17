@@ -9,13 +9,14 @@ use App\Entity\Message\Message;
 use App\Entity\User;
 use App\Enum\Message\MessageChange;
 use App\Event\BandSpaceChatMessageChangedEvent;
+use App\Exception\TranslatableHttpException;
 use App\Repository\Message\MessageRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\ChatMessageBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -56,7 +57,7 @@ readonly class ChatMessagePinProcessor implements ProcessorInterface
         // A tombstone takes no pin, the same 404 the delete and edit endpoints answer with: there is
         // nothing left to keep at the top, and the bar would carry « Message supprimé » (#967).
         if (!$message instanceof Message || $message->isDeleted()) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         // Already pinned is a no-op rather than a conflict: two members reaching for the same message
@@ -81,10 +82,11 @@ readonly class ChatMessagePinProcessor implements ProcessorInterface
         // eleven, which costs one extra line in a bar the members control anyway, and locking the
         // whole channel on every pin to prevent it would be the more expensive mistake.
         if ($this->messageRepository->countPinnedForThread($message->thread) >= self::MAX_PINNED_MESSAGES) {
-            throw new ConflictHttpException(sprintf(
-                'Cette conversation a déjà %d messages épinglés. Détachez-en un avant d\'en épingler un autre.',
-                self::MAX_PINNED_MESSAGES,
-            ));
+            throw new TranslatableHttpException(
+                Response::HTTP_CONFLICT,
+                'band_space.chat.pin_limit_reached',
+                ['max' => (string) self::MAX_PINNED_MESSAGES],
+            );
         }
 
         $message->pinnedDatetime = new \DateTimeImmutable();

@@ -24,13 +24,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[CategoryMaxDepth]
 class FinanceCategoryCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier un nom')]
+    #[Assert\NotBlank(message: 'common.name.required')]
     #[Assert\Length(
         max: 255,
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'common.name.too_long'
     )]
     public string $name;
 
-    #[Assert\Uuid(message: 'Identifiant de catégorie parent invalide')]
+    #[Assert\Uuid(message: 'band_space.finance.category.parent_invalid_identifier')]
     public ?string $parentId = null;
 }

@@ -7,9 +7,9 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class FinanceAmountRange extends Constraint
 {
-    public string $message = 'Le montant minimum doit être inférieur ou égal au montant maximum';
-    public string $exclusiveMessage = 'Vous ne pouvez pas définir un montant exact et une fourchette en même temps';
-    public string $incompleteMessage = 'Une fourchette doit avoir un montant minimum et un montant maximum';
+    public string $message = 'band_space.finance.amount.min_above_max';
+    public string $exclusiveMessage = 'band_space.finance.amount.exact_and_range';
+    public string $incompleteMessage = 'band_space.finance.amount.range_incomplete';
 
     public function getTargets(): string
     {

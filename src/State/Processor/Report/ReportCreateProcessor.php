@@ -66,7 +66,7 @@ readonly class ReportCreateProcessor implements ProcessorInterface
         $loader = $this->loaders[$targetType->value] ?? throw new \LogicException(sprintf('No report target loader for "%s"', $targetType->value));
         $target = $loader->load($targetId, $reporter);
         if (!$target instanceof ReportTarget) {
-            throw new NotFoundHttpException('Contenu introuvable');
+            throw new NotFoundHttpException('report.target_not_found');
         }
 
         // Reporting oneself, or reporting again while the first is pending, changes nothing.

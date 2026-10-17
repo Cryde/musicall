@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class NotSelfRecipient extends Constraint
 {
-    public string $message = 'Vous ne pouvez pas vous envoyer un message à vous-même.';
+    public string $message = 'message.recipient.self';
 
     public function __construct(?string $message = null, ?array $groups = null, mixed $payload = null)
     {

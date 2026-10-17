@@ -61,12 +61,12 @@ class BandSpace
      * Same rules as BandSpaceCreate, so a rename cannot produce a name creation would have refused.
      * The trim normalizer makes both constraints judge the value the processor actually stores.
      */
-    #[Assert\NotBlank(message: 'Veuillez spécifier un nom', normalizer: 'trim')]
+    #[Assert\NotBlank(message: 'common.name.required', normalizer: 'trim')]
     #[Assert\Length(
         min: 3,
         max: 255,
-        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères',
+        minMessage: 'band_space.name_too_short',
+        maxMessage: 'common.name.too_long',
         normalizer: 'trim'
     )]
     public string $name;

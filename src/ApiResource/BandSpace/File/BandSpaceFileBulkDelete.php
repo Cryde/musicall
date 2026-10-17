@@ -31,8 +31,8 @@ class BandSpaceFileBulkDelete
     #[Assert\Count(
         min: 1,
         max: 2000,
-        minMessage: 'Au moins un fichier doit être sélectionné',
-        maxMessage: 'Au maximum {{ limit }} fichiers peuvent être supprimés en une fois',
+        minMessage: 'band_space.file.selection_empty',
+        maxMessage: 'band_space.file.bulk_delete_too_many',
     )]
     #[Assert\All([new Assert\NotBlank()])]
     public array $fileIds = [];

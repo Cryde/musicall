@@ -38,7 +38,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug'], 'status' => Publication::STATUS_ONLINE]);
         if (!$publication instanceof \App\Entity\Publication) {
-            throw new PublicationNotFoundException('Publication inexistante');
+            throw new PublicationNotFoundException('publication.not_found');
         }
         /** @var Request $request */
         $request = $this->requestStack->getCurrentRequest();

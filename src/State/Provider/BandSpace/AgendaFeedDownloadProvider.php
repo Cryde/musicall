@@ -70,7 +70,7 @@ readonly class AgendaFeedDownloadProvider implements ProviderInterface
         if (!$feedToken instanceof AgendaFeedToken) {
             $this->consume($this->feedMissLimiter, $request?->getClientIp() ?? 'unknown');
 
-            throw new NotFoundHttpException('Flux introuvable');
+            throw new NotFoundHttpException('band_space.agenda.feed.not_found');
         }
 
         $this->consume($this->feedAccessLimiter, $feedToken->tokenHash);
@@ -81,7 +81,7 @@ readonly class AgendaFeedDownloadProvider implements ProviderInterface
         // line somebody thrown out of the band would keep reading its dates indefinitely. The leave
         // and kick processors drop the token too; this is the check that does not depend on them.
         if ($membership->status !== MembershipStatus::Active) {
-            throw new NotFoundHttpException('Flux introuvable');
+            throw new NotFoundHttpException('band_space.agenda.feed.not_found');
         }
 
         // Snapped to midnight rather than computed to the second, so two polls on the same day
@@ -157,7 +157,7 @@ readonly class AgendaFeedDownloadProvider implements ProviderInterface
 
         throw new TooManyRequestsHttpException(
             max(1, $limit->getRetryAfter()->getTimestamp() - time()),
-            'Trop de requêtes sur ce flux',
+            'band_space.agenda.feed.too_many_requests',
         );
     }
 }

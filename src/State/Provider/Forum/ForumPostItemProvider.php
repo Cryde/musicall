@@ -38,7 +38,7 @@ readonly class ForumPostItemProvider implements ProviderInterface
     {
         $forumPost = $this->forumPostRepository->find($uriVariables['id']);
         if (!$forumPost instanceof ForumPost) {
-            throw new ForumPostNotFoundException('Message de forum inexistant');
+            throw new ForumPostNotFoundException('forum.post.not_found');
         }
 
         $userVote = $this->resolveUserVote($forumPost->voteCache);

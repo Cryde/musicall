@@ -33,7 +33,7 @@ readonly class CommentItemProvider implements ProviderInterface
     {
         $comment = $this->commentRepository->find($uriVariables['id']);
         if (!$comment instanceof \App\Entity\Comment\Comment) {
-            throw new NotFoundHttpException('Commentaire introuvable');
+            throw new NotFoundHttpException('comment.not_found');
         }
 
         $userVote = null;

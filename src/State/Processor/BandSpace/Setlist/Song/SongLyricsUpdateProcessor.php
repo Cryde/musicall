@@ -50,7 +50,7 @@ readonly class SongLyricsUpdateProcessor implements ProcessorInterface
 
         $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$song instanceof Song) {
-            throw new NotFoundHttpException('Chanson introuvable');
+            throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         $this->songWriteGuard->assertWritable($song);

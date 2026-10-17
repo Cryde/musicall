@@ -99,8 +99,8 @@ class TechRiderItemResource
     #[Groups([self::READ])]
     public bool $isEmpty = false;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
-    #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.title.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.title.too_long')]
     #[Groups([self::READ])]
     public string $title;
 
@@ -148,7 +148,7 @@ class TechRiderItemResource
     #[Groups([self::READ])]
     public ?array $contacts = null;
 
-    #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
+    #[Assert\PositiveOrZero(message: 'common.position.positive_or_zero')]
     #[Groups([self::READ])]
     public int $position = 0;
 

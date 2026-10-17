@@ -45,7 +45,7 @@ readonly class BandSpaceFileTagCreateProcessor implements ProcessorInterface
 
         $name = trim($data->name);
         if ($this->tagRepository->nameExists($bandSpace, $name)) {
-            throw new UnprocessableEntityHttpException('Un tag avec ce nom existe déjà dans ce Band Space');
+            throw new UnprocessableEntityHttpException('band_space.tag.already_exists');
         }
 
         $tag = new BandSpaceFileTag();

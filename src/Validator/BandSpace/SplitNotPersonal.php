@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class SplitNotPersonal extends Constraint
 {
-    public string $message = 'La répartition n\'est pas disponible pour les entrées personnelles';
+    public string $message = 'band_space.finance.split.personal_entry';
 
     public function getTargets(): string
     {

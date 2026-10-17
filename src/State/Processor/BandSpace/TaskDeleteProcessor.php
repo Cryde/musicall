@@ -46,12 +46,12 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
 
         $task = $this->taskRepository->findOneByIdAndBandSpace($data->id, $membership->bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $isCreator = $task->createdBy->id === $user->id;
         if (!$isCreator && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer cette tâche');
+            throw new AccessDeniedHttpException('band_space.task.delete_not_allowed');
         }
 
         $this->fileSourceDetacher->detachDeletedSources(

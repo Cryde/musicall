@@ -22,17 +22,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class SongCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
-    #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'common.title.required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.title.too_long')]
     public string $title;
 
-    #[Assert\Range(min: 1, max: 400, notInRangeMessage: 'Le tempo doit être entre {{ min }} et {{ max }} BPM')]
+    #[Assert\Range(min: 1, max: 400, notInRangeMessage: 'band_space.song.tempo_out_of_range')]
     public ?int $tempo = null;
 
-    #[Assert\Length(max: 16, maxMessage: 'La tonalité ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 16, maxMessage: 'band_space.song.key_too_long')]
     public ?string $tonality = null;
 
-    #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} secondes')]
+    #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'band_space.song.duration_out_of_range')]
     public ?int $referenceDuration = null;
 
     public ?string $notes = null;

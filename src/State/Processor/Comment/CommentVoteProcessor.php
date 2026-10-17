@@ -38,7 +38,7 @@ readonly class CommentVoteProcessor implements ProcessorInterface
     {
         $comment = $this->commentRepository->find($uriVariables['id']);
         if (!$comment instanceof \App\Entity\Comment\Comment) {
-            throw new CommentNotFoundException('Commentaire inexistant');
+            throw new CommentNotFoundException('comment.vote.not_found');
         }
         /** @var Request $request */
         $request = $this->requestStack->getCurrentRequest();

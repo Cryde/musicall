@@ -46,12 +46,12 @@ readonly class BandSpaceMemberChecker
     {
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships($bandSpaceId);
         if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
-            throw new NotFoundHttpException('Band Space introuvable');
+            throw new NotFoundHttpException('band_space.not_found');
         }
 
         $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $user);
         if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new AccessDeniedHttpException('Vous n\'êtes pas membre de ce Band Space');
+            throw new AccessDeniedHttpException('band_space.not_member');
         }
 
         return [$bandSpace, $membership];

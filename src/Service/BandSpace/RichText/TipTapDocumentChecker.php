@@ -20,14 +20,15 @@ use App\Enum\BandSpace\TechRiderColour;
  */
 readonly class TipTapDocumentChecker
 {
-    private const string NOT_A_DOCUMENT = 'Le contenu n\'est pas un document valide';
-    private const string NODE_WITHOUT_TYPE = 'Le contenu contient un élément sans type';
-    private const string UNKNOWN_NODE = 'Le contenu contient un élément non pris en charge (« %s »)';
-    private const string UNKNOWN_MARK = 'Le contenu contient une mise en forme non prise en charge (« %s »)';
-    private const string HEADING_LEVEL = 'Les titres doivent être de niveau %s';
-    private const string CHECKBOX = 'Le contenu contient une case à cocher invalide';
-    private const string ALIGNMENT = 'Le contenu contient un alignement non pris en charge';
-    private const string COLOUR = 'Le contenu contient une couleur hors de la palette';
+    private const string NOT_A_DOCUMENT = 'band_space.rich_text.not_a_document';
+    private const string NODE_WITHOUT_TYPE = 'band_space.rich_text.node_without_type';
+    private const string UNKNOWN_NODE = 'band_space.rich_text.unknown_node';
+    private const string UNKNOWN_MARK = 'band_space.rich_text.unknown_mark';
+    private const string HEADING_LEVEL = 'band_space.rich_text.heading_level';
+    private const string HEADING_LEVELS = 'band_space.rich_text.heading_levels';
+    private const string CHECKBOX = 'band_space.rich_text.checkbox_invalid';
+    private const string ALIGNMENT = 'band_space.rich_text.alignment_unsupported';
+    private const string COLOUR = 'band_space.rich_text.colour_off_palette';
 
     /** Long enough to recognise a node type in a message, short enough not to echo a payload. */
     private const int QUOTED_TYPE_LENGTH = 40;
@@ -37,10 +38,10 @@ readonly class TipTapDocumentChecker
      *
      * @param array<array-key, mixed> $document
      */
-    public function findProblem(array $document, RichTextSurface $surface): ?string
+    public function findProblem(array $document, RichTextSurface $surface): ?TipTapDocumentProblem
     {
         if (($document['type'] ?? null) !== 'doc') {
-            return self::NOT_A_DOCUMENT;
+            return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
         }
 
         $allowedNodes = $surface->nodes();
@@ -51,12 +52,12 @@ readonly class TipTapDocumentChecker
         while ($pendingLists !== []) {
             $nodes = array_pop($pendingLists);
             if (!is_array($nodes) || !array_is_list($nodes)) {
-                return self::NOT_A_DOCUMENT;
+                return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
             }
 
             foreach ($nodes as $node) {
                 $problem = $this->findNodeProblem($node, $allowedNodes, $allowedMarks, $headingLevels);
-                if ($problem !== null) {
+                if ($problem instanceof TipTapDocumentProblem) {
                     return $problem;
                 }
                 if (isset($node['content'])) {
@@ -73,50 +74,52 @@ readonly class TipTapDocumentChecker
      * @param list<string> $allowedMarks
      * @param list<int>    $headingLevels
      */
-    private function findNodeProblem(mixed $node, array $allowedNodes, array $allowedMarks, array $headingLevels): ?string
+    private function findNodeProblem(mixed $node, array $allowedNodes, array $allowedMarks, array $headingLevels): ?TipTapDocumentProblem
     {
         if (!is_array($node)) {
-            return self::NOT_A_DOCUMENT;
+            return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
         }
 
         $type = $node['type'] ?? null;
         if ($type === null) {
-            return self::NODE_WITHOUT_TYPE;
+            return new TipTapDocumentProblem(self::NODE_WITHOUT_TYPE);
         }
         if (!is_string($type)) {
-            return self::NOT_A_DOCUMENT;
+            return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
         }
         if (!in_array($type, $allowedNodes, true)) {
-            return sprintf(self::UNKNOWN_NODE, mb_substr($type, 0, self::QUOTED_TYPE_LENGTH));
+            return new TipTapDocumentProblem(self::UNKNOWN_NODE, ['{{ type }}' => mb_substr($type, 0, self::QUOTED_TYPE_LENGTH)]);
         }
 
         $attrs = $node['attrs'] ?? [];
         if (!is_array($attrs)) {
-            return self::NOT_A_DOCUMENT;
+            return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
         }
 
         $problem = match (true) {
             // ProseMirror refuses an empty text node, and TipTap then loads the whole note as empty.
-            $type === 'text' && (!is_string($node['text'] ?? null) || $node['text'] === '') => self::NOT_A_DOCUMENT,
-            $type === 'heading' && !in_array($attrs['level'] ?? null, $headingLevels, true) => $this->headingLevelMessage($headingLevels),
+            $type === 'text' && (!is_string($node['text'] ?? null) || $node['text'] === '') => new TipTapDocumentProblem(self::NOT_A_DOCUMENT),
+            $type === 'heading' && !in_array($attrs['level'] ?? null, $headingLevels, true) => $this->headingLevelProblem($headingLevels),
             // TipTap writes `checked` on every item; a missing one defaults to unticked.
-            $type === 'taskItem' && array_key_exists('checked', $attrs) && !is_bool($attrs['checked']) => self::CHECKBOX,
+            $type === 'taskItem' && array_key_exists('checked', $attrs) && !is_bool($attrs['checked']) => new TipTapDocumentProblem(self::CHECKBOX),
             default => $this->findAlignmentProblem($type, $attrs['textAlign'] ?? null),
         };
 
         return $problem ?? $this->findMarksProblem($node['marks'] ?? [], $allowedMarks);
     }
 
-    /** @param list<int> $levels « 1, 2 ou 3 » */
-    private function headingLevelMessage(array $levels): string
+    /** @param list<int> $levels « 1, 2 ou 3 », where the « ou » belongs to the message */
+    private function headingLevelProblem(array $levels): TipTapDocumentProblem
     {
-        $last = array_pop($levels);
+        $last = (string) array_pop($levels);
 
-        return sprintf(self::HEADING_LEVEL, $levels === [] ? (string) $last : implode(', ', $levels) . ' ou ' . $last);
+        return $levels === []
+            ? new TipTapDocumentProblem(self::HEADING_LEVEL, ['{{ level }}' => $last])
+            : new TipTapDocumentProblem(self::HEADING_LEVELS, ['{{ levels }}' => implode(', ', $levels), '{{ last }}' => $last]);
     }
 
     /** The editor writes `textAlign: null` on every paragraph and heading it has not aligned. */
-    private function findAlignmentProblem(string $type, mixed $alignment): ?string
+    private function findAlignmentProblem(string $type, mixed $alignment): ?TipTapDocumentProblem
     {
         if ($alignment === null) {
             return null;
@@ -124,28 +127,28 @@ readonly class TipTapDocumentChecker
 
         return in_array($type, TipTapVocabulary::ALIGNABLE_NODES, true) && in_array($alignment, TipTapVocabulary::TEXT_ALIGNMENTS, true)
             ? null
-            : self::ALIGNMENT;
+            : new TipTapDocumentProblem(self::ALIGNMENT);
     }
 
     /** @param list<string> $allowedMarks */
-    private function findMarksProblem(mixed $marks, array $allowedMarks): ?string
+    private function findMarksProblem(mixed $marks, array $allowedMarks): ?TipTapDocumentProblem
     {
         if (!is_array($marks) || !array_is_list($marks)) {
-            return self::NOT_A_DOCUMENT;
+            return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
         }
 
         foreach ($marks as $mark) {
             $type = is_array($mark) ? ($mark['type'] ?? null) : null;
             if (!is_string($type)) {
-                return self::NOT_A_DOCUMENT;
+                return new TipTapDocumentProblem(self::NOT_A_DOCUMENT);
             }
             if (!in_array($type, $allowedMarks, true)) {
-                return sprintf(self::UNKNOWN_MARK, mb_substr($type, 0, self::QUOTED_TYPE_LENGTH));
+                return new TipTapDocumentProblem(self::UNKNOWN_MARK, ['{{ type }}' => mb_substr($type, 0, self::QUOTED_TYPE_LENGTH)]);
             }
 
             $attrs = is_array($mark['attrs'] ?? null) ? $mark['attrs'] : [];
             if ($type === TipTapVocabulary::COLOUR_MARK && !$this->isPaletteColour($attrs['color'] ?? null)) {
-                return self::COLOUR;
+                return new TipTapDocumentProblem(self::COLOUR);
             }
         }
 

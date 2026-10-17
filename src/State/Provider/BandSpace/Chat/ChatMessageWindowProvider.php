@@ -46,7 +46,7 @@ readonly class ChatMessageWindowProvider implements ProviderInterface
 
         $channel = $this->messageThreadRepository->findChannelForBandSpace($bandSpace);
         if (!$channel instanceof MessageThread) {
-            throw new NotFoundHttpException('Ce Band Space n\'a pas de conversation');
+            throw new NotFoundHttpException('band_space.chat.no_conversation');
         }
 
         // Already a uuid when present: the operation's Assert\Uuid refused anything else with a 422.
@@ -56,13 +56,13 @@ readonly class ChatMessageWindowProvider implements ProviderInterface
             static fn (mixed $value): bool => is_string($value) && $value !== '',
         );
         if (count($given) !== 1) {
-            throw new BadRequestHttpException('Indiquez un seul message de référence : around, before ou after');
+            throw new BadRequestHttpException('band_space.chat.window_single_reference');
         }
         $direction = (string) array_key_first($given);
 
         $anchor = $this->messageRepository->findOneInThread((string) $given[$direction], $channel);
         if (!$anchor instanceof Message) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         return match ($direction) {

@@ -33,11 +33,11 @@ readonly class UserSocialLinkDeleteProvider implements ProviderInterface
         $link = $this->userSocialLinkRepository->find($uriVariables['id']);
 
         if (!$link instanceof \App\Entity\User\UserSocialLink) {
-            throw new NotFoundHttpException('Lien social non trouvé');
+            throw new NotFoundHttpException('profile.social_link.not_found');
         }
 
         if ($link->profile->id !== $profile->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas supprimer ce lien');
+            throw new AccessDeniedHttpException('profile.social_link.delete_forbidden');
         }
 
         return $link;

@@ -44,12 +44,12 @@ readonly class TechRiderItemProvider implements ProviderInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['riderId'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         $item = $this->itemRepository->findOneByIdAndRider((string) $uriVariables['id'], $techRider);
         if (!$item instanceof TechRiderItem) {
-            throw new NotFoundHttpException('Élément introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.item.not_found');
         }
 
         return $this->itemBuilder->buildItem($item);

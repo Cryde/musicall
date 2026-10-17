@@ -68,11 +68,11 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         if ($data->sourceId === null) {
-            throw new UnprocessableEntityHttpException("L'identifiant de la source est requis");
+            throw new UnprocessableEntityHttpException('band_space.file.source_id_required');
         }
 
         $sourceLabel = match ($data->sourceType) {
@@ -81,7 +81,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             'note' => $this->resolveNote($data->sourceId, $bandSpace),
             'song' => $this->resolveSong($data->sourceId, $bandSpace),
             'setlist' => $this->resolveSetlist($data->sourceId, $bandSpace),
-            default => throw new UnprocessableEntityHttpException('Type de source invalide'),
+            default => throw new UnprocessableEntityHttpException('band_space.file.source_type_invalid'),
         };
 
         $existing = $this->attachmentRepository->findOneByFileAndSource(
@@ -90,7 +90,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             (string) $data->sourceId,
         );
         if ($existing instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
-            throw new UnprocessableEntityHttpException('Ce fichier est déjà attaché à cette ressource.');
+            throw new UnprocessableEntityHttpException('band_space.file.already_attached');
         }
 
         $attachment = new BandSpaceFileAttachment();
@@ -124,7 +124,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $task = $this->taskRepository->findOneByIdAndBandSpace($taskId, $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
-            throw new NotFoundHttpException('Tâche introuvable');
+            throw new NotFoundHttpException('band_space.task.not_found');
         }
 
         $this->taskWriteGuard->assertWritable($task);
@@ -136,11 +136,11 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
-            throw new NotFoundHttpException('Entrée introuvable');
+            throw new NotFoundHttpException('band_space.finance.entry.not_found');
         }
 
         if ($entry->scope === FinanceEntryScope::Personal && $entry->member?->user->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez modifier que vos propres entrées personnelles');
+            throw new AccessDeniedHttpException('band_space.finance.entry.update_not_owner');
         }
 
         return $entry->labelVisibleToBand();
@@ -150,7 +150,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $note = $this->noteRepository->findOneByIdAndBandSpace($noteId, $bandSpace);
         if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
-            throw new NotFoundHttpException('Note introuvable');
+            throw new NotFoundHttpException('band_space.file.note_not_found');
         }
 
         return $note->title;
@@ -160,7 +160,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $song = $this->songRepository->findOneByIdAndBandSpace($songId, $bandSpace);
         if (!$song instanceof \App\Entity\BandSpace\Song) {
-            throw new NotFoundHttpException('Chanson introuvable');
+            throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         $this->songWriteGuard->assertWritable($song);
@@ -172,7 +172,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     {
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace($setlistId, $bandSpace);
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
-            throw new NotFoundHttpException('Setlist introuvable');
+            throw new NotFoundHttpException('band_space.setlist.not_found');
         }
 
         $this->setlistWriteGuard->assertWritable($setlist);

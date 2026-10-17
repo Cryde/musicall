@@ -59,11 +59,11 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         );
 
         if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         if ($membership->user->id === $user->id) {
-            throw new ConflictHttpException('Vous ne pouvez pas vous exclure vous-même. Utilisez la fonction "Quitter"');
+            throw new ConflictHttpException('band_space.member.cannot_kick_self');
         }
 
         // One transaction: deactivating the personal recurrences drops their planned entries through a

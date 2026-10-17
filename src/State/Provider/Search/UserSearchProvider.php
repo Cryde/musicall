@@ -25,7 +25,7 @@ readonly class UserSearchProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous devez être connecté pour accéder à ceci');
+            throw new AccessDeniedException('search.user.not_authenticated');
         }
         /** @var User $user */
         $user = $this->security->getUser();

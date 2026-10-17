@@ -65,12 +65,12 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[Groups([Publication::LIST])]
     public ?int $id = null;
 
-    #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
+    #[Assert\NotBlank(message: 'publication.title_required')]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([Publication::ITEM, Publication::LIST])]
     public string $title;
 
-    #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
+    #[Assert\NotBlank(message: 'publication.category_required')]
     #[ORM\ManyToOne(targetEntity: PublicationSubCategory::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Publication::ITEM, Publication::LIST])]
@@ -86,12 +86,12 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[Groups([Publication::ITEM, Publication::LIST])]
     public string $slug;
 
-    #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
+    #[Assert\NotBlank(message: 'publication.description_required', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([Publication::ITEM])]
     public ?string $shortDescription = null;
 
-    #[Assert\NotBlank(message: 'Il doit y avoir du contenu dans la publication', groups: ['publication'])]
+    #[Assert\NotBlank(message: 'publication.content_required', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([Publication::ITEM])]
     public ?string $content = null;
@@ -117,7 +117,7 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[ORM\OneToMany(targetEntity: PublicationImage::class, mappedBy: "publication")]
     public Collection $images;
 
-    #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]
+    #[Assert\NotNull(message: 'publication.cover_required', groups: ['publication'])]
     #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups([Publication::LIST])]
     public ?PublicationCover $cover = null;

@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskStatus;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -16,7 +17,7 @@ use App\Service\BandSpace\TaskColumnPositionsGuard;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 readonly class TaskMoveProcedure
 {
@@ -43,7 +44,11 @@ readonly class TaskMoveProcedure
     ): Task {
         $task = $this->taskRepository->findOneByIdAndBandSpace($taskId, $bandSpace);
         if (!$task instanceof Task) {
-            throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', $taskId));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.task.not_found_in_space',
+                ['id' => $taskId],
+            );
         }
 
         // Refused outright rather than per field: status, completedDatetime and position are the
@@ -58,7 +63,11 @@ readonly class TaskMoveProcedure
 
         $missingIds = array_diff($requestedIds, $foundIds);
         if (count($missingIds) > 0) {
-            throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missingIds)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.task.not_found_in_space',
+                ['id' => (string) reset($missingIds)],
+            );
         }
 
         if ($positions !== []) {

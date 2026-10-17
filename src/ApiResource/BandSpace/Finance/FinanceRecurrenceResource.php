@@ -84,25 +84,25 @@ class FinanceRecurrenceResource
     public string $categoryId;
     public string $categoryName;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
-    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'band_space.finance.label_required')]
+    #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public string $label;
 
     // The PATCH reads type, scope and interval straight back into an enum, so without a Choice an
     // unknown value reached ::from() and came out as a 500 instead of a violation. The dates carry no
     // Assert\Date because the provider hands them back in ATOM while the interface sends AAAA-MM-JJ;
     // RecurrenceEndDate parses both and reports an unparsable one itself.
-    #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]
+    #[Assert\Choice(choices: ['expense', 'income'], message: 'band_space.finance.type_invalid')]
     public string $type;
 
-    #[Assert\Positive(message: 'Le montant doit être positif')]
+    #[Assert\Positive(message: 'band_space.finance.amount.positive')]
     #[Assert\LessThanOrEqual(value: FinanceAmountLimit::MAX_CENTS, message: FinanceAmountLimit::MESSAGE)]
     public int $amount;
 
-    #[Assert\Choice(choices: ['band', 'personal'], message: 'Périmètre invalide')]
+    #[Assert\Choice(choices: ['band', 'personal'], message: 'band_space.finance.scope_invalid')]
     public string $scope;
 
-    #[Assert\Choice(choices: ['weekly', 'monthly', 'quarterly', 'yearly'], message: 'Intervalle de récurrence invalide')]
+    #[Assert\Choice(choices: ['weekly', 'monthly', 'quarterly', 'yearly'], message: 'band_space.finance.recurrence.interval_invalid')]
     public string $interval;
 
     public string $startDate;

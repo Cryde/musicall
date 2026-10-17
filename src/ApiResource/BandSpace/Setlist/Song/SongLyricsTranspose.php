@@ -10,9 +10,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class SongLyricsTranspose
 {
-    #[Assert\NotNull(message: 'Veuillez indiquer de combien de demi-tons transposer')]
-    #[Assert\Range(min: -11, max: 11, notInRangeMessage: 'La transposition doit être entre {{ min }} et {{ max }} demi-tons')]
-    #[Assert\NotEqualTo(value: 0, message: 'La transposition doit être d\'au moins un demi-ton')]
+    #[Assert\NotNull(message: 'band_space.song.transpose_required')]
+    #[Assert\Range(min: -11, max: 11, notInRangeMessage: 'band_space.song.transpose_out_of_range')]
+    #[Assert\NotEqualTo(value: 0, message: 'band_space.song.transpose_zero')]
     public ?int $semitones = null;
 
     /** Unconstrained on purpose: a missing one is SongWriteGuard's 428, as on PATCH lyrics. */

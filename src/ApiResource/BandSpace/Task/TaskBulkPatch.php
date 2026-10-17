@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class TaskBulkPatch
 {
     /** @var string[] */
-    #[Assert\Count(min: 1, minMessage: 'Au moins une tâche doit être sélectionnée')]
+    #[Assert\Count(min: 1, minMessage: 'band_space.task.selection_empty')]
     #[Assert\All([new Assert\NotBlank()])]
     public array $taskIds = [];
 

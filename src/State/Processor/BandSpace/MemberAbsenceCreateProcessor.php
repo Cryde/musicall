@@ -83,13 +83,13 @@ readonly class MemberAbsenceCreateProcessor implements ProcessorInterface
 
         $target = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($memberId, $bandSpace);
         if (!$target instanceof BandSpaceMembership) {
-            throw new NotFoundHttpException('Membre introuvable');
+            throw new NotFoundHttpException('band_space.member.not_found');
         }
 
         // A former member keeps the absences they recorded while they were here, as history, but
         // nobody records a new one for them.
         if ($target->status !== MembershipStatus::Active) {
-            throw new UnprocessableEntityHttpException('Ce membre ne fait plus partie du Band Space');
+            throw new UnprocessableEntityHttpException('band_space.absence.member_left');
         }
 
         return $target;

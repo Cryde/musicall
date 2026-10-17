@@ -28,21 +28,21 @@ class UserCourseDeleteProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('You must be logged in.');
+            throw new AccessDeniedException('publication.not_authenticated');
         }
 
         /** @var User $user */
         $user = $this->security->getUser();
         if (!($publication = $this->publicationRepository->find($uriVariables['id'])) instanceof \App\Entity\Publication) {
-            throw new NotFoundHttpException('Course not found');
+            throw new NotFoundHttpException('publication.user.course.not_found');
         }
 
         if ($publication->author->id !== $user->id) {
-            throw new AccessDeniedHttpException('You are not the owner of this course');
+            throw new AccessDeniedHttpException('publication.user.course.not_owner');
         }
 
         if ($publication->status !== Publication::STATUS_DRAFT) {
-            throw new AccessDeniedHttpException('You can only delete draft courses');
+            throw new AccessDeniedHttpException('publication.user.course.delete_not_draft');
         }
 
         return $this->builder->buildFromEntity($publication);

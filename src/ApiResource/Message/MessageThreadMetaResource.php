@@ -66,7 +66,7 @@ class MessageThreadMetaResource
      * field, decided before the processor runs. A default of `false` would be worse than either,
      * silently running the destructive half of the command.
      */
-    #[Assert\NotNull(message: 'Veuillez indiquer si le fil est lu')]
+    #[Assert\NotNull(message: 'message.thread.read_required')]
     #[Groups([MessageThreadMetaResource::PATCH])]
     public ?bool $isRead = null;
 

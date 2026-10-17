@@ -34,16 +34,16 @@ readonly class PublicProfileProvider implements ProviderInterface
     {
         $username = $uriVariables['username'];
         if (!($user = $this->userRepository->findOneBy(['username' => $username])) instanceof \App\Entity\User) {
-            throw new NotFoundHttpException('Profil non trouvé');
+            throw new NotFoundHttpException('profile.not_found');
         }
 
         if (!$user->isPubliclyVisible()) {
-            throw new NotFoundHttpException('Profil non trouvé');
+            throw new NotFoundHttpException('profile.not_found');
         }
 
         $profile = $user->profile;
         if (!$profile->isPublic) {
-            throw new NotFoundHttpException('Ce profil est privé');
+            throw new NotFoundHttpException('profile.private');
         }
 
         $this->trackView($user, $profile);

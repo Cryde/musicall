@@ -40,7 +40,7 @@ readonly class BandSpaceFileTagDeleteProcessor implements ProcessorInterface
 
         $tag = $this->tagRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$tag instanceof \App\Entity\BandSpace\BandSpaceFileTag) {
-            throw new NotFoundHttpException('Tag introuvable');
+            throw new NotFoundHttpException('band_space.tag.not_found');
         }
 
         $this->entityManager->remove($tag);

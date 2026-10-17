@@ -15,6 +15,7 @@ use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -30,9 +31,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -72,17 +73,21 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
 
         $upload = $data->uploadedFile;
         if ($upload === null) {
-            throw new BadRequestHttpException('Aucun fichier fourni');
+            throw new BadRequestHttpException('band_space.file.not_provided');
         }
 
         $mimeType = $upload->getMimeType() ?? 'application/octet-stream';
         if (!BandSpaceFileMimeAllowlist::isAllowed($mimeType)) {
-            throw new UnsupportedMediaTypeHttpException(sprintf('Type de fichier non autorisé : %s', $mimeType));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
+                'band_space.file.type_not_allowed',
+                ['type' => $mimeType],
+            );
         }
 
         $size = $upload->getSize();
         if ($size === false) {
-            throw new BadRequestHttpException('Taille de fichier invalide');
+            throw new BadRequestHttpException('band_space.file.size_invalid');
         }
 
         $this->quotaService->assertCanUpload($bandSpace, $size);
@@ -98,15 +103,19 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
         $attachedSourceId = null;
         if ($attachedSourceType !== null) {
             if (!in_array($attachedSourceType, BandSpaceFileSourceTypes::ALL, true)) {
-                throw new BadRequestHttpException(sprintf('Type de source attaché invalide : %s', $attachedSourceType));
+                throw new TranslatableHttpException(
+                    Response::HTTP_BAD_REQUEST,
+                    'band_space.file.attached_source_type_invalid',
+                    ['type' => $attachedSourceType],
+                );
             }
             $rawSourceId = $data->attachedSourceId;
             if ($rawSourceId === null || $rawSourceId === '') {
-                throw new BadRequestHttpException('attachedSourceId est requis quand attachedSourceType est défini');
+                throw new BadRequestHttpException('band_space.file.attached_source_id_required');
             }
             $violations = $this->validator->validate($rawSourceId, [new Assert\Uuid()]);
             if (count($violations) > 0) {
-                throw new BadRequestHttpException('attachedSourceId doit être un UUID valide');
+                throw new BadRequestHttpException('band_space.file.attached_source_id_invalid');
             }
             $attachedSourceId = $rawSourceId;
         }
@@ -178,7 +187,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
     {
         $folder = $this->folderRepository->find($folderId);
         if ($folder === null || $folder->bandSpace->id !== $bandSpace->id) {
-            throw new BadRequestHttpException('Dossier introuvable dans ce Band Space');
+            throw new BadRequestHttpException('band_space.folder.not_found_in_space');
         }
 
         return $folder;
@@ -193,7 +202,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
     {
         $tags = $this->tagRepository->findBy(['id' => $tagIds, 'bandSpace' => $bandSpace]);
         if (count($tags) !== count(array_unique($tagIds))) {
-            throw new BadRequestHttpException('Une ou plusieurs étiquettes sont invalides pour ce Band Space');
+            throw new BadRequestHttpException('band_space.tag.invalid_in_space');
         }
 
         return $tags;

@@ -13,6 +13,7 @@ use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceFolderActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
@@ -24,10 +25,9 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<BandSpaceFolderResource, void>
@@ -81,22 +81,26 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $membership->bandSpace);
         if (!$folder instanceof BandSpaceFolder) {
-            throw new NotFoundHttpException('Dossier introuvable');
+            throw new NotFoundHttpException('band_space.folder.not_found');
         }
 
         $strategy = $this->requestStack->getCurrentRequest()?->query->getString('strategy') ?: self::STRATEGY_MOVE_TO_ROOT;
 
         if (!in_array($strategy, [self::STRATEGY_MOVE_TO_ROOT, self::STRATEGY_CASCADE], true)) {
-            throw new BadRequestHttpException(sprintf('Stratégie de suppression invalide : %s', $strategy));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.folder.delete_strategy_invalid',
+                ['strategy' => $strategy],
+            );
         }
 
         if ($strategy === self::STRATEGY_CASCADE && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul un administrateur peut supprimer un dossier en cascade');
+            throw new AccessDeniedHttpException('band_space.folder.cascade_delete_admin_only');
         }
 
         $isOwner = $folder->createdBy->id === $user->id;
         if ($strategy === self::STRATEGY_MOVE_TO_ROOT && !$isOwner && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce dossier');
+            throw new AccessDeniedHttpException('band_space.folder.delete_forbidden');
         }
 
         // Everything the cascade is about to archive, read before any of it is touched: both guards
@@ -144,11 +148,11 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             return;
         }
 
-        throw new UnprocessableEntityHttpException(sprintf(
-            'Ce dossier contient %d fichiers, au-delà de la limite de %d par suppression. Supprimez ses sous-dossiers un par un, ou déplacez une partie des fichiers avant de réessayer.',
-            $fileCount,
-            self::MAX_CASCADE_FILES,
-        ));
+        throw new TranslatableHttpException(
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            'band_space.folder.delete_too_many_files',
+            ['count' => (string) $fileCount, 'max' => (string) self::MAX_CASCADE_FILES],
+        );
     }
 
     /**
@@ -176,12 +180,16 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         sort($sourceTypes);
         $sources = BandSpaceFileAttachmentLabels::describe($sourceTypes);
 
-        throw new UnprocessableEntityHttpException(count($sourceTypesByFile) === 1
-            ? sprintf("Ce dossier contient 1 fichier attaché à %s. Détachez-le d'abord depuis la ressource concernée.", $sources)
-            : sprintf(
-                "Ce dossier contient %d fichiers attachés à %s. Détachez-les d'abord depuis les ressources concernées.",
-                count($sourceTypesByFile),
-                $sources,
-            ));
+        throw count($sourceTypesByFile) === 1
+            ? new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.folder.delete_attached_one',
+                ['sources' => $sources],
+            )
+            : new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.folder.delete_attached_many',
+                ['count' => (string) count($sourceTypesByFile), 'sources' => $sources],
+            );
     }
 }

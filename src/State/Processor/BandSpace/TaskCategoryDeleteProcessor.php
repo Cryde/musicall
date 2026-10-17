@@ -43,7 +43,7 @@ readonly class TaskCategoryDeleteProcessor implements ProcessorInterface
 
         $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
-            throw new NotFoundHttpException('Catégorie introuvable');
+            throw new NotFoundHttpException('band_space.task.category.not_found');
         }
 
         $this->entityManager->remove($category);

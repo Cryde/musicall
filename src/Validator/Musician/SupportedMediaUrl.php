@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class SupportedMediaUrl extends Constraint
 {
-    public string $message = 'URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.';
+    public string $message = 'profile.media.url_not_supported';
 
     public function __construct(
         ?string $message = null,

@@ -46,11 +46,11 @@ readonly class SongRestoreProcessor implements ProcessorInterface
         // findOneByIdAndBandSpace does not filter archived songs, which is exactly what the trash needs.
         $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$song instanceof Song) {
-            throw new NotFoundHttpException('Chanson introuvable');
+            throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         if ($song->archiveDatetime === null) {
-            throw new ConflictHttpException('Cette chanson n\'est pas dans la corbeille');
+            throw new ConflictHttpException('band_space.song.not_in_trash');
         }
 
         $song->archiveDatetime = null;

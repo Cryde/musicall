@@ -49,7 +49,7 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
         );
 
         if (!$invitation || $invitation->status !== InvitationStatus::Pending) {
-            throw new NotFoundHttpException('Invitation introuvable');
+            throw new NotFoundHttpException('band_space.invitation.not_found');
         }
 
         $invitation->status = InvitationStatus::Revoked;

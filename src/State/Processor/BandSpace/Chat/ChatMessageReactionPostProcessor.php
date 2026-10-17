@@ -60,7 +60,7 @@ readonly class ChatMessageReactionPostProcessor implements ProcessorInterface
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$message instanceof Message) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         // from(), not tryFrom(): Assert\Choice on the input has already refused anything else with a

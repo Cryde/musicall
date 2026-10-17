@@ -40,7 +40,7 @@ readonly class BandSpaceRestoreProcessor implements ProcessorInterface
         [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
         if (!$bandSpace->deletionScheduledDatetime instanceof DateTimeImmutable) {
-            throw new ConflictHttpException('La suppression de cet espace n\'est pas programmée');
+            throw new ConflictHttpException('band_space.deletion_not_scheduled');
         }
 
         $bandSpace->deletionScheduledDatetime = null;

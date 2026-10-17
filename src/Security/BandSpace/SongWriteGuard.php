@@ -11,7 +11,7 @@ readonly class SongWriteGuard
     public function assertWritable(Song $song): void
     {
         if ($song->archiveDatetime !== null) {
-            throw new ConflictHttpException('Cette chanson est archivée, les modifications sont désactivées');
+            throw new ConflictHttpException('band_space.song.archived_read_only');
         }
     }
 
@@ -23,13 +23,13 @@ readonly class SongWriteGuard
     {
         if ($expectedLyricsVersion === null) {
             throw new PreconditionRequiredHttpException(
-                'Indiquez la version des paroles sur laquelle vous avez travaillé pour les enregistrer.'
+                'band_space.song.lyrics_version_required'
             );
         }
 
         if ($expectedLyricsVersion !== $song->lyricsVersion) {
             throw new ConflictHttpException(
-                'Ces paroles ont été modifiées par un autre membre depuis que vous les avez ouvertes. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.'
+                'band_space.song.lyrics_version_conflict'
             );
         }
     }

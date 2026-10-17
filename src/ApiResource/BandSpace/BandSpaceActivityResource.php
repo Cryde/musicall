@@ -83,7 +83,7 @@ class BandSpaceActivityResource
     private const string ATOM_PATTERN = '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})\z/';
 
     /** The wording Assert\DateTime uses, so which of the two rules fired is not a caller's problem. */
-    private const string ATOM_MESSAGE = 'Cette valeur n\'est pas une date/heure valide.';
+    private const string ATOM_MESSAGE = 'band_space.activity.datetime_invalid';
 
     #[ApiProperty(identifier: true)]
     public string $id;
