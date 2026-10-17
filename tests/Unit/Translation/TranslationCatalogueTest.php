@@ -58,12 +58,13 @@ class TranslationCatalogueTest extends TestCase
     private static ?array $sources = null;
 
     /**
-     * One key per line, sorted: several people add keys at once, and sorted single lines merge.
+     * One key per line, sorted: every area adds keys to these two files at once, and sorted single lines
+     * merge. A domain owned by one feature (push) may group its keys as it likes.
      */
-    #[DataProvider('catalogues')]
-    public function test_a_catalogue_is_flat_and_sorted(string $file): void
+    #[DataProvider('sharedCatalogues')]
+    public function test_a_shared_catalogue_is_flat_and_sorted(string $file): void
     {
-        $messages = self::load($file);
+        $messages = Yaml::parseFile(self::PROJECT_DIR . '/translations/' . $file) ?? [];
         $keys = array_keys($messages);
         $sorted = $keys;
         sort($sorted, SORT_STRING);
@@ -96,10 +97,11 @@ class TranslationCatalogueTest extends TestCase
      * apostrophes: `d'{name}` renders `d{name}`, `d''{name}` is how to write it. A simple message must
      * render as written once `''` reads as `'` and each placeholder holds its value.
      */
-    public function test_every_simple_icu_message_renders_as_written(): void
+    #[DataProvider('icuCatalogues')]
+    public function test_every_simple_icu_message_renders_as_written(string $file): void
     {
         $formatter = new IntlFormatter();
-        foreach (self::load(self::MESSAGES) as $key => $message) {
+        foreach (self::load($file) as $key => $message) {
             if (self::hasComplexArgument($message)) {
                 continue;
             }
@@ -115,11 +117,12 @@ class TranslationCatalogueTest extends TestCase
     /**
      * A plural or a select cannot read back as written, but a syntax error in it still throws.
      */
-    public function test_every_plural_or_select_icu_message_formats(): void
+    #[DataProvider('icuCatalogues')]
+    public function test_every_plural_or_select_icu_message_formats(string $file): void
     {
         $formatter = new IntlFormatter();
         $empty = [];
-        foreach (self::load(self::MESSAGES) as $key => $message) {
+        foreach (self::load($file) as $key => $message) {
             if (!self::hasComplexArgument($message)) {
                 continue;
             }
@@ -147,16 +150,20 @@ class TranslationCatalogueTest extends TestCase
 
     /**
      * Every literal in a namespace the catalogues use is a key, and it is in the catalogue of whatever
-     * reads it: `validators` for the validator, `messages` for an exception.
+     * reads it: `validators` for the validator, `messages` for an exception, and the domain a file names
+     * (`'push'`) for the other keys of that file.
      */
     public function test_every_key_in_src_is_in_the_catalogue_that_reads_it(): void
     {
-        $catalogues = [self::MESSAGES => self::load(self::MESSAGES), self::VALIDATORS => self::load(self::VALIDATORS)];
+        $catalogues = [];
+        foreach (self::catalogueFiles() as $file) {
+            $catalogues[$file] = self::load($file);
+        }
 
         $missing = [];
-        foreach (self::keySites() as [$path, $key, $catalogue]) {
-            if (!isset($catalogues[$catalogue][$key])) {
-                $missing[] = $catalogue . ': ' . $key . ' (' . $path . ')';
+        foreach (self::keySites() as [$path, $key, $files]) {
+            if (array_filter($files, static fn (string $file): bool => isset($catalogues[$file][$key])) === []) {
+                $missing[] = implode(' or ', $files) . ': ' . $key . ' (' . $path . ')';
             }
         }
 
@@ -218,25 +225,71 @@ class TranslationCatalogueTest extends TestCase
      */
     public static function catalogues(): iterable
     {
+        foreach (self::catalogueFiles() as $file) {
+            yield $file => [$file];
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function icuCatalogues(): iterable
+    {
+        foreach (self::catalogueFiles() as $file) {
+            if (str_contains($file, '+intl-icu.')) {
+                yield $file => [$file];
+            }
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function sharedCatalogues(): iterable
+    {
         yield self::MESSAGES => [self::MESSAGES];
         yield self::VALIDATORS => [self::VALIDATORS];
     }
 
     /**
-     * Each key literal in src/ (repositories aside) with the catalogue that reads it. A key held in a
-     * constant is read wherever the constant is used.
+     * @return list<string> every French catalogue file, `messages+intl-icu.fr.yaml` and the like
+     */
+    private static function catalogueFiles(): array
+    {
+        $files = array_map('basename', glob(self::PROJECT_DIR . '/translations/*.fr.yaml') ?: []);
+        sort($files);
+
+        return $files;
+    }
+
+    /**
+     * Each key literal in src/ (repositories aside) with the catalogues that may hold it. An exception
+     * or a constraint reads it from its own catalogue, wherever the key is written or wherever the
+     * constant holding it is used. Any other key is read from the domain its file names, if any
+     * (`private const string DOMAIN = 'push'`), else from the catalogue its path implies.
      *
-     * @return list<array{string, string, string}> path, key, catalogue
+     * @return list<array{string, string, list<string>}> path, key, catalogue files
      */
     private static function keySites(): array
     {
-        $catalogueKeys = array_keys(self::load(self::MESSAGES) + self::load(self::VALIDATORS));
+        $domains = [];
+        $catalogueKeys = [];
+        foreach (self::catalogueFiles() as $file) {
+            $domains[(string) preg_replace('/(?:\+intl-icu)?\.fr\.yaml$/', '', $file)] = $file;
+            $catalogueKeys = [...$catalogueKeys, ...array_keys(self::load($file))];
+        }
+        $otherDomains = array_diff_key($domains, array_flip(['messages', 'validators']));
         $namespaces = array_unique(array_map(static fn (string $key): string => explode('.', $key)[0], $catalogueKeys));
         $literal = '/[\'"]((?:' . implode('|', $namespaces) . ')(?:\.[a-z0-9_]+)+)[\'"]/';
         $sources = array_filter(self::sources(), static fn (string $path): bool => !str_starts_with($path, 'src/Repository/'), ARRAY_FILTER_USE_KEY);
 
         $sites = [];
         foreach ($sources as $path => $code) {
+            $namedDomains = array_values(array_filter(
+                $otherDomains,
+                static fn (string $domain): bool => preg_match('/[\'"]' . preg_quote($domain, '/') . '[\'"]/', $code) === 1,
+                ARRAY_FILTER_USE_KEY,
+            ));
             preg_match_all($literal, $code, $matches, PREG_OFFSET_CAPTURE);
             foreach ($matches[1] as [$key, $offset]) {
                 if (in_array($key, self::NOT_KEYS, true)) {
@@ -248,8 +301,11 @@ class TranslationCatalogueTest extends TestCase
                     ? self::cataloguesReadingConstant($constant[1], $sources)
                     : array_filter([self::catalogueReading($before)]);
 
-                foreach ($catalogues ?: [self::catalogueByPath($path)] as $catalogue) {
-                    $sites[] = [$path, $key, $catalogue];
+                if ($catalogues === []) {
+                    $sites[] = [$path, $key, $namedDomains ?: [self::catalogueByPath($path)]];
+                }
+                foreach ($catalogues as $catalogue) {
+                    $sites[] = [$path, $key, [$catalogue]];
                 }
             }
         }
@@ -427,11 +483,28 @@ class TranslationCatalogueTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * The catalogue as the translator reads it: nested keys joined with dots.
+     *
+     * @return array<string, string>
      */
     private static function load(string $file): array
     {
-        return Yaml::parseFile(self::PROJECT_DIR . '/translations/' . $file) ?? [];
+        return self::flatten(Yaml::parseFile(self::PROJECT_DIR . '/translations/' . $file) ?? []);
+    }
+
+    /**
+     * @param array<mixed> $messages
+     *
+     * @return array<string, string>
+     */
+    private static function flatten(array $messages, string $prefix = ''): array
+    {
+        $flat = [];
+        foreach ($messages as $key => $message) {
+            $flat += is_array($message) ? self::flatten($message, $prefix . $key . '.') : [$prefix . $key => (string) $message];
+        }
+
+        return $flat;
     }
 
     /**
