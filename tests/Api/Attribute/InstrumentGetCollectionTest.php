@@ -106,7 +106,7 @@ class InstrumentGetCollectionTest extends ApiTestCase
 
     /**
      * en_GB rather than en: a catalogue is cached on disk the first time it loads and a resource added later is
-     * ignored, and en will be warmed up once it is enabled. Nothing ever loads en_GB.
+     * ignored, and en is enabled, so it is warmed up. Nothing ever loads en_GB.
      *
      * @param array<string, string> $names
      */

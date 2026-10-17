@@ -18,8 +18,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
- * Only `fr` is enabled in the app, so the HTTP tests cannot tell whether the listener runs at all.
- * This pins its wiring with `en` enabled.
+ * Pins the listener's wiring: the resolved locale reaches both the request and the translator.
  */
 class RequestLocaleListenerTest extends TestCase
 {

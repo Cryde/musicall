@@ -9,12 +9,18 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * The locale a request wants: the user's own choice, then the locale cookie, then Accept-Language,
- * then the default. A value that is not an enabled locale falls through to the next step.
+ * The locale a request wants: the web front end's active locale, then the user's own choice, then the locale
+ * cookie, then Accept-Language, then the default. A value that is not an enabled locale falls through to the
+ * next step.
  */
 readonly class RequestLocaleResolver
 {
     public const string COOKIE = 'locale';
+    // The web front end sends its active locale on every API call, so an English page gets English data whatever
+    // the account or the browser says. Not Accept-Language: the mobile app relies on that one coming after the user.
+    public const string HEADER = 'X-Locale';
+    // Read by Symfony's ResponseListener, which then adds `Vary: Accept-Language`.
+    private const string VARY_BY_LANGUAGE = '_vary_by_language';
     // A real header is a few dozen bytes, and parsing a huge crafted one costs seconds of CPU.
     private const int MAX_ACCEPT_LANGUAGE_LENGTH = 256;
 
@@ -31,6 +37,12 @@ readonly class RequestLocaleResolver
 
     public function resolve(Request $request, ?User $user): string
     {
+        // Compared whole and never parsed, so unlike Accept-Language its length costs nothing.
+        $headerLocale = $request->headers->get(self::HEADER);
+        if ($headerLocale !== null && $this->isEnabled($headerLocale)) {
+            return $headerLocale;
+        }
+
         if ($user instanceof User && $this->isEnabled($user->locale)) {
             return $user->locale;
         }
@@ -41,12 +53,16 @@ readonly class RequestLocaleResolver
             return $cookieLocale;
         }
 
+        // The default goes first: getPreferredLanguage() answers with the first candidate when nothing matches.
+        $candidates = array_values(array_unique([$this->defaultLocale, ...$this->enabledLocales]));
+        // With a single candidate the header cannot change the answer, so production responses stay as they were.
+        if (count($candidates) > 1) {
+            $request->attributes->set(self::VARY_BY_LANGUAGE, true);
+        }
+
         if (strlen((string) $request->headers->get('Accept-Language')) > self::MAX_ACCEPT_LANGUAGE_LENGTH) {
             return $this->defaultLocale;
         }
-
-        // The default goes first: getPreferredLanguage() answers with the first candidate when nothing matches.
-        $candidates = array_values(array_unique([$this->defaultLocale, ...$this->enabledLocales]));
 
         return $request->getPreferredLanguage($candidates) ?? $this->defaultLocale;
     }

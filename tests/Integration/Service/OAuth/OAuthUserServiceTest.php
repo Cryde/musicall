@@ -7,7 +7,6 @@ namespace App\Tests\Integration\Service\OAuth;
 use App\Entity\SocialAccount;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
-use App\Locale\RequestLocaleResolver;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use App\Service\OAuth\OAuthUserData;
@@ -184,8 +183,7 @@ class OAuthUserServiceTest extends KernelTestCase
     public function test_find_or_create_user_stores_the_locale_the_request_asks_for(): void
     {
         $this->mockProfilePictureImporter();
-        // As it will resolve once `en` is enabled. No RequestLocaleListener here, as for the app's sign-in.
-        self::getContainer()->set(RequestLocaleResolver::class, new RequestLocaleResolver(['fr', 'en'], 'fr'));
+        // No RequestLocaleListener here, as for the app's sign-in.
         self::getContainer()->get(RequestStack::class)->push(Request::create('/', server: ['HTTP_ACCEPT_LANGUAGE' => 'en']));
 
         $userData = new OAuthUserData(
