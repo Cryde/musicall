@@ -9,7 +9,7 @@ use Symfony\Component\Mime\Email;
 
 class EmailVerificationCodeEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '10'];
+    private const array TEMPLATE_IDS = ['fr' => '10', 'en' => '19'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {

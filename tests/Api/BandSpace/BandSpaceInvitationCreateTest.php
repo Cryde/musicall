@@ -530,7 +530,7 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $this->assertSame(0, self::getContainer()->get(NotificationRepository::class)->count([]));
     }
 
-    public function test_an_invitation_without_an_account_from_an_english_inviter_gets_the_french_template(): void
+    public function test_an_invitation_without_an_account_from_an_english_inviter_gets_the_english_template(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
@@ -562,7 +562,7 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
 
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
-        $this->assertEmailHeaderSame($email, 'templateId', '12');
+        $this->assertEmailHeaderSame($email, 'templateId', '22');
         $this->assertEmailTextBodyContains($email, 'Vous avez été invité à rejoindre The Rockers sur MusicAll');
         $this->assertEmailAddressContains($email, 'To', 'newuser@example.com');
     }

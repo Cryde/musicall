@@ -14,7 +14,7 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 #[ResetDatabase]
 class SendInactivityReminderCommandLocaleTest extends KernelTestCase
 {
-    public function test_a_user_whose_locale_has_no_template_gets_the_french_one(): void
+    public function test_an_english_user_gets_the_english_template(): void
     {
         self::bootKernel();
         UserFactory::new()->create([
@@ -30,7 +30,7 @@ class SendInactivityReminderCommandLocaleTest extends KernelTestCase
         $commandTester->assertCommandIsSuccessful();
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
-        $this->assertEmailHeaderSame($email, 'templateId', '8');
+        $this->assertEmailHeaderSame($email, 'templateId', '20');
         $this->assertEmailTextBodyContains($email, 'Vous nous manquez sur MusicAll !');
         $this->assertEmailAddressContains($email, 'To', 'inactive@example.com');
     }

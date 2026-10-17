@@ -11,7 +11,7 @@ use Symfony\Component\Mime\Email;
 
 class UsernameChangedEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '7'];
+    private const array TEMPLATE_IDS = ['fr' => '7', 'en' => '18'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {

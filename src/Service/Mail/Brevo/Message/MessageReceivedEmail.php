@@ -9,7 +9,7 @@ use Symfony\Component\Mime\Email;
 
 class MessageReceivedEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '4'];
+    private const array TEMPLATE_IDS = ['fr' => '4', 'en' => '16'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {

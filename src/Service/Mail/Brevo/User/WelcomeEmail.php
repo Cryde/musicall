@@ -11,7 +11,7 @@ use Symfony\Component\Mime\Email;
 
 class WelcomeEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '6'];
+    private const array TEMPLATE_IDS = ['fr' => '6', 'en' => '24'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {

@@ -9,7 +9,7 @@ use Symfony\Component\Mime\Email;
 
 readonly class BandSpaceInvitationExistingUserEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '13'];
+    private const array TEMPLATE_IDS = ['fr' => '13', 'en' => '23'];
 
     public function __construct(private MailerInterface $mailer)
     {

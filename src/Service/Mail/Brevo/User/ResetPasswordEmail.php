@@ -9,7 +9,7 @@ use Symfony\Component\Mime\Email;
 
 class ResetPasswordEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '2'];
+    private const array TEMPLATE_IDS = ['fr' => '2', 'en' => '17'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {

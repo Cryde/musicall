@@ -11,7 +11,7 @@ use Symfony\Component\Mime\Email;
 
 class InactivityReminderEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '8'];
+    private const array TEMPLATE_IDS = ['fr' => '8', 'en' => '20'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {

@@ -67,9 +67,9 @@ class UserRegisterTest extends ApiTestCase
 
         $user = static::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'super_username']);
         $this->assertSame('en', $user?->locale);
-        // No English template yet: the verification code still goes out in French.
+        // The verification code goes out in the stored locale's template.
         $this->assertEmailCount(1);
-        $this->assertEmailHeaderSame($this->getMailerMessage(), 'templateId', '10');
+        $this->assertEmailHeaderSame($this->getMailerMessage(), 'templateId', '19');
     }
 
 

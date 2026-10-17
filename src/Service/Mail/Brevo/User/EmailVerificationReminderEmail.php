@@ -11,7 +11,7 @@ use Symfony\Component\Mime\Email;
 
 class EmailVerificationReminderEmail
 {
-    private const array TEMPLATE_IDS = ['fr' => '11'];
+    private const array TEMPLATE_IDS = ['fr' => '11', 'en' => '21'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {
