@@ -31,11 +31,11 @@ use Symfony\Component\Validator\Constraints as Assert;
                 // One kind only (#1046): with a query, up to 20 hits of it; without one, its 5 most
                 // recently created or edited items.
                 'type' => new QueryParameter(key: 'type', constraints: [
-                    new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'Type de résultat inconnu'),
+                    new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'band_space.search.result_type_unknown'),
                 ]),
                 // Without a query only (#1047): the band's latest changes, or what the caller opened last.
                 'order' => new QueryParameter(key: 'order', constraints: [
-                    new Assert\Choice(callback: [BandSpaceRecentsOrder::class, 'values'], message: 'Ordre inconnu'),
+                    new Assert\Choice(callback: [BandSpaceRecentsOrder::class, 'values'], message: 'band_space.search.order_unknown'),
                 ]),
             ],
         ),

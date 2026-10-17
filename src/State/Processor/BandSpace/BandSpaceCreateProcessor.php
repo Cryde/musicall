@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceBuilder;
@@ -19,7 +20,7 @@ use App\Service\Builder\Message\MessageThreadDirector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
@@ -52,7 +53,11 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
         $this->creationLimiter->create($user->id)->consume()->ensureAccepted();
 
         if ($this->bandSpaceRepository->countAdminByUser($user) >= self::MAX_BAND_SPACES_PER_USER) {
-            throw new TooManyRequestsHttpException(message: sprintf('Vous avez atteint la limite de %d Band Spaces.', self::MAX_BAND_SPACES_PER_USER));
+            throw new TranslatableHttpException(
+                Response::HTTP_TOO_MANY_REQUESTS,
+                'band_space.limit_reached',
+                ['max' => (string) self::MAX_BAND_SPACES_PER_USER],
+            );
         }
 
         // Create BandSpace entity

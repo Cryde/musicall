@@ -50,7 +50,7 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
 
         $tag = $this->tagRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$tag instanceof \App\Entity\BandSpace\BandSpaceFileTag) {
-            throw new NotFoundHttpException('Tag introuvable');
+            throw new NotFoundHttpException('band_space.tag.not_found');
         }
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
@@ -58,12 +58,12 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
         if (array_key_exists('name', $payload)) {
             $newName = trim((string) $payload['name']);
             if ($newName === '') {
-                throw new BadRequestHttpException('Le nom ne peut pas être vide');
+                throw new BadRequestHttpException('band_space.tag.name_blank');
             }
             if (mb_strtolower($newName) !== mb_strtolower($tag->name)
                 && $this->tagRepository->nameExists($bandSpace, $newName, $tag)
             ) {
-                throw new UnprocessableEntityHttpException('Un tag avec ce nom existe déjà dans ce Band Space');
+                throw new UnprocessableEntityHttpException('band_space.tag.already_exists');
             }
             $tag->name = $newName;
         }
@@ -75,7 +75,7 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
             } else {
                 $rawColor = (string) $rawColor;
                 if (preg_match(self::COLOR_PATTERN, $rawColor) !== 1) {
-                    throw new UnprocessableEntityHttpException('La couleur doit être au format hexadécimal (#RGB ou #RRGGBB)');
+                    throw new UnprocessableEntityHttpException('band_space.tag.color_invalid');
                 }
                 $tag->colorHex = $rawColor;
             }

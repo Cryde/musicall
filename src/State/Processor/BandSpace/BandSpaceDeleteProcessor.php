@@ -44,7 +44,7 @@ readonly class BandSpaceDeleteProcessor implements ProcessorInterface
         [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['id'], $user);
 
         if ($bandSpace->deletionScheduledDatetime instanceof DateTimeImmutable) {
-            throw new ConflictHttpException('La suppression de cet espace est déjà programmée');
+            throw new ConflictHttpException('band_space.deletion_already_scheduled');
         }
 
         $this->bandSpaceDeletionScheduler->schedule($bandSpace, $user);

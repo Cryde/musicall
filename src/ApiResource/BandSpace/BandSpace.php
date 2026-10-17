@@ -65,7 +65,7 @@ class BandSpace
     #[Assert\Length(
         min: 3,
         max: 255,
-        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
+        minMessage: 'band_space.name_too_short',
         maxMessage: 'common.name.too_long',
         normalizer: 'trim'
     )]

@@ -40,7 +40,7 @@ readonly class ChatVoiceNoteProvider implements ProviderInterface
             (string) $uriVariables['id'],
             $user,
             [ChatVoiceNoteConverter::OUTPUT_MIME_TYPE],
-            'Note vocale introuvable',
+            'band_space.chat.voice_note_not_found',
         );
 
         $response = BandSpaceFileDownloadProvider::stream($file, $version, $this->vichStorage, inline: true);

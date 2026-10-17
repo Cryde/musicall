@@ -53,7 +53,7 @@ readonly class ChatMessageReactionDeleteProcessor implements ProcessorInterface
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$message instanceof Message) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         // Off the request rather than out of $uriVariables: the slug is not one of the resource's
@@ -66,7 +66,7 @@ readonly class ChatMessageReactionDeleteProcessor implements ProcessorInterface
             : $this->messageReactionRepository->findOneBy(['message' => $message, 'user' => $user, 'emoji' => $emoji]);
 
         if (!$reaction instanceof MessageReaction) {
-            throw new NotFoundHttpException('Réaction introuvable');
+            throw new NotFoundHttpException('band_space.chat.reaction_not_found');
         }
 
         $this->entityManager->remove($reaction);

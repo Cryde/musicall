@@ -39,7 +39,7 @@ readonly class BandSpaceFileTagItemProvider implements ProviderInterface
 
         $tag = $this->tagRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$tag instanceof \App\Entity\BandSpace\BandSpaceFileTag) {
-            throw new NotFoundHttpException('Tag introuvable');
+            throw new NotFoundHttpException('band_space.tag.not_found');
         }
 
         $fileCounts = $this->fileRepository->countByTagIds([(string) $tag->id]);

@@ -6,10 +6,12 @@ use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 readonly class BandSpaceFileRollbackProcedure
@@ -25,12 +27,16 @@ readonly class BandSpaceFileRollbackProcedure
     {
         $target = $this->versionRepository->findOneByFileAndVersionNumber($file, $versionNumber);
         if (!$target instanceof \App\Entity\BandSpace\BandSpaceFileVersion) {
-            throw new UnprocessableEntityHttpException(sprintf('Version %d introuvable pour ce fichier', $versionNumber));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.file.version_not_found',
+                ['version' => (string) $versionNumber],
+            );
         }
 
         $fromVersionNumber = $file->currentVersion?->versionNumber;
         if ($fromVersionNumber === $versionNumber) {
-            throw new UnprocessableEntityHttpException('Cette version est déjà la version courante');
+            throw new UnprocessableEntityHttpException('band_space.file.version_already_current');
         }
 
         $file->currentVersion = $target;

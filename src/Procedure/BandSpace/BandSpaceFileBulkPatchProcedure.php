@@ -5,10 +5,11 @@ namespace App\Procedure\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\User;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Applies one merge-patch to a selection of files, which today means moving them to a folder.
@@ -52,7 +53,11 @@ readonly class BandSpaceFileBulkPatchProcedure
         $foundIds = array_map(static fn (BandSpaceFile $file): string => (string) $file->id, $files);
         $missing = array_diff($fileIds, $foundIds);
         if (count($missing) > 0) {
-            throw new BadRequestHttpException(sprintf('Fichier %s introuvable dans ce Band Space', reset($missing)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.file.not_found_in_space',
+                ['id' => (string) reset($missing)],
+            );
         }
 
         // Resolved once: the destination is the same for every file, so leaving the lookup inside the

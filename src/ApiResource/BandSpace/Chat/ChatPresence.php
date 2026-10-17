@@ -72,7 +72,7 @@ class ChatPresence
 {
     /** A tab's id, minted by the page it identifies; one member can have the chat open in several. */
     public const string TAB_PATTERN = '/^[A-Za-z0-9-]{8,64}\z/';
-    public const string TAB_MESSAGE = 'Identifiant d\'onglet invalide';
+    public const string TAB_MESSAGE = 'band_space.chat.tab_id_invalid';
 
     /** The already validated `tab`; a client that sends none counts as a single tab. */
     public static function tabOf(MetadataOperation $operation): string

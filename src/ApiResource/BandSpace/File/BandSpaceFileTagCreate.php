@@ -31,13 +31,13 @@ class BandSpaceFileTagCreate
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier un nom de tag')]
+    #[Assert\NotBlank(message: 'band_space.tag.name_required')]
     #[Assert\Length(max: 255, maxMessage: 'common.name.too_long')]
     public string $name;
 
     #[Assert\Regex(
         pattern: '/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/',
-        message: 'La couleur doit être au format hexadécimal (#RGB ou #RRGGBB)',
+        message: 'band_space.tag.color_invalid',
     )]
     public ?string $colorHex = null;
 }

@@ -8,6 +8,6 @@ class UnreadableVoiceNoteException extends UnprocessableEntityHttpException
 {
     public function __construct(?\Throwable $previous = null)
     {
-        parent::__construct('La note vocale est illisible, veuillez réessayer', $previous);
+        parent::__construct('band_space.chat.voice_note_unreadable', $previous);
     }
 }

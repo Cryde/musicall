@@ -32,12 +32,12 @@ readonly class BandSpaceItemProvider implements ProviderInterface
 
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships($uriVariables['id']);
         if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
-            throw new NotFoundHttpException('Band space not found');
+            throw new NotFoundHttpException('band_space.item_not_found');
         }
 
         $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $user);
         if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
-            throw new AccessDeniedHttpException('You are not a member of this band space');
+            throw new AccessDeniedHttpException('band_space.item_not_member');
         }
 
         return $this->bandSpaceBuilder->buildItem($bandSpace, $membership->role);

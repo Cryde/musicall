@@ -63,7 +63,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         }
 
         if ($membership->user->id === $user->id) {
-            throw new ConflictHttpException('Vous ne pouvez pas vous exclure vous-même. Utilisez la fonction "Quitter"');
+            throw new ConflictHttpException('band_space.member.cannot_kick_self');
         }
 
         // One transaction: deactivating the personal recurrences drops their planned entries through a

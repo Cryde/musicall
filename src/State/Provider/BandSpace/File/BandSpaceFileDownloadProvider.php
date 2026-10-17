@@ -40,10 +40,10 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
         if (!$file->currentVersion instanceof \App\Entity\BandSpace\BandSpaceFileVersion) {
-            throw new NotFoundHttpException('Aucune version disponible pour ce fichier');
+            throw new NotFoundHttpException('band_space.file.no_version');
         }
 
         return self::stream($file, $file->currentVersion, $this->vichStorage);
@@ -56,7 +56,7 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
     {
         $stream = $vichStorage->resolveStream($version, 'uploadedFile');
         if ($stream === null) {
-            throw new NotFoundHttpException('Le binaire de cette version est introuvable');
+            throw new NotFoundHttpException('band_space.file.version_binary_not_found');
         }
 
         $response = new StreamedResponse(function () use ($stream): void {

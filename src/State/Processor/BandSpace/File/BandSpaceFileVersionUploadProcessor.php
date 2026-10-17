@@ -10,6 +10,7 @@ use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -22,10 +23,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
@@ -62,22 +63,26 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $upload = $data->uploadedFile;
         if ($upload === null) {
-            throw new BadRequestHttpException('Aucun fichier fourni');
+            throw new BadRequestHttpException('band_space.file.not_provided');
         }
 
         $mimeType = $upload->getMimeType() ?? 'application/octet-stream';
         if (!BandSpaceFileMimeAllowlist::isAllowed($mimeType)) {
-            throw new UnsupportedMediaTypeHttpException(sprintf('Type de fichier non autorisé : %s', $mimeType));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
+                'band_space.file.type_not_allowed',
+                ['type' => $mimeType],
+            );
         }
 
         $size = $upload->getSize();
         if ($size === false) {
-            throw new BadRequestHttpException('Taille de fichier invalide');
+            throw new BadRequestHttpException('band_space.file.size_invalid');
         }
 
         $this->quotaService->assertCanUpload($bandSpace, $size);

@@ -31,8 +31,8 @@ class BandSpaceInvitationCreate
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
-    #[Assert\NotBlank(message: 'Veuillez spécifier une adresse email ou un nom d\'utilisateur')]
-    #[Assert\Length(max: 255, maxMessage: 'La valeur ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'band_space.invitation.identifier_required')]
+    #[Assert\Length(max: 255, maxMessage: 'band_space.invitation.identifier_too_long')]
     #[InvitationIdentifier]
     public string $identifier;
 }

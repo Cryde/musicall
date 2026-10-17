@@ -2,7 +2,9 @@
 
 namespace App\Exception\BandSpace;
 
+use App\Exception\TranslatableExceptionTrait;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 /**
  * The only thing a member ever learns about a refused upload, an attachment or a restore, because
@@ -10,17 +12,30 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * by a person: raw byte counts are unreadable at gigabyte scale, and the shortfall is stated outright
  * so a member who cannot free space knows how much to ask an admin for rather than guessing.
  */
-class QuotaExceededException extends UnprocessableEntityHttpException
+class QuotaExceededException extends UnprocessableEntityHttpException implements TranslatableInterface
 {
+    use TranslatableExceptionTrait;
+
+    /**
+     * @var array<string, string>
+     */
+    private readonly array $parameters;
+
     public function __construct(int $quotaBytes, int $usedBytes, int $incomingBytes)
     {
-        parent::__construct(sprintf(
-            'Quota de stockage dépassé : %s utilisés sur %s autorisés, il manque %s pour ajouter %s.',
-            self::humanizeBytes($usedBytes),
-            self::humanizeBytes($quotaBytes),
-            self::humanizeBytes($usedBytes + $incomingBytes - $quotaBytes),
-            self::humanizeBytes($incomingBytes),
-        ));
+        parent::__construct('band_space.storage.quota_exceeded');
+
+        $this->parameters = [
+            'used' => self::humanizeBytes($usedBytes),
+            'quota' => self::humanizeBytes($quotaBytes),
+            'missing' => self::humanizeBytes($usedBytes + $incomingBytes - $quotaBytes),
+            'incoming' => self::humanizeBytes($incomingBytes),
+        ];
+    }
+
+    public function getParameters(): array
+    {
+        return $this->parameters;
     }
 
     /**

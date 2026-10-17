@@ -42,14 +42,14 @@ class BandSpaceOpenedItemRecord
     /** A BandSpaceSearchResultType value: the kinds the palette lists. */
     #[Assert\Sequentially([
         new Assert\NotBlank(message: 'common.type.required'),
-        new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'Type de résultat inconnu'),
+        new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'band_space.opened_item.type_unknown'),
     ])]
     public ?string $type = null;
 
     /** The record's own id, the palette result's `resource_id`. */
     #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez spécifier un identifiant'),
-        new Assert\Uuid(message: 'L\'identifiant est invalide'),
+        new Assert\NotBlank(message: 'band_space.opened_item.id_required'),
+        new Assert\Uuid(message: 'band_space.opened_item.id_invalid'),
     ])]
     public ?string $resourceId = null;
 }

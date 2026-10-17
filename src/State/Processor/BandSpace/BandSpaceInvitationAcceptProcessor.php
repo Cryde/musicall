@@ -48,25 +48,25 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
 
         $invitation = $this->bandSpaceInvitationRepository->findPendingByToken((string) $uriVariables['token']);
         if (!$invitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
-            throw new NotFoundHttpException('Invitation introuvable ou expirée');
+            throw new NotFoundHttpException('band_space.invitation.not_found_or_expired');
         }
 
         if ($invitation->existingUser instanceof \App\Entity\User) {
             if ($invitation->existingUser->id !== $user->id) {
-                throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
+                throw new AccessDeniedHttpException('band_space.invitation.not_recipient');
             }
         } elseif (mb_strtolower($user->email) !== mb_strtolower($invitation->email)) {
-            throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
+            throw new AccessDeniedHttpException('band_space.invitation.not_recipient');
         }
 
         if ($this->bandSpaceMembershipRepository->isMember($invitation->bandSpace, $user)) {
-            throw new ConflictHttpException('Vous êtes déjà membre de ce Band Space');
+            throw new ConflictHttpException('band_space.invitation.already_member');
         }
 
         // No checker to hang the write guard on here, the space comes from the invitation rather than a URI
         // variable, and joining deserves a clearer message than the generic one.
         if ($invitation->bandSpace->isPendingDeletion()) {
-            throw new ConflictHttpException('Cet espace est en attente de suppression, vous ne pouvez pas le rejoindre');
+            throw new ConflictHttpException('band_space.invitation.space_pending_deletion');
         }
 
         $existingMembership = $this->bandSpaceMembershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
@@ -91,7 +91,7 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
         try {
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException) {
-            throw new ConflictHttpException('Vous êtes déjà membre de ce Band Space');
+            throw new ConflictHttpException('band_space.invitation.already_member');
         }
 
         // After the flush, like the event dispatch below: rejoining reuses the same membership row and

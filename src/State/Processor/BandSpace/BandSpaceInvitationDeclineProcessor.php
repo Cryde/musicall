@@ -38,15 +38,15 @@ readonly class BandSpaceInvitationDeclineProcessor implements ProcessorInterface
 
         $invitation = $this->bandSpaceInvitationRepository->findPendingByToken((string) $uriVariables['token']);
         if (!$invitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
-            throw new NotFoundHttpException('Invitation introuvable ou expirée');
+            throw new NotFoundHttpException('band_space.invitation.not_found_or_expired');
         }
 
         if ($invitation->existingUser instanceof \App\Entity\User) {
             if ($invitation->existingUser->id !== $user->id) {
-                throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
+                throw new AccessDeniedHttpException('band_space.invitation.not_recipient');
             }
         } elseif (mb_strtolower($user->email) !== mb_strtolower($invitation->email)) {
-            throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
+            throw new AccessDeniedHttpException('band_space.invitation.not_recipient');
         }
 
         $invitation->status = InvitationStatus::Declined;

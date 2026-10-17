@@ -6,6 +6,8 @@ use App\Exception\BandSpace\QuotaExceededException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
+use Symfony\Component\Translation\Translator;
 
 /**
  * The message is the product here, not a debug string: it is the whole of what a member is told when an
@@ -23,7 +25,8 @@ class QuotaExceededExceptionTest extends TestCase
     {
         $exception = new QuotaExceededException($quotaBytes, $usedBytes, $incomingBytes);
 
-        self::assertSame($expected, $exception->getMessage());
+        self::assertSame('band_space.storage.quota_exceeded', $exception->getMessage());
+        self::assertSame($expected, $exception->trans(self::translator()));
     }
 
     /**
@@ -71,7 +74,7 @@ class QuotaExceededExceptionTest extends TestCase
 
     public function test_no_raw_byte_count_survives_in_the_message(): void
     {
-        $message = (new QuotaExceededException(5_368_709_120, 5_363_000_000, 12_345_678))->getMessage();
+        $message = (new QuotaExceededException(5_368_709_120, 5_363_000_000, 12_345_678))->trans(self::translator());
 
         self::assertStringNotContainsString('octets', $message);
         self::assertStringNotContainsString('5363000000', $message);
@@ -84,5 +87,17 @@ class QuotaExceededExceptionTest extends TestCase
         $exception = new QuotaExceededException(1000, 900, 900);
 
         self::assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getStatusCode());
+    }
+
+    /**
+     * The real catalogue, so the sentence asserted above is the one a member reads.
+     */
+    private static function translator(): Translator
+    {
+        $translator = new Translator('fr');
+        $translator->addLoader('yaml', new YamlFileLoader());
+        $translator->addResource('yaml', __DIR__ . '/../../../../translations/messages+intl-icu.fr.yaml', 'fr', 'messages+intl-icu');
+
+        return $translator;
     }
 }

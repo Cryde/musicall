@@ -10,11 +10,13 @@ use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -71,15 +73,19 @@ readonly class BandSpaceFileUpdateProcedure
     private function applyRename(BandSpaceFile $file, ?string $newName, User $user): bool
     {
         if ($newName === null) {
-            throw new UnprocessableEntityHttpException('Le nom du fichier ne peut pas être vide');
+            throw new UnprocessableEntityHttpException('band_space.file.name_blank');
         }
 
         $sanitised = $this->sanitiseFileName($newName);
         if ($sanitised === '') {
-            throw new UnprocessableEntityHttpException('Le nom du fichier ne peut pas être vide');
+            throw new UnprocessableEntityHttpException('band_space.file.name_blank');
         }
         if (mb_strlen($sanitised) > self::ORIGINAL_NAME_MAX_LENGTH) {
-            throw new UnprocessableEntityHttpException(sprintf('Le nom du fichier ne peut pas dépasser %d caractères', self::ORIGINAL_NAME_MAX_LENGTH));
+            throw new TranslatableHttpException(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'band_space.file.name_too_long',
+                ['max' => (string) self::ORIGINAL_NAME_MAX_LENGTH],
+            );
         }
 
         if ($sanitised === $file->originalName) {
@@ -115,7 +121,7 @@ readonly class BandSpaceFileUpdateProcedure
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace($folderId, $bandSpace);
         if (!$folder instanceof BandSpaceFolder) {
-            throw new UnprocessableEntityHttpException('Dossier introuvable dans ce Band Space');
+            throw new UnprocessableEntityHttpException('band_space.folder.not_found_in_space');
         }
 
         return $folder;
@@ -163,7 +169,7 @@ readonly class BandSpaceFileUpdateProcedure
     private function applyTags(BandSpaceFile $file, $rawTagIds, BandSpace $bandSpace, User $user): bool
     {
         if (!is_array($rawTagIds)) {
-            throw new BadRequestHttpException('tag_ids doit être un tableau');
+            throw new BadRequestHttpException('band_space.file.tag_ids_not_array');
         }
 
         $tagIds = array_values(array_unique(array_map('strval', $rawTagIds)));
@@ -172,7 +178,7 @@ readonly class BandSpaceFileUpdateProcedure
         if (count($tagIds) > 0) {
             $found = $this->tagRepository->findBy(['id' => $tagIds, 'bandSpace' => $bandSpace]);
             if (count($found) !== count($tagIds)) {
-                throw new UnprocessableEntityHttpException('Une ou plusieurs étiquettes sont invalides pour ce Band Space');
+                throw new UnprocessableEntityHttpException('band_space.tag.invalid_in_space');
             }
             $newTags = $found;
         }
@@ -233,7 +239,7 @@ readonly class BandSpaceFileUpdateProcedure
 
         if ($type !== null || $id !== null) {
             throw new UnprocessableEntityHttpException(
-                "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche, entrée financière, note)",
+                'band_space.file.attach_via_dedicated_endpoint',
             );
         }
     }

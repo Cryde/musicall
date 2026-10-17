@@ -33,7 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class ChatMessageUpdate
 {
-    #[Assert\NotBlank(message: 'Veuillez saisir un message')]
-    #[Assert\Length(max: 5000, maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'band_space.chat.content_required')]
+    #[Assert\Length(max: 5000, maxMessage: 'band_space.chat.content_too_long')]
     public string $content;
 }

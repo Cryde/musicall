@@ -80,12 +80,12 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         }
 
         if ($existingUser && $this->bandSpaceMembershipRepository->isMember($bandSpace, $existingUser)) {
-            throw new ConflictHttpException('Cet utilisateur est déjà membre de ce Band Space');
+            throw new ConflictHttpException('band_space.invitation.user_already_member');
         }
 
         $pendingInvitation = $this->bandSpaceInvitationRepository->findPendingByEmailAndBandSpace($email, $bandSpace);
         if ($pendingInvitation instanceof BandSpaceInvitation) {
-            throw new ConflictHttpException('Une invitation est déjà en attente pour cet utilisateur');
+            throw new ConflictHttpException('band_space.invitation.already_pending');
         }
 
         $invitation = new BandSpaceInvitation();

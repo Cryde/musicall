@@ -43,7 +43,7 @@ readonly class BandSpaceFileActivityCollectionProvider implements ProviderInterf
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $activities = $this->activityRepository->findForResource(

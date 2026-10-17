@@ -9,14 +9,13 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Brings a selection of files back out of the trash in one call.
@@ -91,7 +90,11 @@ readonly class BandSpaceFileBulkRestoreProcedure
         $missing = array_diff($fileIds, $foundIds);
 
         if (count($missing) > 0) {
-            throw new BadRequestHttpException(sprintf('Fichier %s introuvable dans ce Band Space', reset($missing)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.file.not_found_in_space',
+                ['id' => (string) reset($missing)],
+            );
         }
     }
 
@@ -106,10 +109,11 @@ readonly class BandSpaceFileBulkRestoreProcedure
             return;
         }
 
-        throw new ConflictHttpException(sprintf(
-            'Ces fichiers ne sont pas dans la corbeille : %s',
-            implode(', ', array_map(static fn (BandSpaceFile $file): string => $file->originalName, $live)),
-        ));
+        throw new TranslatableHttpException(
+            Response::HTTP_CONFLICT,
+            'band_space.file.bulk_restore_not_in_trash',
+            ['files' => implode(', ', array_map(static fn (BandSpaceFile $file): string => $file->originalName, $live))],
+        );
     }
 
     /**
@@ -127,9 +131,10 @@ readonly class BandSpaceFileBulkRestoreProcedure
             return;
         }
 
-        throw new AccessDeniedHttpException(sprintf(
-            'Seul le créateur ou un administrateur peut restaurer ces fichiers : %s',
-            implode(', ', array_map(static fn (BandSpaceFile $file): string => $file->originalName, $foreign)),
-        ));
+        throw new TranslatableHttpException(
+            Response::HTTP_FORBIDDEN,
+            'band_space.file.bulk_restore_forbidden',
+            ['files' => implode(', ', array_map(static fn (BandSpaceFile $file): string => $file->originalName, $foreign))],
+        );
     }
 }

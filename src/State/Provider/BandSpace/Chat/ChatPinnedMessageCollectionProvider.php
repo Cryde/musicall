@@ -48,7 +48,7 @@ readonly class ChatPinnedMessageCollectionProvider implements ProviderInterface
 
         $channel = $this->messageThreadRepository->findChannelForBandSpace($bandSpace);
         if (!$channel instanceof MessageThread) {
-            throw new NotFoundHttpException('Ce Band Space n\'a pas de conversation');
+            throw new NotFoundHttpException('band_space.chat.no_conversation');
         }
 
         return $this->chatMessageBuilder->buildFromProjection(

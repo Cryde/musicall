@@ -52,17 +52,17 @@ readonly class BandSpaceFileRestoreProcessor implements ProcessorInterface
         // findOneByIdAndBandSpace does not filter archived files, which is exactly what the trash needs.
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         if (!$file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new ConflictHttpException('Ce fichier n\'est pas dans la corbeille');
+            throw new ConflictHttpException('band_space.file.not_in_trash');
         }
 
         // Same rule as archiving: whoever could delete it can bring it back.
         $isOwner = $file->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut restaurer ce fichier');
+            throw new AccessDeniedHttpException('band_space.file.restore_forbidden');
         }
 
         // The quota only counts non-archived files, so restoring puts every version of this one back into

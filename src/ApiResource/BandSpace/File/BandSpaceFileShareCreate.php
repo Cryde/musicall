@@ -35,9 +35,9 @@ class BandSpaceFileShareCreate
     #[ApiProperty(identifier: true)]
     public string $fileId;
 
-    #[Assert\NotBlank(message: 'La date d\'expiration est obligatoire')]
+    #[Assert\NotBlank(message: 'band_space.file.share.expiry_required')]
     public ?string $expiryDatetime = null;
 
-    #[Assert\Length(min: 4, max: 255, minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères')]
+    #[Assert\Length(min: 4, max: 255, minMessage: 'band_space.file.share.password_too_short')]
     public ?string $password = null;
 }

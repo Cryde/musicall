@@ -57,7 +57,7 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         $expiry = $this->parseFutureDatetime($data->expiryDatetime);
@@ -110,15 +110,15 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
     private function parseFutureDatetime(?string $raw): \DateTimeImmutable
     {
         if ($raw === null) {
-            throw new UnprocessableEntityHttpException('La date d\'expiration est obligatoire');
+            throw new UnprocessableEntityHttpException('band_space.file.share.expiry_required');
         }
         try {
             $expiry = new \DateTimeImmutable($raw);
         } catch (\Exception) {
-            throw new UnprocessableEntityHttpException('Date d\'expiration invalide');
+            throw new UnprocessableEntityHttpException('band_space.file.share.expiry_invalid');
         }
         if ($expiry <= new \DateTimeImmutable()) {
-            throw new UnprocessableEntityHttpException('La date d\'expiration doit être dans le futur');
+            throw new UnprocessableEntityHttpException('band_space.file.share.expiry_in_past');
         }
 
         return $expiry;

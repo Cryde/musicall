@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFolderActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -19,6 +20,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -52,12 +54,12 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
-            throw new NotFoundHttpException('Dossier introuvable');
+            throw new NotFoundHttpException('band_space.folder.not_found');
         }
 
         $isOwner = $folder->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut modifier ce dossier');
+            throw new AccessDeniedHttpException('band_space.folder.update_forbidden');
         }
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
@@ -70,12 +72,12 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
         if (array_key_exists('name', $payload)) {
             $newName = trim((string) $payload['name']);
             if ($newName === '') {
-                throw new BadRequestHttpException('Le nom ne peut pas être vide');
+                throw new BadRequestHttpException('band_space.folder.name_blank');
             }
             if ($newName !== $folder->name
                 && $this->folderRepository->siblingNameExists($bandSpace, $folder->parent, $newName, $folder)
             ) {
-                throw new UnprocessableEntityHttpException('Un dossier avec ce nom existe déjà à cet emplacement');
+                throw new UnprocessableEntityHttpException('band_space.folder.already_exists');
             }
             if ($newName !== $folder->name) {
                 $renamed = true;
@@ -89,24 +91,28 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
             if ($rawParentId !== null && $rawParentId !== '') {
                 $newParent = $this->folderRepository->findOneByIdAndBandSpace((string) $rawParentId, $bandSpace);
                 if (!$newParent instanceof \App\Entity\BandSpace\BandSpaceFolder) {
-                    throw new BadRequestHttpException('Dossier parent introuvable dans ce Band Space');
+                    throw new BadRequestHttpException('band_space.folder.parent_not_found_in_space');
                 }
                 if ((string) $newParent->id === (string) $folder->id) {
-                    throw new UnprocessableEntityHttpException('Un dossier ne peut pas être son propre parent');
+                    throw new UnprocessableEntityHttpException('band_space.folder.own_parent');
                 }
                 $descendantIds = $this->folderRepository->findDescendantIds($folder);
                 if (in_array((string) $newParent->id, $descendantIds, true)) {
-                    throw new UnprocessableEntityHttpException('Un dossier ne peut pas être déplacé dans un de ses descendants');
+                    throw new UnprocessableEntityHttpException('band_space.folder.move_into_descendant');
                 }
             }
 
             if ($newParent !== $folder->parent) {
                 $newParentDepth = $newParent instanceof \App\Entity\BandSpace\BandSpaceFolder ? $this->folderRepository->computeDepth($newParent) : -1;
                 if ($newParentDepth + 1 >= BandSpaceFolderCreateProcessor::MAX_DEPTH) {
-                    throw new UnprocessableEntityHttpException(sprintf('La profondeur maximale (%d) est dépassée', BandSpaceFolderCreateProcessor::MAX_DEPTH));
+                    throw new TranslatableHttpException(
+                        Response::HTTP_UNPROCESSABLE_ENTITY,
+                        'band_space.folder.max_depth_exceeded',
+                        ['max' => (string) BandSpaceFolderCreateProcessor::MAX_DEPTH],
+                    );
                 }
                 if ($this->folderRepository->siblingNameExists($bandSpace, $newParent, $folder->name, $folder)) {
-                    throw new UnprocessableEntityHttpException('Un dossier avec ce nom existe déjà à cet emplacement');
+                    throw new UnprocessableEntityHttpException('band_space.folder.already_exists');
                 }
                 $folder->parent = $newParent;
                 $moved = true;

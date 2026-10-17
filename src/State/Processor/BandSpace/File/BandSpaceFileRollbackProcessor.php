@@ -42,11 +42,11 @@ readonly class BandSpaceFileRollbackProcessor implements ProcessorInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
-            throw new NotFoundHttpException('Fichier introuvable');
+            throw new NotFoundHttpException('band_space.file.not_found');
         }
 
         if ($data->versionNumber === null) {
-            throw new UnprocessableEntityHttpException('Le numéro de version est requis');
+            throw new UnprocessableEntityHttpException('band_space.file.version_number_required');
         }
 
         $file = $this->rollbackProcedure->rollback($file, $data->versionNumber, $user);

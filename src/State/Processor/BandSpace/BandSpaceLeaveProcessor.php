@@ -60,7 +60,7 @@ readonly class BandSpaceLeaveProcessor implements ProcessorInterface
         }
 
         if ($membership->role === Role::Admin && $this->bandSpaceMembershipRepository->countAdmins($bandSpace) === 1) {
-            throw new ConflictHttpException('Vous devez promouvoir un autre membre administrateur avant de quitter');
+            throw new ConflictHttpException('band_space.member.last_admin_cannot_leave');
         }
 
         // One transaction: deactivating the personal recurrences drops their planned entries through a

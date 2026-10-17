@@ -47,14 +47,14 @@ readonly class ChatMessageUnpinProcessor implements ProcessorInterface
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$message instanceof Message) {
-            throw new NotFoundHttpException('Message introuvable');
+            throw new NotFoundHttpException('band_space.chat.message_not_found');
         }
 
         // The pin is what this endpoint addresses, so a message that carries none has nothing here to
         // delete. A no-op 200 would tell a stale bar it succeeded in removing something that was
         // already gone.
         if ($message->pinnedDatetime === null) {
-            throw new NotFoundHttpException('Ce message n\'est pas épinglé');
+            throw new NotFoundHttpException('band_space.chat.message_not_pinned');
         }
 
         $message->pinnedDatetime = null;
