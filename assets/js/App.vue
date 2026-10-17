@@ -1,5 +1,7 @@
 <template>
-    <router-view/>
+    <!-- Keyed on the locale: a switch remounts the page, which fetches its data again in the new
+         language. The boot locale is set before the app is created, so loading does not remount. -->
+    <router-view :key="locale"/>
     <!-- Without a width the dialog grows to fit its message, so a long one spans the whole screen.
          The message is plain text, so line breaks are how it splits into paragraphs. -->
     <ConfirmDialog
@@ -16,13 +18,16 @@
 import { storeToRefs } from 'pinia'
 import ConfirmDialog from 'primevue/confirmdialog'
 import { onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import FeedbackDrawer from './components/Feedback/FeedbackDrawer.vue'
+import { honourLocaleChoice } from './composables/useLocaleChoice.js'
 import { useUserSecurityStore } from './store/user/security.js'
 import { resolveUnauthenticatedRedirect } from './utils/unauthenticatedRedirect.js'
 
 const userSecurityStore = useUserSecurityStore()
 const router = useRouter()
+const { locale } = useI18n()
 
 onMounted(async () => {
   await userSecurityStore.checkAuthInfo()
@@ -56,5 +61,8 @@ onMounted(async () => {
         : { name: 'app_home' }
     }
   })
+
+  // After the guard, so an arrival that moves to another URL goes through it like any navigation.
+  honourLocaleChoice(router, userSecurityStore)
 })
 </script>

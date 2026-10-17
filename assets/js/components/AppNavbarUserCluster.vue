@@ -1,6 +1,7 @@
 <template>
   <template v-if="!userSecurityStore.isAuthenticatedLoading">
     <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2 px-6 lg:px-0">
+      <LocaleSwitcher v-if="CAN_CHOOSE_LOCALE" @chosen="emit('navigate')" />
       <template v-if="userSecurityStore.isAuthenticated">
         <RouterLink
           :to="{ name: 'app_messages' }"
@@ -78,9 +79,11 @@ import OverlayBadge from 'primevue/overlaybadge'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { CAN_CHOOSE_LOCALE } from '../composables/useLocaleChoice.js'
 import { useNotificationStore } from '../store/notification/notification.js'
 import { useUserSecurityStore } from '../store/user/security.js'
 import { getAvatarStyle } from '../utils/avatar.js'
+import LocaleSwitcher from './Global/LocaleSwitcher.vue'
 
 // Authenticated-only (guarded by v-if) — load the bell + its notification machinery
 // on demand so anonymous visitors never download it.

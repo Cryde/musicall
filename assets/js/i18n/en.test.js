@@ -3,27 +3,9 @@ import { after, before, describe, it } from 'node:test'
 import en from './en/index.js'
 import fr from './fr/index.js'
 import { i18n } from './index.js'
+import { punctuationViolations } from './plainPunctuation.js'
 
 const PLACEHOLDER = /\{(\w+)\}/g
-// Typography that reads as machine written in English UI text, and the French non-breaking spaces a
-// translation would carry over. Plain punctuation instead: a hyphen, a colon or a comma, three dots,
-// straight quotes and apostrophes, ordinary spaces.
-const FORBIDDEN_CHARACTERS = {
-  '\u2014': 'an em dash',
-  '\u2013': 'an en dash',
-  '\u2026': 'an ellipsis character',
-  '\u2018': 'a curly quote',
-  '\u2019': 'a curly apostrophe',
-  '\u201C': 'a curly quote',
-  '\u201D': 'a curly quote',
-  '\u00AB': 'a guillemet',
-  '\u00BB': 'a guillemet',
-  '\u2039': 'a guillemet',
-  '\u203A': 'a guillemet',
-  '\u00B7': 'a middle dot',
-  '\u00A0': 'a non-breaking space',
-  '\u202F': 'a narrow no-break space'
-}
 
 function flatten(messages, prefix = '') {
   return Object.entries(messages).flatMap(([key, value]) =>
@@ -103,9 +85,7 @@ describe('the English catalogue', () => {
 
   it('uses plain punctuation', () => {
     const violations = entries.flatMap(([key, message]) =>
-      Object.entries(FORBIDDEN_CHARACTERS)
-        .filter(([character]) => message.includes(character))
-        .map(([character, name]) => `${key}: ${name} (${character})`)
+      punctuationViolations(message).map((violation) => `${key}: ${violation}`)
     )
 
     assert.deepEqual(violations, [])
