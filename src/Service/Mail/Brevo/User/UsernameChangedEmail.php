@@ -12,6 +12,8 @@ use Symfony\Component\Mime\Email;
 class UsernameChangedEmail
 {
     private const array TEMPLATE_IDS = ['fr' => '7', 'en' => '18'];
+    // Formatted here, the template only prints it; a locale without its own format reads the French one.
+    private const array CHANGED_AT_FORMATS = ['fr' => 'd/m/Y à H:i', 'en' => 'd/m/Y \\a\\t H:i'];
 
     public function __construct(private readonly MailerInterface $mailer)
     {
@@ -33,7 +35,7 @@ class UsernameChangedEmail
             ->addParameterizedHeader('params', 'params', [
                 'old_username' => $oldUsername,
                 'new_username' => $newUsername,
-                'changed_at' => $changedAt->format('d/m/Y à H:i'),
+                'changed_at' => $changedAt->format(self::CHANGED_AT_FORMATS[$locale] ?? self::CHANGED_AT_FORMATS['fr']),
             ]);
         $this->mailer->send($email);
     }
