@@ -64,7 +64,7 @@ readonly class SetlistItemUpdateProcessor implements ProcessorInterface
 
         $item = $this->setlistItemRepository->findOneByIdAndSetlist((string) $uriVariables['id'], $setlist);
         if (!$item instanceof SetlistItem) {
-            throw new NotFoundHttpException('Item introuvable');
+            throw new NotFoundHttpException('band_space.setlist.item.not_found');
         }
 
         // ValidSetlistItemPayload has already checked the label against the type, so what

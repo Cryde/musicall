@@ -29,7 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class SetlistItemsCopy
 {
-    #[Assert\NotBlank(message: 'Choisissez la setlist à copier')]
-    #[Assert\Uuid(message: 'Identifiant de setlist invalide')]
+    #[Assert\NotBlank(message: 'band_space.setlist.copy_source_required')]
+    #[Assert\Uuid(message: 'band_space.setlist.invalid_identifier')]
     public ?string $fromSetlistId = null;
 }

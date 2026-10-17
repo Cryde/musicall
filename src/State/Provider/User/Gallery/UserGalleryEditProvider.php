@@ -35,15 +35,15 @@ readonly class UserGalleryEditProvider implements ProviderInterface
         /** @var User $user */
         $user = $this->security->getUser();
         if (!($gallery = $this->galleryRepository->find($uriVariables['id'])) instanceof \App\Entity\Gallery) {
-            throw new NotFoundHttpException('Galerie non trouvee');
+            throw new NotFoundHttpException('publication.user.gallery.not_found');
         }
 
         if ($gallery->author->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous n\'etes pas autorise a acceder a cette galerie');
+            throw new AccessDeniedHttpException('publication.user.gallery.access_forbidden');
         }
 
         if ($gallery->status !== Gallery::STATUS_DRAFT) {
-            throw new AccessDeniedHttpException('Cette galerie ne peut plus etre modifiee');
+            throw new AccessDeniedHttpException('publication.user.gallery.not_editable');
         }
 
         return $this->userGalleryBuilder->buildEditFromEntity($gallery);

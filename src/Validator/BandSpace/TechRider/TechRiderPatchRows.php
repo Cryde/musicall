@@ -34,15 +34,15 @@ class TechRiderPatchRows extends Constraint
     public const int MAX_MICROPHONE_LENGTH = 120;
     public const int MAX_ROUTING_LENGTH = 180;
 
-    public string $tooManyRowsMessage = 'Une liste ne peut pas dépasser {{ limit }} lignes';
-    public string $invalidRowMessage = 'Chaque ligne doit être un objet avec un numéro de canal entier';
-    public string $channelOutOfRangeMessage = 'Le numéro de canal doit être compris entre {{ min }} et {{ max }}';
-    public string $duplicateChannelMessage = 'Le numéro de canal {{ channel }} apparaît plusieurs fois';
-    public string $stereoOutOfRangeMessage = 'Une paire stéréo occupe deux canaux : elle doit commencer au plus au canal {{ max }}';
-    public string $invalidStereoMessage = 'Ce champ doit valoir vrai ou faux';
-    public string $tooLongMessage = 'Ce champ ne peut pas dépasser {{ limit }} caractères';
-    public string $invalidTextMessage = 'Ce champ doit être du texte';
-    public string $unknownColourMessage = 'Couleur inconnue';
+    public string $tooManyRowsMessage = 'band_space.tech_rider.patch_list.too_many_rows';
+    public string $invalidRowMessage = 'band_space.tech_rider.patch_list.row_invalid';
+    public string $channelOutOfRangeMessage = 'band_space.tech_rider.patch_list.channel_out_of_range';
+    public string $duplicateChannelMessage = 'band_space.tech_rider.patch_list.channel_duplicate';
+    public string $stereoOutOfRangeMessage = 'band_space.tech_rider.patch_list.stereo_out_of_range';
+    public string $invalidStereoMessage = 'band_space.tech_rider.patch_list.stereo_invalid';
+    public string $tooLongMessage = 'band_space.tech_rider.patch_list.field_too_long';
+    public string $invalidTextMessage = 'band_space.tech_rider.patch_list.field_not_text';
+    public string $unknownColourMessage = 'band_space.tech_rider.patch_list.colour_unknown';
 
     public function getTargets(): string
     {

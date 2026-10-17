@@ -8,11 +8,13 @@ use App\ApiResource\BandSpace\Task\TaskReorder;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\BandSpace\TaskColumnPositionsGuard;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -50,18 +52,22 @@ readonly class TaskReorderProcessor implements ProcessorInterface
 
         $missingIds = array_diff($requestedIds, $foundIds);
         if (count($missingIds) > 0) {
-            throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missingIds)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.task.not_found_in_space',
+                ['id' => (string) reset($missingIds)],
+            );
         }
 
         $statuses = array_unique(array_map(fn(Task $t): string => $t->status->value, $foundTasks));
         if (count($statuses) > 1) {
-            throw new UnprocessableEntityHttpException('Toutes les tâches doivent avoir le même statut');
+            throw new UnprocessableEntityHttpException('band_space.task.reorder_mixed_status');
         }
 
         $firstTask = current($foundTasks);
         if (!$firstTask instanceof Task) {
             // Unreachable: the payload is never empty and every id it named was just resolved.
-            throw new BadRequestHttpException('Aucune tâche à réordonner');
+            throw new BadRequestHttpException('band_space.task.reorder_empty');
         }
 
         $this->columnPositionsGuard->assertCoversColumn($bandSpace, $firstTask->status, $requestedIds);

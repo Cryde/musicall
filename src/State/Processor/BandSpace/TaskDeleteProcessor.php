@@ -51,7 +51,7 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
 
         $isCreator = $task->createdBy->id === $user->id;
         if (!$isCreator && $membership->role !== Role::Admin) {
-            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer cette tâche');
+            throw new AccessDeniedHttpException('band_space.task.delete_not_allowed');
         }
 
         $this->fileSourceDetacher->detachDeletedSources(

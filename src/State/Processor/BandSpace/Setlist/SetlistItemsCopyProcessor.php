@@ -63,15 +63,15 @@ readonly class SetlistItemsCopyProcessor implements ProcessorInterface
         // An archived setlist is still a fine starting point, as it is for « Dupliquer ».
         $source = $this->setlistRepository->findOneByIdAndBandSpace((string) $data->fromSetlistId, $bandSpace);
         if (!$source instanceof Setlist) {
-            throw new UnprocessableEntityHttpException('La setlist à copier n\'appartient pas à ce Band Space');
+            throw new UnprocessableEntityHttpException('band_space.setlist.copy_source_not_in_space');
         }
         if ($source->id === $setlist->id) {
-            throw new UnprocessableEntityHttpException('Choisissez une autre setlist que celle-ci');
+            throw new UnprocessableEntityHttpException('band_space.setlist.copy_source_same');
         }
 
         $copies = $this->itemCopier->copyItems($source);
         if ($copies === []) {
-            throw new UnprocessableEntityHttpException('La setlist à copier est vide');
+            throw new UnprocessableEntityHttpException('band_space.setlist.copy_source_empty');
         }
         $this->runningOrder->insert($setlist, $copies);
         foreach ($copies as $copy) {

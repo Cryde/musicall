@@ -16,10 +16,10 @@ class TechRiderItemPositions extends Constraint
 {
     public const string ERROR_CODE = 'music_all_6d2b8e14-9f37-4a5c-8e60-1c4d7b93af52';
 
-    public string $emptyMessage = 'Les positions sont requises';
-    public string $invalidItemMessage = 'Chaque position doit contenir un id (UUID) et une position (entier)';
-    public string $notContiguousMessage = 'Les positions doivent former une séquence 0..n-1 sans trou ni doublon';
-    public string $duplicateIdMessage = 'Chaque élément ne peut apparaître qu\'une seule fois';
+    public string $emptyMessage = 'band_space.tech_rider.item.positions_required';
+    public string $invalidItemMessage = 'band_space.tech_rider.item.position_invalid_item';
+    public string $notContiguousMessage = 'band_space.tech_rider.item.positions_not_contiguous';
+    public string $duplicateIdMessage = 'band_space.tech_rider.item.positions_duplicate_id';
 
     public function getTargets(): string
     {

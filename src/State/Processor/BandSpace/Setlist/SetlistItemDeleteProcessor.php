@@ -60,7 +60,7 @@ readonly class SetlistItemDeleteProcessor implements ProcessorInterface
 
         $item = $this->setlistItemRepository->findOneByIdAndSetlist((string) $uriVariables['id'], $setlist);
         if (!$item instanceof SetlistItem) {
-            throw new NotFoundHttpException('Item introuvable');
+            throw new NotFoundHttpException('band_space.setlist.item.not_found');
         }
 
         $removedPosition = $item->position;

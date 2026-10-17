@@ -52,7 +52,7 @@ readonly class TaskColumnPositionsGuard
 
         if ($expectedIds !== $actualIds) {
             throw new UnprocessableEntityHttpException(
-                'Les positions doivent couvrir exactement les tâches de cette colonne',
+                'band_space.task.positions_column_mismatch',
             );
         }
     }

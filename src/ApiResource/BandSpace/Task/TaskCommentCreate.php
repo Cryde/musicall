@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class TaskCommentCreate
 {
-    #[Assert\NotBlank(message: 'Veuillez saisir un commentaire')]
-    #[Assert\Length(max: 5000, maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\NotBlank(message: 'band_space.task.comment.content_required')]
+    #[Assert\Length(max: 5000, maxMessage: 'band_space.task.comment.content_too_long')]
     public string $content;
 }

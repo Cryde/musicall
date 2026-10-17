@@ -4,16 +4,31 @@ namespace App\Tests\Unit\Service\BandSpace\RichText;
 
 use App\Enum\BandSpace\RichTextSurface;
 use App\Service\BandSpace\RichText\TipTapDocumentChecker;
+use App\Service\BandSpace\RichText\TipTapDocumentProblem;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
+use Symfony\Component\Translation\Translator;
 
 class TipTapDocumentCheckerTest extends TestCase
 {
     private TipTapDocumentChecker $checker;
+    private Translator $translator;
 
     protected function setUp(): void
     {
         $this->checker = new TipTapDocumentChecker();
+        $this->translator = new Translator('fr');
+        $this->translator->addLoader('yaml', new YamlFileLoader());
+        $this->translator->addResource('yaml', __DIR__ . '/../../../../../translations/validators.fr.yaml', 'fr', 'validators');
+    }
+
+    /** The message the member reads, as the validator renders the problem. */
+    private function message(?TipTapDocumentProblem $problem): ?string
+    {
+        return $problem instanceof TipTapDocumentProblem
+            ? $this->translator->trans($problem->messageKey, $problem->parameters, 'validators')
+            : null;
     }
 
     private static function doc(array ...$content): array
@@ -100,14 +115,14 @@ class TipTapDocumentCheckerTest extends TestCase
     {
         $document = self::doc(['type' => 'heading', 'attrs' => ['level' => 1], 'content' => [self::text('Son')]]);
 
-        $this->assertSame('Les titres doivent être de niveau 2 ou 3', $this->checker->findProblem($document, RichTextSurface::TechRider));
+        $this->assertSame('Les titres doivent être de niveau 2 ou 3', $this->message($this->checker->findProblem($document, RichTextSurface::TechRider)));
     }
 
     public function test_a_checklist_is_refused_in_a_rider_text(): void
     {
         $document = self::doc(['type' => 'taskList', 'content' => [['type' => 'taskItem', 'attrs' => ['checked' => false]]]]);
 
-        $this->assertSame('Le contenu contient un élément non pris en charge (« taskList »)', $this->checker->findProblem($document, RichTextSurface::TechRider));
+        $this->assertSame('Le contenu contient un élément non pris en charge (« taskList »)', $this->message($this->checker->findProblem($document, RichTextSurface::TechRider)));
     }
 
     public function test_an_empty_document_is_in_the_format(): void
@@ -129,7 +144,7 @@ class TipTapDocumentCheckerTest extends TestCase
     #[DataProvider('outOfFormatProvider')]
     public function test_a_document_out_of_the_format_is_refused(array $document, string $expected): void
     {
-        $this->assertSame($expected, $this->checker->findProblem($document, RichTextSurface::Note));
+        $this->assertSame($expected, $this->message($this->checker->findProblem($document, RichTextSurface::Note)));
     }
 
     /**
@@ -186,7 +201,7 @@ class TipTapDocumentCheckerTest extends TestCase
     {
         $image = ['type' => 'image', 'attrs' => ['src' => 'https://images.example/affiche.jpg']];
 
-        $this->assertSame('Le contenu contient un élément non pris en charge (« image »)', $this->checker->findProblem(self::doc($image), RichTextSurface::TechRider));
+        $this->assertSame('Le contenu contient un élément non pris en charge (« image »)', $this->message($this->checker->findProblem(self::doc($image), RichTextSurface::TechRider)));
     }
 
     /** Empty is what a pasted `<span style="font-weight:400">` becomes: a span styled without a colour. */
@@ -203,6 +218,6 @@ class TipTapDocumentCheckerTest extends TestCase
     {
         $document = self::doc(self::paragraph(self::text('x', ['type' => 'textStyle', 'attrs' => ['color' => '#123456']])));
 
-        $this->assertSame('Le contenu contient une couleur hors de la palette', $this->checker->findProblem($document, RichTextSurface::TechRider));
+        $this->assertSame('Le contenu contient une couleur hors de la palette', $this->message($this->checker->findProblem($document, RichTextSurface::TechRider)));
     }
 }

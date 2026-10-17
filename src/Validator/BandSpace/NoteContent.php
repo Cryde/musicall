@@ -16,5 +16,5 @@ class NoteContent extends Constraint
     public const int MAX_CONTENT_BYTES = 500_000;
 
     /** In Ko rather than characters: the limit is measured on the encoded JSON, in bytes. */
-    public string $tooLargeMessage = 'Le contenu de la note est trop volumineux (limite : {{ limit }} Ko)';
+    public string $tooLargeMessage = 'band_space.rich_text.note_too_large';
 }

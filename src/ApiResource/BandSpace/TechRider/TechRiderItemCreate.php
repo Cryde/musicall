@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class TechRiderItemCreate
 {
     /** Defaults to a text item, which is the only type with a renderer today. */
-    #[Assert\Choice(callback: [TechRiderItemType::class, 'values'], message: 'Type d\'élément inconnu')]
+    #[Assert\Choice(callback: [TechRiderItemType::class, 'values'], message: 'band_space.tech_rider.item.type_unknown')]
     public string $type = 'text';
 
     #[Assert\NotBlank(message: 'common.title.required')]

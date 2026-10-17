@@ -28,10 +28,10 @@ class TaskCreate
 
     public ?string $description = null;
 
-    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'Le statut doit être "todo", "in_progress" ou "done"')]
+    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'band_space.task.status_invalid')]
     public string $status = 'todo';
 
-    #[Assert\Choice(choices: ['normal', 'high', 'urgent'], message: 'La priorité doit être "normal", "high" ou "urgent"')]
+    #[Assert\Choice(choices: ['normal', 'high', 'urgent'], message: 'band_space.task.priority_invalid')]
     public string $priority = 'normal';
 
     public ?string $dueDate = null;
@@ -43,7 +43,7 @@ class TaskCreate
      * @var string[]|null
      */
     #[Assert\All([
-        new Assert\Uuid(message: 'Identifiant d\'assigné invalide'),
+        new Assert\Uuid(message: 'band_space.task.assignee.invalid_identifier'),
     ])]
     public ?array $assigneeIds = null;
 }

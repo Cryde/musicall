@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class AlreadyExistingVideo extends Constraint
 {
-    public string $message = 'Cette vidéo existe déjà sur MusicAll';
+    public string $message = 'publication.video.already_exists';
 
     public function __construct(?string $message = null, ?array $groups = null, mixed $payload = null)
     {

@@ -53,11 +53,11 @@ readonly class TechRiderDeleteProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         if ($techRider->isArchived()) {
-            throw new ConflictHttpException('Ce tech rider est déjà archivé');
+            throw new ConflictHttpException('band_space.tech_rider.already_archived');
         }
 
         $techRider->archiveDatetime = new DateTimeImmutable();

@@ -46,7 +46,7 @@ class UserPublicationEditProcessor implements ProcessorInterface
         if ($data->categoryId !== null) {
             $category = $this->subCategoryRepository->find($data->categoryId);
             if (!$category instanceof \App\Entity\PublicationSubCategory) {
-                throw new BadRequestHttpException('Category not found');
+                throw new BadRequestHttpException('publication.user.category_not_found');
             }
             $publication->subCategory = $category;
         }

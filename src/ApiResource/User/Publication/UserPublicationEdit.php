@@ -74,9 +74,9 @@ class UserPublicationEdit
      */
     #[Assert\All([
         new Assert\Type('string'),
-        new Assert\NotBlank(message: 'Le tag ne peut pas être vide'),
-        new Assert\Length(max: 100, maxMessage: 'Le tag est trop long (max {{ limit }} caractères)'),
+        new Assert\NotBlank(message: 'publication.tag.label_required'),
+        new Assert\Length(max: 100, maxMessage: 'publication.tag.label_too_long'),
     ])]
-    #[Assert\Count(max: 20, maxMessage: 'Un maximum de {{ limit }} tags est autorisé')]
+    #[Assert\Count(max: 20, maxMessage: 'publication.tag.too_many')]
     public ?array $tags = null;
 }

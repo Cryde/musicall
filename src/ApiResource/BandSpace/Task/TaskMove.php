@@ -24,10 +24,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[TaskMovePayload]
 class TaskMove
 {
-    #[Assert\NotBlank(message: 'Veuillez spécifier un identifiant de tâche')]
+    #[Assert\NotBlank(message: 'band_space.task.id_required')]
     public string $taskId;
 
-    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'Le statut doit être "todo", "in_progress" ou "done"')]
+    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'band_space.task.status_invalid')]
     public string $status;
 
     /** @var list<mixed> */

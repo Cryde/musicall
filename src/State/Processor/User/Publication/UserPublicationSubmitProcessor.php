@@ -31,16 +31,16 @@ class UserPublicationSubmitProcessor implements ProcessorInterface
 
         // Validate required fields for submission
         if (empty($publication->title)) {
-            throw new BadRequestHttpException('Le titre ne peut être vide');
+            throw new BadRequestHttpException('publication.user.submit.title_required');
         }
         if (empty($publication->shortDescription)) {
-            throw new BadRequestHttpException('La description ne peut être vide');
+            throw new BadRequestHttpException('publication.user.submit.description_required');
         }
         if (empty($publication->content)) {
-            throw new BadRequestHttpException('Le contenu ne peut être vide');
+            throw new BadRequestHttpException('publication.user.submit.content_required');
         }
         if (!$publication->cover) {
-            throw new BadRequestHttpException('Vous devez ajouter une image de couverture');
+            throw new BadRequestHttpException('publication.user.submit.cover_required');
         }
 
         $publication->status = Publication::STATUS_PENDING;

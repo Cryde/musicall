@@ -47,7 +47,7 @@ readonly class TechRiderDuplicateProcessor implements ProcessorInterface
         // one is the reason this endpoint exists.
         $source = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$source instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         // Null means "not provided, use the default". Validation has already refused blank, so any

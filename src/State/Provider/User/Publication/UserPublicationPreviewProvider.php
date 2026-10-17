@@ -29,7 +29,7 @@ class UserPublicationPreviewProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?UserPublicationPreview
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('You must be logged in.');
+            throw new AccessDeniedException('publication.not_authenticated');
         }
 
         /** @var User $user */
@@ -37,19 +37,19 @@ class UserPublicationPreviewProvider implements ProviderInterface
 
         $publication = $this->publicationRepository->find($uriVariables['id']);
         if (!$publication instanceof \App\Entity\Publication) {
-            throw new NotFoundHttpException('Publication not found');
+            throw new NotFoundHttpException('publication.user.not_found');
         }
 
         $isOwner = $publication->author->id === $user->id;
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
         if (!$isOwner && !$isAdmin) {
-            throw new AccessDeniedHttpException('You are not the owner of this publication');
+            throw new AccessDeniedHttpException('publication.user.not_owner');
         }
 
         // Preview is only available for draft or pending publications
         if ($publication->status === Publication::STATUS_ONLINE) {
-            throw new AccessDeniedHttpException('This publication is already online. View it directly.');
+            throw new AccessDeniedHttpException('publication.user.preview_already_online');
         }
 
         return $this->builder->buildFromEntity($publication);

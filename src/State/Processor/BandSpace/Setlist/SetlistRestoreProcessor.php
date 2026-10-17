@@ -50,7 +50,7 @@ readonly class SetlistRestoreProcessor implements ProcessorInterface
         }
 
         if ($setlist->archiveDatetime === null) {
-            throw new ConflictHttpException('Cette setlist n\'est pas dans la corbeille');
+            throw new ConflictHttpException('band_space.setlist.not_in_trash');
         }
 
         $setlist->archiveDatetime = null;

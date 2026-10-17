@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class SongSingersAreMembers extends Constraint
 {
-    public string $message = 'Un chanteur attribué n\'est pas membre de ce Band Space';
+    public string $message = 'band_space.song.singer_not_member';
 
     public function getTargets(): string
     {

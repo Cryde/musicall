@@ -105,10 +105,10 @@ class TaskResource
     #[ApiProperty(readable: false)]
     public ?int $expectedTextVersion = null;
 
-    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'Le statut doit être "todo", "in_progress" ou "done"')]
+    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'band_space.task.status_invalid')]
     public string $status;
 
-    #[Assert\Choice(choices: ['normal', 'high', 'urgent'], message: 'La priorité doit être "normal", "high" ou "urgent"')]
+    #[Assert\Choice(choices: ['normal', 'high', 'urgent'], message: 'band_space.task.priority_invalid')]
     public string $priority;
 
     public ?string $dueDate = null;

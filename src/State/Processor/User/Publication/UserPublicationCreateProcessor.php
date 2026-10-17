@@ -37,7 +37,7 @@ class UserPublicationCreateProcessor implements ProcessorInterface
 
         $category = $this->subCategoryRepository->find($data->categoryId);
         if (!$category instanceof \App\Entity\PublicationSubCategory) {
-            throw new BadRequestHttpException('Category not found');
+            throw new BadRequestHttpException('publication.user.category_not_found');
         }
 
         $publication = new Publication();

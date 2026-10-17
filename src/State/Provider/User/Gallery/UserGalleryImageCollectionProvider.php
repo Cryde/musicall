@@ -38,11 +38,11 @@ readonly class UserGalleryImageCollectionProvider implements ProviderInterface
 
         $gallery = $this->galleryRepository->find($uriVariables['id']);
         if (!$gallery instanceof \App\Entity\Gallery) {
-            throw new NotFoundHttpException('Galerie non trouvee');
+            throw new NotFoundHttpException('publication.user.gallery.not_found');
         }
 
         if ($gallery->author->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous n\'etes pas autorise a acceder a cette galerie');
+            throw new AccessDeniedHttpException('publication.user.gallery.access_forbidden');
         }
 
         return array_map(

@@ -53,7 +53,7 @@ readonly class TechRiderUpdateProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         $this->writeGuard->assertWritable($techRider);

@@ -50,7 +50,7 @@ readonly class SongRestoreProcessor implements ProcessorInterface
         }
 
         if ($song->archiveDatetime === null) {
-            throw new ConflictHttpException('Cette chanson n\'est pas dans la corbeille');
+            throw new ConflictHttpException('band_space.song.not_in_trash');
         }
 
         $song->archiveDatetime = null;

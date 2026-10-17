@@ -37,7 +37,7 @@ readonly class VideoPreviewProvider implements ProviderInterface
         try {
             $videoInfo = $this->youtube->getVideoInfo($url);
         } catch (YoutubeVideoNotFoundException) {
-            throw new NotFoundHttpException('Video not found');
+            throw new NotFoundHttpException('publication.video.not_found');
         }
 
         return $this->videoPreviewBuilder->buildFromYoutubeVideoInfo($videoInfo);

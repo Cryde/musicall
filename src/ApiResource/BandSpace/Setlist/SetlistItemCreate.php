@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ValidSetlistItemPayload]
 class SetlistItemCreate
 {
-    #[Assert\NotNull(message: 'Le type est requis')]
+    #[Assert\NotNull(message: 'band_space.setlist.item.type_required')]
     public ?SetlistItemType $type = null;
 
     /** Required when type === song; rejected otherwise. Validated by ValidSetlistItemPayload. */
@@ -36,12 +36,12 @@ class SetlistItemCreate
     #[Assert\Length(max: 255, maxMessage: 'common.label.too_long')]
     public ?string $label = null;
 
-    #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} secondes')]
+    #[Assert\Range(min: 1, max: 86400, notInRangeMessage: 'band_space.setlist.item.duration_out_of_range')]
     public ?int $durationOverride = null;
 
     public ?string $note = null;
 
-    #[Assert\Length(max: 50, maxMessage: 'La transition ne peut pas dépasser {{ limit }} caractères')]
+    #[Assert\Length(max: 50, maxMessage: 'band_space.setlist.item.transition_too_long')]
     public ?string $transition = null;
 
     /** Where to insert, 0 being first (#1061). Left out, or past the end, the item goes last. */

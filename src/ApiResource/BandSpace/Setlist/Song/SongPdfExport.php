@@ -29,12 +29,12 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'api_band_space_songs_pdf_export',
             provider: SongPdfExportProvider::class,
             parameters: [
-                'chords' => new QueryParameter(key: 'chords', constraints: [new Assert\Choice(choices: self::BOOLEANS, message: 'Valeur invalide')]),
-                'singers' => new QueryParameter(key: 'singers', constraints: [new Assert\Choice(choices: self::BOOLEANS, message: 'Valeur invalide')]),
+                'chords' => new QueryParameter(key: 'chords', constraints: [new Assert\Choice(choices: self::BOOLEANS, message: 'band_space.song.pdf_option_invalid')]),
+                'singers' => new QueryParameter(key: 'singers', constraints: [new Assert\Choice(choices: self::BOOLEANS, message: 'band_space.song.pdf_option_invalid')]),
                 'transpose' => new QueryParameter(key: 'transpose', constraints: [
                     new Assert\Sequentially([
-                        new Assert\Regex(pattern: '/^-?\d{1,2}\z/', message: 'La transposition doit être un nombre de demi-tons'),
-                        new Assert\Range(min: -11, max: 11, notInRangeMessage: 'La transposition doit être entre {{ min }} et {{ max }} demi-tons'),
+                        new Assert\Regex(pattern: '/^-?\d{1,2}\z/', message: 'band_space.song.transpose_not_a_number'),
+                        new Assert\Range(min: -11, max: 11, notInRangeMessage: 'band_space.song.transpose_out_of_range'),
                     ]),
                 ]),
             ],

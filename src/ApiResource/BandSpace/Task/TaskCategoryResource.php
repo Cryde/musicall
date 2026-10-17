@@ -82,7 +82,7 @@ class TaskCategoryResource
 
     #[Assert\Regex(
         pattern: '/^#[0-9A-Fa-f]{6}$/',
-        message: 'La couleur doit être au format hexadécimal #RRGGBB'
+        message: 'band_space.task.category.colour_invalid'
     )]
     public string $color;
     public \DateTimeInterface $creationDatetime;

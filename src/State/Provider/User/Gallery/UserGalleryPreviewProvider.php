@@ -29,7 +29,7 @@ readonly class UserGalleryPreviewProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?UserGalleryPreview
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('You must be logged in.');
+            throw new AccessDeniedException('publication.not_authenticated');
         }
 
         /** @var User $user */
@@ -37,18 +37,18 @@ readonly class UserGalleryPreviewProvider implements ProviderInterface
 
         $gallery = $this->galleryRepository->find($uriVariables['id']);
         if (!$gallery instanceof \App\Entity\Gallery) {
-            throw new NotFoundHttpException('Gallery not found');
+            throw new NotFoundHttpException('publication.user.gallery.preview.not_found');
         }
 
         $isOwner = $gallery->author->id === $user->id;
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
         if (!$isOwner && !$isAdmin) {
-            throw new AccessDeniedHttpException('You are not the owner of this gallery');
+            throw new AccessDeniedHttpException('publication.user.gallery.preview.not_owner');
         }
 
         if ($gallery->status === Gallery::STATUS_ONLINE) {
-            throw new AccessDeniedHttpException('This gallery is already online. View it directly.');
+            throw new AccessDeniedHttpException('publication.user.gallery.preview.already_online');
         }
 
         return $this->builder->buildPreviewFromEntity($gallery);

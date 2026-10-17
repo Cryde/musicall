@@ -56,19 +56,19 @@ readonly class TechRiderStagePlotUpdateProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['riderId'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         $this->writeGuard->assertWritable($techRider);
 
         $item = $this->itemRepository->findOneByIdAndRider((string) $uriVariables['itemId'], $techRider);
         if (!$item instanceof TechRiderItem) {
-            throw new NotFoundHttpException('Élément introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.item.not_found');
         }
 
         if ($item->type !== TechRiderItemType::StagePlot) {
             throw new UnprocessableEntityHttpException(
-                'Seul un élément de type plan de scène peut contenir un plan de scène',
+                'band_space.tech_rider.item.stage_plot_wrong_type',
             );
         }
 

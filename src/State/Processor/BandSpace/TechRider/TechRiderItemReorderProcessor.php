@@ -51,7 +51,7 @@ readonly class TechRiderItemReorderProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['riderId'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         $this->writeGuard->assertWritable($techRider);
@@ -81,7 +81,7 @@ readonly class TechRiderItemReorderProcessor implements ProcessorInterface
 
         if ($requestedIds !== $knownIds) {
             throw new UnprocessableEntityHttpException(
-                'Les positions doivent couvrir exactement les éléments de ce tech rider',
+                'band_space.tech_rider.item.positions_mismatch',
             );
         }
 

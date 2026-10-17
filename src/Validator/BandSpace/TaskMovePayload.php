@@ -18,10 +18,10 @@ class TaskMovePayload extends Constraint
 {
     public const string ERROR_CODE = 'music_all_a3e8b210-7c2f-4f5d-9b1e-3a8c5d6e7f8a';
 
-    public string $invalidItemMessage = 'Chaque position doit contenir un id (UUID) et une position (entier)';
-    public string $taskNotInPositionsMessage = 'La tâche déplacée doit figurer dans les positions';
-    public string $duplicateIdMessage = 'Chaque tâche ne peut apparaître qu\'une seule fois';
-    public string $notContiguousMessage = 'Les positions doivent former une séquence 0..n-1 sans trou ni doublon';
+    public string $invalidItemMessage = 'band_space.task.position_invalid_item';
+    public string $taskNotInPositionsMessage = 'band_space.task.moved_task_not_in_positions';
+    public string $duplicateIdMessage = 'band_space.task.positions_duplicate_id';
+    public string $notContiguousMessage = 'band_space.task.positions_not_contiguous';
 
     public function getTargets(): string
     {

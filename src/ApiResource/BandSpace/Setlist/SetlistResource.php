@@ -84,7 +84,7 @@ class SetlistResource
     #[Assert\Length(max: 255, maxMessage: 'common.name.too_long')]
     public string $name;
 
-    #[Assert\Range(min: 60, max: 86400, notInRangeMessage: 'L\'objectif doit être entre 1 minute et 24 heures')]
+    #[Assert\Range(min: 60, max: 86400, notInRangeMessage: 'band_space.setlist.target_duration_out_of_range')]
     public ?int $targetDuration = null;
 
     public ?\DateTimeInterface $archiveDatetime = null;

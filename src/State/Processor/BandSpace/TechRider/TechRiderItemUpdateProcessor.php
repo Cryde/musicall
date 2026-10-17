@@ -63,14 +63,14 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['riderId'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         $this->writeGuard->assertWritable($techRider);
 
         $item = $this->itemRepository->findOneByIdAndRider((string) $uriVariables['id'], $techRider);
         if (!$item instanceof TechRiderItem) {
-            throw new NotFoundHttpException('Élément introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.item.not_found');
         }
 
         // Absent and null mean different things here: a title-only save must not erase the
@@ -104,7 +104,7 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
             // Same rule the other way round: only a Document item's body is a file.
             if (!$item->type->usesFile()) {
                 throw new UnprocessableEntityHttpException(
-                    'Seul un élément de type document peut référencer un fichier',
+                    'band_space.tech_rider.item.file_requires_document_type',
                 );
             }
 
@@ -174,13 +174,13 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
 
         $file = $this->fileRepository->findOneByIdAndBandSpace($fileId, $bandSpace);
         if (!$file instanceof BandSpaceFile) {
-            throw new UnprocessableEntityHttpException('Fichier introuvable dans cet espace');
+            throw new UnprocessableEntityHttpException('band_space.tech_rider.item.file_not_in_space');
         }
 
         $mimeType = $file->currentVersion?->mimeType;
         if ($mimeType === null || !BandSpaceFileMimeAllowlist::isRenderableAsPage($mimeType)) {
             throw new UnprocessableEntityHttpException(
-                'Ce type de fichier ne peut pas servir de page (images et PDF uniquement)',
+                'band_space.tech_rider.item.file_type_not_allowed',
             );
         }
 

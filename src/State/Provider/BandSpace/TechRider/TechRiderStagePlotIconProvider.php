@@ -25,7 +25,7 @@ readonly class TechRiderStagePlotIconProvider implements ProviderInterface
         if (isset($uriVariables['slug'])) {
             $icon = TechRiderStagePlotIcon::tryFrom((string) $uriVariables['slug']);
             if ($icon === null) {
-                throw new NotFoundHttpException('Icône introuvable');
+                throw new NotFoundHttpException('band_space.tech_rider.stage_plot.icon_not_found');
             }
 
             return $this->build($icon);

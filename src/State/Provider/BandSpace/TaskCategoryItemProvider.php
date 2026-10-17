@@ -37,7 +37,7 @@ readonly class TaskCategoryItemProvider implements ProviderInterface
 
         $category = $this->taskCategoryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
-            throw new NotFoundHttpException('Catégorie introuvable');
+            throw new NotFoundHttpException('band_space.task.category.not_found');
         }
 
         return $this->taskCategoryBuilder->buildItem($category);

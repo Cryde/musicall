@@ -34,12 +34,12 @@ readonly class UserGalleryImageSetCoverProvider implements ProviderInterface
         /** @var User $user */
         $user = $this->security->getUser();
         if (!($image = $this->galleryImageRepository->find($uriVariables['id'])) instanceof \App\Entity\Image\GalleryImage) {
-            throw new NotFoundHttpException('Image non trouvee');
+            throw new NotFoundHttpException('publication.user.gallery.image_not_found');
         }
 
         $gallery = $image->gallery;
         if ($gallery->author->id !== $user->id) {
-            throw new AccessDeniedHttpException('Vous n\'etes pas autorise a modifier cette image');
+            throw new AccessDeniedHttpException('publication.user.gallery.image_edit_forbidden');
         }
 
         return $this->userGalleryBuilder->buildImageFromEntity($image);

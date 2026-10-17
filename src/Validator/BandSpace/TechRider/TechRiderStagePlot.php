@@ -51,22 +51,22 @@ class TechRiderStagePlot extends Constraint
     public const int MIN_ROTATION = 0;
     public const int MAX_ROTATION = 359;
 
-    public string $invalidDocumentMessage = 'Le plan de scène doit être un objet';
-    public string $unknownKeyMessage = 'Champ inconnu dans le plan de scène';
-    public string $wrongVersionMessage = 'Version de plan de scène non prise en charge';
-    public string $invalidListMessage = 'Ce champ doit être une liste';
-    public string $tooManyElementsMessage = 'Un plan de scène ne peut pas dépasser {{ limit }} éléments';
-    public string $tooManyLegendEntriesMessage = 'La légende ne peut pas dépasser {{ limit }} entrées';
-    public string $invalidEntryMessage = 'Cette entrée est mal formée';
-    public string $tooLongIdMessage = 'L\'identifiant ne peut pas dépasser {{ limit }} caractères';
-    public string $duplicateIdMessage = 'Chaque élément doit avoir un identifiant unique';
-    public string $coordinateOutOfRangeMessage = 'La position doit être comprise entre 0 et 1';
-    public string $scaleOutOfRangeMessage = 'La taille doit être comprise entre {{ min }} et {{ max }}';
-    public string $invalidRotationMessage = 'La rotation doit être un entier de 0 à 359 degrés';
+    public string $invalidDocumentMessage = 'band_space.tech_rider.stage_plot.not_an_object';
+    public string $unknownKeyMessage = 'band_space.tech_rider.stage_plot.unknown_field';
+    public string $wrongVersionMessage = 'band_space.tech_rider.stage_plot.version_unsupported';
+    public string $invalidListMessage = 'band_space.tech_rider.stage_plot.not_a_list';
+    public string $tooManyElementsMessage = 'band_space.tech_rider.stage_plot.too_many_elements';
+    public string $tooManyLegendEntriesMessage = 'band_space.tech_rider.stage_plot.too_many_legend_entries';
+    public string $invalidEntryMessage = 'band_space.tech_rider.stage_plot.entry_malformed';
+    public string $tooLongIdMessage = 'band_space.tech_rider.stage_plot.id_too_long';
+    public string $duplicateIdMessage = 'band_space.tech_rider.stage_plot.id_duplicate';
+    public string $coordinateOutOfRangeMessage = 'band_space.tech_rider.stage_plot.position_out_of_range';
+    public string $scaleOutOfRangeMessage = 'band_space.tech_rider.stage_plot.scale_out_of_range';
+    public string $invalidRotationMessage = 'band_space.tech_rider.stage_plot.rotation_invalid';
     public string $tooLongLabelMessage = 'common.label.too_long';
-    public string $unknownIconMessage = 'Icône inconnue';
-    public string $unknownColourMessage = 'Couleur inconnue';
-    public string $aspectRatioOutOfRangeMessage = 'Le format de scène doit être compris entre {{ min }} et {{ max }}';
+    public string $unknownIconMessage = 'band_space.tech_rider.stage_plot.icon_unknown';
+    public string $unknownColourMessage = 'band_space.tech_rider.stage_plot.colour_unknown';
+    public string $aspectRatioOutOfRangeMessage = 'band_space.tech_rider.stage_plot.aspect_ratio_out_of_range';
 
     public function getTargets(): string
     {

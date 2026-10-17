@@ -35,8 +35,8 @@ class UserGalleryEdit
     #[ApiProperty(identifier: true)]
     public int $id;
 
-    #[Assert\NotBlank(message: 'Le titre est requis')]
-    #[Assert\Length(min: 3, max: 200, minMessage: 'Le titre doit contenir au moins {{ limit }} caracteres')]
+    #[Assert\NotBlank(message: 'publication.gallery.title_required')]
+    #[Assert\Length(min: 3, max: 200, minMessage: 'publication.gallery.title_too_short')]
     public string $title;
 
     public ?string $description = null;

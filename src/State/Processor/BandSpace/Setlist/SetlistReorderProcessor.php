@@ -10,6 +10,7 @@ use App\Entity\BandSpace\SetlistItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSetlistActivityType;
+use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\SetlistItemRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -17,8 +18,8 @@ use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -63,12 +64,16 @@ readonly class SetlistReorderProcessor implements ProcessorInterface
 
         $missingIds = array_diff($requestedIds, $foundIds);
         if (count($missingIds) > 0) {
-            throw new BadRequestHttpException(sprintf('Item %s introuvable dans cette setlist', reset($missingIds)));
+            throw new TranslatableHttpException(
+                Response::HTTP_BAD_REQUEST,
+                'band_space.setlist.item.not_found_in_setlist',
+                ['id' => (string) reset($missingIds)],
+            );
         }
 
         // Reorder must cover every item in the setlist (no partial reorders).
         if (count($foundItems) !== $setlist->items->count()) {
-            throw new UnprocessableEntityHttpException('Le réordonnancement doit inclure tous les items de la setlist');
+            throw new UnprocessableEntityHttpException('band_space.setlist.reorder_incomplete');
         }
 
         $this->itemRepository->bulkUpdatePositions($data->positions);

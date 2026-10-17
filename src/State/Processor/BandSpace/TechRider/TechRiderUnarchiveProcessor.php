@@ -52,11 +52,11 @@ readonly class TechRiderUnarchiveProcessor implements ProcessorInterface
 
         $techRider = $this->techRiderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$techRider instanceof TechRider) {
-            throw new NotFoundHttpException('Tech rider introuvable');
+            throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
 
         if (!$techRider->isArchived()) {
-            throw new ConflictHttpException('Ce tech rider n\'est pas archivé');
+            throw new ConflictHttpException('band_space.tech_rider.not_archived');
         }
 
         $techRider->archiveDatetime = null;

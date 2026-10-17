@@ -16,10 +16,10 @@ class TaskReorderPositions extends Constraint
 {
     public const string ERROR_CODE = 'music_all_b7c3d2e1-5f6a-4b8c-9d0e-1f2a3b4c5d6e';
 
-    public string $emptyMessage = 'Les positions sont requises';
-    public string $invalidItemMessage = 'Chaque position doit contenir un id (UUID) et une position (entier)';
-    public string $duplicateIdMessage = 'Chaque tâche ne peut apparaître qu\'une seule fois';
-    public string $notContiguousMessage = 'Les positions doivent former une séquence 0..n-1 sans trou ni doublon';
+    public string $emptyMessage = 'band_space.task.positions_required';
+    public string $invalidItemMessage = 'band_space.task.position_invalid_item';
+    public string $duplicateIdMessage = 'band_space.task.positions_duplicate_id';
+    public string $notContiguousMessage = 'band_space.task.positions_not_contiguous';
 
     public function getTargets(): string
     {
