@@ -10,9 +10,11 @@ use App\Entity\User\UserProfile;
 use App\Event\UserConfirmedEvent;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
+use App\Locale\RequestLocaleResolver;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function Symfony\Component\String\u;
 
@@ -24,6 +26,8 @@ readonly class OAuthUserService
         private SocialAccountRepository  $socialAccountRepository,
         private ProfilePictureImporter   $profilePictureImporter,
         private EventDispatcherInterface $eventDispatcher,
+        private RequestStack             $requestStack,
+        private RequestLocaleResolver    $requestLocaleResolver,
     ) {
     }
 
@@ -95,6 +99,12 @@ readonly class OAuthUserService
         $user->password = null; // Social-only user, no password
         $user->confirmationDatetime = new \DateTime(); // Auto-confirmed
         $user->lastLoginDatetime = new \DateTime(); // First login
+        // Resolved here, not read from the LocaleSwitcher: the app's Google sign-in creates the user inside
+        // the firewall, before RequestLocaleListener has run. Nobody is signed in yet, hence no user.
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request !== null) {
+            $user->locale = $this->requestLocaleResolver->resolve($request, null);
+        }
 
         $profile = new UserProfile();
         $user->profile = $profile;

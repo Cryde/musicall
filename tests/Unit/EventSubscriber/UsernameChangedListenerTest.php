@@ -45,4 +45,19 @@ class UsernameChangedListenerTest extends TestCase
 
         ($this->listener)($event);
     }
+
+    public function test_it_sends_the_email_in_the_user_locale(): void
+    {
+        $user = new User();
+        $user->email = 'test@example.com';
+        $user->locale = 'en';
+        $changedAt = new \DateTimeImmutable('2024-01-15 10:30:00');
+
+        $this->usernameChangedEmail
+            ->expects($this->once())
+            ->method('send')
+            ->with('test@example.com', 'old_username', 'new_username', $changedAt, 'en');
+
+        ($this->listener)(new UsernameChangedEvent($user, 'old_username', 'new_username', $changedAt));
+    }
 }

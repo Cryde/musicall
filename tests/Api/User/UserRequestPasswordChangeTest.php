@@ -55,6 +55,22 @@ class UserRequestPasswordChangeTest extends ApiTestCase
         $this->assertEmailAddressContains($email, 'To', 'base_user1@email.com');
     }
 
+    public function test_request_password_change_for_a_user_whose_locale_has_no_template_gets_the_french_one(): void
+    {
+        UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'locale' => 'en']);
+
+        $this->client->jsonRequest('POST', '/api/users/request-reset-password', [
+            'login' => 'base_user_1',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $this->assertEmailCount(1);
+        $email = $this->getMailerMessage();
+        $this->assertEmailHeaderSame($email, 'templateId', '2');
+        $this->assertEmailTextBodyContains($email, 'Réinitialisation du mot de passe');
+        $this->assertEmailAddressContains($email, 'To', 'base_user1@email.com');
+    }
+
     public function test_request_password_change_with_account_not_found(): void
     {
         $this->client->jsonRequest('POST', '/api/users/request-reset-password', [

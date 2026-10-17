@@ -10,6 +10,7 @@ use Symfony\Component\Mime\Email;
 
 class ContactUsEmail
 {
+    // Sent to the team, and the admin side stays French (#1199): one template, no recipient locale.
     private const TEMPLATE_ID = '3';
 
     public function __construct(

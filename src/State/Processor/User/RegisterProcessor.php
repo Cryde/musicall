@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -34,6 +35,7 @@ readonly class RegisterProcessor implements ProcessorInterface
         private RateLimiterFactoryInterface $registrationAttemptLimiter,
         private ValidatorInterface $validator,
         private RequestStack $requestStack,
+        private LocaleSwitcher $localeSwitcher,
     ) {
     }
 
@@ -58,6 +60,8 @@ readonly class RegisterProcessor implements ProcessorInterface
         $user->username = $data->username;
         $user->email = $data->email;
         $user->plainPassword = $data->password;
+        // The language they signed up in, so their emails follow it from the verification code on.
+        $user->locale = $this->localeSwitcher->getLocale();
 
         $user->password = $this->userPasswordHasher->hashPassword(
             $user,

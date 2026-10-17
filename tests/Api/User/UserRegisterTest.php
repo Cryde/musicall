@@ -10,6 +10,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -54,6 +55,27 @@ class UserRegisterTest extends ApiTestCase
         $this->assertEmailHeaderSame($email, 'templateId', '10');
         $this->assertEmailAddressContains($email, 'From', 'no-reply@musicall.com');
         $this->assertEmailAddressContains($email, 'To', 'super_email@mail.com');
+    }
+
+    public function test_register_stores_the_locale_the_request_resolved(): void
+    {
+        // No real request can resolve to `en` while only `fr` is enabled: the switcher stands in for one that did.
+        $localeSwitcher = $this->createStub(LocaleSwitcher::class);
+        $localeSwitcher->method('getLocale')->willReturn('en');
+        self::getContainer()->set('translation.locale_switcher', $localeSwitcher);
+
+        $this->client->jsonRequest('POST', '/api/users/register', [
+            'username' => 'super_username',
+            'password' => 'password',
+            'email' => 'super_email@mail.com',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $user = static::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'super_username']);
+        $this->assertSame('en', $user?->locale);
+        // No English template yet: the verification code still goes out in French.
+        $this->assertEmailCount(1);
+        $this->assertEmailHeaderSame($this->getMailerMessage(), 'templateId', '10');
     }
 
 
