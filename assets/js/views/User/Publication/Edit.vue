@@ -334,6 +334,7 @@
           v-model:short-description="shortDescription"
           v-model:category-id="categoryId"
           v-model:tags="tags"
+          v-model:language="language"
           :word-count="wordCount"
           :reading-time="readingTime"
           :disabled="publicationEditStore.isSaving || publicationEditStore.isSubmitting"
@@ -420,6 +421,7 @@ const title = ref('')
 const shortDescription = ref('')
 const categoryId = ref(null)
 const tags = ref([])
+const language = ref(null)
 const currentContent = ref('')
 const lastSaved = ref(null)
 const focusMode = ref(false)
@@ -465,6 +467,7 @@ const isDirty = computed(() => {
     shortDescription.value !== lastSaved.value.shortDescription ||
     categoryId.value !== lastSaved.value.categoryId ||
     JSON.stringify(tags.value) !== JSON.stringify(lastSaved.value.tags) ||
+    language.value !== lastSaved.value.language ||
     currentContent.value !== lastSaved.value.content
   )
 })
@@ -485,6 +488,7 @@ function takeSnapshot() {
     shortDescription: shortDescription.value,
     categoryId: categoryId.value,
     tags: [...tags.value],
+    language: language.value,
     content: currentContent.value
   }
 }
@@ -496,6 +500,7 @@ function syncSettingsFromStore() {
   shortDescription.value = p.short_description || ''
   categoryId.value = p.category?.id ?? null
   tags.value = Array.isArray(p.tags) ? [...p.tags] : []
+  language.value = p.language ?? null
   currentContent.value = p.content || ''
   takeSnapshot()
 }
@@ -518,7 +523,8 @@ async function silentAutoSave() {
       shortDescription: shortDescription.value.trim(),
       categoryId: categoryId.value,
       content: currentContent.value,
-      tags: tags.value
+      tags: tags.value,
+      language: language.value
     })
     if (success) takeSnapshot()
   } finally {
@@ -685,7 +691,8 @@ async function handleSave() {
     shortDescription: shortDescription.value.trim(),
     categoryId: categoryId.value,
     content: currentContent.value,
-    tags: tags.value
+    tags: tags.value,
+    language: language.value
   })
 
   if (success) {

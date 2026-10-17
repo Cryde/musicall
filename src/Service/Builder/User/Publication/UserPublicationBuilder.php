@@ -5,6 +5,7 @@ namespace App\Service\Builder\User\Publication;
 use App\ApiResource\User\Publication\UserPublication;
 use App\ApiResource\User\Publication\UserPublicationCategory;
 use App\Entity\Publication;
+use App\Repository\PublicationRepository;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -15,10 +16,14 @@ readonly class UserPublicationBuilder
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
         private ReferenceNameTranslator $referenceNames,
+        private PublicationRepository $publicationRepository,
     ) {
     }
 
-    public function buildFromEntity(Publication $publication): UserPublication
+    /**
+     * @param string[] $groupLanguages the languages of every publication in its translation group, itself included
+     */
+    public function buildFromEntity(Publication $publication, array $groupLanguages = []): UserPublication
     {
         $creationDatetime = $publication->creationDatetime;
 
@@ -30,6 +35,8 @@ readonly class UserPublicationBuilder
         $dto->editionDatetime = $publication->editionDatetime;
         $dto->statusId = $publication->status;
         $dto->typeId = (int) $publication->type;
+        $dto->language = $publication->language;
+        $dto->translationLanguages = array_values(array_diff($groupLanguages, [$publication->language]));
 
         $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
@@ -64,6 +71,20 @@ readonly class UserPublicationBuilder
      */
     public function buildFromEntities(array $publications): array
     {
-        return array_map(fn(Publication $p): \App\ApiResource\User\Publication\UserPublication => $this->buildFromEntity($p), $publications);
+        $translationGroups = array_filter(
+            array_map(static fn (Publication $publication): ?string => $publication->translationGroup, $publications),
+        );
+        // One query for the whole page rather than one per translated publication.
+        $languagesByGroup = $this->publicationRepository->findLanguagesByTranslationGroup(
+            array_values(array_unique($translationGroups)),
+        );
+
+        return array_map(
+            fn (Publication $publication): UserPublication => $this->buildFromEntity(
+                $publication,
+                $languagesByGroup[$publication->translationGroup ?? ''] ?? [],
+            ),
+            $publications,
+        );
     }
 }

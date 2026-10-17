@@ -3,6 +3,7 @@
 namespace App\Tests\Api\Publication;
 
 use App\Entity\Publication;
+use App\Entity\PublicationSubCategory;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Metric\VoteCacheFactory;
@@ -124,6 +125,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
                     'cover'                => null,
                     'description'          => 'Petite description de la publication 2',
+                    'language'             => 'fr',
                     'upvotes'              => 1,
                     'downvotes'            => 2,
                     'user_vote'            => null,
@@ -150,6 +152,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'cover'                => null,
                     'description'          => 'Petite description de la publication 1',
+                    'language'             => 'fr',
                     'upvotes'              => 3,
                     'downvotes'            => 1,
                     'user_vote'            => 1,
@@ -197,6 +200,293 @@ class PublicationGetCollectionTest extends ApiTestCase
                     ],
                 ],
             ],
+        ]);
+    }
+
+    public function test_a_french_listing_shows_its_texts_and_every_video(): void
+    {
+        $news = PublicationSubCategoryFactory::new()->asNews()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $french = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'title' => 'Un article', 'slug' => 'un-article',
+            'shortDescription' => 'En français', 'publicationDatetime' => new \DateTime('2022-01-01 10:00:00'),
+        ])->create();
+        $english = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'title' => 'An article', 'slug' => 'an-article',
+            'shortDescription' => 'In English', 'publicationDatetime' => new \DateTime('2022-01-02 10:00:00'),
+        ])->create();
+        $video = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'Une video', 'slug' => 'v-une-video',
+            'publicationDatetime' => new \DateTime('2022-01-03 10:00:00'),
+        ])->create();
+
+        $this->client->request('GET', '/api/publications', [
+            'order' => ['publication_datetime' => 'asc'],
+            'sub_category.slug' => 'news',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/un-article',
+                    '@type' => 'Publication',
+                    'id' => $french->id,
+                    'title' => 'Un article',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'un-article',
+                    'publication_datetime' => '2022-01-01T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'En français',
+                    'language' => 'fr',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/v-une-video',
+                    '@type' => 'Publication',
+                    'id' => $video->id,
+                    'title' => 'Une video',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-une-video',
+                    'publication_datetime' => '2022-01-03T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 2,
+            'view' => [
+                '@id' => '/api/publications?order%5Bpublication_datetime%5D=asc&sub_category.slug=news',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => $this->expectedSearch(),
+        ]);
+    }
+
+    public function test_an_english_listing_shows_its_texts_and_every_video(): void
+    {
+        $news = PublicationSubCategoryFactory::new()->asNews()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $french = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'title' => 'Un article', 'slug' => 'un-article',
+            'shortDescription' => 'En français', 'publicationDatetime' => new \DateTime('2022-01-01 10:00:00'),
+        ])->create();
+        $english = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'title' => 'An article', 'slug' => 'an-article',
+            'shortDescription' => 'In English', 'publicationDatetime' => new \DateTime('2022-01-02 10:00:00'),
+        ])->create();
+        $video = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'Une video', 'slug' => 'v-une-video',
+            'publicationDatetime' => new \DateTime('2022-01-03 10:00:00'),
+        ])->create();
+
+        $this->client->request('GET', '/api/publications', [
+            'order' => ['publication_datetime' => 'asc'],
+            'sub_category.slug' => 'news',
+        ], [], ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/an-article',
+                    '@type' => 'Publication',
+                    'id' => $english->id,
+                    'title' => 'An article',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'an-article',
+                    'publication_datetime' => '2022-01-02T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'In English',
+                    'language' => 'en',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/v-une-video',
+                    '@type' => 'Publication',
+                    'id' => $video->id,
+                    'title' => 'Une video',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-une-video',
+                    'publication_datetime' => '2022-01-03T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 2,
+            'view' => [
+                '@id' => '/api/publications?order%5Bpublication_datetime%5D=asc&sub_category.slug=news',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => $this->expectedSearch(),
+        ]);
+    }
+
+    public function test_an_english_course_listing_shows_its_courses_and_every_video(): void
+    {
+        // A slug no catalogue names, so the title reads the same in every locale.
+        $lessons = PublicationSubCategoryFactory::new([
+            'title' => 'Lessons', 'slug' => 'test-lessons', 'position' => 1, 'type' => PublicationSubCategory::TYPE_COURSE,
+        ])->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        PublicationFactory::new([
+            'author' => $author, 'subCategory' => $lessons, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'slug' => 'un-cours',
+        ])->create();
+        $english = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $lessons, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'title' => 'A lesson', 'slug' => 'a-lesson',
+            'shortDescription' => 'In English', 'publicationDatetime' => new \DateTime('2022-01-02 10:00:00'),
+        ])->create();
+        $video = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $lessons, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'A video lesson', 'slug' => 'v-a-video-lesson',
+            'publicationDatetime' => new \DateTime('2022-01-03 10:00:00'),
+        ])->create();
+
+        $this->client->request('GET', '/api/publications', [
+            'order' => ['publication_datetime' => 'asc'],
+            'sub_category.type' => '2',
+        ], [], ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/a-lesson',
+                    '@type' => 'Publication',
+                    'id' => $english->id,
+                    'title' => 'A lesson',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $lessons->id,
+                        'title' => 'Lessons',
+                        'slug' => 'test-lessons',
+                        'is_course' => true,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'a-lesson',
+                    'publication_datetime' => '2022-01-02T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'In English',
+                    'language' => 'en',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/v-a-video-lesson',
+                    '@type' => 'Publication',
+                    'id' => $video->id,
+                    'title' => 'A video lesson',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $lessons->id,
+                        'title' => 'Lessons',
+                        'slug' => 'test-lessons',
+                        'is_course' => true,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-a-video-lesson',
+                    'publication_datetime' => '2022-01-03T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 2,
+            'view' => [
+                '@id' => '/api/publications?order%5Bpublication_datetime%5D=asc&sub_category.type=2',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => $this->expectedSearch(),
         ]);
     }
 
@@ -290,6 +580,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'publication_datetime' => \DateTimeImmutable::createFromInterface($publication->publicationDatetime)->format(\DateTimeInterface::ATOM),
             'cover' => null,
             'description' => $publication->shortDescription,
+            'language' => 'fr',
             'upvotes' => 0,
             'downvotes' => 0,
             'user_vote' => null,

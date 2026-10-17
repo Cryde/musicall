@@ -19,6 +19,20 @@ class PublicationDirector
     ) {
     }
 
+    /** A text, in its author's language until they pick another one in the editor. */
+    public function buildTextDraft(string $title, PublicationSubCategory $category, User $author): Publication
+    {
+        $publication = new Publication();
+        $publication->title = $title;
+        $publication->subCategory = $category;
+        $publication->author = $author;
+        $publication->slug = $this->publicationSlug->createForDraft($title);
+        $publication->status = Publication::STATUS_DRAFT;
+        $publication->assignType(Publication::TYPE_TEXT);
+
+        return $publication;
+    }
+
     public function buildVideo(AddVideo $addVideo, User $user): Publication
     {
         $category = $addVideo->category;

@@ -8,6 +8,7 @@ use App\ApiResource\Publication\Publication\Category;
 use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Tag;
 use App\ApiResource\Publication\Publication\Thread;
+use App\ApiResource\Publication\Publication\Translation;
 use App\ApiResource\Publication\Publication\Type;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
@@ -15,6 +16,7 @@ use App\Entity\Publication as PublicationEntity;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
 use App\Enum\Publication\PublicationType;
+use App\Repository\PublicationRepository;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -29,6 +31,7 @@ readonly class PublicationBuilder
         #[Target('app.publication_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
         private ReferenceNameTranslator $referenceNames,
+        private PublicationRepository $publicationRepository,
     ) {
     }
 
@@ -80,6 +83,7 @@ readonly class PublicationBuilder
         $publication->type = $this->buildType((int) $publicationEntity->type);
         $publication->language = $publicationEntity->language;
         $publication->tags = $this->buildTags($publicationEntity);
+        $publication->translations = $this->buildTranslations($publicationEntity);
         $publication->viewCount = $publicationEntity->viewCache->count ?? 0;
         $publication->readingTime = $publicationEntity->type === PublicationEntity::TYPE_TEXT
             ? $this->calculateReadingTime($publication->content)
@@ -154,6 +158,28 @@ readonly class PublicationBuilder
         $count = count(array_filter($words, static fn (string $w): bool => $w !== ''));
 
         return max(1, (int) ceil($count / self::READING_WORDS_PER_MINUTE));
+    }
+
+    /**
+     * Drafts and publications awaiting review are left out: their page is not public.
+     *
+     * @return Translation[]
+     */
+    private function buildTranslations(PublicationEntity $publicationEntity): array
+    {
+        $translations = [];
+        foreach ($this->publicationRepository->findTranslationSiblings($publicationEntity) as $sibling) {
+            if ($sibling->status !== PublicationEntity::STATUS_ONLINE) {
+                continue;
+            }
+            $translation = new Translation();
+            // Only texts join a group, and a text always has a language.
+            $translation->language = (string) $sibling->language;
+            $translation->slug = $sibling->slug;
+            $translations[] = $translation;
+        }
+
+        return $translations;
     }
 
     /**

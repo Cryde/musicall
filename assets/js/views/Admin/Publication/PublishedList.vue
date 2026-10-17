@@ -47,6 +47,12 @@
 
       <Column field="category.title" header="Catégorie" sortable />
 
+      <Column v-if="offersLanguageChoice(ENABLED_LOCALES)" field="language" header="Langue" sortable>
+        <template #body="{ data }">
+          <PublicationLanguageLabel :language="data.language" />
+        </template>
+      </Column>
+
       <Column field="author.username" header="Auteur" sortable />
 
       <Column field="publication_datetime" header="Publié le" sortable>
@@ -95,8 +101,11 @@ import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onUnmounted, ref } from 'vue'
+import PublicationLanguageLabel from '../../../components/Publication/PublicationLanguageLabel.vue'
 import { dateFnsLocale } from '../../../i18n/formatLocale.js'
+import { ENABLED_LOCALES } from '../../../i18n/locale.js'
 import { useAdminPublicationStore } from '../../../store/admin/publication.js'
+import { offersLanguageChoice } from '../../../utils/publicationLanguage.js'
 
 const confirm = useConfirm()
 const toast = useToast()

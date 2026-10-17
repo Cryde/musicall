@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\User\Publication;
 
 use App\Entity\Publication;
+use App\Repository\PublicationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationFactory;
@@ -156,7 +157,57 @@ class UserPublicationEditTest extends ApiTestCase
         $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
     }
 
-    public function test_patch_cannot_change_language(): void
+    public function test_get_edit_names_the_languages_of_its_translations(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $category = PublicationSubCategoryFactory::new()->asNews()->create();
+        $original = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'slug' => 'the-original',
+            'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'en',
+        ]);
+        $translation = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'title' => 'La traduction',
+            'slug' => 'la-traduction-',
+            'shortDescription' => null,
+            'content' => null,
+            'status' => Publication::STATUS_DRAFT,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'fr',
+        ]);
+        $translation->joinTranslationGroupOf($original);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications/' . $translation->id . '/edit');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserPublicationEdit',
+            '@id' => '/api/user/publications/' . $translation->id . '/edit',
+            '@type' => 'UserPublicationEdit',
+            'id' => $translation->id,
+            'title' => 'La traduction',
+            'slug' => 'la-traduction-',
+            'status_id' => Publication::STATUS_DRAFT,
+            'category' => [
+                '@type' => 'UserPublicationCategory',
+                'id' => $category->id,
+                'title' => 'News',
+                'slug' => 'news',
+            ],
+            'tags' => [],
+            'language' => 'fr',
+            'translation_languages' => ['en'],
+        ]);
+    }
+
+    public function test_patch_changes_the_language(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $category = PublicationSubCategoryFactory::new()->asNews()->create();
@@ -195,8 +246,137 @@ class UserPublicationEditTest extends ApiTestCase
                 'slug' => 'news',
             ],
             'tags' => [],
+            'language' => 'en',
+            'translation_languages' => [],
+        ]);
+        $reloaded = self::getContainer()->get(PublicationRepository::class)->find($publication->id);
+        $this->assertSame('en', $reloaded->language);
+    }
+
+    public function test_patch_refuses_a_language_that_is_not_enabled(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $publication = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => PublicationSubCategoryFactory::new()->asNews(),
+            'status' => Publication::STATUS_DRAFT,
+            'type' => Publication::TYPE_TEXT,
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
+            'CONTENT_TYPE' => 'application/merge-patch+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ], json_encode(['language' => 'de']));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_a16a08ba-d862-4666-a61c-3aa93707c199',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'language',
+                    'message' => 'Cette langue n\'est pas disponible',
+                    'code' => 'music_all_a16a08ba-d862-4666-a61c-3aa93707c199',
+                ],
+            ],
+            'detail' => 'language: Cette langue n\'est pas disponible',
+            'type' => '/validation_errors/music_all_a16a08ba-d862-4666-a61c-3aa93707c199',
+            'title' => 'An error occurred',
+            'description' => 'language: Cette langue n\'est pas disponible',
+        ]);
+        $reloaded = self::getContainer()->get(PublicationRepository::class)->find($publication->id);
+        $this->assertSame('fr', $reloaded->language);
+    }
+
+    public function test_patch_refuses_to_remove_the_language_of_a_text(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $publication = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => PublicationSubCategoryFactory::new()->asNews(),
+            'status' => Publication::STATUS_DRAFT,
+            'type' => Publication::TYPE_TEXT,
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
+            'CONTENT_TYPE' => 'application/merge-patch+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ], json_encode(['language' => null]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_a16a08ba-d862-4666-a61c-3aa93707c199',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'language',
+                    'message' => 'Cette langue n\'est pas disponible',
+                    'code' => 'music_all_a16a08ba-d862-4666-a61c-3aa93707c199',
+                ],
+            ],
+            'detail' => 'language: Cette langue n\'est pas disponible',
+            'type' => '/validation_errors/music_all_a16a08ba-d862-4666-a61c-3aa93707c199',
+            'title' => 'An error occurred',
+            'description' => 'language: Cette langue n\'est pas disponible',
+        ]);
+        $reloaded = self::getContainer()->get(PublicationRepository::class)->find($publication->id);
+        $this->assertSame('fr', $reloaded->language);
+    }
+
+    public function test_patch_refuses_the_language_of_another_translation(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $category = PublicationSubCategoryFactory::new()->asNews()->create();
+        $original = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'en',
+        ]);
+        $translation = PublicationFactory::new()->create([
+            'author' => $user,
+            'subCategory' => $category,
+            'status' => Publication::STATUS_DRAFT,
+            'type' => Publication::TYPE_TEXT,
             'language' => 'fr',
         ]);
+        $translation->joinTranslationGroupOf($original);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        $this->client->loginUser($user);
+        // The languages taken are the server's: sending none does not free one.
+        $this->client->request('PATCH', '/api/user/publications/' . $translation->id, [], [], [
+            'CONTENT_TYPE' => 'application/merge-patch+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ], json_encode(['language' => 'en', 'translation_languages' => [], 'translationLanguages' => []]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/6b3befbc-2f01-4ddf-be21-b57898905284',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'language',
+                    'message' => 'Cette publication existe déjà dans cette langue',
+                    'code' => '6b3befbc-2f01-4ddf-be21-b57898905284',
+                ],
+            ],
+            'detail' => 'language: Cette publication existe déjà dans cette langue',
+            'type' => '/validation_errors/6b3befbc-2f01-4ddf-be21-b57898905284',
+            'title' => 'An error occurred',
+            'description' => 'language: Cette publication existe déjà dans cette langue',
+        ]);
+        $reloaded = self::getContainer()->get(PublicationRepository::class)->find($translation->id);
+        $this->assertSame('fr', $reloaded->language);
     }
 
     public function test_patch_partial_update(): void

@@ -42,7 +42,23 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
     }
   }
 
-  async function save({ title, shortDescription, categoryId, content, tags }) {
+  async function createTranslation(id, { title, language }) {
+    isLoading.value = true
+    errors.value = []
+    try {
+      const result = await publicationApi.createTranslation(id, { title, language })
+      publication.value = result
+      return result
+    } catch (e) {
+      console.error('Failed to create translation:', e)
+      errors.value = extractErrors(e)
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function save({ title, shortDescription, categoryId, content, tags, language }) {
     if (!publication.value) return false
 
     isSaving.value = true
@@ -53,7 +69,8 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
         shortDescription,
         categoryId,
         content,
-        tags: tags ?? []
+        tags: tags ?? [],
+        language
       })
       publication.value = result
       return true
@@ -184,6 +201,7 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
     errors: readonly(errors),
     loadPublication,
     createPublication,
+    createTranslation,
     save,
     submit,
     uploadImage,

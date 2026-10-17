@@ -62,6 +62,7 @@ class PublicationTagTest extends ApiTestCase
             ],
             'tags' => ['Interview', 'Metal', 'Review'],
             'language' => 'fr',
+            'translation_languages' => [],
         ]);
     }
 
@@ -110,6 +111,7 @@ class PublicationTagTest extends ApiTestCase
             ],
             'tags' => ['A', 'B', 'C'],
             'language' => 'fr',
+            'translation_languages' => [],
         ]);
     }
 
@@ -158,6 +160,7 @@ class PublicationTagTest extends ApiTestCase
             ],
             'tags' => [],
             'language' => 'fr',
+            'translation_languages' => [],
         ]);
     }
 
@@ -206,6 +209,7 @@ class PublicationTagTest extends ApiTestCase
             ],
             'tags' => ['B'],
             'language' => 'fr',
+            'translation_languages' => [],
         ]);
     }
 
@@ -348,6 +352,7 @@ class PublicationTagTest extends ApiTestCase
                     'publication_datetime' => '2026-01-01T00:00:00+00:00',
                     'cover' => null,
                     'description' => 'Short description',
+                    'language' => 'fr',
                     'upvotes' => 0,
                     'downvotes' => 0,
                     'user_vote' => null,

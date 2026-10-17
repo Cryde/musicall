@@ -5,6 +5,7 @@ namespace App\Service\Builder\User\Publication;
 use App\ApiResource\User\Publication\UserPublicationCategory;
 use App\ApiResource\User\Publication\UserPublicationEdit;
 use App\Entity\Publication;
+use App\Repository\PublicationRepository;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -15,6 +16,7 @@ readonly class UserPublicationEditBuilder
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
         private ReferenceNameTranslator $referenceNames,
+        private PublicationRepository $publicationRepository,
     ) {
     }
 
@@ -29,6 +31,10 @@ readonly class UserPublicationEditBuilder
         $dto->statusId = $publication->status;
         $dto->coverUrl = $this->buildCoverUrl($publication);
         $dto->language = $publication->language;
+        $dto->translationLanguages = array_map(
+            static fn (Publication $sibling): string => (string) $sibling->language,
+            $this->publicationRepository->findTranslationSiblings($publication),
+        );
 
         $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
