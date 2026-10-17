@@ -8,7 +8,7 @@ import {
   virtualFolderId,
   virtualFolderSource
 } from '../constants/folderSelection.js'
-import { intlLocale } from '../i18n/formatLocale.js'
+import { intlLocale, treeIndent } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 import { FILES_PAGE_SIZE } from './filePagination.js'
 
@@ -268,7 +268,7 @@ export function folderSelectOptions(tree, rootDisabled = false) {
 
   const walk = (nodes, depth) => {
     for (const node of nodes ?? []) {
-      options.push({ label: '— '.repeat(depth) + node.name, value: node.id })
+      options.push({ label: treeIndent(depth) + node.name, value: node.id })
       if (Array.isArray(node.children) && node.children.length > 0) {
         walk(node.children, depth + 1)
       }

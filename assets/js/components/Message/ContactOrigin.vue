@@ -6,7 +6,7 @@
   >
     <i :class="contactOriginIcon(origin)" class="text-[0.7rem] shrink-0" aria-hidden="true" />
     <span class="truncate">
-      {{ contactOriginLabel(origin) }}<template v-if="details"> · {{ details }}</template>
+      {{ contactOriginLabel(origin) }}<template v-if="details">{{ ` ${separator()} ${details}` }}</template>
     </span>
   </p>
 
@@ -25,6 +25,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { separator } from '../../i18n/formatLocale.js'
 import {
   contactOriginDetails,
   contactOriginIcon,

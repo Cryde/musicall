@@ -167,7 +167,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { dateFnsLocale, intlLocale } from '../../../i18n/formatLocale.js'
+import { dateFnsLocale, intlLocale, noValue } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const props = defineProps({
@@ -309,7 +309,7 @@ function resetDialog() {
 }
 
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return noValue()
   return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',

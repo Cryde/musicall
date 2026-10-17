@@ -151,6 +151,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { formatBytes } from '../../../utils/formatBytes.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
 import InlineEditField from './Song/InlineEditField.vue'
@@ -172,18 +173,6 @@ const fileInput = ref(null)
 const isUploading = ref(false)
 const files = ref([])
 const isLoadingFiles = ref(false)
-
-function formatBytes(bytes) {
-  if (!bytes) return ''
-  const units = ['o', 'Ko', 'Mo', 'Go']
-  let value = bytes
-  let unit = 0
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit++
-  }
-  return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`
-}
 
 async function loadFiles() {
   if (!props.song) {

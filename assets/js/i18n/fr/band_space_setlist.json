@@ -74,7 +74,7 @@
     "new_setlist_with_selection": "Nouvelle setlist avec ces titres",
     "clear_selection": "Tout désélectionner",
     "songs_added": "{count} titre ajouté à « {name} » | {count} titres ajoutés à « {name} »",
-    "archive_selection_confirm_message": "Archiver {count} titre ? Ils seront retirés du répertoire actif et restent restaurables depuis la corbeille. | Archiver {count} titres ? Ils seront retirés du répertoire actif et restent restaurables depuis la corbeille.",
+    "archive_selection_confirm_message": "Archiver {count} titre ? Il sera retiré du répertoire actif et reste restaurable depuis la corbeille. | Archiver {count} titres ? Ils seront retirés du répertoire actif et restent restaurables depuis la corbeille.",
     "songs_archived": "Titre archivé | Titres archivés"
   },
   "editor": {

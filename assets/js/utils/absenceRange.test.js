@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { afterEach, describe, it } from 'node:test'
+import { i18n } from '../i18n/index.js'
 import { formatAbsenceRange, groupAbsencesByMonth } from './absenceRange.js'
 
 /**
@@ -44,6 +45,23 @@ describe('formatAbsenceRange', () => {
     assert.equal(formatAbsenceRange(null, '2026-08-12'), '')
     assert.equal(formatAbsenceRange('2026-08-10', ''), '')
     assert.equal(formatAbsenceRange('pas-une-date', '2026-08-12'), '')
+  })
+
+  describe('in English', () => {
+    afterEach(() => {
+      i18n.global.locale.value = 'fr'
+    })
+
+    it('names the months in English, the ends joined by a hyphen', () => {
+      i18n.global.locale.value = 'en'
+
+      assert.equal(formatAbsenceRange('2026-08-22', '2026-08-22'), '22 August')
+      assert.equal(formatAbsenceRange('2026-08-10', '2026-08-12'), '10 - 12 August')
+      assert.equal(
+        formatAbsenceRange('2026-12-28', '2027-01-03'),
+        '28 December 2026 - 3 January 2027'
+      )
+    })
   })
 })
 

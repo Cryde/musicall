@@ -1,0 +1,137 @@
+{
+  "everyone_mention": {
+    "hint": "the whole band"
+  },
+  "reaction": {
+    "thumbs_up": "Thumbs up",
+    "thumbs_down": "Thumbs down",
+    "heart": "Heart",
+    "laugh": "Laugh",
+    "party": "Party",
+    "fire": "Fire",
+    "guitar": "Guitar",
+    "check": "Approved",
+    "fallback": "Reaction",
+    "pill_remove": "{name}, {count}: remove my reaction",
+    "pill_add": "{name}, {count}: react",
+    "add": "Add a reaction",
+    "choose": "Choose a reaction"
+  },
+  "draft": {
+    "duplicate": "This item is already attached to this message.",
+    "full": "A message cannot reference more than {max} items.",
+    "unusable": "This item cannot be attached."
+  },
+  "image": {
+    "unsupported": "Unsupported image format (accepted formats: JPEG, PNG, WebP, GIF).",
+    "too_large": "The image is too large, the limit is 25 MB.",
+    "deleted": "Image deleted",
+    "alt": "Image sent in the conversation"
+  },
+  "voice_note": {
+    "microphone_denied": "Microphone access was denied. Allow it in your browser settings to record a voice note.",
+    "no_microphone": "No microphone found.",
+    "recording_failed": "The recording could not start.",
+    "deleted": "Voice note deleted",
+    "pause": "Pause the voice note",
+    "play": "Play the voice note",
+    "position": "Position in the voice note"
+  },
+  "read_receipt": {
+    "one": "Seen by {name}",
+    "several": "Seen by {names} and {last}",
+    "many": "Seen by {names} and {count} others"
+  },
+  "typing": {
+    "one": "{name} is typing...",
+    "two": "{first} and {second} are typing...",
+    "many": "{count} people are typing...",
+    "unknown_member": "A member"
+  },
+  "pin": {
+    "pin": "Pin this message",
+    "unpin": "Unpin this message"
+  },
+  "pinned_bar": {
+    "headline": "{count} pinned messages | {count} pinned message | {count} pinned messages",
+    "hide": "{headline}, hide",
+    "show": "{headline}, show",
+    "attachment_only": "Attachment",
+    "pinned_by": "{author}, pinned by {pinner}",
+    "go_to": "Go to {author}'s message",
+    "unpin": "Unpin {author}'s message"
+  },
+  "error": {
+    "load_messages": "Could not load the chat",
+    "load_older": "Could not load older messages.",
+    "load_newer": "Could not load newer messages.",
+    "message_unavailable": "This message is no longer available.",
+    "jump_failed": "Could not show this message, please try again.",
+    "reaction_failed": "Could not update the reaction, please try again."
+  },
+  "picker": {
+    "header": "Attach a Band Space item",
+    "close": "Close",
+    "search_label": "Search for an item to attach",
+    "search_placeholder": "Calendar, task, note, file, setlist...",
+    "remove_one": "Remove one to attach another.",
+    "results_label": "Items to attach",
+    "picked": "Attached",
+    "picked_count": "{count} / {max} attached"
+  },
+  "composer": {
+    "image_alt": "Image to send",
+    "remove_image": "Remove the image",
+    "cancel_voice_note": "Cancel the voice note",
+    "recording": "Recording",
+    "send_voice_note": "Send the voice note",
+    "attach": "Attach a Band Space item",
+    "add_image": "Add an image",
+    "message_label": "Your message",
+    "message_placeholder": "Your message...",
+    "record_voice_note": "Record a voice note",
+    "send": "Send the message",
+    "rate_limited": "Too many messages sent. Please wait a moment.",
+    "send_failed": "The message could not be sent."
+  },
+  "composer_attachments": {
+    "label": "Items attached to this message",
+    "fallback_title": "this item",
+    "remove": "Remove {title}",
+    "remove_untitled": "Remove this item"
+  },
+  "message_attachments": {
+    "deleted": "(deleted)"
+  },
+  "message_list": {
+    "label": "Chat messages",
+    "load_older": "Load older messages",
+    "load_newer": "Load newer messages",
+    "back_to_latest": "Back to recent messages",
+    "online": "(online)",
+    "cancel": "Cancel",
+    "save": "Save",
+    "deleted": "Message deleted",
+    "edited": "(edited)",
+    "create_task": "Create a task from this message",
+    "report": "Report this message",
+    "edit": "Edit the message",
+    "delete": "Delete the message",
+    "delete_confirm_message": "Delete this message? Its content will be removed for everyone.",
+    "delete_confirm_header": "Confirm deletion",
+    "delete_confirm_reject": "Cancel",
+    "delete_confirm_accept": "Delete",
+    "delete_failed": "The message could not be deleted.",
+    "task_created": "Task created",
+    "task_created_detail": "\"{title}\". Its card is below the message, open it to assign the task.",
+    "task_failed": "The task could not be created.",
+    "edit_failed": "The message could not be edited."
+  },
+  "view": {
+    "online_names": "Online: {names}",
+    "online": "Online",
+    "retry": "Try again",
+    "empty_title": "No messages",
+    "empty_text": "Write the band's first message, it will stay here for everyone."
+  }
+}

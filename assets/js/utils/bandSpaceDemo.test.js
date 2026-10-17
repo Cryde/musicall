@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { i18n } from '../i18n/index.js'
 import {
   canAddMore,
   ctaLabel,
@@ -216,6 +217,16 @@ describe('formatEuros and describeBalance', () => {
   it('drops the decimals of a whole amount and uses a comma otherwise', () => {
     assert.equal(formatEuros(180), '180 €')
     assert.equal(formatEuros(11.25), '11,25 €')
+  })
+
+  it('writes the amounts the British way in English', () => {
+    i18n.global.locale.value = 'en'
+    try {
+      assert.equal(formatEuros(180), '€180')
+      assert.equal(formatEuros(11.25), '€11.25')
+    } finally {
+      i18n.global.locale.value = 'fr'
+    }
   })
 
   it('says who pays and who is paid', () => {

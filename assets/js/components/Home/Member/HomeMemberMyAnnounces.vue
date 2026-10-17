@@ -10,7 +10,7 @@
       </h2>
       <ul class="m-0 p-0 list-none flex flex-wrap gap-x-4 gap-y-1 text-sm text-surface-700 dark:text-surface-300">
         <li v-for="announce in shown" :key="announce.id" class="truncate">
-          {{ announceHeadline(announce) }}<template v-if="announce.location_name"> · {{ announce.location_name }}</template>
+          {{ announceHeadline(announce) }}<template v-if="announce.location_name">{{ ` ${separator()} ${announce.location_name}` }}</template>
         </li>
         <li v-if="announces.length > shown.length">{{ t('home.member.my_announces.more', announces.length - shown.length) }}</li>
       </ul>
@@ -29,6 +29,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import musicianAnnounceApi from '../../../api/announce/musician.js'
+import { separator } from '../../../i18n/formatLocale.js'
 import { announceHeadline } from '../../../utils/homeSearch.js'
 
 /**

@@ -1,0 +1,392 @@
+{
+  "source": {
+    "task": {
+      "label": "Task",
+      "indefinite": "a task",
+      "definite": "the task",
+      "quota": "Tasks"
+    },
+    "finance": {
+      "label": "Finance entry",
+      "indefinite": "a finance entry",
+      "definite": "the finance entry",
+      "quota": "Finances"
+    },
+    "note": {
+      "label": "Note",
+      "indefinite": "a note",
+      "definite": "the note",
+      "quota": "Notes"
+    },
+    "song": {
+      "label": "Song",
+      "indefinite": "a song",
+      "definite": "the song",
+      "quota": "Songs"
+    },
+    "setlist": {
+      "label": "Setlist",
+      "indefinite": "a setlist",
+      "definite": "the setlist",
+      "quota": "Setlists"
+    },
+    "message": {
+      "label": "Chat message",
+      "indefinite": "a chat message",
+      "definite": "the message",
+      "quota": "Chat"
+    },
+    "unknown": {
+      "label": "Resource",
+      "indefinite": "another resource"
+    },
+    "manual_quota": "Standalone files",
+    "detach_hint": "Detach it from {source} first",
+    "detach_hint_unknown": "Detach it from the linked resource first",
+    "attached_message": "This file is attached to {source}. {hint}."
+  },
+  "attached_files_notice": "The attached file will be detached but will stay in Files. | The {count} attached files will be detached but will stay in Files.",
+  "bulk": {
+    "delete_not_owner": "Only the uploader or an admin can delete these files: {files}",
+    "restore_not_owner": "Only the uploader or an admin can restore these files: {files}",
+    "delete_attached": "{count} selected file is attached to {sources}. Detach it from that resource first. | {count} selected files are attached to {sources}. Detach them from those resources first."
+  },
+  "count": {
+    "files": "{count} file | {count} files",
+    "files_shown": "{count} file shown out of {total} | {count} files shown out of {total}"
+  },
+  "folder": {
+    "root": "Root"
+  },
+  "move": {
+    "root_refused": "This file is listed in {folders}: the root only lists files that are not attached to any resource.",
+    "folder_moved": "Folder moved",
+    "file_moved": "File moved",
+    "failed": "Could not move"
+  },
+  "upload": {
+    "unexpected_response": "The server sent an unexpected response, so the file was not saved.",
+    "too_large": "File too large ({size}). The maximum size is {max}.",
+    "rate_limit_pause": "Upload limit reached ({limit} files per minute). Resuming in {seconds}s.",
+    "rate_limit_reached": "Upload limit reached, file not sent",
+    "rate_limit_batch_notice": "Upload limit reached. The remaining files were not sent: wait a minute, then try again.",
+    "quota_reached": "Storage quota reached, file not sent",
+    "quota_batch_notice": "This Band Space's storage quota is full. The remaining files were not sent: free up some space, then try again.",
+    "cancelled": "Upload stopped",
+    "cancelled_batch_notice": "Upload stopped. The remaining files were not sent.",
+    "generic_error": "An error occurred",
+    "outcome_imported": "No files uploaded | {count} file uploaded | {count} files uploaded",
+    "outcome_unsent": "{count} not sent | {count} not sent",
+    "outcome_rejected": "{count} rejected | {count} rejected"
+  },
+  "detail": {
+    "not_found": "File not found",
+    "confirm_rename": "Confirm",
+    "preview_unavailable": "Preview unavailable",
+    "uploaded_by": "Uploaded by",
+    "type": "Type",
+    "updated_at": "Last modified",
+    "no_tag": "No tags",
+    "folder": "Folder",
+    "attached_to": "Attached to ({count})",
+    "detach_hint": "To detach this file, go to the resource it is attached to.",
+    "attached_to_several": "This file is attached to {count} resources. Detach it from each of them first.",
+    "delete_not_owner": "Only the uploader or an admin can delete this file"
+  },
+  "breadcrumb": {
+    "aria_label": "Breadcrumb"
+  },
+  "filter": {
+    "search_placeholder": "Search for a file",
+    "tag_placeholder": "Tag",
+    "type_placeholder": "Type",
+    "sort_placeholder": "Sort",
+    "mime": {
+      "audio": "Audio",
+      "image": "Image",
+      "pdf": "PDF",
+      "video": "Video"
+    },
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "name_asc": "Name (A to Z)",
+      "name_desc": "Name (Z to A)",
+      "size_desc": "Size (largest first)",
+      "size_asc": "Size (smallest first)"
+    }
+  },
+  "activity": {
+    "title": "Activity",
+    "empty": "No activity for this file.",
+    "uploaded": "{actor} uploaded the file",
+    "archived": "{actor} archived the file",
+    "archived_with_folder": "{actor} archived the file (folder \"{path}\" deleted)",
+    "restored": "{actor} restored the file",
+    "purged": "{actor} permanently deleted the file",
+    "renamed": "{actor} renamed the file",
+    "renamed_from_to": "{actor} renamed {from} to {to}",
+    "moved": "{actor} moved the file",
+    "moved_to": "{actor} moved the file to {folder}",
+    "tagged": "{actor} added a tag",
+    "tagged_named": "{actor} added the tag {tag}",
+    "untagged": "{actor} removed a tag",
+    "untagged_named": "{actor} removed the tag {tag}",
+    "version_added": "{actor} added a new version",
+    "version_added_number": "{actor} added version {number}",
+    "rolled_back": "{actor} went back to an earlier version",
+    "rolled_back_number": "{actor} went back to version {number}",
+    "shared": "{actor} created a share link",
+    "share_revoked": "{actor} revoked a share link",
+    "public_accessed": "{actor}: the public link was opened",
+    "attached": "{actor} attached the file",
+    "attached_to": "{actor} attached the file to {source}",
+    "attached_to_labelled": "{actor} attached the file to {source} \"{label}\"",
+    "detached": "{actor} detached the file",
+    "detached_from": "{actor} detached the file from {source}",
+    "detached_from_labelled": "{actor} detached the file from {source} \"{label}\"",
+    "source_deleted": "{actor} deleted {source}, so the file was detached",
+    "source_deleted_labelled": "{actor} deleted {source} \"{label}\", so the file was detached",
+    "associated_resource": "the linked resource",
+    "unknown": "{actor} {type}"
+  },
+  "quota": {
+    "title": "Storage",
+    "see_files": "See files",
+    "unavailable": "Unavailable.",
+    "used": "{used} of {total} used",
+    "segment_tooltip": "{label}: {size}",
+    "versions_hint": "Previous versions of files count towards the quota."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "create": "Create",
+    "delete_failed": "Could not delete",
+    "virtual_folder_hint": "Virtual folders are filled automatically with attached files.",
+    "quota_approaching": {
+      "summary": "Quota almost reached",
+      "detail": "You have used 80% of your storage quota."
+    },
+    "select_all": "Select all",
+    "select_file": "Select {name}",
+    "browse": "click to browse",
+    "remove_file": "Remove the file",
+    "upload_progress": "Uploading... {percent}%",
+    "close": "Close",
+    "restore": "Restore"
+  },
+  "folder_delete": {
+    "title": "Delete the folder",
+    "intro": "You are about to delete {folder}. Choose what happens to its contents.",
+    "quoted_name": "\"{name}\"",
+    "move_to_root": "Move the contents to the root",
+    "move_to_root_help": "Subfolders and files are kept and move up one level.",
+    "cascade": "Delete everything",
+    "cascade_help": "Files in this folder and its subfolders go to the bin for {days} days. Admins only.",
+    "cascade_shares": "Their share links are revoked: restoring a file does not reactivate them.",
+    "cascade_attached": "If any of them is attached to {sources}, the deletion is refused.",
+    "cascade_subfolders": "The subfolders are removed: restored files go back to the root."
+  },
+  "folder_edit": {
+    "name_label": "Name",
+    "name_placeholder": "e.g. Live, Setlists, 2025",
+    "parent_label": "Parent folder",
+    "title_create": "New folder",
+    "title_create_sub": "New subfolder",
+    "title_edit": "Rename / move folder",
+    "name_required": "The name is required"
+  },
+  "upload_dialog": {
+    "title": "Upload files",
+    "drop_zone": "Drag and drop one or more files or {browse}",
+    "queue_label": "Files to upload",
+    "progress_of": "Upload progress of {name}",
+    "remove_file": "Remove {name}",
+    "folder": "Folder",
+    "tags": "Tags",
+    "tags_placeholder": "Select tags",
+    "new_tag_placeholder": "Create a new tag",
+    "create_tag": "Create tag",
+    "progress": "Uploading... file {position} of {total}",
+    "stop": "Stop",
+    "retry_unsent": "Retry unsent files",
+    "submit": "Upload",
+    "status": {
+      "queued": "Queued",
+      "uploading": "Uploading",
+      "uploaded": "Uploaded",
+      "failed": "Failed",
+      "skipped": "Not sent",
+      "cancelled": "Stopped",
+      "rejected": "Rejected"
+    }
+  },
+  "share_dialog": {
+    "title": "Share file",
+    "expiry_label": "Expiry date",
+    "use_password": "Protect with a password",
+    "password_placeholder": "Password",
+    "link_created": "Link created. The full link will not be shown again once you close this window, so copy it now.",
+    "copy": "Copy",
+    "password_required": "A password is required for this link.",
+    "active_links": "Active links ({count})",
+    "no_active_links": "No active share link for this file.",
+    "expires_on": "Expires on {date}",
+    "protected": "protected",
+    "access_count": "Views: {count}",
+    "access_count_last": "Views: {count}, last {when}",
+    "create": "Create link",
+    "expiry_required": "Please choose an expiry date",
+    "revoke_confirm_message": "Revoke this share link? It will stop working immediately.",
+    "revoke_confirm_header": "Confirm revocation",
+    "revoke": "Revoke",
+    "revoked": "Link revoked",
+    "copied": "Link copied.",
+    "copy_failed": "Could not copy",
+    "copy_failed_detail": "Select the link and copy it manually."
+  },
+  "attach_dialog": {
+    "title": "Attach a file",
+    "tab_upload": "Upload",
+    "tab_existing": "Choose from existing files",
+    "drop_zone": "Drag and drop a file or {browse}",
+    "search_placeholder": "Search for a file",
+    "no_files": "No files available.",
+    "manual_only": "Only standalone files (not attached to anything) can be attached.",
+    "submit": "Upload",
+    "attached": "File attached"
+  },
+  "attached_section": {
+    "title": "Attachments",
+    "attach": "Attach a file",
+    "empty": "No attached files.",
+    "detach": "Detach",
+    "detach_confirm_task": "Detach \"{name}\" from this task?",
+    "detach_confirm_finance": "Detach \"{name}\" from this entry?",
+    "detach_confirm_header": "Confirm detach",
+    "detached": "File detached",
+    "detach_failed": "Could not detach"
+  },
+  "new_version_dialog": {
+    "title": "Upload a new version",
+    "drop_zone": "Drag and drop the file or {browse}",
+    "replace_notice": "The new version will replace the current one. Previous versions remain available.",
+    "submit": "Upload",
+    "select_required": "Please select a file"
+  },
+  "version_panel": {
+    "title": "File versions",
+    "title_named": "Versions of {name}",
+    "count": "{count} version | {count} versions",
+    "upload_new": "Upload a new version",
+    "empty": "No versions for this file.",
+    "version_number": "v{number}",
+    "current": "Current",
+    "download": "Download this version",
+    "restore": "Restore this version",
+    "rollback_confirm_message": "Restore version v{number} as the current version?",
+    "rollback_confirm_header": "Confirm restore",
+    "rollback_accept": "Restore",
+    "restored": "Version restored",
+    "restored_detail": "Version v{number} is now the current version.",
+    "restore_failed": "Could not restore",
+    "uploaded": "New version uploaded"
+  },
+  "trash_list": {
+    "empty": "The bin is empty.",
+    "retention_notice": "Deleted files stay here for {days} days, then are permanently erased. You can restore them until then.",
+    "deleted_on": "deleted on {date}",
+    "restore_not_allowed": "Only the uploader or an admin can restore this file",
+    "delete_permanently": "Delete permanently",
+    "purge_imminent": "about to be erased",
+    "days_left": "only one day left | {count} days left",
+    "restored": "File restored",
+    "error": "Error",
+    "restore_failed": "Could not restore the file",
+    "delete_confirm_message": "\"{name}\" will be erased immediately and this cannot be undone. Continue?",
+    "deleted": "File permanently deleted",
+    "delete_failed": "Could not delete the file"
+  },
+  "bulk_bar": {
+    "region_label": "Selection actions",
+    "selected_count": "{count} file selected | {count} files selected",
+    "move": "Move",
+    "move_target": "Destination folder",
+    "clear_selection": "Clear selection",
+    "root_refused": "One selected file is attached to a resource: the root only lists files that are not attached to any resource. | {count} selected files are attached to a resource: the root only lists files that are not attached to any resource.",
+    "failed": "Bulk action failed",
+    "moved": "Files moved",
+    "restored": "Files restored",
+    "delete_confirm_message": "{count} file will be moved to the bin, where you can restore it for {days} days. Continue? | {count} files will be moved to the bin, where you can restore them for {days} days. Continue?",
+    "delete_confirm_header": "Move to the bin",
+    "deleted": "Files moved to the bin"
+  },
+  "file_move": {
+    "title": "Move file",
+    "destination_label": "Destination folder",
+    "submit": "Move"
+  },
+  "folder_tree": {
+    "sources": "Sources",
+    "file_count_hint": "{count} file in this folder, subfolders excluded | {count} files in this folder, subfolders excluded",
+    "actions": "Folder actions",
+    "open": "Open",
+    "rename_move": "Rename / move"
+  },
+  "file_list": {
+    "empty": "No files in this folder yet. Start by uploading one.",
+    "column": {
+      "name": "Name",
+      "size": "Size",
+      "tags": "Tags",
+      "added_at": "Date added"
+    },
+    "open_folder": "Open folder {name}",
+    "open_location": "Open {location}",
+    "file_actions": "File actions",
+    "detach_from_each": "Detach it from each resource first",
+    "delete_blocked": "Delete ({reason})",
+    "menu": {
+      "open": "Open",
+      "download": "Download",
+      "rename": "Rename",
+      "share": "Share",
+      "versions": "Versions"
+    },
+    "trash_confirm": {
+      "message": "\"{name}\" will be moved to the bin, where you can restore it for {days} days. Continue?",
+      "header": "Move to the bin",
+      "done": "File moved to the bin"
+    }
+  },
+  "page": {
+    "retry": "Try again",
+    "folders": "Folders",
+    "no_folder": "No folders yet.",
+    "all_files_hint": "Every file in the Band Space, whatever its folder",
+    "all_files": "All files",
+    "trash": "Bin",
+    "upload": "Upload a file",
+    "space_wide_search": "Searching the whole Band Space",
+    "refreshing": "Refreshing...",
+    "load_more": "Load more",
+    "empty": {
+      "virtual_task": "No files attached to a task yet.",
+      "virtual_finance": "No files attached to a finance entry yet.",
+      "virtual_note": "No images attached to a note yet.",
+      "virtual_song": "No files attached to a song yet.",
+      "virtual_setlist": "No files attached to a setlist yet.",
+      "search": "No files match this search.",
+      "filters": "No files match these filters.",
+      "virtual": "No attached files yet.",
+      "root": "No files at the root yet. Start by uploading one.",
+      "all": "No files yet. Start by uploading one."
+    },
+    "upload_toast": {
+      "summary": "File uploaded | Files uploaded",
+      "single_detail": "The file was added."
+    }
+  }
+}

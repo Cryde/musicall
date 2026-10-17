@@ -187,7 +187,7 @@
       "title": "Découvertes",
       "link": "Voir plus",
       "by": "par {author}",
-      "upvotes": "{count} votes positifs",
+      "upvotes": "{count} vote positif | {count} votes positifs",
       "empty": "Pas encore de découverte."
     },
     "my_announces": {

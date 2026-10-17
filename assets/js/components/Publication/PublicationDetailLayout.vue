@@ -40,7 +40,7 @@
           </span>
           <span class="flex items-center gap-1">
             <i class="pi pi-eye text-xs" />
-            {{ t('publication.show.views', { count: publication.view_count }) }}
+            {{ t('publication.show.views', publication.view_count) }}
           </span>
           <div class="ml-auto flex items-center gap-1">
             <VoteButtons :slug="publication.slug" />

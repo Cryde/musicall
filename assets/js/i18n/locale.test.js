@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import axios from 'axios'
-import fr from './fr/index.js'
 import { i18n } from './index.js'
 
 // A page with English enabled. Set before locale.js loads, since it reads the attribute once.
@@ -52,9 +51,11 @@ describe('setLocale', () => {
   })
 
   it('falls back to French for a key the English catalogue lacks', () => {
+    // A key of its own, since the real English catalogue is complete.
+    i18n.global.mergeLocaleMessage('fr', { locale_test: { french_only: 'Seulement en français' } })
     const quiet = { missingWarn: false }
 
-    assert.equal(i18n.global.t('shared.head.title', {}, quiet), fr.shared.head.title)
+    assert.equal(i18n.global.t('locale_test.french_only', {}, quiet), 'Seulement en français')
   })
 
   it('ignores a locale that is not enabled', async () => {

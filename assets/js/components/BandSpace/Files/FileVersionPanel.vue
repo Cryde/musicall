@@ -57,11 +57,11 @@
                 size="sm"
               />
               <span class="font-medium text-surface-700 dark:text-surface-200">
-                <UserName v-if="version.created_by" :username="version.created_by.username" :display-name="version.created_by.display_name" :picture-url="version.created_by.profile_picture_url" /><template v-else>—</template>
+                <UserName v-if="version.created_by" :username="version.created_by.username" :display-name="version.created_by.display_name" :picture-url="version.created_by.profile_picture_url" /><template v-else>{{ noValue() }}</template>
               </span>
-              <span>·</span>
-              <span class="tabular-nums">{{ formatSize(version.size) }}</span>
-              <span>·</span>
+              <span>{{ separator() }}</span>
+              <span class="tabular-nums">{{ formatBytes(version.size) }}</span>
+              <span>{{ separator() }}</span>
               <span>{{ formatDate(version.creation_datetime) }}</span>
             </div>
           </div>
@@ -110,8 +110,9 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { intlLocale } from '../../../i18n/formatLocale.js'
+import { intlLocale, noValue, separator } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { formatBytes } from '../../../utils/formatBytes.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 import FileNewVersionDialog from './FileNewVersionDialog.vue'
@@ -210,16 +211,8 @@ function handleVersionUploaded({ quotaApproaching }) {
   }
 }
 
-function formatSize(bytes) {
-  if (bytes === null || bytes === undefined) return '—'
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`
-}
-
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return noValue()
   return new Date(iso).toLocaleDateString(intlLocale(), {
     day: '2-digit',
     month: 'short',

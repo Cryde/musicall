@@ -27,7 +27,7 @@
               </template>
             </i18n-t>
           </span>
-          <span class="shrink-0 pr-1 text-sm font-bold text-teal-700 dark:text-teal-300" :aria-label="t('home.member.discoveries.upvotes', { count: discovery.upvotes ?? 0 })">
+          <span class="shrink-0 pr-1 text-sm font-bold text-teal-700 dark:text-teal-300" :aria-label="t('home.member.discoveries.upvotes', discovery.upvotes ?? 0)">
             ▲ {{ discovery.upvotes ?? 0 }}
           </span>
         </router-link>
