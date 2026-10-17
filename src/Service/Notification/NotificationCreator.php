@@ -6,6 +6,7 @@ use App\Entity\Notification\Notification;
 use App\Entity\User;
 use App\Enum\Notification\NotificationType;
 use App\Mercure\MercureTopic;
+use App\Service\Notification\Push\PushContent;
 use App\Service\Notification\Push\PushContentBuilder;
 use App\Service\Notification\Push\PushQueue;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,7 +52,7 @@ readonly class NotificationCreator
         $this->entityManager->flush();
 
         $this->signal([$recipient->id]);
-        $this->push([$recipient->id], $type, $payload);
+        $this->push([$recipient], $type, $payload);
     }
 
     /**
@@ -64,6 +65,7 @@ readonly class NotificationCreator
     public function createForRecipients(iterable $recipients, NotificationType $type, array $payload): void
     {
         $seen = [];
+        $uniqueRecipients = [];
         foreach ($recipients as $recipient) {
             if (!$recipient instanceof User) {
                 continue;
@@ -75,6 +77,7 @@ readonly class NotificationCreator
             // Keyed to de-duplicate, valued so array_values() below returns a list<string> without
             // anything having to assert that array keys are still strings.
             $seen[$recipientId] = $recipientId;
+            $uniqueRecipients[] = $recipient;
             $this->entityManager->persist($this->build($recipient, $type, $payload));
         }
 
@@ -86,24 +89,28 @@ readonly class NotificationCreator
 
         // The de-duplicated set, so a recipient named twice is still signalled once.
         $this->signal(array_values($seen));
-        $this->push(array_values($seen), $type, $payload);
+        $this->push($uniqueRecipients, $type, $payload);
     }
 
     /**
      * The same notification on the recipients' phones (#1110), for a closed or backgrounded app: an
      * open one already heard the signal above. Queued, so FCM never slows the request.
      *
-     * @param list<string>         $recipientIds
+     * @param list<User>           $recipients
      * @param array<string, mixed> $payload
      */
-    private function push(array $recipientIds, NotificationType $type, array $payload): void
+    private function push(array $recipients, NotificationType $type, array $payload): void
     {
         $category = $type->pushCategory();
         if ($category === null) {
             return;
         }
 
-        $this->pushQueue->queue($recipientIds, $this->pushContentBuilder->forNotification($type, $payload), $category);
+        $this->pushQueue->queue(
+            $recipients,
+            fn (string $locale): PushContent => $this->pushContentBuilder->forNotification($type, $payload, $locale),
+            $category,
+        );
     }
 
     /**

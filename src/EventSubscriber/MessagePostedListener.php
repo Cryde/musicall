@@ -13,6 +13,7 @@ use App\Mercure\MercureTopic;
 use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\BandSpace\ChatMentionResolver;
 use App\Service\Message\ThreadMemberResolver;
+use App\Service\Notification\Push\PushContent;
 use App\Service\Notification\Push\PushContentBuilder;
 use App\Service\Notification\Push\PushQueue;
 use App\Service\User\UserNotificationPreferenceChecker;
@@ -115,17 +116,18 @@ readonly class MessagePostedListener
             }
 
             $authorId = (string) $message->author->id;
-            $recipientIds = [];
+            $recipients = [];
             foreach ($members as $member) {
                 $memberId = (string) $member->id;
                 if ($memberId !== $authorId && !isset($coveredByMention[$memberId])) {
-                    $recipientIds[] = $memberId;
+                    $recipients[] = $member;
                 }
             }
 
+            $authorName = $this->authorName($message);
             $this->pushQueue->queue(
-                $recipientIds,
-                $this->pushContentBuilder->forMessage($message, $this->authorName($message), $mentionUsernamesById),
+                $recipients,
+                fn (string $locale): PushContent => $this->pushContentBuilder->forMessage($message, $authorName, $locale, $mentionUsernamesById),
                 $bandSpace instanceof BandSpace ? PushCategory::BandChat : PushCategory::MessageReceived,
             );
         } catch (\Throwable $throwable) {

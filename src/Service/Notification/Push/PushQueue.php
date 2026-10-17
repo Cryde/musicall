@@ -2,6 +2,7 @@
 
 namespace App\Service\Notification\Push;
 
+use App\Entity\User;
 use App\Enum\Notification\PushCategory;
 use App\Messenger\SendPushNotification;
 use Psr\Log\LoggerInterface;
@@ -20,19 +21,42 @@ readonly class PushQueue
     }
 
     /**
-     * @param iterable<string> $userIds
+     * The content is built here, in each recipient's own locale (#1191), once per locale among them.
+     *
+     * @param iterable<User>                $recipients
+     * @param \Closure(string): PushContent $contentIn builds the push in the locale it is given
      */
-    public function queue(iterable $userIds, PushContent $content, ?PushCategory $category): void
+    public function queue(iterable $recipients, \Closure $contentIn, ?PushCategory $category): void
     {
-        foreach ($userIds as $userId) {
+        $recipientIdsByLocale = [];
+        foreach ($recipients as $recipient) {
+            $recipientIdsByLocale[$recipient->locale][] = $recipient->id;
+        }
+
+        foreach ($recipientIdsByLocale as $locale => $userIds) {
+            $locale = (string) $locale;
             try {
-                $this->messageBus->dispatch(new SendPushNotification($userId, $content->title, $content->body, $content->data, $category));
+                $content = $contentIn($locale);
             } catch (\Throwable $throwable) {
-                $this->logger->error('Could not queue a push notification', [
+                // Logged once for the locale; the other locales still go out.
+                $this->logger->error('Could not build a push notification', [
                     'exception' => $throwable,
-                    'user_id' => $userId,
-                    'type' => $content->data['type'] ?? null,
+                    'locale' => $locale,
+                    'user_count' => count($userIds),
                 ]);
+                continue;
+            }
+
+            foreach ($userIds as $userId) {
+                try {
+                    $this->messageBus->dispatch(new SendPushNotification($userId, $content->title, $content->body, $content->data, $category));
+                } catch (\Throwable $throwable) {
+                    $this->logger->error('Could not queue a push notification', [
+                        'exception' => $throwable,
+                        'user_id' => $userId,
+                        'type' => $content->data['type'] ?? null,
+                    ]);
+                }
             }
         }
     }
