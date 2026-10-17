@@ -9,34 +9,33 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * Best effort checks on the backend catalogues, the PHP twin of assets/js/i18n/fr.test.js. Keys are
- * found by pattern in src/, so a key built at runtime is invisible here: keep every key a literal.
+ * found by pattern in src/, comments left out, so a key built at runtime is invisible here: keep every
+ * key a literal.
  */
 class TranslationCatalogueTest extends TestCase
 {
     private const string PROJECT_DIR = __DIR__ . '/../../..';
     private const string MESSAGES = 'messages+intl-icu.fr.yaml';
     private const string VALIDATORS = 'validators.fr.yaml';
-    private const string EITHER = 'either catalogue';
     private const string KEY = '[a-z0-9_]+(?:\.[a-z0-9_]+)+';
-    private const string QUOTED_KEY = '[\'"](' . self::KEY . ')[\'"]';
 
     /**
-     * Where a key is handed over to be translated, and which catalogue must hold it. A constant ending
-     * in MESSAGE may feed an exception or a constraint, so it may be in either file.
+     * What precedes a key handed to an exception: its message argument, wherever it sits among the
+     * arguments (`new UnauthorizedHttpException('Bearer', ...)`), or a `not_found_message`.
      */
-    private const array KEY_SITES = [
-        self::MESSAGES => [
-            '/new [\w\\\\]*Exception\(\s*(?:[^,()\'"]+,\s*)?' . self::QUOTED_KEY . '/',
-            '/\'not_found_message\'\s*=>\s*' . self::QUOTED_KEY . '/',
-        ],
-        self::VALIDATORS => [
-            '/\b\w*[mM]essage:\s*' . self::QUOTED_KEY . '/',
-            '/\$\w*[mM]essage\s*=\s*' . self::QUOTED_KEY . '/',
-            '/buildViolation\(\s*' . self::QUOTED_KEY . '/',
-            '/\'invalid_message\'\s*=>\s*' . self::QUOTED_KEY . '/',
-        ],
-        self::EITHER => ['/const string \w*MESSAGE\w*\s*=\s*' . self::QUOTED_KEY . '/'],
-    ];
+    private const string EXCEPTION_ARGUMENT = '/(?:(?:new [\w\\\\]*Exception|parent::__construct)\(\s*(?:[^;]{0,80}?,\s*)?|not_found_message\'\]?\s*(?:=>|\?\?)\s*)$/';
+
+    /**
+     * What precedes a key handed to the validator: a `*message*` argument or property, a violation,
+     * or an `invalid_message`.
+     */
+    private const string CONSTRAINT_ARGUMENT = '/(?:\b\w*[mM]essage\w*:\s*|\$\w*[mM]essage\w*\s*=\s*|buildViolation\(\s*|invalid_message\'\]?\s*(?:=>|\?\?)\s*)$/';
+
+    /**
+     * Where a key that is neither of the above (a match arm, a method argument, a returned constant)
+     * is read by the validator. Anywhere else it is an exception message.
+     */
+    private const array VALIDATION_PATHS = ['src/ApiResource/', 'src/Validator/', 'src/Service/BandSpace/RichText/'];
 
     /**
      * Literals shaped like a key in a catalogue namespace that are not messages: log event names and a
@@ -55,6 +54,9 @@ class TranslationCatalogueTest extends TestCase
         'auth.trail.write_failed',
     ];
 
+    /** @var array<string, string>|null path => code without its comments */
+    private static ?array $sources = null;
+
     /**
      * One key per line, sorted: several people add keys at once, and sorted single lines merge.
      */
@@ -71,6 +73,22 @@ class TranslationCatalogueTest extends TestCase
             self::assertMatchesRegularExpression('/^' . self::KEY . '$/', (string) $key, $file);
             self::assertIsString($message, $file . ': ' . $key . ' must be a flat dotted key');
         }
+    }
+
+    /**
+     * A key read both by the validator and by an exception is one message: its two copies must agree.
+     */
+    public function test_a_key_in_both_catalogues_has_the_same_text(): void
+    {
+        $messages = self::load(self::MESSAGES);
+        $different = [];
+        foreach (array_intersect_key(self::load(self::VALIDATORS), $messages) as $key => $text) {
+            if ($messages[$key] !== $text) {
+                $different[] = $key;
+            }
+        }
+
+        self::assertSame([], $different);
     }
 
     /**
@@ -106,9 +124,8 @@ class TranslationCatalogueTest extends TestCase
                 continue;
             }
 
-            preg_match_all('/\{\s*(\w+)\s*[,}]/', $message, $matches);
             foreach ([1, 1000] as $number) {
-                if ($formatter->formatIntl($message, 'fr', array_fill_keys($matches[1], $number)) === '') {
+                if ($formatter->formatIntl($message, 'fr', array_fill_keys(self::placeholders($message), $number)) === '') {
                     $empty[] = $key;
                 }
             }
@@ -120,7 +137,7 @@ class TranslationCatalogueTest extends TestCase
     #[DataProvider('catalogues')]
     public function test_every_key_is_used_in_src(string $file): void
     {
-        preg_match_all('/' . self::QUOTED_KEY . '/', self::sources(), $matches);
+        preg_match_all('/[\'"](' . self::KEY . ')[\'"]/', implode("\n", self::sources()), $matches);
         $literals = array_flip($matches[1]);
 
         $unused = array_keys(array_diff_key(self::load($file), $literals));
@@ -128,42 +145,22 @@ class TranslationCatalogueTest extends TestCase
         self::assertSame([], $unused, $file . ' holds keys that nothing in src/ uses');
     }
 
-    public function test_every_key_given_to_an_exception_or_a_constraint_exists(): void
+    /**
+     * Every literal in a namespace the catalogues use is a key, and it is in the catalogue of whatever
+     * reads it: `validators` for the validator, `messages` for an exception.
+     */
+    public function test_every_key_in_src_is_in_the_catalogue_that_reads_it(): void
     {
-        $catalogues = [
-            self::MESSAGES => self::load(self::MESSAGES),
-            self::VALIDATORS => self::load(self::VALIDATORS),
-        ];
-        $catalogues[self::EITHER] = $catalogues[self::MESSAGES] + $catalogues[self::VALIDATORS];
+        $catalogues = [self::MESSAGES => self::load(self::MESSAGES), self::VALIDATORS => self::load(self::VALIDATORS)];
 
         $missing = [];
-        foreach (self::KEY_SITES as $catalogue => $patterns) {
-            foreach ($patterns as $pattern) {
-                preg_match_all($pattern, self::sources(), $matches);
-                foreach ($matches[1] as $key) {
-                    if (!isset($catalogues[$catalogue][$key])) {
-                        $missing[] = $catalogue . ': ' . $key;
-                    }
-                }
+        foreach (self::keySites() as [$path, $key, $catalogue]) {
+            if (!isset($catalogues[$catalogue][$key])) {
+                $missing[] = $catalogue . ': ' . $key . ' (' . $path . ')';
             }
         }
 
         self::assertSame([], array_values(array_unique($missing)));
-    }
-
-    /**
-     * A catch-all for keys handed over some other way (an argument, a match arm, an enum): any literal
-     * in a namespace the catalogues use must be a key one of them holds.
-     */
-    public function test_every_literal_in_a_catalogue_namespace_is_a_key(): void
-    {
-        $keys = self::load(self::MESSAGES) + self::load(self::VALIDATORS);
-        $namespaces = array_unique(array_map(static fn (string $key): string => explode('.', $key)[0], array_keys($keys)));
-
-        preg_match_all('/[\'"]((?:' . implode('|', $namespaces) . ')(?:\.[a-z0-9_]+)+)[\'"]/', self::sources(excludeRepositories: true), $matches);
-        $unknown = array_diff(array_unique($matches[1]), array_keys($keys), self::NOT_KEYS);
-
-        self::assertSame([], array_values($unknown));
     }
 
     /**
@@ -173,9 +170,10 @@ class TranslationCatalogueTest extends TestCase
     public function test_a_key_with_a_placeholder_is_thrown_with_its_parameters(): void
     {
         $messages = self::load(self::MESSAGES);
-        preg_match_all('/class (\w+)[^{]*\bimplements\b[^{]*\bTranslatableInterface\b/', self::sources(), $translatable);
+        $code = implode("\n", self::sources());
+        preg_match_all('/class (\w+)[^{]*\bimplements\b[^{]*\bTranslatableInterface\b/', $code, $translatable);
 
-        preg_match_all('/new ([\w\\\\]*Exception)\(\s*(?:[^,()\'"]+,\s*)?' . self::QUOTED_KEY . '/', self::sources(), $throws, PREG_SET_ORDER);
+        preg_match_all('/new ([\w\\\\]*Exception)\(\s*(?:[^;]{0,80}?,\s*)?[\'"](' . self::KEY . ')[\'"]/', $code, $throws, PREG_SET_ORDER);
         $wrong = [];
         foreach ($throws as [, $class, $key]) {
             $shortName = substr((string) strrchr('\\' . $class, '\\'), 1);
@@ -188,12 +186,239 @@ class TranslationCatalogueTest extends TestCase
     }
 
     /**
+     * A parameter the message does not name is lost, and a placeholder no parameter fills shows as
+     * `{name}`: the names on both sides must be the same.
+     */
+    public function test_the_parameters_of_a_translatable_exception_name_its_placeholders(): void
+    {
+        $messages = self::load(self::MESSAGES);
+        $mismatched = [];
+        $checked = 0;
+        foreach (self::translatableThrows() as [$path, $key, $parameters]) {
+            // A key that is not a literal here (TranslatableHttpException's own parent call) is not checked.
+            if ($key === '') {
+                continue;
+            }
+
+            $placeholders = self::placeholders($messages[$key] ?? '');
+            sort($placeholders);
+            sort($parameters);
+            if ($placeholders !== $parameters) {
+                $mismatched[] = $key . ' (' . $path . '): [' . implode(', ', $parameters) . '] for {' . implode('}, {', $placeholders) . '}';
+            }
+            ++$checked;
+        }
+
+        self::assertGreaterThan(0, $checked);
+        self::assertSame([], $mismatched);
+    }
+
+    /**
      * @return iterable<string, array{string}>
      */
     public static function catalogues(): iterable
     {
         yield self::MESSAGES => [self::MESSAGES];
         yield self::VALIDATORS => [self::VALIDATORS];
+    }
+
+    /**
+     * Each key literal in src/ (repositories aside) with the catalogue that reads it. A key held in a
+     * constant is read wherever the constant is used.
+     *
+     * @return list<array{string, string, string}> path, key, catalogue
+     */
+    private static function keySites(): array
+    {
+        $catalogueKeys = array_keys(self::load(self::MESSAGES) + self::load(self::VALIDATORS));
+        $namespaces = array_unique(array_map(static fn (string $key): string => explode('.', $key)[0], $catalogueKeys));
+        $literal = '/[\'"]((?:' . implode('|', $namespaces) . ')(?:\.[a-z0-9_]+)+)[\'"]/';
+        $sources = array_filter(self::sources(), static fn (string $path): bool => !str_starts_with($path, 'src/Repository/'), ARRAY_FILTER_USE_KEY);
+
+        $sites = [];
+        foreach ($sources as $path => $code) {
+            preg_match_all($literal, $code, $matches, PREG_OFFSET_CAPTURE);
+            foreach ($matches[1] as [$key, $offset]) {
+                if (in_array($key, self::NOT_KEYS, true)) {
+                    continue;
+                }
+
+                $before = substr($code, max(0, $offset - 121), min($offset - 1, 120));
+                $catalogues = preg_match('/const string (\w+)\s*=\s*$/', $before, $constant) === 1
+                    ? self::cataloguesReadingConstant($constant[1], $sources)
+                    : array_filter([self::catalogueReading($before)]);
+
+                foreach ($catalogues ?: [self::catalogueByPath($path)] as $catalogue) {
+                    $sites[] = [$path, $key, $catalogue];
+                }
+            }
+        }
+
+        return $sites;
+    }
+
+    private static function catalogueReading(string $before): ?string
+    {
+        return match (true) {
+            preg_match(self::EXCEPTION_ARGUMENT, $before) === 1 => self::MESSAGES,
+            preg_match(self::CONSTRAINT_ARGUMENT, $before) === 1 => self::VALIDATORS,
+            default => null,
+        };
+    }
+
+    /**
+     * @param array<string, string> $sources
+     *
+     * @return list<string>
+     */
+    private static function cataloguesReadingConstant(string $name, array $sources): array
+    {
+        $catalogues = [];
+        foreach ($sources as $code) {
+            preg_match_all('/::' . $name . '\b/', $code, $uses, PREG_OFFSET_CAPTURE);
+            foreach ($uses[0] as [, $offset]) {
+                $before = preg_replace('/(?:self|static|[\w\\\\]+)$/', '', substr($code, max(0, $offset - 140), min($offset, 140)));
+                $catalogues[] = self::catalogueReading((string) $before);
+            }
+        }
+
+        return array_values(array_unique(array_filter($catalogues)));
+    }
+
+    private static function catalogueByPath(string $path): string
+    {
+        foreach (self::VALIDATION_PATHS as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return self::VALIDATORS;
+            }
+        }
+
+        return self::MESSAGES;
+    }
+
+    /**
+     * The key and the parameter names of every `new TranslatableHttpException(status, 'key', [...])`,
+     * and of every other exception using TranslatableExceptionTrait (`parent::__construct('key')` with
+     * `$this->parameters = [...]`).
+     *
+     * @return list<array{string, string, list<string>}>
+     */
+    private static function translatableThrows(): array
+    {
+        $throws = [];
+        foreach (self::sources() as $path => $code) {
+            if (!str_contains($code, 'TranslatableHttpException(') && !str_contains($code, 'use TranslatableExceptionTrait;')) {
+                continue;
+            }
+
+            $tokens = self::tokens($code);
+            foreach ($tokens as $i => $token) {
+                if (self::text($token) === 'new' && str_ends_with(self::text($tokens[$i + 1] ?? ''), 'TranslatableHttpException')) {
+                    $arguments = self::arguments($tokens, $i + 2);
+                    $throws[] = [$path, self::stringValue($arguments[1] ?? []), self::arrayKeys($arguments[2] ?? [])];
+                }
+                if (self::text($token) === 'parent' && self::text($tokens[$i + 2] ?? '') === '__construct' && str_contains($code, 'use TranslatableExceptionTrait;')) {
+                    $parameters = preg_match('/\$this->parameters\s*=\s*\[/', $code, $match, PREG_OFFSET_CAPTURE) === 1
+                        ? self::arrayKeys(self::tokens(substr($code, $match[0][1] + strlen($match[0][0]) - 1)))
+                        : [];
+                    $throws[] = [$path, self::stringValue(self::arguments($tokens, $i + 3)[0] ?? []), $parameters];
+                }
+            }
+        }
+
+        return $throws;
+    }
+
+    /**
+     * @return list<array{0: int, 1: string, 2: int}|string>
+     */
+    private static function tokens(string $code): array
+    {
+        $tokens = token_get_all(str_starts_with($code, '<?php') ? $code : '<?php ' . $code);
+
+        return array_values(array_filter($tokens, static fn (array|string $token): bool => !is_array($token) || !in_array($token[0], [T_OPEN_TAG, T_WHITESPACE], true)));
+    }
+
+    /**
+     * @param array{0: int, 1: string, 2: int}|string $token
+     */
+    private static function text(array|string $token): string
+    {
+        return is_array($token) ? $token[1] : $token;
+    }
+
+    /**
+     * The tokens of each argument of the call whose `(` is at $open.
+     *
+     * @param list<array{0: int, 1: string, 2: int}|string> $tokens
+     *
+     * @return list<list<array{0: int, 1: string, 2: int}|string>>
+     */
+    private static function arguments(array $tokens, int $open): array
+    {
+        $arguments = [[]];
+        $depth = 0;
+        for ($i = $open, $count = count($tokens); $i < $count; ++$i) {
+            $text = self::text($tokens[$i]);
+            if (in_array($text, ['(', '[', '{', '{$', '${'], true)) {
+                if (++$depth === 1) {
+                    continue;
+                }
+            } elseif (in_array($text, [')', ']', '}'], true)) {
+                if (--$depth === 0) {
+                    break;
+                }
+            } elseif ($text === ',' && $depth === 1) {
+                $arguments[] = [];
+                continue;
+            }
+            $arguments[count($arguments) - 1][] = $tokens[$i];
+        }
+
+        return array_values(array_filter($arguments));
+    }
+
+    /**
+     * @param list<array{0: int, 1: string, 2: int}|string> $argument
+     */
+    private static function stringValue(array $argument): string
+    {
+        return count($argument) === 1 && is_array($argument[0]) && $argument[0][0] === T_CONSTANT_ENCAPSED_STRING
+            ? substr($argument[0][1], 1, -1)
+            : '';
+    }
+
+    /**
+     * The quoted keys of an array literal, its own level only (a closure's `=>` inside a value is not one).
+     *
+     * @param list<array{0: int, 1: string, 2: int}|string> $tokens starting at the array's `[`
+     *
+     * @return list<string>
+     */
+    private static function arrayKeys(array $tokens): array
+    {
+        if (self::text($tokens[0] ?? '') !== '[') {
+            return [];
+        }
+
+        $keys = [];
+        foreach (self::arguments($tokens, 0) as $element) {
+            if (count($element) > 1 && is_array($element[0]) && $element[0][0] === T_CONSTANT_ENCAPSED_STRING && self::text($element[1]) === '=>') {
+                $keys[] = substr($element[0][1], 1, -1);
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function placeholders(string $message): array
+    {
+        preg_match_all('/\{\s*(\w+)\s*[,}]/', $message, $matches);
+
+        return array_values(array_unique($matches[1]));
     }
 
     private static function hasComplexArgument(string $message): bool
@@ -209,20 +434,35 @@ class TranslationCatalogueTest extends TestCase
         return Yaml::parseFile(self::PROJECT_DIR . '/translations/' . $file) ?? [];
     }
 
-    private static function sources(bool $excludeRepositories = false): string
+    /**
+     * Every PHP file of src/, by path from the project root, with its comments removed so a key quoted
+     * in a docblock neither counts as used nor as handed to anything.
+     *
+     * @return array<string, string>
+     */
+    private static function sources(): array
     {
-        $sources = '';
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(self::PROJECT_DIR . '/src'));
-        foreach ($files as $file) {
+        if (self::$sources !== null) {
+            return self::$sources;
+        }
+
+        $root = realpath(self::PROJECT_DIR) . '/';
+        $sources = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . 'src')) as $file) {
             if (!$file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
-            if ($excludeRepositories && str_contains($file->getPathname(), '/src/Repository/')) {
-                continue;
-            }
-            $sources .= file_get_contents($file->getPathname()) . "\n";
-        }
 
-        return $sources;
+            $code = '';
+            foreach (token_get_all((string) file_get_contents($file->getPathname())) as $token) {
+                if (!is_array($token) || !in_array($token[0], [T_COMMENT, T_DOC_COMMENT], true)) {
+                    $code .= self::text($token);
+                }
+            }
+            $sources[substr($file->getPathname(), strlen($root))] = $code;
+        }
+        ksort($sources);
+
+        return self::$sources = $sources;
     }
 }
