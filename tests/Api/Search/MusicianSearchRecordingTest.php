@@ -121,6 +121,34 @@ class MusicianSearchRecordingTest extends ApiTestCase
         $this->assertSame([], $this->logs());
     }
 
+    public function test_a_search_filtered_on_a_language_is_not_recorded(): void
+    {
+        $drum = InstrumentFactory::new()->asDrum()->create();
+
+        $this->client->request('GET', '/api/musicians/search?type=2&instrument=' . $drum->id . '&language=en');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AnnounceMusician',
+            '@id' => '/api/musicians/search',
+            '@type' => 'Collection',
+            'totalItems' => 4,
+            'member' => [],
+            'view' => ['@id' => '/api/musicians/search?instrument=' . $drum->id . '&language=en&type=2', '@type' => 'PartialCollectionView'],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/musicians/search{?type,instrument,styles}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'type', 'property' => 'type', 'required' => false],
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'instrument', 'property' => 'instrument', 'required' => false],
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'styles', 'property' => 'styles', 'required' => false],
+                ],
+            ],
+        ]);
+        $this->assertSame([], $this->logs());
+    }
+
     public function test_past_its_budget_a_visitor_still_gets_results_without_being_recorded(): void
     {
         self::getContainer()->get('limiter.search_log')->create('127.0.0.1')->consume(60);
@@ -172,6 +200,7 @@ class MusicianSearchRecordingTest extends ApiTestCase
                     'instrument' => ['@type' => 'Instrument', 'name' => 'Batteur'],
                     'type' => 1,
                     'styles' => [['@type' => 'Style', 'name' => 'Rock']],
+                    'languages' => ['fr'],
                 ],
             ],
             'view' => ['@id' => '/api/musicians/search?type=1', '@type' => 'PartialCollectionView'],

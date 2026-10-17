@@ -22,6 +22,7 @@ class SearchModelBuilder
         int         $page = 1,
         int         $limit = 12,
         ?int        $radius = null,
+        ?string     $language = null,
     ): MusicianSearch {
         $searchModel = new MusicianSearch();
         $searchModel->type = $searchType;
@@ -32,6 +33,7 @@ class SearchModelBuilder
         $searchModel->page = $page;
         $searchModel->limit = $limit;
         $searchModel->radius = $radius;
+        $searchModel->language = $language;
 
         return $searchModel;
     }
@@ -53,6 +55,7 @@ class SearchModelBuilder
         $latitude = $value('latitude');
         $page = $value('page');
         $radius = $value('radius');
+        $language = $value('language');
 
         return $this->build(
             $type !== null ? (int) $type : null,
@@ -63,6 +66,7 @@ class SearchModelBuilder
             $page !== null ? (int) $page : 1,
             $limit,
             $radius !== null ? (int) $radius : null,
+            is_string($language) ? $language : null,
         );
     }
 }

@@ -51,10 +51,12 @@ readonly class MusicianSearchRecorder
      * Only the first page of a search that asks for something: « Voir plus » is the same search, and
      * the search page's opening list, with no criterion, is nobody's search. Nor is the list a landing
      * page such as « Rechercher un batteur » shows on arrival, which the page flags as `landing`.
+     * Nor a search filtered on a language (#1198): the log has no column for it, so its smaller count
+     * would read as too few announces for the rest of the criteria.
      */
     public function recordFiltersSearch(MusicianSearch $search, ?string $locationName, int $firstPageResultCount, bool $landing = false): void
     {
-        if ($landing) {
+        if ($landing || $search->language !== null) {
             return;
         }
         $hasLocation = $search->latitude !== null && $search->longitude !== null;
