@@ -240,7 +240,7 @@ describe('arrivalPlan', () => {
     )
   })
 
-  // Production until #1194: the page stays French and no cookie is written, whatever the account says.
+  // With French only, the page stays French and no cookie is written, whatever the account says.
   it('changes nothing while French is the only enabled locale', () => {
     assert.deepEqual(
       arrivalPlan({

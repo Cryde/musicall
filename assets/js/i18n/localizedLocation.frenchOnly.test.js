@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { createMemoryHistory, createRouter, START_LOCATION } from 'vue-router'
 
-// Production until #1194: the page names no enabled locales, so French is the only one. A file of its own,
+// An environment with French only: the page names no enabled locales. A file of its own,
 // since the list is read once, when the module loads.
 globalThis.document = { documentElement: { lang: 'fr', dataset: {} } }
 const { default: routes } = await import('../router/routes.js')

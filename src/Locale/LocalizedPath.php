@@ -56,7 +56,7 @@ readonly class LocalizedPath
         return $this->prefixLocale($path) ?? $this->defaultLocale;
     }
 
-    /** Untouched while the default locale is the only one, so production paths reach their readers as they came. */
+    /** Untouched while the default locale is the only one, so a French-only environment serves its paths as they came. */
     public function inDefaultLocale(string $path): string
     {
         return array_diff($this->enabledLocales, [$this->defaultLocale]) === [] ? $path : $this->inLocale($path, $this->defaultLocale);
