@@ -10,6 +10,7 @@ use App\ApiResource\Publication\PublicationListItem;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
 use App\Service\Metric\PublicationUserVoteResolver;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -26,6 +27,7 @@ readonly class LatestPublicationsProvider implements ProviderInterface
         private PublicationListItemBuilder  $publicationListItemBuilder,
         private PublicationUserVoteResolver $userVoteResolver,
         private CacheInterface              $cache,
+        private LocaleSwitcher              $localeSwitcher,
     ) {
     }
 
@@ -52,16 +54,18 @@ readonly class LatestPublicationsProvider implements ProviderInterface
             ? (int) $filters['subCategoryType']
             : null;
 
-        $cacheKey = sprintf('latest_publications_%d_%d_%d', $excludeId ?? 0, $limit, $subCategoryType ?? 0);
+        // The locale is one of the enabled ones, never free input, so it goes in the key as it is.
+        $locale = $this->localeSwitcher->getLocale();
+        $cacheKey = sprintf('latest_publications_%s_%d_%d_%d', $locale, $excludeId ?? 0, $limit, $subCategoryType ?? 0);
 
         // Cache the list of ids only; vote resolution stays per-request so it
         // can't leak across users.
         $ids = $this->cache->get(
             $cacheKey,
-            function (ItemInterface $item) use ($excludeId, $limit, $subCategoryType): array {
+            function (ItemInterface $item) use ($locale, $excludeId, $limit, $subCategoryType): array {
                 $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->publicationRepository->findLatestIdsExcluding($excludeId, $limit, $subCategoryType);
+                return $this->publicationRepository->findLatestIdsExcluding($locale, $excludeId, $limit, $subCategoryType);
             }
         );
 

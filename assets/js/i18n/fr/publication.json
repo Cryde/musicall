@@ -15,6 +15,7 @@
     "title": "Titre",
     "category": "Catégorie",
     "category_placeholder": "Choisir une catégorie",
+    "every_language": "Toutes les langues",
     "publications": "Publications",
     "like": "J'aime",
     "dislike": "Je n'aime pas",
@@ -59,7 +60,8 @@
     "author": "Par {author}",
     "reading_time": "{minutes} min de lecture",
     "views": "{count} vues",
-    "report": "Signaler cette publication"
+    "report": "Signaler cette publication",
+    "translations": "Également disponible en : {languages}"
   },
   "share": {
     "share": "Partager",
@@ -141,6 +143,7 @@
     },
     "settings": {
       "title": "Paramètres",
+      "language": "Langue",
       "words": "mots | mot | mots",
       "reading_time": "min de lecture",
       "description": "Description courte",
@@ -163,6 +166,7 @@
     "all_statuses": "Tous les statuts",
     "reset_filters": "Réinitialiser les filtres",
     "column_image": "Image",
+    "column_language": "Langue",
     "column_created": "Création",
     "column_edited": "Édition",
     "column_status": "Statut",
@@ -186,6 +190,7 @@
     "view": "Voir la publication",
     "edit": "Modifier la publication",
     "delete": "Supprimer la publication",
+    "translate": "Ajouter une traduction",
     "submit_confirm": "Soumettre la publication \"{title}\" pour validation ?",
     "submitted": "Publication soumise pour validation",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer cette publication ?",
@@ -194,6 +199,13 @@
     "add_modal": {
       "header": "Nouvelle publication",
       "title_placeholder": "Le titre de votre publication"
+    },
+    "translation_modal": {
+      "header": "Ajouter une traduction",
+      "intro": "La traduction de « {title} » est une nouvelle publication en brouillon, que vous rédigez puis soumettez à la validation.",
+      "language": "Langue",
+      "language_placeholder": "Choisir une langue",
+      "title_placeholder": "Le titre dans cette langue"
     }
   },
   "review": {

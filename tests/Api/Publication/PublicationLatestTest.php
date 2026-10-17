@@ -14,6 +14,7 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
 class PublicationLatestTest extends ApiTestCase
@@ -102,6 +103,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-03-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Newest',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -128,6 +130,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-02-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Middle',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -154,6 +157,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-01-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Oldest',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -233,6 +237,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-02-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Middle',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -305,6 +310,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-02-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Cours',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -389,6 +395,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-03-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Voted',
+                    'language'             => 'fr',
                     'upvotes'              => 1,
                     'downvotes'            => 0,
                     'user_vote'            => 1,
@@ -415,6 +422,7 @@ class PublicationLatestTest extends ApiTestCase
                     'publication_datetime' => '2025-02-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Other',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -503,6 +511,98 @@ class PublicationLatestTest extends ApiTestCase
             'description' => 'sub_category_type: Cette valeur doit être comprise entre 1 et 2.',
             'type'        => '/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
             'title'       => 'An error occurred',
+        ]);
+    }
+
+    public function test_get_latest_publications_in_english(): void
+    {
+        $news = PublicationSubCategoryFactory::new()->asNews()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        // The newest, so leaving it out is the filter's doing, not the limit's.
+        PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'slug' => 'un-article',
+            'publicationDatetime' => new \DateTime('2022-01-03 10:00:00'),
+        ])->create();
+        $english = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'title' => 'An article', 'slug' => 'an-article',
+            'shortDescription' => 'In English', 'publicationDatetime' => new \DateTime('2022-01-02 10:00:00'),
+        ])->create();
+        $video = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'Une video', 'slug' => 'v-une-video',
+            'publicationDatetime' => new \DateTime('2022-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->request('GET', '/api/publications/latest', ['count' => 3], [], ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications/latest',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/an-article',
+                    '@type' => 'Publication',
+                    'id' => $english->id,
+                    'title' => 'An article',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'an-article',
+                    'publication_datetime' => '2022-01-02T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'In English',
+                    'language' => 'en',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/v-une-video',
+                    '@type' => 'Publication',
+                    'id' => $video->id,
+                    'title' => 'Une video',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-une-video',
+                    'publication_datetime' => '2022-01-01T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 2,
+            'view' => [
+                '@id' => '/api/publications/latest?count=3',
+                '@type' => 'PartialCollectionView',
+            ],
         ]);
     }
 }

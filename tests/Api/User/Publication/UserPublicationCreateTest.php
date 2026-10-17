@@ -93,6 +93,7 @@ class UserPublicationCreateTest extends ApiTestCase
                 'slug' => 'news',
             ],
             'language' => 'en',
+            'translation_languages' => [],
             'tags' => [],
         ]);
     }

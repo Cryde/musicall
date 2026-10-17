@@ -12,6 +12,7 @@ use App\Entity\Publication\Tag;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
 use App\Service\Metric\PublicationUserVoteResolver;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * @implements ProviderInterface<PublicationListItem>
@@ -24,6 +25,7 @@ readonly class RelatedPublicationProvider implements ProviderInterface
         private PublicationRepository       $publicationRepository,
         private PublicationListItemBuilder  $publicationListItemBuilder,
         private PublicationUserVoteResolver $userVoteResolver,
+        private LocaleSwitcher              $localeSwitcher,
     ) {
     }
 
@@ -37,10 +39,12 @@ readonly class RelatedPublicationProvider implements ProviderInterface
             return [];
         }
 
+        $locale = $this->localeSwitcher->getLocale();
         $publicationId = (int) $publication->id;
         $tagIds = array_map(static fn (Tag $tag): int => (int) $tag->id, $publication->tags->toArray());
 
         $byTag = $this->publicationRepository->findRelatedIdsByTags(
+            $locale,
             $publicationId,
             $tagIds,
             self::RELATED_PUBLICATIONS_LIMIT,
@@ -50,6 +54,7 @@ readonly class RelatedPublicationProvider implements ProviderInterface
             $publications = $this->publicationRepository->findOnlineByIdsOrdered($byTag);
         } else {
             $fallback = $this->publicationRepository->findRelatedIdsBySubCategory(
+                $locale,
                 $publicationId,
                 (int) $publication->subCategory->id,
                 self::RELATED_PUBLICATIONS_LIMIT - count($byTag),

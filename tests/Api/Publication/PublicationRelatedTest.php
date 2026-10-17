@@ -13,6 +13,7 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Publication\TagFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
 class PublicationRelatedTest extends ApiTestCase
@@ -111,6 +112,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'publication_datetime' => '2023-01-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Related 1',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -137,6 +139,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'publication_datetime' => '2022-01-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Related 2',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -254,6 +257,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'publication_datetime' => '2024-01-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Two shared',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -280,6 +284,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'publication_datetime' => '2024-06-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'One shared',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -306,6 +311,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'publication_datetime' => '2023-01-01T00:00:00+00:00',
                     'cover'                => null,
                     'description'          => 'Category fallback',
+                    'language'             => 'fr',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,
@@ -325,6 +331,232 @@ class PublicationRelatedTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [],
             'totalItems' => 0,
+        ]);
+    }
+
+    public function test_get_related_publications_in_english(): void
+    {
+        $news = PublicationSubCategoryFactory::new()->asNews()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $current = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'slug' => 'current-article',
+            'publicationDatetime' => new \DateTime('2022-01-04 10:00:00'),
+        ])->create();
+        // The newest of the rest, so leaving it out is the filter's doing, not the limit's.
+        PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'slug' => 'un-article',
+            'publicationDatetime' => new \DateTime('2022-01-03 10:00:00'),
+        ])->create();
+        $english = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'title' => 'An article', 'slug' => 'an-article',
+            'shortDescription' => 'In English', 'publicationDatetime' => new \DateTime('2022-01-02 10:00:00'),
+        ])->create();
+        $video = PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'Une video', 'slug' => 'v-une-video',
+            'publicationDatetime' => new \DateTime('2022-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->request('GET', '/api/publications/current-article/related', [], [], ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications/current-article/related',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/an-article',
+                    '@type' => 'Publication',
+                    'id' => $english->id,
+                    'title' => 'An article',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'an-article',
+                    'publication_datetime' => '2022-01-02T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'In English',
+                    'language' => 'en',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/v-une-video',
+                    '@type' => 'Publication',
+                    'id' => $video->id,
+                    'title' => 'Une video',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-une-video',
+                    'publication_datetime' => '2022-01-01T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 2,
+        ]);
+    }
+
+    /**
+     * One English publication shares the tag, so the category fallback fills the rest and must not list it
+     * twice. A French publication on each path is newer than the English one it competes with.
+     */
+    public function test_get_related_publications_in_english_by_tag_then_by_category(): void
+    {
+        $news = PublicationSubCategoryFactory::new()->asNews()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $metal = TagFactory::new(['label' => 'Metal', 'slug' => 'metal'])->create();
+        $publication = static fn (array $attributes): Publication => PublicationFactory::new([
+            'author' => $author, 'subCategory' => $news, 'status' => Publication::STATUS_ONLINE, ...$attributes,
+        ])->create();
+
+        $publication([
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'slug' => 'current-article',
+            'publicationDatetime' => new \DateTime('2025-01-01 10:00:00'), 'tags' => new ArrayCollection([$metal]),
+        ]);
+        $publication([
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'slug' => 'une-critique-metal',
+            'publicationDatetime' => new \DateTime('2024-06-01 10:00:00'), 'tags' => new ArrayCollection([$metal]),
+        ]);
+        $englishTagged = $publication([
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'slug' => 'a-metal-review', 'title' => 'A metal review',
+            'shortDescription' => 'Shares the tag', 'publicationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+            'tags' => new ArrayCollection([$metal]),
+        ]);
+        $publication([
+            'type' => Publication::TYPE_TEXT, 'language' => 'fr', 'slug' => 'un-autre-article',
+            'publicationDatetime' => new \DateTime('2024-05-01 10:00:00'),
+        ]);
+        $englishUntagged = $publication([
+            'type' => Publication::TYPE_TEXT, 'language' => 'en', 'slug' => 'another-article', 'title' => 'Another article',
+            'shortDescription' => 'Same category', 'publicationDatetime' => new \DateTime('2023-01-01 10:00:00'),
+        ]);
+        $video = $publication([
+            'type' => Publication::TYPE_VIDEO, 'slug' => 'v-une-video', 'title' => 'Une video',
+            'publicationDatetime' => new \DateTime('2022-01-01 10:00:00'),
+        ]);
+
+        $this->client->request('GET', '/api/publications/current-article/related', [], [], ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications/current-article/related',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/a-metal-review',
+                    '@type' => 'Publication',
+                    'id' => $englishTagged->id,
+                    'title' => 'A metal review',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'a-metal-review',
+                    'publication_datetime' => '2024-01-01T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'Shares the tag',
+                    'language' => 'en',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/another-article',
+                    '@type' => 'Publication',
+                    'id' => $englishUntagged->id,
+                    'title' => 'Another article',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'another-article',
+                    'publication_datetime' => '2023-01-01T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => 'Same category',
+                    'language' => 'en',
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+                [
+                    '@id' => '/api/publications/v-une-video',
+                    '@type' => 'Publication',
+                    'id' => $video->id,
+                    'title' => 'Une video',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $news->id,
+                        'title' => 'News',
+                        'slug' => 'news',
+                        'is_course' => false,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-une-video',
+                    'publication_datetime' => '2022-01-01T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 3,
         ]);
     }
 }
