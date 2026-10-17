@@ -23,10 +23,12 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
+#[ORM\UniqueConstraint(name: 'publication_translation_group_language_unique', columns: ['translation_group', 'language'])]
 #[ApiResource(operations: [])]
 class Publication implements ViewableInterface, VotableInterface, SluggableEntityInterface
 {
@@ -127,6 +129,10 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[ORM\Column(type: Types::STRING, length: 10, nullable: true)]
     public ?string $language = null;
 
+    /** Shared by the translations of one text, each its own row. Null when it has none. */
+    #[ORM\Column(type: Types::GUID, nullable: true)]
+    public ?string $translationGroup = null;
+
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     public ?int $oldPublicationId = null;
 
@@ -163,6 +169,30 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     {
         $this->type = $type;
         $this->language = $type === self::TYPE_VIDEO ? null : $this->author->locale;
+    }
+
+    /**
+     * Makes this publication a translation of $sibling, opening a group on $sibling if it has none.
+     * A video is never translated: it is already shown in every language.
+     */
+    public function joinTranslationGroupOf(Publication $sibling): void
+    {
+        if ($this->type === self::TYPE_VIDEO || $sibling->type === self::TYPE_VIDEO) {
+            throw new \LogicException('A video publication cannot join a translation group.');
+        }
+        if ($sibling === $this) {
+            throw new \LogicException('A publication cannot be a translation of itself.');
+        }
+        if ($this->translationGroup !== null) {
+            throw new \LogicException('A publication already in a translation group cannot join another one.');
+        }
+        // Only the sibling is checked here: the unique index is the backstop for a third member.
+        if ($sibling->language === $this->language) {
+            throw new \LogicException('A translation group holds one publication per language.');
+        }
+
+        $sibling->translationGroup ??= Uuid::v7()->toRfc4122();
+        $this->translationGroup = $sibling->translationGroup;
     }
 
     #[Groups([Publication::ITEM, Publication::LIST])]

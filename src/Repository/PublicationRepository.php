@@ -54,6 +54,25 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return Publication[] the other translations of $publication, whatever their status
+     */
+    public function findTranslationSiblings(Publication $publication): array
+    {
+        if ($publication->translationGroup === null) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('publication')
+            ->where('publication.translationGroup = :translation_group')
+            ->andWhere('publication != :publication')
+            ->setParameter('translation_group', $publication->translationGroup)
+            ->setParameter('publication', $publication)
+            ->orderBy('publication.language', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return Publication|null
      */
     public function findOneVideo(string $videoId): ?object
