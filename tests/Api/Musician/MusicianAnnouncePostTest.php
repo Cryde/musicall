@@ -83,11 +83,68 @@ class MusicianAnnouncePostTest extends ApiTestCase
             ],
             'location_name' => 'Brussels',
             'note' => 'This is a note for the announce',
+            'languages' => ['fr'],
             'author' => [
                 '@type' => 'Author',
                 'id' => $user1->id,
                 'username' => $user1->username,
                 'display_name' => $user1->username,
+                'has_musician_profile' => false,
+            ],
+        ]);
+    }
+
+    public function test_post_languages_come_from_the_author_locale(): void
+    {
+        $musicianAnnounceRepository = self::getContainer()->get(MusicianAnnounceRepository::class);
+        $author = UserFactory::new()->asBaseUser()->create(['locale' => 'en']);
+        $style = StyleFactory::new()->asRock()->create();
+        $instrument = InstrumentFactory::new()->asDrum()->create();
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', '/api/musician_announces', [
+            'type'          => 1,
+            'instrument'    => '/api/instruments/' . $instrument->id,
+            'styles'        => ['/api/styles/' . $style->id],
+            'location_name' => 'Brussels',
+            'longitude'     => '4.3517103',
+            'latitude'      => '50.8503396',
+            // Not writable until the form offers a choice (#1198).
+            'languages'     => ['de'],
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseIsSuccessful();
+
+        $result = $musicianAnnounceRepository->findBy(['author' => $author]);
+        $this->assertCount(1, $result);
+        $createdAnnounce = $result[0];
+        $this->assertSame(['en'], $createdAnnounce->languages);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianAnnounce',
+            '@id' => '/api/musician_announces/' . $createdAnnounce->id,
+            '@type' => 'MusicianAnnounce',
+            'id' => $createdAnnounce->id,
+            'creation_datetime' => $createdAnnounce->creationDatetime->format('c'),
+            'type' => 1,
+            'instrument' => [
+                '@type' => 'Instrument',
+                'id' => $instrument->id,
+                'musician_name' => 'Batteur',
+            ],
+            'styles' => [
+                [
+                    '@type' => 'Style',
+                    'id' => $style->id,
+                    'name' => 'Rock',
+                ],
+            ],
+            'location_name' => 'Brussels',
+            'languages' => ['en'],
+            'author' => [
+                '@type' => 'Author',
+                'id' => $author->id,
+                'username' => $author->username,
+                'display_name' => $author->username,
                 'has_musician_profile' => false,
             ],
         ]);

@@ -21,6 +21,7 @@ final class MusicianAnnounceFactory extends PersistentObjectFactory
             'author' => UserFactory::new(),
             'creationDatetime' => self::faker()->dateTimeBetween('-1 year'),
             'instrument' => InstrumentFactory::new(),
+            'languages' => ['fr'],
             'latitude' => self::faker()->latitude(),
             'locationName' => self::faker()->city(),
             'longitude' => self::faker()->longitude(),

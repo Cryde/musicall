@@ -81,6 +81,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     ],
                     'location_name' => 'Paris',
                     'note' => 'note announce 2',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $user1->id,
@@ -109,6 +110,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     ],
                     'location_name' => 'Mons',
                     'note' => 'note announce 1',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $user1->id,
@@ -215,6 +217,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     ],
                     'location_name' => 'Lyon',
                     'note' => 'newest announce',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $author3->id,
@@ -237,6 +240,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'styles' => [],
                     'location_name' => 'Nantes',
                     'note' => 'middle announce',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $author2->id,
@@ -261,6 +265,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     ],
                     'location_name' => 'Brest',
                     'note' => 'oldest announce',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $authorWithProfile->id,
@@ -338,6 +343,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'styles' => [],
                     'location_name' => 'Mons',
                     'note' => 'a band looking for a drummer',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $author->id,
@@ -413,6 +419,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'styles' => [],
                     'location_name' => 'Paris',
                     'note' => 'a drummer looking for a band',
+                    'languages' => ['fr'],
                     'author' => [
                         '@type' => 'Author',
                         'id' => $author->id,

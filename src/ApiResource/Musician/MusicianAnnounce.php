@@ -81,6 +81,9 @@ class MusicianAnnounce
 
     public ?string $note = null;
 
+    /** @var list<string> */
+    public array $languages = [];
+
     #[ApiProperty(genId: false)]
     public ?Author $author = null;
 }

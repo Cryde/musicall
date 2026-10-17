@@ -69,6 +69,14 @@ class MusicianAnnounce
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $note = null;
 
+    /**
+     * Spoken languages the author welcomes, not UI locales: a filter, never a partition (#1189).
+     *
+     * @var list<string> lowercase ISO 639-1 codes, at least one
+     */
+    #[ORM\Column(type: Types::JSON)]
+    public array $languages = ['fr'];
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
