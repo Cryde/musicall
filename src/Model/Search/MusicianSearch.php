@@ -11,6 +11,8 @@ class MusicianSearch
     public ?Instrument $instrument = null;
     /** @var Style[] */
     public array $styles = [];
+    /** A spoken language the announce welcomes; none keeps every announce. */
+    public ?string $language = null;
     public ?float $latitude = null;
     public ?float $longitude = null;
     /** In km around the point; none keeps every distance, only sorted by it. */

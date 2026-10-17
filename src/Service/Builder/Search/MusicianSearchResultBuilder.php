@@ -49,6 +49,7 @@ class MusicianSearchResultBuilder
         $announceMusician->note = (string) $musicianAnnounce->note;
         $announceMusician->locationName = $musicianAnnounce->locationName;
         $announceMusician->type = $musicianAnnounce->type;
+        $announceMusician->languages = $musicianAnnounce->languages;
         if ($distance !== null) {
             $announceMusician->distance = $distance / 1000;
         }

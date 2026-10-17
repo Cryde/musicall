@@ -281,6 +281,7 @@ class MusicianSearchGuidedTest extends ApiTestCase
             'instrument' => ['@type' => 'Instrument', 'name' => 'Batteur'],
             'type' => MusicianAnnounce::TYPE_BAND,
             'styles' => $styles,
+            'languages' => ['fr'],
         ];
         if ($distance !== null) {
             $member['distance'] = $distance;

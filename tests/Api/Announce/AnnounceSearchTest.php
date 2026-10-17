@@ -94,6 +94,7 @@ class AnnounceSearchTest extends ApiTestCase
                         'name' => 'Guitariste',
                     ],
                     'type' => 1,
+                    'languages' => ['fr'],
                     'styles' => [
                         ['@type' => 'Style', 'name' => 'Rock'],
                     ],
@@ -116,6 +117,7 @@ class AnnounceSearchTest extends ApiTestCase
                         'name' => 'Guitariste',
                     ],
                     'type' => 1,
+                    'languages' => ['fr'],
                     'styles' => [
                         ['@type' => 'Style', 'name' => 'Rock'],
                         ['@type' => 'Style', 'name' => 'Pop'],

@@ -66,6 +66,7 @@ class MusicianSearchNoteTest extends ApiTestCase
                 'instrument' => ['@type' => 'Instrument', 'name' => 'Saxophoniste'],
                 'type' => MusicianAnnounce::TYPE_BAND,
                 'styles' => [['@type' => 'Style', 'name' => 'Jazz']],
+                'languages' => ['fr'],
             ]],
             'view' => ['@id' => $viewId, '@type' => 'PartialCollectionView'],
             'search' => [

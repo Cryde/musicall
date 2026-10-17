@@ -11,6 +11,7 @@ export default {
     longitude = null,
     location = null,
     radius = null,
+    language = null,
     landing = false,
     page = 1
   }) {
@@ -32,6 +33,8 @@ export default {
       // Only the guided search bounds the distance (#1084); the filters only sort by it.
       if (radius) params.radius = radius
     }
+    // No language by default, so every announce shows (#1198).
+    if (language !== null) params.language = language
     // A landing page's list on arrival, which the server does not record as a search (#1075).
     if (landing) params.landing = '1'
     return axios

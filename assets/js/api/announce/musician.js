@@ -16,7 +16,7 @@ export default {
       .then((resp) => resp.data)
   },
 
-  create({ type, note, styles, instrument, locationName, longitude, latitude }) {
+  create({ type, note, styles, instrument, locationName, longitude, latitude, languages }) {
     return axios
       .post(
         Routing.generate('api_musician_announces_post'),
@@ -27,7 +27,8 @@ export default {
           instrument,
           locationName,
           longitude,
-          latitude
+          latitude,
+          languages
         },
         {
           headers: {

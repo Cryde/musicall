@@ -77,6 +77,11 @@
                 <AnnounceNoteButton :note="note" :author-name="userName" class="shrink-0" />
             </div>
 
+            <!-- Spoken languages (#1198) -->
+            <p v-if="languages.length > 0" class="text-sm text-surface-500 dark:text-surface-400 mt-1 mb-0">
+                <i class="pi pi-language mr-1" aria-hidden="true" /><span class="sr-only">{{ `${t('search.announce_card.languages_label')} ` }}</span>{{ languagesText }}
+            </p>
+
             <!-- Buttons -->
             <div class="flex gap-2 mt-auto pt-4">
                 <button
@@ -127,6 +132,7 @@ import ReportButton from '../../components/Report/ReportButton.vue'
 import UserName from '../../components/User/UserName.vue'
 import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { languageListLabel } from '../../utils/announceLanguages.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { hasMoreStyles, MAX_VISIBLE_STYLES } from '../../utils/styles.js'
 
@@ -143,7 +149,9 @@ const props = defineProps({
   note: { type: String, default: null },
   from: { type: String, default: null },
   /** Style names the search asked for (#1084): shown first and highlighted. */
-  highlightedStyles: { type: Array, default: () => [] }
+  highlightedStyles: { type: Array, default: () => [] },
+  /** Spoken language codes the author welcomes (#1198). */
+  languages: { type: Array, default: () => [] }
 })
 
 const { t } = useI18n()
@@ -160,6 +168,7 @@ const visibleStyles = computed(() =>
     .slice(0, MAX_VISIBLE_STYLES)
 )
 const allStylesText = computed(() => props.styles.map((s) => s.name).join(', '))
+const languagesText = computed(() => languageListLabel(props.languages))
 
 const userSecurityStore = useUserSecurityStore()
 const showMessageModal = ref(false)
