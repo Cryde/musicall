@@ -27,14 +27,20 @@ export function localizedPage(loaders) {
       const shown = shallowRef(versions[shownLocale()])
 
       // A locale switched while the page is open keeps the current version until the other loads.
-      watch(shownLocale, async (locale) => {
-        try {
-          await load(locale)
-          if (locale === shownLocale()) shown.value = versions[locale]
-        } catch (error) {
-          console.error(`The ${locale} version of this page failed to load`, error)
-        }
-      })
+      // Immediate for a page mounted in a locale whose version is not downloaded yet: a language switch
+      // can remount the page (the router view keyed on the locale, #1193) without entering the route again.
+      watch(
+        shownLocale,
+        async (locale) => {
+          try {
+            await load(locale)
+            if (locale === shownLocale()) shown.value = versions[locale]
+          } catch (error) {
+            console.error(`The ${locale} version of this page failed to load`, error)
+          }
+        },
+        { immediate: true }
+      )
 
       return () => (shown.value ? h(shown.value) : null)
     }

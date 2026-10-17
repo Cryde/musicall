@@ -132,6 +132,21 @@ describe('localizedPage', () => {
     assert.deepEqual(loaded, ['fr', 'en'])
   })
 
+  it('downloads its version when mounted in a locale it has not loaded, as a language switch remounts it', async () => {
+    const english = pendingDownload()
+    const { loaded, loaders } = pageVersions({ en: english.load })
+    const page = localizedPage(loaders)
+    await page.beforeRouteEnter()
+
+    i18n.global.locale.value = 'en'
+    const pageText = mountInMemory(page)
+    english.resolve(version('Hello'))
+    await settled()
+
+    assert.equal(pageText(), 'Hello')
+    assert.deepEqual(loaded, ['fr', 'en'])
+  })
+
   it('keeps the open version when the other locale fails to download', async (t) => {
     const logged = t.mock.method(console, 'error', () => {})
     const { loaders } = pageVersions({ en: () => Promise.reject(new Error('chunk failed')) })
