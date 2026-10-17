@@ -62,7 +62,7 @@ readonly class RequestLocaleResolver
 
         // The default goes first: getPreferredLanguage() answers with the first candidate when nothing matches.
         $candidates = array_values(array_unique([$this->defaultLocale, ...$this->enabledLocales]));
-        // With a single candidate the header cannot change the answer, so production responses stay as they were.
+        // With a single candidate the header cannot change the answer, so a French-only response needs no Vary.
         if (count($candidates) > 1) {
             $request->attributes->set(self::VARY_BY_LANGUAGE, true);
         }
