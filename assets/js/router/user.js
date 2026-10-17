@@ -1,3 +1,5 @@
+import { localizedPage } from '../i18n/localizedPage.js'
+
 export default [
   {
     name: 'app_user_public_profile',
@@ -26,23 +28,35 @@ export default [
   {
     name: 'app_privacy',
     path: '/privacy',
-    component: () => import('../views/Legal/Privacy.vue')
+    component: localizedPage({
+      fr: () => import('../views/Legal/Privacy.vue'),
+      en: () => import('../views/Legal/en/Privacy.vue')
+    })
   },
   {
     name: 'app_terms',
     path: '/terms',
-    component: () => import('../views/Legal/Terms.vue')
+    component: localizedPage({
+      fr: () => import('../views/Legal/Terms.vue'),
+      en: () => import('../views/Legal/en/Terms.vue')
+    })
   },
   {
     // Public on purpose: Google Play's Data safety form links here as the account deletion URL (#1130).
     name: 'app_account_deletion',
     path: '/supprimer-mon-compte',
-    component: () => import('../views/Legal/AccountDeletion.vue')
+    component: localizedPage({
+      fr: () => import('../views/Legal/AccountDeletion.vue'),
+      en: () => import('../views/Legal/en/AccountDeletion.vue')
+    })
   },
   {
     name: 'app_mentions_legales',
     path: '/mentions-legales',
-    component: () => import('../views/Legal/MentionsLegales.vue')
+    component: localizedPage({
+      fr: () => import('../views/Legal/MentionsLegales.vue'),
+      en: () => import('../views/Legal/en/MentionsLegales.vue')
+    })
   },
   {
     name: 'app_login',
