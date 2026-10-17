@@ -18,6 +18,12 @@
 
       <Column field="sub_category.title" header="Catégorie" sortable />
 
+      <Column v-if="offersLanguageChoice(ENABLED_LOCALES)" field="language" header="Langue" sortable>
+        <template #body="{ data }">
+          <PublicationLanguageLabel :language="data.language" />
+        </template>
+      </Column>
+
       <Column field="author.username" header="Auteur" sortable />
 
       <Column header="Actions" style="width: 200px">
@@ -65,8 +71,11 @@ import DataTable from 'primevue/datatable'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onMounted } from 'vue'
+import PublicationLanguageLabel from '../../../components/Publication/PublicationLanguageLabel.vue'
+import { ENABLED_LOCALES } from '../../../i18n/locale.js'
 import { useAdminPublicationStore } from '../../../store/admin/publication.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
+import { offersLanguageChoice } from '../../../utils/publicationLanguage.js'
 
 const confirm = useConfirm()
 const toast = useToast()

@@ -10,6 +10,7 @@ use App\ApiResource\Publication\PublicationListItem;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
 use App\Service\Metric\PublicationUserVoteResolver;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * @implements ProviderInterface<PublicationListItem>
@@ -22,6 +23,7 @@ readonly class LastPublicationsProvider implements ProviderInterface
         private PublicationRepository       $publicationRepository,
         private PublicationListItemBuilder  $publicationListItemBuilder,
         private PublicationUserVoteResolver $userVoteResolver,
+        private LocaleSwitcher              $localeSwitcher,
     ) {
     }
 
@@ -30,7 +32,10 @@ readonly class LastPublicationsProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $publications = $this->publicationRepository->findLastPublications(self::LAST_PUBLICATIONS_LIMIT);
+        $publications = $this->publicationRepository->findLastPublications(
+            $this->localeSwitcher->getLocale(),
+            self::LAST_PUBLICATIONS_LIMIT,
+        );
 
         return $this->publicationListItemBuilder->buildList(
             $publications,

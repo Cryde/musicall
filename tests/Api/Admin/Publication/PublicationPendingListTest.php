@@ -86,6 +86,65 @@ class PublicationPendingListTest extends ApiTestCase
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'cover'                => null,
                     'description'          => 'Petite description de la publication',
+                    'language'             => 'fr',
+                    'upvotes'              => 0,
+                    'downvotes'            => 0,
+                    'user_vote'            => null,
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_the_queue_lists_every_language(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $sub = PublicationSubCategoryFactory::new()->asNews()->create();
+        $publication = PublicationFactory::new([
+            'author'              => $admin,
+            'publicationDatetime' => new \DateTime('2022-01-02 10:00:00'),
+            'shortDescription'    => 'In English',
+            'slug'                => 'an-article',
+            'status'              => Publication::STATUS_PENDING,
+            'subCategory'         => $sub,
+            'title'               => 'An article',
+            'type'                => Publication::TYPE_TEXT,
+            'language'            => 'en',
+        ])->create();
+
+        $this->client->loginUser($admin);
+        // A French page, whose public listings leave English out.
+        $this->client->request('GET', '/api/admin/publications/pending', [], [], ['HTTP_X_LOCALE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'   => '/api/contexts/Publication',
+            '@id'        => '/api/admin/publications/pending',
+            '@type'      => 'Collection',
+            'member'     => [
+                [
+                    '@id'                  => '/api/publications/an-article',
+                    '@type'                => 'Publication',
+                    'id'                   => $publication->id,
+                    'title'                => 'An article',
+                    'sub_category'         => [
+                        '@type'      => 'SubCategory',
+                        'id'         => $sub->id,
+                        'title'      => 'News',
+                        'slug'       => 'news',
+                        'is_course'  => false,
+                    ],
+                    'author'               => [
+                        '@type'             => 'Author',
+                        'username'          => 'user_admin',
+                        'display_name'      => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug'                 => 'an-article',
+                    'publication_datetime' => '2022-01-02T10:00:00+00:00',
+                    'cover'                => null,
+                    'description'          => 'In English',
+                    'language'             => 'en',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
                     'user_vote'            => null,

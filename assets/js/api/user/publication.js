@@ -55,12 +55,22 @@ export default {
       .then((resp) => resp.data)
   },
 
-  save(id, { title, shortDescription, categoryId, content, tags }) {
+  save(id, { title, shortDescription, categoryId, content, tags, language }) {
     return axios
       .patch(
         Routing.generate('api_user_publications_patch', { id }),
-        { title, shortDescription, categoryId, content, tags: tags ?? [] },
+        { title, shortDescription, categoryId, content, tags: tags ?? [], language },
         { headers: { 'Content-Type': 'application/merge-patch+json' } }
+      )
+      .then((resp) => resp.data)
+  },
+
+  createTranslation(id, { title, language }) {
+    return axios
+      .post(
+        Routing.generate('api_user_publications_translation_create', { id }),
+        { title, language },
+        { headers: { 'Content-Type': 'application/ld+json' } }
       )
       .then((resp) => resp.data)
   },

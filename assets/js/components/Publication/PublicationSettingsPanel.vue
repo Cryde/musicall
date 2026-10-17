@@ -15,6 +15,22 @@
       </div>
     </div>
 
+    <div v-if="offersLanguageChoice(ENABLED_LOCALES)" class="flex flex-col gap-2">
+      <label for="panel-language" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+        {{ t('publication.editor.settings.language') }}
+      </label>
+      <Select
+        id="panel-language"
+        v-model="language"
+        :options="languageChoices"
+        optionLabel="label"
+        optionValue="value"
+        optionDisabled="disabled"
+        class="w-full"
+        :disabled="disabled"
+      />
+    </div>
+
     <div class="flex flex-col gap-2">
       <label for="panel-category" class="text-sm font-medium text-surface-700 dark:text-surface-200">
         {{ t('publication.common.category') }}
@@ -132,8 +148,10 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import tagsApi from '../../api/publication/tags.js'
+import { ENABLED_LOCALES } from '../../i18n/locale.js'
 import { usePublicationEditStore } from '../../store/publication/publicationEdit.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
+import { languageOptions, offersLanguageChoice } from '../../utils/publicationLanguage.js'
 
 defineProps({
   disabled: { type: Boolean, default: false },
@@ -144,6 +162,7 @@ defineProps({
 const shortDescription = defineModel('shortDescription', { type: String, default: '' })
 const categoryId = defineModel('categoryId', { type: Number, default: null })
 const tags = defineModel('tags', { type: Array, default: () => [] })
+const language = defineModel('language', { type: String, default: null })
 
 const { t } = useI18n()
 const publicationEditStore = usePublicationEditStore()
@@ -154,6 +173,10 @@ const tagSuggestions = ref([])
 const fileUploadRef = ref(null)
 
 const coverUrl = computed(() => publicationEditStore.publication?.cover_url || null)
+
+const languageChoices = computed(() =>
+  languageOptions(ENABLED_LOCALES, publicationEditStore.publication?.translation_languages)
+)
 
 onMounted(async () => {
   if (publicationsStore.publicationCategories.length === 0) {

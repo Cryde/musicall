@@ -12,6 +12,7 @@ use App\ApiResource\Publication\Publication\Author;
 use App\ApiResource\Publication\Publication\Category;
 use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Thread;
+use App\ApiResource\Publication\Publication\Translation;
 use App\ApiResource\Publication\Publication\Type;
 use App\State\Provider\Publication\PublicationProvider;
 use App\State\Provider\Publication\PublicationSearchProvider;
@@ -29,6 +30,7 @@ use App\State\Provider\Publication\PublicationSearchProvider;
             uriTemplate: '/publications/search',
             openapi: new Operation(
                 tags: ['Publications'],
+                description: 'Every language, whatever the request locale: the admin delete page searches all publications.',
                 parameters: [new Parameter(name: 'term', in: 'query', description: "The query string you want to search", required: true, allowEmptyValue: false, example: "My search title")]
             ),
             paginationEnabled: false,
@@ -68,4 +70,8 @@ class Publication
 
     /** @var Publication\Tag[] */
     public array $tags = [];
+
+    /** @var Translation[] the same text in other languages, online ones only */
+    #[ApiProperty(genId: false)]
+    public array $translations = [];
 }

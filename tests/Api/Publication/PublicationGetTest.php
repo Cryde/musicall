@@ -90,6 +90,7 @@ class PublicationGetTest extends ApiTestCase
             'view_count'           => 124,
             'reading_time'         => 1,
             'tags'                 => [],
+            'translations'         => [],
         ]);
     }
 
@@ -157,6 +158,95 @@ class PublicationGetTest extends ApiTestCase
             'view_count'           => 1,
             'reading_time'         => 0,
             'tags'                 => [],
+            'translations'         => [],
+        ]);
+    }
+
+    public function test_get_item_links_its_online_translations(): void
+    {
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $thread = CommentThreadFactory::new()->create();
+        $publication = PublicationFactory::new([
+            'author'              => $author,
+            'content'             => 'contenu',
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2022-01-02T02:03:04+00:00'),
+            'shortDescription'    => 'Description',
+            'slug'                => 'mon-article',
+            'status'              => Publication::STATUS_ONLINE,
+            'subCategory'         => $sub,
+            'title'               => 'Mon article',
+            'type'                => Publication::TYPE_TEXT,
+            'language'            => 'fr',
+            'cover'               => PublicationCoverFactory::new(['imageName' => 'fr.jpg']),
+            'thread'              => $thread,
+        ])->create();
+        $english = PublicationFactory::new([
+            'author' => $author, 'slug' => 'my-article', 'status' => Publication::STATUS_ONLINE,
+            'subCategory' => $sub, 'type' => Publication::TYPE_TEXT, 'language' => 'en',
+        ])->create();
+        // Not public yet, so not linked.
+        $german = PublicationFactory::new([
+            'author' => $author, 'slug' => 'mein-artikel-', 'status' => Publication::STATUS_DRAFT,
+            'subCategory' => $sub, 'type' => Publication::TYPE_TEXT, 'language' => 'de',
+        ])->create();
+        $english->joinTranslationGroupOf($publication);
+        $german->joinTranslationGroupOf($publication);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        $this->client->request('GET', '/api/publications/mon-article');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications/mon-article',
+            '@type' => 'Publication',
+            'id'                   => $publication->id,
+            'title'                => 'Mon article',
+            'author'               => [
+                '@type'    => 'Author',
+                'username' => 'user_admin',
+                'display_name' => 'user_admin',
+                'deletion_datetime' => null,
+            ],
+            'slug'                 => 'mon-article',
+            'content'              => 'contenu',
+            'publication_datetime' => '2022-01-02T02:03:04+00:00',
+            'category'             => [
+                '@type'    => 'Category',
+                'id'       => $sub->id,
+                'title'    => 'Chroniques',
+                'slug'     => 'chroniques',
+                'is_course' => false,
+            ],
+            'description'          => 'Description',
+            'cover'                => [
+                '@type'     => 'Cover',
+                'cover_url' => 'http://musicall.test/media/cache/resolve/publication_cover_300x300/images/publication/cover/fr.jpg',
+            ],
+            'thread'               => [
+                '@type'    => 'Thread',
+                'id'       => $thread->id,
+            ],
+            'type'                 => [
+                '@type'    => 'Type',
+                'id'       => 1,
+                'label'    => 'text',
+            ],
+            'language'             => 'fr',
+            'upvotes'              => 0,
+            'downvotes'            => 0,
+            'user_vote'            => null,
+            'view_count'           => 1,
+            'reading_time'         => 1,
+            'tags'                 => [],
+            'translations'         => [
+                [
+                    '@type'    => 'Translation',
+                    'language' => 'en',
+                    'slug'     => 'my-article',
+                ],
+            ],
         ]);
     }
 

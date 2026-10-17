@@ -11,6 +11,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\User\Publication\UserPublicationEditProcessor;
 use App\State\Processor\User\Publication\UserPublicationSubmitProcessor;
 use App\State\Provider\User\Publication\UserPublicationEditProvider;
+use App\Validator\User\SupportedLocale;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
@@ -62,8 +63,17 @@ class UserPublicationEdit
 
     public ?string $coverUrl = null;
 
-    #[ApiProperty(writable: false)]
+    #[SupportedLocale]
+    #[Assert\Expression('value not in this.translationLanguages', message: 'publication.translation.language_taken')]
     public ?string $language = null;
+
+    /**
+     * The languages its other translations are in, so the ones it cannot switch to.
+     *
+     * @var string[]
+     */
+    #[ApiProperty(writable: false)]
+    public array $translationLanguages = [];
 
     /**
      * null = leave tags untouched. [] = clear all tags. Non-empty array = replace tag set.

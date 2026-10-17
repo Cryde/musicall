@@ -14,6 +14,7 @@ use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
 use App\Service\Metric\PublicationUserVoteResolver;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * @implements ProviderInterface<PublicationListItem>
@@ -25,6 +26,7 @@ readonly class PublicationCollectionProvider implements ProviderInterface
         private PublicationListItemBuilder  $publicationListItemBuilder,
         private Pagination                  $pagination,
         private PublicationUserVoteResolver $userVoteResolver,
+        private LocaleSwitcher              $localeSwitcher,
     ) {
     }
 
@@ -40,7 +42,13 @@ readonly class PublicationCollectionProvider implements ProviderInterface
         $orderDirection = $filters['order']['publication_datetime'] ?? 'desc';
         $tagSlug = $filters['tag.slug'] ?? null;
 
-        $qb = $this->publicationRepository->createCollectionQueryBuilder($subCategorySlug, $subCategoryType, $orderDirection, $tagSlug);
+        $qb = $this->publicationRepository->createCollectionQueryBuilder(
+            $this->localeSwitcher->getLocale(),
+            $subCategorySlug,
+            $subCategoryType,
+            $orderDirection,
+            $tagSlug,
+        );
         $qb->setFirstResult($offset)
            ->setMaxResults($itemsPerPage);
 

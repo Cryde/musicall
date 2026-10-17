@@ -157,7 +157,7 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
 
     /**
      * Sets the type and its language together, so a text always has one and a video never does.
-     * A text is in its author's language until the editor offers a picker (#1196), so set the author first.
+     * A text starts in its author's language, so set the author first.
      */
     public function assignType(int $type): void
     {
