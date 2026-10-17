@@ -27,6 +27,7 @@ readonly class ForumCategoryListBuilder
         $item = new ForumCategory();
         $item->id = (string) $category->id;
         $item->title = $category->title;
+        $item->locale = $category->locale;
         $item->forums = $this->buildForumItems($category->forums->toArray());
 
         return $item;

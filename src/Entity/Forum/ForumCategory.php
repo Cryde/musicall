@@ -34,6 +34,10 @@ class ForumCategory
     #[ORM\Column(type: Types::INTEGER)]
     public int $position;
 
+    /** Its forums and their topics read in this locale: categories are per language rows. */
+    #[ORM\Column(type: Types::STRING, length: 10, options: ['default' => 'fr'])]
+    public string $locale = 'fr';
+
     #[ORM\ManyToOne(targetEntity: ForumSource::class, inversedBy: 'forumCategories')]
     #[ORM\JoinColumn(nullable: false)]
     public ForumSource $forumSource;

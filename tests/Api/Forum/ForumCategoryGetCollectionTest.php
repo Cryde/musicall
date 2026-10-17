@@ -98,6 +98,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     '@type' => 'ForumCategory',
                     'id' => $category1->id,
                     'title' => 'First Category',
+                    'locale' => 'fr',
                     'forums' => [
                         [
                             '@type' => 'Forum',
@@ -127,6 +128,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     '@type' => 'ForumCategory',
                     'id' => $category2->id,
                     'title' => 'Second Category',
+                    'locale' => 'fr',
                     'forums' => [
                         [
                             '@type' => 'Forum',
@@ -149,6 +151,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     '@type' => 'ForumCategory',
                     'id' => $category3->id,
                     'title' => 'Third Category',
+                    'locale' => 'fr',
                     'forums' => [
                         [
                             '@type' => 'Forum',
@@ -209,6 +212,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     '@type' => 'ForumCategory',
                     'id' => $rootCategory->id,
                     'title' => 'Root Category',
+                    'locale' => 'fr',
                     'forums' => [
                         [
                             '@type' => 'Forum',
@@ -221,6 +225,80 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 1,
+        ]);
+    }
+
+    public function test_get_collection_exposes_each_category_locale_without_filtering(): void
+    {
+        $forumSource = ForumSourceFactory::new()->asRoot()->create();
+        $englishCategory = ForumCategoryFactory::new([
+            'position' => 1,
+            'title' => 'General',
+            'locale' => 'en',
+            'forumSource' => $forumSource,
+        ])->create();
+        $frenchCategory = ForumCategoryFactory::new([
+            'position' => 2,
+            'title' => 'Généralités',
+            'locale' => 'fr',
+            'forumSource' => $forumSource,
+        ])->create();
+        $englishForum = ForumFactory::new([
+            'forumCategory' => $englishCategory,
+            'position' => 1,
+            'title' => 'Introductions',
+            'slug' => 'introductions',
+            'description' => 'Say hello',
+        ])->create();
+        $frenchForum = ForumFactory::new([
+            'forumCategory' => $frenchCategory,
+            'position' => 1,
+            'title' => 'Présentations',
+            'slug' => 'presentations',
+            'description' => 'Dites bonjour',
+        ])->create();
+
+        $this->client->request('GET', '/api/forums/categories');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategory',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/forum_categories/' . $englishCategory->id,
+                    '@type' => 'ForumCategory',
+                    'id' => $englishCategory->id,
+                    'title' => 'General',
+                    'locale' => 'en',
+                    'forums' => [
+                        [
+                            '@type' => 'Forum',
+                            'id' => $englishForum->id,
+                            'title' => 'Introductions',
+                            'slug' => 'introductions',
+                            'description' => 'Say hello',
+                        ],
+                    ],
+                ],
+                [
+                    '@id' => '/api/forum_categories/' . $frenchCategory->id,
+                    '@type' => 'ForumCategory',
+                    'id' => $frenchCategory->id,
+                    'title' => 'Généralités',
+                    'locale' => 'fr',
+                    'forums' => [
+                        [
+                            '@type' => 'Forum',
+                            'id' => $frenchForum->id,
+                            'title' => 'Présentations',
+                            'slug' => 'presentations',
+                            'description' => 'Dites bonjour',
+                        ],
+                    ],
+                ],
+            ],
+            'totalItems' => 2,
         ]);
     }
 

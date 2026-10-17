@@ -18,6 +18,7 @@ final class ForumCategoryFactory extends PersistentObjectFactory
         return [
             'creationDatetime' => self::faker()->dateTime(),
             'forumSource' => ForumSourceFactory::new()->asRoot(),
+            'locale' => 'fr',
             'position' => self::faker()->randomNumber(),
             'title' => self::faker()->text(255),
         ];
