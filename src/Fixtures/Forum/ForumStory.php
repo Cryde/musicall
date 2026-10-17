@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Fixtures\Forum;
 
 use App\Entity\Forum\Forum;
+use App\Entity\Forum\ForumSource;
 use App\Entity\Forum\ForumTopic;
 use App\Fixtures\Factory\Forum\ForumCategoryFactory;
 use App\Fixtures\Factory\Forum\ForumFactory;
@@ -72,6 +73,95 @@ class ForumStory extends Story
         $this->createTopicsForDiscussionForum($discussionForum);
         $this->createTopicsForTheorieForum($theorieForum);
         $this->createTopicsForSuggestionsForum($suggestionsForum);
+
+        $this->createEnglishForums($rootSource);
+    }
+
+    /**
+     * The English forums are their own categories (#1188), listed on English pages only (#1197).
+     * Forum slugs are unique across locales, hence English slugs where a French forum has the same word.
+     */
+    private function createEnglishForums(ForumSource $rootSource): void
+    {
+        // Each forum: title, slug, description, and its topics as title, slug and number of posts.
+        $categories = [
+            'General' => [
+                ['Introductions', 'introductions', 'Introduce yourself!', [
+                    ['Hi everyone, guitarist from Manchester', 'hi-everyone-guitarist-from-manchester', 6],
+                    ['New drummer looking for a band', 'new-drummer-looking-for-a-band', 3],
+                    ['Hello from a bass player', 'hello-from-a-bass-player', 0],
+                ]],
+                ['General discussion', 'general-discussion', 'Anything goes', [
+                    ['What are you listening to right now?', 'what-are-you-listening-to-right-now', 10],
+                    ['How do you deal with stage fright?', 'how-do-you-deal-with-stage-fright', 4],
+                ]],
+            ],
+            'Help' => [
+                ['Music theory', 'music-theory', 'Notation, harmony and more', []],
+                ['Music production', 'music-production', 'DAWs, plugins and more', []],
+            ],
+            'Ads and promotion' => [
+                ['Self-promotion', 'self-promotion', 'Promote your music!', []],
+                ['Classifieds', 'classifieds', 'Buy, sell and swap', []],
+            ],
+            'Media sharing' => [
+                ['Videos', 'video-sharing', 'Share your videos', []],
+                ['Audio', 'audio-sharing', 'Share your tracks', []],
+            ],
+            'About the site' => [
+                ['Feature requests', 'feature-requests', 'Your ideas for the site', []],
+                ['Bug reports', 'bug-reports', 'Report a bug', []],
+            ],
+        ];
+
+        $categoryPosition = 1;
+        foreach ($categories as $categoryTitle => $categoryForums) {
+            $category = ForumCategoryFactory::new([
+                'forumSource' => $rootSource,
+                'title' => $categoryTitle,
+                'position' => $categoryPosition++,
+                'locale' => 'en',
+            ])->create();
+            $this->addToPool(self::FORUM_CATEGORIES, $category);
+
+            foreach ($categoryForums as $forumPosition => [$title, $slug, $description, $topics]) {
+                $forum = ForumFactory::new([
+                    'forumCategory' => $category,
+                    'title' => $title,
+                    'slug' => $slug,
+                    'description' => $description,
+                    'position' => $forumPosition + 1,
+                ])->create();
+                $this->addToPool(self::FORUMS, $forum);
+                $this->createEnglishTopics($forum, $topics);
+            }
+        }
+    }
+
+    /**
+     * @param list<array{string, string, int}> $topics
+     */
+    private function createEnglishTopics(Forum $forum, array $topics): void
+    {
+        $users = UserStory::getPool(UserStory::POOL_USERS);
+
+        foreach ($topics as [$title, $slug, $posts]) {
+            $topic = ForumTopicFactory::new([
+                'forum' => $forum,
+                'title' => $title,
+                'slug' => $slug,
+                'author' => $users[array_rand($users)],
+                'creationDatetime' => new \DateTime('-' . rand(1, 60) . ' days'),
+            ])->create();
+
+            if ($posts > 0) {
+                $this->createPostsForTopic($topic, $posts);
+            }
+
+            $this->addToPool(self::TOPICS, $topic);
+        }
+
+        $this->updateForumCounts($forum);
     }
 
     private function createTopicsForPresentationForum(Forum $forum): void

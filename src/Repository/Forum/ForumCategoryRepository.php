@@ -21,14 +21,16 @@ class ForumCategoryRepository extends ServiceEntityRepository
     /**
      * @return ForumCategory[]
      */
-    public function findBySourceSlugOrderedByPosition(string $sourceSlug): array
+    public function findBySourceSlugAndLocaleOrderedByPosition(string $sourceSlug, string $locale): array
     {
         return $this->createQueryBuilder('fc')
             ->innerJoin('fc.forumSource', 'fs')
             ->innerJoin('fc.forums', 'f')
             ->addSelect('f')
             ->where('fs.slug = :slug')
+            ->andWhere('fc.locale = :locale')
             ->setParameter('slug', $sourceSlug)
+            ->setParameter('locale', $locale)
             ->orderBy('fc.position', 'ASC')
             ->addOrderBy('f.position', 'ASC')
             ->getQuery()

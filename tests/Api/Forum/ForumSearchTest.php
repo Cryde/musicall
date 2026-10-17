@@ -13,18 +13,9 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 /**
  * Covers the input-validation surface of /api/forums/search.
  *
- * The happy-path cases (MATCH AGAINST returning hits) cannot run here:
- * InnoDB's FULLTEXT auxiliary tables are not updated until the transaction
- * that inserted the rows commits, and DAMA wraps each test in an
- * always-rolled-back transaction. Inserts seeded inside a test are therefore
- * invisible to MATCH AGAINST in the same test.
- *
- * Disabling DAMA via StaticDriver::setKeepStaticConnections(false) in
- * setUpBeforeClass works for this class but leaks state into the rest of
- * the suite (subsequent tests start without transaction wrapping and pay
- * a full schema reset per test, ballooning suite runtime ~25x). So the
- * happy paths are covered by manual exercise in dev and by the
- * PostSnippetExtractorTest unit tests for the snippet extraction layer.
+ * Searches that find something live in ForumSearchLocaleTest: MATCH AGAINST
+ * only sees committed rows, and DAMA wraps each test here in an
+ * always-rolled-back transaction, so that class turns DAMA off for itself.
  */
 #[ResetDatabase]
 class ForumSearchTest extends ApiTestCase

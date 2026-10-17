@@ -90,6 +90,68 @@ class ForumTopicPostPostTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_new_topic_takes_its_forum_locale_not_the_page_locale(): void
+    {
+        $forumTopicRepository = static::getContainer()->get(ForumTopicRepository::class);
+        $forumPostRepository = static::getContainer()->get(ForumPostRepository::class);
+        $user = UserFactory::new()->asBaseUser()->create();
+        $englishCategory = ForumCategoryFactory::new(['position' => 1, 'title' => 'General', 'locale' => 'en'])->create();
+        $englishForum = ForumFactory::new(['forumCategory' => $englishCategory, 'slug' => 'introductions'])->create();
+
+        $userId = $user->id;
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/forum/topic/post',
+            [
+                'title' => 'Hello from a French page',
+                'message' => 'test content for new topic',
+                'forum' => '/api/forum/introductions',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => 'fr']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $topics = $forumTopicRepository->findBy(['forum' => $englishForum]);
+        $this->assertCount(1, $topics);
+        $posts = $forumPostRepository->findBy(['topic' => $topics[0]]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumTopic',
+            '@id' => '/api/forum_topics/hello-from-a-french-page',
+            '@type' => 'ForumTopic',
+            'id' => $topics[0]->id,
+            'title' => 'Hello from a French page',
+            'slug' => 'hello-from-a-french-page',
+            'type' => 0,
+            'is_locked' => false,
+            'is_resolved' => false,
+            'is_pinned' => false,
+            'last_post' => [
+                '@type' => 'ForumPost',
+                'id' => $posts[0]->id,
+                'creation_datetime' => $posts[0]->creationDatetime->format('c'),
+                'creator' => [
+                    '@type' => 'User',
+                    'id' => $userId,
+                    'username' => 'base_admin',
+                    'display_name' => 'base_admin',
+                ],
+            ],
+            'creation_datetime' => $topics[0]->creationDatetime->format('c'),
+            'author' => [
+                '@type' => 'User',
+                'id' => $userId,
+                'username' => 'base_admin',
+                'display_name' => 'base_admin',
+            ],
+            'post_number' => 1,
+        ]);
+        // Listed with the English forums, where it was posted, and not with the French ones.
+        $this->assertSame(
+            ['hello-from-a-french-page'],
+            array_map(static fn ($topic): string => $topic->slug, $forumTopicRepository->findRecentlyActive('en', 3)),
+        );
+        $this->assertSame([], $forumTopicRepository->findRecentlyActive('fr', 3));
+    }
+
     public function test_post_topic_validation(): void
     {
         $forumTopicRepository =  static::getContainer()->get(ForumTopicRepository::class);

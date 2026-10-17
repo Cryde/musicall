@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Forum;
 
+use App\Entity\Forum\Forum;
+use App\Entity\Forum\ForumCategory;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
@@ -228,7 +230,114 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_collection_exposes_each_category_locale_without_filtering(): void
+    public function test_get_collection_lists_the_french_forums_by_default(): void
+    {
+        [$frenchCategory, $frenchForum] = $this->createFrenchAndEnglishForums();
+
+        $this->client->request('GET', '/api/forums/categories');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategory',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/forum_categories/' . $frenchCategory->id,
+                    '@type' => 'ForumCategory',
+                    'id' => $frenchCategory->id,
+                    'title' => 'Généralités',
+                    'locale' => 'fr',
+                    'forums' => [
+                        [
+                            '@type' => 'Forum',
+                            'id' => $frenchForum->id,
+                            'title' => 'Présentations',
+                            'slug' => 'presentations',
+                            'description' => 'Dites bonjour',
+                        ],
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_get_collection_lists_the_english_forums_for_an_english_page(): void
+    {
+        [, , $englishCategory, $englishForum] = $this->createFrenchAndEnglishForums();
+
+        $this->client->request('GET', '/api/forums/categories', server: ['HTTP_X_LOCALE' => 'en']);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategory',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/forum_categories/' . $englishCategory->id,
+                    '@type' => 'ForumCategory',
+                    'id' => $englishCategory->id,
+                    'title' => 'General',
+                    'locale' => 'en',
+                    'forums' => [
+                        [
+                            '@type' => 'Forum',
+                            'id' => $englishForum->id,
+                            'title' => 'Introductions',
+                            'slug' => 'introductions',
+                            'description' => 'Say hello',
+                        ],
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_get_collection_is_empty_for_an_english_page_without_english_forums(): void
+    {
+        // No fallback to the French forums: an English page shows its empty state until English forums exist.
+        $forumSource = ForumSourceFactory::new()->asRoot()->create();
+        $frenchCategory = ForumCategoryFactory::new([
+            'position' => 1,
+            'title' => 'Généralités',
+            'locale' => 'fr',
+            'forumSource' => $forumSource,
+        ])->create();
+        ForumFactory::new(['forumCategory' => $frenchCategory, 'position' => 1, 'slug' => 'presentations'])->create();
+
+        $this->client->request('GET', '/api/forums/categories', server: ['HTTP_X_LOCALE' => 'en']);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategory',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [],
+            'totalItems' => 0,
+        ]);
+    }
+
+    public function test_get_collection_empty_when_no_categories(): void
+    {
+        ForumSourceFactory::new()->asRoot()->create();
+
+        $this->client->request('GET', '/api/forums/categories');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategory',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [],
+            'totalItems' => 0,
+        ]);
+    }
+
+    /**
+     * The English category comes first by position, so a missing filter would show it in the French list.
+     *
+     * @return array{ForumCategory, Forum, ForumCategory, Forum}
+     */
+    private function createFrenchAndEnglishForums(): array
     {
         $forumSource = ForumSourceFactory::new()->asRoot()->create();
         $englishCategory = ForumCategoryFactory::new([
@@ -258,62 +367,6 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
             'description' => 'Dites bonjour',
         ])->create();
 
-        $this->client->request('GET', '/api/forums/categories');
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/ForumCategory',
-            '@id' => '/api/forums/categories',
-            '@type' => 'Collection',
-            'member' => [
-                [
-                    '@id' => '/api/forum_categories/' . $englishCategory->id,
-                    '@type' => 'ForumCategory',
-                    'id' => $englishCategory->id,
-                    'title' => 'General',
-                    'locale' => 'en',
-                    'forums' => [
-                        [
-                            '@type' => 'Forum',
-                            'id' => $englishForum->id,
-                            'title' => 'Introductions',
-                            'slug' => 'introductions',
-                            'description' => 'Say hello',
-                        ],
-                    ],
-                ],
-                [
-                    '@id' => '/api/forum_categories/' . $frenchCategory->id,
-                    '@type' => 'ForumCategory',
-                    'id' => $frenchCategory->id,
-                    'title' => 'Généralités',
-                    'locale' => 'fr',
-                    'forums' => [
-                        [
-                            '@type' => 'Forum',
-                            'id' => $frenchForum->id,
-                            'title' => 'Présentations',
-                            'slug' => 'presentations',
-                            'description' => 'Dites bonjour',
-                        ],
-                    ],
-                ],
-            ],
-            'totalItems' => 2,
-        ]);
-    }
-
-    public function test_get_collection_empty_when_no_categories(): void
-    {
-        ForumSourceFactory::new()->asRoot()->create();
-
-        $this->client->request('GET', '/api/forums/categories');
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/ForumCategory',
-            '@id' => '/api/forums/categories',
-            '@type' => 'Collection',
-            'member' => [],
-            'totalItems' => 0,
-        ]);
+        return [$frenchCategory, $frenchForum, $englishCategory, $englishForum];
     }
 }

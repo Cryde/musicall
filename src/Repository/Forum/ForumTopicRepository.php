@@ -77,19 +77,22 @@ class ForumTopicRepository extends ServiceEntityRepository
     }
 
     /**
-     * The topics that moved last, across every forum: by their last post, which a new topic has
+     * The topics that moved last, across every forum of a locale: by their last post, which a new topic has
      * too as its opening post, and by their creation for one that somehow has none.
      *
      * @return ForumTopic[]
      */
-    public function findRecentlyActive(int $limit): array
+    public function findRecentlyActive(string $locale, int $limit): array
     {
         return $this->createQueryBuilder('ft')
             ->innerJoin('ft.forum', 'f')
             ->addSelect('f')
+            ->innerJoin('f.forumCategory', 'fc')
             ->leftJoin('ft.lastPost', 'lp')
             ->addSelect('lp')
             ->addSelect('COALESCE(lp.creationDatetime, ft.creationDatetime) AS HIDDEN lastActivity')
+            ->where('fc.locale = :locale')
+            ->setParameter('locale', $locale)
             ->orderBy('lastActivity', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
@@ -97,9 +100,10 @@ class ForumTopicRepository extends ServiceEntityRepository
     }
 
     /**
-     * Full-text search across topic titles and post bodies. Returns one row per
-     * matching topic, ranked: title hits first (highest MATCH score), then
-     * body-only hits, both tiers tie-broken by creation_datetime DESC.
+     * Full-text search across topic titles and post bodies, in the forums of one
+     * locale. Returns one row per matching topic, ranked: title hits first
+     * (highest MATCH score), then body-only hits, both tiers tie-broken by
+     * creation_datetime DESC.
      *
      * Native SQL because the OR + correlated EXISTS over two MATCH AGAINST
      * predicates is awkward in DQL and we don't need entity hydration here -
@@ -110,23 +114,30 @@ class ForumTopicRepository extends ServiceEntityRepository
      *
      * @return array{total: int, rows: array<int, array<string, mixed>>}
      */
-    public function searchPaginated(string $term, int $page, int $limit): array
+    public function searchPaginated(string $term, string $locale, int $page, int $limit): array
     {
         $conn = $this->getEntityManager()->getConnection();
         $offset = ($page - 1) * $limit;
 
+        $forumJoinSql = '
+            INNER JOIN forum f             ON f.id = ft.forum_id
+            INNER JOIN forum_category fc   ON fc.id = f.forum_category_id
+        ';
         $whereSql = '
-            MATCH(ft.title) AGAINST (:term) > 0
-            OR EXISTS (
-                SELECT 1 FROM forum_post fp
-                WHERE fp.topic_id = ft.id
-                  AND MATCH(fp.content) AGAINST (:term) > 0
+            fc.locale = :locale
+            AND (
+                MATCH(ft.title) AGAINST (:term) > 0
+                OR EXISTS (
+                    SELECT 1 FROM forum_post fp
+                    WHERE fp.topic_id = ft.id
+                      AND MATCH(fp.content) AGAINST (:term) > 0
+                )
             )
         ';
 
         $total = (int) $conn->fetchOne(
-            "SELECT COUNT(*) FROM forum_topic ft WHERE $whereSql",
-            ['term' => $term],
+            "SELECT COUNT(*) FROM forum_topic ft $forumJoinSql WHERE $whereSql",
+            ['term' => $term, 'locale' => $locale],
         );
 
         if ($total === 0) {
@@ -149,14 +160,13 @@ class ForumTopicRepository extends ServiceEntityRepository
                 lp.creation_datetime        AS last_post_datetime,
                 COALESCE(MATCH(ft.title) AGAINST (:term), 0) AS title_score
             FROM forum_topic ft
-            INNER JOIN forum f             ON f.id = ft.forum_id
-            INNER JOIN forum_category fc   ON fc.id = f.forum_category_id
+            $forumJoinSql
             LEFT JOIN forum_post lp        ON lp.id = ft.last_post_id
             WHERE $whereSql
             ORDER BY title_score DESC, ft.creation_datetime DESC
             LIMIT :limit OFFSET :offset
             ",
-            ['term' => $term, 'limit' => $limit, 'offset' => $offset],
+            ['term' => $term, 'locale' => $locale, 'limit' => $limit, 'offset' => $offset],
             ['limit' => \Doctrine\DBAL\ParameterType::INTEGER, 'offset' => \Doctrine\DBAL\ParameterType::INTEGER],
         );
 

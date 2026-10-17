@@ -12,6 +12,7 @@ use App\Repository\Forum\ForumTopicRepository;
 use App\Service\Forum\PostSnippetExtractor;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * GET /api/forums/search?term=X&page=N
@@ -26,6 +27,7 @@ readonly class ForumSearchProvider implements ProviderInterface
         private ForumTopicRepository $forumTopicRepository,
         private PostSnippetExtractor $snippetExtractor,
         private Pagination $pagination,
+        private LocaleSwitcher $localeSwitcher,
     ) {
     }
 
@@ -46,7 +48,8 @@ readonly class ForumSearchProvider implements ProviderInterface
         $page = $this->pagination->getPage($context);
         $limit = $this->pagination->getLimit($operation, $context);
 
-        $result = $this->forumTopicRepository->searchPaginated($term, $page, $limit);
+        // The forums of the page's locale, like the index the search box sits on.
+        $result = $this->forumTopicRepository->searchPaginated($term, $this->localeSwitcher->getLocale(), $page, $limit);
         /** @var array<int, array<string, mixed>> $rows */
         $rows = $result['rows'];
         $total = $result['total'];
