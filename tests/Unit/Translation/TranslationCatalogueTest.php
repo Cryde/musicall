@@ -17,6 +17,7 @@ class TranslationCatalogueTest extends TestCase
     private const string PROJECT_DIR = __DIR__ . '/../../..';
     private const string MESSAGES = 'messages+intl-icu.fr.yaml';
     private const string VALIDATORS = 'validators.fr.yaml';
+    private const string REFERENCE = 'reference+intl-icu.fr.yaml';
     private const string KEY = '[a-z0-9_]+(?:\.[a-z0-9_]+)+';
 
     /**
@@ -168,6 +169,14 @@ class TranslationCatalogueTest extends TestCase
         }
 
         self::assertSame([], array_values(array_unique($missing)));
+    }
+
+    /** has() walks the fallback chain, so a French name entry would shadow the database name in every locale. */
+    public function test_the_french_reference_catalogue_holds_no_reference_name(): void
+    {
+        $names = preg_grep('/^(?:instrument|instrument_musician|style|publication_sub_category)\./', array_keys(self::load(self::REFERENCE)));
+
+        self::assertSame([], array_values($names));
     }
 
     /**

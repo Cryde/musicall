@@ -5,6 +5,7 @@ namespace App\Service\Builder\User\Publication;
 use App\ApiResource\User\Publication\UserPublicationCategory;
 use App\ApiResource\User\Publication\UserPublicationEdit;
 use App\Entity\Publication;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -13,6 +14,7 @@ readonly class UserPublicationEditBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -31,7 +33,7 @@ readonly class UserPublicationEditBuilder
         $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
         $category->id = (int) $subCategory->id;
-        $category->title = $subCategory->title;
+        $category->title = $this->referenceNames->subCategory($subCategory);
         $category->slug = $subCategory->slug;
         $dto->category = $category;
 

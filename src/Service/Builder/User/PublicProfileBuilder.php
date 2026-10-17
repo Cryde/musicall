@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Repository\Musician\MusicianAnnounceRepository;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -23,6 +24,7 @@ readonly class PublicProfileBuilder
         private CacheManager $cacheManager,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private TranslatorInterface $translator,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -100,10 +102,10 @@ readonly class PublicProfileBuilder
             $dto->id = (string) $announce->id;
             $dto->creationDatetime = $announce->creationDatetime;
             $dto->type = $announce->type;
-            $dto->instrumentName = $announce->instrument->musicianName;
+            $dto->instrumentName = $this->referenceNames->instrumentMusicianName($announce->instrument);
             $dto->locationName = $announce->locationName;
             $dto->styles = array_map(
-                fn(\App\Entity\Attribute\Style $style): string => $style->name,
+                $this->referenceNames->style(...),
                 $announce->styles->toArray()
             );
 

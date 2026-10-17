@@ -11,6 +11,7 @@ use App\Entity\Image\PublicationCover;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -19,6 +20,7 @@ readonly class PublicationListItemBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager   $cacheManager,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -72,7 +74,7 @@ readonly class PublicationListItemBuilder
     {
         $dto = new SubCategory();
         $dto->id = (int) $subCategory->id;
-        $dto->title = $subCategory->title;
+        $dto->title = $this->referenceNames->subCategory($subCategory);
         $dto->slug = $subCategory->slug;
         $dto->isCourse = $subCategory->getIsCourse();
 

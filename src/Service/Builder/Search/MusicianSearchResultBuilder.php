@@ -10,6 +10,7 @@ use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User as UserEntity;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -17,7 +18,8 @@ class MusicianSearchResultBuilder
 {
     public function __construct(
         private readonly UploaderHelper         $uploaderHelper,
-        private readonly CacheManager           $cacheManager
+        private readonly CacheManager           $cacheManager,
+        private readonly ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -75,7 +77,7 @@ class MusicianSearchResultBuilder
     private function buildInstrument(InstrumentEntity $instrumentEntity): Instrument
     {
         $instrument = new Instrument();
-        $instrument->name = $instrumentEntity->musicianName;
+        $instrument->name = $this->referenceNames->instrumentMusicianName($instrumentEntity);
 
         return $instrument;
     }
@@ -87,9 +89,9 @@ class MusicianSearchResultBuilder
      */
     private function buildStyles(array $styles): array
     {
-        return array_map(static function (StyleEntity $styleEntity): Style {
+        return array_map(function (StyleEntity $styleEntity): Style {
             $style = new Style();
-            $style->name = $styleEntity->name;
+            $style->name = $this->referenceNames->style($styleEntity);
 
             return $style;
         }, $styles);

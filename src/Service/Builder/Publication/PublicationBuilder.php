@@ -15,6 +15,7 @@ use App\Entity\Publication as PublicationEntity;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
 use App\Enum\Publication\PublicationType;
+use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
@@ -27,6 +28,7 @@ readonly class PublicationBuilder
         private CacheManager           $cacheManager,
         #[Target('app.publication_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
+        private ReferenceNameTranslator $referenceNames,
     ) {
     }
 
@@ -116,7 +118,7 @@ readonly class PublicationBuilder
         $category = new Category();
         $category->id = (int) $publicationSubCategory->id;
         $category->slug = $publicationSubCategory->slug;
-        $category->title = $publicationSubCategory->title;
+        $category->title = $this->referenceNames->subCategory($publicationSubCategory);
         $category->isCourse = $publicationSubCategory->getIsCourse();
 
         return $category;
