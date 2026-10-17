@@ -134,6 +134,29 @@
           </div>
         </div>
 
+        <!-- Language -->
+        <div
+          v-if="CAN_CHOOSE_LOCALE"
+          class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700"
+        >
+          <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
+            {{ t('profile.settings.general.language') }}
+          </div>
+          <div class="md:w-2/3">
+            <Select
+              :modelValue="activeLocale"
+              :options="LOCALE_OPTIONS"
+              optionLabel="label"
+              optionValue="locale"
+              :aria-label="t('profile.settings.general.language')"
+              :disabled="isSwitching"
+              :pt="{ option: ({ context }) => ({ lang: context.option.locale }) }"
+              class="w-full md:w-64"
+              @update:modelValue="chooseLocale"
+            />
+          </div>
+        </div>
+
         <!-- Dark Mode -->
         <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3">
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
@@ -232,6 +255,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
+import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
@@ -239,6 +263,11 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import securityApi from '../../../api/user/security.js'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
+import {
+  CAN_CHOOSE_LOCALE,
+  LOCALE_OPTIONS,
+  useLocaleChoice
+} from '../../../composables/useLocaleChoice.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
@@ -253,6 +282,7 @@ const confirm = useConfirm()
 const toast = useToast()
 const { t } = useI18n()
 const { isDarkMode, setDarkMode } = useDarkMode()
+const { activeLocale, isSwitching, chooseLocale } = useLocaleChoice()
 
 const fileInput = ref(null)
 const selectedImage = ref(null)

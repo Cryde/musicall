@@ -15,14 +15,18 @@
             </div>
         </main>
         <Footer/>
+        <!-- Last: it appears once the auth check answers and sits fixed over the page anyway. -->
+        <LocaleSuggestionBanner v-if="CAN_CHOOSE_LOCALE" />
     </div>
 </template>
 <script setup>
 import Toast from 'primevue/toast'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { CAN_CHOOSE_LOCALE } from '../composables/useLocaleChoice.js'
 import Footer from '../views/Global/Footer.vue'
 import Menu from '../views/Global/Menu.vue'
+import LocaleSuggestionBanner from './Global/LocaleSuggestionBanner.vue'
 import SkipLink from './SkipLink.vue'
 
 const route = useRoute()

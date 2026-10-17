@@ -43,6 +43,11 @@
     "admin": "Administration",
     "logout": "Se déconnecter"
   },
+  "locale_switcher": {
+    "label": "Langue : {language}",
+    "menu": "Choisir la langue",
+    "error": "La langue n'a pas pu être changée. Veuillez réessayer."
+  },
   "footer": {
     "tagline": "La plateforme gratuite des musicien·ne·s et des groupes : trouver, organiser, apprendre. Depuis 2008.",
     "follow_instagram": "Suivre MusicAll sur Instagram",

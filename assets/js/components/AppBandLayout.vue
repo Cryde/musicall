@@ -143,6 +143,8 @@
                     />
                   </a>
                 </RouterLink>
+                <!-- The header's language switcher, which this drawer stands in for on mobile. -->
+                <LocaleOptionList v-if="CAN_CHOOSE_LOCALE" class="mt-1" @chosen="mobileNavOpen = false" />
               </template>
             </BandSidebar>
           </div>
@@ -165,6 +167,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
+import { CAN_CHOOSE_LOCALE } from '../composables/useLocaleChoice.js'
 import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
 import { useNotificationStore } from '../store/notification/notification.js'
@@ -174,6 +177,7 @@ import MenuBand from '../views/Global/MenuBand.vue'
 import BandSidebar from './BandSpace/BandSidebar.vue'
 import BandSpaceSelector from './BandSpace/BandSpaceSelector.vue'
 import CommandPalette from './BandSpace/CommandPalette.vue'
+import LocaleOptionList from './Global/LocaleOptionList.vue'
 import SkipLink from './SkipLink.vue'
 
 const bandSpaceStore = useBandSpaceStore()

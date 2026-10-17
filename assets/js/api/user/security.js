@@ -75,6 +75,21 @@ export default {
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
+  changeLocale(locale) {
+    return axios
+      .patch(
+        Routing.generate('api_users_self_locale_patch'),
+        { locale },
+        {
+          headers: {
+            'Content-Type': 'application/merge-patch+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
   checkUsernameAvailability(username) {
     return axios
       .get(Routing.generate('api_users_username_availability', { username }))
