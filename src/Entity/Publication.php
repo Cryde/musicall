@@ -46,12 +46,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
 
     final const ALL_STATUS = [self::STATUS_ONLINE, self::STATUS_DRAFT, self::STATUS_PENDING];
 
-    final const STATUS_LABEL = [
-        self::STATUS_DRAFT => 'Brouillon',
-        self::STATUS_ONLINE => 'Publié',
-        self::STATUS_PENDING => 'En validation',
-    ];
-
     final const STATUS_DRAFT_STR = '0';
     final const STATUS_ONLINE_STR = '1';
     final const STATUS_PENDING_STR = '2';
@@ -193,12 +187,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
 
         $sibling->translationGroup ??= Uuid::v7()->toRfc4122();
         $this->translationGroup = $sibling->translationGroup;
-    }
-
-    #[Groups([Publication::ITEM, Publication::LIST])]
-    public function getTypeLabel(): string
-    {
-        return $this->type === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL;
     }
 
     #[Groups([Publication::LIST])]

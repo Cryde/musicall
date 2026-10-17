@@ -46,8 +46,6 @@ class UserGallery
 
     public int $status;
 
-    public string $statusLabel;
-
     public int $imageCount;
 
     public ?string $coverImageUrl = null;

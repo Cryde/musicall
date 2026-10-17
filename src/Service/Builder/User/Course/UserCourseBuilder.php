@@ -28,11 +28,7 @@ readonly class UserCourseBuilder
         $dto->creationDatetime = $creationDatetime;
         $dto->editionDatetime = $publication->editionDatetime;
         $dto->statusId = $publication->status;
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->typeId = (int) $publication->type;
-        $dto->typeLabel = $publication->type === Publication::TYPE_VIDEO
-            ? Publication::TYPE_VIDEO_LABEL
-            : Publication::TYPE_TEXT_LABEL;
 
         $category = new UserCourseCategory();
         $category->id = (int) $subCategory->id;

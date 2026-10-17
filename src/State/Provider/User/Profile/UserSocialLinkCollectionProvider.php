@@ -10,6 +10,7 @@ use App\ApiResource\User\Profile\UserSocialLinkResource;
 use App\Entity\User;
 use App\Entity\User\UserSocialLink;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @implements ProviderInterface<object>
@@ -18,6 +19,7 @@ readonly class UserSocialLinkCollectionProvider implements ProviderInterface
 {
     public function __construct(
         private Security $security,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -41,7 +43,7 @@ readonly class UserSocialLinkCollectionProvider implements ProviderInterface
         $dto = new UserSocialLinkResource();
         $dto->id = $link->id;
         $dto->platform = $link->platform->value;
-        $dto->platformLabel = $link->platform->getLabel();
+        $dto->platformLabel = $link->platform->trans($this->translator);
         $dto->url = $link->url;
 
         return $dto;

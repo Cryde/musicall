@@ -60,7 +60,6 @@ class UserPublicationPreviewTest extends ApiTestCase
         $this->assertSame('Short desc', $response['short_description']);
         $this->assertSame('<p>Test content</p>', $response['content']);
         $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
-        $this->assertSame('Brouillon', $response['status_label']);
         $this->assertSame($category->id, $response['category']['id']);
         $this->assertSame('News', $response['category']['title']);
         $this->assertSame('testauthor', $response['author']['username']);
@@ -90,7 +89,6 @@ class UserPublicationPreviewTest extends ApiTestCase
         $this->assertSame($publication->id, $response['id']);
         $this->assertSame('Test Pending Publication', $response['title']);
         $this->assertSame(Publication::STATUS_PENDING, $response['status_id']);
-        $this->assertSame('En validation', $response['status_label']);
         $this->assertSame('pendingauthor', $response['author']['username']);
     }
 

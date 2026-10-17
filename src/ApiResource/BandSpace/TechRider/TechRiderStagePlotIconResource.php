@@ -54,8 +54,6 @@ class TechRiderStagePlotIconResource
 
     public string $category;
 
-    public string $categoryLabel;
-
     /** Served rather than mapped in the browser so the four values live in one place. */
     public string $categoryColour;
 

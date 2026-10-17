@@ -14,6 +14,7 @@ use App\Entity\Musician\MusicianProfile;
 use App\Entity\Musician\MusicianProfileInstrument;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class MusicianProfileBuilder
@@ -23,6 +24,7 @@ readonly class MusicianProfileBuilder
         private CacheManager $cacheManager,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private MusicianProfileMediaResourceBuilder $musicianProfileMediaResourceBuilder,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -46,7 +48,7 @@ readonly class MusicianProfileBuilder
 
         if ($profile->availabilityStatus instanceof \App\Enum\Musician\AvailabilityStatus) {
             $dto->availabilityStatus = $profile->availabilityStatus->value;
-            $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
+            $dto->availabilityStatusLabel = $profile->availabilityStatus->trans($this->translator);
         }
 
         $dto->instruments = $this->buildInstruments($profile->instruments->toArray());
@@ -72,7 +74,7 @@ readonly class MusicianProfileBuilder
             $dto->instrumentId = (string) $instrumentEntity->id;
             $dto->instrumentName = $instrumentEntity->musicianName;
             $dto->skillLevel = $instrument->skillLevel->value;
-            $dto->skillLevelLabel = $instrument->skillLevel->getLabel();
+            $dto->skillLevelLabel = $instrument->skillLevel->trans($this->translator);
 
             return $dto;
         }, $instruments));

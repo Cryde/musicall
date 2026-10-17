@@ -74,7 +74,6 @@ class PublicationPendingListTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -86,7 +85,6 @@ class PublicationPendingListTest extends ApiTestCase
                     'slug'                 => 'titre-de-la-publication',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Petite description de la publication',
                     'upvotes'              => 0,
                     'downvotes'            => 0,

@@ -13,6 +13,7 @@ use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @implements ProviderInterface<MusicianProfileEdit>
@@ -21,6 +22,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 {
     public function __construct(
         private Security $security,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -42,7 +44,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
         if ($profile->availabilityStatus instanceof \App\Enum\Musician\AvailabilityStatus) {
             $dto->availabilityStatus = $profile->availabilityStatus->value;
-            $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
+            $dto->availabilityStatusLabel = $profile->availabilityStatus->trans($this->translator);
         }
 
         $dto->instruments = array_values(array_map(function (\App\Entity\Musician\MusicianProfileInstrument $instrument): MusicianProfileEditInstrument {
@@ -50,7 +52,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
             $item->instrumentId = (string) $instrument->instrument->id;
             $item->instrumentName = $instrument->instrument->musicianName;
             $item->skillLevel = $instrument->skillLevel->value;
-            $item->skillLevelLabel = $instrument->skillLevel->getLabel();
+            $item->skillLevelLabel = $instrument->skillLevel->trans($this->translator);
 
             return $item;
         }, $profile->instruments->toArray()));

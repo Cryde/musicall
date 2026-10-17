@@ -56,7 +56,6 @@ class TechRiderStagePlotIconCollectionTest extends ApiTestCase
             'slug' => 'drum_kit',
             'label' => 'Batterie',
             'category' => 'instrument',
-            'category_label' => 'Instruments',
             'category_colour' => '#059669',
             'image_url' => '/images/band_space/stage_plot/drum_kit.png',
         ], $drumKit[0]);
@@ -129,7 +128,6 @@ class TechRiderStagePlotIconCollectionTest extends ApiTestCase
             'slug' => 'drum_kit',
             'label' => 'Batterie',
             'category' => 'instrument',
-            'category_label' => 'Instruments',
             'category_colour' => '#059669',
             'image_url' => '/images/band_space/stage_plot/drum_kit.png',
         ]);

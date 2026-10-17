@@ -141,7 +141,6 @@ class PublicationGetLastTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -153,7 +152,6 @@ class PublicationGetLastTest extends ApiTestCase
                     'slug'                 => 'publication-5',
                     'publication_datetime' => '2024-01-01T00:00:00+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Description 5',
                     'upvotes'              => 0,
                     'downvotes'            => 0,
@@ -169,7 +167,6 @@ class PublicationGetLastTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -181,7 +178,6 @@ class PublicationGetLastTest extends ApiTestCase
                     'slug'                 => 'publication-4',
                     'publication_datetime' => '2023-01-01T00:00:00+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Description 4',
                     'upvotes'              => 0,
                     'downvotes'            => 3,
@@ -197,7 +193,6 @@ class PublicationGetLastTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -209,7 +204,6 @@ class PublicationGetLastTest extends ApiTestCase
                     'slug'                 => 'publication-3',
                     'publication_datetime' => '2022-01-01T00:00:00+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Description 3',
                     'upvotes'              => 5,
                     'downvotes'            => 0,
@@ -225,7 +219,6 @@ class PublicationGetLastTest extends ApiTestCase
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
-                        'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
@@ -237,7 +230,6 @@ class PublicationGetLastTest extends ApiTestCase
                     'slug'                 => 'publication-2',
                     'publication_datetime' => '2021-01-01T00:00:00+00:00',
                     'cover'                => null,
-                    'type_label'           => 'text',
                     'description'          => 'Description 2',
                     'upvotes'              => 2,
                     'downvotes'            => 1,

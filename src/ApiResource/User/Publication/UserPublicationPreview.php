@@ -34,8 +34,6 @@ class UserPublicationPreview
 
     public int $statusId;
 
-    public string $statusLabel;
-
     #[ApiProperty(genId: false)]
     public ?UserPublicationCategory $category = null;
 

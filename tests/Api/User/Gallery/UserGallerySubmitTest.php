@@ -62,7 +62,6 @@ class UserGallerySubmitTest extends ApiTestCase
         $this->assertSame('UserGallery', $response['@type']);
         $this->assertSame($gallery->id, $response['id']);
         $this->assertSame(Gallery::STATUS_PENDING, $response['status']);
-        $this->assertSame('En validation', $response['status_label']);
     }
 
     public function test_submit_not_owner(): void

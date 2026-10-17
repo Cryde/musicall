@@ -60,6 +60,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { iconCategoryLabel } from '../../../../constants/stagePlot.js'
 import StagePlotIcon from './StagePlotIcon.vue'
 
 const props = defineProps({
@@ -76,17 +77,15 @@ const activeCategory = ref(null)
 
 /**
  * Derived from the catalogue rather than hardcoded, so an icon in a new category appears without a
- * second edit here. Null is the "all" tab.
+ * second edit here (its tab reads the raw value until constants/stagePlot.js names it). Null is the
+ * "all" tab.
  */
 const categories = computed(() => {
-  const seen = new Map()
-  for (const icon of props.icons) {
-    if (!seen.has(icon.category)) seen.set(icon.category, icon.category_label)
-  }
+  const seen = new Set(props.icons.map((icon) => icon.category))
 
   return [
     { value: null, label: t('band_space_tech_rider.icon_picker.all') },
-    ...[...seen].map(([value, label]) => ({ value, label }))
+    ...[...seen].map((value) => ({ value, label: iconCategoryLabel(value) }))
   ]
 })
 

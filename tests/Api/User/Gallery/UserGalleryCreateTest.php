@@ -56,7 +56,6 @@ class UserGalleryCreateTest extends ApiTestCase
             'title' => 'My New Gallery',
             'slug' => $createdGallery->slug,
             'status' => Gallery::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'creation_datetime' => $this->getResponseAsArray()['creation_datetime'],
             'image_count' => 0,
         ]);

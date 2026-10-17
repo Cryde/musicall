@@ -26,7 +26,7 @@
                 <strong>{{ isAdminReview ? t('publication.review.admin_review') : t('publication.review.preview_mode') }}</strong>
               </template>
               <template #status>
-                <Tag :value="gallery.status_label" :severity="getStatusSeverity(gallery.status)" class="mx-1" />
+                <Tag :value="galleryStatusLabel(gallery.status)" :severity="getStatusSeverity(gallery.status)" class="mx-1" />
               </template>
             </i18n-t>
           </div>
@@ -192,6 +192,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import adminGalleryApi from '../../../api/admin/gallery.js'
 import userGalleryApi from '../../../api/user/gallery.js'
+import { galleryStatusLabel } from '../../../constants/publicationStatus.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import Breadcrumb from '../../Global/Breadcrumb.vue'

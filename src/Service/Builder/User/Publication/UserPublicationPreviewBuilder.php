@@ -30,7 +30,6 @@ readonly class UserPublicationPreviewBuilder
         $dto->shortDescription = $publication->shortDescription;
         $dto->content = $this->sanitizer->sanitize($publication->content ?? '');
         $dto->statusId = $publication->status;
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
 
         $subCategory = $publication->subCategory;

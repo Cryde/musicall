@@ -396,6 +396,7 @@ import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import ColumnsBubbleMenu from '../../../components/Editor/ColumnsBubbleMenu.vue'
 import { Column, Columns } from '../../../components/Editor/extensions/Columns.js'
 import PublicationSettingsPanel from '../../../components/Publication/PublicationSettingsPanel.vue'
+import { publicationStatusLabel } from '../../../constants/publicationStatus.js'
 import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 
 const { t } = useI18n()
@@ -427,21 +428,16 @@ let autosaveTimer = null
 
 const AUTOSAVE_INTERVAL_MS = 30_000
 
-const STATUS_BADGES = {
-  0: { labelKey: 'publication.user_list.status.draft', severity: 'warn' },
-  1: { labelKey: 'publication.user_list.status.online', severity: 'success' },
-  2: { labelKey: 'publication.user_list.status.pending', severity: 'info' }
-}
+const STATUS_SEVERITIES = { 0: 'warn', 1: 'success', 2: 'info' }
 
 const statusBadge = computed(() => {
-  const id = publicationEditStore.publication?.status_id
-  const badge = STATUS_BADGES[id]
-  if (badge) {
-    return { label: t(badge.labelKey), severity: badge.severity }
+  const publication = publicationEditStore.publication
+  if (!publication) {
+    return { label: '—', severity: 'secondary' }
   }
   return {
-    label: publicationEditStore.publication?.status_label ?? '—',
-    severity: 'secondary'
+    label: publicationStatusLabel(publication.status_id),
+    severity: STATUS_SEVERITIES[publication.status_id] ?? 'secondary'
   }
 })
 

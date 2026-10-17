@@ -40,7 +40,6 @@ readonly class TechRiderStagePlotIconProvider implements ProviderInterface
         $resource->slug = $icon->value;
         $resource->label = $icon->label();
         $resource->category = $icon->category()->value;
-        $resource->categoryLabel = $icon->category()->label();
         $resource->categoryColour = $icon->category()->hex();
         $resource->imageUrl = $icon->imagePath();
 

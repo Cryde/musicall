@@ -9,6 +9,5 @@ class SubCategory
     public int $id;
     public string $title;
     public string $slug;
-    public string $typeLabel;
     public bool $isCourse;
 }

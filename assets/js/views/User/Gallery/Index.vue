@@ -60,9 +60,9 @@
             </template>
           </Column>
 
-          <Column field="status_label" :header="t('publication.user_list.column_status')" style="min-width: 120px">
+          <Column field="status" :header="t('publication.user_list.column_status')" style="min-width: 120px">
             <template #body="{ data }">
-              <Tag :value="data.status_label" :severity="getStatusSeverity(data.status)" />
+              <Tag :value="galleryStatusLabel(data.status)" :severity="getStatusSeverity(data.status)" />
             </template>
           </Column>
 
@@ -162,6 +162,7 @@ import { useToast } from 'primevue/usetoast'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { galleryStatusLabel } from '../../../constants/publicationStatus.js'
 import { useUserGalleriesStore } from '../../../store/gallery/userGalleries.js'
 
 const { t } = useI18n()

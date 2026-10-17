@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Enum;
 
-enum SocialPlatform: string
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+enum SocialPlatform: string implements TranslatableInterface
 {
     case YOUTUBE = 'youtube';
     case SOUNDCLOUD = 'soundcloud';
@@ -16,19 +19,19 @@ enum SocialPlatform: string
     case BANDCAMP = 'bandcamp';
     case WEBSITE = 'website';
 
-    public function getLabel(): string
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
     {
-        return match ($this) {
-            self::YOUTUBE => 'YouTube',
-            self::SOUNDCLOUD => 'SoundCloud',
-            self::INSTAGRAM => 'Instagram',
-            self::FACEBOOK => 'Facebook',
-            self::TWITTER => 'X (Twitter)',
-            self::TIKTOK => 'TikTok',
-            self::SPOTIFY => 'Spotify',
-            self::BANDCAMP => 'Bandcamp',
-            self::WEBSITE => 'Site web',
-        };
+        return $translator->trans(match ($this) {
+            self::YOUTUBE => 'social_platform.youtube',
+            self::SOUNDCLOUD => 'social_platform.soundcloud',
+            self::INSTAGRAM => 'social_platform.instagram',
+            self::FACEBOOK => 'social_platform.facebook',
+            self::TWITTER => 'social_platform.twitter',
+            self::TIKTOK => 'social_platform.tiktok',
+            self::SPOTIFY => 'social_platform.spotify',
+            self::BANDCAMP => 'social_platform.bandcamp',
+            self::WEBSITE => 'social_platform.website',
+        }, [], 'reference', $locale);
     }
 
 }

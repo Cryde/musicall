@@ -25,7 +25,6 @@ readonly class UserPublicationEditBuilder
         $dto->shortDescription = $publication->shortDescription;
         $dto->content = $publication->content;
         $dto->statusId = $publication->status;
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
         $dto->language = $publication->language;
 

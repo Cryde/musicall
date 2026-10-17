@@ -13,6 +13,7 @@ use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class PublicProfileBuilder
@@ -21,6 +22,7 @@ readonly class PublicProfileBuilder
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -80,7 +82,7 @@ readonly class PublicProfileBuilder
         return array_map(function (UserSocialLink $link): PublicProfileSocialLink {
             $dto = new PublicProfileSocialLink();
             $dto->platform = $link->platform->value;
-            $dto->platformLabel = $link->platform->getLabel();
+            $dto->platformLabel = $link->platform->trans($this->translator);
             $dto->url = $link->url;
 
             return $dto;

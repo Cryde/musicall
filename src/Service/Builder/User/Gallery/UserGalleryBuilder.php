@@ -13,13 +13,6 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class UserGalleryBuilder
 {
-    /** @var array<int, string> */
-    private const array STATUS_LABELS = [
-        Gallery::STATUS_ONLINE => 'En ligne',
-        Gallery::STATUS_DRAFT => 'Brouillon',
-        Gallery::STATUS_PENDING => 'En validation',
-    ];
-
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
@@ -37,7 +30,6 @@ readonly class UserGalleryBuilder
         $dto->description = $gallery->description;
         $dto->creationDatetime = $creationDatetime;
         $dto->status = $gallery->status;
-        $dto->statusLabel = self::STATUS_LABELS[$gallery->status] ?? 'Inconnu';
         $dto->imageCount = $gallery->getImageCount();
         $dto->coverImageUrl = $this->getCoverImageUrl($gallery);
 
@@ -68,7 +60,6 @@ readonly class UserGalleryBuilder
         $dto->slug = (string) $gallery->slug;
         $dto->description = $gallery->description;
         $dto->status = $gallery->status;
-        $dto->statusLabel = self::STATUS_LABELS[$gallery->status] ?? 'Inconnu';
         $dto->creationDatetime = $creationDatetime;
         $dto->authorUsername = $author->username;
         $dto->authorDisplayName = $author->publicName();

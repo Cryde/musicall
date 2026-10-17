@@ -26,9 +26,6 @@ class PublicationSubCategory
     final const int TYPE_PUBLICATION = 1;
     final const int TYPE_COURSE = 2;
 
-    final const string TYPE_PUBLICATION_LABEL = 'publication';
-    final const string TYPE_COURSE_LABEL = 'course';
-
     final const string LIST = 'PUBLICATION_CATEGORY_LIST';
     final const string ITEM = 'PUBLICATION_CATEGORY_ITEM';
 
@@ -63,12 +60,6 @@ class PublicationSubCategory
     public function __construct()
     {
         $this->publications = new ArrayCollection();
-    }
-
-    #[Groups([Publication::LIST])]
-    public function getTypeLabel(): string
-    {
-        return $this->type === self::TYPE_PUBLICATION ? self::TYPE_PUBLICATION_LABEL : self::TYPE_COURSE_LABEL;
     }
 
     #[Groups([Publication::LIST])]

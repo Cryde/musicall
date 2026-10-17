@@ -58,7 +58,6 @@ readonly class PublicationListItemBuilder
         assert($publicationDatetime instanceof \DateTimeInterface);
         $item->publicationDatetime = $publicationDatetime;
         $item->cover = $this->buildCoverUrl($publication->cover);
-        $item->typeLabel = $publication->getTypeLabel();
         $item->description = $publication->getDescription();
 
         $voteCache = $publication->voteCache;
@@ -75,7 +74,6 @@ readonly class PublicationListItemBuilder
         $dto->id = (int) $subCategory->id;
         $dto->title = $subCategory->title;
         $dto->slug = $subCategory->slug;
-        $dto->typeLabel = $subCategory->getTypeLabel();
         $dto->isCourse = $subCategory->getIsCourse();
 
         return $dto;

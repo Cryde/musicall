@@ -6,12 +6,14 @@ use App\ApiResource\Musician\MusicianProfileMedia;
 use App\Entity\Musician\MusicianProfileMedia as MusicianProfileMediaEntity;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class MusicianProfileMediaResourceBuilder
 {
     public function __construct(
         private ParameterBagInterface $parameterBag,
         private CacheManager          $cacheManager,
+        private TranslatorInterface   $translator,
     ) {
     }
 
@@ -30,7 +32,7 @@ readonly class MusicianProfileMediaResourceBuilder
         $profileMedia = new MusicianProfileMedia();
         $profileMedia->id = $media->id;
         $profileMedia->platform = $media->platform->value;
-        $profileMedia->platformLabel = $media->platform->getLabel();
+        $profileMedia->platformLabel = $media->platform->trans($this->translator);
         $profileMedia->url = $media->url;
         $profileMedia->embedId = $media->embedId;
         $profileMedia->title = $media->title;

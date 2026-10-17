@@ -81,7 +81,6 @@ class PublicationListItem
 
     public DateTimeInterface $publicationDatetime;
     public ?string $cover = null;
-    public string $typeLabel;
     public ?string $description = null;
     public int $upvotes = 0;
     public int $downvotes = 0;

@@ -57,7 +57,6 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->assertSame('UserPublicationEdit', $response['@type']);
         $this->assertSame('My New Publication', $response['title']);
         $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
-        $this->assertSame('Brouillon', $response['status_label']);
         $this->assertSame($category->id, $response['category']['id']);
         $this->assertSame('News', $response['category']['title']);
         $this->assertSame('fr', $response['language']);
@@ -87,7 +86,6 @@ class UserPublicationCreateTest extends ApiTestCase
             'title' => 'My New Publication',
             'slug' => 'my-new-publication-',
             'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
                 'id' => $category->id,
