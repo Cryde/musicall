@@ -51,6 +51,13 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'not_found_message' => 'search.style.not_found',
             ],
         ),
+        // No filter by default (#1198): only announces that welcome the language once one is asked for.
+        'language' => new QueryParameter(
+            key: 'language',
+            schema: ['type' => 'string', 'enum' => MusicianAnnounce::LANGUAGES],
+            description: 'A spoken language the announce welcomes, as an ISO 639-1 code (optional)',
+            constraints: [new Assert\Choice(choices: MusicianAnnounce::LANGUAGES, message: 'search.language.invalid')],
+        ),
         'latitude' => new QueryParameter(
             key: 'latitude',
             schema: ['type' => 'number', 'format' => 'float'],
@@ -103,5 +110,7 @@ class AnnounceMusician
     /** @var Style[] */
     #[ApiProperty(genId: false)]
     public $styles;
+    /** @var list<string> */
+    public array $languages = [];
     public ?float $distance = null;
 }

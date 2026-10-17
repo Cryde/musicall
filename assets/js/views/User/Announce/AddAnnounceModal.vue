@@ -234,6 +234,28 @@
               class="w-full"
             />
 
+            <div class="flex flex-col gap-2">
+              <p id="announce-languages-label" class="text-surface-700 dark:text-surface-300 font-medium m-0">
+                {{ t('profile.announce.add.languages_label') }}
+              </p>
+              <MultiSelect
+                v-model="selectedLanguages"
+                :options="languageChoices"
+                optionLabel="name"
+                optionValue="code"
+                display="chip"
+                :placeholder="t('profile.announce.add.languages_placeholder')"
+                aria-labelledby="announce-languages-label"
+                class="w-full"
+              />
+              <Message v-if="selectedLanguages.length === 0" severity="error" size="small" variant="simple">
+                {{ t('profile.announce.add.languages_required') }}
+              </Message>
+              <small class="text-surface-500 dark:text-surface-400">
+                {{ t('profile.announce.add.languages_hint') }}
+              </small>
+            </div>
+
             <div class="bg-surface-100 dark:bg-surface-800 rounded-xl p-4 mt-2">
               <p class="font-semibold text-surface-900 dark:text-surface-0 mb-3">{{ t('profile.announce.add.summary') }}</p>
               <div class="flex flex-col gap-2 text-sm">
@@ -253,6 +275,10 @@
                   <span class="text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.summary_location') }}</span>
                   <span class="text-surface-900 dark:text-surface-0">{{ selectedLocation?.fullName }}</span>
                 </div>
+                <div class="flex justify-between">
+                  <span class="text-surface-500 dark:text-surface-400">{{ t('profile.announce.add.summary_languages') }}</span>
+                  <span class="text-surface-900 dark:text-surface-0">{{ languageListLabel(selectedLanguages) }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -271,6 +297,7 @@
               :label="t('profile.announce.add.submit')"
               icon="pi pi-check"
               :loading="userAnnounceStore.isSaving"
+              :disabled="selectedLanguages.length === 0"
               @click="save"
             />
           </div>
@@ -309,22 +336,31 @@ import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
+import {
+  isAnnounceLanguage,
+  languageListLabel,
+  languageOptions
+} from '../../../utils/announceLanguages.js'
 
 const props = defineProps({
   initialType: { type: String, default: null },
   initialInstrument: { type: Object, default: null },
   initialStyles: { type: Array, default: () => [] },
-  initialLocation: { type: Object, default: null }
+  initialLocation: { type: Object, default: null },
+  /** Language codes the search asked for, welcomed on top of the author's own. */
+  initialLanguages: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['created'])
 const visible = defineModel('visible', { type: Boolean, default: false })
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const userAnnounceStore = useUserAnnounceStore()
 const instrumentStore = useInstrumentStore()
 const styleStore = useStyleStore()
 const musicianProfileStore = useMusicianProfileStore()
+const userSecurityStore = useUserSecurityStore()
 
 const currentStep = ref('1')
 const isSuccess = ref(false)
@@ -334,6 +370,8 @@ const selectedInstrument = ref(null)
 const selectedStyles = ref([])
 const selectedLocation = ref(null)
 const note = ref('')
+const selectedLanguages = ref([])
+const languageChoices = computed(() => languageOptions())
 
 // Location search
 const locationSuggestions = ref([])
@@ -351,18 +389,22 @@ onMounted(async () => {
   await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
 })
 
-// Initialize from props when modal opens
-watch(visible, async (isVisible) => {
-  if (isVisible) {
-    initializeFromProps()
-    // Load user profile (404 means no profile, which is fine)
-    try {
-      await musicianProfileStore.loadMyProfile()
-    } catch {
-      // No profile exists, that's OK
+// Initialize from props when modal opens. Immediate, because the search page mounts it already open.
+watch(
+  visible,
+  async (isVisible) => {
+    if (isVisible) {
+      initializeFromProps()
+      // Load user profile (404 means no profile, which is fine)
+      try {
+        await musicianProfileStore.loadMyProfile()
+      } catch {
+        // No profile exists, that's OK
+      }
     }
-  }
-})
+  },
+  { immediate: true }
+)
 
 function initializeFromProps() {
   // Set initial values from props
@@ -378,6 +420,7 @@ function initializeFromProps() {
   if (props.initialLocation) {
     selectedLocation.value = props.initialLocation
   }
+  selectedLanguages.value = startingLanguages()
 
   // Find the first step with missing data
   currentStep.value = getFirstMissingStep()
@@ -391,6 +434,13 @@ function getFirstMissingStep() {
   // Skip profile step if user has profile or already completed this step
   if (musicianProfileStore.profile || musicianProfileStore.profileStepCompleted) return '6'
   return '5'
+}
+
+// The author's own language, as the server picks for a client that sends none, plus what the search asked for.
+function startingLanguages() {
+  const authorLocale = userSecurityStore.userProfile?.locale ?? locale.value
+  const own = isAnnounceLanguage(authorLocale) ? [authorLocale] : []
+  return [...new Set([...own, ...props.initialLanguages])]
 }
 
 function handleLocationNext(activateCallback) {
@@ -424,7 +474,8 @@ async function save() {
       latitude: selectedLocation.value.latitude,
       longitude: selectedLocation.value.longitude
     },
-    note: note.value
+    note: note.value,
+    languages: selectedLanguages.value
   })
 
   if (success) {
@@ -442,6 +493,7 @@ function reset() {
   selectedStyles.value = []
   selectedLocation.value = null
   note.value = ''
+  selectedLanguages.value = []
   locationSuggestions.value = []
   userAnnounceStore.clearError()
   musicianProfileStore.resetProfileStepCompleted()

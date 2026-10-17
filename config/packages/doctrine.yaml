@@ -24,6 +24,7 @@ doctrine:
                 ST_GeomFromText: LongitudeOne\Spatial\ORM\Query\AST\Functions\Standard\StGeomFromText
                 ST_Point: LongitudeOne\Spatial\ORM\Query\AST\Functions\MariaDB\SpPoint
             numeric_functions:
+                JSON_CONTAINS: App\Extensions\Doctrine\JsonContains
                 ST_Distance_Sphere: LongitudeOne\Spatial\ORM\Query\AST\Functions\MariaDB\SpDistanceSphere
 
 when@test:

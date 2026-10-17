@@ -313,6 +313,13 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
                 ->setParameter('styles', $styles);
         }
 
+        // Only the announces that list the language (#1198). One that lists none is left out: it never
+        // said it welcomes the language, and with no filter it is found like any other.
+        if ($musician->language !== null) {
+            $qb->andWhere('JSON_CONTAINS(musician_announce.languages, :language) = 1')
+                ->setParameter('language', json_encode($musician->language, JSON_THROW_ON_ERROR));
+        }
+
         if ($musician->radius !== null && $this->hasPoint($musician)) {
             $qb->andWhere(self::DISTANCE . ' <= :radius')
                 ->setParameter('point', $this->pointOf($musician))

@@ -32,5 +32,13 @@ class SearchModelBuilderTest extends KernelTestCase
         $this->assertCount(2, $result->styles);
         $this->assertSame($style1->id, $result->styles[0]->id);
         $this->assertSame($style2->id, $result->styles[1]->id);
+        $this->assertNull($result->language);
+    }
+
+    public function test_build_with_a_language(): void
+    {
+        $result = new SearchModelBuilder()->build(null, null, [], language: 'nl');
+
+        $this->assertSame('nl', $result->language);
     }
 }

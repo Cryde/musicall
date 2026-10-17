@@ -41,4 +41,21 @@ class MusicianAnnounceCreate
     public string $latitude;
 
     public ?string $note = null;
+
+    /**
+     * Optional, so a client that does not ask (the mobile app) still gets the author's locale.
+     *
+     * @var list<string>|null
+     */
+    #[Assert\Sequentially([
+        // The serializer reads a JSON object (`{"a": "fr"}`) into a keyed array, which JSON_CONTAINS never matches.
+        new Assert\Type('list', message: 'announce.languages.invalid'),
+        new Assert\Count(min: 1, minMessage: 'announce.languages.required'),
+        new Assert\All([
+            new Assert\NotNull(message: 'announce.languages.invalid'),
+            new Assert\Choice(choices: MusicianAnnounceEntity::LANGUAGES, message: 'announce.languages.invalid'),
+        ]),
+        new Assert\Unique(message: 'announce.languages.duplicate'),
+    ])]
+    public ?array $languages = null;
 }
