@@ -34,7 +34,13 @@ readonly class ReferenceNameTranslator
     /** The player of the instrument (« Batteur / Batteuse »), which profiles and announces show. */
     public function instrumentMusicianName(Instrument $instrument): string
     {
-        return $this->translate('instrument_musician.' . $instrument->slug, $instrument->musicianName);
+        return $this->instrumentMusicianNameBySlug($instrument->slug, $instrument->musicianName);
+    }
+
+    /** For a query that selects the slug and the name rather than the entity: the name is the French one, read when the catalogue has none. */
+    public function instrumentMusicianNameBySlug(string $slug, string $musicianName): string
+    {
+        return $this->translate('instrument_musician.' . $slug, $musicianName);
     }
 
     public function style(Style $style): string

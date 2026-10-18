@@ -58,7 +58,7 @@ class MusicianSearchLogRepository extends ServiceEntityRepository
      * cannot put it on the homepage; the coordinates are averaged, as the same city picked twice
      * comes back with the same point.
      *
-     * @return list<array{type: int, instrumentId: string, instrumentName: string, locationName: string, latitude: float, longitude: float, visitors: int}>
+     * @return list<array{type: int, instrumentId: string, instrumentSlug: string, instrumentName: string, locationName: string, latitude: float, longitude: float, visitors: int}>
      */
     public function findFrequentSearches(DateTimeImmutable $since, int $minVisitors, int $limit): array
     {
@@ -66,6 +66,7 @@ class MusicianSearchLogRepository extends ServiceEntityRepository
             ->select(
                 'log.type AS type',
                 'instrument.id AS instrumentId',
+                'instrument.slug AS instrumentSlug',
                 'instrument.musicianName AS instrumentName',
                 'log.locationName AS locationName',
                 'AVG(log.latitude) AS latitude',
@@ -79,7 +80,7 @@ class MusicianSearchLogRepository extends ServiceEntityRepository
             ->andWhere('log.locationName IS NOT NULL')
             ->andWhere('log.latitude IS NOT NULL')
             ->andWhere('log.longitude IS NOT NULL')
-            ->groupBy('log.type, instrument.id, instrument.musicianName, log.locationName')
+            ->groupBy('log.type, instrument.id, instrument.slug, instrument.musicianName, log.locationName')
             ->having('COUNT(DISTINCT log.visitorHash) >= :minVisitors')
             ->orderBy('visitors', 'DESC')
             ->addOrderBy('instrumentName', 'ASC')
@@ -93,6 +94,7 @@ class MusicianSearchLogRepository extends ServiceEntityRepository
         return array_values(array_map(static fn (array $row): array => [
             'type' => (int) $row['type'],
             'instrumentId' => (string) $row['instrumentId'],
+            'instrumentSlug' => (string) $row['instrumentSlug'],
             'instrumentName' => (string) $row['instrumentName'],
             'locationName' => (string) $row['locationName'],
             'latitude' => (float) $row['latitude'],
