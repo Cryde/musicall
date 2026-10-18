@@ -30,7 +30,7 @@ final class PhotonGeocoderTest extends TestCase
 
     public function test_it_maps_cities_and_skips_a_feature_without_coordinates(): void
     {
-        $cities = $this->geocoder->searchCities('lyon', 5);
+        $cities = $this->geocoder->searchCities('lyon', 5, 'fr');
 
         $this->assertEquals([
             new City('Lyon', 'Rhône, Auvergne-Rhône-Alpes, France', 45.7578137, 4.8320114, 'Lyon, Rhône, Auvergne-Rhône-Alpes, France'),
@@ -41,7 +41,7 @@ final class PhotonGeocoderTest extends TestCase
 
     public function test_it_asks_photon_for_places_only(): void
     {
-        $this->geocoder->searchCities('lyon', 5);
+        $this->geocoder->searchCities('lyon', 5, 'fr');
 
         $this->assertSame(
             ['https://photon.komoot.io/api/?q=lyon&limit=10&lang=fr&osm_tag=place%3Acity&osm_tag=place%3Atown&osm_tag=place%3Avillage&osm_tag=place%3Amunicipality'],
@@ -49,10 +49,54 @@ final class PhotonGeocoderTest extends TestCase
         );
     }
 
+    public function test_an_english_visitor_gets_the_places_named_in_english(): void
+    {
+        $cities = $this->geocoder->searchCities('lyon', 5, 'en');
+
+        $this->assertEquals([
+            new City('Lyon', 'Rhône, Auvergne-Rhône-Alpes, France', 45.7578137, 4.8320114, 'Lyon, Rhône, Auvergne-Rhône-Alpes, France'),
+            new City('Lyons-la-Forêt', 'Eure, Normandy, France', 49.3997, 1.4714, 'Lyons-la-Forêt, Eure, Normandy, France'),
+            new City('Lyon', 'Virginia, United States', 37.2099, -79.6389, 'Lyon, Virginia, United States'),
+        ], $cities);
+        $this->assertSame(
+            ['https://photon.komoot.io/api/?q=lyon&limit=10&lang=en&osm_tag=place%3Acity&osm_tag=place%3Atown&osm_tag=place%3Avillage&osm_tag=place%3Amunicipality'],
+            $this->photon->requestedUrls,
+        );
+    }
+
+    public function test_each_language_has_its_own_cache_entry(): void
+    {
+        $this->geocoder->searchCities('lyon', 5, 'fr');
+        $this->geocoder->searchCities('lyon', 5, 'en');
+        $this->geocoder->reverse(45.764, 4.836, 'fr');
+        $this->geocoder->reverse(45.764, 4.836, 'en');
+
+        $this->assertCount(4, $this->photon->requestedUrls);
+    }
+
+    public function test_a_language_photon_does_not_know_asks_in_french(): void
+    {
+        $this->geocoder->searchCities('lyon', 5, 'it');
+        $this->geocoder->searchCities('lyon', 5, 'fr');
+        $this->geocoder->reverse(45.764, 4.836, 'it');
+
+        $this->assertSame([
+            'https://photon.komoot.io/api/?q=lyon&limit=10&lang=fr&osm_tag=place%3Acity&osm_tag=place%3Atown&osm_tag=place%3Avillage&osm_tag=place%3Amunicipality',
+            'https://photon.komoot.io/reverse?lat=45.764&lon=4.836&lang=fr',
+        ], $this->photon->requestedUrls);
+    }
+
+    public function test_reverse_asks_in_the_visitor_language(): void
+    {
+        $this->geocoder->reverse(45.764, 4.836, 'en');
+
+        $this->assertSame(['https://photon.komoot.io/reverse?lat=45.764&lon=4.836&lang=en'], $this->photon->requestedUrls);
+    }
+
     public function test_a_repeated_search_is_answered_from_the_cache_whatever_its_case(): void
     {
-        $first = $this->geocoder->searchCities('lyon', 5);
-        $second = $this->geocoder->searchCities('  LYON ', 5);
+        $first = $this->geocoder->searchCities('lyon', 5, 'fr');
+        $second = $this->geocoder->searchCities('  LYON ', 5, 'fr');
 
         $this->assertEquals($first, $second);
         $this->assertCount(1, $this->photon->requestedUrls);
@@ -60,8 +104,8 @@ final class PhotonGeocoderTest extends TestCase
 
     public function test_a_smaller_limit_is_sliced_from_the_same_cached_lookup(): void
     {
-        $this->geocoder->searchCities('lyon', 5);
-        $first = $this->geocoder->searchCities('lyon', 1);
+        $this->geocoder->searchCities('lyon', 5, 'fr');
+        $first = $this->geocoder->searchCities('lyon', 1, 'fr');
 
         $this->assertEquals(
             [new City('Lyon', 'Rhône, Auvergne-Rhône-Alpes, France', 45.7578137, 4.8320114, 'Lyon, Rhône, Auvergne-Rhône-Alpes, France')],
@@ -74,35 +118,35 @@ final class PhotonGeocoderTest extends TestCase
     {
         $this->photon->goDown();
 
-        $this->assertSame([], $this->geocoder->searchCities('lyon', 5));
-        $this->assertSame([], $this->geocoder->searchCities('lyon', 5));
+        $this->assertSame([], $this->geocoder->searchCities('lyon', 5, 'fr'));
+        $this->assertSame([], $this->geocoder->searchCities('lyon', 5, 'fr'));
         $this->assertCount(2, $this->photon->requestedUrls);
     }
 
     public function test_reverse_names_the_town_and_drops_it_from_the_context(): void
     {
-        $city = $this->geocoder->reverse(45.76403, 4.83572);
+        $city = $this->geocoder->reverse(45.76403, 4.83572, 'fr');
 
         $this->assertEquals(new City('Lyon', 'Auvergne-Rhône-Alpes, France', 45.764, 4.836, 'Lyon, Auvergne-Rhône-Alpes, France'), $city);
     }
 
     public function test_two_points_a_few_metres_apart_share_one_reverse_lookup(): void
     {
-        $this->geocoder->reverse(45.76403, 4.83572);
-        $this->geocoder->reverse(45.76411, 4.83568);
+        $this->geocoder->reverse(45.76403, 4.83572, 'fr');
+        $this->geocoder->reverse(45.76411, 4.83568, 'fr');
 
         $this->assertCount(1, $this->photon->requestedUrls);
     }
 
     public function test_reverse_finds_nothing_in_the_middle_of_nowhere(): void
     {
-        $this->assertNull($this->geocoder->reverse(0.0, -30.0));
+        $this->assertNull($this->geocoder->reverse(0.0, -30.0, 'fr'));
     }
 
     public function test_an_unreachable_photon_gives_no_town(): void
     {
         $this->photon->goDown();
 
-        $this->assertNull($this->geocoder->reverse(45.764, 4.836));
+        $this->assertNull($this->geocoder->reverse(45.764, 4.836, 'fr'));
     }
 }
