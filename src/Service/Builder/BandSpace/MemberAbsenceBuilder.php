@@ -7,12 +7,14 @@ use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\MemberAbsence;
 use App\Security\BandSpace\MemberAbsenceChecker;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 
 readonly class MemberAbsenceBuilder
 {
     public function __construct(
         private MemberAbsenceChecker $memberAbsenceChecker,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -34,7 +36,7 @@ readonly class MemberAbsenceBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->member->bandSpace->id;
         $dto->memberId = (string) $entity->member->id;
-        $dto->displayName = $entity->member->displayName();
+        $dto->displayName = $this->displayNames->memberName($entity->member);
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($entity->member->user);
         // The column is a DATE and the DTO a `Y-m-d` string, so the day goes out as written with no
         // offset for a reader to unpin. That bug class is what assets/js/utils/agendaDate.js documents.

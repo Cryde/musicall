@@ -6,6 +6,7 @@ use App\ApiResource\User\Publication\UserPublicationCategory;
 use App\ApiResource\User\Publication\UserPublicationPreview;
 use App\ApiResource\User\Publication\UserPublicationPreviewAuthor;
 use App\Entity\Publication;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -20,6 +21,7 @@ readonly class UserPublicationPreviewBuilder
         #[Target('app.publication_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
         private ReferenceNameTranslator $referenceNames,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -44,7 +46,7 @@ readonly class UserPublicationPreviewBuilder
         $author = $publication->author;
         $authorDto = new UserPublicationPreviewAuthor();
         $authorDto->username = $author->username;
-        $authorDto->displayName = $author->publicName();
+        $authorDto->displayName = $this->displayNames->publicName($author);
         $dto->author = $authorDto;
 
         return $dto;

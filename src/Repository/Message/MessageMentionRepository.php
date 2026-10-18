@@ -4,7 +4,6 @@ namespace App\Repository\Message;
 
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageMention;
-use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -50,10 +49,11 @@ class MessageMentionRepository extends ServiceEntityRepository
      * is substituted here exactly as ChatMessageBuilder already does for an author.
      *
      * @param string[] $messageIds
+     * @param string   $deletedName what a closed account reads as, in the reader's locale
      *
      * @return array<string, array<string, string>> message id => (user id => username)
      */
-    public function findUsernamesByMessageIds(array $messageIds): array
+    public function findUsernamesByMessageIds(array $messageIds, string $deletedName): array
     {
         if ($messageIds === []) {
             return [];
@@ -77,7 +77,7 @@ class MessageMentionRepository extends ServiceEntityRepository
             // Lower-cased, because the mention format accepts a uuid in either case and the renderer
             // lower-cases the token before looking it up.
             $byMessage[(string) $row['messageId']][mb_strtolower((string) $row['userId'])] =
-                $row['deletionDatetime'] === null ? (string) $row['username'] : User::DELETED_DISPLAY_NAME;
+                $row['deletionDatetime'] === null ? (string) $row['username'] : $deletedName;
         }
 
         return $byMessage;

@@ -11,6 +11,7 @@ use App\Repository\Message\MessageMentionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\BandSpace\ChatMessageTaskSeed;
 use App\Service\Message\MessagePlainTextExtractor;
+use App\Tests\Double\CatalogueTranslator;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -117,6 +118,21 @@ class ChatMessageTaskSeedTest extends TestCase
         self::assertSame('@batteur ramène le câble', $input->title);
     }
 
+    public function test_the_names_written_into_the_task_stay_in_french(): void
+    {
+        // The task is stored, worded in French, so a closed account and a lost mention are too,
+        // whatever the locale of the member turning the message into a task.
+        $mentionRepository = $this->createMock(MessageMentionRepository::class);
+        $mentionRepository->expects(self::once())->method('findUsernamesByMessageIds')
+            ->with(['aaaa0000-0000-4000-8000-000000000001'], User::DELETED_DISPLAY_NAME)
+            ->willReturn([]);
+
+        $input = $this->seed(mentionRepository: $mentionRepository)
+            ->fromMessage($this->message('@[3f2a0000-0000-4000-8000-000000000001] ramène le câble'));
+
+        self::assertSame('@inconnu ramène le câble', $input->title);
+    }
+
     public function test_a_message_of_cards_only_is_named_by_its_first_card(): void
     {
         $input = $this->seed(attachmentLabels: ['contrat.pdf', 'Réparer l\'ampli'])->fromMessage($this->message(''));
@@ -185,7 +201,8 @@ class ChatMessageTaskSeedTest extends TestCase
 
         return new ChatMessageTaskSeed(
             $extractor,
-            new ChatMentionRenderer(),
+            // English on purpose: the task is stored in French whoever creates it.
+            new ChatMentionRenderer(CatalogueTranslator::in('en')),
             $mentionRepository ?? $this->createStub(MessageMentionRepository::class),
             $attachmentRepository,
         );

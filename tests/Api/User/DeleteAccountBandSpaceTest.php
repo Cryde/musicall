@@ -446,6 +446,7 @@ class DeleteAccountBandSpaceTest extends ApiTestCase
             'stage_name' => null,
             'show_email_on_riders' => false,
             'display_name' => 'third_member',
+            'is_deleted' => false,
             'instruments' => [],
             'profile_picture_url' => null,
             'creation_datetime' => '2024-03-01T10:00:00+00:00',

@@ -195,6 +195,34 @@ class CommentGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_closed_account_is_named_in_the_reader_locale(): void
+    {
+        $thread = CommentThreadFactory::new()->create();
+        $departed = UserFactory::new()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2024-06-01 09:00:00'),
+        ]);
+        $comment = CommentFactory::new(['thread' => $thread, 'author' => $departed, 'content' => 'Commentaire 0'])->create();
+
+        $this->client->jsonRequest('GET', '/api/comments?thread=' . $thread->id, [], ['HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Comment',
+            '@id' => '/api/comments',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->expectedComment($thread, self::getContainer()->get(CommentRepository::class)->find($comment->id), $departed, 'Deleted user', '2024-06-01T09:00:00+00:00'),
+            ],
+            'view' => [
+                '@id' => '/api/comments?thread=' . $thread->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
     /**
      * @return array<string, mixed>
      */

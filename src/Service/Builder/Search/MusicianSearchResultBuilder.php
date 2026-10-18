@@ -10,6 +10,7 @@ use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User as UserEntity;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -20,6 +21,7 @@ class MusicianSearchResultBuilder
         private readonly UploaderHelper         $uploaderHelper,
         private readonly CacheManager           $cacheManager,
         private readonly ReferenceNameTranslator $referenceNames,
+        private readonly DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -62,7 +64,7 @@ class MusicianSearchResultBuilder
         $user = new User();
         $user->id = $userEntity->id;
         $user->username = $userEntity->username;
-        $user->displayName = $userEntity->publicName();
+        $user->displayName = $this->displayNames->publicName($userEntity);
         $user->deletionDatetime = $userEntity->deletionDatetime;
         $user->hasMusicianProfile = $userEntity->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
         if ($userEntity->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {

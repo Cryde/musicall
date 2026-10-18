@@ -7,6 +7,7 @@ use App\Service\BandSpace\Song\ChordPro\ChordProParser;
 use App\Service\BandSpace\Song\ChordPro\ChordTransposer;
 use App\Service\BandSpace\Song\ChordPro\SingerPalette;
 use App\Service\Builder\BandSpace\SongLyricsBuilder;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * A song ready to print (#1055): its sheet, transposed if asked, and every singer it names with a
@@ -29,12 +30,13 @@ use App\Service\Builder\BandSpace\SongLyricsBuilder;
 readonly class SongSheetBuilder
 {
     private const string ALL_LABEL = 'Tous';
-    private const string UNKNOWN_LABEL = 'Membre inconnu';
+    private const string UNKNOWN_KEY = 'band_space.song.unknown_member';
 
     public function __construct(
         private ChordProParser $parser,
         private ChordTransposer $transposer,
         private SongLyricsBuilder $lyricsBuilder,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -79,7 +81,7 @@ readonly class SongSheetBuilder
                 continue;
             }
             $singers[$id] = [
-                'name' => $members[$id]['name'] ?? self::UNKNOWN_LABEL,
+                'name' => $members[$id]['name'] ?? $this->translator->trans(self::UNKNOWN_KEY),
                 'color' => SingerPalette::forIndex($index++),
                 'former' => $members[$id]['is_former_member'] ?? false,
             ];

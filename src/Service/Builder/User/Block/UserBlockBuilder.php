@@ -5,11 +5,13 @@ namespace App\Service\Builder\User\Block;
 use App\ApiResource\User\Block\UserBlockResource;
 use App\Entity\User\Relation\UserBlock;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 
 readonly class UserBlockBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -20,7 +22,7 @@ readonly class UserBlockBuilder
         $resource = new UserBlockResource();
         $resource->userId = (string) $blocked->id;
         $resource->username = $blocked->username;
-        $resource->displayName = $blocked->publicName();
+        $resource->displayName = $this->displayNames->publicName($blocked);
         $resource->profilePictureUrl = $this->profilePictureUrlBuilder->build($blocked);
         $resource->creationDatetime = $block->creationDatetime;
 

@@ -94,6 +94,10 @@ class BandSpaceMember
     /** stageName when set, the username otherwise. Resolved server side so nobody repeats it. */
     public string $displayName;
 
+    /** A closed account, whose username is an internal `deleted_<uuid>` handle that a client must not show. */
+    #[ApiProperty(writable: false)]
+    public bool $isDeleted = false;
+
     /** @var list<array{id: string, name: string}> */
     public array $instruments = [];
 

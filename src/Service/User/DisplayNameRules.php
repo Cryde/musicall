@@ -37,7 +37,8 @@ final class DisplayNameRules
     /** One or two marks cover every real accent; more is text spilling over its neighbours. */
     private const string STACKED_MARKS_PATTERN = '/\p{M}{3,}/u';
 
-    private const array RESERVED_NAMES = [User::DELETED_DISPLAY_NAME, 'MusicAll'];
+    /** The closed account label in every locale (`user.deleted_display_name`), so nobody can pass for one. */
+    private const array RESERVED_NAMES = [User::DELETED_DISPLAY_NAME, 'Deleted user', 'MusicAll'];
 
     /** NFC, every run of whitespace as one space, trimmed; blank means no name at all. */
     public static function normalize(?string $name): ?string

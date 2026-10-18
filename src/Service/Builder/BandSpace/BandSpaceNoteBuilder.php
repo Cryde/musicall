@@ -4,8 +4,8 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
 use App\Entity\BandSpace\BandSpaceNote as BandSpaceNoteEntity;
-use App\Entity\User;
 use App\Service\BandSpace\BandSpaceMemberNames;
+use App\Translation\DisplayNameTranslator;
 
 readonly class BandSpaceNoteBuilder
 {
@@ -33,6 +33,7 @@ readonly class BandSpaceNoteBuilder
 
     public function __construct(
         private BandSpaceMemberNames $memberNames,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -68,7 +69,7 @@ readonly class BandSpaceNoteBuilder
         $dto->createdBy = [
             'id' => $entity->createdBy->id,
             'username' => $entity->createdBy->isDeleted()
-                ? User::DELETED_DISPLAY_NAME
+                ? $this->displayNames->deletedUser()
                 : $entity->createdBy->username,
             'display_name' => $this->memberNames->nameOf($entity->createdBy, $dto->bandSpaceId),
         ];

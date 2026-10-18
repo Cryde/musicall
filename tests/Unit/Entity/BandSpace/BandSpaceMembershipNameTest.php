@@ -13,29 +13,29 @@ class BandSpaceMembershipNameTest extends TestCase
 {
     public function test_the_stage_name_wins_over_the_profile_name_and_the_username(): void
     {
-        $this->assertSame('Alex', BandSpaceMembership::nameFor('Alex', 'androidtest_123', false, 'Alexandre Martin', true));
+        $this->assertSame('Alex', BandSpaceMembership::nameFor('Alex', 'androidtest_123', false, 'Alexandre Martin', true, 'Deleted user'));
     }
 
     public function test_without_a_stage_name_the_public_profile_name_is_used(): void
     {
-        $this->assertSame('Alexandre Martin', BandSpaceMembership::nameFor(null, 'androidtest_123', false, 'Alexandre Martin', true));
+        $this->assertSame('Alexandre Martin', BandSpaceMembership::nameFor(null, 'androidtest_123', false, 'Alexandre Martin', true, 'Deleted user'));
     }
 
     public function test_a_private_profile_name_is_never_used(): void
     {
-        $this->assertSame('androidtest_123', BandSpaceMembership::nameFor(null, 'androidtest_123', false, 'Alexandre Martin', false));
+        $this->assertSame('androidtest_123', BandSpaceMembership::nameFor(null, 'androidtest_123', false, 'Alexandre Martin', false, 'Deleted user'));
     }
 
     public function test_without_any_name_the_username_is_used(): void
     {
-        $this->assertSame('androidtest_123', BandSpaceMembership::nameFor(null, 'androidtest_123', false, null, true));
+        $this->assertSame('androidtest_123', BandSpaceMembership::nameFor(null, 'androidtest_123', false, null, true, 'Deleted user'));
     }
 
     /** DeleteAccountProcedure keeps the stage name on the membership, so it must not leak the person back. */
     public function test_a_deleted_account_is_labelled_whatever_its_stage_name(): void
     {
-        $this->assertSame(User::DELETED_DISPLAY_NAME, BandSpaceMembership::nameFor('Alex', 'deleted_c7c9f2e1', true, null, false));
-        $this->assertSame(User::DELETED_DISPLAY_NAME, BandSpaceMembership::nameFor(null, 'deleted_c7c9f2e1', true, null, false));
+        $this->assertSame('Deleted user', BandSpaceMembership::nameFor('Alex', 'deleted_c7c9f2e1', true, null, false, 'Deleted user'));
+        $this->assertSame('Deleted user', BandSpaceMembership::nameFor(null, 'deleted_c7c9f2e1', true, null, false, 'Deleted user'));
     }
 
     public function test_display_name_applies_the_rule_to_the_membership(): void
@@ -48,6 +48,6 @@ class BandSpaceMembershipNameTest extends TestCase
         $membership->user = $user;
         $membership->stageName = 'Alex';
 
-        $this->assertSame(User::DELETED_DISPLAY_NAME, $membership->displayName());
+        $this->assertSame('Deleted user', $membership->displayName('Deleted user'));
     }
 }

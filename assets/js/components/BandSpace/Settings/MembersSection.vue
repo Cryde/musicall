@@ -90,7 +90,7 @@
               <!-- Shown only when it differs, so the row says who this is without repeating
                    itself for the members who never set a stage name. -->
               <span
-                v-if="userHandle(member.username, member.display_name)"
+                v-if="userHandle(member.username, member.display_name, member.is_deleted)"
                 class="text-xs text-surface-500 dark:text-surface-400 ml-1"
               >
                 ({{ member.username }})

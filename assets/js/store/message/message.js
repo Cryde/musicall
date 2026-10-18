@@ -144,8 +144,8 @@ export const useMessageStore = defineStore('message', () => {
    * other message. Adapting once here is what keeps `author_username ?? author.username` out of the
    * component, the merge helper and the unread logic.
    *
-   * `author_username` already reads « Utilisateur supprimé » when the account is gone, substituted by
-   * ChatMessageBuilder, so there is no deletion date left to carry.
+   * `author_username` already reads the closed account label, in the page's locale, when the account is
+   * gone, substituted by ChatMessageBuilder, so there is no deletion date left to carry.
    *
    * The id has to come across too: grouping keys on it (#1031), and leaving it out made every
    * consecutive message in a channel look like one author.

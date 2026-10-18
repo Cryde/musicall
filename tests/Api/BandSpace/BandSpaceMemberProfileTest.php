@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use Doctrine\Common\Collections\ArrayCollection;
 use App\Enum\BandSpace\Role;
@@ -61,6 +62,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             'stage_name' => 'Jérémy',
             'show_email_on_riders' => false,
             'display_name' => 'Jérémy',
+            'is_deleted' => false,
             // Ordered by name, which is the mapping's OrderBy, so a document does not reshuffle.
             'instruments' => [
                 ['id' => (string) $drums->id, 'name' => 'Batterie'],
@@ -103,6 +105,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             'stage_name' => 'Jérémy',
             'show_email_on_riders' => false,
             'display_name' => 'Jérémy',
+            'is_deleted' => false,
             'instruments' => [
                 ['id' => (string) $guitar->id, 'name' => 'Guitar'],
                 ['id' => (string) $vocals->id, 'name' => 'Vocals'],
@@ -136,7 +139,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
         // Stored as null, not as spaces: "nothing chosen" needs one representation or every
         // reader has to test for two.
         $this->assertNull($reloaded?->stageName);
-        $this->assertSame('kenny_login', $reloaded?->displayName());
+        $this->assertSame('kenny_login', $reloaded?->displayName(User::DELETED_DISPLAY_NAME));
     }
 
     public function test_an_admin_edits_another_member(): void
@@ -168,6 +171,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             'stage_name' => 'Kenny',
             'show_email_on_riders' => false,
             'display_name' => 'Kenny',
+            'is_deleted' => false,
             'instruments' => [],
             'profile_picture_url' => null,
             'creation_datetime' => $target->creationDatetime->format(\DateTimeInterface::ATOM),

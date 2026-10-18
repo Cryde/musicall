@@ -337,6 +337,7 @@ class ChatPinnedMessageGetCollectionTest extends ApiTestCase
             'author_id' => (string) $author->id,
             'author_username' => $expectedUsername,
             'author_display_name' => $expectedUsername,
+            'author_is_deleted' => false,
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => $creationDatetime,

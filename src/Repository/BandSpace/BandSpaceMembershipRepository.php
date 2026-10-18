@@ -319,9 +319,11 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
      * included so a task or a file keeps naming its author after they leave. Scalars only: a User
      * drags three profile tables along when hydrated (#730).
      *
+     * @param string $deletedName what a closed account reads as, in the reader's locale
+     *
      * @return array<string, string>
      */
-    public function findDisplayNamesByUserId(string $bandSpaceId): array
+    public function findDisplayNamesByUserId(string $bandSpaceId, string $deletedName): array
     {
         $rows = $this->createQueryBuilder('m')
             ->select('u.id AS userId', 'u.username', 'u.deletionDatetime', 'm.stageName', 'p.displayName AS profileName', 'p.isPublic AS profileIsPublic')
@@ -340,6 +342,7 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
                 $row['deletionDatetime'] !== null,
                 $row['profileName'],
                 (bool) $row['profileIsPublic'],
+                $deletedName,
             );
         }
 

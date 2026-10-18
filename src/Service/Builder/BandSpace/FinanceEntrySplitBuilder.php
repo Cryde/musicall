@@ -5,9 +5,15 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\Finance\FinanceEntrySplitResource;
 use App\Entity\BandSpace\FinanceEntrySplit;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Translation\DisplayNameTranslator;
 
 readonly class FinanceEntrySplitBuilder
 {
+    public function __construct(
+        private DisplayNameTranslator $displayNames,
+    ) {
+    }
+
     /**
      * @param FinanceEntrySplit[] $entities
      * @return FinanceEntrySplitResource[]
@@ -27,7 +33,7 @@ readonly class FinanceEntrySplitBuilder
         $dto->bandSpaceId = (string) $entity->entry->category->bandSpace->id;
         $dto->entryId = (string) $entity->entry->id;
         $dto->memberId = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership ? (string) $entity->member->id : null;
-        $dto->memberName = $entity->member?->displayName();
+        $dto->memberName = $entity->member?->displayName($this->displayNames->deletedUser());
         $dto->memberUsername = $entity->member?->user->username;
         $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
         $dto->amount = $entity->amount;

@@ -7,14 +7,17 @@ namespace App\Tests\Api\BandSpace\Chat;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\Message\MessageFactory;
+use App\Tests\Factory\Message\MessageMentionFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserProfilePictureFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -190,6 +193,58 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 $this->expectedMessage($message->id, $space, $gone, 'Utilisateur supprimé', 'salut', '2026-09-10T20:00:00+00:00'),
+            ],
+        ]);
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function readerLocales(): iterable
+    {
+        yield 'French' => ['fr', 'Utilisateur supprimé', 'inconnu'];
+        yield 'English' => ['en', 'Deleted user', 'unknown'];
+    }
+
+    #[DataProvider('readerLocales')]
+    public function test_a_closed_account_and_a_lost_mention_are_named_in_the_reader_locale(string $locale, string $deletedName, string $unknownName): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $gone = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_3f2504e0',
+            'email' => 'gone@test.com',
+            'deletionDatetime' => new \DateTimeImmutable('2026-09-01 10:00:00'),
+        ]);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $gone, 'status' => MembershipStatus::Left])->create();
+        $channel = $this->channelOf($space);
+
+        // The second id has no mention row, which only legacy messages and corrupt data reach.
+        $message = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $gone,
+            'content' => 'salut @[' . $gone->id . '] et @[6ba7b810-9dad-11d1-80b4-00c04fd430c8]',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+        ])->create();
+        MessageMentionFactory::new(['message' => $message, 'mentionedUser' => $gone])->create();
+
+        $this->client->loginUser($member);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/chat/messages', server: ['HTTP_X_LOCALE' => $locale]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/band_spaces/' . $space->id . '/chat/messages',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->expectedMessage(
+                    $message->id,
+                    $space,
+                    $gone,
+                    $deletedName,
+                    'salut <span class="chat-mention">@' . $deletedName . '</span> et <span class="chat-mention">@' . $unknownName . '</span>',
+                    '2026-09-10T20:00:00+00:00',
+                ),
             ],
         ]);
     }
@@ -402,6 +457,7 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'author_id' => (string) $author->id,
             'author_username' => $expectedUsername,
             'author_display_name' => $expectedUsername,
+            'author_is_deleted' => $author->isDeleted(),
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => $creationDatetime,

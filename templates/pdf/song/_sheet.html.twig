@@ -18,7 +18,7 @@
             <div class="song-gutter">
                 {% for set in line.singerSets %}
                     {% for id in set %}
-                        <span class="singer-tag" style="background: {{ sheet.singers[id].color ?? '#64748b' }}">{{ sheet.singers[id].name ?? 'Membre inconnu' }}</span>
+                        <span class="singer-tag" style="background: {{ sheet.singers[id].color ?? '#64748b' }}">{{ sheet.singers[id].name ?? 'band_space.song.unknown_member'|trans }}</span>
                     {% endfor %}
                 {% endfor %}
             </div>

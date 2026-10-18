@@ -306,9 +306,11 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string $deletedName what a closed account reads as, in the reader's locale
+     *
      * @return array<int, array{member_id: string, username: string, display_name: string, total: int}>
      */
-    public function getMemberContributions(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
+    public function getMemberContributions(BandSpace $bandSpace, string $deletedName, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
         [$dateFilter, $params] = $this->buildDateFilter($bandSpace, $from, $to);
@@ -338,7 +340,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
         return array_map(fn (array $row): array => [
             'member_id' => $row['member_id'],
             'username' => $row['username'],
-            'display_name' => BandSpaceMembership::nameFor($row['stage_name'], $row['username'], $row['deletion_datetime'] !== null, $row['profile_name'], (bool) $row['profile_is_public']),
+            'display_name' => BandSpaceMembership::nameFor($row['stage_name'], $row['username'], $row['deletion_datetime'] !== null, $row['profile_name'], (bool) $row['profile_is_public'], $deletedName),
             'total' => (int) $row['total'],
         ], $rows);
     }

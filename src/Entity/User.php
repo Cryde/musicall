@@ -280,7 +280,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return false;
     }
 
-    /** What a renderer shows instead of the `deleted_<uuid>` handle DeleteAccountProcedure leaves behind. */
+    /**
+     * What a renderer shows instead of the `deleted_<uuid>` handle DeleteAccountProcedure leaves behind, in
+     * French. A reader gets it in their locale through DisplayNameTranslator; this stays for stored text.
+     */
     public const string DELETED_DISPLAY_NAME = 'Utilisateur supprimé';
 
     public function isDeleted(): bool
@@ -299,27 +302,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return !$this->isDeleted() && !$this->isSuspended();
     }
 
-    /** Serialized as `display_name` wherever a payload embeds the User itself rather than a DTO. */
+    /**
+     * Serialized as `display_name` wherever a payload embeds the User itself rather than a DTO. In French
+     * here: DisplayNameNormalizer swaps in the reader's locale.
+     */
     #[Groups([GalleryResource::LIST, MessageResource::LIST, MessageResource::ITEM, MessageThreadMetaResource::LIST])]
     public function getDisplayName(): string
     {
-        return $this->publicName();
+        return $this->publicName(self::DELETED_DISPLAY_NAME);
     }
 
     /** What the site calls this user next to their username (#1118). Reads the profile, which is lazy. */
-    public function publicName(): string
+    public function publicName(string $deletedName): string
     {
-        return self::publicNameFor($this->username, $this->isDeleted(), $this->profile->displayName, $this->profile->isPublic);
+        return self::publicNameFor($this->username, $this->isDeleted(), $this->profile->displayName, $this->profile->isPublic, $deletedName);
     }
 
     /**
      * The naming rule outside a band space, shared with the scalar projections. A private profile keeps
      * its name to itself, and a closed account is labelled whatever it held.
      */
-    public static function publicNameFor(string $username, bool $isDeleted, ?string $profileName, bool $profileIsPublic): string
+    public static function publicNameFor(string $username, bool $isDeleted, ?string $profileName, bool $profileIsPublic, string $deletedName): string
     {
         if ($isDeleted) {
-            return self::DELETED_DISPLAY_NAME;
+            return $deletedName;
         }
 
         return $profileIsPublic && $profileName !== null && trim($profileName) !== '' ? $profileName : $username;

@@ -5,9 +5,15 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\Finance\FinanceEntryResource;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Translation\DisplayNameTranslator;
 
 readonly class FinanceEntryBuilder
 {
+    public function __construct(
+        private DisplayNameTranslator $displayNames,
+    ) {
+    }
+
     /**
      * @param FinanceEntry[] $entities
      * @param array<string, bool> $splitWarnings keyed by entry ID
@@ -40,7 +46,7 @@ readonly class FinanceEntryBuilder
         $dto->date = $entity->date->format('Y-m-d');
         $dto->scope = $entity->scope->value;
         $dto->memberId = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership ? (string) $entity->member->id : null;
-        $dto->memberName = $entity->member?->displayName();
+        $dto->memberName = $entity->member?->displayName($this->displayNames->deletedUser());
         $dto->memberUsername = $entity->member?->user->username;
         $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
         $dto->recurrenceId = $entity->recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence ? (string) $entity->recurrence->id : null;

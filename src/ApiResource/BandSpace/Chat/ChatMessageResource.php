@@ -79,11 +79,14 @@ class ChatMessageResource
 
     public string $authorId;
 
-    /** `Utilisateur supprimé` once the account is gone, so the renderer never prints `deleted_<uuid>`. */
+    /** The closed account label, in the reader's locale, once the account is gone, so nobody prints `deleted_<uuid>`. */
     public string $authorUsername;
 
     /** The author's name in this band (#1115), next to the username mentions keep using. */
     public string $authorDisplayName;
+
+    /** A closed account, so a client never has to recognise one by its name. */
+    public bool $authorIsDeleted = false;
 
     public ?string $authorProfilePictureUrl = null;
 
@@ -165,7 +168,7 @@ class ChatMessageResource
 
     public ?DateTimeInterface $pinnedDatetime = null;
 
-    /** `Utilisateur supprimé` once the account is gone, exactly like the author field above. */
+    /** The closed account label once the account is gone, exactly like the author field above. */
     public ?string $pinnedByUsername = null;
 
     public ?string $pinnedByDisplayName = null;

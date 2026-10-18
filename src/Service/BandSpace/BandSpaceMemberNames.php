@@ -5,6 +5,7 @@ namespace App\Service\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Translation\DisplayNameTranslator;
 use Symfony\Contracts\Service\ResetInterface;
 
 /**
@@ -19,26 +20,27 @@ class BandSpaceMemberNames implements ResetInterface
 
     public function __construct(
         private readonly BandSpaceMembershipRepository $membershipRepository,
+        private readonly DisplayNameTranslator $displayNames,
     ) {
     }
 
     public function nameOf(User $user, string $bandSpaceId): string
     {
-        $this->namesByBandSpace[$bandSpaceId] ??= $this->membershipRepository->findDisplayNamesByUserId($bandSpaceId);
+        $this->namesByBandSpace[$bandSpaceId] ??= $this->membershipRepository->findDisplayNamesByUserId($bandSpaceId, $this->displayNames->deletedUser());
 
         // No membership row is not expected (memberships are never hard deleted), so fall back to the
         // site wide name, which reads the profile only in that unexpected case.
-        return $this->namesByBandSpace[$bandSpaceId][$user->id] ?? $user->publicName();
+        return $this->namesByBandSpace[$bandSpaceId][$user->id] ?? $this->displayNames->publicName($user);
     }
 
     /** For the scalar projections that never hydrate a User, such as the chat page. */
     public function nameById(string $bandSpaceId, string $userId, string $username, bool $isDeleted): string
     {
-        $this->namesByBandSpace[$bandSpaceId] ??= $this->membershipRepository->findDisplayNamesByUserId($bandSpaceId);
+        $this->namesByBandSpace[$bandSpaceId] ??= $this->membershipRepository->findDisplayNamesByUserId($bandSpaceId, $this->displayNames->deletedUser());
 
         // Same unexpected case, without a User to read a profile from: the handle is all there is.
         return $this->namesByBandSpace[$bandSpaceId][$userId]
-            ?? User::publicNameFor($username, $isDeleted, null, false);
+            ?? User::publicNameFor($username, $isDeleted, null, false, $this->displayNames->deletedUser());
     }
 
     public function reset(): void

@@ -10,6 +10,7 @@ use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -147,6 +148,80 @@ class MessageGetCollectionTest extends ApiTestCase
                 'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
+                        'variable' => 'order[creation_datetime]',
+                        'property' => 'creation_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[id]',
+                        'property' => 'id',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function readerLocales(): iterable
+    {
+        yield 'French' => ['fr', 'Utilisateur supprimé'];
+        yield 'English' => ['en', 'Deleted user'];
+    }
+
+    /** The author is the User entity itself here, with no builder to name a closed account in. */
+    #[DataProvider('readerLocales')]
+    public function test_a_closed_account_is_named_in_the_reader_locale(string $locale, string $deletedName): void
+    {
+        $reader = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $gone = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'gone@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2026-09-01 10:00:00'),
+        ]);
+        $thread = MessageThreadFactory::new()->create();
+        $message = MessageFactory::new([
+            'author' => $gone,
+            'thread' => $thread,
+            'content' => 'salut',
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2026-08-01T10:00:00+00:00'),
+        ])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $reader])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $gone])->create();
+
+        $this->client->loginUser($reader);
+        $this->client->request('GET', '/api/messages/' . $thread->id, server: ['HTTP_X_LOCALE' => $locale]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $thread->id,
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/messages/' . $message->id,
+                    '@type' => 'Message',
+                    'creation_datetime' => '2026-08-01T10:00:00+00:00',
+                    'author' => [
+                        '@id' => '/api/users/' . $gone->id,
+                        '@type' => 'User',
+                        'id' => $gone->id,
+                        'username' => 'deleted_c7c9f2e1',
+                        'display_name' => $deletedName,
+                        'deletion_datetime' => '2026-09-01T10:00:00+00:00',
+                    ],
+                    'content' => 'salut',
+                ],
+            ],
+            'totalItems' => 1,
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/messages/' . $thread->id . '{?order[creation_datetime],order[id]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
                         'variable' => 'order[creation_datetime]',
                         'property' => 'creation_datetime',
                         'required' => false,

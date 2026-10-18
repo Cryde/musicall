@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\Finance\FinanceSummary;
 use App\Entity\User;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Translation\DisplayNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -20,6 +21,7 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         private BandSpaceMemberChecker $memberChecker,
         private FinanceEntryRepository $financeEntryRepository,
         private Security $security,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -38,7 +40,7 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         $boundaries = $this->financeEntryRepository->getDateBoundaries($bandSpace, $currentMembership);
         $totals = $this->financeEntryRepository->getSummaryByBandSpace($bandSpace, $currentMembership, $from, $to);
         $byCategory = $this->financeEntryRepository->getSummaryByCategory($bandSpace, $currentMembership, $from, $to);
-        $contributions = $this->financeEntryRepository->getMemberContributions($bandSpace, $from, $to);
+        $contributions = $this->financeEntryRepository->getMemberContributions($bandSpace, $this->displayNames->deletedUser(), $from, $to);
         $upcoming = $this->financeEntryRepository->getUpcomingByBandSpace($bandSpace, $currentMembership, $from, $to);
 
         $summary = new FinanceSummary();

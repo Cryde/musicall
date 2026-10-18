@@ -12,6 +12,7 @@ use App\Entity\Musician\MusicianAnnounce as MusicianAnnounceEntity;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameTranslator;
 
 readonly class MusicianAnnounceBuilder
@@ -19,6 +20,7 @@ readonly class MusicianAnnounceBuilder
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private ReferenceNameTranslator $referenceNames,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
     /**
@@ -108,7 +110,7 @@ readonly class MusicianAnnounceBuilder
         return $this->createAuthor(
             $user->id,
             $user->username,
-            $user->publicName(),
+            $this->displayNames->publicName($user),
             $user->deletionDatetime,
             $user->musicianProfile instanceof MusicianProfile,
             $user->profilePicture?->imageName,

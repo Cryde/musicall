@@ -33,6 +33,9 @@ readonly class ChatMessageTaskSeed
     /** A message made only of markup sanitizes down to nothing, and a task still needs a name. */
     private const string EMPTY_TITLE_FALLBACK = 'Message de la discussion';
 
+    /** The task is stored, worded in French like the description below, so the names in it are too. */
+    private const string STORED_TEXT_LOCALE = 'fr';
+
     public function __construct(
         private MessagePlainTextExtractor $plainTextExtractor,
         private ChatMentionRenderer $chatMentionRenderer,
@@ -47,7 +50,8 @@ readonly class ChatMessageTaskSeed
         // Resolved so a task reads « @batteur ramène le câble » rather than « @[3f2a...] ».
         $content = $this->chatMentionRenderer->renderPlain(
             $message->content,
-            $this->messageMentionRepository->findUsernamesByMessageIds([$messageId])[$messageId] ?? [],
+            $this->messageMentionRepository->findUsernamesByMessageIds([$messageId], User::DELETED_DISPLAY_NAME)[$messageId] ?? [],
+            self::STORED_TEXT_LOCALE,
         );
 
         // A message can carry only cards since #971, and then its cards are all it says. Read before
