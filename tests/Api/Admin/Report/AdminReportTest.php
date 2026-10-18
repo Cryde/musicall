@@ -17,10 +17,12 @@ use App\Repository\UserRepository;
 use App\Service\Notification\NotificationCreator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Forum\ForumPostFactory;
 use App\Tests\Factory\Report\ReportFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -134,6 +136,40 @@ class AdminReportTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals(['@context' => '/api/contexts/AdminReport'] + $this->expected($report, $reporter, null, 1, 'removed'));
+    }
+
+    /**
+     * An announce snapshot keeps its instrument by slug (#1212); the moderation screens stay French
+     * whatever the request asks for, and a name the migration could not convert reads as stored.
+     */
+    #[DataProvider('announceInstrumentProvider')]
+    public function test_the_detail_names_the_announce_instrument_in_french(string $stored, string $expected): void
+    {
+        InstrumentFactory::new()->asDrum()->create();
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $reporter = UserFactory::new()->create(['username' => 'vigilant', 'email' => 'vigilant@test.com']);
+        $report = ReportFactory::new([
+            'reporter' => $reporter,
+            'targetType' => ReportTargetType::Announce,
+            'targetId' => 'b6f1a6a0-0000-4000-8000-0000000000ff',
+            'snapshotContext' => ['instrument' => $stored, 'location' => 'Liège', 'username' => 'vendeur'],
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/reports/' . $report->id, server: ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals(
+            ['@context' => '/api/contexts/AdminReport', 'snapshot_context' => ['instrument' => $expected, 'location' => 'Liège', 'username' => 'vendeur']]
+            + $this->expected($report, $reporter, null, 1, 'removed'),
+        );
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function announceInstrumentProvider(): iterable
+    {
+        yield 'a slug' => ['batterie', 'Batteur'];
+        yield 'a legacy name' => ['Batteur / Batteuse', 'Batteur / Batteuse'];
     }
 
     public function test_dismissing_closes_every_pending_report_on_the_same_content(): void

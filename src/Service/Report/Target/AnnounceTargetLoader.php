@@ -32,10 +32,11 @@ readonly class AnnounceTargetLoader implements ReportTargetLoaderInterface
             return null;
         }
 
+        // The instrument by slug (#1212), so it is named in whichever language reads the report.
         return new ReportTarget(
             $announce->author,
             ReportTarget::text((string) $announce->note),
-            ['instrument' => $announce->instrument->musicianName, 'location' => $announce->locationName, 'username' => $announce->author->username],
+            ['instrument' => $announce->instrument->slug, 'location' => $announce->locationName, 'username' => $announce->author->username],
         );
     }
 }

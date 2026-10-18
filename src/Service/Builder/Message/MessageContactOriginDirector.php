@@ -10,6 +10,7 @@ use App\Entity\Teacher\TeacherProfile;
 use App\Entity\Teacher\TeacherProfileInstrument;
 use App\Enum\Message\ContactOriginType;
 
+/** Instruments and styles are kept by slug (#1212), so each reader names them in their own language. */
 class MessageContactOriginDirector
 {
     public function create(Message $message, MusicianAnnounce|TeacherProfile $source): MessageContactOrigin
@@ -21,9 +22,8 @@ class MessageContactOriginDirector
             $origin->type = ContactOriginType::MusicianAnnounce;
             $origin->musicianAnnounce = $source;
             $origin->announceType = $source->type;
-            // « Batteur » rather than « Batterie »: an announce names who is wanted, or who is offering.
-            $origin->instruments = [$source->instrument->musicianName];
-            $origin->styles = self::styleNames($source->styles->toArray());
+            $origin->instruments = [$source->instrument->slug];
+            $origin->styles = self::styleSlugs($source->styles->toArray());
             $origin->locationName = $source->locationName;
 
             return $origin;
@@ -32,10 +32,10 @@ class MessageContactOriginDirector
         $origin->type = ContactOriginType::TeacherProfile;
         $origin->teacherProfile = $source;
         $origin->instruments = array_values(array_map(
-            static fn (TeacherProfileInstrument $taught): string => $taught->instrument->name,
+            static fn (TeacherProfileInstrument $taught): string => $taught->instrument->slug,
             $source->instruments->toArray(),
         ));
-        $origin->styles = self::styleNames($source->styles->toArray());
+        $origin->styles = self::styleSlugs($source->styles->toArray());
 
         return $origin;
     }
@@ -45,8 +45,8 @@ class MessageContactOriginDirector
      *
      * @return list<string>
      */
-    private static function styleNames(array $styles): array
+    private static function styleSlugs(array $styles): array
     {
-        return array_values(array_map(static fn (Style $style): string => $style->name, $styles));
+        return array_values(array_map(static fn (Style $style): string => $style->slug, $styles));
     }
 }
