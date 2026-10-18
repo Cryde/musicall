@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Contracts\SluggableEntityInterface;
 use App\Repository\Attribute\StyleRepository;
+use App\State\Provider\Attribute\ReferenceCollectionProvider;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -30,6 +31,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         openapi: new Operation(tags: ['Attributes']),
         paginationItemsPerPage: 100,
         order: ['name' => 'ASC'],
+        provider: ReferenceCollectionProvider::class,
         name: 'api_styles_get_collection',
     )
 ])]

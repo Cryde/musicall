@@ -70,6 +70,16 @@ final class InstrumentFactory extends PersistentObjectFactory
         ]);
     }
 
+    public function asVocals(): \App\Tests\Factory\Attribute\InstrumentFactory
+    {
+        return $this->with([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'musicianName' => 'Chanteur / Chanteuse',
+            'name' => 'Chant',
+            'slug' => 'chant',
+        ]);
+    }
+
     public static function class(): string
     {
         return Instrument::class;
