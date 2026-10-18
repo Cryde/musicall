@@ -23,6 +23,7 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class AgendaAggregator
 {
@@ -41,6 +42,7 @@ readonly class AgendaAggregator
         private BandSpaceMemberNames $memberNames,
         private AgendaEntryAvailabilityRepository $availabilityRepository,
         private BandSpaceMembershipRepository $membershipRepository,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -489,8 +491,6 @@ readonly class AgendaAggregator
      */
     private function buildAbsence(BandSpace $bandSpace, MemberAbsence $absence): AgendaItem
     {
-        $displayName = $absence->member->displayName();
-
         $item = new AgendaItem();
         $item->id = 'absence-' . $absence->id;
         $item->bandSpaceId = (string) $bandSpace->id;
@@ -499,7 +499,7 @@ readonly class AgendaAggregator
         $item->datetime = $this->pinToUtcMidnight($absence->startDate);
         $item->endDatetime = $this->pinToUtcMidnight($absence->endDate);
         $item->isAllDay = true;
-        $item->title = $displayName . ' indisponible';
+        $item->title = $this->translator->trans('band_space.agenda.absence_title', ['name' => $absence->member->displayName()]);
         $item->description = $absence->reason;
         // Only what a consumer reads. The member's name is already in the title, and the reason is
         // already the description, which is where both the list row and the calendar chip read it.
