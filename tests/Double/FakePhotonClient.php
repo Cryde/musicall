@@ -11,8 +11,8 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
 
 /**
- * Stands in for Photon so the suite never calls komoot. Answers « lyon » and a point in Lyon from
- * recorded responses, anything else with no feature, and fails on demand.
+ * Stands in for Photon so the suite never calls komoot. Answers « lyon » (in French or English) and a
+ * point in Lyon from recorded responses, anything else with no feature, and fails on demand.
  *
  * Registered as a decorator of photon.client under when@test in config/services.yaml.
  */
@@ -62,7 +62,7 @@ final class FakePhotonClient implements HttpClientInterface
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
         $path = (string) parse_url($url, PHP_URL_PATH);
         $fixture = match (true) {
-            $path === '/api/' && ($query['q'] ?? null) === 'lyon' => 'search-lyon.json',
+            $path === '/api/' && ($query['q'] ?? null) === 'lyon' => ($query['lang'] ?? null) === 'en' ? 'search-lyon-en.json' : 'search-lyon.json',
             $path === '/reverse' && str_starts_with((string) ($query['lat'] ?? ''), '45.7') => 'reverse-lyon.json',
             default => null,
         };

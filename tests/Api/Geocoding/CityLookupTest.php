@@ -57,6 +57,44 @@ final class CityLookupTest extends ApiTestCase
         ]);
     }
 
+    public function test_an_english_visitor_gets_city_suggestions_in_english(): void
+    {
+        $this->client->request('GET', '/api/geocoding/cities?q=lyon&limit=5', server: ['HTTP_ACCEPT_LANGUAGE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/CityLookup',
+            '@id' => '/api/geocoding/cities',
+            '@type' => 'CityLookup',
+            'cities' => [
+                [
+                    '@type' => 'City',
+                    'name' => 'Lyon',
+                    'context' => 'Rhône, Auvergne-Rhône-Alpes, France',
+                    'latitude' => 45.7578137,
+                    'longitude' => 4.8320114,
+                    'full_name' => 'Lyon, Rhône, Auvergne-Rhône-Alpes, France',
+                ],
+                [
+                    '@type' => 'City',
+                    'name' => 'Lyons-la-Forêt',
+                    'context' => 'Eure, Normandy, France',
+                    'latitude' => 49.3997,
+                    'longitude' => 1.4714,
+                    'full_name' => 'Lyons-la-Forêt, Eure, Normandy, France',
+                ],
+                [
+                    '@type' => 'City',
+                    'name' => 'Lyon',
+                    'context' => 'Virginia, United States',
+                    'latitude' => 37.2099,
+                    'longitude' => -79.6389,
+                    'full_name' => 'Lyon, Virginia, United States',
+                ],
+            ],
+        ]);
+    }
+
     public function test_nothing_found_is_an_empty_list(): void
     {
         $this->client->request('GET', '/api/geocoding/cities?q=xyzzy');

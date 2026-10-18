@@ -12,6 +12,7 @@ use App\Service\Geocoding\PhotonGeocoder;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * @implements ProviderInterface<CityLookup>
@@ -25,6 +26,7 @@ readonly class CitySearchProvider implements ProviderInterface
         private RequestStack $requestStack,
         #[Target('geocoding')]
         private RateLimiterFactoryInterface $geocodingLimiter,
+        private LocaleSwitcher $localeSwitcher,
     ) {
     }
 
@@ -39,6 +41,6 @@ readonly class CitySearchProvider implements ProviderInterface
         $limit = $parameters?->get('limit')?->getValue();
         $limit = $limit instanceof ParameterNotFound ? self::DEFAULT_LIMIT : (int) $limit;
 
-        return CityLookup::of($this->geocoder->searchCities($query, $limit));
+        return CityLookup::of($this->geocoder->searchCities($query, $limit, $this->localeSwitcher->getLocale()));
     }
 }

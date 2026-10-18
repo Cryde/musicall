@@ -11,6 +11,7 @@ use App\Service\Geocoding\PhotonGeocoder;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * « Use my location »: the town at the visitor's position, as a list of zero or one.
@@ -24,6 +25,7 @@ readonly class CityReverseProvider implements ProviderInterface
         private RequestStack $requestStack,
         #[Target('geocoding')]
         private RateLimiterFactoryInterface $geocodingLimiter,
+        private LocaleSwitcher $localeSwitcher,
     ) {
     }
 
@@ -36,6 +38,7 @@ readonly class CityReverseProvider implements ProviderInterface
         $city = $this->geocoder->reverse(
             (float) $parameters?->get('latitude')?->getValue(),
             (float) $parameters?->get('longitude')?->getValue(),
+            $this->localeSwitcher->getLocale(),
         );
 
         return CityLookup::of($city !== null ? [$city] : []);

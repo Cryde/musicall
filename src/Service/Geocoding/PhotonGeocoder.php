@@ -27,6 +27,8 @@ readonly class PhotonGeocoder
     private const int FETCH_LIMIT = 10;
     // Three decimals is about 100 m: close enough to name the same town, coarse enough to share a cache entry.
     private const int REVERSE_PRECISION = 3;
+    // The only languages Photon names places in: it answers anything else with a 400.
+    private const array PHOTON_LANGUAGES = ['fr', 'en', 'de'];
 
     public function __construct(
         #[Target('photon.client')]
@@ -42,14 +44,15 @@ readonly class PhotonGeocoder
      *
      * @return list<City>
      */
-    public function searchCities(string $query, int $limit): array
+    public function searchCities(string $query, int $limit, string $locale): array
     {
         $normalized = mb_strtolower(trim($query));
-        $key = 'city_search_' . hash('sha256', $normalized);
+        $language = $this->photonLanguage($locale);
+        $key = 'city_search_' . $language . '_' . hash('sha256', $normalized);
 
         try {
-            $cities = $this->cache->get($key, function (ItemInterface $item) use ($normalized): array {
-                $cities = $this->fetchCities($normalized, self::FETCH_LIMIT);
+            $cities = $this->cache->get($key, function (ItemInterface $item) use ($normalized, $language): array {
+                $cities = $this->fetchCities($normalized, self::FETCH_LIMIT, $language);
                 $item->expiresAfter($cities === [] ? self::EMPTY_CACHE_TTL : self::CACHE_TTL);
 
                 return $cities;
@@ -64,17 +67,18 @@ readonly class PhotonGeocoder
     }
 
     /** The town at a point, or null when Photon has none there or cannot be reached. */
-    public function reverse(float $latitude, float $longitude): ?City
+    public function reverse(float $latitude, float $longitude, string $locale): ?City
     {
         $latitude = round($latitude, self::REVERSE_PRECISION);
         $longitude = round($longitude, self::REVERSE_PRECISION);
-        $key = 'city_reverse_' . hash('sha256', $latitude . '|' . $longitude);
+        $language = $this->photonLanguage($locale);
+        $key = 'city_reverse_' . $language . '_' . hash('sha256', $latitude . '|' . $longitude);
 
         try {
-            return $this->cache->get($key, function (ItemInterface $item) use ($latitude, $longitude): ?City {
+            return $this->cache->get($key, function (ItemInterface $item) use ($latitude, $longitude, $language): ?City {
                 $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->fetchReverse($latitude, $longitude);
+                return $this->fetchReverse($latitude, $longitude, $language);
             });
         } catch (ExceptionInterface $exception) {
             $this->logger->warning('Photon reverse geocoding failed', ['exception' => $exception]);
@@ -84,11 +88,11 @@ readonly class PhotonGeocoder
     }
 
     /** @return list<City> */
-    private function fetchCities(string $query, int $limit): array
+    private function fetchCities(string $query, int $limit, string $language): array
     {
         // Photon wants osm_tag repeated, which an array in `query` would send as osm_tag[0].
         $tags = implode('&', array_map(static fn (string $tag): string => 'osm_tag=' . urlencode($tag), self::CITY_TAGS));
-        $url = 'api/?' . http_build_query(['q' => $query, 'limit' => $limit, 'lang' => 'fr']) . '&' . $tags;
+        $url = 'api/?' . http_build_query(['q' => $query, 'limit' => $limit, 'lang' => $language]) . '&' . $tags;
 
         $cities = [];
         foreach ($this->photonClient->request('GET', $url)->toArray()['features'] ?? [] as $feature) {
@@ -104,10 +108,10 @@ readonly class PhotonGeocoder
         return $cities;
     }
 
-    private function fetchReverse(float $latitude, float $longitude): ?City
+    private function fetchReverse(float $latitude, float $longitude, string $language): ?City
     {
         // No osm_tag here: Photon returns the nearest feature of any kind, and its `city` names the town.
-        $url = 'reverse?' . http_build_query(['lat' => $latitude, 'lon' => $longitude, 'lang' => 'fr']);
+        $url = 'reverse?' . http_build_query(['lat' => $latitude, 'lon' => $longitude, 'lang' => $language]);
         $properties = $this->photonClient->request('GET', $url)->toArray()['features'][0]['properties'] ?? null;
         if (!is_array($properties)) {
             return null;
@@ -121,6 +125,11 @@ readonly class PhotonGeocoder
         $context = array_values(array_filter($this->contextOf($properties), static fn (string $part): bool => $part !== $name));
 
         return $this->city($name, $context, $latitude, $longitude);
+    }
+
+    private function photonLanguage(string $locale): string
+    {
+        return in_array($locale, self::PHOTON_LANGUAGES, true) ? $locale : 'fr';
     }
 
     /**
