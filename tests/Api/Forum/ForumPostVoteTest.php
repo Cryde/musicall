@@ -115,6 +115,26 @@ class ForumPostVoteTest extends ApiTestCase
         ]);
     }
 
+    public function test_vote_on_an_id_that_is_not_a_uuid(): void
+    {
+        // A guid column converts nothing, so a malformed id is not found rather than a 500.
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/forums/posts/not-a-uuid/vote', ['user_vote' => 1], self::SERVER_PARAMS);
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Message de forum inexistant',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Message de forum inexistant',
+        ]);
+    }
+
     public function test_vote_on_nonexistent_post(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
