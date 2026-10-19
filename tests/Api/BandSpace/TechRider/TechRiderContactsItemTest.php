@@ -106,6 +106,46 @@ class TechRiderContactsItemTest extends ApiTestCase
         ]);
     }
 
+    /** « Basse » sorts before « Chœurs », but Backing vocals sorts before Bass. */
+    public function test_the_instruments_are_named_and_ordered_in_the_request_locale(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+        $this->seedBand($bandSpace, $user);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', $this->itemUrl($bandSpace, $rider, $item), [], [], self::HEADERS + ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TechRiderItem',
+            '@id' => $this->itemUrl($bandSpace, $rider, $item),
+            '@type' => 'TechRiderItem',
+            'id' => (string) $item->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'rider_id' => (string) $rider->id,
+            'type' => 'contacts',
+            'is_included' => true,
+            'is_empty' => false,
+            'title' => 'Membres et contacts',
+            'content' => null,
+            'file' => null,
+            'patch_list' => null,
+            'contacts' => [
+                'show_emails' => false,
+                'lines' => [
+                    'Geoffrey /// Vocals',
+                    'Kenny /// Backing vocals, Bass',
+                    'Roadie',
+                    'jeremy_login /// Drums',
+                ],
+                'emails' => [],
+            ],
+            'position' => 0,
+            'creation_datetime' => $item->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $item->updateDatetime?->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
     /** The whole point of rendering live rather than storing a copy. */
     public function test_a_member_who_left_is_absent(): void
     {

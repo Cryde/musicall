@@ -51,6 +51,93 @@ class InstrumentGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_get_instruments_in_french_keeps_the_database_order(): void
+    {
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $vocals = InstrumentFactory::new()->asVocals()->create();
+        $drum = InstrumentFactory::new()->asDrum()->create();
+
+        $this->client->request('GET', '/api/instruments');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Instrument',
+            '@id' => '/api/instruments',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/instruments/' . $drum->id,
+                    '@type' => 'Instrument',
+                    'id' => $drum->id,
+                    'name' => 'Batterie',
+                    'musician_name' => 'Batteur',
+                    'slug' => 'batterie',
+                ],
+                [
+                    '@id' => '/api/instruments/' . $vocals->id,
+                    '@type' => 'Instrument',
+                    'id' => $vocals->id,
+                    'name' => 'Chant',
+                    'musician_name' => 'Chanteur / Chanteuse',
+                    'slug' => 'chant',
+                ],
+                [
+                    '@id' => '/api/instruments/' . $guitar->id,
+                    '@type' => 'Instrument',
+                    'id' => $guitar->id,
+                    'name' => 'Guitare',
+                    'musician_name' => 'Guitariste',
+                    'slug' => 'guitare',
+                ],
+            ],
+            'totalItems' => 3,
+        ]);
+    }
+
+    /** « Chanteur » sorts before « Guitariste », but Singer sorts after Guitarist. */
+    public function test_get_instruments_in_english_sorted_by_the_english_musician_name(): void
+    {
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $vocals = InstrumentFactory::new()->asVocals()->create();
+        $drum = InstrumentFactory::new()->asDrum()->create();
+
+        $this->client->request('GET', '/api/instruments', server: ['HTTP_ACCEPT_LANGUAGE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Instrument',
+            '@id' => '/api/instruments',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/instruments/' . $drum->id,
+                    '@type' => 'Instrument',
+                    'id' => $drum->id,
+                    'name' => 'Drums',
+                    'musician_name' => 'Drummer',
+                    'slug' => 'batterie',
+                ],
+                [
+                    '@id' => '/api/instruments/' . $guitar->id,
+                    '@type' => 'Instrument',
+                    'id' => $guitar->id,
+                    'name' => 'Guitar',
+                    'musician_name' => 'Guitarist',
+                    'slug' => 'guitare',
+                ],
+                [
+                    '@id' => '/api/instruments/' . $vocals->id,
+                    '@type' => 'Instrument',
+                    'id' => $vocals->id,
+                    'name' => 'Vocals',
+                    'musician_name' => 'Singer',
+                    'slug' => 'chant',
+                ],
+            ],
+            'totalItems' => 3,
+        ]);
+    }
+
     public function test_get_instrument(): void
     {
         $guitar = InstrumentFactory::new()->asGuitar()->create();

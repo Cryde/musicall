@@ -3,16 +3,15 @@
 namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\BandSpaceMember;
-use App\Entity\Attribute\Instrument;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
-use App\Translation\ReferenceNameTranslator;
+use App\Translation\ReferenceNameSorter;
 
 readonly class BandSpaceMemberBuilder
 {
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
-        private ReferenceNameTranslator $referenceNames,
+        private ReferenceNameSorter $referenceNameSorter,
     ) {
     }
 
@@ -28,13 +27,7 @@ readonly class BandSpaceMemberBuilder
         $dto->showEmailOnRiders = $membership->showEmailOnRiders;
         // The name a document should use, resolved here so no caller has to repeat the fallback.
         $dto->displayName = $membership->displayName();
-        $dto->instruments = array_map(
-            fn (Instrument $instrument): array => [
-                'id' => (string) $instrument->id,
-                'name' => $this->referenceNames->instrument($instrument),
-            ],
-            array_values($membership->instruments->toArray()),
-        );
+        $dto->instruments = $this->referenceNameSorter->instrumentNames($membership->instruments);
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($membership->user);
         $dto->creationDatetime = $membership->creationDatetime;
         $dto->status = $membership->status->value;

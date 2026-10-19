@@ -5,7 +5,7 @@ namespace App\Service\BandSpace\TechRider;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
-use App\Translation\ReferenceNameTranslator;
+use App\Translation\ReferenceNameSorter;
 
 /**
  * Turns a band's current membership into the lines a contacts item prints.
@@ -27,7 +27,7 @@ readonly class TechRiderContactsRenderer
 
     public function __construct(
         private BandSpaceMembershipRepository $membershipRepository,
-        private ReferenceNameTranslator $referenceNames,
+        private ReferenceNameSorter $referenceNameSorter,
     ) {
     }
 
@@ -60,10 +60,7 @@ readonly class TechRiderContactsRenderer
      */
     private function line(BandSpaceMembership $membership): string
     {
-        $instruments = implode(self::INSTRUMENT_SEPARATOR, array_map(
-            $this->referenceNames->instrument(...),
-            array_values($membership->instruments->toArray()),
-        ));
+        $instruments = implode(self::INSTRUMENT_SEPARATOR, array_column($this->referenceNameSorter->instrumentNames($membership->instruments), 'name'));
 
         return $instruments === ''
             ? $membership->displayName()

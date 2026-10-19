@@ -73,6 +73,47 @@ class BandSpaceMemberProfileTest extends ApiTestCase
         ]);
     }
 
+    /** « Chant » sorts before « Guitare », but Vocals sorts after Guitar. */
+    public function test_the_instruments_are_ordered_by_their_name_in_the_request_locale(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'jeremy_login']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $vocals = InstrumentFactory::new()->asVocals()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            $this->profileUrl($bandSpace->id, $membership->id),
+            ['stage_name' => 'Jérémy', 'instrument_ids' => [(string) $guitar->id, (string) $vocals->id]],
+            self::HEADERS + ['HTTP_X_LOCALE' => 'en'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceMember',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $membership->id,
+            '@type' => 'BandSpaceMember',
+            'id' => (string) $membership->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'user_id' => $user->id,
+            'username' => 'jeremy_login',
+            'role' => 'user',
+            'stage_name' => 'Jérémy',
+            'show_email_on_riders' => false,
+            'display_name' => 'Jérémy',
+            'instruments' => [
+                ['id' => (string) $guitar->id, 'name' => 'Guitar'],
+                ['id' => (string) $vocals->id, 'name' => 'Vocals'],
+            ],
+            'profile_picture_url' => null,
+            'creation_datetime' => $membership->creationDatetime->format(\DateTimeInterface::ATOM),
+            'status' => 'active',
+            'left_datetime' => null,
+        ]);
+    }
+
     /** Nothing chosen means the login name, which is the only other name we hold. */
     public function test_display_name_falls_back_to_the_username(): void
     {
