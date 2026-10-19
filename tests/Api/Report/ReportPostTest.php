@@ -32,6 +32,7 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Report\ReportFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Validator\Constraints\Choice;
@@ -258,11 +259,34 @@ class ReportPostTest extends ApiTestCase
         $this->assertJsonEquals(self::NOT_FOUND);
     }
 
-    public function test_a_malformed_id_is_not_found_rather_than_a_server_error(): void
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function uuidTargetTypes(): iterable
+    {
+        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post'] as $type) {
+            yield $type => [$type];
+        }
+    }
+
+    #[DataProvider('uuidTargetTypes')]
+    public function test_a_malformed_id_is_not_found_rather_than_a_server_error(string $targetType): void
     {
         $reporter = $this->reporter();
 
-        $this->report($reporter, 'forum_post', 'not-a-uuid', 'spam');
+        $this->report($reporter, $targetType, 'not-a-uuid', 'spam');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals(self::NOT_FOUND);
+    }
+
+    public function test_a_lookalike_spelling_of_an_id_is_not_found(): void
+    {
+        // A full width 7 for the version digit: the column's collation matches it to the real post.
+        $reporter = $this->reporter();
+        $post = ForumPostFactory::new()->create();
+
+        $this->report($reporter, 'forum_post', substr_replace((string) $post->id, '７', 14, 1), 'spam');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals(self::NOT_FOUND);

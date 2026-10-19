@@ -9,7 +9,6 @@ use App\Enum\Report\ReportTargetType;
 use App\Repository\Musician\MusicianProfileMediaRepository;
 use App\Repository\Teacher\TeacherProfileMediaRepository;
 use App\Service\Report\ReportTarget;
-use Ramsey\Uuid\Uuid;
 
 /** A media on a musician or a teacher profile; both are public and their ids never collide. */
 readonly class ProfileMediaTargetLoader implements ReportTargetLoaderInterface
@@ -32,10 +31,6 @@ readonly class ProfileMediaTargetLoader implements ReportTargetLoaderInterface
 
     public function current(string $id): ?ReportTarget
     {
-        if (!Uuid::isValid($id)) {
-            return null;
-        }
-
         $media = $this->musicianMediaRepository->find($id) ?? $this->teacherMediaRepository->find($id);
         [$owner, $profile] = match (true) {
             $media instanceof MusicianProfileMedia => [$media->musicianProfile->user, 'musician'],

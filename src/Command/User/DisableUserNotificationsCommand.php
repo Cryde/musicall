@@ -6,7 +6,6 @@ namespace App\Command\User;
 
 use App\Entity\User\UserNotificationPreference;
 use App\Repository\UserRepository;
-use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

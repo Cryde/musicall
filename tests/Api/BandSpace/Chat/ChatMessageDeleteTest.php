@@ -378,8 +378,8 @@ class ChatMessageDeleteTest extends ApiTestCase
 
     public function test_a_malformed_message_id_is_a_404_rather_than_a_500(): void
     {
-        // The id reaches the repository as a path segment. It is bound as a plain string there rather
-        // than through the uuid type, so a value that is not a uuid at all is an ordinary miss.
+        // The id reaches the repository as a path segment, and a value that is not a uuid at all is an
+        // ordinary miss.
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();

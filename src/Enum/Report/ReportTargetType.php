@@ -2,6 +2,8 @@
 
 namespace App\Enum\Report;
 
+use Symfony\Component\Uid\Uuid;
+
 /** What a report can point at (#1116). */
 enum ReportTargetType: string
 {
@@ -20,13 +22,26 @@ enum ReportTargetType: string
      */
     public function canonicalId(string $id): string
     {
-        $isInteger = $this === self::Comment || $this === self::Publication;
-        if (!$isInteger) {
+        if (!$this->hasIntegerId()) {
             return mb_strtolower($id);
         }
 
         // Past 18 digits it is no id of ours, and an int cast would saturate onto a real one.
         return ctype_digit($id) && strlen(ltrim($id, '0')) <= 18 ? (string) (int) $id : $id;
+    }
+
+    /**
+     * A uuid has to be spelled exactly: the column's collation also matches a lookalike (a full width
+     * digit, an accent), and the report would then keep a second spelling of the target.
+     */
+    public function acceptsId(string $id): bool
+    {
+        return $this->hasIntegerId() || Uuid::isValid($id);
+    }
+
+    private function hasIntegerId(): bool
+    {
+        return $this === self::Comment || $this === self::Publication;
     }
 
     /**

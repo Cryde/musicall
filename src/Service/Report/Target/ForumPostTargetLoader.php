@@ -8,7 +8,6 @@ use App\Entity\User;
 use App\Enum\Report\ReportTargetType;
 use App\Repository\Forum\ForumPostRepository;
 use App\Service\Report\ReportTarget;
-use Ramsey\Uuid\Uuid;
 
 /** The forum is public, so any existing post can be reported. Replaces #903. */
 readonly class ForumPostTargetLoader implements ReportTargetLoaderInterface
@@ -29,7 +28,7 @@ readonly class ForumPostTargetLoader implements ReportTargetLoaderInterface
 
     public function current(string $id): ?ReportTarget
     {
-        $post = Uuid::isValid($id) ? $this->postRepository->find($id) : null;
+        $post = $this->postRepository->find($id);
         if (!$post instanceof ForumPost) {
             return null;
         }

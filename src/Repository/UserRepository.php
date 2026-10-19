@@ -9,7 +9,6 @@ use App\Enum\BandSpace\MembershipStatus;
 use App\Repository\User\Relation\UserBlockRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Ramsey\Uuid\Uuid;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
@@ -125,21 +124,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getResult();
     }
 
-    /**
-     * The id arrives as a URI path segment that nothing has validated, so a malformed one is not
-     * found here rather than sent to the database (see #934).
-     */
     public function findOneById(string $id): ?User
     {
-        if (!Uuid::isValid($id)) {
-            return null;
-        }
-
-        return $this->createQueryBuilder('u')
-            ->where('u.id = :id')
-            ->setParameter('id', $id)
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $this->find($id);
     }
 
     /**

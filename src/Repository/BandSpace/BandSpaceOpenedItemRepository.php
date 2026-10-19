@@ -8,7 +8,7 @@ use App\Enum\BandSpace\BandSpaceSearchResultType;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<BandSpaceOpenedItem>
@@ -32,7 +32,7 @@ class BandSpaceOpenedItemRepository extends ServiceEntityRepository
             . ' VALUES (:id, :membership, :type, :resourceId, :openedAt)'
             . ' ON DUPLICATE KEY UPDATE opened_datetime = VALUES(opened_datetime)',
             [
-                'id' => Uuid::uuid4()->toString(),
+                'id' => Uuid::v7()->toRfc4122(),
                 'membership' => (string) $membership->id,
                 'type' => $type->value,
                 'resourceId' => $resourceId,
@@ -69,7 +69,7 @@ class BandSpaceOpenedItemRepository extends ServiceEntityRepository
 
     /**
      * The member's own history, newest first, the same order pruneBeyond keeps. The date is to the
-     * second, so two opens in the same second order by a random id: arbitrary, and harmless.
+     * second, so two opens in the same second order by id: arbitrary, and harmless.
      *
      * @param BandSpaceSearchResultType[] $types
      *

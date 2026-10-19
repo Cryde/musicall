@@ -12,7 +12,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<MusicianSearchLog>
@@ -32,7 +32,7 @@ class MusicianSearchLogRepository extends ServiceEntityRepository
     public function insert(MusicianSearchLog $log): void
     {
         $this->getEntityManager()->getConnection()->insert('musician_search_log', [
-            'id' => $log->id ?? Uuid::uuid4()->toString(),
+            'id' => $log->id ?? Uuid::v7()->toRfc4122(),
             'kind' => $log->kind->value,
             'type' => $log->type,
             'instrument_id' => $log->instrument?->id !== null ? (string) $log->instrument->id : null,

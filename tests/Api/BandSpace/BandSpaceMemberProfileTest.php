@@ -500,7 +500,7 @@ class BandSpaceMemberProfileTest extends ApiTestCase
         ]);
     }
 
-    /** An id the catalogue does not know is a 422 naming it, never a 500 from the uuid column. */
+    /** An id the catalogue does not know is a 422 naming it. */
     public function test_an_unknown_instrument_id_is_refused_without_a_server_error(): void
     {
         [$user, $bandSpace, $membership] = $this->seedSelf();
