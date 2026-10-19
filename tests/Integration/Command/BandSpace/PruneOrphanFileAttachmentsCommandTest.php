@@ -15,10 +15,10 @@ use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -45,8 +45,8 @@ class PruneOrphanFileAttachmentsCommandTest extends KernelTestCase
         $liveTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $liveNote = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace])->create();
 
-        $orphanTaskAttachmentId = $this->attach($bandSpace, $user, 'task', (string) Uuid::uuid4());
-        $orphanNoteAttachmentId = $this->attach($bandSpace, $user, 'note', (string) Uuid::uuid4());
+        $orphanTaskAttachmentId = $this->attach($bandSpace, $user, 'task', Uuid::v7()->toRfc4122());
+        $orphanNoteAttachmentId = $this->attach($bandSpace, $user, 'note', Uuid::v7()->toRfc4122());
         $liveTaskAttachmentId = $this->attach($bandSpace, $user, 'task', (string) $liveTask->id);
         $liveNoteAttachmentId = $this->attach($bandSpace, $user, 'note', (string) $liveNote->id);
 
@@ -104,7 +104,7 @@ class PruneOrphanFileAttachmentsCommandTest extends KernelTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        $orphanId = $this->attach($bandSpace, $user, 'finance', (string) Uuid::uuid4());
+        $orphanId = $this->attach($bandSpace, $user, 'finance', Uuid::v7()->toRfc4122());
 
         $this->commandTester->execute(['--dry-run' => true]);
         $this->commandTester->assertCommandIsSuccessful();
@@ -130,7 +130,7 @@ class PruneOrphanFileAttachmentsCommandTest extends KernelTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $user,
         ]);
         $fileId = (string) $file->id;
@@ -151,7 +151,7 @@ class PruneOrphanFileAttachmentsCommandTest extends KernelTestCase
         return (string) BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => $sourceType,
-            'sourceId' => Uuid::fromString($sourceId),
+            'sourceId' => (string) $sourceId,
             'attachedBy' => $user,
         ])->id;
     }

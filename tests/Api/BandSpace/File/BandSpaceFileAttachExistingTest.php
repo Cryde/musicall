@@ -56,6 +56,56 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         $this->assertNotNull($attachment);
     }
 
+    public function test_attach_existing_with_an_upper_case_task_id(): void
+    {
+        // Stored lower case, or the file card would not find the task title it is keyed by.
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Réparer l\'ampli'])->create();
+        $file = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'schema-ampli.pdf',
+            'creationDatetime' => new \DateTime('2026-09-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'task', 'sourceId' => strtoupper((string) $task->id)],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $reloaded = self::getContainer()->get(BandSpaceFileRepository::class)->find($file->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => 'schema-ampli.pdf',
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [
+                ['source_type' => 'task', 'source_id' => $task->id, 'source_label' => 'Réparer l\'ampli'],
+            ],
+            'version_count' => 0,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'batteur',
+                'display_name' => 'batteur',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => '2026-09-01T10:00:00+00:00',
+            'update_datetime' => $reloaded?->updateDatetime?->format('c'),
+        ]);
+    }
+
     public function test_attach_existing_already_attached_returns_422(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
@@ -67,7 +117,7 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => \Ramsey\Uuid\Uuid::fromString($task->id),
+            'sourceId' => (string) $task->id,
             'attachedBy' => $user,
         ]);
 

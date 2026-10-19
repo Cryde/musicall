@@ -10,6 +10,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
+use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -105,6 +106,56 @@ class BandSpaceFileUploadTest extends ApiTestCase
         $this->assertNotNull($file->folder);
         $this->assertSame($folder->id, $file->folder->id);
         $this->assertCount(2, $file->tags);
+    }
+
+    public function test_upload_attached_to_an_upper_case_task_id(): void
+    {
+        // Stored lower case, or the file card would not find the task title it is keyed by.
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Réparer l\'ampli'])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            ['attachedSourceType' => 'task', 'attachedSourceId' => strtoupper((string) $task->id)],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $file = self::getContainer()->get(BandSpaceFileRepository::class)->findOneBy(['bandSpace' => $bandSpace]);
+        $this->assertInstanceOf(BandSpaceFile::class, $file);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => 'sample.txt',
+            'size' => 30,
+            'mime_type' => 'text/plain',
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [
+                ['source_type' => 'task', 'source_id' => $task->id, 'source_label' => 'Réparer l\'ampli'],
+            ],
+            'current_version_id' => $file->currentVersion?->id,
+            'current_version_number' => 1,
+            'version_count' => 1,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'batteur',
+                'display_name' => 'batteur',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => $file->creationDatetime->format('c'),
+        ]);
     }
 
     public function test_upload_disallowed_mime_returns_415(): void

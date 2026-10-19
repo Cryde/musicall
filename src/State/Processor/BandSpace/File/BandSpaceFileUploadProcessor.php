@@ -26,7 +26,6 @@ use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -117,7 +116,8 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
             if (count($violations) > 0) {
                 throw new BadRequestHttpException('band_space.file.attached_source_id_invalid');
             }
-            $attachedSourceId = $rawSourceId;
+            // Stored lower case, as every generated id is: the file card matches it with ===.
+            $attachedSourceId = mb_strtolower($rawSourceId);
         }
 
         $tags = [];
@@ -149,7 +149,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
             $attachment = new BandSpaceFileAttachment();
             $attachment->bandSpaceFile = $file;
             $attachment->sourceType = $attachedSourceType;
-            $attachment->sourceId = Uuid::fromString($attachedSourceId);
+            $attachment->sourceId = $attachedSourceId;
             $attachment->attachedBy = $user;
             $this->entityManager->persist($attachment);
         }

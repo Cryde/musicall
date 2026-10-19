@@ -285,7 +285,7 @@ class SongUpdateTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Setlist,
             'type' => 'song_updated',
-            'resourceId' => \Ramsey\Uuid\Uuid::fromString($songId),
+            'resourceId' => (string) $songId,
             'actor' => $user,
             'creationDatetime' => new \DateTime('-2 minutes'),
         ])->create();

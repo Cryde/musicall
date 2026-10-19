@@ -10,8 +10,8 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -174,27 +174,27 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
 
         $task1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $task1, 'sourceType' => 'task', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $task1, 'sourceType' => 'task', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         $task2 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $task2, 'sourceType' => 'task', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $task2, 'sourceType' => 'task', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         $finance1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $finance1, 'sourceType' => 'finance', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $finance1, 'sourceType' => 'finance', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         $song1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $song1, 'sourceType' => 'song', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $song1, 'sourceType' => 'song', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         $setlist1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $setlist1, 'sourceType' => 'setlist', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $setlist1, 'sourceType' => 'setlist', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         $setlist2 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $setlist2, 'sourceType' => 'setlist', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $setlist2, 'sourceType' => 'setlist', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         // Archived attached file — must not count
         $archived = BandSpaceFileFactory::new([
@@ -203,7 +203,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable(),
         ])->create();
         BandSpaceFileAttachmentFactory::createOne([
-            'bandSpaceFile' => $archived, 'sourceType' => 'task', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+            'bandSpaceFile' => $archived, 'sourceType' => 'task', 'sourceId' => Uuid::v7()->toRfc4122(), 'attachedBy' => $user,
         ]);
         // Manual file — must not appear in any virtual folder
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
@@ -269,7 +269,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attached,
             'sourceType' => 'note',
-            'sourceId' => Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $user,
         ]);
 

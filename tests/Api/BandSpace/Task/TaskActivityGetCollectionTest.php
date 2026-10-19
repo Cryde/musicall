@@ -9,7 +9,6 @@ use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
-use Ramsey\Uuid\Uuid;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -30,7 +29,7 @@ class TaskActivityGetCollectionTest extends ApiTestCase
         BandSpaceActivityFactory::new([
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Task,
-            'resourceId' => Uuid::fromString((string) $task->id),
+            'resourceId' => (string) $task->id,
             'actor' => $user,
             'type' => 'status_changed',
             'payload' => ['from' => 'todo', 'to' => 'in_progress'],

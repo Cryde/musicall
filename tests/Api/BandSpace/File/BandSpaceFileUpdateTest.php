@@ -14,8 +14,8 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -221,7 +221,7 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
-            ['tagIds' => [Uuid::uuid4()->toString()]],
+            ['tagIds' => [Uuid::v7()->toRfc4122()]],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -250,7 +250,7 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
-            ['attachedSourceType' => 'task', 'attachedSourceId' => Uuid::uuid4()->toString()],
+            ['attachedSourceType' => 'task', 'attachedSourceId' => Uuid::v7()->toRfc4122()],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 

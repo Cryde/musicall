@@ -10,7 +10,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -36,7 +35,7 @@ class BandSpaceSongFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attachedFile,
             'sourceType' => 'song',
-            'sourceId' => Uuid::fromString((string) $song->id),
+            'sourceId' => (string) $song->id,
             'attachedBy' => $user,
         ]);
 
@@ -49,7 +48,7 @@ class BandSpaceSongFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $otherFile,
             'sourceType' => 'song',
-            'sourceId' => Uuid::fromString((string) $otherSong->id),
+            'sourceId' => (string) $otherSong->id,
             'attachedBy' => $user,
         ]);
 
@@ -70,7 +69,7 @@ class BandSpaceSongFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $archivedFile,
             'sourceType' => 'song',
-            'sourceId' => Uuid::fromString((string) $song->id),
+            'sourceId' => (string) $song->id,
             'attachedBy' => $user,
         ]);
 

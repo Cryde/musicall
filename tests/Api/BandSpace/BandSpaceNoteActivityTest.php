@@ -17,7 +17,6 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\BandSpaceNoteFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTime;
-use Ramsey\Uuid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -188,7 +187,7 @@ class BandSpaceNoteActivityTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Notes,
             'type' => 'note_content_updated',
-            'resourceId' => Uuid::fromString((string) $note->id),
+            'resourceId' => (string) $note->id,
             'actor' => $actor,
             'creationDatetime' => $when,
         ])->create();

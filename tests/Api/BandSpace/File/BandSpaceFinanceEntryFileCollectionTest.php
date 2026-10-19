@@ -12,7 +12,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -40,7 +39,7 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attachedFile,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $user,
         ]);
         $otherFile = BandSpaceFileFactory::new([
@@ -51,7 +50,7 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $otherFile,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($otherEntry->id),
+            'sourceId' => (string) $otherEntry->id,
             'attachedBy' => $user,
         ]);
 

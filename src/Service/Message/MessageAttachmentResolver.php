@@ -180,8 +180,8 @@ readonly class MessageAttachmentResolver
 
     /**
      * `<type>-<uuid>`, split on the first hyphen because a uuid is full of them and no type value has
-     * one. The uuid is checked here rather than left to the query: handing a malformed one to a uuid
-     * column throws out of Doctrine's type conversion, which would answer a typo with a 500.
+     * one. The uuid is checked here rather than left to the query, because nothing else checks the
+     * shape of a target id before it is stored.
      *
      * @return array{BandSpaceSearchResultType, string}|null
      */

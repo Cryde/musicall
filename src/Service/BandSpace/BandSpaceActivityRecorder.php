@@ -10,8 +10,6 @@ use App\Repository\BandSpace\BandSpaceActivityRepository;
 use BackedEnum;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 
 readonly class BandSpaceActivityRecorder
 {
@@ -42,14 +40,14 @@ readonly class BandSpaceActivityRecorder
         BandSpace $bandSpace,
         BandSpaceModule $module,
         BackedEnum|string $type,
-        UuidInterface|string|null $resourceId = null,
+        ?string $resourceId = null,
         ?User $actor = null,
         ?array $payload = null,
     ): BandSpaceActivity {
         $activity = new BandSpaceActivity();
         $activity->bandSpace = $bandSpace;
         $activity->module = $module;
-        $activity->resourceId = is_string($resourceId) ? Uuid::fromString($resourceId) : $resourceId;
+        $activity->resourceId = $resourceId;
         $activity->actor = $actor;
         $activity->type = $type instanceof BackedEnum ? (string) $type->value : $type;
         $activity->payload = $payload;
@@ -81,7 +79,7 @@ readonly class BandSpaceActivityRecorder
         BandSpace $bandSpace,
         BandSpaceModule $module,
         BackedEnum|string $type,
-        UuidInterface|string $resourceId,
+        string $resourceId,
         User $actor,
         ?array $payload = null,
     ): ?BandSpaceActivity {

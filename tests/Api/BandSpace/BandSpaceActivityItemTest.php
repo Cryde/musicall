@@ -198,9 +198,6 @@ class BandSpaceActivityItemTest extends ApiTestCase
         ]);
     }
 
-    /**
-     * A non-uuid id must not reach the uuid column, where it would raise ValueNotConvertible and 500.
-     */
     public function test_a_malformed_activity_id_is_not_found(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

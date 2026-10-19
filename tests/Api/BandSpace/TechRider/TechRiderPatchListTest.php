@@ -23,7 +23,6 @@ use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\TechRider\TechRiderPatchRows;
 use DateTime;
 use DateTimeImmutable;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -799,7 +798,7 @@ class TechRiderPatchListTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Rider,
             'type' => 'rider_patch_list_updated',
-            'resourceId' => Uuid::fromString((string) $item->id),
+            'resourceId' => (string) $item->id,
             'actor' => $actor,
             'creationDatetime' => $when,
         ])->create();

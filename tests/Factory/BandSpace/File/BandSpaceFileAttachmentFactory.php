@@ -4,7 +4,7 @@ namespace App\Tests\Factory\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -17,7 +17,7 @@ final class BandSpaceFileAttachmentFactory extends PersistentObjectFactory
         return [
             'bandSpaceFile' => BandSpaceFileFactory::new(),
             'sourceType' => 'task',
-            'sourceId' => Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => UserFactory::new(),
             'attachedDatetime' => self::faker()->dateTime(),
         ];

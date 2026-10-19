@@ -18,6 +18,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileShareFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -196,7 +197,7 @@ class BandSpaceFileDeleteTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $user,
         ]);
 
@@ -237,7 +238,7 @@ class BandSpaceFileDeleteTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $user,
         ]);
 

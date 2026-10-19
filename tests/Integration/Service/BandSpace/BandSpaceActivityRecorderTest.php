@@ -19,9 +19,8 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -38,7 +37,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        $resourceId = Uuid::uuid4();
+        $resourceId = Uuid::v7()->toRfc4122();
 
         $activity = $this->getRecorder()->record(
             bandSpace: $bandSpace,
@@ -57,24 +56,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
         $this->assertSame($user->id, $activity->actor?->id);
         $this->assertSame('uploaded', $activity->type);
         $this->assertSame(['original_name' => 'master.wav'], $activity->payload);
-        $this->assertTrue($activity->resourceId?->equals($resourceId));
-    }
-
-    public function test_record_accepts_string_resource_id_and_normalises_to_uuid(): void
-    {
-        $bandSpace = BandSpaceFactory::new()->create();
-        $resourceIdString = Uuid::uuid4()->toString();
-
-        $activity = $this->getRecorder()->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Task,
-            type: 'status_changed',
-            resourceId: $resourceIdString,
-        );
-
-        $this->getEntityManager()->flush();
-
-        $this->assertSame($resourceIdString, $activity->resourceId?->toString());
+        $this->assertSame($resourceId, $activity->resourceId);
     }
 
     public function test_record_supports_anonymous_actor(): void
@@ -85,7 +67,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
             bandSpace: $bandSpace,
             module: BandSpaceModule::File,
             type: 'public_accessed',
-            resourceId: Uuid::uuid4(),
+            resourceId: Uuid::v7()->toRfc4122(),
         );
 
         $this->getEntityManager()->flush();
@@ -114,8 +96,8 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
     public function test_find_for_resource_returns_only_matching_activities_newest_first(): void
     {
         $bandSpace = BandSpaceFactory::new()->create();
-        $fileId = Uuid::uuid4();
-        $otherFileId = Uuid::uuid4();
+        $fileId = Uuid::v7()->toRfc4122();
+        $otherFileId = Uuid::v7()->toRfc4122();
 
         $this->getRecorder()->record(
             bandSpace: $bandSpace,
@@ -175,7 +157,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
             bandSpace: $bandSpace,
             module: BandSpaceModule::Notes,
             type: 'note_content_updated',
-            resourceId: Uuid::uuid4(),
+            resourceId: Uuid::v7()->toRfc4122(),
             actor: $user,
         );
         $this->getEntityManager()->flush();
@@ -188,7 +170,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        $resourceId = Uuid::uuid4();
+        $resourceId = Uuid::v7()->toRfc4122();
         $this->seedActivity($bandSpace, $resourceId, $user, new DateTime('-2 minutes'));
 
         $activity = $this->getRecorder()->recordCoalesced(
@@ -226,7 +208,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        $resourceId = Uuid::uuid4();
+        $resourceId = Uuid::v7()->toRfc4122();
         $this->seedActivity($bandSpace, $resourceId, $user, new DateTime('-2 minutes'));
 
         $this->getRecorder()->recordCoalesced(
@@ -249,7 +231,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        $resourceId = Uuid::uuid4();
+        $resourceId = Uuid::v7()->toRfc4122();
         $this->seedActivity($bandSpace, $resourceId, $user, new DateTime('-16 minutes'));
 
         $activity = $this->getRecorder()->recordCoalesced(
@@ -271,7 +253,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $other = UserFactory::new()->create(['username' => 'second_member', 'email' => 'second@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        $resourceId = Uuid::uuid4();
+        $resourceId = Uuid::v7()->toRfc4122();
         $this->seedActivity($bandSpace, $resourceId, $other, new DateTime('-2 minutes'));
 
         $activity = $this->getRecorder()->recordCoalesced(
@@ -291,7 +273,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        $resourceId = Uuid::uuid4();
+        $resourceId = Uuid::v7()->toRfc4122();
         $this->seedActivity($bandSpace, $resourceId, $user, new DateTime('-2 minutes'));
 
         $activity = $this->getRecorder()->recordCoalesced(
@@ -310,13 +292,13 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        $this->seedActivity($bandSpace, Uuid::uuid4(), $user, new DateTime('-2 minutes'));
+        $this->seedActivity($bandSpace, Uuid::v7()->toRfc4122(), $user, new DateTime('-2 minutes'));
 
         $activity = $this->getRecorder()->recordCoalesced(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Notes,
             type: 'note_content_updated',
-            resourceId: Uuid::uuid4(),
+            resourceId: Uuid::v7()->toRfc4122(),
             actor: $user,
         );
         $this->getEntityManager()->flush();
@@ -326,7 +308,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     private function seedActivity(
         BandSpace $bandSpace,
-        UuidInterface $resourceId,
+        string $resourceId,
         User $actor,
         DateTime $when,
     ): void {

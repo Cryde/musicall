@@ -23,7 +23,7 @@ final class BandSpaceFileFactory extends PersistentObjectFactory
     }
 
     /**
-     * @param array{type: string, id: string|\Ramsey\Uuid\UuidInterface, attachedBy?: \App\Entity\User} $source
+     * @param array{type: string, id: string, attachedBy?: \App\Entity\User} $source
      */
     public function withAttachment(array $source): self
     {

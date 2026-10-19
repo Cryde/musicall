@@ -16,7 +16,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -74,7 +73,7 @@ class TaskDeleteTest extends ApiTestCase
         $attachment = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString((string) $task->id),
+            'sourceId' => (string) $task->id,
             'attachedBy' => $user,
         ]);
         $taskId = (string) $task->id;
