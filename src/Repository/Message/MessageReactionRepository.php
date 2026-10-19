@@ -84,7 +84,7 @@ class MessageReactionRepository extends ServiceEntityRepository
      * Nothing is lost by going round the ORM here: a reaction has no lifecycle listener, and the row
      * is read back through the aggregate rather than from the identity map.
      *
-     * UUID() is MariaDB's version 1 where the ORM mints version 4. Nothing reads the version, and the
+     * UUID() is MariaDB's version 1 where the ORM mints version 7. Nothing reads the version, and the
      * same trade was already made for the channel backfill in #959.
      *
      * Answers whether a row was written: the duplicate path changes nothing and reports no affected

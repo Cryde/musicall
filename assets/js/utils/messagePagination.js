@@ -13,7 +13,7 @@
  * Repeats are the only failure mode here, not holes: nothing deletes a message yet, so the list only
  * ever grows at the head and no row can slide out of a window before it was read. Deleting a message
  * is #967, and that is the point to revisit this for a keyset cursor, which would need
- * `(creation_datetime, id)` because the id is a uuid4 and carries no order of its own.
+ * `(creation_datetime, id)` because the id carries no order of its own (rows before #1178 are uuid4).
  */
 
 /** Rows per request, matching `paginationItemsPerPage` on the operation. Capped server side at 200. */

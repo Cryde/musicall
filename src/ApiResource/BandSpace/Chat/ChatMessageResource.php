@@ -17,8 +17,8 @@ use DateTimeInterface;
  * The band's chat, read.
  *
  * Offset paginated rather than cursor paginated, which is what #960 originally called for: #955
- * settled that question the other way for the same table, because `Message.id` is uuid4 and carries
- * no order, so a correct cursor would have to be a `(creation_datetime, id)` composite that API
+ * settled that question the other way for the same table, because `Message.id` carries no order (rows
+ * before #1178 are uuid4), so a correct cursor would have to be a `(creation_datetime, id)` composite that API
  * Platform's paginationViaCursor cannot express. The client merges pages by `@id` instead, and
  * assets/js/utils/messagePagination.js already does it for the direct message thread.
  */

@@ -11,8 +11,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Ramsey\Uuid\UuidInterface;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Index(name: 'idx_message_thread_creation', columns: ['thread_id', 'creation_datetime'])]
@@ -20,14 +19,10 @@ use Ramsey\Uuid\UuidInterface;
 class Message
 {
     #[ORM\Id]
-    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    public UuidInterface|string|null $id = null {
-        get {
-            return is_string($this->id) ? $this->id : $this->id?->toString();
-        }
-    }
+    public ?string $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
@@ -79,20 +74,12 @@ class Message
      * No foreign key on purpose: the file can be purged from the Files trash while the message stays,
      * and the id surviving it is what lets the bubble say « Image supprimée » instead of going blank.
      */
-    #[ORM\Column(type: 'uuid', nullable: true)]
-    public UuidInterface|string|null $imageFileId = null {
-        get {
-            return is_string($this->imageFileId) ? $this->imageFileId : $this->imageFileId?->toString();
-        }
-    }
+    #[ORM\Column(type: Types::GUID, nullable: true)]
+    public ?string $imageFileId = null;
 
     /** The band space file holding the voice note this message carries (#974), no foreign key either. */
-    #[ORM\Column(type: 'uuid', nullable: true)]
-    public UuidInterface|string|null $voiceNoteFileId = null {
-        get {
-            return is_string($this->voiceNoteFileId) ? $this->voiceNoteFileId : $this->voiceNoteFileId?->toString();
-        }
-    }
+    #[ORM\Column(type: Types::GUID, nullable: true)]
+    public ?string $voiceNoteFileId = null;
 
     /** Measured by ffprobe on the stored file: a MediaRecorder WebM carries no duration of its own. */
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]

@@ -122,7 +122,7 @@ class MessageAttachmentRepository extends ServiceEntityRepository
         foreach ($rows as $row) {
             // Ascending, so the first row seen for a target is the one kept. The id only breaks a tie
             // the second-granular datetime cannot, and it is a stable pick rather than a chronology:
-            // Message.id is uuid4 and carries no order. Two messages naming the same task within the
+            // Message.id carries no order (rows before #1178 are uuid4). Two messages naming the same task within the
             // same second are indistinguishable, so this answers with the same one every time instead
             // of with whatever the database felt like returning.
             $oldestByTarget[mb_strtolower((string) $row['targetId'])] ??= (string) $row['messageId'];

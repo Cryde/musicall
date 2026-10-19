@@ -10,8 +10,7 @@ use DateTime;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Ramsey\Uuid\UuidInterface;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 /**
  * A Band Space object a chat message points at (#970): an agenda entry, a task, a note, a file, a
@@ -36,14 +35,10 @@ use Ramsey\Uuid\UuidInterface;
 class MessageAttachment
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    public UuidInterface|string|null $id = null {
-        get {
-            return is_string($this->id) ? $this->id : $this->id?->toString();
-        }
-    }
+    public ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -52,12 +47,8 @@ class MessageAttachment
     #[ORM\Column(type: Types::STRING, length: 20, enumType: BandSpaceSearchResultType::class)]
     public BandSpaceSearchResultType $targetType;
 
-    #[ORM\Column(type: 'uuid')]
-    public UuidInterface|string $targetId {
-        get {
-            return is_string($this->targetId) ? $this->targetId : $this->targetId->toString();
-        }
-    }
+    #[ORM\Column(type: Types::GUID)]
+    public string $targetId;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $label;

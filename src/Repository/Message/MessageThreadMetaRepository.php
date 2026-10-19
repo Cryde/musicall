@@ -69,7 +69,7 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
      * against `UNIQUE (thread_id, user_id)` also makes this safe against a send creating the same row
      * concurrently, which a bare insert outside the thread lock would not be.
      *
-     * UUID() is MariaDB's version 1 where the application mints version 4. Nothing reads the version,
+     * UUID() is MariaDB's version 1 where the application mints version 7. Nothing reads the version,
      * and the same trade was already made for the channel backfill in #959.
      */
     public function markChannelsReadForUser(BandSpace $bandSpace, User $user): void

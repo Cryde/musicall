@@ -40,7 +40,7 @@ readonly class MessageCollectionProvider implements ProviderInterface
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('common.not_authenticated');
         }
-        if (!($thread = $this->messageThreadRepository->find($uriVariables['threadId'])) instanceof MessageThread) {
+        if (!($thread = $this->messageThreadRepository->find((string) $uriVariables['threadId'])) instanceof MessageThread) {
             throw new NotFoundHttpException('message.thread.not_found');
         }
 
