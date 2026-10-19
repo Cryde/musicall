@@ -20,9 +20,9 @@ readonly class RequestLocaleResolver
     // the account or the browser says. Not Accept-Language: the mobile app relies on that one coming after the user.
     public const string HEADER = 'X-Locale';
     // Read by Symfony's ResponseListener, which then adds `Vary: Accept-Language`.
-    private const string VARY_BY_LANGUAGE = '_vary_by_language';
+    public const string VARY_BY_LANGUAGE = '_vary_by_language';
     // A real header is a few dozen bytes, and parsing a huge crafted one costs seconds of CPU.
-    private const int MAX_ACCEPT_LANGUAGE_LENGTH = 256;
+    public const int MAX_ACCEPT_LANGUAGE_LENGTH = 256;
 
     /**
      * @param string[] $enabledLocales

@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Locale\BrowserLocaleRedirect;
 use App\Locale\PageVersionsResolver;
+use App\Locale\RequestLocaleResolver;
 use App\Repository\PublicationRepository;
 use App\Service\Bot\BotDetector;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,20 +35,33 @@ class HomeController extends AbstractController
 
     #[Route('/', name: 'app_homepage')]
     #[Route('/{route}', name: 'vue_pages', requirements: ['route' => '^(?!.*_wdt|_profiler|media|api|oauth|register\/confirm\/).+'])]
-    public function index(Request $request, BotDetector $botDetector, PageVersionsResolver $pageVersionsResolver): Response
-    {
+    public function index(
+        Request $request,
+        BotDetector $botDetector,
+        PageVersionsResolver $pageVersionsResolver,
+        BrowserLocaleRedirect $browserLocaleRedirect,
+    ): Response {
         if ($botDetector->isBot($request->headers->get('User-Agent', ''))) {
             return $this->forward('\\App\\Controller\\BotController::index');
         }
 
         // Search engines get this page, not the bot one: BotDetector only knows the crawlers of share cards.
         $versions = $pageVersionsResolver->resolve($request);
-        // A page with a version per locale is in its URL's locale, or its content's, as the router will show it.
         // The others (a member's own, the sign-in flow) keep the locale the request resolved.
-        if ($versions !== null) {
-            $request->setLocale($versions->locale);
+        if ($versions === null) {
+            return $this->render('base.html.twig', ['versions' => null]);
         }
 
-        return $this->render('base.html.twig', ['versions' => $versions]);
+        // A page with a version per locale is in its URL's locale, or its content's, as the router will show it.
+        $request->setLocale($versions->locale);
+        $target = $browserLocaleRedirect->target($request, $versions);
+        // Whether it redirects depends on the browser language and the cookies.
+        $request->attributes->set(RequestLocaleResolver::VARY_BY_LANGUAGE, true);
+        $response = $target !== null
+            ? $this->redirect($target)
+            : $this->render('base.html.twig', ['versions' => $versions]);
+        $response->setVary('Cookie', false);
+
+        return $response;
     }
 }
