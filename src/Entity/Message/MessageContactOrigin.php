@@ -52,11 +52,11 @@ class MessageContactOrigin
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     public ?int $announceType = null;
 
-    /** @var list<string> */
+    /** @var list<string> instrument slugs (#1212); a row older than that may still hold a French name */
     #[ORM\Column(type: Types::JSON)]
     public array $instruments = [];
 
-    /** @var list<string> */
+    /** @var list<string> style slugs, same caveat */
     #[ORM\Column(type: Types::JSON)]
     public array $styles = [];
 

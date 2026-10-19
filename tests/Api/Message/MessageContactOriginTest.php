@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Message;
 
+use App\Entity\Attribute\Style;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
 use App\Enum\Message\ContactOriginType;
+use App\Repository\Message\MessageContactOriginRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
@@ -25,6 +27,7 @@ use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Validator\Message\ValidContactOriginValidator;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -82,6 +85,10 @@ class MessageContactOriginTest extends ApiTestCase
                 'location_name' => 'Lyon',
             ],
         ]);
+        // Kept by slug (#1212), named only when read.
+        $origin = self::getContainer()->get(MessageContactOriginRepository::class)->findByMessageIds([(string) $message->id])[(string) $message->id];
+        $this->assertSame([$announce->instrument->slug], $origin->instruments);
+        $this->assertEqualsCanonicalizing(array_map(static fn (Style $style): string => $style->slug, $announce->styles->toArray()), $origin->styles);
     }
 
     public function test_a_message_sent_from_a_teacher_profile_carries_it(): void
@@ -290,19 +297,31 @@ class MessageContactOriginTest extends ApiTestCase
         $this->assertSame(2, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
     }
 
-    /** The inbox row recalls the most recent reason, not the first one. */
-    public function test_the_inbox_shows_the_latest_origin(): void
+    /**
+     * The inbox row recalls the most recent reason, not the first one, in the request language.
+     *
+     * @param list<string> $instruments
+     * @param list<string> $styles
+     */
+    #[DataProvider('inboxOriginProvider')]
+    public function test_the_inbox_shows_the_latest_origin(string $locale, array $instruments, array $styles): void
     {
         [$sender, $recipient] = $this->pair();
         $thread = $this->thread($sender, $recipient);
         $this->origin($thread, $sender, $this->announce($recipient), '2026-09-01 10:00:00');
-        $latest = $this->origin($thread, $sender, $this->announce($recipient, 'Bassiste'), '2026-09-20 10:00:00');
+        $bassAnnounce = MusicianAnnounceFactory::new([
+            'author' => $recipient,
+            'type' => MusicianAnnounce::TYPE_MUSICIAN,
+            'instrument' => InstrumentFactory::new()->asBass(),
+            'locationName' => 'Lyon',
+        ])->withStyles([StyleFactory::findOrCreate(['name' => 'Rock']), StyleFactory::new(['name' => 'Électro', 'slug' => 'electro'])->create()])->create();
+        $latest = $this->origin($thread, $sender, $bassAnnounce, '2026-09-20 10:00:00');
         $meta = MessageThreadMetaFactory::new(['thread' => $thread, 'user' => $recipient])->create();
         $participants = $thread->messageParticipants->toArray();
         $lastMessage = $latest->message;
 
         $this->client->loginUser($recipient);
-        $this->client->request('GET', '/api/message_thread_metas', [], [], self::JSON);
+        $this->client->request('GET', '/api/message_thread_metas', [], [], self::JSON + ['HTTP_X_LOCALE' => $locale]);
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -362,8 +381,8 @@ class MessageContactOriginTest extends ApiTestCase
                             'musician_announce_id' => (string) $latest->musicianAnnounce?->id,
                             'teacher_profile_id' => null,
                             'announce_type' => MusicianAnnounce::TYPE_MUSICIAN,
-                            'instruments' => ['Bassiste'],
-                            'styles' => ['Rock', 'Blues'],
+                            'instruments' => $instruments,
+                            'styles' => $styles,
                             'location_name' => 'Lyon',
                         ],
                     ],
@@ -371,6 +390,13 @@ class MessageContactOriginTest extends ApiTestCase
             ],
             'totalItems' => 1,
         ]);
+    }
+
+    /** @return iterable<string, array{string, list<string>, list<string>}> */
+    public static function inboxOriginProvider(): iterable
+    {
+        yield 'French' => ['fr', ['Bassiste'], ['Rock', 'Électro']];
+        yield 'English' => ['en', ['Bassist'], ['Rock', 'Electronic']];
     }
 
     /** The announce is gone once someone is found; the conversation still says what it was about. */
@@ -442,6 +468,125 @@ class MessageContactOriginTest extends ApiTestCase
     }
 
     /**
+     * A conversation from before #1212 holds slugs once migrated. One written by the old code during
+     * the deploy window holds French names, matched too. Both read in the request language, French
+     * reading the database name as before; a name matching nothing reads as stored.
+     *
+     * @param list<string> $announceInstruments
+     * @param list<string> $announceStyles
+     * @param list<string> $teacherInstruments
+     */
+    #[DataProvider('storedOriginProvider')]
+    public function test_a_stored_origin_reads_in_the_request_language(string $locale, array $announceInstruments, array $announceStyles, array $teacherInstruments): void
+    {
+        InstrumentFactory::new()->asDrum()->create();
+        InstrumentFactory::new()->asBass()->create();
+        StyleFactory::new(['name' => 'Chanson Française', 'slug' => 'chanson-francaise'])->create();
+        StyleFactory::new(['name' => 'Électro', 'slug' => 'electro'])->create();
+        [$sender, $recipient] = $this->pair();
+        $thread = $this->thread($sender, $recipient);
+        $fromAnnounce = MessageFactory::new(['thread' => $thread, 'author' => $sender, 'content' => 'Bonjour', 'creationDatetime' => new \DateTime('2026-09-01 10:00:00')])->create();
+        $fromTeacher = MessageFactory::new(['thread' => $thread, 'author' => $sender, 'content' => 'Et les cours ?', 'creationDatetime' => new \DateTime('2026-09-02 10:00:00')])->create();
+        MessageContactOriginFactory::new([
+            'message' => $fromAnnounce,
+            'instruments' => ['Bassiste'],
+            'styles' => ['chanson-francaise', 'Électro', 'Rock Sudiste'],
+        ])->create();
+        MessageContactOriginFactory::new([
+            'message' => $fromTeacher,
+            'type' => ContactOriginType::TeacherProfile,
+            'announceType' => null,
+            'instruments' => ['batterie', 'Basse', 'Ukulélé'],
+            'styles' => [],
+            'locationName' => null,
+        ])->create();
+
+        $this->client->loginUser($recipient);
+        $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]=asc', server: self::JSON + ['HTTP_X_LOCALE' => $locale]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $thread->id,
+            '@type' => 'Collection',
+            'member' => [
+                $this->storedOriginMessage($fromAnnounce, $sender, [
+                    'type' => 'musician_announce',
+                    'musician_announce_id' => null,
+                    'teacher_profile_id' => null,
+                    'announce_type' => MusicianAnnounce::TYPE_MUSICIAN,
+                    'instruments' => $announceInstruments,
+                    'styles' => $announceStyles,
+                    'location_name' => 'Lyon',
+                ]),
+                $this->storedOriginMessage($fromTeacher, $sender, [
+                    'type' => 'teacher_profile',
+                    'musician_announce_id' => null,
+                    'teacher_profile_id' => null,
+                    'announce_type' => null,
+                    'instruments' => $teacherInstruments,
+                    'styles' => [],
+                    'location_name' => null,
+                ]),
+            ],
+            'totalItems' => 2,
+            'view' => [
+                '@id' => '/api/messages/' . $thread->id . '?order%5Bcreation_datetime%5D=asc',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/messages/' . $thread->id . '{?order[creation_datetime],order[id]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[creation_datetime]',
+                        'property' => 'creation_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[id]',
+                        'property' => 'id',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /** @return iterable<string, array{string, list<string>, list<string>, list<string>}> */
+    public static function storedOriginProvider(): iterable
+    {
+        yield 'French' => ['fr', ['Bassiste'], ['Chanson Française', 'Électro', 'Rock Sudiste'], ['Batterie', 'Basse', 'Ukulélé']];
+        yield 'English' => ['en', ['Bassist'], ['French Chanson', 'Electronic', 'Rock Sudiste'], ['Drums', 'Bass', 'Ukulélé']];
+    }
+
+    /**
+     * @param array<string, mixed> $contactOrigin
+     *
+     * @return array<string, mixed>
+     */
+    private function storedOriginMessage(Message $message, User $author, array $contactOrigin): array
+    {
+        return [
+            '@id' => '/api/messages/' . $message->id,
+            '@type' => 'Message',
+            'creation_datetime' => $message->creationDatetime->format(\DateTimeInterface::ATOM),
+            'author' => [
+                '@id' => '/api/users/' . $author->id,
+                '@type' => 'User',
+                'id' => $author->id,
+                'username' => 'sender',
+                'display_name' => 'sender',
+            ],
+            'content' => $message->content,
+            'contact_origin' => $contactOrigin,
+        ];
+    }
+
+    /**
      * @return array{0: User, 1: User}
      */
     private function pair(): array
@@ -482,8 +627,8 @@ class MessageContactOriginTest extends ApiTestCase
             'message' => $message,
             'type' => ContactOriginType::MusicianAnnounce,
             'musicianAnnounce' => $announce,
-            'instruments' => [$announce->instrument->musicianName],
-            'styles' => ['Rock', 'Blues'],
+            'instruments' => [$announce->instrument->slug],
+            'styles' => array_values(array_map(static fn (Style $style): string => $style->slug, $announce->styles->toArray())),
         ])->create();
     }
 

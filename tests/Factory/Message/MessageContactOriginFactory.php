@@ -17,8 +17,8 @@ final class MessageContactOriginFactory extends PersistentObjectFactory
             'message' => MessageFactory::new(),
             'type' => ContactOriginType::MusicianAnnounce,
             'announceType' => MusicianAnnounce::TYPE_MUSICIAN,
-            'instruments' => ['Batteur'],
-            'styles' => ['Rock'],
+            'instruments' => ['batterie'],
+            'styles' => ['rock'],
             'locationName' => 'Lyon',
         ];
     }

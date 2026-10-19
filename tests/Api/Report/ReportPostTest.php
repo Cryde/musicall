@@ -97,6 +97,11 @@ class ReportPostTest extends ApiTestCase
         $report = $this->onlyReport();
         $this->assertSame('Arnaque garantie', $report->snapshotText);
         $this->assertSame($announce->author->id, $report->targetAuthor?->id);
+        // The instrument by slug (#1212), so it can be named in any language later.
+        $this->assertSame(
+            ['instrument' => $announce->instrument->slug, 'location' => 'Lyon', 'username' => $announce->author->username],
+            $report->snapshotContext,
+        );
     }
 
     public function test_reports_a_direct_message_from_its_conversation(): void

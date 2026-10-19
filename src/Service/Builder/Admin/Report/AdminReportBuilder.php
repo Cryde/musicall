@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\Report\ReportRepository;
 use App\Service\Report\ReportTarget;
 use App\Service\Report\Target\ReportTargetLoaderInterface;
+use App\Translation\ReferenceSnapshotNames;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class AdminReportBuilder
@@ -20,6 +21,7 @@ readonly class AdminReportBuilder
      */
     public function __construct(
         private ReportRepository $reportRepository,
+        private ReferenceSnapshotNames $referenceSnapshotNames,
         #[AutowireIterator('app.report_target_loader')]
         iterable $loaders,
     ) {
@@ -62,7 +64,7 @@ readonly class AdminReportBuilder
         $resource->reason = $report->reason->value;
         $resource->details = $report->details;
         $resource->snapshotText = $report->snapshotText;
-        $resource->snapshotContext = $report->snapshotContext;
+        $resource->snapshotContext = $this->snapshotContext($report);
         $resource->reporter = ['id' => $report->reporter->id, 'username' => $report->reporter->username];
         $resource->targetAuthor = $report->targetAuthor instanceof User
             ? [
@@ -80,6 +82,23 @@ readonly class AdminReportBuilder
         $resource->outcome = $report->outcome?->value;
 
         return $resource;
+    }
+
+    /**
+     * An announce snapshot keeps its instrument by slug (#1212); the moderation screens are French, so
+     * they read the database name rather than the request locale.
+     *
+     * @return array<string, scalar|null>
+     */
+    private function snapshotContext(Report $report): array
+    {
+        $context = $report->snapshotContext;
+        $instrument = $context['instrument'] ?? null;
+        if (is_string($instrument)) {
+            $context['instrument'] = $this->referenceSnapshotNames->frenchInstrumentMusicianName($instrument);
+        }
+
+        return $context;
     }
 
     private function liveState(Report $report): string
