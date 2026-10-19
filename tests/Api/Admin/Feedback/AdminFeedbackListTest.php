@@ -43,10 +43,7 @@ class AdminFeedbackListTest extends ApiTestCase
         $admin = UserFactory::new()->asAdminUser()->create();
         $author = UserFactory::new()->asBaseUser()->create(['username' => 'reporter', 'email' => 'reporter@email.com']);
 
-        $older = FeedbackFactory::new()->create([
-            'creationDatetime' => new \DateTime('2026-09-01 09:00:00'),
-            'message' => 'Le plus ancien des deux retours.',
-        ]);
+        // The newer one is created first, so the order can only come from the datetime: new ids sort by creation.
         $newer = FeedbackFactory::new()->create([
             'creationDatetime' => new \DateTime('2026-09-02 09:00:00'),
             'type' => FeedbackType::Suggestion,
@@ -55,6 +52,10 @@ class AdminFeedbackListTest extends ApiTestCase
             'pageUrl' => '/forum',
             'email' => 'reporter@email.com',
             'user' => $author,
+        ]);
+        $older = FeedbackFactory::new()->create([
+            'creationDatetime' => new \DateTime('2026-09-01 09:00:00'),
+            'message' => 'Le plus ancien des deux retours.',
         ]);
 
         $this->client->loginUser($admin);

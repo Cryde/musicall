@@ -10,7 +10,6 @@ use Doctrine\DBAL\LockMode;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<Report>
@@ -22,10 +21,9 @@ class ReportRepository extends ServiceEntityRepository
         parent::__construct($registry, Report::class);
     }
 
-    /** Null for an id that is not a uuid, rather than a conversion error from the column type. */
     public function findOneById(string $id): ?Report
     {
-        return Uuid::isValid($id) ? $this->find($id) : null;
+        return $this->find($id);
     }
 
     public function findPendingByReporterAndTarget(User $reporter, ReportTargetType $targetType, string $targetId): ?Report

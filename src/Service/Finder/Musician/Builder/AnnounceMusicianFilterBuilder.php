@@ -79,10 +79,7 @@ class AnnounceMusicianFilterBuilder
         return $id !== null ? (string) $id : null;
     }
 
-    /**
-     * Guards the repository lookups: the id columns are UUID typed, so handing Doctrine a plain word
-     * throws ValueNotConvertible, which would surface as a 500 rather than a degraded search.
-     */
+    /** A style or an instrument arrives as an id or as a slug, and this picks the lookup. */
     private function isUuid(string $value): bool
     {
         return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1;
