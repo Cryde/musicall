@@ -119,6 +119,24 @@ class PushContentBuilderTest extends KernelTestCase
         $this->assertSame(['type' => 'band_space_message', 'route' => '/band/' . $band->id . '/chat?message=' . $message->id], $content->data);
     }
 
+    /** @return iterable<string, array{string, string}> */
+    public static function recipientLocales(): iterable
+    {
+        yield 'French' => ['fr', 'Alice : Salut @inconnu !'];
+        yield 'English' => ['en', 'Alice: Salut @unknown !'];
+    }
+
+    /** The request here is French: a push follows its recipient's locale, never the sender's (#1226). */
+    #[DataProvider('recipientLocales')]
+    public function test_a_mention_nobody_resolves_reads_in_the_recipient_locale(string $locale, string $expected): void
+    {
+        $band = BandSpaceFactory::new()->create(['name' => 'Les Cactus']);
+        $channel = MessageThreadFactory::new()->forBandSpace($band)->create();
+        $message = MessageFactory::new(['thread' => $channel, 'content' => 'Salut @[6ba7b810-9dad-11d1-80b4-00c04fd430c8] !'])->create();
+
+        $this->assertSame($expected, $this->builder()->forMessage($message, 'Alice', $locale)->body);
+    }
+
     public function test_an_attachment_alone_and_a_long_message(): void
     {
         $thread = MessageThreadFactory::new()->create();

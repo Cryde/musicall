@@ -5,6 +5,7 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameSorter;
 
 readonly class BandSpaceMemberBuilder
@@ -12,6 +13,7 @@ readonly class BandSpaceMemberBuilder
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private ReferenceNameSorter $referenceNameSorter,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -26,7 +28,8 @@ readonly class BandSpaceMemberBuilder
         $dto->stageName = $membership->stageName;
         $dto->showEmailOnRiders = $membership->showEmailOnRiders;
         // The name a document should use, resolved here so no caller has to repeat the fallback.
-        $dto->displayName = $membership->displayName();
+        $dto->displayName = $this->displayNames->memberName($membership);
+        $dto->isDeleted = $membership->user->isDeleted();
         $dto->instruments = $this->referenceNameSorter->instrumentNames($membership->instruments);
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($membership->user);
         $dto->creationDatetime = $membership->creationDatetime;

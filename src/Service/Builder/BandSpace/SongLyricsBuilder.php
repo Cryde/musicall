@@ -8,12 +8,14 @@ use App\Entity\BandSpace\Song;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Service\BandSpace\Song\ChordPro\ChordProParser;
+use App\Translation\DisplayNameTranslator;
 
 readonly class SongLyricsBuilder
 {
     public function __construct(
         private ChordProParser $parser,
         private BandSpaceMembershipRepository $membershipRepository,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -56,7 +58,7 @@ readonly class SongLyricsBuilder
             if (isset($byUser[$id])) {
                 $singers[] = [
                     'id' => $id,
-                    'name' => $byUser[$id]->displayName(),
+                    'name' => $this->displayNames->memberName($byUser[$id]),
                     'is_former_member' => $byUser[$id]->status !== MembershipStatus::Active,
                 ];
             }

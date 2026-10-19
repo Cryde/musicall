@@ -138,14 +138,17 @@ readonly class MessagePostedListener
         }
     }
 
-    /** The name the conversation shows: the stage name inside a band (#1115), the public one elsewhere. */
+    /**
+     * The name the conversation shows: the stage name inside a band (#1115), the public one elsewhere.
+     * Locale free: the author has just posted, so the account is never the closed one.
+     */
     private function authorName(Message $message): string
     {
         $bandSpace = $message->thread->bandSpace;
 
         return $bandSpace instanceof BandSpace
             ? $this->memberNames->nameOf($message->author, (string) $bandSpace->id)
-            : $message->author->publicName();
+            : $message->author->publicName(User::DELETED_DISPLAY_NAME);
     }
 
     /**

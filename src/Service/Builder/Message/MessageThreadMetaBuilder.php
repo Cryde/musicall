@@ -13,6 +13,7 @@ use App\Entity\User;
 use App\Repository\Message\MessageContactOriginRepository;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageRepository;
+use App\Translation\DisplayNameTranslator;
 
 readonly class MessageThreadMetaBuilder
 {
@@ -21,6 +22,7 @@ readonly class MessageThreadMetaBuilder
         private MessageRepository $messageRepository,
         private MessageMentionRepository $messageMentionRepository,
         private MessageContactOriginRepository $messageContactOriginRepository,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -40,6 +42,7 @@ readonly class MessageThreadMetaBuilder
         // Same rule for the previews: one query for every row's mentions, never one per row (#994).
         $mentions = $this->messageMentionRepository->findUsernamesByMessageIds(
             $this->lastMessageIds($entities),
+            $this->displayNames->deletedUser(),
         );
 
         // And one for the line recalling why each conversation exists (#998).
@@ -63,7 +66,7 @@ readonly class MessageThreadMetaBuilder
         return $this->build(
             $entity,
             $this->messageRepository->countUnreadForThread($entity),
-            $this->messageMentionRepository->findUsernamesByMessageIds($this->lastMessageIds([$entity])),
+            $this->messageMentionRepository->findUsernamesByMessageIds($this->lastMessageIds([$entity]), $this->displayNames->deletedUser()),
             $this->messageContactOriginRepository->findLatestByThreads([$entity->thread])[(string) $entity->thread->id] ?? null,
         );
     }

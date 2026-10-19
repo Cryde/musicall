@@ -82,10 +82,11 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
      * and the `musicianProfile` to its id (existence flag).
      *
      * @param MusicianAnnounce[] $announces
+     * @param string             $deletedName what a closed account reads as, in the reader's locale
      *
      * @return array<string, array{id: string, username: string, deletionDatetime: ?\DateTimeImmutable, hasMusicianProfile: bool, profilePictureName: ?string, displayName: string}>
      */
-    public function findAuthorsDataForAnnounces(array $announces): array
+    public function findAuthorsDataForAnnounces(array $announces, string $deletedName): array
     {
         if ($announces === []) {
             return [];
@@ -124,6 +125,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
                     $row['deletionDatetime'] !== null,
                     $row['profileName'],
                     (bool) $row['profileIsPublic'],
+                    $deletedName,
                 ),
             ];
         }

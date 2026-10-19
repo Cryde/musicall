@@ -6,6 +6,7 @@ namespace App\Service\Builder\Forum;
 
 use App\ApiResource\Forum\Data\User;
 use App\Entity\User as UserEntity;
+use App\Translation\DisplayNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -14,6 +15,7 @@ readonly class UserDtoBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager   $cacheManager,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -22,7 +24,7 @@ readonly class UserDtoBuilder
         $dto = new User();
         $dto->id = $user->id;
         $dto->username = $user->username;
-        $dto->displayName = $user->publicName();
+        $dto->displayName = $this->displayNames->publicName($user);
         $dto->deletionDatetime = $user->deletionDatetime;
         $dto->profilePicture = $this->buildProfilePicture($user);
 

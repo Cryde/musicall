@@ -5,6 +5,7 @@ namespace App\Service\Builder\Comment;
 use App\ApiResource\Comment\CommentResource;
 use App\Entity\Comment\Comment;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -14,6 +15,7 @@ readonly class CommentBuilder
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -49,7 +51,7 @@ readonly class CommentBuilder
         $dto->author = [
             'id' => $entity->author->id,
             'username' => $entity->author->username,
-            'display_name' => $entity->author->publicName(),
+            'display_name' => $this->displayNames->publicName($entity->author),
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->author),
             'deletion_datetime' => $entity->author->deletionDatetime?->format(\DateTimeInterface::ATOM),
         ];

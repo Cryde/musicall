@@ -6,7 +6,6 @@ use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
-use App\Entity\User;
 use App\Enum\Message\MessageReactionEmoji;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\Message\MessageMentionRepository;
@@ -16,6 +15,7 @@ use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use App\Service\Message\MessageAttachmentResolver;
+use App\Translation\DisplayNameTranslator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -32,6 +32,7 @@ readonly class ChatMessageBuilder
         private MessageAttachmentResolver $messageAttachmentResolver,
         private BandSpaceFileRepository $bandSpaceFileRepository,
         private BandSpaceMemberNames $memberNames,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -59,7 +60,7 @@ readonly class ChatMessageBuilder
         // One query for the whole page, never one per message. The lookup lives here rather than in
         // the caller so that no entry point can forget it and quietly render every name as
         // `@inconnu` (#964).
-        $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds($messageIds);
+        $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds($messageIds, $this->displayNames->deletedUser());
         // Same rule, same reason (#968): one grouped query for the page, here rather than in the
         // caller so no entry point can forget it and silently drop every reaction.
         $reactionsByMessage = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer->user);
@@ -136,7 +137,7 @@ readonly class ChatMessageBuilder
             $this->profilePictureUrlBuilder->build($entity->author),
             $entity->content,
             $entity->creationDatetime,
-            $this->messageMentionRepository->findUsernamesByMessageIds([$messageId])[$messageId] ?? [],
+            $this->messageMentionRepository->findUsernamesByMessageIds([$messageId], $this->displayNames->deletedUser())[$messageId] ?? [],
             $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer->user)[$messageId] ?? [],
             $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId, $viewer)[$messageId] ?? [],
             $entity->updateDatetime,
@@ -276,7 +277,8 @@ readonly class ChatMessageBuilder
         $dto->id = $id;
         $dto->bandSpaceId = $bandSpaceId;
         $dto->authorId = $authorId;
-        $dto->authorUsername = $authorIsDeleted ? User::DELETED_DISPLAY_NAME : $authorUsername;
+        $dto->authorUsername = $authorIsDeleted ? $this->displayNames->deletedUser() : $authorUsername;
+        $dto->authorIsDeleted = $authorIsDeleted;
         $dto->authorDisplayName = $this->memberNames->nameById($bandSpaceId, $authorId, $authorUsername, $authorIsDeleted);
         $dto->authorProfilePictureUrl = $authorProfilePictureUrl;
         // Sanitized at read time, exactly like the direct message thread: what the sender typed stays
@@ -302,7 +304,7 @@ readonly class ChatMessageBuilder
         $dto->pinnedDatetime = $pinnedDatetime;
         $dto->pinnedByUsername = $pinnedByUsername === null
             ? null
-            : ($pinnedByIsDeleted ? User::DELETED_DISPLAY_NAME : $pinnedByUsername);
+            : ($pinnedByIsDeleted ? $this->displayNames->deletedUser() : $pinnedByUsername);
         $dto->pinnedByDisplayName = $pinnedById === null || $pinnedByUsername === null
             ? null
             : $this->memberNames->nameById($bandSpaceId, $pinnedById, $pinnedByUsername, $pinnedByIsDeleted);

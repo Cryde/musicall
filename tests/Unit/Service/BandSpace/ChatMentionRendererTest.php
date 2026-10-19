@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Service\BandSpace;
 
 use App\Service\BandSpace\ChatMentionRenderer;
+use App\Tests\Double\CatalogueTranslator;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,7 +21,7 @@ class ChatMentionRendererTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->renderer = new ChatMentionRenderer();
+        $this->renderer = new ChatMentionRenderer(CatalogueTranslator::in('fr'));
     }
 
     public function test_it_names_the_mentioned_member(): void
@@ -77,6 +78,23 @@ class ChatMentionRendererTest extends TestCase
             '<span class="chat-mention">@inconnu</span>',
             $this->renderer->render('&#64;[' . self::ALICE . ']', []),
         );
+    }
+
+    public function test_an_unknown_member_reads_in_the_request_locale(): void
+    {
+        $renderer = new ChatMentionRenderer(CatalogueTranslator::in('en'));
+
+        self::assertSame(
+            '<span class="chat-mention">@unknown</span>',
+            $renderer->render('&#64;[' . self::ALICE . ']', []),
+        );
+    }
+
+    public function test_a_plain_preview_reads_in_the_locale_it_is_given(): void
+    {
+        // A push is built for each recipient's locale, not for the request that sent the message.
+        self::assertSame('@unknown', $this->renderer->renderPlain('&#64;[' . self::ALICE . ']', [], 'en'));
+        self::assertSame('@inconnu', $this->renderer->renderPlain('&#64;[' . self::ALICE . ']', []));
     }
 
     public function test_a_uuid_in_capitals_resolves_to_the_same_member(): void

@@ -11,6 +11,7 @@ use App\Entity\Image\PublicationCover;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -21,6 +22,7 @@ readonly class PublicationListItemBuilder
         private UploaderHelper $uploaderHelper,
         private CacheManager   $cacheManager,
         private ReferenceNameTranslator $referenceNames,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -86,7 +88,7 @@ readonly class PublicationListItemBuilder
     {
         $dto = new Author();
         $dto->username = $user->username;
-        $dto->displayName = $user->publicName();
+        $dto->displayName = $this->displayNames->publicName($user);
         $dto->deletionDatetime = $user->deletionDatetime;
 
         return $dto;

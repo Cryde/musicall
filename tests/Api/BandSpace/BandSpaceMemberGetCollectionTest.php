@@ -9,6 +9,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -57,6 +58,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => $admin->username,
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -74,6 +76,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => 'member_user',
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -127,6 +130,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => $admin->username,
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -144,6 +148,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => 'member_user',
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -204,6 +209,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => $admin->username,
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -221,6 +227,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => 'member_user',
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -284,6 +291,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => $admin->username,
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -301,6 +309,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => 'member_user',
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -318,6 +327,7 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'stage_name' => null,
                     'show_email_on_riders' => false,
                     'display_name' => 'former_user',
+                    'is_deleted' => false,
                     'instruments' => [],
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-03T10:00:00+00:00',
@@ -326,6 +336,95 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 3,
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/members?include_inactive=true',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function readerLocales(): iterable
+    {
+        yield 'French' => ['fr', 'Utilisateur supprimé'];
+        yield 'English' => ['en', 'Deleted user'];
+    }
+
+    /** The flag is what a client reads, so it never has to recognise a closed account by its name. */
+    #[DataProvider('readerLocales')]
+    public function test_a_closed_account_is_flagged_and_named_in_the_reader_locale(string $locale, string $deletedName): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $gone = UserFactory::new()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'gone@test.com',
+            'deletionDatetime' => new \DateTimeImmutable('2026-09-01 10:00:00'),
+        ]);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+
+        $adminMembership = BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $admin,
+            'role' => Role::Admin,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+        // DeleteAccountProcedure leaves the stage name in place, and the label must win over it.
+        $goneMembership = BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $gone,
+            'role' => Role::User,
+            'stageName' => 'Alex',
+            'status' => MembershipStatus::Left,
+            'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/members?include_inactive=true', server: ['HTTP_X_LOCALE' => $locale]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceMember',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $adminMembership->id,
+                    '@type' => 'BandSpaceMember',
+                    'id' => $adminMembership->id,
+                    'band_space_id' => $bandSpace->id,
+                    'user_id' => $admin->id,
+                    'username' => $admin->username,
+                    'role' => 'admin',
+                    'stage_name' => null,
+                    'show_email_on_riders' => false,
+                    'display_name' => $admin->username,
+                    'is_deleted' => false,
+                    'instruments' => [],
+                    'profile_picture_url' => null,
+                    'creation_datetime' => '2024-01-01T10:00:00+00:00',
+                    'status' => 'active',
+                    'left_datetime' => null,
+                ],
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $goneMembership->id,
+                    '@type' => 'BandSpaceMember',
+                    'id' => $goneMembership->id,
+                    'band_space_id' => $bandSpace->id,
+                    'user_id' => $gone->id,
+                    'username' => 'deleted_c7c9f2e1',
+                    'role' => 'user',
+                    'stage_name' => 'Alex',
+                    'show_email_on_riders' => false,
+                    'display_name' => $deletedName,
+                    'is_deleted' => true,
+                    'instruments' => [],
+                    'profile_picture_url' => null,
+                    'creation_datetime' => '2024-01-02T10:00:00+00:00',
+                    'status' => 'left',
+                    'left_datetime' => null,
+                ],
+            ],
+            'totalItems' => 2,
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/members?include_inactive=true',
                 '@type' => 'PartialCollectionView',

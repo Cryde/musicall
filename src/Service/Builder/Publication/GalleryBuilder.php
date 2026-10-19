@@ -11,6 +11,7 @@ use App\ApiResource\Publication\Gallery;
 use App\Entity\Gallery as GalleryEntity;
 use App\Entity\Image\GalleryImage as GalleryImageEntity;
 use App\Entity\User;
+use App\Translation\DisplayNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -19,6 +20,7 @@ readonly class GalleryBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager   $cacheManager,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -71,7 +73,7 @@ readonly class GalleryBuilder
     {
         $author = new Author();
         $author->username = $user->username;
-        $author->displayName = $user->publicName();
+        $author->displayName = $this->displayNames->publicName($user);
         $author->deletionDatetime = $user->deletionDatetime;
 
         return $author;

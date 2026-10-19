@@ -8,6 +8,7 @@ use App\ApiResource\User\Gallery\UserGalleryImage;
 use App\ApiResource\User\Gallery\UserGalleryPreview;
 use App\Entity\Gallery;
 use App\Entity\Image\GalleryImage;
+use App\Translation\DisplayNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -16,6 +17,7 @@ readonly class UserGalleryBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -62,7 +64,7 @@ readonly class UserGalleryBuilder
         $dto->status = $gallery->status;
         $dto->creationDatetime = $creationDatetime;
         $dto->authorUsername = $author->username;
-        $dto->authorDisplayName = $author->publicName();
+        $dto->authorDisplayName = $this->displayNames->publicName($author);
         $dto->images = array_map(
             fn (GalleryImage $image): array => $this->getImageSizes($image),
             $gallery->images->toArray()

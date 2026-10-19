@@ -17,6 +17,7 @@ use App\Entity\PublicationSubCategory;
 use App\Entity\User;
 use App\Enum\Publication\PublicationType;
 use App\Repository\PublicationRepository;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -32,6 +33,7 @@ readonly class PublicationBuilder
         private HtmlSanitizerInterface $sanitizer,
         private ReferenceNameTranslator $referenceNames,
         private PublicationRepository $publicationRepository,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -101,7 +103,7 @@ readonly class PublicationBuilder
     {
         $author = new Author();
         $author->username = $user->username;
-        $author->displayName = $user->publicName();
+        $author->displayName = $this->displayNames->publicName($user);
         $author->deletionDatetime = $user->deletionDatetime;
 
         return $author;

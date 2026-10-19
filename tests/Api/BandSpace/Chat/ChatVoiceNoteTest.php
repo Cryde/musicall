@@ -442,6 +442,7 @@ class ChatVoiceNoteTest extends ApiTestCase
             'author_id' => (string) $author->id,
             'author_username' => $author->username,
             'author_display_name' => $author->username,
+            'author_is_deleted' => false,
             'author_profile_picture_url' => null,
             'content' => '',
             'creation_datetime' => $message->creationDatetime->format('c'),

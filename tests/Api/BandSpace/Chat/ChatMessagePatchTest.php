@@ -82,6 +82,7 @@ class ChatMessagePatchTest extends ApiTestCase
             'author_id' => (string) $author->id,
             'author_username' => 'batteur',
             'author_display_name' => 'batteur',
+            'author_is_deleted' => false,
             'author_profile_picture_url' => null,
             // Sanitizer output, like every other read of a message: the apostrophe comes back escaped.
             'content' => 'on répète mercredi, j&#039;apporte la basse',
@@ -550,6 +551,7 @@ class ChatMessagePatchTest extends ApiTestCase
             'author_id' => (string) $author->id,
             'author_username' => 'batteur',
             'author_display_name' => 'batteur',
+            'author_is_deleted' => false,
             'author_profile_picture_url' => null,
             'content' => 'on répète mardi',
             'creation_datetime' => '2026-09-10T20:00:00+00:00',

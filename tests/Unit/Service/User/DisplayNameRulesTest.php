@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Service\User;
 
 use App\Service\User\DisplayNameRules;
+use App\Tests\Double\CatalogueTranslator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -78,5 +79,21 @@ class DisplayNameRulesTest extends TestCase
     public function test_a_harmful_name_is_refused(string $name, string $rule): void
     {
         $this->assertSame($rule, DisplayNameRules::violation($name));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function catalogueLocales(): iterable
+    {
+        yield 'French' => ['fr'];
+        yield 'English' => ['en'];
+    }
+
+    /** The reserved list repeats the catalogue wording, so a change to it must not let a name pass for a closed account. */
+    #[DataProvider('catalogueLocales')]
+    public function test_the_closed_account_label_is_reserved_in_every_locale(string $locale): void
+    {
+        $label = CatalogueTranslator::in($locale)->trans('user.deleted_display_name');
+
+        $this->assertSame(DisplayNameRules::RESERVED, DisplayNameRules::violation($label));
     }
 }

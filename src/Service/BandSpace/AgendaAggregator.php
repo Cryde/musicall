@@ -19,6 +19,7 @@ use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -43,6 +44,7 @@ readonly class AgendaAggregator
         private AgendaEntryAvailabilityRepository $availabilityRepository,
         private BandSpaceMembershipRepository $membershipRepository,
         private TranslatorInterface $translator,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -499,7 +501,7 @@ readonly class AgendaAggregator
         $item->datetime = $this->pinToUtcMidnight($absence->startDate);
         $item->endDatetime = $this->pinToUtcMidnight($absence->endDate);
         $item->isAllDay = true;
-        $item->title = $this->translator->trans('band_space.agenda.absence_title', ['name' => $absence->member->displayName()]);
+        $item->title = $this->translator->trans('band_space.agenda.absence_title', ['name' => $this->displayNames->memberName($absence->member)]);
         $item->description = $absence->reason;
         // Only what a consumer reads. The member's name is already in the title, and the reason is
         // already the description, which is where both the list row and the calendar chip read it.

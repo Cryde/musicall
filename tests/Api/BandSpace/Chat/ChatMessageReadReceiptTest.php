@@ -431,6 +431,7 @@ class ChatMessageReadReceiptTest extends ApiTestCase
             'author_id' => (string) $author->id,
             'author_username' => $author->username,
             'author_display_name' => $author->username,
+            'author_is_deleted' => false,
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => self::SENT_AT_ISO,

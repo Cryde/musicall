@@ -16,4 +16,8 @@ describe('userHandle', () => {
   it('never reveals the handle of a closed account', () => {
     assert.equal(userHandle('deleted_c7c9f2e1', 'Utilisateur supprimé'), null)
   })
+
+  it('trusts the flag over the name', () => {
+    assert.equal(userHandle('deleted_c7c9f2e1', 'Deleted user', true), null)
+  })
 })

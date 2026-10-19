@@ -5,6 +5,7 @@ namespace App\Service\BandSpace\TechRider;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Translation\DisplayNameTranslator;
 use App\Translation\ReferenceNameSorter;
 
 /**
@@ -28,6 +29,7 @@ readonly class TechRiderContactsRenderer
     public function __construct(
         private BandSpaceMembershipRepository $membershipRepository,
         private ReferenceNameSorter $referenceNameSorter,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -63,8 +65,8 @@ readonly class TechRiderContactsRenderer
         $instruments = implode(self::INSTRUMENT_SEPARATOR, array_column($this->referenceNameSorter->instrumentNames($membership->instruments), 'name'));
 
         return $instruments === ''
-            ? $membership->displayName()
-            : $membership->displayName() . self::NAME_SEPARATOR . $instruments;
+            ? $this->displayNames->memberName($membership)
+            : $this->displayNames->memberName($membership) . self::NAME_SEPARATOR . $instruments;
     }
 
     /**
@@ -74,6 +76,6 @@ readonly class TechRiderContactsRenderer
      */
     private function byDisplayNameThenUsername(BandSpaceMembership $a, BandSpaceMembership $b): int
     {
-        return [$a->displayName(), $a->user->username] <=> [$b->displayName(), $b->user->username];
+        return [$this->displayNames->memberName($a), $a->user->username] <=> [$this->displayNames->memberName($b), $b->user->username];
     }
 }

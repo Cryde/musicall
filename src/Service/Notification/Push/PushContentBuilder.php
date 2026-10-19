@@ -156,7 +156,7 @@ readonly class PushContentBuilder
         }
 
         $content = $isChannel
-            ? $this->chatMentionRenderer->renderPlain($message->content, $mentionUsernamesById)
+            ? $this->chatMentionRenderer->renderPlain($message->content, $mentionUsernamesById, $locale)
             : $message->content;
 
         return $this->plainTextExtractor->extractOneLine($content);

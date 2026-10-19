@@ -8,6 +8,7 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Builder\Musician\MusicianAnnounceBuilder;
+use App\Translation\DisplayNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
@@ -19,6 +20,7 @@ readonly class MusicianAnnounceLastProvider implements ProviderInterface
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private MusicianAnnounceBuilder    $musicianAnnounceBuilder,
         private Security                   $security,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -34,7 +36,7 @@ readonly class MusicianAnnounceLastProvider implements ProviderInterface
             is_string($type) && $type !== '' ? (int) $type : null,
             $viewer instanceof User ? $viewer : null,
         );
-        $authorsByAnnounceId = $this->musicianAnnounceRepository->findAuthorsDataForAnnounces($entities);
+        $authorsByAnnounceId = $this->musicianAnnounceRepository->findAuthorsDataForAnnounces($entities, $this->displayNames->deletedUser());
 
         return $this->musicianAnnounceBuilder->buildListWithProjectedAuthors($entities, $authorsByAnnounceId);
     }

@@ -92,11 +92,11 @@ class BandSpaceMembership
     }
 
     /** What a document should call this member. */
-    public function displayName(): string
+    public function displayName(string $deletedName): string
     {
         $user = $this->user;
 
-        return self::nameFor($this->stageName, $user->username, $user->isDeleted(), $user->profile->displayName, $user->profile->isPublic);
+        return self::nameFor($this->stageName, $user->username, $user->isDeleted(), $user->profile->displayName, $user->profile->isPublic, $deletedName);
     }
 
     /**
@@ -104,12 +104,12 @@ class BandSpaceMembership
      * scalar projections that never hydrate a membership. A deleted account wins over the stage name,
      * which DeleteAccountProcedure leaves in place.
      */
-    public static function nameFor(?string $stageName, string $username, bool $isDeleted, ?string $profileName, bool $profileIsPublic): string
+    public static function nameFor(?string $stageName, string $username, bool $isDeleted, ?string $profileName, bool $profileIsPublic, string $deletedName): string
     {
         if ($isDeleted) {
-            return User::DELETED_DISPLAY_NAME;
+            return $deletedName;
         }
 
-        return $stageName ?? User::publicNameFor($username, false, $profileName, $profileIsPublic);
+        return $stageName ?? User::publicNameFor($username, false, $profileName, $profileIsPublic, $deletedName);
     }
 }

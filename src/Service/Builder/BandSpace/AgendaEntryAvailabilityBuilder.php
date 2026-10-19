@@ -14,6 +14,7 @@ use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Service\BandSpace\AgendaAvailabilityTally;
 use App\Service\BandSpace\AgendaOccurrenceLocator;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Translation\DisplayNameTranslator;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -24,6 +25,7 @@ readonly class AgendaEntryAvailabilityBuilder
         private AgendaEntryAvailabilityRepository $availabilityRepository,
         private MemberAbsenceRepository $memberAbsenceRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -53,7 +55,7 @@ readonly class AgendaEntryAvailabilityBuilder
             $resource->members[] = [
                 'membership_id' => $memberId,
                 'user_id' => (string) $member->user->id,
-                'display_name' => $member->displayName(),
+                'display_name' => $this->displayNames->memberName($member),
                 'profile_picture_url' => $this->profilePictureUrlBuilder->build($member->user),
                 'answer' => $resolved[$memberId],
                 'answered_at' => $answeredAt[$memberId] ?? null,

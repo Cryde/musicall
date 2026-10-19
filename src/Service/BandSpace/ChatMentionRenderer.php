@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\BandSpace;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+
 /**
  * Turns the stored `@[uuid]` tokens of a chat message into something a browser can show (#964).
  *
@@ -25,9 +27,14 @@ readonly class ChatMentionRenderer
     private const string EVERYONE_LABEL = 'tous';
 
     /** Somebody the message named who has no mention row: only legacy messages and corrupt data. */
-    private const string UNKNOWN_LABEL = 'inconnu';
+    private const string UNKNOWN_KEY = 'band_space.chat.mention_unknown';
 
     private const string TOKEN_PATTERN = '/(?:@|&#64;)\[([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|tous)\]/i';
+
+    public function __construct(
+        private TranslatorInterface $translator,
+    ) {
+    }
 
     /**
      * @param array<string, string> $usernamesById the names this message's mention rows resolve to,
@@ -39,6 +46,7 @@ readonly class ChatMentionRenderer
             $sanitizedContent,
             fn (string $label): string => $this->span($label),
             $usernamesById,
+            null,
         );
     }
 
@@ -50,13 +58,15 @@ readonly class ChatMentionRenderer
      * the pattern with render() is the whole point: a second copy of it would drift.
      *
      * @param array<string, string> $usernamesById
+     * @param string|null           $locale        the reader's when it is not the request's (a push recipient)
      */
-    public function renderPlain(string $content, array $usernamesById): string
+    public function renderPlain(string $content, array $usernamesById, ?string $locale = null): string
     {
         return $this->replaceTokens(
             $content,
             static fn (string $label): string => '@' . $label,
             $usernamesById,
+            $locale,
         );
     }
 
@@ -64,11 +74,11 @@ readonly class ChatMentionRenderer
      * @param callable(string): string $format  what one resolved label prints as
      * @param array<string, string>    $usernamesById
      */
-    private function replaceTokens(string $content, callable $format, array $usernamesById): string
+    private function replaceTokens(string $content, callable $format, array $usernamesById, ?string $locale): string
     {
         $rendered = preg_replace_callback(
             self::TOKEN_PATTERN,
-            fn (array $matches): string => $format($this->labelFor($matches[1], $usernamesById)),
+            fn (array $matches): string => $format($this->labelFor($matches[1], $usernamesById, $locale)),
             $content,
         );
 
@@ -80,13 +90,13 @@ readonly class ChatMentionRenderer
     /**
      * @param array<string, string> $usernamesById
      */
-    private function labelFor(string $token, array $usernamesById): string
+    private function labelFor(string $token, array $usernamesById, ?string $locale): string
     {
         if (mb_strtolower($token) === self::EVERYONE_LABEL) {
             return self::EVERYONE_LABEL;
         }
 
-        return $usernamesById[mb_strtolower($token)] ?? self::UNKNOWN_LABEL;
+        return $usernamesById[mb_strtolower($token)] ?? $this->translator->trans(self::UNKNOWN_KEY, [], null, $locale);
     }
 
     private function span(string $label): string

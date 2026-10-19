@@ -13,6 +13,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -122,6 +123,32 @@ class SongPdfExportTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $html = self::getContainer()->get(RecordingGotenbergClient::class)->sentHtml();
         $this->assertStringContainsString('ancienne</span> (ancien membre)', $html);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function readerLocales(): iterable
+    {
+        yield 'French' => ['fr', 'Membre inconnu'];
+        yield 'English' => ['en', 'Unknown member'];
+    }
+
+    /** A singer id that names nobody in the band, as hand edited lyrics can, in the reader's locale. */
+    #[DataProvider('readerLocales')]
+    public function test_a_singer_who_is_nobody_reads_as_unknown_in_the_reader_locale(string $locale, string $unknownName): void
+    {
+        [$space, $member] = $this->songSungBy('batteur');
+        $song = SongFactory::new()->create([
+            'bandSpace' => $space,
+            'title' => 'Au clair de la lune',
+            'lyrics' => "[C]Au clair <span singer=\"@[6ba7b810-9dad-11d1-80b4-00c04fd430c8]\">de la</span> lune",
+        ]);
+
+        $this->client->loginUser($member);
+        $this->client->request('GET', $this->url($space, $song), server: ['HTTP_X_LOCALE' => $locale]);
+
+        $this->assertResponseIsSuccessful();
+        $html = self::getContainer()->get(RecordingGotenbergClient::class)->sentHtml();
+        $this->assertStringContainsString('<span class="singer-tag" style="background: #4f46e5">' . $unknownName . '</span>', $html);
     }
 
     public function test_an_invalid_transposition_is_refused(): void

@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\TechRider;
 
 use App\Entity\BandSpace\TechRiderItem;
+use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TechRiderRepository;
@@ -50,7 +51,7 @@ class TechRiderCreateTest extends ApiTestCase
         $expectedByType = [
             'contacts' => [
                 'is_empty' => false,
-                'contacts' => ['show_emails' => false, 'lines' => [$membership->displayName()], 'emails' => []],
+                'contacts' => ['show_emails' => false, 'lines' => [$membership->displayName(User::DELETED_DISPLAY_NAME)], 'emails' => []],
             ],
             'stage_plot' => ['is_empty' => true],
             'patch_list' => ['is_empty' => true, 'patch_list' => ['inputs' => [], 'outputs' => []]],

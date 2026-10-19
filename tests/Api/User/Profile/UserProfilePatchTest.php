@@ -258,6 +258,7 @@ class UserProfilePatchTest extends ApiTestCase
         yield 'punctuation only' => ['...', 'Ce nom doit contenir au moins une lettre ou un chiffre', DisplayNameValidator::NO_LETTER_OR_DIGIT_ERROR];
         yield 'looks like a handle' => ['@someone', 'Ce nom ne peut pas commencer par @', DisplayNameValidator::LEADING_AT_ERROR];
         yield 'deleted account label' => ['Utilisateur supprimé', 'Ce nom est réservé', DisplayNameValidator::RESERVED_ERROR];
+        yield 'deleted account label in English' => ['deleted USER', 'Ce nom est réservé', DisplayNameValidator::RESERVED_ERROR];
     }
 
     #[DataProvider('refusedDisplayNames')]
