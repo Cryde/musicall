@@ -19,6 +19,8 @@ use App\Repository\BandSpace\SetlistRepository;
 use App\Service\Setlist\SetlistPdfOptions;
 use App\Service\Setlist\SetlistPdfRenderer;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -421,7 +423,7 @@ class SetlistPdfExportTest extends ApiTestCase
 
         // The status is the contract; the detail is deliberately not. API Platform replaces the
         // message on any 5xx outside debug mode (ErrorProvider::provide) so an internal failure
-        // cannot leak, which is why the French wording the renderer attaches only reaches the logs
+        // cannot leak, which is why the wording the renderer attaches only reaches the logs
         // and why the user-facing copy lives in the frontend toast instead.
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_GATEWAY);
         $this->assertJsonEquals([
@@ -434,6 +436,32 @@ class SetlistPdfExportTest extends ApiTestCase
             'type' => '/errors/502',
             'description' => 'Internal Server Error',
         ]);
+    }
+
+    /** API Platform blanks a 5xx detail outside debug, so the message is asserted on the exception. */
+    public function test_an_unreachable_gotenberg_message_is_translated(): void
+    {
+        $setlist = $this->createCompactSetlistWithSongs(1);
+        self::getContainer()->get(RecordingGotenbergClient::class)->failWith(
+            new ClientException('Could not resolve host: gotenberg.musicall'),
+        );
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+
+        try {
+            self::getContainer()->get(SetlistPdfRenderer::class)->render($entity, new SetlistPdfOptions(), 0);
+            self::fail('The render should have failed.');
+        } catch (HttpException $exception) {
+            $translator = self::getContainer()->get(TranslatorInterface::class);
+            $this->assertSame(Response::HTTP_BAD_GATEWAY, $exception->getStatusCode());
+            $this->assertSame(
+                'Le service de génération PDF est momentanément indisponible. Veuillez réessayer.',
+                $translator->trans($exception->getMessage(), [], null, 'fr'),
+            );
+            $this->assertSame(
+                'The PDF generation service is temporarily unavailable. Please try again.',
+                $translator->trans($exception->getMessage(), [], null, 'en'),
+            );
+        }
     }
 
     private function createCompactSetlistWithSongs(int $count): object

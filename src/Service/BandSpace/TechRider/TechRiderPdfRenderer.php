@@ -261,7 +261,7 @@ readonly class TechRiderPdfRenderer
         } catch (GotenbergException|HttpClientException $e) {
             throw new HttpException(
                 Response::HTTP_BAD_GATEWAY,
-                'Le service de génération PDF est momentanément indisponible. Veuillez réessayer.',
+                'common.pdf_service_unavailable',
                 $e,
             );
         }

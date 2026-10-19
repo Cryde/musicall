@@ -25,6 +25,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Sensiolabs\GotenbergBundle\Exception\ClientException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -149,6 +151,31 @@ class TechRiderPdfExportTest extends ApiTestCase
             'type' => '/errors/502',
             'description' => 'Internal Server Error',
         ]);
+    }
+
+    /** API Platform blanks a 5xx detail outside debug, so the message is asserted on the exception. */
+    public function test_an_unreachable_renderer_message_is_translated(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        self::getContainer()->get(RecordingGotenbergClient::class)->failWith(
+            new ClientException('Could not resolve host: gotenberg.musicall'),
+        );
+
+        try {
+            $this->render($bandSpace, $rider);
+            self::fail('The render should have failed.');
+        } catch (HttpException $exception) {
+            $translator = self::getContainer()->get(TranslatorInterface::class);
+            $this->assertSame(Response::HTTP_BAD_GATEWAY, $exception->getStatusCode());
+            $this->assertSame(
+                'Le service de génération PDF est momentanément indisponible. Veuillez réessayer.',
+                $translator->trans($exception->getMessage(), [], null, 'fr'),
+            );
+            $this->assertSame(
+                'The PDF generation service is temporarily unavailable. Please try again.',
+                $translator->trans($exception->getMessage(), [], null, 'en'),
+            );
+        }
     }
 
     // ------------------------------------------------------------------ the segment pipeline
