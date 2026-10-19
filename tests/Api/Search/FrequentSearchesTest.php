@@ -60,6 +60,34 @@ class FrequentSearchesTest extends ApiTestCase
         ]);
     }
 
+    public function test_an_english_visitor_reads_the_instrument_in_english(): void
+    {
+        $drum = InstrumentFactory::new()->asDrum()->create();
+        foreach (['a', 'b', 'c'] as $visitor) {
+            $this->seed(2, $drum, 'Bruxelles', 50.84, 4.35, $visitor);
+        }
+
+        $this->client->request('GET', '/api/musicians/search/frequent', server: ['HTTP_ACCEPT_LANGUAGE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FrequentSearches',
+            '@id' => '/api/musicians/search/frequent',
+            '@type' => 'FrequentSearches',
+            'searches' => [
+                [
+                    '@type' => 'FrequentSearch',
+                    'type' => 2,
+                    'instrument_id' => (string) $drum->id,
+                    'instrument_name' => 'Drummer',
+                    'location_name' => 'Bruxelles',
+                    'latitude' => 50.84,
+                    'longitude' => 4.35,
+                ],
+            ],
+        ]);
+    }
+
     public function test_one_person_repeating_a_search_does_not_make_it_frequent(): void
     {
         $drum = InstrumentFactory::new()->asDrum()->create();
