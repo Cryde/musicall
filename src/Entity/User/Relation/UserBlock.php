@@ -7,8 +7,7 @@ use App\Repository\User\Relation\UserBlockRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Ramsey\Uuid\UuidInterface;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 /**
  * One user blocking another (#1117). One row per direction: two people may block each other, and
@@ -20,14 +19,10 @@ use Ramsey\Uuid\UuidInterface;
 class UserBlock
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    public UuidInterface|string|null $id = null {
-        get {
-            return is_string($this->id) ? $this->id : $this->id?->toString();
-        }
-    }
+    public ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]

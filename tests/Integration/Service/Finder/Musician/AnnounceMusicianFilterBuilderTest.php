@@ -73,10 +73,6 @@ class AnnounceMusicianFilterBuilderTest extends KernelTestCase
         $this->assertSame([(string) $metal->id], $filter->styles);
     }
 
-    /**
-     * The id columns are UUID typed, so handing Doctrine a plain word used to throw ValueNotConvertible
-     * and surface as a 500 instead of a degraded search.
-     */
     public function test_an_unresolvable_instrument_widens_the_search_instead_of_failing(): void
     {
         $metal = StyleFactory::new()->asMetal()->create();

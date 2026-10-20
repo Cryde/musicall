@@ -84,4 +84,22 @@ class MusicianAnnounceGetItemTest extends ApiTestCase
             'description' => 'Musician announce not found',
         ]);
     }
+
+    public function test_get_item_with_an_id_that_is_not_a_uuid_is_not_found(): void
+    {
+        // A guid column converts nothing, so a malformed id is not found rather than a 500.
+        $this->client->request('GET', '/api/musician_announces/not-a-uuid');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Musician announce not found',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Musician announce not found',
+        ]);
+    }
 }

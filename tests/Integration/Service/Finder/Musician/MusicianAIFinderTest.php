@@ -68,7 +68,7 @@ class MusicianAIFinderTest extends KernelTestCase
         return new ObjectResult([
             'type' => 1,
             'instrument' => $instrument->id,
-            'styles' => array_map(fn(Style $style): \Ramsey\Uuid\UuidInterface|string|null => $style->id, $styles),
+            'styles' => array_map(fn(Style $style): ?string => $style->id, $styles),
             'coordinates' => [
                 'latitude' => 48.856614,
                 'longitude' => 2.3522219,

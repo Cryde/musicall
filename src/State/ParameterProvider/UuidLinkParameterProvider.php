@@ -20,10 +20,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * ReadLinkParameterProvider for a parameter that holds uuids, refusing anything else first (#1141).
  *
- * The lookup hands the raw value to Doctrine, which throws on a non-uuid and answers a 500. A query
- * constraint cannot stop it: parameter validation runs after this provider, on the entity it loaded.
- * So the shape is checked here, and a bad value is a 422 naming the parameter, as other query
- * parameters answer. A well-formed but unknown id is left to the lookup.
+ * A bad value is a 422 naming the parameter, as other query parameters answer, rather than the
+ * lookup's 404. A query constraint cannot do it: parameter validation runs after this provider, on
+ * the entity it loaded. A well-formed but unknown id is left to the lookup.
  *
  * The message keys come from the parameter's `invalid_message` (validators domain) and
  * `not_found_message` (messages domain) extra properties, and `list` says whether several ids may be given.

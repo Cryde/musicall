@@ -9,7 +9,6 @@ use App\Enum\Feedback\FeedbackType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<Feedback>
@@ -21,22 +20,9 @@ class FeedbackRepository extends ServiceEntityRepository
         parent::__construct($registry, Feedback::class);
     }
 
-    /**
-     * Looked up through a QueryBuilder rather than find(), which coerces the id through the uuid
-     * field type and throws on a malformed one. The id here is a URI path segment, so nothing has
-     * validated it before it arrives, and a stray character has to be a 404 rather than a 500.
-     */
     public function findOneById(string $id): ?Feedback
     {
-        if (!Uuid::isValid($id)) {
-            return null;
-        }
-
-        return $this->createQueryBuilder('f')
-            ->where('f.id = :id')
-            ->setParameter('id', $id)
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $this->find($id);
     }
 
     /**

@@ -97,10 +97,7 @@ class AdminFeedbackStatusUpdateTest extends ApiTestCase
         $this->assertSame(FeedbackStatus::New, $this->reload((string) $feedback->id)->status);
     }
 
-    /**
-     * The id is a URI path segment, so nothing validates it before the processor. find() would coerce
-     * it through the uuid field type and throw, which is a 500 rather than a 404.
-     */
+    /** The id is a URI path segment that nothing validates before the processor. */
     public function test_a_malformed_id_is_a_404_rather_than_a_500(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create();
