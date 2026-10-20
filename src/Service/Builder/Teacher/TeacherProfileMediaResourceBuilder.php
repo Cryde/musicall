@@ -30,9 +30,7 @@ readonly class TeacherProfileMediaResourceBuilder
     public function buildFromEntity(TeacherProfileMediaEntity $media): TeacherProfileMedia
     {
         $profileMedia = new TeacherProfileMedia();
-        /** @var string|null $mediaId */
-        $mediaId = $media->id;
-        $profileMedia->id = $mediaId;
+        $profileMedia->id = $media->id;
         $profileMedia->platform = $media->platform->value;
         $profileMedia->url = $media->url;
         $profileMedia->embedId = $media->embedId;

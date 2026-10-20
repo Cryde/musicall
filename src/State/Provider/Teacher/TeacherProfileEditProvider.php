@@ -45,9 +45,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
     public function buildFromEntity(TeacherProfile $profile): TeacherProfileOutput
     {
         $dto = new TeacherProfileOutput();
-        /** @var string|null $profileId */
-        $profileId = $profile->id;
-        $dto->id = $profileId;
+        $dto->id = $profile->id;
         $dto->description = $profile->description;
         $dto->yearsOfExperience = $profile->yearsOfExperience;
 
@@ -60,9 +58,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
         $dto->locations = array_values(array_map(function (\App\Entity\Teacher\TeacherProfileLocation $location): TeacherProfileLocation {
             $item = new TeacherProfileLocation();
-            /** @var string|null $locationId */
-            $locationId = $location->id;
-            $item->id = $locationId;
+            $item->id = $location->id;
             $item->type = $location->type->value;
             $item->address = $location->address;
             $item->city = $location->city;
@@ -92,9 +88,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
         $dto->pricing = array_values(array_map(function (\App\Entity\Teacher\TeacherProfilePricing $pricing): TeacherProfilePricing {
             $item = new TeacherProfilePricing();
-            /** @var string|null $pricingId */
-            $pricingId = $pricing->id;
-            $item->id = $pricingId;
+            $item->id = $pricing->id;
             $item->duration = $pricing->duration->value;
             $item->price = $pricing->price;
 
@@ -103,9 +97,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
         $dto->availability = array_values(array_map(function (\App\Entity\Teacher\TeacherAvailability $availability): TeacherProfileAvailability {
             $item = new TeacherProfileAvailability();
-            /** @var string|null $availabilityId */
-            $availabilityId = $availability->id;
-            $item->id = $availabilityId;
+            $item->id = $availability->id;
             $item->dayOfWeek = $availability->dayOfWeek->value;
             $item->startTime = $availability->startTime->format('H:i');
             $item->endTime = $availability->endTime->format('H:i');
@@ -115,9 +107,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
         $dto->packages = array_values(array_map(function (\App\Entity\Teacher\TeacherProfilePackage $package): TeacherProfilePackage {
             $item = new TeacherProfilePackage();
-            /** @var string|null $packageId */
-            $packageId = $package->id;
-            $item->id = $packageId;
+            $item->id = $package->id;
             $item->title = $package->title;
             $item->description = $package->description;
             $item->sessionsCount = $package->sessionsCount;

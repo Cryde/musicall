@@ -25,15 +25,7 @@ class TeacherProfileMediaTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user]);
 
-        $media1 = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
-            'platform' => MediaPlatform::YOUTUBE,
-            'url' => 'https://www.youtube.com/watch?v=abc123',
-            'embedId' => 'abc123',
-            'title' => 'First Video',
-            'position' => 0,
-        ]);
-
+        // Created in reverse, so the order can only come from the position: new ids sort by creation.
         $media2 = TeacherProfileMediaFactory::new()->create([
             'teacherProfile' => $teacherProfile,
             'platform' => MediaPlatform::YOUTUBE,
@@ -41,6 +33,15 @@ class TeacherProfileMediaTest extends ApiTestCase
             'embedId' => 'def456',
             'title' => 'Second Video',
             'position' => 1,
+        ]);
+
+        $media1 = TeacherProfileMediaFactory::new()->create([
+            'teacherProfile' => $teacherProfile,
+            'platform' => MediaPlatform::YOUTUBE,
+            'url' => 'https://www.youtube.com/watch?v=abc123',
+            'embedId' => 'abc123',
+            'title' => 'First Video',
+            'position' => 0,
         ]);
 
         $media1Id = $media1->id;
@@ -148,6 +149,28 @@ class TeacherProfileMediaTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/teacher-profile/media/00000000-0000-0000-0000-000000000000');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function test_delete_media_with_an_id_that_is_not_a_uuid(): void
+    {
+        // A guid column converts nothing, so a malformed id is not found rather than a 500.
+        $user = UserFactory::new()->asBaseUser()->create();
+        TeacherProfileFactory::new()->create(['user' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/teacher-profile/media/not-a-uuid');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Média non trouvé',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Média non trouvé',
+        ]);
     }
 
     public function test_delete_media_not_owner(): void
