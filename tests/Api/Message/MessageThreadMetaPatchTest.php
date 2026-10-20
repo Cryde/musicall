@@ -172,8 +172,8 @@ class MessageThreadMetaPatchTest extends ApiTestCase
     {
         yield 'not a uuid at all' => ['not-a-uuid'];
         // Thirty six characters of hex with no hyphens. It is the shape a looser
-        // `[0-9a-fA-F\-]{36}` requirement would wave through, and Ramsey rejects it, so Doctrine
-        // would throw converting it. Requirement::UUID pins the hyphens, the version and the variant.
+        // `[0-9a-fA-F\-]{36}` requirement would wave through. Requirement::UUID pins the hyphens, the
+        // version and the variant.
         yield 'hex of the right length but not a uuid' => [str_repeat('a', 36)];
         yield 'the nil uuid' => ['00000000-0000-0000-0000-000000000000'];
     }
@@ -181,9 +181,9 @@ class MessageThreadMetaPatchTest extends ApiTestCase
     #[DataProvider('idsThatAreNotUuids')]
     public function test_an_id_that_is_not_a_uuid_is_not_a_server_error(string $id): void
     {
-        // The column is a uuid, so an unconvertible value reached Doctrine and threw where nothing
-        // catches it: a 500 on a route any signed in person can reach. The route requirement now
-        // refuses to match, so the request never reaches the provider at all.
+        // When the column still converted its value, a malformed one threw out of Doctrine: a 500 on a
+        // route any signed in person can reach. The route requirement refuses to match, so the
+        // request never reaches the provider at all.
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
 
         $this->client->loginUser($user);

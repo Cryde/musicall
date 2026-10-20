@@ -11,7 +11,6 @@ use App\Entity\Message\Message;
 use App\Entity\Message\MessageContactOrigin;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Message\MessagePlainTextExtractor;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -112,7 +111,7 @@ readonly class MessageBuilder
         return $this->plainTextExtractor->extractOneLine($content);
     }
 
-    private function buildShallowThread(UuidInterface|string|null $threadId): MessageThreadResource
+    private function buildShallowThread(?string $threadId): MessageThreadResource
     {
         $dto = new MessageThreadResource();
         $dto->id = (string) $threadId;

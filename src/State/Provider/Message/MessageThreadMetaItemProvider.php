@@ -34,7 +34,6 @@ readonly class MessageThreadMetaItemProvider implements ProviderInterface
             throw new AccessDeniedException('common.not_authenticated');
         }
 
-        // The id is a uuid by route requirement, so nothing unconvertible reaches Doctrine here.
         $entity = $this->messageThreadMetaRepository->findOneByIdAndUser((string) $uriVariables['id'], $user);
         if (!$entity instanceof MessageThreadMeta) {
             throw new NotFoundHttpException('message.thread_meta.not_found');

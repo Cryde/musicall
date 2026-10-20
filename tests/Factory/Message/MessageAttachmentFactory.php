@@ -6,7 +6,7 @@ namespace App\Tests\Factory\Message;
 
 use App\Entity\Message\MessageAttachment;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -21,7 +21,7 @@ final class MessageAttachmentFactory extends PersistentObjectFactory
             'targetType' => BandSpaceSearchResultType::Task,
             // A target that resolves is the caller's business: the default points at nothing, which is
             // the orphan case the label snapshot exists for.
-            'targetId' => Uuid::uuid4(),
+            'targetId' => Uuid::v7()->toRfc4122(),
             'label' => self::faker()->words(3, true),
         ];
     }

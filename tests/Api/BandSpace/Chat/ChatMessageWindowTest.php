@@ -49,6 +49,24 @@ class ChatMessageWindowTest extends ApiTestCase
         $this->assertJsonEquals($this->expectedWindow($space, $member, array_slice($messages, 5, 51), hasOlder: true, hasNewer: true, total: 60));
     }
 
+    public function test_around_follows_the_datetime_when_the_ids_run_against_it(): void
+    {
+        // New ids are v7 and sort like the datetime, which would hide a window ordered by id alone.
+        // Rows written before #1178 are v4, so the order has to come from the datetime.
+        [$member, $space, $messages] = $this->conversationOf(60);
+        $messages = array_reverse($messages);
+        foreach ($messages as $index => $message) {
+            $message->creationDatetime = (new \DateTime('2026-09-10 10:00:00'))->modify('+' . $index . ' minutes');
+        }
+        self::getContainer()->get(EntityManagerInterface::class)->flush();
+
+        $this->client->loginUser($member);
+        $this->window($space, 'around', (string) $messages[30]->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals($this->expectedWindow($space, $member, array_slice($messages, 5, 51), hasOlder: true, hasNewer: true, total: 60));
+    }
+
     public function test_around_a_message_near_the_start_says_there_is_nothing_older(): void
     {
         [$member, $space, $messages] = $this->conversationOf(60);

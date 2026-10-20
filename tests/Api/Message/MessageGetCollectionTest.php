@@ -430,9 +430,7 @@ class MessageGetCollectionTest extends ApiTestCase
 
     public function test_an_id_that_is_not_a_uuid(): void
     {
-        // Raised by API Platform resolving the uri variable, before the provider runs, so the detail
-        // is not the provider's. It is still a 404, and it is reachable without knowing any id at all,
-        // so it tells a caller nothing they did not already have.
+        // A guid column converts nothing, so the malformed id is simply not found, like an unknown one.
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
 
         $this->client->loginUser($user);
@@ -444,8 +442,8 @@ class MessageGetCollectionTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'description' => 'Invalid uri variables.',
-            'detail' => 'Invalid uri variables.',
+            'description' => 'Thread not found.',
+            'detail' => 'Thread not found.',
             'status' => 404,
             'type' => '/errors/404',
         ]);

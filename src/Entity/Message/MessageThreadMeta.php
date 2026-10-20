@@ -10,22 +10,17 @@ use DateTime;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Ramsey\Uuid\UuidInterface;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: MessageThreadMetaRepository::class)]
 #[ORM\UniqueConstraint(name: 'message_thread_meta_unique', columns: ['thread_id', 'user_id'])]
 class MessageThreadMeta
 {
     #[ORM\Id]
-    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\Column(type: Types::GUID, unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    public UuidInterface|string|null $id = null {
-        get {
-            return is_string($this->id) ? $this->id : $this->id?->toString();
-        }
-    }
+    public ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -44,7 +39,7 @@ class MessageThreadMeta
      *
      * A position rather than the boolean it replaced (#954), because a boolean can say "something is
      * new" and cannot say how much or where. A datetime rather than a relation to the last read
-     * message, because Message ids are uuid4 and therefore carry no order: a relation would have had
+     * message, because Message ids carry no order (rows before #1178 are uuid4): a relation would have had
      * to fall back on this very column to compare two messages, so it would have bought a foreign key
      * and no accuracy.
      *

@@ -56,7 +56,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
 )]
 /**
- * `id` is in the sort for a tiebreak, not because anybody wants to order by a uuid4.
+ * `id` is in the sort for a tiebreak, not for order: rows before #1178 are uuid4.
  *
  * `creation_datetime` is second granular and same second pairs are ordinary rather than rare, and SQL
  * promises nothing about the order of tied rows. Two page requests that happened to be planned
