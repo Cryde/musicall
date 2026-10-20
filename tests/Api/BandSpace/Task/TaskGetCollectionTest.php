@@ -20,7 +20,6 @@ use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Date;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -229,7 +228,7 @@ class TaskGetCollectionTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('-1 day'),
         ])->create();
 
-        $taskUuid = Uuid::fromString($taskWithFiles->id);
+        $taskUuid = (string) $taskWithFiles->id;
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $activeFile1,
             'sourceType' => 'task',

@@ -16,6 +16,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileShareFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
@@ -155,10 +156,10 @@ class BandSpaceFileBulkDeleteTest extends ApiTestCase
 
         $free = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'libre.wav'])->create();
         $attachedToTask = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'devis.pdf'])
-            ->withAttachment(['type' => 'task', 'id' => \Ramsey\Uuid\Uuid::uuid4()->toString()])
+            ->withAttachment(['type' => 'task', 'id' => Uuid::v7()->toRfc4122()])
             ->create();
         $attachedToNote = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'paroles.pdf'])
-            ->withAttachment(['type' => 'note', 'id' => \Ramsey\Uuid\Uuid::uuid4()->toString()])
+            ->withAttachment(['type' => 'note', 'id' => Uuid::v7()->toRfc4122()])
             ->create();
 
         $this->client->loginUser($user);
@@ -197,7 +198,7 @@ class BandSpaceFileBulkDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $attached = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'facture.pdf'])
-            ->withAttachment(['type' => 'finance', 'id' => \Ramsey\Uuid\Uuid::uuid4()->toString()])
+            ->withAttachment(['type' => 'finance', 'id' => Uuid::v7()->toRfc4122()])
             ->create();
 
         $this->client->loginUser($user);

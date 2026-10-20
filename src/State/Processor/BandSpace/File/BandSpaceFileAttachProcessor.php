@@ -26,7 +26,6 @@ use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -74,20 +73,22 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         if ($data->sourceId === null) {
             throw new UnprocessableEntityHttpException('band_space.file.source_id_required');
         }
+        // Stored lower case, as every generated id is: the file card matches it with ===.
+        $sourceId = mb_strtolower($data->sourceId);
 
         $sourceLabel = match ($data->sourceType) {
-            'task' => $this->resolveTask($data->sourceId, $bandSpace),
-            'finance' => $this->resolveFinanceEntry($data->sourceId, $bandSpace, $user),
-            'note' => $this->resolveNote($data->sourceId, $bandSpace),
-            'song' => $this->resolveSong($data->sourceId, $bandSpace),
-            'setlist' => $this->resolveSetlist($data->sourceId, $bandSpace),
+            'task' => $this->resolveTask($sourceId, $bandSpace),
+            'finance' => $this->resolveFinanceEntry($sourceId, $bandSpace, $user),
+            'note' => $this->resolveNote($sourceId, $bandSpace),
+            'song' => $this->resolveSong($sourceId, $bandSpace),
+            'setlist' => $this->resolveSetlist($sourceId, $bandSpace),
             default => throw new UnprocessableEntityHttpException('band_space.file.source_type_invalid'),
         };
 
         $existing = $this->attachmentRepository->findOneByFileAndSource(
             $file,
             (string) $data->sourceType,
-            (string) $data->sourceId,
+            $sourceId,
         );
         if ($existing instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
             throw new UnprocessableEntityHttpException('band_space.file.already_attached');
@@ -96,7 +97,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         $attachment = new BandSpaceFileAttachment();
         $attachment->bandSpaceFile = $file;
         $attachment->sourceType = (string) $data->sourceType;
-        $attachment->sourceId = Uuid::fromString((string) $data->sourceId);
+        $attachment->sourceId = $sourceId;
         $attachment->attachedBy = $user;
         $this->entityManager->persist($attachment);
 
@@ -110,7 +111,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             actor: $user,
             payload: [
                 'source_type' => $data->sourceType,
-                'source_id' => (string) $data->sourceId,
+                'source_id' => $sourceId,
                 'source_label' => $sourceLabel,
             ],
         );

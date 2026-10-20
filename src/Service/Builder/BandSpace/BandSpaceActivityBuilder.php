@@ -31,7 +31,7 @@ readonly class BandSpaceActivityBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->module = $entity->module->value;
-        $dto->resourceId = $entity->resourceId?->toString();
+        $dto->resourceId = $entity->resourceId;
         $dto->type = $entity->type;
         $dto->payload = ActivityPayloadMask::mask($entity->payload);
         $dto->actor = $entity->actor instanceof \App\Entity\User ? [

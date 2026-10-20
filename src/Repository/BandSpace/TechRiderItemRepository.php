@@ -6,7 +6,6 @@ use App\Entity\BandSpace\TechRider;
 use App\Entity\BandSpace\TechRiderItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<TechRiderItem>
@@ -20,15 +19,10 @@ class TechRiderItemRepository extends ServiceEntityRepository
 
     /**
      * Scoped by rider so an item id from another rider resolves to null rather than
-     * granting access. A non-uuid id returns null instead of reaching the uuid column,
-     * where it would raise ValueNotConvertible and surface as a 500.
+     * granting access.
      */
     public function findOneByIdAndRider(string $id, TechRider $techRider): ?TechRiderItem
     {
-        if (!Uuid::isValid($id)) {
-            return null;
-        }
-
         return $this->createQueryBuilder('s')
             ->where('s.id = :id')
             ->andWhere('s.techRider = :techRider')

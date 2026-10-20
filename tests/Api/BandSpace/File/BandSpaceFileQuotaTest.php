@@ -14,6 +14,7 @@ use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -93,7 +94,7 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $taskFile,
             'sourceType' => 'task',
-            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $user,
         ]);
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $taskFile, 'versionNumber' => 1, 'size' => 50])->create();

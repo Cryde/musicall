@@ -16,7 +16,6 @@ use App\Tests\Factory\BandSpace\TechRiderFactory;
 use App\Tests\Factory\BandSpace\TechRiderItemFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTime;
-use Ramsey\Uuid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -175,7 +174,7 @@ class TechRiderItemActivityTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Rider,
             'type' => 'rider_item_updated',
-            'resourceId' => Uuid::fromString((string) $item->id),
+            'resourceId' => (string) $item->id,
             'actor' => $actor,
             'creationDatetime' => $when,
         ])->create();

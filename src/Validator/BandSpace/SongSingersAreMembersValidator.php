@@ -40,11 +40,9 @@ class SongSingersAreMembersValidator extends ConstraintValidator
             return;
         }
 
-        // A malformed id can never be a member, and must not reach a uuid column.
-        $wellFormed = array_values(array_filter($singerIds, static fn (string $id): bool => uuid_is_valid($id)));
         $memberIds = array_map(
             static fn (BandSpaceMembership $membership): string => $membership->user->id,
-            $this->membershipRepository->findByBandSpaceIdAndUserIds($value->bandSpaceId, $wellFormed),
+            $this->membershipRepository->findByBandSpaceIdAndUserIds($value->bandSpaceId, $singerIds),
         );
 
         if (array_diff($singerIds, $memberIds) !== []) {

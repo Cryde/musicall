@@ -36,13 +36,6 @@ class TechRiderRepository extends ServiceEntityRepository
     /**
      * Direct id lookup does NOT filter archived riders: an archived rider still has to
      * be readable so it can be restored or duplicated into next year's.
-     *
-     * A non-uuid $id returns null rather than blowing up, because setParameter() with no
-     * explicit type binds the plain string and it simply matches no row. That safety does
-     * NOT survive a switch to find() or findOneBy(['id' => $id]), which bind through the
-     * column's uuid type and throw ValueNotConvertible, surfacing as a 500 where the
-     * caller wants a 404. Keep the query builder.
-     * Pinned by TechRiderGetItemTest::test_get_tech_rider_with_a_non_uuid_id_is_not_found.
      */
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?TechRider
     {

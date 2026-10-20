@@ -13,7 +13,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\SetlistFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -133,7 +132,7 @@ class BandSpaceSetlistFileAttachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'setlist',
-            'sourceId' => Uuid::fromString((string) $setlist->id),
+            'sourceId' => (string) $setlist->id,
             'attachedBy' => $user,
         ]);
 
@@ -160,7 +159,7 @@ class BandSpaceSetlistFileAttachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'setlist',
-            'sourceId' => Uuid::fromString((string) $setlist->id),
+            'sourceId' => (string) $setlist->id,
             'attachedBy' => $user,
         ]);
 
@@ -217,7 +216,7 @@ class BandSpaceSetlistFileAttachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'setlist',
-            'sourceId' => Uuid::fromString((string) $setlist->id),
+            'sourceId' => (string) $setlist->id,
             'attachedBy' => $member,
         ]);
 

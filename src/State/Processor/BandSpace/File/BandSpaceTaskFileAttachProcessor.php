@@ -25,7 +25,6 @@ use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -133,7 +132,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
         $attachment = new BandSpaceFileAttachment();
         $attachment->bandSpaceFile = $file;
         $attachment->sourceType = 'task';
-        $attachment->sourceId = Uuid::fromString((string) $task->id);
+        $attachment->sourceId = (string) $task->id;
         $attachment->attachedBy = $user;
 
         $this->entityManager->persist($file);

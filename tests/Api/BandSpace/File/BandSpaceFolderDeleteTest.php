@@ -19,8 +19,8 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileShareFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -192,13 +192,13 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attachedToTask,
             'sourceType' => 'task',
-            'sourceId' => Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $admin,
         ]);
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attachedToNote,
             'sourceType' => 'note',
-            'sourceId' => Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $admin,
         ]);
 
@@ -254,7 +254,7 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::uuid4(),
+            'sourceId' => Uuid::v7()->toRfc4122(),
             'attachedBy' => $admin,
         ]);
 
@@ -468,7 +468,7 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         $parameters = [];
         for ($i = 0; $i < $count; $i++) {
             $rows[] = '(?, ?, ?, ?, ?, ?)';
-            array_push($parameters, Uuid::uuid4()->toString(), $bandSpaceId, $folderId, $createdById, 'photo-' . $i . '.jpg', $now);
+            array_push($parameters, Uuid::v7()->toRfc4122(), $bandSpaceId, $folderId, $createdById, 'photo-' . $i . '.jpg', $now);
         }
 
         $connection->executeStatement(

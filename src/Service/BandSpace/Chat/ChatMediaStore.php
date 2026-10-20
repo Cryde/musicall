@@ -12,7 +12,6 @@ use App\Service\BandSpace\File\BandSpaceFilePurger;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -76,7 +75,7 @@ readonly class ChatMediaStore
         $attachment = new BandSpaceFileAttachment();
         $attachment->bandSpaceFile = $file;
         $attachment->sourceType = BandSpaceFileSourceTypes::CHAT_MESSAGE;
-        $attachment->sourceId = Uuid::fromString((string) $message->id);
+        $attachment->sourceId = (string) $message->id;
         $attachment->attachedBy = $uploader;
         $this->entityManager->persist($attachment);
         $this->entityManager->flush();

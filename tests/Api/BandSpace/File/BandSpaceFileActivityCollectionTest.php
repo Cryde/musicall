@@ -10,7 +10,6 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -33,7 +32,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'uploaded',
-            'resourceId' => Uuid::fromString($file->id),
+            'resourceId' => (string) $file->id,
             'actor' => $user,
             'payload' => ['original_name' => 'test.pdf', 'size' => 1024, 'mime_type' => 'application/pdf'],
             'creationDatetime' => new \DateTime('2026-05-01 10:00:00'),
@@ -43,7 +42,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'renamed',
-            'resourceId' => Uuid::fromString($file->id),
+            'resourceId' => (string) $file->id,
             'actor' => $user,
             'payload' => ['from' => 'a.pdf', 'to' => 'b.pdf'],
             'creationDatetime' => new \DateTime('2026-05-02 10:00:00'),
@@ -54,7 +53,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'uploaded',
-            'resourceId' => Uuid::fromString($otherFile->id),
+            'resourceId' => (string) $otherFile->id,
             'actor' => $user,
             'creationDatetime' => new \DateTime('2026-05-03 10:00:00'),
         ])->create();

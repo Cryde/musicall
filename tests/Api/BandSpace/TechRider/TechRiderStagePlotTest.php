@@ -13,7 +13,6 @@ use App\Repository\BandSpace\TechRiderItemRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use DateTime;
-use Ramsey\Uuid\Uuid;
 use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
@@ -638,7 +637,7 @@ class TechRiderStagePlotTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Rider,
             'type' => 'rider_stage_plot_updated',
-            'resourceId' => Uuid::fromString((string) $item->id),
+            'resourceId' => (string) $item->id,
             'actor' => $user,
             'creationDatetime' => new DateTime('-1 minute'),
         ])->create();

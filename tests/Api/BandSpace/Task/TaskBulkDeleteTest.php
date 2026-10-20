@@ -14,7 +14,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -91,19 +90,19 @@ class TaskBulkDeleteTest extends ApiTestCase
         $attachment1 = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file1,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString((string) $task1->id),
+            'sourceId' => (string) $task1->id,
             'attachedBy' => $user,
         ]);
         $attachment2 = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file2,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString((string) $task2->id),
+            'sourceId' => (string) $task2->id,
             'attachedBy' => $user,
         ]);
         $keptAttachment = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $keptFile,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString((string) $keptTask->id),
+            'sourceId' => (string) $keptTask->id,
             'attachedBy' => $user,
         ]);
 

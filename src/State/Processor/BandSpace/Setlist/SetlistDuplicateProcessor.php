@@ -18,7 +18,6 @@ use App\Service\BandSpace\Setlist\SetlistItemCopier;
 use App\Service\BandSpace\Setlist\SetlistRunningOrder;
 use App\Service\Builder\BandSpace\SetlistBuilder;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -107,7 +106,7 @@ readonly class SetlistDuplicateProcessor implements ProcessorInterface
             $attachmentCopy = new BandSpaceFileAttachment();
             $attachmentCopy->bandSpaceFile = $sourceAttachment->bandSpaceFile;
             $attachmentCopy->sourceType = self::ATTACHMENT_SOURCE_TYPE;
-            $attachmentCopy->sourceId = Uuid::fromString((string) $copy->id);
+            $attachmentCopy->sourceId = (string) $copy->id;
             // The duplicator, not whoever attached the original: this attachment was created now,
             // and attachedDatetime already says so.
             $attachmentCopy->attachedBy = $user;

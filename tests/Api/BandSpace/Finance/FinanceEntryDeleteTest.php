@@ -23,7 +23,6 @@ use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -99,7 +98,7 @@ class FinanceEntryDeleteTest extends ApiTestCase
         $attachment = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString((string) $entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $user,
         ]);
         $entryId = (string) $entry->id;
@@ -158,7 +157,7 @@ class FinanceEntryDeleteTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString((string) $entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $user,
         ]);
         $bandSpaceId = (string) $bandSpace->id;

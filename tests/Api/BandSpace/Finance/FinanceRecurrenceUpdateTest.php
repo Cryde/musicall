@@ -35,7 +35,6 @@ use App\Validator\BandSpace\PersonalScopeWithoutSplitsValidator;
 use App\Validator\BandSpace\RecurrenceEndDateValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\GreaterThan;
@@ -774,7 +773,7 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString((string) $forecast->id),
+            'sourceId' => (string) $forecast->id,
             'attachedBy' => $owner,
         ]);
         $bandSpaceId = (string) $bandSpace->id;

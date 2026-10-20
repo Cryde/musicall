@@ -9,7 +9,6 @@ use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\UserRepository;
 use App\Service\User\DisplayNameRules;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraint;
@@ -81,7 +80,7 @@ class DisplayNameValidator extends ConstraintValidator
     {
         if ($constraint->owner === DisplayName::OWNER_MEMBERSHIP) {
             $membershipId = (string) $this->requestStack->getCurrentRequest()?->attributes->get('id');
-            $membership = Uuid::isValid($membershipId) ? $this->membershipRepository->find($membershipId) : null;
+            $membership = $this->membershipRepository->find($membershipId);
 
             return $membership instanceof BandSpaceMembership ? [$membership->user, $membership->stageName] : [null, null];
         }

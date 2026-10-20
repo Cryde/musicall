@@ -16,7 +16,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\User\UserFactory;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -38,7 +37,7 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $user,
         ]);
 
@@ -72,7 +71,7 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $user,
         ]);
         $bandSpaceId = (string) $bandSpace->id;
@@ -104,7 +103,7 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $user,
         ]);
 
@@ -140,7 +139,7 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($entry->id),
+            'sourceId' => (string) $entry->id,
             'attachedBy' => $owner,
         ]);
 
@@ -177,7 +176,7 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($otherEntry->id),
+            'sourceId' => (string) $otherEntry->id,
             'attachedBy' => $user,
         ]);
 

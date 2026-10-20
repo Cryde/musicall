@@ -20,7 +20,6 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -102,7 +101,7 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $attachment = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'note',
-            'sourceId' => Uuid::fromString((string) $note->id),
+            'sourceId' => (string) $note->id,
             'attachedBy' => $user,
         ]);
         $noteId = (string) $note->id;
@@ -157,13 +156,13 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $childAttachment = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $childFile,
             'sourceType' => 'note',
-            'sourceId' => Uuid::fromString((string) $child->id),
+            'sourceId' => (string) $child->id,
             'attachedBy' => $user,
         ]);
         $grandChildAttachment = BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $grandChildFile,
             'sourceType' => 'note',
-            'sourceId' => Uuid::fromString((string) $grandChild->id),
+            'sourceId' => (string) $grandChild->id,
             'attachedBy' => $user,
         ]);
 
