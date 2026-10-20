@@ -63,6 +63,9 @@ readonly class ReportCreateProcessor implements ProcessorInterface
 
         $targetType = ReportTargetType::from($data->targetType);
         $targetId = $targetType->canonicalId($data->targetId);
+        if (!$targetType->acceptsId($targetId)) {
+            throw new NotFoundHttpException('report.target_not_found');
+        }
         $loader = $this->loaders[$targetType->value] ?? throw new \LogicException(sprintf('No report target loader for "%s"', $targetType->value));
         $target = $loader->load($targetId, $reporter);
         if (!$target instanceof ReportTarget) {

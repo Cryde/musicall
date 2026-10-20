@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
 use App\Repository\User\Relation\UserBlockRepository;
-use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -35,9 +34,7 @@ readonly class UserBlockDeleteProcessor implements ProcessorInterface
 
         $this->userBlockLimiter->create($user->getUserIdentifier())->consume()->ensureAccepted();
 
-        // Checked before the query, which would coerce the id through the uuid type (see #934).
-        $blockedId = (string) $uriVariables['userId'];
-        if (!Uuid::isValid($blockedId) || $this->userBlockRepository->unblock($user, $blockedId) === 0) {
+        if ($this->userBlockRepository->unblock($user, (string) $uriVariables['userId']) === 0) {
             throw new NotFoundHttpException('user.block.not_blocked');
         }
     }

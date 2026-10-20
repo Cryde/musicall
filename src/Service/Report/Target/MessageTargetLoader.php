@@ -8,7 +8,6 @@ use App\Enum\Report\ReportTargetType;
 use App\Repository\Message\MessageRepository;
 use App\Service\Access\ThreadAccess;
 use App\Service\Report\ReportTarget;
-use Ramsey\Uuid\Uuid;
 
 /** A direct message, reportable only by a participant of its conversation. */
 readonly class MessageTargetLoader implements ReportTargetLoaderInterface
@@ -42,7 +41,7 @@ readonly class MessageTargetLoader implements ReportTargetLoaderInterface
 
     private function find(string $id): ?Message
     {
-        $message = Uuid::isValid($id) ? $this->messageRepository->find($id) : null;
+        $message = $this->messageRepository->find($id);
 
         return $message instanceof Message && !$message->isDeleted() && !$message->thread->isChannel() ? $message : null;
     }

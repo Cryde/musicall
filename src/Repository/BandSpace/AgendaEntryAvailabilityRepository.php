@@ -9,7 +9,7 @@ use App\Enum\BandSpace\AvailabilityAnswer;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<AgendaEntryAvailability>
@@ -33,7 +33,7 @@ class AgendaEntryAvailabilityRepository extends ServiceEntityRepository
             . ' VALUES (:id, :entry, :date, :membership, :answer, :answeredAt)'
             . ' ON DUPLICATE KEY UPDATE answer = VALUES(answer), answered_at = VALUES(answered_at)',
             [
-                'id' => Uuid::uuid4()->toString(),
+                'id' => Uuid::v7()->toRfc4122(),
                 'entry' => (string) $entry->id,
                 'date' => $occurrenceDate->format('Y-m-d'),
                 'membership' => (string) $membership->id,

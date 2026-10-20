@@ -5,7 +5,7 @@ namespace App\Service\Message;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Repository\Message\MessageAttachmentRepository;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Turns attachment rows into the cards a chat message carries, and the synthetic identifiers a

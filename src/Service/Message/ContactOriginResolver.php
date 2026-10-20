@@ -7,7 +7,6 @@ use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\Teacher\TeacherProfileRepository;
-use Ramsey\Uuid\Uuid;
 
 /**
  * The announce or teacher profile a direct message says it was sent from (#998), only the
@@ -23,7 +22,7 @@ readonly class ContactOriginResolver
 
     public function musicianAnnounceOf(string $announceId, User $recipient): ?MusicianAnnounce
     {
-        $announce = Uuid::isValid($announceId) ? $this->musicianAnnounceRepository->find($announceId) : null;
+        $announce = $this->musicianAnnounceRepository->find($announceId);
 
         return $announce instanceof MusicianAnnounce && (string) $announce->author->id === (string) $recipient->id ? $announce : null;
     }

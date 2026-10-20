@@ -7,7 +7,6 @@ use App\Entity\User;
 use App\Enum\Report\ReportTargetType;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Report\ReportTarget;
-use Ramsey\Uuid\Uuid;
 
 readonly class AnnounceTargetLoader implements ReportTargetLoaderInterface
 {
@@ -27,7 +26,7 @@ readonly class AnnounceTargetLoader implements ReportTargetLoaderInterface
 
     public function current(string $id): ?ReportTarget
     {
-        $announce = Uuid::isValid($id) ? $this->announceRepository->find($id) : null;
+        $announce = $this->announceRepository->find($id);
         if (!$announce instanceof MusicianAnnounce || $announce->author->isDeleted()) {
             return null;
         }

@@ -296,8 +296,7 @@ class ChatMessageAttachmentTest extends ApiTestCase
         $this->channelOf($space);
 
         $this->client->loginUser($member);
-        // Not a uuid, which must be refused here rather than reaching Doctrine's uuid conversion and
-        // coming back as a 500.
+        // Not a uuid, which is refused here: nothing else checks a target id before it is stored.
         $this->post($space, 'regarde ça', ['task-pas-un-uuid']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

@@ -10,7 +10,6 @@ use App\Enum\Report\ReportTargetType;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Message\MessageRepository;
 use App\Service\Report\ReportTarget;
-use Ramsey\Uuid\Uuid;
 
 /** A band chat message, reportable only by an active member of that band. */
 readonly class BandChatMessageTargetLoader implements ReportTargetLoaderInterface
@@ -48,7 +47,7 @@ readonly class BandChatMessageTargetLoader implements ReportTargetLoaderInterfac
 
     private function find(string $id): ?Message
     {
-        $message = Uuid::isValid($id) ? $this->messageRepository->find($id) : null;
+        $message = $this->messageRepository->find($id);
 
         return $message instanceof Message && !$message->isDeleted() && $message->thread->isChannel() ? $message : null;
     }
