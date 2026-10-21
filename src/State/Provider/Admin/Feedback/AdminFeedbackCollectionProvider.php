@@ -38,7 +38,7 @@ readonly class AdminFeedbackCollectionProvider implements ProviderInterface
         $filters = $context['filters'] ?? [];
 
         $paginator = $this->feedbackRepository->findForAdmin(
-            FeedbackStatus::tryFrom(self::readFilter($filters, 'status')),
+            self::readStatuses($operation),
             FeedbackModule::tryFrom(self::readFilter($filters, 'module')),
             FeedbackType::tryFrom(self::readFilter($filters, 'type')),
             $offset,
@@ -51,9 +51,25 @@ readonly class AdminFeedbackCollectionProvider implements ProviderInterface
     }
 
     /**
+     * Read from the parameter rather than the raw filters, because only the parameter has been through
+     * castToArray: `?status=new` arrives here as `['new']`. Every value has already passed the Choice.
+     *
+     * @return list<FeedbackStatus>
+     */
+    private static function readStatuses(Operation $operation): array
+    {
+        $values = $operation->getParameters()?->get('status')?->getValue();
+        if (!is_array($values)) {
+            return [];
+        }
+
+        return array_values(array_map(static fn (string $value): FeedbackStatus => FeedbackStatus::from($value), $values));
+    }
+
+    /**
      * No defensive parsing: ParameterValidatorProvider has already turned an unknown value into a
      * 422 before this runs, so all that is left is "was it sent at all". The string check survives
-     * `?status[]=x`, which reaches here as an array rather than a string.
+     * `?type[]=x`, which reaches here as an array rather than a string.
      *
      * @param array<string, mixed> $filters
      */

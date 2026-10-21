@@ -38,7 +38,14 @@ use Symfony\Component\Validator\Constraints as Assert;
             // in a `schema` here: an attribute argument has to be a constant expression, and a static
             // call is not one.
             parameters: [
-                'status' => new QueryParameter(key: 'status', constraints: [new Assert\Choice(callback: [FeedbackStatus::class, 'values'], message: 'Statut inconnu')]),
+                // A list, so the admin page can open on "everything not yet handled". `?status=new` still
+                // works: castToArray wraps a single value.
+                'status' => new QueryParameter(
+                    key: 'status',
+                    constraints: [new Assert\All([new Assert\Choice(callback: [FeedbackStatus::class, 'values'], message: 'Statut inconnu')])],
+                    schema: ['type' => 'array', 'items' => ['type' => 'string']],
+                    castToArray: true,
+                ),
                 'module' => new QueryParameter(key: 'module', constraints: [new Assert\Choice(callback: [FeedbackModule::class, 'values'], message: 'Section inconnue')]),
                 'type' => new QueryParameter(key: 'type', constraints: [new Assert\Choice(callback: [FeedbackType::class, 'values'], message: 'Type de retour inconnu')]),
             ],

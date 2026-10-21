@@ -169,15 +169,119 @@ class AdminFeedbackListTest extends ApiTestCase
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/feedbacks?status=bogus');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'status',
+                    'message' => 'Statut inconnu',
+                    'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+                ],
+            ],
+            'detail' => 'status: Statut inconnu',
+            'description' => 'status: Statut inconnu',
+            'type' => '/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            'title' => 'An error occurred',
+        ]);
     }
 
-    public function test_an_array_status_filter_is_refused_rather_than_a_500(): void
+    public function test_admin_filters_by_several_statuses(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+
+        $untriaged = FeedbackFactory::new()->create([
+            'creationDatetime' => new \DateTime('2026-09-02 09:00:00'),
+            'message' => 'Un retour encore à trier.',
+        ]);
+        $inProgress = FeedbackFactory::new()->create([
+            'creationDatetime' => new \DateTime('2026-09-01 09:00:00'),
+            'status' => FeedbackStatus::InProgress,
+            'message' => 'Un retour en cours.',
+        ]);
+        FeedbackFactory::new()->asTriaged()->create(['message' => 'Un retour déjà traité.']);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/feedbacks?status[]=new&status[]=in_progress');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AdminFeedback',
+            '@id' => '/api/admin/feedbacks',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => '/api/admin/feedbacks/' . $untriaged->id,
+                    '@type' => 'AdminFeedback',
+                    'id' => (string) $untriaged->id,
+                    'type' => 'bug',
+                    'type_label' => 'Bug',
+                    'module' => 'file',
+                    'module_label' => 'Fichiers',
+                    'message' => 'Un retour encore à trier.',
+                    'page_url' => '/band/space-id/fichiers',
+                    'status' => 'new',
+                    'status_label' => 'Nouveau',
+                    'creation_datetime' => '2026-09-02T09:00:00+00:00',
+                ],
+                [
+                    '@id' => '/api/admin/feedbacks/' . $inProgress->id,
+                    '@type' => 'AdminFeedback',
+                    'id' => (string) $inProgress->id,
+                    'type' => 'bug',
+                    'type_label' => 'Bug',
+                    'module' => 'file',
+                    'module_label' => 'Fichiers',
+                    'message' => 'Un retour en cours.',
+                    'page_url' => '/band/space-id/fichiers',
+                    'status' => 'in_progress',
+                    'status_label' => 'En cours',
+                    'creation_datetime' => '2026-09-01T09:00:00+00:00',
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/admin/feedbacks?status%5B%5D=new&status%5B%5D=in_progress',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/admin/feedbacks{?status,module,type}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'status', 'property' => 'status', 'required' => false],
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'module', 'property' => 'module', 'required' => false],
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'type', 'property' => 'type', 'required' => false],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_an_unknown_status_among_several_is_refused(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('GET', '/api/admin/feedbacks?status[]=new');
+        $this->client->request('GET', '/api/admin/feedbacks?status[]=new&status[]=bogus');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'status',
+                    'message' => 'Statut inconnu',
+                    'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+                ],
+            ],
+            'detail' => 'status: Statut inconnu',
+            'description' => 'status: Statut inconnu',
+            'type' => '/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            'title' => 'An error occurred',
+        ]);
     }
 
     public function test_the_untriaged_count_ignores_handled_feedback(): void

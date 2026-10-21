@@ -43,10 +43,14 @@ class FeedbackRepository extends ServiceEntityRepository
      * Joins the author and the band space eagerly because the list renders both on every row, and a
      * lazy proxy per row would be a pair of N+1s.
      *
+     * An empty `$statuses` means every status.
+     *
+     * @param list<FeedbackStatus> $statuses
+     *
      * @return Paginator<Feedback>
      */
     public function findForAdmin(
-        ?FeedbackStatus $status,
+        array $statuses,
         ?FeedbackModule $module,
         ?FeedbackType $type,
         int $offset,
@@ -60,8 +64,8 @@ class FeedbackRepository extends ServiceEntityRepository
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
-        if ($status instanceof FeedbackStatus) {
-            $queryBuilder->andWhere('f.status = :status')->setParameter('status', $status);
+        if ($statuses !== []) {
+            $queryBuilder->andWhere('f.status IN (:statuses)')->setParameter('statuses', $statuses);
         }
         if ($module instanceof FeedbackModule) {
             $queryBuilder->andWhere('f.module = :module')->setParameter('module', $module);

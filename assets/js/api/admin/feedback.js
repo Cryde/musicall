@@ -3,9 +3,9 @@
 import axios from 'axios'
 
 export default {
-  list({ page = 1, status = null, module = null, type = null } = {}) {
+  list({ page = 1, statuses = [], module = null, type = null } = {}) {
     const params = new URLSearchParams({ page: String(page) })
-    if (status) params.append('status', status)
+    for (const status of statuses) params.append('status[]', status)
     if (module) params.append('module', module)
     if (type) params.append('type', type)
 

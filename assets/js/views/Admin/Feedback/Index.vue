@@ -6,13 +6,15 @@
     </div>
 
     <div class="flex flex-wrap gap-3 mb-6">
-      <Select
+      <MultiSelect
         v-model="statusFilter"
-        :options="STATUS_FILTER_OPTIONS"
+        :options="STATUS_OPTIONS"
         option-label="label"
         option-value="value"
+        placeholder="Tous les statuts"
+        :show-toggle-all="false"
         aria-label="Filtrer par statut"
-        class="w-48"
+        class="w-56"
       />
       <Select
         v-model="typeFilter"
@@ -75,7 +77,7 @@
       </Column>
       <template #empty>
         <div class="text-center py-8 text-surface-500 dark:text-surface-400">
-          Aucun retour pour le moment.
+          Aucun retour ne correspond à ces filtres.
         </div>
       </template>
     </DataTable>
@@ -95,6 +97,7 @@
 import { useTitle } from '@vueuse/core'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
+import MultiSelect from 'primevue/multiselect'
 import Paginator from 'primevue/paginator'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
@@ -109,6 +112,10 @@ import { formatDate } from '../../../utils/date.js'
 // tables: this one is never drained.
 const ROWS_PER_PAGE = 25
 
+// Opens on what still needs someone: a handled report stays one click away instead of burying the
+// queue. Nothing checked means every status.
+const UNHANDLED_STATUSES = ['new', 'in_progress']
+
 // A sentinel rather than null, because PrimeVue reads a null model value as "nothing selected" and
 // renders the field blank instead of showing the "all" option. Translated back to "send no filter"
 // in load().
@@ -119,8 +126,6 @@ const STATUS_OPTIONS = [
   { value: 'in_progress', label: 'En cours' },
   { value: 'done', label: 'Traité' }
 ]
-
-const STATUS_FILTER_OPTIONS = [{ value: ALL, label: 'Tous les statuts' }, ...STATUS_OPTIONS]
 
 const TYPE_FILTER_OPTIONS = [{ value: ALL, label: 'Tous les types' }, ...FEEDBACK_TYPE_OPTIONS]
 
@@ -151,7 +156,7 @@ const page = ref(1)
 const isLoading = ref(false)
 const updatingId = ref(null)
 
-const statusFilter = ref(ALL)
+const statusFilter = ref([...UNHANDLED_STATUSES])
 const typeFilter = ref(ALL)
 const moduleFilter = ref(ALL)
 
@@ -165,7 +170,7 @@ async function load() {
   try {
     const data = await feedbackApi.list({
       page: page.value,
-      status: asFilter(statusFilter.value),
+      statuses: statusFilter.value,
       type: asFilter(typeFilter.value),
       module: asFilter(moduleFilter.value)
     })
@@ -204,6 +209,11 @@ async function handleStatusChange(feedback, status) {
   try {
     await feedbackApi.updateStatus(feedback.id, status)
     feedback.status = status
+    // Leaves the table as soon as it no longer matches, so treating a report is what clears it.
+    if (statusFilter.value.length && !statusFilter.value.includes(status)) {
+      feedbacks.value = feedbacks.value.filter((item) => item.id !== feedback.id)
+      totalItems.value--
+    }
     // The navbar badge counts untriaged reports, so it has to follow a change made here rather than
     // wait for the next page load.
     await notificationStore.loadNotifications()
