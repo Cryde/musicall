@@ -103,7 +103,7 @@
              once at its start rather than every time the speaker changes. -->
         <p
           v-if="needsTimeSeparator(messageBlocks[blockIndex - 1], block)"
-          class="-mb-2 text-center text-xs text-surface-500 dark:text-surface-400"
+          class="mb-2 text-center text-xs text-surface-500 dark:text-surface-400"
         >
           <time :datetime="block.messages[0].creation_datetime">
             {{ absoluteDate(block.messages[0].creation_datetime) }}
