@@ -141,10 +141,10 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Impossible de supprimer une répartition d\'une entrée payée. Repassez le statut à Engagé.',
+            'detail' => 'Impossible de supprimer une répartition d\'une entrée payée. Repasse le statut à Engagé.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Impossible de supprimer une répartition d\'une entrée payée. Repassez le statut à Engagé.',
+            'description' => 'Impossible de supprimer une répartition d\'une entrée payée. Repasse le statut à Engagé.',
         ]);
     }
 

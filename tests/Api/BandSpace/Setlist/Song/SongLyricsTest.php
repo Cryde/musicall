@@ -82,10 +82,10 @@ class SongLyricsTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 
@@ -206,7 +206,7 @@ class SongLyricsTest extends ApiTestCase
         $this->patch($space, $song, ['lyrics' => 'Ma version', 'expected_lyrics_version' => 1]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
-        $detail = 'Ces paroles ont été modifiées par un autre membre depuis que vous les avez ouvertes. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.';
+        $detail = 'Ces paroles ont été modifiées par un autre membre depuis que tu les as ouvertes. Tes modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.';
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/409',
@@ -231,7 +231,7 @@ class SongLyricsTest extends ApiTestCase
         $this->patch($space, $song, ['lyrics' => 'La la']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_PRECONDITION_REQUIRED);
-        $detail = 'Indiquez la version des paroles sur laquelle vous avez travaillé pour les enregistrer.';
+        $detail = 'Indique la version des paroles sur laquelle tu as travaillé pour les enregistrer.';
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/428',
@@ -397,7 +397,7 @@ class SongLyricsTest extends ApiTestCase
         $this->transpose($space, $song, ['semitones' => 2, 'expected_lyrics_version' => 2]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
-        $detail = 'Ces paroles ont été modifiées par un autre membre depuis que vous les avez ouvertes. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.';
+        $detail = 'Ces paroles ont été modifiées par un autre membre depuis que tu les as ouvertes. Tes modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.';
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/409',
@@ -425,10 +425,10 @@ class SongLyricsTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
         $this->assertSame('Secret', $this->refresh($song)->lyrics);
     }
@@ -447,10 +447,10 @@ class SongLyricsTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
         $this->assertSame('[C]La', $this->refresh($song)->lyrics);
     }
@@ -467,7 +467,7 @@ class SongLyricsTest extends ApiTestCase
         $this->transpose($space, $song, ['semitones' => 2]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_PRECONDITION_REQUIRED);
-        $detail = 'Indiquez la version des paroles sur laquelle vous avez travaillé pour les enregistrer.';
+        $detail = 'Indique la version des paroles sur laquelle tu as travaillé pour les enregistrer.';
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/428',

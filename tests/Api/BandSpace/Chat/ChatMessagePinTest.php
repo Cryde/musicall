@@ -293,8 +293,8 @@ class ChatMessagePinTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette conversation a déjà 10 messages épinglés. Détachez-en un avant d\'en épingler un autre.',
-            'description' => 'Cette conversation a déjà 10 messages épinglés. Détachez-en un avant d\'en épingler un autre.',
+            'detail' => 'Cette conversation a déjà 10 messages épinglés. Détaches-en un avant d\'en épingler un autre.',
+            'description' => 'Cette conversation a déjà 10 messages épinglés. Détaches-en un avant d\'en épingler un autre.',
             'status' => 409,
             'type' => '/errors/409',
         ]);
@@ -320,8 +320,8 @@ class ChatMessagePinTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
         ]);
@@ -437,8 +437,8 @@ class ChatMessagePinTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
         ]);

@@ -155,7 +155,7 @@ describe('microphoneSuggestionGroups', () => {
           { name: 'Beta 58A', usageCount: null }
         ]
       },
-      { label: 'Déjà utilisés dans vos riders', items: [{ name: 'Beta 91A', usageCount: 1 }] }
+      { label: 'Déjà utilisés dans tes riders', items: [{ name: 'Beta 91A', usageCount: 1 }] }
     ])
   })
 
@@ -171,7 +171,7 @@ describe('microphoneSuggestionGroups', () => {
   it('drops a group with nothing matching', () => {
     assert.deepEqual(
       microphoneSuggestionGroups('sm5', suggestions).map((group) => group.label),
-      ['Déjà utilisés dans vos riders']
+      ['Déjà utilisés dans tes riders']
     )
   })
 })

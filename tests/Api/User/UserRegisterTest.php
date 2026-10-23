@@ -50,7 +50,7 @@ class UserRegisterTest extends ApiTestCase
         // OTP email was sent
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
-        $this->assertEmailTextBodyContains($email, 'Votre code de vérification');
+        $this->assertEmailTextBodyContains($email, 'Ton code de vérification');
         $this->assertEmailHeaderSame($email, 'templateId', '10');
         $this->assertEmailAddressContains($email, 'From', 'no-reply@musicall.com');
         $this->assertEmailAddressContains($email, 'To', 'super_email@mail.com');
@@ -256,10 +256,10 @@ password: Le mot de passe doit au moins contenir 8 caractères',
             '@id' => '/api/errors/400',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous êtes déjà connecté',
+            'detail' => 'Tu es déjà connecté',
             'status' => 400,
             'type' => '/errors/400',
-            'description' => 'Vous êtes déjà connecté',
+            'description' => 'Tu es déjà connecté',
         ]);
 
         $this->assertEmailCount(0);

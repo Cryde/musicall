@@ -136,12 +136,12 @@ final class CityLookupTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'q',
-                    'message' => 'Saisissez au moins 2 caractères',
+                    'message' => 'Saisis au moins 2 caractères',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
-            'detail' => 'q: Saisissez au moins 2 caractères',
-            'description' => 'q: Saisissez au moins 2 caractères',
+            'detail' => 'q: Saisis au moins 2 caractères',
+            'description' => 'q: Saisis au moins 2 caractères',
             'type' => '/validation_errors/9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
         ]);
@@ -160,12 +160,12 @@ final class CityLookupTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'q',
-                    'message' => 'Saisissez une ville',
+                    'message' => 'Saisis une ville',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'q: Saisissez une ville',
-            'description' => 'q: Saisissez une ville',
+            'detail' => 'q: Saisis une ville',
+            'description' => 'q: Saisis une ville',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);
@@ -184,12 +184,12 @@ final class CityLookupTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'q',
-                    'message' => 'Saisissez une ville',
+                    'message' => 'Saisis une ville',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'q: Saisissez une ville',
-            'description' => 'q: Saisissez une ville',
+            'detail' => 'q: Saisis une ville',
+            'description' => 'q: Saisis une ville',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);
@@ -326,12 +326,12 @@ final class CityLookupTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'longitude',
-                    'message' => 'Précisez une longitude',
+                    'message' => 'Précise une longitude',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'longitude: Précisez une longitude',
-            'description' => 'longitude: Précisez une longitude',
+            'detail' => 'longitude: Précise une longitude',
+            'description' => 'longitude: Précise une longitude',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);

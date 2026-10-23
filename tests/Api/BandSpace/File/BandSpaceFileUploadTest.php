@@ -244,12 +244,12 @@ class BandSpaceFileUploadTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'uploaded_file',
-                    'message' => 'Veuillez sélectionner un fichier',
+                    'message' => 'Sélectionne un fichier',
                     'code' => 'ad32d13f-c3d4-423b-909a-857b961eb720',
                 ],
             ],
-            'detail' => 'uploaded_file: Veuillez sélectionner un fichier',
-            'description' => 'uploaded_file: Veuillez sélectionner un fichier',
+            'detail' => 'uploaded_file: Sélectionne un fichier',
+            'description' => 'uploaded_file: Sélectionne un fichier',
             'type' => '/validation_errors/ad32d13f-c3d4-423b-909a-857b961eb720',
             'title' => 'An error occurred',
         ]);
@@ -279,10 +279,10 @@ class BandSpaceFileUploadTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
 

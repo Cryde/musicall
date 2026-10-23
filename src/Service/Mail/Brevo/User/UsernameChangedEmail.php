@@ -29,7 +29,7 @@ class UsernameChangedEmail
         $email = new Email()
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
             ->to(new Address($recipientEmail, $newUsername))
-            ->text(sprintf('Votre nom d\'utilisateur a été modifié de %s à %s.', $oldUsername, $newUsername));
+            ->text(sprintf('Ton nom d\'utilisateur a été modifié de %s à %s.', $oldUsername, $newUsername));
         $email->getHeaders()
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [

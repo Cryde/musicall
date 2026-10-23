@@ -798,14 +798,14 @@ class AgendaEntryCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'recurrence_until_date',
-                    'message' => 'Veuillez spécifier une date de fin de récurrence.',
+                    'message' => 'Indique une date de fin de récurrence.',
                     'code' => ValidRecurrence::MISSING_UNTIL_CODE,
                 ],
             ],
-            'detail' => 'recurrence_until_date: Veuillez spécifier une date de fin de récurrence.',
+            'detail' => 'recurrence_until_date: Indique une date de fin de récurrence.',
             'type' => '/validation_errors/' . ValidRecurrence::MISSING_UNTIL_CODE,
             'title' => 'An error occurred',
-            'description' => 'recurrence_until_date: Veuillez spécifier une date de fin de récurrence.',
+            'description' => 'recurrence_until_date: Indique une date de fin de récurrence.',
         ]);
     }
 
@@ -837,14 +837,14 @@ class AgendaEntryCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'recurrence_monthly_mode',
-                    'message' => 'Veuillez préciser le mode de récurrence mensuelle (par date ou par jour de la semaine).',
+                    'message' => 'Précise le mode de récurrence mensuelle (par date ou par jour de la semaine).',
                     'code' => ValidRecurrence::MISSING_MONTHLY_MODE_CODE,
                 ],
             ],
-            'detail' => 'recurrence_monthly_mode: Veuillez préciser le mode de récurrence mensuelle (par date ou par jour de la semaine).',
+            'detail' => 'recurrence_monthly_mode: Précise le mode de récurrence mensuelle (par date ou par jour de la semaine).',
             'type' => '/validation_errors/' . ValidRecurrence::MISSING_MONTHLY_MODE_CODE,
             'title' => 'An error occurred',
-            'description' => 'recurrence_monthly_mode: Veuillez préciser le mode de récurrence mensuelle (par date ou par jour de la semaine).',
+            'description' => 'recurrence_monthly_mode: Précise le mode de récurrence mensuelle (par date ou par jour de la semaine).',
         ]);
     }
 

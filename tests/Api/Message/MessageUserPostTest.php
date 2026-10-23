@@ -181,16 +181,16 @@ class MessageUserPostTest extends ApiTestCase
             '@id' => '/api/validation_errors/music_all_f7a2c4d6-3b8e-4f1a-9d5c-6e0b7a8c2d14',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'description' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'description' => 'Tu ne peux pas envoyer un message à un utilisateur supprimé.',
             'violations' => [
                 [
                     'propertyPath' => '',
-                    'message' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+                    'message' => 'Tu ne peux pas envoyer un message à un utilisateur supprimé.',
                     'code' => 'music_all_f7a2c4d6-3b8e-4f1a-9d5c-6e0b7a8c2d14',
                 ],
             ],
             'status' => 422,
-            'detail' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'detail' => 'Tu ne peux pas envoyer un message à un utilisateur supprimé.',
             'type' => '/validation_errors/music_all_f7a2c4d6-3b8e-4f1a-9d5c-6e0b7a8c2d14',
         ]);
     }
@@ -210,16 +210,16 @@ class MessageUserPostTest extends ApiTestCase
             '@id' => '/api/validation_errors/music_all_b8c3e2f1-5a4d-4e6b-9c7f-1a2b3c4d5e6f',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'description' => 'Vous ne pouvez pas vous envoyer un message à vous-même.',
+            'description' => 'Tu ne peux pas t\'envoyer un message à toi-même.',
             'violations' => [
                 [
                     'propertyPath' => '',
-                    'message' => 'Vous ne pouvez pas vous envoyer un message à vous-même.',
+                    'message' => 'Tu ne peux pas t\'envoyer un message à toi-même.',
                     'code' => 'music_all_b8c3e2f1-5a4d-4e6b-9c7f-1a2b3c4d5e6f',
                 ],
             ],
             'status' => 422,
-            'detail' => 'Vous ne pouvez pas vous envoyer un message à vous-même.',
+            'detail' => 'Tu ne peux pas t\'envoyer un message à toi-même.',
             'type' => '/validation_errors/music_all_b8c3e2f1-5a4d-4e6b-9c7f-1a2b3c4d5e6f',
         ]);
     }

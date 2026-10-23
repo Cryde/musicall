@@ -63,7 +63,7 @@
         <TabPanel value="roles">
           <Panel header="Rôles attribués">
             <Message v-if="isSelf" severity="warn" :closable="false" class="mb-4">
-              Vous ne pouvez pas modifier vos propres rôles. Demandez à un autre administrateur.
+              Tu ne peux pas modifier tes propres rôles. Demande à un autre administrateur.
             </Message>
             <Message v-if="roleError" severity="error" :closable="false" class="mb-4">{{ roleError }}</Message>
 
@@ -213,7 +213,7 @@ const isSelf = computed(() => user.value?.username === userSecurityStore.user?.u
 // The server refuses these too; saying so up front beats a refusal after typing a reason.
 const suspensionBlocker = computed(() => {
   if (isSelf.value) {
-    return 'Vous ne pouvez pas suspendre votre propre compte.'
+    return 'Tu ne peux pas suspendre ton propre compte.'
   }
   if (grantsAdmin(user.value?.roles)) {
     return 'Un administrateur ne peut pas être suspendu.'
@@ -317,7 +317,7 @@ async function saveRoles(roles) {
     toast.add({ severity: 'success', summary: 'Rôles mis à jour', life: 3000 })
   } catch {
     roleError.value =
-      "Les rôles ont bien été enregistrés, mais l'affichage n'a pas pu être actualisé. Rechargez la page."
+      "Les rôles ont bien été enregistrés, mais l'affichage n'a pas pu être actualisé. Recharge la page."
   } finally {
     isSavingRoles.value = false
   }

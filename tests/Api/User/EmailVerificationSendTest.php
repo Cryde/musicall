@@ -39,7 +39,7 @@ class EmailVerificationSendTest extends ApiTestCase
         // OTP email was sent
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
-        $this->assertEmailTextBodyContains($email, 'Votre code de vérification');
+        $this->assertEmailTextBodyContains($email, 'Ton code de vérification');
         $this->assertEmailHeaderSame($email, 'templateId', '10');
         $this->assertEmailAddressContains($email, 'To', 'user@email.com');
     }
@@ -138,14 +138,14 @@ class EmailVerificationSendTest extends ApiTestCase
             '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'detail' => 'email: Veuillez saisir un email',
+            'detail' => 'email: Saisis un email',
             'status' => 422,
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            'description' => 'email: Veuillez saisir un email',
+            'description' => 'email: Saisis un email',
             'violations' => [
                 [
                     'propertyPath' => 'email',
-                    'message' => 'Veuillez saisir un email',
+                    'message' => 'Saisis un email',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],

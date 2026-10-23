@@ -261,19 +261,19 @@ class RegisterConfirmCodeTest extends ApiTestCase
             '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=4b6f5c76-22b4-409d-af16-fbe823ba9332',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'detail' => "email: Veuillez saisir un email\ncode: Veuillez saisir le code\ncode: Le code doit contenir 6 chiffres",
+            'detail' => "email: Saisis un email\ncode: Saisis le code\ncode: Le code doit contenir 6 chiffres",
             'status' => 422,
             'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=4b6f5c76-22b4-409d-af16-fbe823ba9332',
-            'description' => "email: Veuillez saisir un email\ncode: Veuillez saisir le code\ncode: Le code doit contenir 6 chiffres",
+            'description' => "email: Saisis un email\ncode: Saisis le code\ncode: Le code doit contenir 6 chiffres",
             'violations' => [
                 [
                     'propertyPath' => 'email',
-                    'message' => 'Veuillez saisir un email',
+                    'message' => 'Saisis un email',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
                 [
                     'propertyPath' => 'code',
-                    'message' => 'Veuillez saisir le code',
+                    'message' => 'Saisis le code',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
                 [

@@ -255,10 +255,10 @@ class ChatVoiceNoteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'La note vocale est illisible, veuillez réessayer',
+            'detail' => 'La note vocale est illisible, réessaie',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'La note vocale est illisible, veuillez réessayer',
+            'description' => 'La note vocale est illisible, réessaie',
         ]);
         $this->assertNull(self::getContainer()->get(MessageRepository::class)->findOneBy(['thread' => $channel->id]));
         $this->assertNull(self::getContainer()->get(BandSpaceFileRepository::class)->findOneBy(['bandSpace' => $space->id]));
@@ -319,10 +319,10 @@ class ChatVoiceNoteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 

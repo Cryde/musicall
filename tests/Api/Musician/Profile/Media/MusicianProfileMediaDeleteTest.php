@@ -78,8 +78,8 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas accéder à ce média',
-            'description' => 'Vous ne pouvez pas accéder à ce média',
+            'detail' => 'Tu ne peux pas accéder à ce média',
+            'description' => 'Tu ne peux pas accéder à ce média',
             'status' => 403,
             'type' => '/errors/403',
         ]);

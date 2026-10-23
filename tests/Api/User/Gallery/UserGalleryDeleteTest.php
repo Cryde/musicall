@@ -72,10 +72,10 @@ class UserGalleryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'etes pas autorise a supprimer cette galerie',
+            'detail' => 'Tu n\'es pas autorisé à supprimer cette galerie',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'etes pas autorise a supprimer cette galerie',
+            'description' => 'Tu n\'es pas autorisé à supprimer cette galerie',
         ]);
     }
 
@@ -116,10 +116,10 @@ class UserGalleryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas supprimer une galerie publiee',
+            'detail' => 'Tu ne peux pas supprimer une galerie publiée',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez pas supprimer une galerie publiee',
+            'description' => 'Tu ne peux pas supprimer une galerie publiée',
         ]);
     }
 }

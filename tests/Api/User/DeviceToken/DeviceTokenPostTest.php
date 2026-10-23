@@ -134,7 +134,7 @@ class DeviceTokenPostTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'token',
-                    'message' => 'Veuillez fournir un jeton',
+                    'message' => 'Fournis un jeton',
                     'code' => NotBlank::IS_BLANK_ERROR,
                 ],
                 [
@@ -143,8 +143,8 @@ class DeviceTokenPostTest extends ApiTestCase
                     'code' => Choice::NO_SUCH_CHOICE_ERROR,
                 ],
             ],
-            'detail' => "token: Veuillez fournir un jeton\nplatform: Plateforme inconnue",
-            'description' => "token: Veuillez fournir un jeton\nplatform: Plateforme inconnue",
+            'detail' => "token: Fournis un jeton\nplatform: Plateforme inconnue",
+            'description' => "token: Fournis un jeton\nplatform: Plateforme inconnue",
             'type' => '/validation_errors/0=' . NotBlank::IS_BLANK_ERROR . ';1=' . Choice::NO_SUCH_CHOICE_ERROR,
             'title' => 'An error occurred',
         ]);
@@ -197,7 +197,7 @@ class DeviceTokenPostTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'token',
-                    'message' => 'Veuillez fournir un jeton',
+                    'message' => 'Fournis un jeton',
                     'code' => NotBlank::IS_BLANK_ERROR,
                 ],
                 [
@@ -206,8 +206,8 @@ class DeviceTokenPostTest extends ApiTestCase
                     'code' => Choice::NO_SUCH_CHOICE_ERROR,
                 ],
             ],
-            'detail' => "token: Veuillez fournir un jeton\nplatform: Plateforme inconnue",
-            'description' => "token: Veuillez fournir un jeton\nplatform: Plateforme inconnue",
+            'detail' => "token: Fournis un jeton\nplatform: Plateforme inconnue",
+            'description' => "token: Fournis un jeton\nplatform: Plateforme inconnue",
             'type' => '/validation_errors/0=' . NotBlank::IS_BLANK_ERROR . ';1=' . Choice::NO_SUCH_CHOICE_ERROR,
             'title' => 'An error occurred',
         ]);

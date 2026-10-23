@@ -52,17 +52,17 @@ class ContactPostTest extends ApiTestCase
                 ],
                 [
                     'propertyPath' => 'message',
-                    'message'      => 'Votre message doit être de minimum 10 caractères.',
+                    'message'      => 'Ton message doit être de minimum 10 caractères.',
                     'code'         => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
             'detail'            => 'email: L\'email est invalide
-message: Votre message doit être de minimum 10 caractères.',
+message: Ton message doit être de minimum 10 caractères.',
             'type'              => '/validation_errors/0=bd79c0ab-ddba-46cc-a703-a7a4b08de310;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title'             => 'An error occurred',
             '@context' => '/api/contexts/ConstraintViolation',
             'description' => 'email: L\'email est invalide
-message: Votre message doit être de minimum 10 caractères.',
+message: Ton message doit être de minimum 10 caractères.',
         ]);
 
         $this->assertEmailCount(0);

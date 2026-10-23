@@ -41,8 +41,8 @@ class ForumPostEditTest extends ApiTestCase
         '@id' => '/api/errors/403',
         '@type' => 'Error',
         'title' => 'An error occurred',
-        'detail' => 'Vous ne pouvez pas modifier ce message.',
-        'description' => 'Vous ne pouvez pas modifier ce message.',
+        'detail' => 'Tu ne peux pas modifier ce message.',
+        'description' => 'Tu ne peux pas modifier ce message.',
         'status' => 403,
         'type' => '/errors/403',
     ];

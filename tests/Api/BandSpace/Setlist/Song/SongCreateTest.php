@@ -135,14 +135,14 @@ class SongCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'title',
-                    'message' => 'Veuillez spécifier un titre',
+                    'message' => 'Indique un titre',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'title: Veuillez spécifier un titre',
+            'detail' => 'title: Indique un titre',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => 'title: Veuillez spécifier un titre',
+            'description' => 'title: Indique un titre',
         ]);
     }
 
@@ -201,10 +201,10 @@ class SongCreateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
 
         // No song persisted

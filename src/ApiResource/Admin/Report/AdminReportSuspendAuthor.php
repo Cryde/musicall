@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class AdminReportSuspendAuthor
 {
-    #[Assert\NotBlank(message: 'Veuillez indiquer la raison de la suspension')]
+    #[Assert\NotBlank(message: 'Indique la raison de la suspension')]
     #[Assert\Length(max: 500, maxMessage: 'La raison ne peut pas dépasser {{ limit }} caractères')]
     public string $reason = '';
 }

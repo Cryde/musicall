@@ -38,7 +38,7 @@ final class ForumFactory extends PersistentObjectFactory
         return $this->with([
             'forumCategory' => $forumCategory,
             'title' => 'Présentation',
-            'description' => 'Présentez-vous !',
+            'description' => 'Présente-toi !',
             'slug' => 'presentation',
             'position' => 1,
         ]);
@@ -82,7 +82,7 @@ final class ForumFactory extends PersistentObjectFactory
         return $this->with([
             'forumCategory' => $forumCategory,
             'title' => 'Promotion',
-            'description' => 'Faites votre promotion !',
+            'description' => 'Fais ta promotion !',
             'slug' => 'promotion',
             'position' => 1,
         ]);
@@ -104,7 +104,7 @@ final class ForumFactory extends PersistentObjectFactory
         return $this->with([
             'forumCategory' => $forumCategory,
             'title' => 'Vidéos',
-            'description' => 'Partagez vos vidéos',
+            'description' => 'Partage tes vidéos',
             'slug' => 'videos',
             'position' => 1,
         ]);
@@ -115,7 +115,7 @@ final class ForumFactory extends PersistentObjectFactory
         return $this->with([
             'forumCategory' => $forumCategory,
             'title' => 'Audio',
-            'description' => 'Partagez vos morceaux',
+            'description' => 'Partage tes morceaux',
             'slug' => 'audio',
             'position' => 2,
         ]);
@@ -126,7 +126,7 @@ final class ForumFactory extends PersistentObjectFactory
         return $this->with([
             'forumCategory' => $forumCategory,
             'title' => 'Suggestions',
-            'description' => 'Vos idées pour le site',
+            'description' => 'Tes idées pour le site',
             'slug' => 'suggestions',
             'position' => 1,
         ]);

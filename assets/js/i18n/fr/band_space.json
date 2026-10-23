@@ -40,7 +40,7 @@
     "filter_by_type": "Filtrer par type",
     "opened_by_me": "Ouverts par moi",
     "recents_listbox": "{label}, {heading}",
-    "min_length": "Tapez au moins {min} caractères pour chercher.",
+    "min_length": "Tape au moins {min} caractères pour chercher.",
     "no_result_for": "Aucun résultat pour « {query} »",
     "recents_opened_first": "Derniers ouverts d'abord",
     "recents": "Récents"
@@ -53,7 +53,7 @@
   "layout": {
     "load_error": "Une erreur est survenue lors du chargement.",
     "retry": "Réessayer",
-    "deletion_banner": "Cet espace sera définitivement supprimé le {date}. Les modifications sont désactivées, mais vous pouvez toujours consulter et télécharger vos fichiers. {link}",
+    "deletion_banner": "Cet espace sera définitivement supprimé le {date}. Les modifications sont désactivées, mais tu peux toujours consulter et télécharger les fichiers. {link}",
     "manage_deletion": "Gérer la suppression",
     "navigation": "Navigation",
     "my_account": "Mon compte",
@@ -61,8 +61,8 @@
     "page_title_with_space": "{section} - {space} {separator} MusicAll",
     "page_title": "{section} {separator} MusicAll",
     "not_found_summary": "Band Space introuvable",
-    "not_found_detail": "Ce Band Space n'existe pas ou vous n'y avez pas accès",
-    "load_spaces_error": "Impossible de charger vos Band Spaces"
+    "not_found_detail": "Ce Band Space n'existe pas ou tu n'y as pas accès",
+    "load_spaces_error": "Impossible de charger tes Band Spaces"
   },
   "sidebar": {
     "modules_aria": "Modules du Band Space",
@@ -73,7 +73,7 @@
     "unread_aria": "{label} ({unread} non lus)"
   },
   "selector": {
-    "placeholder": "Sélectionnez votre band space",
+    "placeholder": "Sélectionne ton band space",
     "create": "Créer un Band Space"
   },
   "palette": {
@@ -92,7 +92,7 @@
     "name_label": "Nom du Band Space",
     "name_placeholder": "Ex: Mon groupe de rock",
     "submit": "Créer",
-    "name_required": "Veuillez saisir un nom",
+    "name_required": "Saisis un nom",
     "created_summary": "Band Space créé",
     "created_detail": "\"{name}\" a été créé avec succès"
   },
@@ -147,17 +147,17 @@
   },
   "no_space": {
     "title": "Bienvenue dans les Band Spaces",
-    "intro": "Un Band Space est l'espace de travail partagé de votre groupe : agenda, tâches, notes, fichiers et suivi financier au même endroit, accessible à tous les membres invités.",
-    "invitation_title": "Vous avez reçu une invitation ?",
-    "invitation_hint": "Vérifiez votre boîte mail et cliquez sur le lien d'invitation pour rejoindre un Band Space existant."
+    "intro": "Un Band Space est l'espace de travail partagé de ton groupe : agenda, tâches, notes, fichiers et suivi financier au même endroit, accessible à tous les membres invités.",
+    "invitation_title": "Tu as reçu une invitation ?",
+    "invitation_hint": "Vérifie ta boîte mail et clique sur le lien d'invitation pour rejoindre un Band Space existant."
   },
   "invitation": {
     "title": "Invitation à rejoindre {name}",
-    "question": "Souhaitez-vous accepter ou décliner cette invitation ?",
+    "question": "Souhaites-tu accepter ou décliner cette invitation ?",
     "decline": "Décliner",
     "accept": "Accepter",
     "declined_title": "Invitation déclinée",
-    "declined_text": "Vous avez décliné cette invitation."
+    "declined_text": "Tu as décliné cette invitation."
   },
   "general": {
     "name_help": "Ce nom apparaît dans le menu, dans les notifications et sur les tech riders.",
@@ -173,15 +173,15 @@
     "delete_title": "Supprimer ce Band Space",
     "delete_text": "L'espace, ses fichiers, son agenda, ses notes, ses tâches, ses setlists et ses finances seront supprimés après un délai de {days} jours, pendant lequel un administrateur peut annuler la suppression.",
     "delete": "Supprimer",
-    "admin_only": "Seul un administrateur peut supprimer cet espace. Vous pouvez le quitter depuis la section « Membres ».",
+    "admin_only": "Seul un administrateur peut supprimer cet espace. Tu peux le quitter depuis la section « Membres ».",
     "dialog_header": "Supprimer ce Band Space ?",
-    "dialog_intro": "Vous êtes sur le point de programmer la suppression de {name}.",
+    "dialog_intro": "Tu es sur le point de programmer la suppression de {name}.",
     "quoted_name": "« {name} »",
     "dialog_grace": "L'espace reste accessible {days} jours, le temps que chacun récupère ses fichiers.",
     "dialog_members_notified": "Les autres membres sont prévenus immédiatement.",
     "dialog_admin_can_cancel": "Un administrateur peut annuler jusqu'à l'échéance.",
     "dialog_permanent": "Passé ce délai, tout est supprimé définitivement et rien ne peut être récupéré.",
-    "confirm_label": "Pour confirmer, tapez {word} ci-dessous.",
+    "confirm_label": "Pour confirmer, tape {word} ci-dessous.",
     "confirmation_word": "Supprimer"
   },
   "member_profile": {
@@ -220,20 +220,20 @@
     "load_more": "Charger plus"
   },
   "calendar_sync": {
-    "intro": "Recevez les dates du groupe directement dans Google Agenda, Apple Calendrier ou Outlook. Le lien est personnel : il vous appartient et ne concerne que ce Band Space.",
+    "intro": "Reçois les dates du groupe directement dans Google Agenda, Apple Calendrier ou Outlook. Le lien est personnel : il t'appartient et ne concerne que ce Band Space.",
     "separate_calendar": "L'agenda du groupe apparaît comme un {separate}, en lecture seule, avec sa propre couleur et sa propre case pour l'afficher ou le masquer.",
     "separate_calendar_strong": "calendrier séparé",
     "events_only": "Seuls les {events} sont publiés. Les tâches, les finances et les absences restent dans l'application.",
     "events_only_strong": "événements de l'agenda",
-    "google_refresh": "Google actualise ce type de calendrier {frequency} et ne propose aucun bouton pour forcer la mise à jour. Une date ajoutée aujourd'hui peut donc n'apparaître que demain sur votre téléphone.",
+    "google_refresh": "Google actualise ce type de calendrier {frequency} et ne propose aucun bouton pour forcer la mise à jour. Une date ajoutée aujourd'hui peut donc n'apparaître que demain sur ton téléphone.",
     "google_refresh_strong": "toutes les 8 à 24 heures",
-    "your_link": "Votre lien d'abonnement",
+    "your_link": "Ton lien d'abonnement",
     "link_aria": "Lien d'abonnement à l'agenda",
     "copied": "Copié",
     "copy": "Copier",
     "add_google": "Ajouter à Google Agenda",
     "add_apple_outlook": "Apple Calendrier ou Outlook",
-    "keep_link": "Conservez ce lien : il ne pourra plus être affiché. Toute personne qui le détient peut lire les dates du groupe, ne le publiez pas.",
+    "keep_link": "Conserve ce lien : il ne pourra plus être affiché. Toute personne qui le détient peut lire les dates du groupe, ne le publie pas.",
     "created_at": "Créé le",
     "never": "Jamais",
     "regenerate_link": "Régénérer le lien",
@@ -246,7 +246,7 @@
     "revoked_detail": "Le flux d'agenda a été désactivé.",
     "revoke_error": "La révocation a échoué.",
     "copy_failed": "Copie impossible",
-    "copy_failed_detail": "Sélectionnez le lien et copiez-le manuellement."
+    "copy_failed_detail": "Sélectionne le lien et copie-le manuellement."
   },
   "members": {
     "invite_title": "Inviter un membre",
@@ -254,7 +254,7 @@
     "invite": "Inviter",
     "expires_on": "Expire le {date}",
     "cancel_invitation": "Annuler l'invitation",
-    "you": "(vous)",
+    "you": "(toi)",
     "role_admin": "Admin",
     "role_member": "Membre",
     "edit_profile_aria": "Modifier le nom de scène et les instruments de {name}",
@@ -262,7 +262,7 @@
     "demote": "Rétrograder membre",
     "kick": "Exclure",
     "leave_title": "Quitter le Band Space",
-    "only_admin": "Vous devez promouvoir un autre membre administrateur avant de quitter.",
+    "only_admin": "Tu dois promouvoir un autre membre administrateur avant de quitter.",
     "leave": "Quitter",
     "invite_sent": "Invitation envoyée à {target}",
     "unknown_user": "un utilisateur",
@@ -273,11 +273,11 @@
     "invitation_cancelled": "Invitation annulée",
     "promoted": "{username} est maintenant admin",
     "demoted": "{username} est maintenant membre",
-    "kick_message": "Êtes-vous sûr de vouloir exclure {username} ?",
+    "kick_message": "Es-tu sûr de vouloir exclure {username} ?",
     "kick_header": "Confirmer l'exclusion",
     "kicked": "{username} a été exclu",
-    "leave_message": "Êtes-vous sûr de vouloir quitter ce Band Space ?",
+    "leave_message": "Es-tu sûr de vouloir quitter ce Band Space ?",
     "leave_header": "Confirmer le départ",
-    "left": "Vous avez quitté le Band Space"
+    "left": "Tu as quitté le Band Space"
   }
 }

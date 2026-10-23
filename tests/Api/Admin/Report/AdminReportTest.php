@@ -316,10 +316,10 @@ class AdminReportTest extends ApiTestCase
             '@type' => 'ConstraintViolation',
             'status' => 422,
             'violations' => [
-                ['propertyPath' => 'reason', 'message' => 'Veuillez indiquer la raison de la suspension', 'code' => NotBlank::IS_BLANK_ERROR],
+                ['propertyPath' => 'reason', 'message' => 'Indique la raison de la suspension', 'code' => NotBlank::IS_BLANK_ERROR],
             ],
-            'detail' => 'reason: Veuillez indiquer la raison de la suspension',
-            'description' => 'reason: Veuillez indiquer la raison de la suspension',
+            'detail' => 'reason: Indique la raison de la suspension',
+            'description' => 'reason: Indique la raison de la suspension',
             'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
             'title' => 'An error occurred',
         ]);

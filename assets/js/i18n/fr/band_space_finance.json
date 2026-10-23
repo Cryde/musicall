@@ -40,7 +40,7 @@
     "load_categories_error": "Impossible de charger les catégories"
   },
   "confirmations": {
-    "category_has_children": "Cette catégorie contient des sous-catégories et ne peut pas être supprimée. Supprimez ou déplacez ses sous-catégories d’abord.",
+    "category_has_children": "Cette catégorie contient des sous-catégories et ne peut pas être supprimée. Supprime ou déplace ses sous-catégories d’abord.",
     "category_delete": "Es-tu sûr de vouloir supprimer cette catégorie ? Elle ne contient aucune entrée. | Es-tu sûr de vouloir supprimer cette catégorie ? L’entrée qu’elle contient et ses récurrences seront également supprimées. | Es-tu sûr de vouloir supprimer cette catégorie ? Les {count} entrées qu’elle contient et ses récurrences seront également supprimées.",
     "recurrence_delete": "Es-tu sûr de vouloir supprimer cette récurrence ? Les entrées prévues qu’elle a générées seront également supprimées, les entrées engagées ou payées seront conservées."
   },
@@ -92,7 +92,7 @@
     "name_placeholder_child": "Nom de la sous-catégorie",
     "name_placeholder": "Nom de la catégorie",
     "create": "Créer",
-    "name_required": "Veuillez saisir un nom"
+    "name_required": "Saisis un nom"
   },
   "metric_cards": {
     "income_hint": "Total des revenus du groupe avec le statut Payé",
@@ -100,7 +100,7 @@
     "committed_hint": "Total des entrées du groupe avec le statut Engagé (dépenses + revenus). Les fourchettes utilisent la moyenne.",
     "planned_hint": "Total des entrées du groupe avec le statut Prévu (dépenses + revenus). Les fourchettes utilisent la moyenne.",
     "personal": "Personnel",
-    "personal_hint": "Total de vos entrées personnelles, tous statuts confondus. Non inclus dans les totaux du groupe."
+    "personal_hint": "Total de tes entrées personnelles, tous statuts confondus. Non inclus dans les totaux du groupe."
   },
   "type_totals": {
     "income": "Revenus :",
@@ -112,7 +112,7 @@
   "entry_list": {
     "drag_title": "Déplacer vers une autre catégorie",
     "drag_aria_label": "Déplacer l'entrée",
-    "paid_locked_title": "Entrée payée : repassez-la en « Engagé » pour la déplacer",
+    "paid_locked_title": "Entrée payée : repasse-la en « Engagé » pour la déplacer",
     "paid_locked_aria_label": "Entrée payée, non déplaçable",
     "empty": "Aucune entrée"
   },
@@ -150,7 +150,7 @@
   "entry_drawer": {
     "title_edit": "Modifier l’entrée",
     "title_new": "Nouvelle entrée",
-    "locked": "Cette entrée est verrouillée. Repassez le statut à « Engagé » pour la modifier.",
+    "locked": "Cette entrée est verrouillée. Repasse le statut à « Engagé » pour la modifier.",
     "label_placeholder": "Ex : Location salle de répétition",
     "status": "Statut",
     "select_status": "Sélectionne un statut",
@@ -176,7 +176,7 @@
     "reopen_confirm": "Cette entrée sera marquée comme « Engagé » et redeviendra modifiable. Continuer ?",
     "reopen_header": "Rouvrir l’entrée",
     "reopen_accept": "Rouvrir",
-    "category_required": "Veuillez sélectionner une catégorie",
+    "category_required": "Sélectionne une catégorie",
     "split_failed": "L’entrée a été enregistrée mais la répartition a échoué : {error}",
     "unknown_error": "erreur inconnue",
     "save_error": "Impossible d’enregistrer l’entrée",
@@ -190,7 +190,7 @@
     "amount": "Montant (en euros)",
     "interval": "Intervalle",
     "select_interval": "Sélectionne un intervalle",
-    "frozen_schedule_hint": "Non modifiable : terminez cette récurrence et créez-en une nouvelle.",
+    "frozen_schedule_hint": "Non modifiable : termine cette récurrence et crées-en une nouvelle.",
     "start_date": "Date de début",
     "end_date": "Date de fin",
     "deactivate": "Désactiver",

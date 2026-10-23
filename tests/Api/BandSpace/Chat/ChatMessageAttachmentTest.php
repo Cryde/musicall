@@ -72,8 +72,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
         ]);
@@ -615,14 +615,14 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'content',
-                    'message' => 'Veuillez saisir un message',
+                    'message' => 'Saisis un message',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'content: Veuillez saisir un message',
+            'detail' => 'content: Saisis un message',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => 'content: Veuillez saisir un message',
+            'description' => 'content: Saisis un message',
         ]);
     }
 
@@ -682,14 +682,14 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'content',
-                    'message' => 'Veuillez saisir un message',
+                    'message' => 'Saisis un message',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'content: Veuillez saisir un message',
+            'detail' => 'content: Saisis un message',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => 'content: Veuillez saisir un message',
+            'description' => 'content: Saisis un message',
         ]);
     }
 

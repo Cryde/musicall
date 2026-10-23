@@ -39,8 +39,8 @@ class ForumTopicUnlockTest extends ApiTestCase
         '@id' => '/api/errors/403',
         '@type' => 'Error',
         'title' => 'An error occurred',
-        'detail' => 'Vous ne pouvez pas modifier l\'état de ce sujet.',
-        'description' => 'Vous ne pouvez pas modifier l\'état de ce sujet.',
+        'detail' => 'Tu ne peux pas modifier l\'état de ce sujet.',
+        'description' => 'Tu ne peux pas modifier l\'état de ce sujet.',
         'status' => 403,
         'type' => '/errors/403',
     ];

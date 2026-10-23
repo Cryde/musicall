@@ -215,10 +215,10 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la ressource concernée.",
+            'detail' => "Ce fichier est attaché à une tâche. Détache-le d'abord depuis la ressource concernée.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la ressource concernée.",
+            'description' => "Ce fichier est attaché à une tâche. Détache-le d'abord depuis la ressource concernée.",
         ]);
 
         /** @var BandSpaceFileRepository $repo */
@@ -256,10 +256,10 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.",
+            'detail' => "Ce fichier est attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.",
+            'description' => "Ce fichier est attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée.",
         ]);
     }
 }

@@ -121,12 +121,12 @@ with multiline",
             'violations' => [
                 [
                     'propertyPath' => 'parent_id',
-                    'message'      => 'Vous ne pouvez pas répondre à une réponse.',
+                    'message'      => 'Tu ne peux pas répondre à une réponse.',
                     'code'         => ValidReplyParent::ALREADY_NESTED_CODE,
                 ],
             ],
-            'detail'      => 'parent_id: Vous ne pouvez pas répondre à une réponse.',
-            'description' => 'parent_id: Vous ne pouvez pas répondre à une réponse.',
+            'detail'      => 'parent_id: Tu ne peux pas répondre à une réponse.',
+            'description' => 'parent_id: Tu ne peux pas répondre à une réponse.',
             'type'        => '/validation_errors/' . ValidReplyParent::ALREADY_NESTED_CODE,
             'title'       => 'An error occurred',
         ]);

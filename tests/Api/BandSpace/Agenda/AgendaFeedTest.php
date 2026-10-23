@@ -116,8 +116,8 @@ class AgendaFeedTest extends ApiTestCase
             'status' => 403,
             'type' => '/errors/403',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
         $this->assertCount(0, $this->feedTokenRepository()->findAll());
     }
@@ -147,8 +147,8 @@ class AgendaFeedTest extends ApiTestCase
             'status' => 403,
             'type' => '/errors/403',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
         // The member's feed is untouched: a stranger cannot cut off someone else's subscription.
         $this->assertCount(1, $this->feedTokenRepository()->findBy(['membership' => $membership]));

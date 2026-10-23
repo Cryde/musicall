@@ -126,8 +126,8 @@ class MusicianProfilePostTest extends ApiTestCase
             '@type' => 'Error',
             '@id' => '/api/errors/400',
             'title' => 'An error occurred',
-            'detail' => 'Vous avez déjà un profil musicien',
-            'description' => 'Vous avez déjà un profil musicien',
+            'detail' => 'Tu as déjà un profil musicien',
+            'description' => 'Tu as déjà un profil musicien',
             'status' => 400,
             'type' => '/errors/400',
         ]);

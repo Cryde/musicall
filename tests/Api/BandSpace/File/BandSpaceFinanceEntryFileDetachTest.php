@@ -155,10 +155,10 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez modifier que vos propres entrées personnelles',
+            'detail' => 'Tu ne peux modifier que tes propres entrées personnelles',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez modifier que vos propres entrées personnelles',
+            'description' => 'Tu ne peux modifier que tes propres entrées personnelles',
         ]);
     }
 

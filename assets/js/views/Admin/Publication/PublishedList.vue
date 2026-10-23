@@ -39,7 +39,7 @@
     >
       <template #empty>
         <div class="text-center py-8 text-surface-500">
-          {{ searched ? 'Aucune publication ne correspond à ce terme.' : 'Saisissez un terme et lancez une recherche.' }}
+          {{ searched ? 'Aucune publication ne correspond à ce terme.' : 'Saisis un terme et lance une recherche.' }}
         </div>
       </template>
 

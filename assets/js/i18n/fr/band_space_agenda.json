@@ -62,10 +62,10 @@
   "entry": {
     "edit_title": "Modifier un événement",
     "ask_availability": "Demander les disponibilités aux membres",
-    "ask_availability_kept": "Les réponses déjà données sont conservées et réapparaîtront si vous réactivez l’option.",
+    "ask_availability_kept": "Les réponses déjà données sont conservées et réapparaîtront si tu réactives l’option.",
     "ask_availability_series": "S’applique à toutes les dates de la série.",
     "ask_availability_error": "Impossible de modifier cette option",
-    "series_notice": "Cet événement fait partie d’une série : vos modifications s’appliqueront à toutes les occurrences, passées comme futures.",
+    "series_notice": "Cet événement fait partie d’une série : tes modifications s’appliqueront à toutes les occurrences, passées comme futures.",
     "series_start": "Début de la série : {date}.",
     "title_label": "Titre",
     "title_placeholder": "Ex : Répétition générale",
@@ -118,9 +118,9 @@
       "saturday": "samedi"
     },
     "until_label": "Jusqu'au",
-    "until_required": "Veuillez spécifier une date de fin de récurrence.",
+    "until_required": "Indique une date de fin de récurrence.",
     "until_before_start": "La date de fin doit être postérieure ou égale au premier événement.",
-    "monthly_mode_required": "Veuillez préciser le mode de récurrence mensuelle."
+    "monthly_mode_required": "Précise le mode de récurrence mensuelle."
   },
   "series_save": {
     "remove_recurrence": "Supprimer la récurrence",
@@ -147,7 +147,7 @@
     "member_label": "Membre",
     "all_members": "Tous",
     "add": "Ajouter",
-    "member_locked_hint": "Pour changer de membre, supprimez cette indisponibilité et créez-en une autre.",
+    "member_locked_hint": "Pour changer de membre, supprime cette indisponibilité et crées-en une autre.",
     "start_label": "Du",
     "end_label": "Au",
     "reason_label": "Motif (optionnel)",
@@ -156,8 +156,8 @@
     "edit_aria": "Modifier l'indisponibilité",
     "edit_tooltip": "Modifier",
     "delete_aria": "Supprimer l'indisponibilité",
-    "start_required": "Veuillez spécifier une date de début",
-    "end_required": "Veuillez spécifier une date de fin",
+    "start_required": "Indique une date de début",
+    "end_required": "Indique une date de fin",
     "end_before_start": "La date de fin doit être postérieure ou égale à la date de début",
     "save_error": "Impossible d'enregistrer l'indisponibilité",
     "delete_error": "Impossible de supprimer l'indisponibilité",
@@ -186,7 +186,7 @@
     "quick_yes": "Dispo",
     "quick_no": "Pas dispo",
     "answer_failed": "Disponibilité non enregistrée",
-    "retry_soon": "Réessayez dans un instant.",
+    "retry_soon": "Réessaie dans un instant.",
     "past": "Cette date est passée, les disponibilités ne peuvent plus changer.",
     "absent_notice": "Une indisponibilité est déclarée sur cette date. Répondre ici la remplace pour cet événement.",
     "remind": "Relancer les membres sans réponse",
@@ -194,7 +194,7 @@
     "remind_sent_detail": "Les membres sans réponse ont reçu une notification.",
     "remind_error": "Impossible de relancer les membres",
     "load_error": "Impossible de charger les disponibilités",
-    "answer_error": "Impossible d’enregistrer votre disponibilité"
+    "answer_error": "Impossible d’enregistrer ta disponibilité"
   },
   "chip": {
     "recurring": "Événement récurrent",

@@ -573,10 +573,10 @@ class UserProfilePatchTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'detail' => 'Choisis une ville dans la liste pour enregistrer sa position',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'description' => 'Choisis une ville dans la liste pour enregistrer sa position',
         ]);
     }
 
@@ -596,10 +596,10 @@ class UserProfilePatchTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'detail' => 'Choisis une ville dans la liste pour enregistrer sa position',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'description' => 'Choisis une ville dans la liste pour enregistrer sa position',
         ]);
     }
 
@@ -619,10 +619,10 @@ class UserProfilePatchTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'detail' => 'Choisis une ville dans la liste pour enregistrer sa position',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'description' => 'Choisis une ville dans la liste pour enregistrer sa position',
         ]);
     }
 

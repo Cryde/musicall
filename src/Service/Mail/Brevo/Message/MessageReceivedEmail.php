@@ -25,7 +25,7 @@ class MessageReceivedEmail
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
             ->to(new Address($recipientEmail, $username))
-            ->text('Vous avez reçu un message privé');
+            ->text('Tu as reçu un message privé');
         $email->getHeaders()
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [

@@ -114,10 +114,10 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
 
@@ -156,10 +156,10 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'description' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
         ]);
 
         $this->assertCount(

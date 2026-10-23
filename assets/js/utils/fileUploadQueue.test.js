@@ -381,7 +381,7 @@ describe('applyUploadFailure', () => {
     assert.equal(outcome.queue[2].status, UPLOAD_STATUS.Skipped)
     assert.equal(
       outcome.notice,
-      "Le quota de stockage de l'espace est atteint. Les fichiers restants n'ont pas été envoyés : libérez de la place, puis réessayez."
+      "Le quota de stockage de l'espace est atteint. Les fichiers restants n'ont pas été envoyés : libère de la place, puis réessaie."
     )
   })
 
@@ -436,7 +436,7 @@ describe('applyUploadFailure', () => {
     assert.equal(queue[1].status, UPLOAD_STATUS.Skipped)
     assert.equal(
       outcome.notice,
-      "Limite d'envoi atteinte. Les fichiers restants n'ont pas été envoyés : patientez une minute, puis réessayez."
+      "Limite d'envoi atteinte. Les fichiers restants n'ont pas été envoyés : patiente une minute, puis réessaie."
     )
   })
 

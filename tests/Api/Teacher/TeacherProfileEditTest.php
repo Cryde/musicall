@@ -187,18 +187,18 @@ class TeacherProfileEditTest extends ApiTestCase
                 ],
                 [
                     'propertyPath' => 'instrument_ids',
-                    'message' => 'Vous devez sélectionner au moins un instrument',
+                    'message' => 'Tu dois sélectionner au moins un instrument',
                     'code' => 'bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
                 ],
             ],
             'title' => 'An error occurred',
             'detail' => 'description: La présentation est obligatoire
 years_of_experience: Les années d\'expérience sont obligatoires
-instrument_ids: Vous devez sélectionner au moins un instrument',
+instrument_ids: Tu dois sélectionner au moins un instrument',
             'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=ad32d13f-c3d4-423b-909a-857b961eb720;2=bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
             'description' => 'description: La présentation est obligatoire
 years_of_experience: Les années d\'expérience sont obligatoires
-instrument_ids: Vous devez sélectionner au moins un instrument',
+instrument_ids: Tu dois sélectionner au moins un instrument',
         ]);
     }
 

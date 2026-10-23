@@ -206,10 +206,10 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez modifier que votre propre profil',
+            'detail' => 'Tu ne peux modifier que ton propre profil',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez modifier que votre propre profil',
+            'description' => 'Tu ne peux modifier que ton propre profil',
         ]);
 
         $reloaded = self::getContainer()->get(BandSpaceMembershipRepository::class)
@@ -640,10 +640,10 @@ class BandSpaceMemberProfileTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
 

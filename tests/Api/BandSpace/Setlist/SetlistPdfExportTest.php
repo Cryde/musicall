@@ -454,7 +454,7 @@ class SetlistPdfExportTest extends ApiTestCase
             $translator = self::getContainer()->get(TranslatorInterface::class);
             $this->assertSame(Response::HTTP_BAD_GATEWAY, $exception->getStatusCode());
             $this->assertSame(
-                'Le service de génération PDF est momentanément indisponible. Veuillez réessayer.',
+                'Le service de génération PDF est momentanément indisponible. Réessaie.',
                 $translator->trans($exception->getMessage(), [], null, 'fr'),
             );
             $this->assertSame(
@@ -705,10 +705,10 @@ class SetlistPdfExportTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
     /** « Inclure les paroles » (#1055): each song with lyrics once, after the list, and no fit. */

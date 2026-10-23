@@ -312,10 +312,10 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'La date de début d\'une récurrence ne peut plus être modifiée. Terminez celle-ci et créez une nouvelle récurrence.',
+            'detail' => 'La date de début d\'une récurrence ne peut plus être modifiée. Termine celle-ci et crée une nouvelle récurrence.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'La date de début d\'une récurrence ne peut plus être modifiée. Terminez celle-ci et créez une nouvelle récurrence.',
+            'description' => 'La date de début d\'une récurrence ne peut plus être modifiée. Termine celle-ci et crée une nouvelle récurrence.',
         ]);
 
         $this->assertSame(self::monthStart(-3)->format('Y-m-d'), $this->reloadRecurrence($recurrenceId)->startDate->format('Y-m-d'));
@@ -379,10 +379,10 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'L\'intervalle d\'une récurrence ne peut plus être modifié. Terminez celle-ci et créez une nouvelle récurrence.',
+            'detail' => 'L\'intervalle d\'une récurrence ne peut plus être modifié. Termine celle-ci et crée une nouvelle récurrence.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'L\'intervalle d\'une récurrence ne peut plus être modifié. Terminez celle-ci et créez une nouvelle récurrence.',
+            'description' => 'L\'intervalle d\'une récurrence ne peut plus être modifié. Termine celle-ci et crée une nouvelle récurrence.',
         ]);
     }
 
@@ -823,12 +823,12 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'scope',
-                    'message' => 'Supprimez d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
+                    'message' => 'Supprime d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
                     'code' => PersonalScopeWithoutSplitsValidator::ERROR_CODE,
                 ],
             ],
-            'detail' => 'scope: Supprimez d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
-            'description' => 'scope: Supprimez d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
+            'detail' => 'scope: Supprime d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
+            'description' => 'scope: Supprime d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
             'type' => '/validation_errors/' . PersonalScopeWithoutSplitsValidator::ERROR_CODE,
             'title' => 'An error occurred',
         ]);

@@ -18,11 +18,11 @@ describe('apiErrorDetail', () => {
       apiErrorDetail(
         {
           status: 403,
-          message: 'Vous ne pouvez supprimer que vos propres récurrences personnelles'
+          message: 'Tu ne peux supprimer que tes propres récurrences personnelles'
         },
         'fallback'
       ),
-      'Vous ne pouvez supprimer que vos propres récurrences personnelles'
+      'Tu ne peux supprimer que tes propres récurrences personnelles'
     )
   })
 

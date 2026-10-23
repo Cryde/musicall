@@ -335,12 +335,12 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => '',
-                    'message' => 'Vous ne pouvez pas ajouter plus de 6 médias',
+                    'message' => 'Tu ne peux pas ajouter plus de 6 médias',
                     'code' => 'music_all_7f8e9d0c-1a2b-3c4d-5e6f-7a8b9c0d1e2f',
                 ],
             ],
-            'detail' => 'Vous ne pouvez pas ajouter plus de 6 médias',
-            'description' => 'Vous ne pouvez pas ajouter plus de 6 médias',
+            'detail' => 'Tu ne peux pas ajouter plus de 6 médias',
+            'description' => 'Tu ne peux pas ajouter plus de 6 médias',
             'type' => '/validation_errors/music_all_7f8e9d0c-1a2b-3c4d-5e6f-7a8b9c0d1e2f',
             'title' => 'An error occurred',
         ]);

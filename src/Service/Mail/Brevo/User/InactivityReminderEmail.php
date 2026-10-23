@@ -22,7 +22,7 @@ class InactivityReminderEmail
         $email = new Email()
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
             ->to(new Address($recipientEmail, $username))
-            ->text('Vous nous manquez sur MusicAll !');
+            ->text('Tu nous manques sur MusicAll !');
         $email->getHeaders()
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [

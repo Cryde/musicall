@@ -60,7 +60,7 @@ describe('recordingErrorMessage', () => {
   it('explains a refused permission', () => {
     assert.equal(
       recordingErrorMessage({ name: 'NotAllowedError' }),
-      "L'accès au micro a été refusé. Autorisez-le dans les réglages du navigateur pour enregistrer une note vocale."
+      "L'accès au micro a été refusé. Autorise-le dans les réglages du navigateur pour enregistrer une note vocale."
     )
   })
 

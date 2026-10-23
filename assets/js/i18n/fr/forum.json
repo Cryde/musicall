@@ -27,7 +27,7 @@
   "show": {
     "new_topic": "Nouveau sujet",
     "no_topics": "Aucun sujet dans ce forum pour le moment.",
-    "login_to_create": "Vous devez vous connecter pour créer un nouveau sujet."
+    "login_to_create": "Tu dois te connecter pour créer un nouveau sujet."
   },
   "topic": {
     "default_title": "Sujet",
@@ -47,13 +47,13 @@
   },
   "my_topics": {
     "page_title": "Mes sujets - MusicAll",
-    "empty": "Vous ne participez à aucun sujet pour le moment.",
+    "empty": "Tu ne participes à aucun sujet pour le moment.",
     "unread": "Non lu",
     "in_forum": "Dans {forum}",
     "last_post_on": "Dernier message le {date}",
     "no_post": "Aucun message",
     "remove": "Retirer de mes sujets",
-    "removed_toast": "Sujet retiré de votre liste"
+    "removed_toast": "Sujet retiré de ta liste"
   },
   "topic_item": {
     "created_by": "Par {author} le {date}",
@@ -71,41 +71,41 @@
     "edited_on": "(modifié le {date})",
     "edit": "Modifier",
     "edit_message": "Modifier le message",
-    "edit_placeholder": "Modifiez votre message…",
+    "edit_placeholder": "Modifie ton message…",
     "save": "Enregistrer",
     "like": "J'aime",
     "dislike": "Je n'aime pas",
     "quote": "Citer",
     "quote_message_of": "Citer le message de {name}",
     "report_message_of": "Signaler le message de {name}",
-    "login_to_message": "Vous devez vous connecter pour envoyer un message.",
+    "login_to_message": "Tu dois te connecter pour envoyer un message.",
     "edited_toast": "Message modifié"
   },
   "reply": {
-    "login_to_post": "Vous devez vous connecter pour poster un message.",
-    "locked": "Ce sujet est verrouillé. Vous ne pouvez plus y répondre.",
+    "login_to_post": "Tu dois te connecter pour poster un message.",
+    "locked": "Ce sujet est verrouillé. Tu ne peux plus y répondre.",
     "send": "Envoyer",
     "sent_toast": "Message envoyé",
-    "sent_toast_detail": "Votre message a été publié avec succès",
-    "rate_limited": "Veuillez patienter avant de poster un nouveau message.",
+    "sent_toast_detail": "Ton message a été publié avec succès",
+    "rate_limited": "Patiente avant de poster un nouveau message.",
     "send_failed": "Une erreur est survenue lors de l'envoi du message"
   },
   "add_topic": {
     "title": "Ajouter un nouveau sujet",
     "title_label": "Titre du sujet",
-    "title_placeholder": "Votre titre ici",
+    "title_placeholder": "Ton titre ici",
     "title_too_short": "Le titre doit contenir au moins {min} caractères",
-    "message_label": "Votre message",
+    "message_label": "Ton message",
     "message_too_short": "Le message doit contenir au moins {min} caractères",
     "created": "Le sujet a été créé !",
     "close": "Fermer",
     "create": "Créer",
     "go_to_topic": "Aller sur le sujet",
-    "rate_limited": "Veuillez patienter quelques minutes avant de créer un nouveau sujet.",
+    "rate_limited": "Patiente quelques minutes avant de créer un nouveau sujet.",
     "create_failed": "Une erreur est survenue lors de la création du sujet"
   },
   "editor": {
-    "placeholder": "Écrivez votre message…",
+    "placeholder": "Écris ton message…",
     "bold": "Gras",
     "bold_glyph": "B",
     "italic": "Italique",
@@ -117,7 +117,7 @@
     "add_youtube": "Ajouter une vidéo YouTube",
     "undo": "Annuler",
     "redo": "Rétablir",
-    "youtube_hint": "Collez l'URL d'une vidéo YouTube",
+    "youtube_hint": "Colle l'URL d'une vidéo YouTube",
     "add": "Ajouter",
     "image_added": "Image ajoutée",
     "upload_failed": "Échec du téléchargement",

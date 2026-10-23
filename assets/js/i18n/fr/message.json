@@ -17,7 +17,7 @@
     "unread_aria_label": "{count} message(s) non lu(s)",
     "last_message_author": "{author} :",
     "no_message": "Aucun message",
-    "empty": "Vous n'avez pas encore de message."
+    "empty": "Tu n'as pas encore de message."
   },
   "thread": {
     "load_older": "Charger les messages plus anciens",
@@ -25,24 +25,24 @@
     "deleted": "Message supprimé",
     "attachment": "Pièce jointe",
     "report": "Signaler ce message",
-    "recipient_deleted": "Vous ne pouvez plus envoyer de message à cet utilisateur.",
-    "placeholder": "Votre message...",
+    "recipient_deleted": "Tu ne peux plus envoyer de message à cet utilisateur.",
+    "placeholder": "Ton message...",
     "send": "Envoyer le message",
-    "none_selected": "Sélectionnez une conversation ou envoyez un nouveau message."
+    "none_selected": "Sélectionne une conversation ou envoie un nouveau message."
   },
   "send_modal": {
     "title": "Nouveau message",
-    "subtitle": "Envoyez un message privé",
+    "subtitle": "Envoie un message privé",
     "recipient": "Destinataire",
     "recipient_placeholder": "Rechercher un destinataire...",
-    "content_aria_label": "Votre message",
-    "content_placeholder": "Écrivez votre message...",
+    "content_aria_label": "Ton message",
+    "content_placeholder": "Écris ton message...",
     "cancel": "Annuler",
     "send": "Envoyer le message",
     "error": "Une erreur est survenue lors de l'envoi du message."
   },
   "error": {
-    "too_many_messages": "Trop de messages envoyés. Veuillez patienter un instant."
+    "too_many_messages": "Trop de messages envoyés. Patiente un instant."
   },
   "contact_origin": {
     "course": "Cours : {instruments}",

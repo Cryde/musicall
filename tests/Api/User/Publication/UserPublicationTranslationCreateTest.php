@@ -371,14 +371,14 @@ class UserPublicationTranslationCreateTest extends ApiTestCase
                 ],
                 [
                     'propertyPath' => 'language',
-                    'message' => 'Veuillez choisir une langue',
+                    'message' => 'Choisis une langue',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => "title: Le titre doit contenir au moins 3 caractères\nlanguage: Veuillez choisir une langue",
+            'detail' => "title: Le titre doit contenir au moins 3 caractères\nlanguage: Choisis une langue",
             'type' => '/validation_errors/0=9ff3fdc4-b214-49db-8718-39c315e33d45;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => "title: Le titre doit contenir au moins 3 caractères\nlanguage: Veuillez choisir une langue",
+            'description' => "title: Le titre doit contenir au moins 3 caractères\nlanguage: Choisis une langue",
         ]);
     }
 

@@ -83,14 +83,14 @@ class SetlistCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'name',
-                    'message' => 'Veuillez spécifier un nom',
+                    'message' => 'Indique un nom',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'name: Veuillez spécifier un nom',
+            'detail' => 'name: Indique un nom',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => 'name: Veuillez spécifier un nom',
+            'description' => 'name: Indique un nom',
         ]);
     }
 
@@ -115,10 +115,10 @@ class SetlistCreateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
 }

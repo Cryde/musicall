@@ -83,7 +83,7 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
         $this->client->request('GET', $this->url($space, $entry), [], [], self::JSON);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertJsonEquals($this->error(422, 'Précisez la date de l\'occurrence'));
+        $this->assertJsonEquals($this->error(422, 'Précise la date de l\'occurrence'));
     }
 
     public function test_a_date_the_entry_does_not_fall_on_is_not_found(): void
@@ -108,7 +108,7 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
         $this->client->request('GET', $this->url($space, $entry), [], [], self::JSON);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonEquals($this->error(403, 'Vous n\'êtes pas membre de ce Band Space'));
+        $this->assertJsonEquals($this->error(403, 'Tu n\'es pas membre de ce Band Space'));
     }
 
     public function test_a_member_answers_one_occurrence_of_a_series(): void
@@ -260,7 +260,7 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
         $this->client->jsonRequest('POST', $this->url($space, $entry) . '/remind', [], self::JSON);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
-        $this->assertJsonEquals($this->error(429, 'Les membres ont déjà été relancés pour cette date, réessayez plus tard'));
+        $this->assertJsonEquals($this->error(429, 'Les membres ont déjà été relancés pour cette date, réessaie plus tard'));
     }
 
     /** The home card's « 3 dispos · 1 sans réponse » comes with the feed, one count per occurrence. */
@@ -354,7 +354,7 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
         $this->client->jsonRequest('PUT', $this->url($space, $entry), ['answer' => 'yes'], self::JSON);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertJsonEquals($this->error(422, 'Précisez la date de l\'occurrence'));
+        $this->assertJsonEquals($this->error(422, 'Précise la date de l\'occurrence'));
     }
 
     public function test_a_cancelled_occurrence_cannot_be_answered(): void
@@ -407,12 +407,12 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'answer',
-                    'message' => 'Veuillez indiquer votre disponibilité',
+                    'message' => 'Indique ta disponibilité',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'answer: Veuillez indiquer votre disponibilité',
-            'description' => 'answer: Veuillez indiquer votre disponibilité',
+            'detail' => 'answer: Indique ta disponibilité',
+            'description' => 'answer: Indique ta disponibilité',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);

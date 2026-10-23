@@ -83,7 +83,7 @@ import HomeAnnounceCard from '../HomeAnnounceCard.vue'
 import HomeMemberCityPrompt from './HomeMemberCityPrompt.vue'
 
 /**
- * « Annonces pour vous » (#1078): the bands looking for the member's instrument, the nearest first
+ * « Annonces pour toi » (#1078): the bands looking for the member's instrument, the nearest first
  * when their profile has a city, which the block asks for otherwise (#1079). Without an instrument,
  * every announce near that city, or the latest ones, and a nudge to fill in a musician profile.
  */

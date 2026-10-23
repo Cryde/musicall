@@ -134,10 +134,10 @@ class BandSpaceInvitationGetCollectionTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'detail' => 'Tu dois être administrateur pour effectuer cette action',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous devez être administrateur pour effectuer cette action',
+            'description' => 'Tu dois être administrateur pour effectuer cette action',
         ]);
     }
 }

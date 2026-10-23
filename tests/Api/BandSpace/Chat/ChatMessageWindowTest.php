@@ -281,10 +281,10 @@ class ChatMessageWindowTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 
@@ -296,10 +296,10 @@ class ChatMessageWindowTest extends ApiTestCase
             '@id' => '/api/errors/400',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Indiquez un seul message de référence : around, before ou after',
+            'detail' => 'Indique un seul message de référence : around, before ou after',
             'status' => 400,
             'type' => '/errors/400',
-            'description' => 'Indiquez un seul message de référence : around, before ou after',
+            'description' => 'Indique un seul message de référence : around, before ou after',
         ]);
     }
 

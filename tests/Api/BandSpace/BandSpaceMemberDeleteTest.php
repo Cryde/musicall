@@ -184,10 +184,10 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas vous exclure vous-même. Utilisez la fonction "Quitter"',
+            'detail' => 'Tu ne peux pas t\'exclure toi-même. Utilise la fonction "Quitter"',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Vous ne pouvez pas vous exclure vous-même. Utilisez la fonction "Quitter"',
+            'description' => 'Tu ne peux pas t\'exclure toi-même. Utilise la fonction "Quitter"',
         ]);
     }
 
@@ -212,10 +212,10 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'detail' => 'Tu dois être administrateur pour effectuer cette action',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous devez être administrateur pour effectuer cette action',
+            'description' => 'Tu dois être administrateur pour effectuer cette action',
         ]);
     }
 

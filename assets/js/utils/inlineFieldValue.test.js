@@ -18,7 +18,7 @@ describe('parseInlineFieldValue', () => {
     assert.deepEqual(parseInlineFieldValue('07', { kind: 'number' }), { value: 7 })
     for (const text of ['1e3', '3.5', '-4', '12 bpm']) {
       assert.deepEqual(parseInlineFieldValue(text, { kind: 'number' }), {
-        error: 'Indiquez un nombre entier.'
+        error: 'Indique un nombre entier.'
       })
     }
   })

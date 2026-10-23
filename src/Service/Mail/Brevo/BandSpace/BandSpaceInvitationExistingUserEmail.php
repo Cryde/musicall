@@ -25,7 +25,7 @@ readonly class BandSpaceInvitationExistingUserEmail
         $email = new Email()
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
             ->to(new Address($recipientEmail, $username))
-            ->text('Vous avez été invité à rejoindre ' . $bandSpaceName . ' sur MusicAll');
+            ->text('Tu as été invité à rejoindre ' . $bandSpaceName . ' sur MusicAll');
         $email->getHeaders()
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [

@@ -27,7 +27,7 @@ class EmailVerificationReminderEmail
         $email = new Email()
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
             ->to(new Address($recipientEmail, $username))
-            ->text('Rappel : vérifiez votre adresse email');
+            ->text('Rappel : vérifie ton adresse email');
         $email->getHeaders()
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [

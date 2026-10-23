@@ -126,12 +126,12 @@ class MessagePostInThreadTest extends ApiTestCase
             '@id' => '/api/validation_errors/music_all_a9d3b7e1-4c6f-4e2a-8b5d-3f1c0e9a7d26',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
-            'description' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'detail' => 'Tu ne peux pas envoyer un message à un utilisateur supprimé.',
+            'description' => 'Tu ne peux pas envoyer un message à un utilisateur supprimé.',
             'violations' => [
                 [
                     'propertyPath' => '',
-                    'message' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+                    'message' => 'Tu ne peux pas envoyer un message à un utilisateur supprimé.',
                     'code' => 'music_all_a9d3b7e1-4c6f-4e2a-8b5d-3f1c0e9a7d26',
                 ],
             ],

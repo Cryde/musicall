@@ -101,10 +101,10 @@ class MemberAbsenceDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez gérer que vos propres indisponibilités',
+            'detail' => 'Tu ne peux gérer que tes propres indisponibilités',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez gérer que vos propres indisponibilités',
+            'description' => 'Tu ne peux gérer que tes propres indisponibilités',
         ]);
 
         $repository = self::getContainer()->get(MemberAbsenceRepository::class);

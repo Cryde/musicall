@@ -200,10 +200,10 @@ class TaskCommentCreateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'description' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
         ]);
 
         $this->assertCount(0, self::getContainer()->get(TaskCommentRepository::class)->findByTask($task));

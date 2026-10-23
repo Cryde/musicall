@@ -31,7 +31,7 @@ class SendInactivityReminderCommandLocaleTest extends KernelTestCase
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
         $this->assertEmailHeaderSame($email, 'templateId', '20');
-        $this->assertEmailTextBodyContains($email, 'Vous nous manquez sur MusicAll !');
+        $this->assertEmailTextBodyContains($email, 'Tu nous manques sur MusicAll !');
         $this->assertEmailAddressContains($email, 'To', 'inactive@example.com');
     }
 }

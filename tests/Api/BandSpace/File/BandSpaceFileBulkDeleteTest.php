@@ -171,7 +171,7 @@ class BandSpaceFileBulkDeleteTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $detail = "2 fichiers sélectionnés sont attachés à une note et une tâche. Détachez-les d'abord depuis les ressources concernées.";
+        $detail = "2 fichiers sélectionnés sont attachés à une note et une tâche. Détache-les d'abord depuis les ressources concernées.";
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/422',
@@ -210,7 +210,7 @@ class BandSpaceFileBulkDeleteTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $detail = "1 fichier sélectionné est attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.";
+        $detail = "1 fichier sélectionné est attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée.";
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/422',
@@ -318,10 +318,10 @@ class BandSpaceFileBulkDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
 
