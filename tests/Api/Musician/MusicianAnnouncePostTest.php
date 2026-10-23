@@ -228,7 +228,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
     /** @return iterable<string, array{mixed, string, string, string}> */
     public static function invalidLanguages(): iterable
     {
-        yield 'no language' => [[], 'languages', 'Veuillez choisir au moins une langue', Count::TOO_FEW_ERROR];
+        yield 'no language' => [[], 'languages', 'Choisis au moins une langue', Count::TOO_FEW_ERROR];
         yield 'a language the form does not offer' => [['fr', 'es'], 'languages[1]', "Cette langue n'est pas proposée", Choice::NO_SUCH_CHOICE_ERROR];
         yield 'an upper case code' => [['FR'], 'languages[0]', "Cette langue n'est pas proposée", Choice::NO_SUCH_CHOICE_ERROR];
         yield 'a null language' => [[null], 'languages[0]', "Cette langue n'est pas proposée", NotNull::IS_NULL_ERROR];

@@ -33,7 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             parameters: [
                 'search' => new QueryParameter(
                     key: 'search',
-                    constraints: [new Assert\Length(min: self::SEARCH_MIN_LENGTH, minMessage: 'Saisissez au moins {{ limit }} caractères')],
+                    constraints: [new Assert\Length(min: self::SEARCH_MIN_LENGTH, minMessage: 'Saisis au moins {{ limit }} caractères')],
                 ),
             ],
         ),

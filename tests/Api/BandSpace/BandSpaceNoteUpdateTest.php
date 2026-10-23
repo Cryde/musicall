@@ -444,12 +444,12 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'title',
-                    'message' => 'Veuillez spécifier un titre',
+                    'message' => 'Indique un titre',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'title: Veuillez spécifier un titre',
-            'description' => 'title: Veuillez spécifier un titre',
+            'detail' => 'title: Indique un titre',
+            'description' => 'title: Indique un titre',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);
@@ -1177,10 +1177,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'detail' => "Tu n'es pas membre de ce Band Space",
             'status' => 403,
             'type' => '/errors/403',
-            'description' => "Vous n'êtes pas membre de ce Band Space",
+            'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
 
@@ -1287,10 +1287,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Cette note a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+            'detail' => "Cette note a été modifiée par un autre membre depuis que tu l'as ouverte. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
             'status' => 409,
             'type' => '/errors/409',
-            'description' => "Cette note a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+            'description' => "Cette note a été modifiée par un autre membre depuis que tu l'as ouverte. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
         ]);
 
         $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
@@ -1335,10 +1335,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@id' => '/api/errors/428',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Indiquez la version de la note sur laquelle vous avez travaillé pour enregistrer son contenu.',
+            'detail' => 'Indique la version de la note sur laquelle tu as travaillé pour enregistrer son contenu.',
             'status' => 428,
             'type' => '/errors/428',
-            'description' => 'Indiquez la version de la note sur laquelle vous avez travaillé pour enregistrer son contenu.',
+            'description' => 'Indique la version de la note sur laquelle tu as travaillé pour enregistrer son contenu.',
         ]);
 
         $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);

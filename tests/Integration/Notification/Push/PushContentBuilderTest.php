@@ -29,7 +29,7 @@ class PushContentBuilderTest extends KernelTestCase
         ], 'fr');
 
         $this->assertSame('Les Cactus', $content->title);
-        $this->assertSame('alice vous a assigné à la tâche « Répéter le pont »', $content->body);
+        $this->assertSame('alice t\'a assigné à la tâche « Répéter le pont »', $content->body);
         $this->assertSame(['type' => 'band_space_task_assignment', 'route' => '/band/b1/tasks/t1'], $content->data);
     }
 
@@ -42,7 +42,7 @@ class PushContentBuilderTest extends KernelTestCase
             'actor_username' => 'alice',
         ], 'fr');
 
-        $this->assertSame('alice vous a mentionné dans la discussion de « Les Cactus »', $content->body);
+        $this->assertSame('alice t\'a mentionné dans la discussion de « Les Cactus »', $content->body);
         $this->assertSame(['type' => 'band_space_chat_mention', 'route' => '/band/b1/chat?message=m1'], $content->data);
     }
 
@@ -53,8 +53,8 @@ class PushContentBuilderTest extends KernelTestCase
         $promoted = $this->builder()->forNotification(NotificationType::BandSpaceRoleChanged, $payload + ['to' => 'admin'], 'fr');
         $demoted = $this->builder()->forNotification(NotificationType::BandSpaceRoleChanged, $payload + ['to' => 'user'], 'fr');
 
-        $this->assertSame('alice vous a nommé administrateur de « Les Cactus »', $promoted->body);
-        $this->assertSame('alice vous a retiré les droits d\'administrateur sur « Les Cactus »', $demoted->body);
+        $this->assertSame('alice t\'a nommé administrateur de « Les Cactus »', $promoted->body);
+        $this->assertSame('alice t\'a retiré les droits d\'administrateur sur « Les Cactus »', $demoted->body);
         $this->assertSame(['type' => 'band_space_role_changed', 'route' => '/band/b1/settings'], $promoted->data);
     }
 
@@ -63,7 +63,7 @@ class PushContentBuilderTest extends KernelTestCase
         $content = $this->builder()->forNotification(NotificationType::ForumTopicReply, ['topic_slug' => 'ampli-a-lampes', 'actor_username' => 'bob'], 'fr');
 
         $this->assertSame('MusicAll', $content->title);
-        $this->assertSame('bob a répondu à votre sujet sur le forum', $content->body);
+        $this->assertSame('bob a répondu à ton sujet sur le forum', $content->body);
         $this->assertSame(['type' => 'forum_topic_reply', 'route' => '/forums/topic/ampli-a-lampes'], $content->data);
     }
 
@@ -77,7 +77,7 @@ class PushContentBuilderTest extends KernelTestCase
             'actor_username' => 'alice',
         ], 'fr');
 
-        $this->assertSame('alice vous a attribué une dépense sur « Location du van »', $content->body);
+        $this->assertSame('alice t\'a attribué une dépense sur « Location du van »', $content->body);
         $this->assertSame(['type' => 'band_space_finance_split_assigned'], $content->data);
     }
 
@@ -89,7 +89,7 @@ class PushContentBuilderTest extends KernelTestCase
             'invited_by_username' => 'alice',
         ], 'fr');
 
-        $this->assertSame('alice vous a invité à rejoindre Les Cactus', $content->body);
+        $this->assertSame('alice t\'a invité à rejoindre Les Cactus', $content->body);
         $this->assertSame(['type' => 'band_space_invitation'], $content->data);
     }
 
@@ -166,31 +166,31 @@ class PushContentBuilderTest extends KernelTestCase
     /** @return iterable<string, array{NotificationType, array<string, string>, string}> */
     public static function everySentence(): iterable
     {
-        yield 'invitation' => [NotificationType::BandSpaceInvitation, ['actor_username' => '', 'invited_by_username' => 'alice'], 'alice vous a invité à rejoindre Les Cactus'];
-        yield 'invitation accepted' => [NotificationType::BandSpaceInvitationAccepted, [], 'alice a accepté votre invitation à Les Cactus'];
-        yield 'invitation declined' => [NotificationType::BandSpaceInvitationDeclined, [], 'alice a décliné votre invitation à Les Cactus'];
-        yield 'task assignment' => [NotificationType::BandSpaceTaskAssignment, ['task_title' => 'Répéter le pont'], 'alice vous a assigné à la tâche « Répéter le pont »'];
-        yield 'task mention' => [NotificationType::TaskMention, ['task_title' => 'Répéter le pont'], 'alice vous a mentionné dans la tâche « Répéter le pont »'];
-        yield 'chat mention' => [NotificationType::BandSpaceChatMention, [], 'alice vous a mentionné dans la discussion de « Les Cactus »'];
+        yield 'invitation' => [NotificationType::BandSpaceInvitation, ['actor_username' => '', 'invited_by_username' => 'alice'], 'alice t\'a invité à rejoindre Les Cactus'];
+        yield 'invitation accepted' => [NotificationType::BandSpaceInvitationAccepted, [], 'alice a accepté ton invitation à Les Cactus'];
+        yield 'invitation declined' => [NotificationType::BandSpaceInvitationDeclined, [], 'alice a décliné ton invitation à Les Cactus'];
+        yield 'task assignment' => [NotificationType::BandSpaceTaskAssignment, ['task_title' => 'Répéter le pont'], 'alice t\'a assigné à la tâche « Répéter le pont »'];
+        yield 'task mention' => [NotificationType::TaskMention, ['task_title' => 'Répéter le pont'], 'alice t\'a mentionné dans la tâche « Répéter le pont »'];
+        yield 'chat mention' => [NotificationType::BandSpaceChatMention, [], 'alice t\'a mentionné dans la discussion de « Les Cactus »'];
         yield 'task comment' => [NotificationType::TaskComment, ['task_title' => 'Répéter le pont'], 'alice a commenté la tâche « Répéter le pont »'];
         yield 'agenda entry' => [NotificationType::BandSpaceAgendaEntryCreated, ['entry_title' => 'Concert d\'été'], 'alice a ajouté l\'événement « Concert d\'été »'];
-        yield 'availability' => [NotificationType::BandSpaceAgendaAvailabilityRequested, ['entry_title' => 'Concert {live}'], 'alice demande vos disponibilités pour « Concert {live} »'];
-        yield 'finance split' => [NotificationType::BandSpaceFinanceSplitAssigned, ['entry_label' => 'Location du van'], 'alice vous a attribué une dépense sur « Location du van »'];
-        yield 'promoted' => [NotificationType::BandSpaceRoleChanged, ['to' => 'admin'], 'alice vous a nommé administrateur de « Les Cactus »'];
-        yield 'demoted' => [NotificationType::BandSpaceRoleChanged, ['to' => 'user'], 'alice vous a retiré les droits d\'administrateur sur « Les Cactus »'];
-        yield 'member removed' => [NotificationType::BandSpaceMemberRemoved, [], 'alice vous a retiré de « Les Cactus »'];
+        yield 'availability' => [NotificationType::BandSpaceAgendaAvailabilityRequested, ['entry_title' => 'Concert {live}'], 'alice demande tes disponibilités pour « Concert {live} »'];
+        yield 'finance split' => [NotificationType::BandSpaceFinanceSplitAssigned, ['entry_label' => 'Location du van'], 'alice t\'a attribué une dépense sur « Location du van »'];
+        yield 'promoted' => [NotificationType::BandSpaceRoleChanged, ['to' => 'admin'], 'alice t\'a nommé administrateur de « Les Cactus »'];
+        yield 'demoted' => [NotificationType::BandSpaceRoleChanged, ['to' => 'user'], 'alice t\'a retiré les droits d\'administrateur sur « Les Cactus »'];
+        yield 'member removed' => [NotificationType::BandSpaceMemberRemoved, [], 'alice t\'a retiré de « Les Cactus »'];
         yield 'member left' => [NotificationType::BandSpaceMemberLeft, [], 'alice a quitté « Les Cactus »'];
         yield 'deletion scheduled' => [NotificationType::BandSpaceDeletionScheduled, [], 'alice a programmé la suppression de « Les Cactus »'];
         yield 'deletion cancelled' => [NotificationType::BandSpaceDeletionCancelled, [], 'alice a annulé la suppression de « Les Cactus »'];
-        yield 'forum reply' => [NotificationType::ForumTopicReply, [], 'alice a répondu à votre sujet sur le forum'];
-        yield 'publication comment' => [NotificationType::PublicationComment, [], 'alice a commenté votre publication'];
-        yield 'comment reply' => [NotificationType::CommentReply, [], 'alice a répondu à votre commentaire'];
-        yield 'publication approved' => [NotificationType::PublicationApproved, [], 'alice a publié votre article'];
-        yield 'publication rejected' => [NotificationType::PublicationRejected, [], 'alice a refusé votre article'];
-        yield 'gallery approved' => [NotificationType::GalleryApproved, [], 'alice a publié votre galerie'];
-        yield 'gallery rejected' => [NotificationType::GalleryRejected, [], 'alice a refusé votre galerie'];
-        yield 'report received' => [NotificationType::ReportReceived, ['actor_username' => ''], 'a une nouvelle notification pour vous'];
-        yield 'report resolved' => [NotificationType::ReportResolved, [], 'alice a une nouvelle notification pour vous'];
+        yield 'forum reply' => [NotificationType::ForumTopicReply, [], 'alice a répondu à ton sujet sur le forum'];
+        yield 'publication comment' => [NotificationType::PublicationComment, [], 'alice a commenté ta publication'];
+        yield 'comment reply' => [NotificationType::CommentReply, [], 'alice a répondu à ton commentaire'];
+        yield 'publication approved' => [NotificationType::PublicationApproved, [], 'alice a publié ton article'];
+        yield 'publication rejected' => [NotificationType::PublicationRejected, [], 'alice a refusé ton article'];
+        yield 'gallery approved' => [NotificationType::GalleryApproved, [], 'alice a publié ta galerie'];
+        yield 'gallery rejected' => [NotificationType::GalleryRejected, [], 'alice a refusé ta galerie'];
+        yield 'report received' => [NotificationType::ReportReceived, ['actor_username' => ''], 'a une nouvelle notification pour toi'];
+        yield 'report resolved' => [NotificationType::ReportResolved, [], 'alice a une nouvelle notification pour toi'];
         yield 'names with quotes and braces' => [NotificationType::BandSpaceMemberLeft, ['actor_username' => "o'{neil}'", 'band_space_name' => "L''écho {#} '"], "o'{neil}' a quitté « L''écho {#} ' »"];
     }
 

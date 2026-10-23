@@ -187,10 +187,10 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'detail' => 'Tu dois être administrateur pour effectuer cette action',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous devez être administrateur pour effectuer cette action',
+            'description' => 'Tu dois être administrateur pour effectuer cette action',
         ]);
 
         // Category not deleted, no activity recorded.
@@ -273,10 +273,10 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette catégorie contient une entrée payée. Repassez son statut à Engagé ou déplacez-la d\'abord.',
+            'detail' => 'Cette catégorie contient une entrée payée. Repasse son statut à Engagé ou déplace-la d\'abord.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Cette catégorie contient une entrée payée. Repassez son statut à Engagé ou déplacez-la d\'abord.',
+            'description' => 'Cette catégorie contient une entrée payée. Repasse son statut à Engagé ou déplace-la d\'abord.',
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
@@ -317,10 +317,10 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette catégorie contient 2 entrées payées. Repassez leur statut à Engagé ou déplacez-les d\'abord.',
+            'detail' => 'Cette catégorie contient 2 entrées payées. Repasse leur statut à Engagé ou déplace-les d\'abord.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Cette catégorie contient 2 entrées payées. Repassez leur statut à Engagé ou déplacez-les d\'abord.',
+            'description' => 'Cette catégorie contient 2 entrées payées. Repasse leur statut à Engagé ou déplace-les d\'abord.',
         ]);
     }
 
@@ -354,10 +354,10 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette catégorie contient une sous-catégorie. Supprimez-la d\'abord.',
+            'detail' => 'Cette catégorie contient une sous-catégorie. Supprime-la d\'abord.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Cette catégorie contient une sous-catégorie. Supprimez-la d\'abord.',
+            'description' => 'Cette catégorie contient une sous-catégorie. Supprime-la d\'abord.',
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
@@ -391,10 +391,10 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette catégorie contient 2 sous-catégories. Supprimez-les d\'abord.',
+            'detail' => 'Cette catégorie contient 2 sous-catégories. Supprime-les d\'abord.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Cette catégorie contient 2 sous-catégories. Supprimez-les d\'abord.',
+            'description' => 'Cette catégorie contient 2 sous-catégories. Supprime-les d\'abord.',
         ]);
     }
 }

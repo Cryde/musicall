@@ -49,8 +49,8 @@ describe('texts', () => {
   const styles = [{ name: 'Rock' }, { name: 'Métal' }]
 
   it('words the questions for who is looking', () => {
-    assert.equal(stepQuestion('location', false), 'Où répète votre groupe ?')
-    assert.equal(stepQuestion('location', true), 'Où cherchez-vous un groupe ?')
+    assert.equal(stepQuestion('location', false), 'Où répète ton groupe ?')
+    assert.equal(stepQuestion('location', true), 'Où cherches-tu un groupe ?')
   })
 
   it('names what is sought', () => {

@@ -2,26 +2,26 @@
   "title": "MusicAll, le site de référence au service de la musique",
   "visitor": {
     "cta": {
-      "title": "Rejoignez la communauté {brand}",
+      "title": "Rejoins la communauté {brand}",
       "brand": "MusicAll",
       "subtitle": "Des milliers de passionné·e·s échangent déjà sur MusicAll",
       "button": "Créer mon compte gratuitement"
     },
     "auth": {
-      "teacher_profile": "Vous devez vous connecter pour créer votre profil professeur.",
-      "discover": "Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter.",
-      "announce": "Si vous souhaitez poster une annonce, vous devez vous connecter.",
-      "contact": "Vous devez vous connecter pour envoyer un message à cet utilisateur."
+      "teacher_profile": "Tu dois te connecter pour créer ton profil professeur.",
+      "discover": "Si tu souhaites partager une vidéo avec la communauté, tu dois te connecter.",
+      "announce": "Si tu souhaites poster une annonce, tu dois te connecter.",
+      "contact": "Tu dois te connecter pour envoyer un message à cet utilisateur."
     }
   },
   "hero": {
-    "title": "Trouvez les musiciens {highlight}",
-    "title_highlight": "qui manquent à votre groupe.",
-    "intro": "Annonces de musiciens et de groupes, un espace privé pour gérer votre groupe, des cours et une communauté de passionné·e·s."
+    "title": "Trouve les musiciens {highlight}",
+    "title_highlight": "qui manquent à ton groupe.",
+    "intro": "Annonces de musiciens et de groupes, un espace privé pour gérer ton groupe, des cours et une communauté de passionné·e·s."
   },
   "search_form": {
     "aria_label": "Rechercher un musicien ou un groupe",
-    "looking_for_aria_label": "Ce que vous cherchez",
+    "looking_for_aria_label": "Ce que tu cherches",
     "looking_for_musician": "Je cherche un musicien",
     "looking_for_band": "Je cherche un groupe",
     "instrument": "Instrument",
@@ -63,15 +63,15 @@
   },
   "band_space": {
     "eyebrow": "Band Space",
-    "private": "Privé à votre groupe",
-    "title": "Vous avez trouvé votre groupe ? {highlight}",
-    "title_highlight": "Organisez-le ici.",
+    "private": "Privé à ton groupe",
+    "title": "Tu as trouvé ton groupe ? {highlight}",
+    "title_highlight": "Organise-le ici.",
     "intro": "Un espace de travail réservé aux membres du groupe : fini les infos perdues dans les conversations.",
     "discover": "Découvrir le Band Space",
     "open_mine": "Ouvrir mon Band Space",
     "create": "Créer l'espace de mon groupe",
     "demo": {
-      "your_band": "Votre groupe",
+      "your_band": "Ton groupe",
       "tabs_aria_label": "Modules du Band Space",
       "illustrative": "Aperçu illustratif",
       "done": "(fait)",
@@ -141,7 +141,7 @@
   "teachers": {
     "avatars_aria_label": "Quelques professeurs",
     "view_profile": "Voir le profil de {username}",
-    "title": "Trouvez votre prof de musique",
+    "title": "Trouve ton prof de musique",
     "soon": "Bientôt",
     "intro": "Les premiers professeurs nous ont déjà rejoints. La recherche par instrument et par ville arrive.",
     "see_all": "Voir les profs",
@@ -152,8 +152,8 @@
       "day": "Bonjour, {username}",
       "evening": "Bonsoir, {username}"
     },
-    "intro_band": "Voici ce qui bouge pour vous et votre groupe.",
-    "intro_search": "Trouvez les musiciens et les groupes qui vous correspondent.",
+    "intro_band": "Voici ce qui bouge pour toi et ton groupe.",
+    "intro_search": "Trouve les musiciens et les groupes qui te correspondent.",
     "post_announce": "Poster une annonce",
     "post_discovery": "Poster une découverte",
     "new_topic": "Nouveau sujet",
@@ -196,30 +196,30 @@
       "manage": "Gérer mes annonces"
     },
     "band_space_strip": {
-      "title": "Vous avez trouvé votre groupe ?",
+      "title": "Tu as trouvé ton groupe ?",
       "intro": "Agenda, setlists, tâches et fichiers dans un espace réservé à ses membres.",
       "create": "Créer son espace",
       "discover": "Découvrir"
     },
     "city_prompt": {
-      "label": "Où jouez-vous ?",
-      "intro": "Indiquez votre ville pour voir d'abord les annonces près de chez vous.",
-      "placeholder": "Votre ville",
+      "label": "Où joues-tu ?",
+      "intro": "Indique ta ville pour voir d'abord les annonces près de chez toi.",
+      "placeholder": "Ta ville",
       "save": "Enregistrer",
       "cancel": "Annuler",
-      "hint": "Elle est aussi affichée sur votre profil, vous pouvez la changer à tout moment.",
-      "error": "Impossible d'enregistrer votre ville, réessayez."
+      "hint": "Elle est aussi affichée sur ton profil, tu peux la changer à tout moment.",
+      "error": "Impossible d'enregistrer ta ville, réessaie."
     },
     "announces": {
-      "title_for_you": "Annonces pour vous",
-      "title_near": "Annonces près de chez vous",
+      "title_for_you": "Annonces pour toi",
+      "title_near": "Annonces près de chez toi",
       "title_latest": "Dernières annonces",
       "criteria_aria_label": "Groupes cherchant : {instrument}. Modifier mon profil musicien",
       "criteria": "Groupes cherchant : {instrument} · Modifier",
       "city_aria_label": "Autour de {city}. Changer de ville",
       "city": "Autour de {city} · Changer",
       "see_all": "Toutes les annonces",
-      "profile_nudge": "Indiquez vos instruments dans votre {link} pour voir ici les groupes qui vous cherchent.",
+      "profile_nudge": "Indique tes instruments dans ton {link} pour voir ici les groupes qui te cherchent.",
       "profile_link": "profil musicien",
       "empty": "Aucune annonce pour le moment."
     },
@@ -236,7 +236,7 @@
       "setlist_meta": "{count} morceau · {duration} | {count} morceaux · {duration}",
       "modified": "Modifiée {date}",
       "no_setlist": "Pas encore de setlist.",
-      "private": "Visible uniquement par vous et les membres du groupe.",
+      "private": "Visible uniquement par toi et les membres du groupe.",
       "load_error": "Impossible de charger le résumé du Band Space.",
       "all_day": "Toute la journée"
     }
@@ -244,13 +244,13 @@
   "discover": {
     "title": "Découvrir MusicAll - La communauté de passionné·e·s de musique",
     "badge": "La plateforme des passionné·e·s de musique",
-    "heading": "Découvrez {brand}",
+    "heading": "Découvre {brand}",
     "brand": "MusicAll",
-    "intro": "Explorez toutes les fonctionnalités qui font de MusicAll {community}",
-    "intro_community": "votre communauté musicale",
+    "intro": "Explore toutes les fonctionnalités qui font de MusicAll {community}",
+    "intro_community": "ta communauté musicale",
     "publications": {
       "title": "Publications",
-      "body": "Découvrez des articles, tutoriels et actualités rédigés par la communauté. Cours de musique, techniques instrumentales, théorie musicale et bien plus encore.",
+      "body": "Découvre des articles, tutoriels et actualités rédigés par la communauté. Cours de musique, techniques instrumentales, théorie musicale et bien plus encore.",
       "articles": "Articles et tutoriels sur tous les instruments",
       "courses": "Cours de musique pour tous les niveaux",
       "discoveries": "Découvertes vidéo partagées par la communauté",
@@ -260,9 +260,9 @@
     },
     "announces": {
       "title": "Annonces musiciens",
-      "body": "Trouvez des musicien·ne·s pour votre groupe ou rejoignez une formation. Postez votre annonce et entrez en contact avec d'autres passionné·e·s.",
+      "body": "Trouve des musicien·ne·s pour ton groupe ou rejoins une formation. Poste ton annonce et entre en contact avec d'autres passionné·e·s.",
       "by_instrument": "Recherche de musicien·ne·s par instrument et style",
-      "bands_nearby": "Recherche de groupes dans votre région",
+      "bands_nearby": "Recherche de groupes dans ta région",
       "location_filters": "Filtres par localisation géographique",
       "direct_contact": "Contact direct via la messagerie intégrée",
       "cta": "Voir les annonces",
@@ -270,7 +270,7 @@
     },
     "forum": {
       "title": "Forum",
-      "body": "Échangez avec la communauté sur tous les sujets liés à la musique. Posez vos questions, partagez vos expériences et aidez les autres.",
+      "body": "Échange avec la communauté sur tous les sujets liés à la musique. Pose tes questions, partage tes expériences et aide les autres.",
       "topics": "Discussions thématiques par catégorie",
       "help": "Conseils et entraide entre membres",
       "introductions": "Espace de présentation pour les nouveaux",
@@ -280,17 +280,17 @@
     },
     "photos": {
       "title": "Galeries photos",
-      "body": "Parcourez les galeries photos de concerts et événements musicaux. Revivez les meilleurs moments capturés par la communauté.",
+      "body": "Parcours les galeries photos de concerts et événements musicaux. Revis les meilleurs moments capturés par la communauté.",
       "concerts": "Photos de concerts et festivals",
       "events": "Événements musicaux en tout genre",
       "quality": "Galeries haute qualité",
-      "share": "Partagez vos propres photos",
+      "share": "Partage tes propres photos",
       "cta": "Voir les galeries",
       "image_alt": "Galeries photos MusicAll"
     },
     "messages": {
       "title": "Messagerie privée",
-      "body": "Communiquez en privé avec les autres membres de la communauté. Discutez de projets, échangez des conseils ou planifiez des rencontres.",
+      "body": "Communique en privé avec les autres membres de la communauté. Discute de projets, échange des conseils ou planifie des rencontres.",
       "private": "Messages privés entre membres",
       "realtime": "Notifications en temps réel",
       "from_announces": "Contact direct depuis les annonces"
@@ -298,44 +298,44 @@
     "band": {
       "soon": "Bientôt disponible",
       "title": "Espace groupe",
-      "body": "Gérez votre groupe de musique avec des outils collaboratifs. Organisez vos répétitions et communiquez efficacement.",
+      "body": "Gère ton groupe de musique avec des outils collaboratifs. Organise tes répétitions et communique efficacement.",
       "members": "Gestion des membres du groupe",
       "calendar": "Calendrier partagé des répétitions",
-      "storage": "Espace de stockage pour vos morceaux"
+      "storage": "Espace de stockage pour tes morceaux"
     },
     "cta": {
-      "badge": "Rejoignez une communauté active",
+      "badge": "Rejoins une communauté active",
       "title": "Prêt·e à rejoindre l'aventure ?",
-      "body": "Créez votre compte gratuitement et commencez à échanger avec des milliers de passionné·e·s de musique",
+      "body": "Crée ton compte gratuitement et commence à échanger avec des milliers de passionné·e·s de musique",
       "button": "Créer mon compte gratuitement"
     },
     "back_home": "Retour à l'accueil"
   },
   "add_discover": {
     "header": "Ajouter une vidéo découverte",
-    "intro_share": "Partagez vos découvertes musicales avec la communauté.",
+    "intro_share": "Partage tes découvertes musicales avec la communauté.",
     "intro_youtube_only": "Pour l'instant seuls les liens Youtube fonctionnent.",
     "url_placeholder": "Url de la vidéo Youtube",
     "url_hint": "Avec ce lien nous pourrons récupérer quelques informations",
     "loading_preview": "Chargement de l'aperçu...",
     "existing": "La vidéo existe déjà.",
-    "existing_detail": "Vous ne pouvez pas la remettre en ligne une nouvelle fois.",
-    "generic_error": "Une erreur est survenue. Veuillez vérifier l'URL et réessayer.",
+    "existing_detail": "Tu ne peux pas la remettre en ligne une nouvelle fois.",
+    "generic_error": "Une erreur est survenue. Vérifie l'URL et réessaie.",
     "title_placeholder": "Titre de la vidéo",
-    "title_hint": "Le titre de la vidéo. Vous pouvez le changer",
+    "title_hint": "Le titre de la vidéo. Tu peux le changer",
     "description_placeholder": "Description de la vidéo",
-    "description_hint": "La description de la vidéo. Vous pouvez la changer",
+    "description_hint": "La description de la vidéo. Tu peux la changer",
     "preview_alt": "Aperçu de la vidéo",
     "cancel": "Annuler",
     "publish": "Publier",
     "published_summary": "Vidéo publiée",
-    "published_detail": "Votre vidéo a été mise en ligne",
+    "published_detail": "Ta vidéo a été mise en ligne",
     "error_summary": "Erreur"
   },
   "band_space_presentation": {
     "eyebrow": "Band Space · gratuit",
-    "title": "Votre groupe mérite mieux qu'une conversation de groupe.",
-    "intro": "Répondez à trois questions : on vous montre l'espace de votre groupe, et vous pouvez déjà cocher, réordonner et ajouter.",
+    "title": "Ton groupe mérite mieux qu'une conversation de groupe.",
+    "intro": "Réponds à trois questions : on te montre l'espace de ton groupe, et tu peux déjà cocher, réordonner et ajouter.",
     "form": {
       "name_question": "1 · Le nom du groupe",
       "name_placeholder": "Ex : ElectricNight",
@@ -358,20 +358,20 @@
     },
     "reasons_aria_label": "Pourquoi un Band Space",
     "reasons": {
-      "invite_title": "Invitez le groupe par mail",
-      "invite_body": "Chaque membre reçoit un lien et voit tout de suite l'agenda, les fichiers et les setlists. Vous choisissez qui est admin.",
+      "invite_title": "Invite le groupe par mail",
+      "invite_body": "Chaque membre reçoit un lien et voit tout de suite l'agenda, les fichiers et les setlists. Tu choisis qui est admin.",
       "several_bands_title": "Plusieurs groupes ?",
       "several_bands_body": "Un Band Space par groupe, on passe de l'un à l'autre en un clic. Chaque groupe ne voit que le sien.",
-      "private_title": "Privé à votre groupe",
+      "private_title": "Privé à ton groupe",
       "private_body": "Rien n'est public. Pas de pub, pas de revente de données. Gratuit, et ça le restera."
     },
     "closing": {
-      "title_named": "{name} n'attend plus que vous.",
-      "title_default": "Votre groupe n'attend plus que vous.",
-      "body": "Créez l'espace, invitez les autres, et travaillez à plusieurs dès la prochaine répète."
+      "title_named": "{name} n'attend plus que toi.",
+      "title_default": "Ton groupe n'attend plus que toi.",
+      "body": "Crée l'espace, invite les autres, et travaillez à plusieurs dès la prochaine répète."
     },
     "demo": {
-      "you": "Vous",
+      "you": "Toi",
       "days": {
         "tue": "MAR",
         "thu": "JEU",
@@ -427,13 +427,13 @@
       }
     },
     "preview": {
-      "aria_label": "Aperçu de votre Band Space",
+      "aria_label": "Aperçu de ton Band Space",
       "members": "{count} membres",
       "members_and_more": "{count} membres et plus",
       "tabs_aria_label": "Modules de l'aperçu",
       "dashboard_tab": "Dashboard",
       "priority": "PRIORITÉ",
-      "your_band": "Votre groupe",
+      "your_band": "Ton groupe",
       "welcome": "Bienvenue, {name}",
       "members_invited_by_mail": "{members} · invitations par mail",
       "available": "{available} membres sur {size} disponibles",
@@ -441,7 +441,7 @@
       "toolbar_bold": "B",
       "toolbar_italic": "I",
       "note_content": "Contenu de la note « {title} »",
-      "note_edited_by_you": "Modifiée à l'instant par Vous",
+      "note_edited_by_you": "Modifiée à l'instant par toi",
       "note_written_by": "Écrite par {name}",
       "note_empty": "Note vide",
       "just_now": "À l'instant",
@@ -450,12 +450,12 @@
       "move_down": "Descendre « {title} »",
       "file_added_by": "{folder} · ajouté par {name}",
       "delete_file": "Supprimer {name}",
-      "files_empty": "Plus aucun fichier. Dans votre espace, rien ne part sans vous.",
+      "files_empty": "Plus aucun fichier. Dans ton espace, rien ne part sans toi.",
       "restore_files": "Remettre les fichiers",
       "expense_split": "Avancé par {payer}, partagé entre {size}",
       "who_owes_what": "Qui doit quoi",
-      "demo_limit": "C'est tout pour la démo. Dans votre espace, il n'y a pas de limite.",
-      "footer": "Aperçu : cliquez dans le menu. Les exemples seront remplacés par vos vraies dates, tâches et morceaux.",
+      "demo_limit": "C'est tout pour la démo. Dans ton espace, il n'y a pas de limite.",
+      "footer": "Aperçu : clique dans le menu. Les exemples seront remplacés par tes vraies dates, tâches et morceaux.",
       "panels": {
         "agenda_title": "Agenda",
         "agenda_subtitle": "Octobre 2026",
@@ -467,7 +467,7 @@
         "notes_title": "Notes",
         "notes_subtitle": "Les idées de la répète, avant qu'elles se perdent",
         "setlists_title": "Setlist du concert",
-        "setlists_subtitle": "Une seule version, à jour. Changez l'ordre avec les flèches.",
+        "setlists_subtitle": "Une seule version, à jour. Change l'ordre avec les flèches.",
         "setlists_summary": "{songs} morceaux · {minutes} min",
         "files_title": "Fichiers",
         "files_subtitle": "Rangés par dossier, partagés avec le groupe",

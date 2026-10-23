@@ -29,7 +29,7 @@
     "alt": "Image envoyée dans la conversation"
   },
   "voice_note": {
-    "microphone_denied": "L'accès au micro a été refusé. Autorisez-le dans les réglages du navigateur pour enregistrer une note vocale.",
+    "microphone_denied": "L'accès au micro a été refusé. Autorise-le dans les réglages du navigateur pour enregistrer une note vocale.",
     "no_microphone": "Aucun micro détecté.",
     "recording_failed": "L'enregistrement n'a pas pu démarrer.",
     "deleted": "Note vocale supprimée",
@@ -66,15 +66,15 @@
     "load_older": "Impossible de charger les messages plus anciens.",
     "load_newer": "Impossible de charger les messages plus récents.",
     "message_unavailable": "Ce message n'est plus disponible.",
-    "jump_failed": "Impossible d'afficher ce message, veuillez réessayer.",
-    "reaction_failed": "Impossible de mettre à jour la réaction, veuillez réessayer."
+    "jump_failed": "Impossible d'afficher ce message, réessaie.",
+    "reaction_failed": "Impossible de mettre à jour la réaction, réessaie."
   },
   "picker": {
     "header": "Joindre un élément du Band Space",
     "close": "Fermer",
     "search_label": "Rechercher un élément à joindre",
     "search_placeholder": "Agenda, tâche, note, fichier, setlist...",
-    "remove_one": "Retirez-en un pour en joindre un autre.",
+    "remove_one": "Retires-en un pour en joindre un autre.",
     "results_label": "Éléments à joindre",
     "picked": "Joint",
     "picked_count": "{count} / {max} joints"
@@ -87,11 +87,11 @@
     "send_voice_note": "Envoyer la note vocale",
     "attach": "Joindre un élément du Band Space",
     "add_image": "Ajouter une image",
-    "message_label": "Votre message",
-    "message_placeholder": "Votre message...",
+    "message_label": "Ton message",
+    "message_placeholder": "Ton message...",
     "record_voice_note": "Enregistrer une note vocale",
     "send": "Envoyer le message",
-    "rate_limited": "Trop de messages envoyés. Veuillez patienter un instant.",
+    "rate_limited": "Trop de messages envoyés. Patiente un instant.",
     "send_failed": "Le message n'a pas pu être envoyé."
   },
   "composer_attachments": {
@@ -123,7 +123,7 @@
     "delete_confirm_accept": "Supprimer",
     "delete_failed": "Le message n'a pas pu être supprimé.",
     "task_created": "Tâche créée",
-    "task_created_detail": "« {title} ». Sa fiche est sous le message, ouvrez-la pour l'assigner.",
+    "task_created_detail": "« {title} ». Sa fiche est sous le message, ouvre-la pour l'assigner.",
     "task_failed": "La tâche n'a pas pu être créée.",
     "edit_failed": "Le message n'a pas pu être modifié."
   },
@@ -132,6 +132,6 @@
     "online": "En ligne",
     "retry": "Réessayer",
     "empty_title": "Aucun message",
-    "empty_text": "Écrivez le premier message du groupe, il restera ici pour tout le monde."
+    "empty_text": "Écris le premier message du groupe, il restera ici pour tout le monde."
   }
 }

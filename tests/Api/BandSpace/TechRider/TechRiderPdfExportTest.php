@@ -168,7 +168,7 @@ class TechRiderPdfExportTest extends ApiTestCase
             $translator = self::getContainer()->get(TranslatorInterface::class);
             $this->assertSame(Response::HTTP_BAD_GATEWAY, $exception->getStatusCode());
             $this->assertSame(
-                'Le service de génération PDF est momentanément indisponible. Veuillez réessayer.',
+                'Le service de génération PDF est momentanément indisponible. Réessaie.',
                 $translator->trans($exception->getMessage(), [], null, 'fr'),
             );
             $this->assertSame(

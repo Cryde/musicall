@@ -246,12 +246,12 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => '',
-                    'message' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+                    'message' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
                     'code' => EntryNotPaidValidator::ERROR_CODE,
                 ],
             ],
-            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
-            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'detail' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
+            'description' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
             'type' => '/validation_errors/' . EntryNotPaidValidator::ERROR_CODE,
             'title' => 'An error occurred',
         ]);

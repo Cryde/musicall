@@ -236,14 +236,14 @@ class AdminUserSearchTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'search',
-                    'message' => 'Saisissez au moins 2 caractères',
+                    'message' => 'Saisis au moins 2 caractères',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
-            'detail' => 'search: Saisissez au moins 2 caractères',
+            'detail' => 'search: Saisis au moins 2 caractères',
             'type' => '/validation_errors/9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
-            'description' => 'search: Saisissez au moins 2 caractères',
+            'description' => 'search: Saisis au moins 2 caractères',
         ]);
     }
 }

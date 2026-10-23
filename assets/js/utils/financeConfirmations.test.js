@@ -33,7 +33,7 @@ describe('categoryDeleteMessage', () => {
     // The server refuses this outright, and a category with children can hold no entries of its own,
     // so the old copy promised a deletion and then failed for a reason it had never raised.
     const refused =
-      'Cette catégorie contient des sous-catégories et ne peut pas être supprimée. Supprimez ou déplacez ses sous-catégories d’abord.'
+      'Cette catégorie contient des sous-catégories et ne peut pas être supprimée. Supprime ou déplace ses sous-catégories d’abord.'
 
     assert.equal(categoryDeleteMessage(0, true), refused)
     assert.equal(categoryDeleteMessage(12, true), refused)

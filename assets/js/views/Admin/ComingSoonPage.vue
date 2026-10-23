@@ -13,7 +13,7 @@
         {{ description }}
       </p>
       <p v-else class="text-surface-500 dark:text-surface-400 max-w-md">
-        Cette section est en cours de préparation. Repassez plus tard.
+        Cette section est en cours de préparation. Repasse plus tard.
       </p>
     </div>
   </div>

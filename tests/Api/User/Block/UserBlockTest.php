@@ -111,8 +111,8 @@ class UserBlockTest extends ApiTestCase
             'title' => 'An error occurred',
             'status' => 422,
             'type' => '/errors/422',
-            'detail' => 'Vous ne pouvez pas vous bloquer vous-même',
-            'description' => 'Vous ne pouvez pas vous bloquer vous-même',
+            'detail' => 'Tu ne peux pas te bloquer toi-même',
+            'description' => 'Tu ne peux pas te bloquer toi-même',
         ]);
         $this->assertSame(0, self::getContainer()->get(UserBlockRepository::class)->count());
     }
@@ -178,12 +178,12 @@ class UserBlockTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'user_id',
-                    'message' => 'Veuillez préciser l\'utilisateur à bloquer',
+                    'message' => 'Précise l\'utilisateur à bloquer',
                     'code' => NotBlank::IS_BLANK_ERROR,
                 ],
             ],
-            'detail' => 'user_id: Veuillez préciser l\'utilisateur à bloquer',
-            'description' => 'user_id: Veuillez préciser l\'utilisateur à bloquer',
+            'detail' => 'user_id: Précise l\'utilisateur à bloquer',
+            'description' => 'user_id: Précise l\'utilisateur à bloquer',
             'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
             'title' => 'An error occurred',
         ]);

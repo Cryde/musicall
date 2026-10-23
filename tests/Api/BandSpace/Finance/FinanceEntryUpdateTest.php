@@ -304,10 +304,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'detail' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'description' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
         ]);
     }
 
@@ -346,10 +346,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'detail' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'description' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
         ]);
     }
 
@@ -393,10 +393,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'detail' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'description' => 'Impossible de modifier une entrée payée. Repasse le statut à Engagé.',
         ]);
     }
 
@@ -802,12 +802,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'amount',
-                    'message' => 'Vous ne pouvez pas définir un montant exact et une fourchette en même temps',
+                    'message' => 'Tu ne peux pas définir un montant exact et une fourchette en même temps',
                     'code' => FinanceAmountRangeValidator::ERROR_CODE_EXCLUSIVE,
                 ],
             ],
-            'detail' => 'amount: Vous ne pouvez pas définir un montant exact et une fourchette en même temps',
-            'description' => 'amount: Vous ne pouvez pas définir un montant exact et une fourchette en même temps',
+            'detail' => 'amount: Tu ne peux pas définir un montant exact et une fourchette en même temps',
+            'description' => 'amount: Tu ne peux pas définir un montant exact et une fourchette en même temps',
             'type' => '/validation_errors/' . FinanceAmountRangeValidator::ERROR_CODE_EXCLUSIVE,
             'title' => 'An error occurred',
         ]);
@@ -933,12 +933,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'label',
-                    'message' => 'Veuillez spécifier un libellé',
+                    'message' => 'Indique un libellé',
                     'code' => NotBlank::IS_BLANK_ERROR,
                 ],
             ],
-            'detail' => 'label: Veuillez spécifier un libellé',
-            'description' => 'label: Veuillez spécifier un libellé',
+            'detail' => 'label: Indique un libellé',
+            'description' => 'label: Indique un libellé',
             'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
             'title' => 'An error occurred',
         ]);
@@ -1053,12 +1053,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'scope',
-                    'message' => 'Supprimez d\'abord la répartition de cette entrée pour la passer en personnelle.',
+                    'message' => 'Supprime d\'abord la répartition de cette entrée pour la passer en personnelle.',
                     'code' => PersonalScopeWithoutSplitsValidator::ERROR_CODE,
                 ],
             ],
-            'detail' => 'scope: Supprimez d\'abord la répartition de cette entrée pour la passer en personnelle.',
-            'description' => 'scope: Supprimez d\'abord la répartition de cette entrée pour la passer en personnelle.',
+            'detail' => 'scope: Supprime d\'abord la répartition de cette entrée pour la passer en personnelle.',
+            'description' => 'scope: Supprime d\'abord la répartition de cette entrée pour la passer en personnelle.',
             'type' => '/validation_errors/' . PersonalScopeWithoutSplitsValidator::ERROR_CODE,
             'title' => 'An error occurred',
         ]);

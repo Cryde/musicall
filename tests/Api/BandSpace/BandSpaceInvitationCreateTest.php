@@ -348,10 +348,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'detail' => 'Tu dois être administrateur pour effectuer cette action',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous devez être administrateur pour effectuer cette action',
+            'description' => 'Tu dois être administrateur pour effectuer cette action',
         ]);
     }
 
@@ -378,12 +378,12 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'identifier',
-                    'message' => 'Veuillez spécifier une adresse email ou un nom d\'utilisateur',
+                    'message' => 'Indique une adresse email ou un nom d\'utilisateur',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'identifier: Veuillez spécifier une adresse email ou un nom d\'utilisateur',
-            'description' => 'identifier: Veuillez spécifier une adresse email ou un nom d\'utilisateur',
+            'detail' => 'identifier: Indique une adresse email ou un nom d\'utilisateur',
+            'description' => 'identifier: Indique une adresse email ou un nom d\'utilisateur',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);
@@ -563,7 +563,7 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
         $this->assertEmailHeaderSame($email, 'templateId', '22');
-        $this->assertEmailTextBodyContains($email, 'Vous avez été invité à rejoindre The Rockers sur MusicAll');
+        $this->assertEmailTextBodyContains($email, 'Tu as été invité à rejoindre The Rockers sur MusicAll');
         $this->assertEmailAddressContains($email, 'To', 'newuser@example.com');
     }
 

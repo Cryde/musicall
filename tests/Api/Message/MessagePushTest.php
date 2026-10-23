@@ -87,7 +87,7 @@ class MessagePushTest extends ApiTestCase
             new SendPushNotification(
                 (string) $mentioned->id,
                 'Les Cactus',
-                'alice_drums vous a mentionné dans la discussion de « Les Cactus »',
+                'alice_drums t\'a mentionné dans la discussion de « Les Cactus »',
                 ['type' => 'band_space_chat_mention', 'route' => '/band/' . $band->id . '/chat?message=' . $message->id],
                 PushCategory::BandMention,
             ),
@@ -122,7 +122,7 @@ class MessagePushTest extends ApiTestCase
         // The mention push is still queued; the worker drops it on the preference.
         $this->assertEquals([
             new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums : Salut @carl_keys !', ['type' => 'band_space_message', 'route' => $route], PushCategory::BandChat),
-            new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums vous a mentionné dans la discussion de « Les Cactus »', ['type' => 'band_space_chat_mention', 'route' => $route], PushCategory::BandMention),
+            new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums t\'a mentionné dans la discussion de « Les Cactus »', ['type' => 'band_space_chat_mention', 'route' => $route], PushCategory::BandMention),
         ], $this->queuedPushes());
     }
 

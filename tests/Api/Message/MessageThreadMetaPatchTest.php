@@ -85,14 +85,14 @@ class MessageThreadMetaPatchTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'is_read',
-                    'message' => 'Veuillez indiquer si le fil est lu',
+                    'message' => 'Indique si le fil est lu',
                     'code' => 'ad32d13f-c3d4-423b-909a-857b961eb720',
                 ],
             ],
-            'detail' => 'is_read: Veuillez indiquer si le fil est lu',
+            'detail' => 'is_read: Indique si le fil est lu',
             'type' => '/validation_errors/ad32d13f-c3d4-423b-909a-857b961eb720',
             'title' => 'An error occurred',
-            'description' => 'is_read: Veuillez indiquer si le fil est lu',
+            'description' => 'is_read: Indique si le fil est lu',
         ]);
     }
 

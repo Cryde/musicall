@@ -234,8 +234,8 @@ class MessageBlockedContactTest extends ApiTestCase
             'title' => 'An error occurred',
             'status' => 403,
             'type' => '/errors/403',
-            'detail' => 'Vous ne pouvez pas échanger de messages avec cet utilisateur',
-            'description' => 'Vous ne pouvez pas échanger de messages avec cet utilisateur',
+            'detail' => 'Tu ne peux pas échanger de messages avec cet utilisateur',
+            'description' => 'Tu ne peux pas échanger de messages avec cet utilisateur',
         ]);
     }
 }

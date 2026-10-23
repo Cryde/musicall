@@ -82,10 +82,10 @@ class UserGallerySubmitTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'etes pas autorise a soumettre cette galerie',
+            'detail' => 'Tu n\'es pas autorisé à soumettre cette galerie',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'etes pas autorise a soumettre cette galerie',
+            'description' => 'Tu n\'es pas autorisé à soumettre cette galerie',
         ]);
     }
 
@@ -179,10 +179,10 @@ class UserGallerySubmitTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez spécifier une description pour votre galerie',
+            'detail' => 'Tu dois spécifier une description pour ta galerie',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Vous devez spécifier une description pour votre galerie',
+            'description' => 'Tu dois spécifier une description pour ta galerie',
         ]);
     }
 
@@ -206,10 +206,10 @@ class UserGallerySubmitTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez spécifier une image de couverture',
+            'detail' => 'Tu dois spécifier une image de couverture',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Vous devez spécifier une image de couverture',
+            'description' => 'Tu dois spécifier une image de couverture',
         ]);
     }
 }

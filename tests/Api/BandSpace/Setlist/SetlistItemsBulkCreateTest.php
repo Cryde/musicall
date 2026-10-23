@@ -161,14 +161,14 @@ class SetlistItemsBulkCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'song_ids',
-                    'message' => 'Choisissez au moins un titre',
+                    'message' => 'Choisis au moins un titre',
                     'code' => 'bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
                 ],
             ],
-            'detail' => 'song_ids: Choisissez au moins un titre',
+            'detail' => 'song_ids: Choisis au moins un titre',
             'type' => '/validation_errors/bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
             'title' => 'An error occurred',
-            'description' => 'song_ids: Choisissez au moins un titre',
+            'description' => 'song_ids: Choisis au moins un titre',
         ]);
     }
 
@@ -209,10 +209,10 @@ class SetlistItemsBulkCreateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 

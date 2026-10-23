@@ -40,21 +40,21 @@
     "header": "Nouvelle setlist",
     "name_label": "Nom",
     "name_placeholder": "ex. Tour d'été 2026",
-    "name_required": "Veuillez spécifier un nom",
+    "name_required": "Indique un nom",
     "created": "Setlist créée"
   },
   "new_song_dialog": {
     "header": "Nouveau titre",
     "title_label": "Titre",
     "hint": "Tonalité, BPM, durée et paroles se renseignent ensuite, dans sa fiche.",
-    "title_required": "Indiquez un titre."
+    "title_required": "Indique un titre."
   },
   "repertoire": {
     "filter_without_lyrics": "Sans paroles · {count}",
     "filter_missing_info": "Infos manquantes · {count}",
     "filter_missing_info_tooltip": "Sans tonalité, BPM ou durée",
     "add_song": "Ajouter un titre",
-    "empty": "Aucun titre dans le répertoire. Commencez par en ajouter un.",
+    "empty": "Aucun titre dans le répertoire. Commence par en ajouter un.",
     "select_all_aria": "Sélectionner tous les titres affichés",
     "column_title": "Titre",
     "column_tonality": "Tonalité",
@@ -78,14 +78,14 @@
     "songs_archived": "Titre archivé | Titres archivés"
   },
   "editor": {
-    "no_selection": "Sélectionnez une setlist dans la barre latérale.",
+    "no_selection": "Sélectionne une setlist dans la barre latérale.",
     "section_aria": "Setlist {name}",
-    "archived_notice": "Cette setlist est archivée, elle est en lecture seule. Dupliquez-la pour repartir de son contenu.",
+    "archived_notice": "Cette setlist est archivée, elle est en lecture seule. Duplique-la pour repartir de son contenu.",
     "name_aria": "Nom de la setlist",
     "rename_aria": "Renommer la setlist",
     "export_pdf": "Exporter PDF",
     "live_mode": "Mode Live",
-    "live_mode_needs_song": "Ajoutez au moins un titre",
+    "live_mode_needs_song": "Ajoute au moins un titre",
     "more_actions_aria": "Plus d’actions : fichiers, dupliquer, archiver",
     "empty": "Aucun titre pour l’instant",
     "song_count": "{count} titre | {count} titres",
@@ -102,7 +102,7 @@
     "columns_aria": "Choisir les colonnes",
     "columns_tooltip": "Colonnes",
     "columns_legend": "Colonnes affichées",
-    "drag_hint": "Glissez un titre du répertoire dans la liste, ou cliquez dessus",
+    "drag_hint": "Glisse un titre du répertoire dans la liste, ou clique dessus",
     "insert_hint_first": "Les titres s’ajoutent en tête de la setlist.",
     "insert_hint_after": "Les titres s’ajoutent après « {name} ».",
     "copied_from": "Setlist « {name} » reprise",
@@ -141,8 +141,8 @@
     "song": "Titre"
   },
   "empty_state": {
-    "title": "Construisez votre setlist",
-    "intro": "Cliquez sur un titre du répertoire pour l’ajouter, ou glissez-le ici. Vous pourrez ensuite réordonner les titres et insérer des pauses.",
+    "title": "Construis ta setlist",
+    "intro": "Clique sur un titre du répertoire pour l’ajouter, ou glisse-le ici. Tu pourras ensuite réordonner les titres et insérer des pauses.",
     "copy_from": "Partir d’une setlist existante",
     "add_all": "Ajouter tout le répertoire ({count})",
     "source": "{name} · {count} titre | {name} · {count} titres",
@@ -169,11 +169,11 @@
   },
   "duration_prompt": {
     "submit": "OK",
-    "required": "Indiquez une durée.",
+    "required": "Indique une durée.",
     "at_least": "Au moins {duration}."
   },
   "duration": {
-    "invalid_format": "Durée invalide. Utilisez le format mm:ss, par exemple 3:47.",
+    "invalid_format": "Durée invalide. Utilise le format mm:ss, par exemple 3:47.",
     "out_of_range": "La durée doit être comprise entre 1 seconde et 24 heures (24:00:00)."
   },
   "item_drawer": {
@@ -218,11 +218,11 @@
     "generating": "Génération...",
     "download": "Télécharger le PDF",
     "failed_summary": "Export impossible",
-    "failed_detail": "Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant."
+    "failed_detail": "Le PDF n’a pas pu être généré. Réessaie dans un instant."
   },
   "file_drawer": {
     "header": "Fichiers de la setlist",
-    "intro": "Importez les fichiers liés à cette setlist (timing sheet, notes scéniques, etc.). Ils apparaitront dans le dossier virtuel « Setlists » du module Fichiers.",
+    "intro": "Importe les fichiers liés à cette setlist (timing sheet, notes scéniques, etc.). Ils apparaitront dans le dossier virtuel « Setlists » du module Fichiers.",
     "detach_confirm_message": "Détacher le fichier « {name} » de cette setlist ?"
   },
   "attached_files": {
@@ -236,7 +236,7 @@
   },
   "trash": {
     "title": "Corbeille",
-    "intro": "Les setlists et les titres supprimés sont conservés ici sans limite de temps. Restaurez-les quand vous voulez.",
+    "intro": "Les setlists et les titres supprimés sont conservés ici sans limite de temps. Restaure-les quand tu veux.",
     "empty": "La corbeille est vide.",
     "setlists": "Setlists",
     "songs": "Titres",
@@ -264,7 +264,7 @@
     "placeholder": "Ajouter…",
     "multiline_hint": "Ctrl + Entrée pour enregistrer, Échap pour annuler.",
     "required": "Ce champ est obligatoire.",
-    "whole_number": "Indiquez un nombre entier."
+    "whole_number": "Indique un nombre entier."
   },
   "lyrics_panel": {
     "title": "Paroles",
@@ -278,7 +278,7 @@
     "semitone_down_aria": "Descendre d'un demi-ton",
     "semitone_up_aria": "Monter d'un demi-ton",
     "save_transposition": "Enregistrer dans cette tonalité",
-    "empty": "Pas encore de paroles. Collez-les depuis un site d'accords, les accords suivent.",
+    "empty": "Pas encore de paroles. Colle-les depuis un site d'accords, les accords suivent.",
     "add": "Ajouter les paroles",
     "pdf_transposed": "Transposé de {transposition}, comme à l'écran.",
     "original_key": "Tonalité d'origine",
@@ -302,8 +302,8 @@
     "save_failed": "Enregistrement impossible",
     "copied": "Texte copié",
     "copy_failed_summary": "Copie impossible",
-    "copy_failed_detail": "Passez en mode Avancé pour copier le texte.",
-    "discard_confirm_message": "Fermer sans enregistrer ? Vos modifications seront perdues.",
+    "copy_failed_detail": "Passe en mode Avancé pour copier le texte.",
+    "discard_confirm_message": "Fermer sans enregistrer ? Tes modifications seront perdues.",
     "discard_confirm_header": "Modifications non enregistrées",
     "discard_confirm_accept": "Fermer sans enregistrer",
     "discard_confirm_reject": "Continuer"
@@ -313,7 +313,7 @@
     "chord": "Accord",
     "section": "Section",
     "comment": "Commentaire",
-    "hint": "Sélectionnez des mots pour les attribuer · « {key} » pour un accord",
+    "hint": "Sélectionne des mots pour les attribuer · « {key} » pour un accord",
     "edit_chord": "Modifier l'accord",
     "delete": "Supprimer",
     "assign": "Attribuer",

@@ -30,7 +30,7 @@
     "title": "Tech riders",
     "intro": "Les documents techniques envoyés aux salles avant un concert.",
     "empty_title": "Aucun tech rider",
-    "empty_text": "Créez votre premier tech rider pour centraliser vos besoins techniques.",
+    "empty_text": "Crée ton premier tech rider pour centraliser tes besoins techniques.",
     "save_error": "Erreur | Erreur sur {count} sections",
     "saving": "Enregistrement…",
     "saved": "Enregistré",
@@ -38,13 +38,13 @@
     "exporting": "Génération...",
     "download_pdf": "Télécharger le PDF",
     "more_actions": "Plus d'actions sur ce tech rider",
-    "archived_notice": "Ce tech rider est archivé. Restaurez-le pour pouvoir le modifier.",
+    "archived_notice": "Ce tech rider est archivé. Restaure-le pour pouvoir le modifier.",
     "created_on": "Créé le {date}",
     "created_on_by": "Créé le {date} par {name}",
     "close_preview": "Fermer l’aperçu",
     "export_failed_summary": "Export impossible",
-    "export_failed_detail": "Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant.",
-    "archive_confirm_message": "« {name} » sera déplacé dans les archives. Vous pourrez le restaurer plus tard.",
+    "export_failed_detail": "Le PDF n’a pas pu être généré. Réessaie dans un instant.",
+    "archive_confirm_message": "« {name} » sera déplacé dans les archives. Tu pourras le restaurer plus tard.",
     "archive_confirm_header": "Archiver le tech rider",
     "archived": "Tech rider archivé",
     "restored": "Tech rider restauré",
@@ -55,14 +55,14 @@
     "duplicate_header": "Dupliquer le tech rider",
     "name_label": "Nom",
     "name_placeholder": "ex. Tech rider 2026",
-    "name_required": "Veuillez spécifier un nom",
+    "name_required": "Indique un nom",
     "create": "Créer",
     "created": "Tech rider créé",
     "renamed": "Tech rider renommé",
     "duplicated": "Tech rider dupliqué"
   },
   "selector": {
-    "placeholder": "Sélectionnez un tech rider",
+    "placeholder": "Sélectionne un tech rider",
     "label": "Tech rider affiché",
     "archives": "Archives"
   },
@@ -82,7 +82,7 @@
     "contacts": "Membres et contacts",
     "contacts_description": "Repris de la liste des membres",
     "document": "Document",
-    "document_description": "Une image ou un PDF de vos fichiers"
+    "document_description": "Une image ou un PDF de tes fichiers"
   },
   "add_section": {
     "label": "Ajouter une section",
@@ -92,7 +92,7 @@
     "section_label": "Section",
     "hidden_option": "{title} (masquée)",
     "no_sections": "Ce tech rider n'a aucune section.",
-    "no_sections_add": "Ce tech rider n'a aucune section. Ajoutez-en une pour commencer.",
+    "no_sections_add": "Ce tech rider n'a aucune section. Ajoutes-en une pour commencer.",
     "reorder_failed": "Réordonnancement impossible",
     "delete_confirm_message": "« {title} » et son contenu seront supprimés. Cette action est irréversible.",
     "delete_confirm_header": "Supprimer la section",
@@ -146,13 +146,13 @@
     "undo": "Annuler",
     "redo": "Rétablir",
     "content_label": "Contenu de l'élément {title}",
-    "placeholder": "Décrivez vos besoins pour cet élément..."
+    "placeholder": "Décris tes besoins pour cet élément..."
   },
   "contacts": {
     "members_title": "Membres",
     "members_hint": "Repris automatiquement de la liste des membres.",
     "no_members": "Aucun membre actif à afficher.",
-    "change_hint": "Pour changer un nom ou un instrument, passez par {link} . Le document reste ainsi à jour quand quelqu'un rejoint le groupe ou le quitte.",
+    "change_hint": "Pour changer un nom ou un instrument, passe par {link} . Le document reste ainsi à jour quand quelqu'un rejoint le groupe ou le quitte.",
     "settings_link": "les paramètres du Band Space",
     "show_emails": "Afficher les adresses e-mail des membres",
     "emails_warning": "Seules les adresses des membres qui l'ont accepté dans leur profil apparaissent, et elles seront visibles par toute personne recevant ce document.",
@@ -160,9 +160,9 @@
     "notes_hint": "Tout ce que la liste des membres ne couvre pas : régisseur, numéros de téléphone, contact de tournée."
   },
   "document": {
-    "trashed_notice": "Le fichier « {name} » est dans la corbeille. Restaurez-le depuis les fichiers pour que cette page réapparaisse dans le document.",
-    "trashed_hint": "La page réapparaîtra si le fichier est restauré, ou choisissez-en un autre.",
-    "no_file": "Aucun fichier choisi. Une page peut être une image ou un PDF déjà présent dans vos fichiers.",
+    "trashed_notice": "Le fichier « {name} » est dans la corbeille. Restaure-le depuis les fichiers pour que cette page réapparaisse dans le document.",
+    "trashed_hint": "La page réapparaîtra si le fichier est restauré, ou choisis-en un autre.",
+    "no_file": "Aucun fichier choisi. Une page peut être une image ou un PDF déjà présent dans tes fichiers.",
     "choose": "Choisir un fichier",
     "choose_other": "Choisir un autre fichier",
     "preview_alt": "Aperçu de {name}",
@@ -171,7 +171,7 @@
   },
   "file_picker": {
     "header": "Choisir un fichier",
-    "hint": "Seuls les images et les PDF de vos fichiers peuvent servir de page. Importez le fichier depuis le module Fichiers s'il n'apparaît pas ici.",
+    "hint": "Seuls les images et les PDF de tes fichiers peuvent servir de page. Importe le fichier depuis le module Fichiers s'il n'apparaît pas ici.",
     "search_placeholder": "Rechercher un fichier...",
     "empty": "Aucune image ni PDF dans les fichiers de cet espace."
   },
@@ -212,11 +212,11 @@
     "cell_stereo": "{column}, ligne {line}, stéréo",
     "new_entry_cell": "{column}, nouvelle entrée",
     "new_entry_placeholder": "Ajouter une entrée…",
-    "microphone_empty": "Aucune suggestion, saisissez librement",
+    "microphone_empty": "Aucune suggestion, saisis librement",
     "microphone_search": "{count} suggestions",
     "microphone_selection": "{count} sélectionné",
     "microphone_suggestions": "Suggestions",
-    "microphone_used": "Déjà utilisés dans vos riders",
+    "microphone_used": "Déjà utilisés dans tes riders",
     "row_actions": "Actions de la ligne {line}",
     "row_actions_named": "Actions de la ligne {line} ({name})",
     "insert_above": "Insérer au-dessus",
@@ -250,16 +250,16 @@
     "front_right": "à l'avant à droite"
   },
   "stage_canvas": {
-    "label": "Plan de scène, {count} éléments. Utilisez Tab pour parcourir les éléments et les flèches pour les déplacer.",
+    "label": "Plan de scène, {count} éléments. Utilise Tab pour parcourir les éléments et les flèches pour les déplacer.",
     "rotate": "Faire pivoter {element}, actuellement {degrees} degrés",
     "rotate_tooltip": "Aligner sur le prochain quart de tour",
     "audience": "Face public",
-    "help": "Glissez une icône depuis la liste, ou sélectionnez-la et appuyez sur Entrée. Flèches pour déplacer, Maj + flèches pour aller plus vite, Alt + flèches pour un réglage fin, Alt pendant un déplacement à la souris pour ignorer la grille, Suppr pour retirer. Sur l'élément sélectionné, la poignée en bas à droite règle la taille, celle en haut à gauche l'orientation (par pas de 15°, ou Alt pour un angle libre) et le bouton en haut à droite l'aligne sur le prochain quart de tour."
+    "help": "Glisse une icône depuis la liste, ou sélectionne-la et appuie sur Entrée. Flèches pour déplacer, Maj + flèches pour aller plus vite, Alt + flèches pour un réglage fin, Alt pendant un déplacement à la souris pour ignorer la grille, Suppr pour retirer. Sur l'élément sélectionné, la poignée en bas à droite règle la taille, celle en haut à gauche l'orientation (par pas de 15°, ou Alt pour un angle libre) et le bouton en haut à droite l'aligne sur le prochain quart de tour."
   },
   "inspector": {
     "label": "Élément sélectionné",
     "title": "Élément",
-    "empty": "Sélectionnez un élément sur la scène pour le modifier.",
+    "empty": "Sélectionne un élément sur la scène pour le modifier.",
     "label_field": "Libellé",
     "scale": "Taille ({scale})",
     "scale_aria": "Taille de {icon}",
@@ -272,7 +272,7 @@
   },
   "legend": {
     "title": "Légende",
-    "hint": "Associez une icône à un mot pour que la salle comprenne le plan sans explication.",
+    "hint": "Associe une icône à un mot pour que la salle comprenne le plan sans explication.",
     "entry_label": "Libellé de légende pour {icon}",
     "remove_entry": "Retirer {icon} de la légende",
     "add_placeholder": "Ajouter une icône",

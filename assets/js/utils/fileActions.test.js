@@ -120,7 +120,7 @@ describe('attachmentReason', () => {
 
     assert.equal(
       attachmentReason(selection),
-      "1 fichier sélectionné est attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée."
+      "1 fichier sélectionné est attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée."
     )
   })
 
@@ -135,7 +135,7 @@ describe('attachmentReason', () => {
 
     assert.equal(
       attachmentReason(selection),
-      "2 fichiers sélectionnés sont attachés à une note et une tâche. Détachez-les d'abord depuis les ressources concernées."
+      "2 fichiers sélectionnés sont attachés à une note et une tâche. Détache-les d'abord depuis les ressources concernées."
     )
   })
 
@@ -147,7 +147,7 @@ describe('attachmentReason', () => {
 
     assert.equal(
       attachmentReason(selection),
-      "2 fichiers sélectionnés sont attachés à une tâche. Détachez-les d'abord depuis les ressources concernées."
+      "2 fichiers sélectionnés sont attachés à une tâche. Détache-les d'abord depuis les ressources concernées."
     )
   })
 
@@ -180,7 +180,7 @@ describe('deleteBlockedReason', () => {
 
     assert.equal(
       deleteBlockedReason(selection, ALICE, false),
-      "1 fichier sélectionné est attaché à une tâche. Détachez-le d'abord depuis la ressource concernée."
+      "1 fichier sélectionné est attaché à une tâche. Détache-le d'abord depuis la ressource concernée."
     )
   })
 

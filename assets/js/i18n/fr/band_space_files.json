@@ -41,15 +41,15 @@
       "indefinite": "une autre ressource"
     },
     "manual_quota": "Manuels",
-    "detach_hint": "Détachez-le d'abord depuis {source}",
-    "detach_hint_unknown": "Détachez-le d'abord depuis la ressource concernée",
+    "detach_hint": "Détache-le d'abord depuis {source}",
+    "detach_hint_unknown": "Détache-le d'abord depuis la ressource concernée",
     "attached_message": "Ce fichier est attaché à {source}. {hint}."
   },
   "attached_files_notice": "Le fichier attaché sera détaché mais restera dans Fichiers. | Les {count} fichiers attachés seront détachés mais resteront dans Fichiers.",
   "bulk": {
     "delete_not_owner": "Seul le créateur ou un administrateur peut supprimer ces fichiers : {files}",
     "restore_not_owner": "Seul le créateur ou un administrateur peut restaurer ces fichiers : {files}",
-    "delete_attached": "{count} fichier sélectionné est attaché à {sources}. Détachez-le d'abord depuis la ressource concernée. | {count} fichiers sélectionnés sont attachés à {sources}. Détachez-les d'abord depuis les ressources concernées."
+    "delete_attached": "{count} fichier sélectionné est attaché à {sources}. Détache-le d'abord depuis la ressource concernée. | {count} fichiers sélectionnés sont attachés à {sources}. Détache-les d'abord depuis les ressources concernées."
   },
   "count": {
     "files": "{count} fichier | {count} fichiers",
@@ -69,9 +69,9 @@
     "too_large": "Fichier trop volumineux ({size}). La taille maximale est de {max}.",
     "rate_limit_pause": "Limite d'envoi atteinte ({limit} fichiers par minute). Reprise dans {seconds} s.",
     "rate_limit_reached": "Limite d'envoi atteinte, fichier non envoyé",
-    "rate_limit_batch_notice": "Limite d'envoi atteinte. Les fichiers restants n'ont pas été envoyés : patientez une minute, puis réessayez.",
+    "rate_limit_batch_notice": "Limite d'envoi atteinte. Les fichiers restants n'ont pas été envoyés : patiente une minute, puis réessaie.",
     "quota_reached": "Quota de stockage atteint, fichier non envoyé",
-    "quota_batch_notice": "Le quota de stockage de l'espace est atteint. Les fichiers restants n'ont pas été envoyés : libérez de la place, puis réessayez.",
+    "quota_batch_notice": "Le quota de stockage de l'espace est atteint. Les fichiers restants n'ont pas été envoyés : libère de la place, puis réessaie.",
     "cancelled": "Import interrompu",
     "cancelled_batch_notice": "Import interrompu. Les fichiers restants n'ont pas été envoyés.",
     "generic_error": "Une erreur est survenue",
@@ -89,8 +89,8 @@
     "no_tag": "Aucun tag",
     "folder": "Dossier",
     "attached_to": "Attaché à ({count})",
-    "detach_hint": "Pour détacher ce fichier, utilisez la ressource d'origine.",
-    "attached_to_several": "Ce fichier est attaché à {count} ressources. Détachez-le d'abord depuis chacune.",
+    "detach_hint": "Pour détacher ce fichier, utilise la ressource d'origine.",
+    "attached_to_several": "Ce fichier est attaché à {count} ressources. Détache-le d'abord depuis chacune.",
     "delete_not_owner": "Seul le créateur ou un administrateur peut supprimer ce fichier"
   },
   "breadcrumb": {
@@ -167,11 +167,11 @@
     "virtual_folder_hint": "Les dossiers virtuels sont remplis automatiquement par les attachements.",
     "quota_approaching": {
       "summary": "Quota presque atteint",
-      "detail": "Vous avez atteint 80 % de votre quota de stockage."
+      "detail": "L'espace a atteint 80 % de son quota de stockage."
     },
     "select_all": "Tout sélectionner",
     "select_file": "Sélectionner {name}",
-    "browse": "cliquez pour parcourir",
+    "browse": "clique pour parcourir",
     "remove_file": "Retirer le fichier",
     "upload_progress": "Import… {percent} %",
     "close": "Fermer",
@@ -179,7 +179,7 @@
   },
   "folder_delete": {
     "title": "Supprimer le dossier",
-    "intro": "Vous êtes sur le point de supprimer {folder}. Choisissez ce qu'il advient des éléments qu'il contient.",
+    "intro": "Tu es sur le point de supprimer {folder}. Choisis ce qu'il advient des éléments qu'il contient.",
     "quoted_name": "« {name} »",
     "move_to_root": "Déplacer le contenu à la racine",
     "move_to_root_help": "Les sous-dossiers et fichiers sont conservés et remontent au niveau supérieur.",
@@ -200,7 +200,7 @@
   },
   "upload_dialog": {
     "title": "Importer des fichiers",
-    "drop_zone": "Glissez-déposez un ou plusieurs fichiers ou {browse}",
+    "drop_zone": "Glisse-dépose un ou plusieurs fichiers ou {browse}",
     "queue_label": "Fichiers à importer",
     "progress_of": "Progression de {name}",
     "remove_file": "Retirer {name}",
@@ -228,7 +228,7 @@
     "expiry_label": "Date d'expiration",
     "use_password": "Protéger par mot de passe",
     "password_placeholder": "Mot de passe",
-    "link_created": "Lien créé. Le lien complet ne sera plus visible après fermeture — copiez-le maintenant.",
+    "link_created": "Lien créé. Le lien complet ne sera plus visible après fermeture : copie-le maintenant.",
     "copy": "Copier",
     "password_required": "Mot de passe requis pour ce lien.",
     "active_links": "Liens actifs ({count})",
@@ -238,20 +238,20 @@
     "access_count": "{count} accès",
     "access_count_last": "{count} accès — dernier {when}",
     "create": "Créer le lien",
-    "expiry_required": "Veuillez choisir une date d'expiration",
+    "expiry_required": "Choisis une date d'expiration",
     "revoke_confirm_message": "Révoquer ce lien de partage ? Il deviendra immédiatement inaccessible.",
     "revoke_confirm_header": "Confirmer la révocation",
     "revoke": "Révoquer",
     "revoked": "Lien révoqué",
     "copied": "Lien copié.",
     "copy_failed": "Copie impossible",
-    "copy_failed_detail": "Sélectionnez le lien et copiez-le manuellement."
+    "copy_failed_detail": "Sélectionne le lien et copie-le manuellement."
   },
   "attach_dialog": {
     "title": "Joindre un fichier",
     "tab_upload": "Importer",
     "tab_existing": "Choisir parmi les fichiers existants",
-    "drop_zone": "Glissez-déposez un fichier ou {browse}",
+    "drop_zone": "Glisse-dépose un fichier ou {browse}",
     "search_placeholder": "Rechercher un fichier",
     "no_files": "Aucun fichier disponible.",
     "manual_only": "Seuls les fichiers manuels (non attachés) peuvent être joints.",
@@ -271,10 +271,10 @@
   },
   "new_version_dialog": {
     "title": "Importer une nouvelle version",
-    "drop_zone": "Glissez-déposez le fichier ou {browse}",
+    "drop_zone": "Glisse-dépose le fichier ou {browse}",
     "replace_notice": "La nouvelle version remplacera la version actuelle. Les versions précédentes restent accessibles.",
     "submit": "Importer",
-    "select_required": "Veuillez sélectionner un fichier"
+    "select_required": "Sélectionne un fichier"
   },
   "version_panel": {
     "title": "Versions du fichier",
@@ -296,7 +296,7 @@
   },
   "trash_list": {
     "empty": "La corbeille est vide.",
-    "retention_notice": "Les fichiers supprimés restent ici {days} jours, puis sont définitivement effacés. Vous pouvez les restaurer avant cette date.",
+    "retention_notice": "Les fichiers supprimés restent ici {days} jours, puis sont définitivement effacés. Tu peux les restaurer avant cette date.",
     "deleted_on": "supprimé le {date}",
     "restore_not_allowed": "Seul le créateur ou un administrateur peut restaurer ce fichier",
     "delete_permanently": "Supprimer définitivement",
@@ -319,7 +319,7 @@
     "failed": "Action en lot impossible",
     "moved": "Fichiers déplacés",
     "restored": "Fichiers restaurés",
-    "delete_confirm_message": "{count} fichier sera déplacé dans la corbeille, où vous pourrez le restaurer pendant {days} jours. Continuer ? | {count} fichiers seront déplacés dans la corbeille, où vous pourrez les restaurer pendant {days} jours. Continuer ?",
+    "delete_confirm_message": "{count} fichier sera déplacé dans la corbeille, où tu pourras le restaurer pendant {days} jours. Continuer ? | {count} fichiers seront déplacés dans la corbeille, où tu pourras les restaurer pendant {days} jours. Continuer ?",
     "delete_confirm_header": "Déplacer dans la corbeille",
     "deleted": "Fichiers déplacés dans la corbeille"
   },
@@ -336,7 +336,7 @@
     "rename_move": "Renommer / déplacer"
   },
   "file_list": {
-    "empty": "Aucun fichier dans ce dossier, commencez par en importer un.",
+    "empty": "Aucun fichier dans ce dossier, commence par en importer un.",
     "column": {
       "name": "Nom",
       "size": "Taille",
@@ -346,7 +346,7 @@
     "open_folder": "Ouvrir le dossier {name}",
     "open_location": "Ouvrir {location}",
     "file_actions": "Actions du fichier",
-    "detach_from_each": "Détachez-le d'abord depuis chaque ressource",
+    "detach_from_each": "Détache-le d'abord depuis chaque ressource",
     "delete_blocked": "Supprimer ({reason})",
     "menu": {
       "open": "Ouvrir",
@@ -356,7 +356,7 @@
       "versions": "Versions"
     },
     "trash_confirm": {
-      "message": "« {name} » sera déplacé dans la corbeille, où vous pourrez le restaurer pendant {days} jours. Continuer ?",
+      "message": "« {name} » sera déplacé dans la corbeille, où tu pourras le restaurer pendant {days} jours. Continuer ?",
       "header": "Déplacer dans la corbeille",
       "done": "Fichier déplacé dans la corbeille"
     }
@@ -381,8 +381,8 @@
       "search": "Aucun fichier ne correspond à cette recherche.",
       "filters": "Aucun fichier ne correspond à ces filtres.",
       "virtual": "Aucun fichier attaché pour le moment.",
-      "root": "Aucun fichier à la racine, commencez par en importer un.",
-      "all": "Aucun fichier, commencez par en importer un."
+      "root": "Aucun fichier à la racine, commence par en importer un.",
+      "all": "Aucun fichier, commence par en importer un."
     },
     "upload_toast": {
       "summary": "Fichier téléversé | Fichiers téléversés",

@@ -13,7 +13,7 @@ export const DEMO_SIZES = Object.freeze([2, 3, 4, 5, 6])
 // How many fake dates or expenses a visitor can add: enough to see the list react, not a real tool.
 export const DEMO_ADD_LIMIT = 2
 
-// The visitor comes first, under a translated « Vous »; the others are first names.
+// The visitor comes first, under a translated « Toi »; the others are first names.
 const BAND_MATES = ['Léa', 'Tom', 'Sam', 'Nico', 'Alex']
 
 const t = (key, params) => i18n.global.t(key, params)

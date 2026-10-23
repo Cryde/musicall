@@ -426,10 +426,10 @@ class TaskUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+            'detail' => 'La position ne se modifie pas ici, utilise le réordonnancement de la colonne',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+            'description' => 'La position ne se modifie pas ici, utilise le réordonnancement de la colonne',
         ]);
 
         self::getContainer()->get('doctrine')->getManager()->clear();
@@ -465,10 +465,10 @@ class TaskUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+            'detail' => 'La position ne se modifie pas ici, utilise le réordonnancement de la colonne',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+            'description' => 'La position ne se modifie pas ici, utilise le réordonnancement de la colonne',
         ]);
 
         // The refusal lands before any write, so the title the same request carried is not saved
@@ -508,10 +508,10 @@ class TaskUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'description' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -550,10 +550,10 @@ class TaskUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'description' => 'Une tâche archivée est en lecture seule, désarchive-la pour la modifier',
         ]);
 
         self::getContainer()->get('doctrine')->getManager()->clear();
@@ -645,10 +645,10 @@ class TaskUpdateTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Cette tâche a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+            'detail' => "Cette tâche a été modifiée par un autre membre depuis que tu l'as ouverte. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
             'status' => 409,
             'type' => '/errors/409',
-            'description' => "Cette tâche a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+            'description' => "Cette tâche a été modifiée par un autre membre depuis que tu l'as ouverte. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
         ]);
 
         $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);

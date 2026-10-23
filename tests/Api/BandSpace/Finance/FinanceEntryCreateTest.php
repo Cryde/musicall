@@ -360,12 +360,12 @@ class FinanceEntryCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'label',
-                    'message' => 'Veuillez spécifier un libellé',
+                    'message' => 'Indique un libellé',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'label: Veuillez spécifier un libellé',
-            'description' => 'label: Veuillez spécifier un libellé',
+            'detail' => 'label: Indique un libellé',
+            'description' => 'label: Indique un libellé',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);
@@ -455,12 +455,12 @@ class FinanceEntryCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'date',
-                    'message' => 'Veuillez spécifier une date',
+                    'message' => 'Indique une date',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'date: Veuillez spécifier une date',
-            'description' => 'date: Veuillez spécifier une date',
+            'detail' => 'date: Indique une date',
+            'description' => 'date: Indique une date',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
         ]);
@@ -568,12 +568,12 @@ class FinanceEntryCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'amount',
-                    'message' => 'Vous ne pouvez pas définir un montant exact et une fourchette en même temps',
+                    'message' => 'Tu ne peux pas définir un montant exact et une fourchette en même temps',
                     'code' => FinanceAmountRangeValidator::ERROR_CODE_EXCLUSIVE,
                 ],
             ],
-            'detail' => 'amount: Vous ne pouvez pas définir un montant exact et une fourchette en même temps',
-            'description' => 'amount: Vous ne pouvez pas définir un montant exact et une fourchette en même temps',
+            'detail' => 'amount: Tu ne peux pas définir un montant exact et une fourchette en même temps',
+            'description' => 'amount: Tu ne peux pas définir un montant exact et une fourchette en même temps',
             'type' => '/validation_errors/' . FinanceAmountRangeValidator::ERROR_CODE_EXCLUSIVE,
             'title' => 'An error occurred',
         ]);

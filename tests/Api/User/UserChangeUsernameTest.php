@@ -236,14 +236,14 @@ class UserChangeUsernameTest extends ApiTestCase
             '@type' => 'ConstraintViolation',
             '@id' => '/api/validation_errors/music_all_a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez attendre 30 jours entre chaque changement de nom d\'utilisateur.',
+            'detail' => 'Tu dois attendre 30 jours entre chaque changement de nom d\'utilisateur.',
             'status' => 422,
             'type' => '/validation_errors/music_all_a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
-            'description' => 'Vous devez attendre 30 jours entre chaque changement de nom d\'utilisateur.',
+            'description' => 'Tu dois attendre 30 jours entre chaque changement de nom d\'utilisateur.',
             'violations' => [
                 [
                     'propertyPath' => '',
-                    'message' => 'Vous devez attendre 30 jours entre chaque changement de nom d\'utilisateur.',
+                    'message' => 'Tu dois attendre 30 jours entre chaque changement de nom d\'utilisateur.',
                     'code' => 'music_all_a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
                 ],
             ],

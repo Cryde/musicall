@@ -20,7 +20,7 @@ class EmailVerificationCodeEmail
         $email = new Email()
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
             ->to(new Address($recipientEmail, $username))
-            ->text('Votre code de vérification');
+            ->text('Ton code de vérification');
         $email->getHeaders()
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [

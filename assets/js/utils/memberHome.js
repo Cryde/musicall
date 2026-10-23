@@ -78,7 +78,7 @@ export function searchResultAsAnnounce(result) {
 }
 
 /**
- * What « Annonces pour vous » searches for: bands looking for the first instrument of the member's
+ * What « Annonces pour toi » searches for: bands looking for the first instrument of the member's
  * musician profile. None without a profile or an instrument.
  */
 export function announceCriteriaFor(musicianProfile) {

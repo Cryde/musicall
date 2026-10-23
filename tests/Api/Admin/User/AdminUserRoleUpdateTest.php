@@ -114,10 +114,10 @@ class AdminUserRoleUpdateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas modifier vos propres rôles',
+            'detail' => 'Tu ne peux pas modifier tes propres rôles',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez pas modifier vos propres rôles',
+            'description' => 'Tu ne peux pas modifier tes propres rôles',
         ]);
 
         $this->assertSame(['ROLE_ADMIN'], $this->reload((string) $admin->id)->roles);

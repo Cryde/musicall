@@ -245,8 +245,8 @@ class ForumPostPostTest extends ApiTestCase
             '@id' => '/api/errors/400',
             '@type' => 'Error',
             'status' => 400,
-            'detail' => 'Ce sujet est verrouillé. Vous ne pouvez plus y répondre.',
-            'description' => 'Ce sujet est verrouillé. Vous ne pouvez plus y répondre.',
+            'detail' => 'Ce sujet est verrouillé. Tu ne peux plus y répondre.',
+            'description' => 'Ce sujet est verrouillé. Tu ne peux plus y répondre.',
             'title' => 'An error occurred',
             'type' => '/errors/400',
         ]);

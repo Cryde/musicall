@@ -95,10 +95,10 @@ class BandSpaceInvitationDeclineTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette invitation ne vous est pas destinée',
+            'detail' => 'Cette invitation ne t\'est pas destinée',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Cette invitation ne vous est pas destinée',
+            'description' => 'Cette invitation ne t\'est pas destinée',
         ]);
     }
 

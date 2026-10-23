@@ -186,14 +186,14 @@ class BandSpaceCreateTest extends ApiTestCase
             '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'detail' => "name: Veuillez spécifier un nom\nname: Le nom doit contenir au moins 3 caractères",
-            'description' => "name: Veuillez spécifier un nom\nname: Le nom doit contenir au moins 3 caractères",
+            'detail' => "name: Indique un nom\nname: Le nom doit contenir au moins 3 caractères",
+            'description' => "name: Indique un nom\nname: Le nom doit contenir au moins 3 caractères",
             'status' => 422,
             'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'violations' => [
                 [
                     'propertyPath' => 'name',
-                    'message' => 'Veuillez spécifier un nom',
+                    'message' => 'Indique un nom',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
                 [
@@ -225,14 +225,14 @@ class BandSpaceCreateTest extends ApiTestCase
             '@type' => 'ConstraintViolation',
             '@context' => '/api/contexts/ConstraintViolation',
             'title' => 'An error occurred',
-            'detail' => 'name: Veuillez spécifier un nom',
-            'description' => 'name: Veuillez spécifier un nom',
+            'detail' => 'name: Indique un nom',
+            'description' => 'name: Indique un nom',
             'status' => 422,
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'violations' => [
                 [
                     'propertyPath' => 'name',
-                    'message' => 'Veuillez spécifier un nom',
+                    'message' => 'Indique un nom',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],

@@ -187,10 +187,10 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas vous rétrograder car vous êtes le seul administrateur',
+            'detail' => 'Tu ne peux pas te rétrograder car tu es le seul administrateur',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Vous ne pouvez pas vous rétrograder car vous êtes le seul administrateur',
+            'description' => 'Tu ne peux pas te rétrograder car tu es le seul administrateur',
         ]);
     }
 
@@ -345,10 +345,10 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'detail' => 'Tu dois être administrateur pour effectuer cette action',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous devez être administrateur pour effectuer cette action',
+            'description' => 'Tu dois être administrateur pour effectuer cette action',
         ]);
     }
 }

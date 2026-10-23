@@ -88,8 +88,8 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'title' => 'An error occurred',
             'status' => 403,
             'type' => '/errors/403',
-            'detail' => 'Vous ne pouvez pas supprimer ce lien',
-            'description' => 'Vous ne pouvez pas supprimer ce lien',
+            'detail' => 'Tu ne peux pas supprimer ce lien',
+            'description' => 'Tu ne peux pas supprimer ce lien',
         ]);
     }
 }

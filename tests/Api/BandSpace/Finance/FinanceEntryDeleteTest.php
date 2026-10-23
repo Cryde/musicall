@@ -273,10 +273,10 @@ class FinanceEntryDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.',
+            'detail' => 'Impossible de supprimer une entrée payée. Repasse le statut à Engagé d\'abord.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.',
+            'description' => 'Impossible de supprimer une entrée payée. Repasse le statut à Engagé d\'abord.',
         ]);
     }
 

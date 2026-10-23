@@ -183,10 +183,10 @@ class BandSpaceLeaveTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez promouvoir un autre membre administrateur avant de quitter',
+            'detail' => 'Tu dois promouvoir un autre membre administrateur avant de quitter',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Vous devez promouvoir un autre membre administrateur avant de quitter',
+            'description' => 'Tu dois promouvoir un autre membre administrateur avant de quitter',
         ]);
     }
 
@@ -213,10 +213,10 @@ class BandSpaceLeaveTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 }

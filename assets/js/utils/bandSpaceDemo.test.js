@@ -35,7 +35,7 @@ import {
 
 describe('demoRoster and memberAt', () => {
   it('starts with the visitor', () => {
-    assert.deepEqual(demoRoster(3), ['Vous', 'Léa', 'Tom'])
+    assert.deepEqual(demoRoster(3), ['Toi', 'Léa', 'Tom'])
   })
 
   it('clamps an index past the end of a small band', () => {
@@ -116,7 +116,7 @@ describe('demoTasks', () => {
 
     assert.equal(tasks.find((task) => task.id === 'van').done, true)
     assert.equal(tasks.find((task) => task.id === 'rider').done, false)
-    assert.ok(tasks.every((task) => ['Vous', 'Léa'].includes(task.who)))
+    assert.ok(tasks.every((task) => ['Toi', 'Léa'].includes(task.who)))
   })
 })
 
@@ -157,7 +157,7 @@ describe('demoNotes', () => {
   it('signs the untouched notes with their author', () => {
     const [rehearsal, covers] = demoNotes(4, {})
 
-    assert.equal(rehearsal.who, 'Vous')
+    assert.equal(rehearsal.who, 'Toi')
     assert.equal(covers.who, 'Sam')
     assert.equal(covers.isEdited, false)
   })
@@ -166,7 +166,7 @@ describe('demoNotes', () => {
     const covers = demoNotes(4, { covers: 'On vote samedi.' })[1]
 
     assert.equal(covers.body, 'On vote samedi.')
-    assert.equal(covers.who, 'Vous')
+    assert.equal(covers.who, 'Toi')
     assert.equal(covers.isEdited, true)
   })
 
@@ -188,7 +188,7 @@ describe('demoBalances', () => {
     const balances = demoBalances(4, demoExpenses(4, 0))
 
     assert.deepEqual(balances, [
-      { name: 'Vous', cents: -4500 },
+      { name: 'Toi', cents: -4500 },
       { name: 'Léa', cents: 13500 },
       { name: 'Tom', cents: -4500 },
       { name: 'Sam', cents: -4500 }
@@ -209,7 +209,7 @@ describe('demoBalances', () => {
   it('keeps a payer who left a smaller band inside it', () => {
     const expenses = demoExpenses(2, 2)
 
-    assert.ok(expenses.every((expense) => ['Vous', 'Léa'].includes(expense.payer)))
+    assert.ok(expenses.every((expense) => ['Toi', 'Léa'].includes(expense.payer)))
   })
 })
 

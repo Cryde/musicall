@@ -151,7 +151,7 @@ class SetlistItemsCopyTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->copy($space, $target, ['from_setlist_id' => (string) $target->id]);
 
-        $this->assertUnprocessable('Choisissez une autre setlist que celle-ci');
+        $this->assertUnprocessable('Choisis une autre setlist que celle-ci');
     }
 
     public function test_an_empty_setlist_gives_nothing_to_copy(): void
@@ -204,14 +204,14 @@ class SetlistItemsCopyTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'from_setlist_id',
-                    'message' => 'Choisissez la setlist à copier',
+                    'message' => 'Choisis la setlist à copier',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'from_setlist_id: Choisissez la setlist à copier',
+            'detail' => 'from_setlist_id: Choisis la setlist à copier',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => 'from_setlist_id: Choisissez la setlist à copier',
+            'description' => 'from_setlist_id: Choisis la setlist à copier',
         ]);
     }
 
@@ -230,10 +230,10 @@ class SetlistItemsCopyTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 

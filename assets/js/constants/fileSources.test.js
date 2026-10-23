@@ -128,8 +128,8 @@ describe('fileSourceDefiniteNoun', () => {
 
 describe('fileSourceDetachHint', () => {
   it('names the source to detach from', () => {
-    assert.equal(fileSourceDetachHint('setlist'), "Détachez-le d'abord depuis la setlist")
-    assert.equal(fileSourceDetachHint('song'), "Détachez-le d'abord depuis la chanson")
+    assert.equal(fileSourceDetachHint('setlist'), "Détache-le d'abord depuis la setlist")
+    assert.equal(fileSourceDetachHint('song'), "Détache-le d'abord depuis la chanson")
   })
 
   it('never names the generic resource for a type the API can emit', () => {
@@ -145,7 +145,7 @@ describe('fileSourceDetachHint', () => {
   it('stays a sentence for an unknown type', () => {
     assert.equal(
       fileSourceDetachHint('gigposter'),
-      "Détachez-le d'abord depuis la ressource concernée"
+      "Détache-le d'abord depuis la ressource concernée"
     )
   })
 })
@@ -154,18 +154,18 @@ describe('fileSourceAttachedMessage', () => {
   it('says what the file hangs on and how to free it', () => {
     assert.equal(
       fileSourceAttachedMessage('song'),
-      "Ce fichier est attaché à une chanson. Détachez-le d'abord depuis la chanson."
+      "Ce fichier est attaché à une chanson. Détache-le d'abord depuis la chanson."
     )
     assert.equal(
       fileSourceAttachedMessage('task'),
-      "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche."
+      "Ce fichier est attaché à une tâche. Détache-le d'abord depuis la tâche."
     )
   })
 
   it('stays a sentence for an unknown type', () => {
     assert.equal(
       fileSourceAttachedMessage('gigposter'),
-      "Ce fichier est attaché à une autre ressource. Détachez-le d'abord depuis la ressource concernée."
+      "Ce fichier est attaché à une autre ressource. Détache-le d'abord depuis la ressource concernée."
     )
   })
 })

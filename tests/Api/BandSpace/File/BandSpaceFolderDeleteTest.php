@@ -220,10 +220,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce dossier contient 2 fichiers attachés à une note et une tâche. Détachez-les d'abord depuis les ressources concernées.",
+            'detail' => "Ce dossier contient 2 fichiers attachés à une note et une tâche. Détache-les d'abord depuis les ressources concernées.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce dossier contient 2 fichiers attachés à une note et une tâche. Détachez-les d'abord depuis les ressources concernées.",
+            'description' => "Ce dossier contient 2 fichiers attachés à une note et une tâche. Détache-les d'abord depuis les ressources concernées.",
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
@@ -272,10 +272,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce dossier contient 1 fichier attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.",
+            'detail' => "Ce dossier contient 1 fichier attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce dossier contient 1 fichier attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.",
+            'description' => "Ce dossier contient 1 fichier attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée.",
         ]);
     }
 
@@ -399,10 +399,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Ce dossier contient 2001 fichiers, au-delà de la limite de 2000 par suppression. Supprimez ses sous-dossiers un par un, ou déplacez une partie des fichiers avant de réessayer.',
+            'detail' => 'Ce dossier contient 2001 fichiers, au-delà de la limite de 2000 par suppression. Supprime ses sous-dossiers un par un, ou déplace une partie des fichiers avant de réessayer.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Ce dossier contient 2001 fichiers, au-delà de la limite de 2000 par suppression. Supprimez ses sous-dossiers un par un, ou déplacez une partie des fichiers avant de réessayer.',
+            'description' => 'Ce dossier contient 2001 fichiers, au-delà de la limite de 2000 par suppression. Supprime ses sous-dossiers un par un, ou déplace une partie des fichiers avant de réessayer.',
         ]);
     }
 

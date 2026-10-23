@@ -36,7 +36,7 @@ readonly class AdminUserRoleUpdateProcessor implements ProcessorInterface
         // themselves out of a back office only another admin could let them back into, and it takes
         // the simplest self escalation path off the table.
         if ($currentUser instanceof User && $currentUser->id === $user->id) {
-            throw new AccessDeniedHttpException('Vous ne pouvez pas modifier vos propres rôles');
+            throw new AccessDeniedHttpException('Tu ne peux pas modifier tes propres rôles');
         }
 
         // A role the account holds that is not grantable here is kept rather than silently dropped:

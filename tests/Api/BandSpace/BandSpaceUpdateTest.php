@@ -139,10 +139,10 @@ class BandSpaceUpdateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'detail' => 'Tu dois être administrateur pour effectuer cette action',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous devez être administrateur pour effectuer cette action',
+            'description' => 'Tu dois être administrateur pour effectuer cette action',
         ]);
 
         $this->assertSame('The Rockers', $this->reload($bandSpace)->name);
@@ -214,14 +214,14 @@ class BandSpaceUpdateTest extends ApiTestCase
             '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             '@type' => 'ConstraintViolation',
             'title' => 'An error occurred',
-            'detail' => "name: Veuillez spécifier un nom\nname: Le nom doit contenir au moins 3 caractères",
-            'description' => "name: Veuillez spécifier un nom\nname: Le nom doit contenir au moins 3 caractères",
+            'detail' => "name: Indique un nom\nname: Le nom doit contenir au moins 3 caractères",
+            'description' => "name: Indique un nom\nname: Le nom doit contenir au moins 3 caractères",
             'status' => 422,
             'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'violations' => [
                 [
                     'propertyPath' => 'name',
-                    'message' => 'Veuillez spécifier un nom',
+                    'message' => 'Indique un nom',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
                 [

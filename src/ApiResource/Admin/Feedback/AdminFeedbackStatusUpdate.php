@@ -29,7 +29,7 @@ class AdminFeedbackStatusUpdate
     #[ApiProperty(identifier: true)]
     public string $id;
 
-    #[Assert\NotBlank(message: 'Veuillez choisir un statut')]
+    #[Assert\NotBlank(message: 'Choisis un statut')]
     #[Assert\Choice(callback: [FeedbackStatus::class, 'values'], message: 'Statut inconnu')]
     public string $status;
 }

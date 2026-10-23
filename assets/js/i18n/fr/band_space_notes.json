@@ -11,7 +11,7 @@
     "title_placeholder": "Titre de la note",
     "cancel": "Annuler",
     "create": "Créer",
-    "title_required": "Veuillez saisir un titre"
+    "title_required": "Saisis un titre"
   },
   "tree": {
     "heading": "Notes",
@@ -25,7 +25,7 @@
   "page": {
     "back": "Retour",
     "heading": "Notes",
-    "select_prompt": "Sélectionnez une note pour commencer",
+    "select_prompt": "Sélectionne une note pour commencer",
     "error_summary": "Erreur",
     "created": "Note créée",
     "create_error": "Impossible de créer la note",
@@ -33,7 +33,7 @@
     "emoji_update_error": "L'emoji n'a pas pu être modifié",
     "reload_error": "Impossible de recharger la note",
     "delete_confirm": {
-      "message": "Êtes-vous sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées. Les images qui s’y trouvent resteront dans Fichiers.",
+      "message": "Es-tu sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées. Les images qui s’y trouvent resteront dans Fichiers.",
       "header": "Confirmer la suppression",
       "reject": "Annuler",
       "accept": "Supprimer"
@@ -43,7 +43,7 @@
   },
   "editor": {
     "title_placeholder": "Titre de la note",
-    "content_placeholder": "Commencez à écrire...",
+    "content_placeholder": "Commence à écrire...",
     "created_by": "Créée par {author}",
     "save_status": {
       "saving": "Sauvegarde en cours...",
@@ -52,7 +52,7 @@
       "error": "Erreur"
     },
     "conflict_notice": {
-      "message": "Cette note a été modifiée par un autre membre pendant que vous écriviez. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes, et la sauvegarde automatique est arrêtée. Votre texte est toujours affiché ci-dessous : copiez-le avant de recharger la note ou d'en ouvrir une autre, car il ne sera plus récupérable ensuite.",
+      "message": "Cette note a été modifiée par un autre membre pendant que tu écrivais. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes, et la sauvegarde automatique est arrêtée. Ton texte est toujours affiché ci-dessous : copie-le avant de recharger la note ou d'en ouvrir une autre, car il ne sera plus récupérable ensuite.",
       "copy_my_text": "Copier mon texte",
       "reload_note": "Recharger la note"
     },
@@ -97,23 +97,23 @@
     "checklist_item_empty": "Élément de check-list vide",
     "save_conflict": {
       "summary": "Modifications non enregistrées",
-      "detail_titled": "« {title} » a été modifiée par un autre membre. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
-      "detail_untitled": "La note a été modifiée par un autre membre. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes."
+      "detail_titled": "« {title} » a été modifiée par un autre membre. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+      "detail_untitled": "La note a été modifiée par un autre membre. Tes modifications n'ont pas été enregistrées afin de ne pas effacer les siennes."
     },
     "save_error": {
       "summary": "Sauvegarde impossible",
-      "detail_titled": "« {title} » n'a pas pu être enregistrée. Ne fermez pas cet onglet : votre texte est toujours affiché et sera renvoyé à votre prochaine modification.",
-      "detail_untitled": "La note n'a pas pu être enregistrée. Ne fermez pas cet onglet : votre texte est toujours affiché et sera renvoyé à votre prochaine modification."
+      "detail_titled": "« {title} » n'a pas pu être enregistrée. Ne ferme pas cet onglet : ton texte est toujours affiché et sera renvoyé à ta prochaine modification.",
+      "detail_untitled": "La note n'a pas pu être enregistrée. Ne ferme pas cet onglet : ton texte est toujours affiché et sera renvoyé à ta prochaine modification."
     },
     "copy": {
       "success_summary": "Texte copié",
-      "success_detail": "Votre version est dans le presse-papiers.",
+      "success_detail": "Ta version est dans le presse-papiers.",
       "error_summary": "Copie impossible",
-      "error_detail": "Sélectionnez votre texte dans la note, puis copiez-le avec Ctrl+C."
+      "error_detail": "Sélectionne ton texte dans la note, puis copie-le avec Ctrl+C."
     },
     "image": {
       "quota_summary": "Quota presque atteint",
-      "quota_detail": "Vous avez atteint 80 % de votre quota de stockage.",
+      "quota_detail": "L'espace a atteint 80 % de son quota de stockage.",
       "import_error_summary": "Import impossible"
     }
   },

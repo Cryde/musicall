@@ -213,10 +213,10 @@ class MemberAbsenceCreateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez gérer que vos propres indisponibilités',
+            'detail' => 'Tu ne peux gérer que tes propres indisponibilités',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez gérer que vos propres indisponibilités',
+            'description' => 'Tu ne peux gérer que tes propres indisponibilités',
         ]);
 
         $repository = self::getContainer()->get(MemberAbsenceRepository::class);
@@ -513,14 +513,14 @@ class MemberAbsenceCreateTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'start_date',
-                    'message' => 'Veuillez spécifier une date de début',
+                    'message' => 'Indique une date de début',
                     'code' => NotBlank::IS_BLANK_ERROR,
                 ],
             ],
-            'detail' => 'start_date: Veuillez spécifier une date de début',
+            'detail' => 'start_date: Indique une date de début',
             'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
             'title' => 'An error occurred',
-            'description' => 'start_date: Veuillez spécifier une date de début',
+            'description' => 'start_date: Indique une date de début',
         ]);
 
         $repository = self::getContainer()->get(MemberAbsenceRepository::class);
@@ -546,10 +546,10 @@ class MemberAbsenceCreateTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'êtes pas membre de ce Band Space',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'êtes pas membre de ce Band Space',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
     }
 }

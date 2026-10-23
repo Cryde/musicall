@@ -169,14 +169,14 @@ class FeedbackPostTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'message',
-                    'message' => 'Votre message doit contenir au minimum 10 caractères',
+                    'message' => 'Ton message doit contenir au minimum 10 caractères',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
-            'detail' => 'message: Votre message doit contenir au minimum 10 caractères',
+            'detail' => 'message: Ton message doit contenir au minimum 10 caractères',
             'type' => '/validation_errors/9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
-            'description' => 'message: Votre message doit contenir au minimum 10 caractères',
+            'description' => 'message: Ton message doit contenir au minimum 10 caractères',
         ]);
 
         $this->assertSame(0, $this->feedbackCount());

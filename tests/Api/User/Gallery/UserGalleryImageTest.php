@@ -79,10 +79,10 @@ class UserGalleryImageTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'etes pas autorise a acceder a cette galerie',
+            'detail' => 'Tu n\'es pas autorisé à accéder à cette galerie',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'etes pas autorise a acceder a cette galerie',
+            'description' => 'Tu n\'es pas autorisé à accéder à cette galerie',
         ]);
     }
 
@@ -171,10 +171,10 @@ class UserGalleryImageTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'etes pas autorise a modifier cette image',
+            'detail' => 'Tu n\'es pas autorisé à modifier cette image',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'etes pas autorise a modifier cette image',
+            'description' => 'Tu n\'es pas autorisé à modifier cette image',
         ]);
     }
 
@@ -246,10 +246,10 @@ class UserGalleryImageTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous n\'etes pas autorise a supprimer cette image',
+            'detail' => 'Tu n\'es pas autorisé à supprimer cette image',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous n\'etes pas autorise a supprimer cette image',
+            'description' => 'Tu n\'es pas autorisé à supprimer cette image',
         ]);
     }
 
@@ -318,10 +318,10 @@ class UserGalleryImageTest extends ApiTestCase
             '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez pas supprimer l\'image de couverture',
+            'detail' => 'Tu ne peux pas supprimer l\'image de couverture',
             'status' => 403,
             'type' => '/errors/403',
-            'description' => 'Vous ne pouvez pas supprimer l\'image de couverture',
+            'description' => 'Tu ne peux pas supprimer l\'image de couverture',
         ]);
     }
 }

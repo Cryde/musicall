@@ -171,8 +171,8 @@ class ForumStory extends Story
         // Pinned welcome topic with many replies
         $welcomeTopic = ForumTopicFactory::new([
             'forum' => $forum,
-            'title' => 'Bienvenue sur MusicAll ! Présentez-vous ici',
-            'slug' => 'bienvenue-sur-musicall-presentez-vous-ici',
+            'title' => 'Bienvenue sur MusicAll ! Présente-toi ici',
+            'slug' => 'bienvenue-sur-musicall-presente-toi-ici',
             'author' => UserStory::get(UserStory::ADMIN_USER),
             'creationDatetime' => new \DateTime('-6 months'),
         ])->asPinned()->create();
@@ -216,11 +216,11 @@ class ForumStory extends Story
         $users = UserStory::getPool(UserStory::POOL_USERS);
 
         $discussionTopics = [
-            ['title' => 'Quel est votre morceau préféré du moment ?', 'slug' => 'quel-est-votre-morceau-prefere-du-moment', 'posts' => 12],
+            ['title' => 'Quel est ton morceau préféré du moment ?', 'slug' => 'quel-est-ton-morceau-prefere-du-moment', 'posts' => 12],
             ['title' => 'Les concerts à ne pas manquer en 2024', 'slug' => 'les-concerts-a-ne-pas-manquer-2024', 'posts' => 8],
             ['title' => 'Débat : Vinyle vs Streaming', 'slug' => 'debat-vinyle-vs-streaming', 'posts' => 20],
-            ['title' => 'Vos influences musicales', 'slug' => 'vos-influences-musicales', 'posts' => 0],
-            ['title' => 'Comment gérez-vous le trac sur scène ?', 'slug' => 'comment-gerez-vous-le-trac-sur-scene', 'posts' => 6],
+            ['title' => 'Tes influences musicales', 'slug' => 'tes-influences-musicales', 'posts' => 0],
+            ['title' => 'Comment gères-tu le trac sur scène ?', 'slug' => 'comment-geres-tu-le-trac-sur-scene', 'posts' => 6],
         ];
 
         foreach ($discussionTopics as $topicData) {
