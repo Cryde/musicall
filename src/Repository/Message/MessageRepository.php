@@ -465,6 +465,34 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Whether marking this direct thread read would turn a message of the other person to « Vu » (#1243).
+     * Asked before the position moves, for the same reason as hasChannelMessageUnreadBy() above, and
+     * against the seen position, which « marquer comme non lu » never moves back.
+     */
+    public function hasThreadMessageUnseenBy(MessageThread $thread, User $reader): bool
+    {
+        $found = $this->createQueryBuilder('message')
+            ->select('message.id')
+            ->leftJoin(
+                MessageThreadMeta::class,
+                'meta',
+                Join::WITH,
+                'meta.thread = message.thread AND meta.user = :reader'
+            )
+            ->where('message.thread = :thread')
+            ->andWhere('message.author != :reader')
+            ->andWhere('message.deletionDatetime IS NULL')
+            ->andWhere('(meta.lastSeenDatetime IS NULL OR message.creationDatetime > meta.lastSeenDatetime)')
+            ->setParameter('thread', $thread)
+            ->setParameter('reader', $reader)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $found !== null;
+    }
+
+    /**
      * Count messages sent within a date range.
      */
     public function countMessagesSince(\DateTimeImmutable $since): int

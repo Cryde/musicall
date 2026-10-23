@@ -18,6 +18,7 @@ function route(payload) {
     chatMessageChanged: record('chatMessageChanged'),
     chatTyping: record('chatTyping'),
     inboxTyping: record('inboxTyping'),
+    inboxRead: record('inboxRead'),
     chatPresence: record('chatPresence'),
     bandSpaceChanged: record('bandSpaceChanged')
   })
@@ -86,6 +87,14 @@ describe('routeLiveSignal', () => {
     ])
     assert.deepEqual(route({ type: 'message_typing', thread_id: 'thread-1' }), [])
     assert.deepEqual(route({ type: 'message_typing', user_id: 'lea' }), [])
+  })
+
+  it('sends a direct conversation read to the inbox read handler and nowhere else', () => {
+    // Above all not inboxMessage, which marks the open conversation read and would signal back.
+    assert.deepEqual(route({ type: 'message_read', thread_id: 'thread-1' }), [
+      ['inboxRead', 'thread-1']
+    ])
+    assert.deepEqual(route({ type: 'message_read' }), [])
   })
 
   it('drops a chat read that names no space', () => {

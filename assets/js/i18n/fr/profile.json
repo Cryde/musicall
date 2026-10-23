@@ -146,6 +146,7 @@
       "section_updates": "Mises à jour",
       "section_reminders": "Rappels",
       "section_band_space": "Band Space",
+      "section_direct_messages": "Messages privés",
       "section_push": "Notifications mobiles",
       "section_marketing": "Marketing",
       "email": {
@@ -176,6 +177,10 @@
         "show_online_presence": {
           "label": "Me montrer en ligne",
           "description": "Les membres de tes groupes voient quand tu as leur discussion ouverte"
+        },
+        "show_read_receipts": {
+          "label": "Confirmations de lecture",
+          "description": "Les personnes avec qui tu échanges voient quand tu as lu leurs messages. Désactivé, tu ne vois pas non plus les leurs."
         },
         "marketing": {
           "label": "Offres et promotions",

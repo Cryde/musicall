@@ -45,6 +45,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => true,
             'activity_reminder' => true,
             'show_online_presence' => true,
+            'show_read_receipts' => true,
             'push_message_received' => true,
             'push_publication_comment' => true,
             'push_forum_reply' => true,
@@ -99,6 +100,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => false,
             'activity_reminder' => true,
             'show_online_presence' => true,
+            'show_read_receipts' => true,
             'push_message_received' => true,
             'push_publication_comment' => true,
             'push_forum_reply' => true,
@@ -129,6 +131,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => true,
             'activity_reminder' => false,
             'show_online_presence' => false,
+            'show_read_receipts' => false,
             'push_message_received' => true,
             'push_publication_comment' => true,
             'push_forum_reply' => true,
@@ -154,6 +157,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'marketing' => true,
             'activity_reminder' => false,
             'show_online_presence' => false,
+            'show_read_receipts' => false,
             'push_message_received' => true,
             'push_publication_comment' => true,
             'push_forum_reply' => true,
@@ -170,6 +174,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             ->findOneBy(['user' => $user->id]);
         $this->assertInstanceOf(UserNotificationPreference::class, $stored);
         $this->assertFalse($stored->showOnlinePresence);
+        $this->assertFalse($stored->showReadReceipts);
         $this->assertFalse($stored->pushBandChat);
         $this->assertFalse($stored->pushModeration);
         $this->assertTrue($stored->pushBandMention);

@@ -28,7 +28,8 @@
     "recipient_deleted": "You can no longer send messages to this user.",
     "placeholder": "Your message...",
     "send": "Send message",
-    "none_selected": "Select a conversation or send a new message."
+    "none_selected": "Select a conversation or send a new message.",
+    "seen": "Seen"
   },
   "send_modal": {
     "title": "New message",

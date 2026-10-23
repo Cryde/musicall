@@ -7,12 +7,16 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Message\MessageThreadMetaResource;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\Event\MessageThreadReadEvent;
+use App\Repository\Message\MessageRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Service\Builder\Message\MessageThreadMetaBuilder;
+use App\Service\User\UserNotificationPreferenceChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<MessageThreadMetaResource, MessageThreadMetaResource>
@@ -24,6 +28,9 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
         private EntityManagerInterface      $entityManager,
         private MessageThreadMetaRepository $messageThreadMetaRepository,
         private MessageThreadMetaBuilder    $messageThreadMetaBuilder,
+        private MessageRepository           $messageRepository,
+        private EventDispatcherInterface    $eventDispatcher,
+        private UserNotificationPreferenceChecker $preferenceChecker,
     ) {
     }
 
@@ -54,9 +61,28 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
             $entity->pendingNotificationSent = false;
         }
 
-        // A command, not a state: mark read as of now, or put the position back to nothing.
-        $entity->lastReadDatetime = $data->isRead === true ? new \DateTimeImmutable() : null;
+        // Asked first, since afterwards the position is `now`. Only a read covering the other person's
+        // message changes their « Vu » (#1243). A channel opened from the inbox lands here too and has
+        // its own receipt signal, so it is left out.
+        // Somebody hiding that they read leaves no seen position to reveal once they stop hiding it.
+        $recordsSeen = $this->preferenceChecker->showsReadReceipts($user);
+        $changesReceipt = $data->isRead === true
+            && $recordsSeen
+            && !$entity->thread->isChannel()
+            && $this->messageRepository->hasThreadMessageUnseenBy($entity->thread, $user);
+
+        // A command, not a state: mark read as of now, or put the read position back to nothing, which
+        // leaves the seen position where it was.
+        if ($data->isRead === true) {
+            $entity->markReadAt(new \DateTimeImmutable(), $recordsSeen);
+        } else {
+            $entity->lastReadDatetime = null;
+        }
         $this->entityManager->flush();
+
+        if ($changesReceipt) {
+            $this->eventDispatcher->dispatch(new MessageThreadReadEvent($entity->thread, $user));
+        }
 
         return $this->messageThreadMetaBuilder->buildItem($entity);
     }

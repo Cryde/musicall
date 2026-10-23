@@ -47,7 +47,12 @@ readonly class MessageBuilder
      *                                                    channel has any; a direct message cannot be
      *                                                    written with a mention at all.
      */
-    public function buildItem(Message $entity, array $mentionUsernamesById = [], ?MessageContactOrigin $contactOrigin = null): MessageResource
+    public function buildItem(
+        Message $entity,
+        array $mentionUsernamesById = [],
+        ?MessageContactOrigin $contactOrigin = null,
+        bool $isSeen = false,
+    ): MessageResource
     {
         $dto = new MessageResource();
         $dto->id = (string) $entity->id;
@@ -61,6 +66,7 @@ readonly class MessageBuilder
         );
         $dto->contentPreview = $this->toPreview($entity, $mentionUsernamesById);
         $dto->contactOrigin = $contactOrigin instanceof MessageContactOrigin ? $this->contactOriginBuilder->build($contactOrigin) : null;
+        $dto->isSeen = $isSeen;
 
         return $dto;
     }

@@ -54,6 +54,16 @@ class MessageThreadMeta
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $lastReadDatetime = null;
 
+    /**
+     * How far this user has seen the thread, which is what the other person's « Vu » reads (#1243).
+     * It follows the reads of a direct thread but only ever moves forward: « marquer comme non lu »
+     * puts the read position above back to null and leaves this alone, so it never takes a receipt
+     * back from the sender. A band channel's bulk read (markChannelsReadForUser) does not write it,
+     * since nothing reads it for a channel.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $lastSeenDatetime = null;
+
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $isDeleted;
 
@@ -69,6 +79,18 @@ class MessageThreadMeta
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+    }
+
+    /**
+     * Read as of $at: the read position moves there, and the seen position too unless it is already
+     * past, or unless this reader hides that they read, so turning receipts back on reveals nothing.
+     */
+    public function markReadAt(\DateTimeImmutable $at, bool $recordsSeen): void
+    {
+        $this->lastReadDatetime = $at;
+        if ($recordsSeen && ($this->lastSeenDatetime === null || $this->lastSeenDatetime < $at)) {
+            $this->lastSeenDatetime = $at;
+        }
     }
 
     /**

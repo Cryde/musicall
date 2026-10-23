@@ -48,6 +48,8 @@ class UserNotificationPreferenceEdit
 
     public bool $showOnlinePresence = true;
 
+    public bool $showReadReceipts = true;
+
     // Push categories (#1110), see PushCategory.
     public bool $pushMessageReceived = true;
 

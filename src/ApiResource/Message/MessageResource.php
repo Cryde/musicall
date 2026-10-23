@@ -97,4 +97,8 @@ class MessageResource
      */
     #[Groups([MessageResource::LIST, MessageResource::ITEM])]
     public ?array $contactOrigin = null;
+
+    /** The caller wrote it and the other person has seen it: « Vu » (#1243). Always false otherwise. */
+    #[Groups([MessageResource::LIST])]
+    public bool $isSeen = false;
 }
