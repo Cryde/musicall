@@ -442,6 +442,7 @@ class MessageContactOriginTest extends ApiTestCase
                         'styles' => ['Rock', 'Blues'],
                         'location_name' => 'Lyon',
                     ],
+                    'is_seen' => false,
                 ],
             ],
             'totalItems' => 1,
@@ -583,6 +584,7 @@ class MessageContactOriginTest extends ApiTestCase
             ],
             'content' => $message->content,
             'contact_origin' => $contactOrigin,
+            'is_seen' => false,
         ];
     }
 

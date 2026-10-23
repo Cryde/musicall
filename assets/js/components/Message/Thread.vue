@@ -189,6 +189,12 @@
           </div>
         </div>
         </template>
+
+        <!-- Under your newest message only, once the other person has seen it (#1243). Once they reply,
+             their answer says it better. -->
+        <p v-if="isNewestSeen" class="-mt-3 text-right text-xs text-surface-500 dark:text-surface-400">
+          {{ t('message.thread.seen') }}
+        </p>
       </template>
     </div>
 
@@ -318,6 +324,11 @@ const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_dat
 
 // Two people in a conversation, so whoever is writing is the one the header names.
 const typistNames = computed(() => (messageStore.currentTypists.length > 0 ? [title.value] : []))
+
+const isNewestSeen = computed(() => {
+  const newest = messageStore.messages.at(-1)
+  return !!newest && isSender(newest) && newest.is_seen === true
+})
 
 // Whitespace is not writing anything yet.
 function handleInput() {

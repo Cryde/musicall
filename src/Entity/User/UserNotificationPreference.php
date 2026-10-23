@@ -49,6 +49,10 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $showOnlinePresence = true;
 
+    /** « Vu » in direct conversations, both ways: off, one neither shows nor sees it (#1243). */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $showReadReceipts = true;
+
     // Push categories (#1110), all on by default: a token only exists once the phone allowed notifications.
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $pushMessageReceived = true;

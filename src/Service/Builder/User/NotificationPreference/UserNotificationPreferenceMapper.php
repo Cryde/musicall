@@ -19,6 +19,7 @@ final class UserNotificationPreferenceMapper
         'marketing',
         'activityReminder',
         'showOnlinePresence',
+        'showReadReceipts',
         'pushMessageReceived',
         'pushPublicationComment',
         'pushForumReply',

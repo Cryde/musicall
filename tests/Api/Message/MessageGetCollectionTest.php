@@ -95,6 +95,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         'display_name' => 'base_user_1',
                     ],
                     'content'           => 'first message from user 1',
+                    'is_seen' => false,
                 ],
                 [
                     '@id' => '/api/messages/' . $message3->id,
@@ -108,6 +109,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         'display_name' => 'base_user_2',
                     ],
                     'content'           => 'second message from user 2',
+                    'is_seen' => false,
                 ],
                 [
                     '@id' => '/api/messages/' . $message4->id,
@@ -121,6 +123,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         'display_name' => 'base_user_1',
                     ],
                     'content'           => 'third message from user 1',
+                    'is_seen' => false,
                 ],
                 [
                     '@id' => '/api/messages/' . $message1->id,
@@ -134,6 +137,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         'display_name' => 'base_user_1',
                     ],
                     'content'           => 'last message from user 1',
+                    'is_seen' => false,
                 ],
             ],
             'totalItems' => 4,
@@ -212,6 +216,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         'deletion_datetime' => '2026-09-01T10:00:00+00:00',
                     ],
                     'content' => 'salut',
+                    'is_seen' => false,
                 ],
             ],
             'totalItems' => 1,
@@ -273,6 +278,7 @@ class MessageGetCollectionTest extends ApiTestCase
                         'display_name' => 'base_user_2',
                     ],
                     'content' => '',
+                    'is_seen' => false,
                 ],
             ],
             'totalItems' => 1,
@@ -494,6 +500,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'creation_datetime' => '2026-09-11T10:02:00+00:00',
                     'author' => $writerJson,
                     'content' => 'message 2',
+                    'is_seen' => false,
                 ],
                 [
                     '@id' => '/api/messages/' . $messages[1]->id,
@@ -501,6 +508,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'creation_datetime' => '2026-09-11T10:01:00+00:00',
                     'author' => $writerJson,
                     'content' => 'message 1',
+                    'is_seen' => false,
                 ],
             ],
             'totalItems' => 52,

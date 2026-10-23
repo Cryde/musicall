@@ -385,6 +385,17 @@ export const useMessageStore = defineStore('message', () => {
     typingNotifier.reset()
   }
 
+  /**
+   * The other person read this conversation (#1243), so a « Vu » on screen may be stale. Refetched
+   * quietly and never marked read in return: answering a read with a read is how two tabs feed each
+   * other.
+   */
+  function handleThreadRead(threadId) {
+    if (threadId && threadId === currentThreadId.value) {
+      loadMessages(threadId, { silent: true })
+    }
+  }
+
   function clearCurrentThread() {
     forgetTyping()
     currentThreadId.value = null
@@ -424,6 +435,7 @@ export const useMessageStore = defineStore('message', () => {
     loadOlderMessages,
     handleIncomingMessage,
     handleTyping,
+    handleThreadRead,
     notifyTyping,
     currentTypists: readonly(currentTypists),
     getOtherParticipant,

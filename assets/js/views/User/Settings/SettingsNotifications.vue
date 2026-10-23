@@ -90,6 +90,21 @@
         />
       </div>
 
+      <!-- Direct messages section (#1243) -->
+      <div class="flex flex-col gap-2">
+        <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
+          {{ t('profile.settings.notifications.section_direct_messages') }}
+        </h3>
+        <div class="border-b border-surface-200 dark:border-surface-700" />
+
+        <NotificationToggle
+          v-model="form.show_read_receipts"
+          :label="t('profile.settings.notifications.email.show_read_receipts.label')"
+          :description="t('profile.settings.notifications.email.show_read_receipts.description')"
+          :disabled="isUpdating"
+        />
+      </div>
+
       <!-- Mobile push section (#1110) -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
@@ -159,6 +174,7 @@ const DEFAULTS = {
   marketing: false,
   activity_reminder: true,
   show_online_presence: true,
+  show_read_receipts: true,
   push_message_received: true,
   push_publication_comment: true,
   push_forum_reply: true,
