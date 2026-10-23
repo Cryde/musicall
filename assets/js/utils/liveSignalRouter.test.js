@@ -17,6 +17,7 @@ function route(payload) {
     chatRead: record('chatRead'),
     chatMessageChanged: record('chatMessageChanged'),
     chatTyping: record('chatTyping'),
+    inboxTyping: record('inboxTyping'),
     chatPresence: record('chatPresence'),
     bandSpaceChanged: record('bandSpaceChanged')
   })
@@ -76,6 +77,15 @@ describe('routeLiveSignal', () => {
       [['chatTyping', { bandSpaceId: 'space-1', userId: 'lea' }]]
     )
     assert.deepEqual(route({ type: 'band_space_typing', band_space_id: 'space-1' }), [])
+  })
+
+  it('sends a direct conversation typing signal to the inbox and nowhere else', () => {
+    // No badge refresh and no message handler: somebody writing is not new content.
+    assert.deepEqual(route({ type: 'message_typing', thread_id: 'thread-1', user_id: 'lea' }), [
+      ['inboxTyping', { threadId: 'thread-1', userId: 'lea' }]
+    ])
+    assert.deepEqual(route({ type: 'message_typing', thread_id: 'thread-1' }), [])
+    assert.deepEqual(route({ type: 'message_typing', user_id: 'lea' }), [])
   })
 
   it('drops a chat read that names no space', () => {

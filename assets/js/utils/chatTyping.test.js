@@ -1,13 +1,52 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
-  activeTypists,
   createTypingNotifier,
+  createTypistTracker,
   memberNames,
-  typingSentence,
-  withoutTypist,
-  withTypist
+  typingSentence
 } from './chatTyping.js'
+
+/** A clock that only moves when the test says so. */
+function fakeClock() {
+  let now = 0
+  let nextId = 1
+  const scheduled = new Map()
+
+  return {
+    set(fn, delay) {
+      const id = nextId++
+      scheduled.set(id, { fn, at: now + delay })
+      return id
+    },
+    clear(id) {
+      scheduled.delete(id)
+    },
+    advance(ms) {
+      now += ms
+      for (const [id, { fn, at }] of [...scheduled]) {
+        if (at <= now) {
+          scheduled.delete(id)
+          fn()
+        }
+      }
+    },
+    get pending() {
+      return scheduled.size
+    }
+  }
+}
+
+function tracker(timers) {
+  const heard = []
+  const typists = createTypistTracker({
+    onChange: (userIds) => heard.push(userIds),
+    ttlMs: 5000,
+    timers
+  })
+
+  return { typists, heard, current: () => heard.at(-1) ?? [] }
+}
 
 describe('createTypingNotifier', () => {
   it('sends once per interval however often it is told', () => {
@@ -42,21 +81,67 @@ describe('createTypingNotifier', () => {
   })
 })
 
-describe('typists', () => {
+describe('createTypistTracker', () => {
   it('shows a typist until their time runs out, with no stop signal needed', () => {
-    const typists = withTypist({}, 'lea', 1000, 5000)
+    const clock = fakeClock()
+    const { typists, current } = tracker(clock)
 
-    assert.deepEqual(activeTypists(typists, 5999), ['lea'])
-    assert.deepEqual(activeTypists(typists, 6000), [])
+    typists.seen('lea')
+    clock.advance(4999)
+    assert.deepEqual(current(), ['lea'])
+
+    clock.advance(1)
+    assert.deepEqual(current(), [])
+    assert.equal(clock.pending, 0)
   })
 
-  it('extends a typist who keeps typing, and drops one on demand', () => {
-    let typists = withTypist({}, 'lea', 0, 5000)
-    typists = withTypist(typists, 'tom', 1000, 5000)
-    typists = withTypist(typists, 'lea', 4000, 5000)
+  it('extends a typist who keeps typing, keeping the order they started in', () => {
+    const clock = fakeClock()
+    const { typists, heard, current } = tracker(clock)
 
-    assert.deepEqual(activeTypists(typists, 5500), ['lea', 'tom'])
-    assert.deepEqual(activeTypists(withoutTypist(typists, 'lea'), 5500), ['tom'])
+    typists.seen('lea')
+    clock.advance(1000)
+    typists.seen('tom')
+    clock.advance(3000)
+    typists.seen('lea')
+    clock.advance(1500)
+
+    assert.deepEqual(current(), ['lea', 'tom'])
+    // A typist seen again is no change to announce.
+    assert.equal(heard.length, 2)
+
+    // Tom's last signal was at 1000, Léa's at 4000.
+    clock.advance(1000)
+    assert.deepEqual(current(), ['lea'])
+  })
+
+  it('drops a typist whose message landed, and nobody it never saw', () => {
+    const clock = fakeClock()
+    const { typists, heard, current } = tracker(clock)
+
+    typists.seen('lea')
+    typists.seen('tom')
+    typists.forget('lea')
+    typists.forget('ghost')
+
+    assert.deepEqual(current(), ['tom'])
+    assert.equal(heard.length, 3)
+    assert.equal(clock.pending, 1)
+  })
+
+  it('clears everybody at once, and says nothing when there was nobody', () => {
+    const clock = fakeClock()
+    const { typists, heard, current } = tracker(clock)
+
+    typists.clear()
+    assert.equal(heard.length, 0)
+
+    typists.seen('lea')
+    typists.seen('tom')
+    typists.clear()
+
+    assert.deepEqual(current(), [])
+    assert.equal(clock.pending, 0)
   })
 })
 

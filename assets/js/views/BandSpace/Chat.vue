@@ -61,10 +61,7 @@
       :members="settingsStore.members"
     />
 
-    <!-- Always in the page, so a screen reader hears it change; polite, so it never cuts in. -->
-    <p class="min-h-5 m-0 px-4 text-xs italic text-surface-600 dark:text-surface-300" aria-live="polite">
-      {{ typingText }}
-    </p>
+    <ChatTypingLine :names="typistNames" />
 
     <ChatComposer
       :members="settingsStore.members"
@@ -91,9 +88,10 @@ import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
 import ChatPinnedBar from '../../components/BandSpace/Chat/ChatPinnedBar.vue'
 import ChatPresenceAvatar from '../../components/BandSpace/Chat/ChatPresenceAvatar.vue'
+import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
 import { useBandSpaceChatStore } from '../../store/bandSpace/bandSpaceChat.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
-import { memberNames, typingSentence } from '../../utils/chatTyping.js'
+import { memberNames } from '../../utils/chatTyping.js'
 import { createHeartbeat } from '../../utils/heartbeat.js'
 import { createPresenceSession } from '../../utils/presenceSession.js'
 
@@ -193,7 +191,5 @@ const onlineMembers = computed(() =>
 )
 onUnmounted(() => chatStore.clear())
 
-const typingText = computed(() =>
-  typingSentence(memberNames(chatStore.currentTypists, settingsStore.members))
-)
+const typistNames = computed(() => memberNames(chatStore.currentTypists, settingsStore.members))
 </script>

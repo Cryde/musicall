@@ -192,6 +192,9 @@
       </template>
     </div>
 
+    <!-- Empty for a channel opened here, which has its own typing signal. -->
+    <ChatTypingLine :names="typistNames" />
+
     <!-- The band space tab's composer, so a mention is chipped and sent in the same `@[uuid]` format
          from either place. It carries its own border and padding, hence sitting outside the block. -->
     <ChatComposer
@@ -220,6 +223,7 @@
           rows="2"
           class="flex-1"
           @keydown.enter.exact.prevent="send"
+          @input="handleInput"
         />
         <Button
           icon="pi pi-send"
@@ -257,6 +261,7 @@ import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
+import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
@@ -310,6 +315,14 @@ const otherParticipant = computed(() => {
 const title = computed(() => conversationTitle(currentThread.value, otherParticipant.value))
 
 const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_datetime)
+
+// Two people in a conversation, so whoever is writing is the one the header names.
+const typistNames = computed(() => (messageStore.currentTypists.length > 0 ? [title.value] : []))
+
+// Whitespace is not writing anything yet.
+function handleInput() {
+  if (content.value.trim() !== '') messageStore.notifyTyping()
+}
 
 // The conversation leaves the inbox and its badge once blocked (#1117), so both are reloaded and the
 // pane closes with it. « Débloquer » stays on the profile and in the privacy settings.

@@ -192,5 +192,10 @@
   },
   "user": {
     "deleted": "Deleted user"
+  },
+  "typing": {
+    "one": "{name} is typing...",
+    "two": "{first} and {second} are typing...",
+    "many": "{count} people are typing..."
   }
 }

@@ -192,5 +192,10 @@
   },
   "user": {
     "deleted": "Utilisateur supprimé"
+  },
+  "typing": {
+    "one": "{name} écrit…",
+    "two": "{first} et {second} écrivent…",
+    "many": "{count} personnes écrivent…"
   }
 }

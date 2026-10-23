@@ -43,9 +43,6 @@
     "many": "Seen by {names} and {count} others"
   },
   "typing": {
-    "one": "{name} is typing...",
-    "two": "{first} and {second} are typing...",
-    "many": "{count} people are typing...",
     "unknown_member": "A member"
   },
   "pin": {

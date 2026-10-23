@@ -7,12 +7,7 @@ import {
   rolledBackReactions,
   toggledReactions
 } from '../../utils/chatReactionToggle.js'
-import {
-  activeTypists,
-  createTypingNotifier,
-  withoutTypist,
-  withTypist
-} from '../../utils/chatTyping.js'
+import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
 import {
   isHeld,
   mayMergeNewestPage,
@@ -687,43 +682,28 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
 
   // --- « X écrit… » (#1040) ------------------------------------------------------------------------
 
-  // User id to the moment they stop showing. A clock ticks while anybody is typing so they fade out on
-  // time with no stop signal, and stops once nobody is.
-  const typists = ref({})
-  const typingClock = ref(Date.now())
-  let typingTimer = null
-
-  const currentTypists = computed(() => activeTypists(typists.value, typingClock.value))
+  // Who is writing, by user id, in the order they started. Each fades on its own, with no stop signal.
+  const currentTypists = ref([])
+  const typists = createTypistTracker({
+    onChange: (userIds) => {
+      currentTypists.value = userIds
+    }
+  })
 
   function handleTyping({ bandSpaceId, userId }) {
     if (!bandSpaceId || bandSpaceId !== openBandSpaceId.value) {
       return
     }
-    typingClock.value = Date.now()
-    typists.value = withTypist(typists.value, userId, typingClock.value)
-    if (typingTimer === null) {
-      typingTimer = setInterval(tickTyping, 1000)
-    }
-  }
-
-  function tickTyping() {
-    typingClock.value = Date.now()
-    if (activeTypists(typists.value, typingClock.value).length === 0) {
-      stopTyping()
-    }
+    typists.seen(userId)
   }
 
   function stopTyping() {
-    clearInterval(typingTimer)
-    typingTimer = null
-    typists.value = {}
+    typists.clear()
   }
 
   /** Their message has landed, so they are no longer writing it. */
   function forgetTypistOf(message) {
-    if (message?.author_id && typists.value[message.author_id]) {
-      typists.value = withoutTypist(typists.value, message.author_id)
-    }
+    if (message?.author_id) typists.forget(message.author_id)
   }
 
   // Best effort: a lost signal only means nobody sees « écrit… » for three seconds.
@@ -855,7 +835,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     leavePresence,
     onlineUserIds: readonly(onlineUserIds),
     notifyTyping,
-    currentTypists,
+    currentTypists: readonly(currentTypists),
     clear
   }
 })
