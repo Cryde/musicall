@@ -33,8 +33,10 @@
         </div>
 
         <!-- Conversation - hidden on mobile when no thread selected -->
+        <!-- min-w-0: a flex item never shrinks below its content's minimum width otherwise, and the
+             chat composer's editor has one wider than a phone. -->
         <div
-          class="flex-1"
+          class="min-w-0 flex-1"
           :class="{ 'hidden md:block': !messageStore.currentThreadId }"
         >
           <Thread @back="handleBack" />

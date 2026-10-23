@@ -33,9 +33,8 @@ export function routeLiveSignal(payload, handlers) {
     handlers.inboxMessage(payload?.thread_id ?? null)
   }
   if (type === null || type === 'band_space_message') {
-    // A Band Space channel, which both panes can be showing: the band space tab, keyed by space,
-    // and since #994 the inbox, keyed by thread. Each no-ops when its own pane is not on screen,
-    // and they never are at once, since they are different routes.
+    // A Band Space channel. The band chat refetches it wherever it is shown, the Band Space tab or
+    // « Messages » (#1244), and the inbox refreshes its list of conversations.
     //
     // The chat store refreshes the sidebar badge itself, because whether the member is looking at
     // the conversation is also what decides whether the signal marks it read.

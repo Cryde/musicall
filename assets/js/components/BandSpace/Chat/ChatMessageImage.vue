@@ -23,17 +23,16 @@
 
 <script setup>
 import Image from 'primevue/image'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 
-const props = defineProps({
+defineProps({
   /** The `image` of one ChatMessage, straight from the API. */
   image: { type: Object, required: true },
-  bandSpaceId: { type: String, required: true }
+  /** Where the conversation that owns the image serves it from. */
+  src: { type: String, required: true }
 })
 
 const { t } = useI18n()
 const hasFailed = ref(false)
-const src = computed(() => bandSpaceChatApi.imageUrl(props.bandSpaceId, props.image.file_id))
 </script>

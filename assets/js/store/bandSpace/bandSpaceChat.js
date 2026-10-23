@@ -47,8 +47,8 @@ const MESSAGE_CHANGE_COALESCE_MS = 1000
  */
 export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   // Which space's conversation is held, which is how a live signal knows whether any of this is on
-  // screen. Chat.vue clears the store when it unmounts and AppBandLayout keys <router-view> on the
-  // space id, so leaving the tab or switching band empties it.
+  // screen. BandChatPanel clears the store when it unmounts and whoever shows it keys it on the space
+  // id, so leaving the chat or switching band empties it.
   const openBandSpaceId = ref(null)
   const messages = ref([])
   const totalMessages = ref(0)
@@ -337,7 +337,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   async function loadPinnedMessages(bandSpaceId) {
     // Checked against the space on screen, not against the load token: switching band while this is in
     // flight must not hang another band's pins over the conversation now open, but the token moves on
-    // every load and every jump (#1039), and Chat.vue starts the list load right after this one, which
+    // every load and every jump (#1039), and BandChatPanel starts the list load right after this one, which
     // used to throw every first answer away and leave the bar hidden.
     try {
       const pinned = await bandSpaceChatApi.getPinnedMessages(bandSpaceId)
@@ -721,8 +721,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
 
   // --- « En ligne » (#1040) --------------------------------------------------------------------------
 
-  // The other members with the chat open, as the last heartbeat answered. Chat.vue runs the heartbeat,
-  // since it owns the page's lifecycle (shown, hidden, left); the store only holds the answer.
+  // The other members with the chat open, as the last heartbeat answered. BandChatPanel runs the
+  // heartbeat, since it owns the chat's lifecycle (shown, hidden, left); the store only holds the answer.
   const onlineUserIds = ref([])
   // One per page load: the server keeps a member online while any of their tabs still beats.
   const presenceTab = crypto.randomUUID()
@@ -766,7 +766,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     changedMessageIds.clear()
     pinnedBarIsStale = false
     // Bumped so nothing already in flight lands in a pane the member has left, a silent refresh
-    // included. Chat.vue clears on unmount, which is the one moment a response has nowhere to go.
+    // included. BandChatPanel clears on unmount, which is the one moment a response has nowhere to go.
     loadToken += 1
     openBandSpaceId.value = null
     messages.value = []

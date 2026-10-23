@@ -172,19 +172,21 @@ import ChatComposerAttachments from './ChatComposerAttachments.vue'
 const props = defineProps({
   members: { type: Array, default: () => [] },
   /**
-   * Where the message goes, supplied by the parent rather than reached for here (#994): the band
-   * space tab sends through its own store, the inbox through the one holding the open conversation.
-   * Both end at the same endpoint, and the editor below does not need to know which.
+   * Where the message goes, supplied by the parent rather than reached for here: a band's chat sends
+   * through the band store, a direct conversation through the message store (#1244).
    */
   sendMessage: { type: Function, required: true },
   isSending: { type: Boolean, default: false },
   /**
    * Which space the picker searches, and by its presence whether there is a picker at all (#971).
-   * The inbox renders a channel through this same composer and even reaches the same endpoint, but
-   * `Thread.vue` draws no attachment card, so a member picking one there would see nothing come of
-   * it. It leaves this out until that half exists.
+   * A direct conversation has none, and no image or voice note either until #1247.
    */
-  bandSpaceId: { type: String, default: null }
+  bandSpaceId: { type: String, default: null },
+  /**
+   * Off in a direct conversation (#1244): two people and nobody to mention, and the server leaves an
+   * `@` there as plain text.
+   */
+  mentions: { type: Boolean, default: true }
 })
 
 const emit = defineEmits(['sent', 'typing'])
@@ -227,7 +229,7 @@ const recorder = useVoiceRecorder({ onLimitReached: sendVoiceNote })
 const canRecord = computed(() => canAttach.value && recorder.isSupported.value)
 const pickedIds = computed(() => draftIdentifiers(attachments.value))
 
-const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
+const suggestionSource = computed(() => (props.mentions ? [EVERYONE_MEMBER, ...props.members] : []))
 
 /**
  * The single way into the draft, whatever found the object. The picker refuses a duplicate and a

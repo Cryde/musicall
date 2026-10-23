@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
-import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { CHAT_TESTER_ONLY } from '../../constants/bandSpace.js'
@@ -104,69 +103,25 @@ export const useMessageStore = defineStore('message', () => {
     currentThreadId.value = threadMeta.thread.id
     currentThreadMetaId.value = threadMeta.id
 
+    // A channel is shown by the band chat itself (#1244), which loads it and marks it read; the row
+    // only has to stop showing a count for it.
+    if (isChannel(threadMeta)) {
+      // A direct conversation still loading must not land in here once the channel is open.
+      ++messagesRequestId
+      messages.value = []
+      totalMessages.value = 0
+      loadOlderError.value = null
+      isLoadingMessages.value = false
+      threadMeta.unread_count = 0
+      return
+    }
+
     await loadMessages(threadMeta.thread.id)
 
     // Mark as read if anything is unread. Still driven by arriving on the thread rather than by
     // scrolling to the new message, which is what it did before the count replaced the boolean (#954).
     if (threadMeta.unread_count > 0) {
       await markAsRead(threadMeta.id)
-    }
-  }
-
-  /**
-   * One page of a conversation, from whichever API owns it (#994).
-   *
-   * A channel is read and written through the Band Space chat endpoints, never through
-   * `/api/messages`. That route's access check knows about participant rows only, which a channel
-   * has none of, and widening it would also put the write outside the directory
-   * BandSpaceWriteGuardCoverageTest globs, so a space in its deletion grace period would start
-   * accepting messages with no test noticing.
-   */
-  async function fetchConversationPage(threadId, page) {
-    const bandSpaceId = bandSpaceIdFor(threadId)
-    if (!bandSpaceId) {
-      return messageApi.getMessages({ threadId, page })
-    }
-
-    const response = await bandSpaceChatApi.getMessages(bandSpaceId, { page })
-
-    return { ...response, member: (response.member || []).map(asThreadMessage) }
-  }
-
-  /** The space a conversation belongs to, or null when it is a direct message. */
-  function bandSpaceIdFor(threadId) {
-    return threads.value.find((t) => t.thread.id === threadId)?.thread?.band_space_id ?? null
-  }
-
-  /**
-   * A chat message in the shape this pane reads.
-   *
-   * The two DTOs describe the same `Message` row and differ only in how they carry the author: the
-   * chat flattens it because its own list draws an avatar per bubble, the inbox nests it like every
-   * other message. Adapting once here is what keeps `author_username ?? author.username` out of the
-   * component, the merge helper and the unread logic.
-   *
-   * `author_username` already reads the closed account label, in the page's locale, when the account is
-   * gone, substituted by ChatMessageBuilder, so there is no deletion date left to carry.
-   *
-   * The id has to come across too: grouping keys on it (#1031), and leaving it out made every
-   * consecutive message in a channel look like one author.
-   *
-   * `is_deleted` likewise, because a deleted message arrives with an empty content (#967) and this
-   * pane would otherwise draw an empty bubble where the chat tab draws a tombstone.
-   */
-  function asThreadMessage(chatMessage) {
-    return {
-      '@id': chatMessage['@id'],
-      id: chatMessage.id,
-      content: chatMessage.content,
-      creation_datetime: chatMessage.creation_datetime,
-      is_deleted: chatMessage.is_deleted ?? false,
-      author: {
-        id: chatMessage.author_id,
-        username: chatMessage.author_username,
-        display_name: chatMessage.author_display_name
-      }
     }
   }
 
@@ -177,7 +132,7 @@ export const useMessageStore = defineStore('message', () => {
       isLoadingMessages.value = true
     }
     try {
-      const response = await fetchConversationPage(threadId)
+      const response = await messageApi.getMessages({ threadId })
       if (currentRequestId !== messagesRequestId) return
       // Reverse to show oldest first
       const newest = (response.member || []).reverse()
@@ -219,10 +174,10 @@ export const useMessageStore = defineStore('message', () => {
     isLoadingOlderMessages.value = true
     loadOlderError.value = null
     try {
-      const response = await fetchConversationPage(
+      const response = await messageApi.getMessages({
         threadId,
-        nextOlderPageToLoad(messages.value.length)
-      )
+        page: nextOlderPageToLoad(messages.value.length)
+      })
       if (currentRequestId !== messagesRequestId || threadId !== currentThreadId.value) return
       messages.value = mergeMessages(messages.value, (response.member || []).reverse())
       totalMessages.value = response.totalItems ?? totalMessages.value
@@ -234,12 +189,7 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  /**
-   * One PATCH per conversation, a channel included: the processor behind it only checks that the meta
-   * row belongs to the caller, and the sidebar's per-band badge reads that same `lastReadDatetime`,
-   * so it follows with no second call. `POST /chat/read` would also work today and marks every
-   * channel in the space at once, which is where the two stop agreeing at #1013.
-   */
+  /** A direct conversation only: a channel is marked read by the band chat that shows it (#1244). */
   async function markAsRead(threadMetaId) {
     try {
       await messageApi.markThreadAsRead({ threadMetaId })
@@ -271,12 +221,9 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   async function postMessageInThread({ threadId, content }) {
-    const bandSpaceId = bandSpaceIdFor(threadId)
     isAddingMessage.value = true
     try {
-      const newMessage = bandSpaceId
-        ? asThreadMessage(await bandSpaceChatApi.postMessage(bandSpaceId, content))
-        : await messageApi.postMessageInThread({ threadId, content })
+      const newMessage = await messageApi.postMessageInThread({ threadId, content })
       typingNotifier.reset()
       // The signal for this very message can arrive before this promise resolves, because the server
       // publishes inside the send and answers afterwards. That refetch has already put the message in
@@ -286,19 +233,9 @@ export const useMessageStore = defineStore('message', () => {
       }
 
       const thread = threads.value.find((t) => t.thread.id === threadId)
-      if (!thread) {
-        return
+      if (thread) {
+        thread.thread.last_message = newMessage
       }
-
-      // A chat message carries no preview, so pinning it on the row would blank that row's last line
-      // until the next load. One silent refresh of the list is cheaper and more honest than teaching
-      // the client to render a preview out of the HTML it was handed.
-      if (bandSpaceId) {
-        loadThreads({ silent: true })
-
-        return
-      }
-      thread.thread.last_message = newMessage
     } finally {
       isAddingMessage.value = false
     }
@@ -338,6 +275,15 @@ export const useMessageStore = defineStore('message', () => {
     if (!plan.refreshOpenThread) {
       return
     }
+
+    // An open channel is the band chat's to refetch and mark read (#1244). The row only follows it,
+    // here rather than after that read lands, or the count just fetched would show for a moment.
+    const openThread = threads.value.find((t) => t.thread.id === openThreadId)
+    if (isChannel(openThread)) {
+      if (plan.markRead) openThread.unread_count = 0
+      return
+    }
+
     await loadMessages(openThreadId, { silent: true })
     // Their message has landed, so they are no longer writing it. Not on a reconnect, which resyncs
     // the same newest message and would hide somebody still writing the next one.
@@ -365,12 +311,11 @@ export const useMessageStore = defineStore('message', () => {
     if (threadId && threadId === currentThreadId.value) typists.seen(userId)
   }
 
-  // Best effort: a lost signal only means nobody sees « écrit… » for three seconds. A channel opened
-  // here has its own endpoint, keyed by space, and is left out.
+  // Best effort: a lost signal only means nobody sees « écrit… » for three seconds.
   const typingNotifier = createTypingNotifier({
     send: () => {
       const threadId = currentThreadId.value
-      if (!threadId || bandSpaceIdFor(threadId)) return false
+      if (!threadId) return false
       messageApi.sendTyping(threadId).catch(() => {})
       return true
     }
