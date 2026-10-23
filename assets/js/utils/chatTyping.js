@@ -1,7 +1,9 @@
 import { i18n } from '../i18n/index.js'
+import { browserTimers } from './browserTimers.js'
 
 /**
- * « X écrit… » (#1040), kept out of the store and the composer so each rule is pinned by a test.
+ * « X écrit… » (#1040), kept out of the stores and the composers so each rule is pinned by a test. The
+ * band chat and a direct conversation (#1242) share all of it but the names.
  */
 
 /** How often a member's browser says it is still typing, at most. */
@@ -38,21 +40,45 @@ export function createTypingNotifier({
   }
 }
 
-/** The typists with this one seen now: a plain object from user id to when they stop showing. */
-export function withTypist(typists, userId, now, ttlMs = TYPIST_TTL_MS) {
-  return { ...typists, [userId]: now + ttlMs }
-}
+/**
+ * Who is writing, in the order they started (#1040, #1242). Each typist fades on their own timer, since
+ * nothing ever says « stopped », and goes at once when `forget` is told their message landed.
+ * `onChange` hears the new list on every change.
+ */
+export function createTypistTracker({ onChange, ttlMs = TYPIST_TTL_MS, timers = browserTimers() }) {
+  // Insertion ordered, so a typist who keeps typing keeps their place.
+  const fades = new Map()
 
-export function withoutTypist(typists, userId) {
-  const { [userId]: _gone, ...rest } = typists
-  return rest
-}
+  function publish() {
+    onChange([...fades.keys()])
+  }
 
-/** Who is still typing, in the order they started. */
-export function activeTypists(typists, now) {
-  return Object.entries(typists)
-    .filter(([, until]) => until > now)
-    .map(([userId]) => userId)
+  return {
+    seen(userId) {
+      const isNew = !fades.has(userId)
+      if (!isNew) timers.clear(fades.get(userId))
+      fades.set(
+        userId,
+        timers.set(() => {
+          fades.delete(userId)
+          publish()
+        }, ttlMs)
+      )
+      if (isNew) publish()
+    },
+    forget(userId) {
+      if (!fades.has(userId)) return
+      timers.clear(fades.get(userId))
+      fades.delete(userId)
+      publish()
+    },
+    clear() {
+      if (fades.size === 0) return
+      for (const fade of fades.values()) timers.clear(fade)
+      fades.clear()
+      publish()
+    }
+  }
 }
 
 /** How the chat names members, typists or online, from the band's roster; somebody not on it yet is « Un membre ». */
@@ -67,9 +93,9 @@ export function memberNames(userIds, members) {
 /** Named up to two, counted past that. */
 export function typingSentence(names) {
   if (names.length === 0) return ''
-  if (names.length === 1) return i18n.global.t('band_space_chat.typing.one', { name: names[0] })
+  if (names.length === 1) return i18n.global.t('shared.typing.one', { name: names[0] })
   if (names.length === 2) {
-    return i18n.global.t('band_space_chat.typing.two', { first: names[0], second: names[1] })
+    return i18n.global.t('shared.typing.two', { first: names[0], second: names[1] })
   }
-  return i18n.global.t('band_space_chat.typing.many', { count: names.length })
+  return i18n.global.t('shared.typing.many', { count: names.length })
 }

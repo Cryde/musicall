@@ -15,6 +15,7 @@
  * @param {(bandSpaceId: string) => unknown} handlers.chatRead
  * @param {(change: {bandSpaceId: string, messageId: string, change: string}) => unknown} handlers.chatMessageChanged
  * @param {(typing: {bandSpaceId: string, userId: string}) => unknown} handlers.chatTyping
+ * @param {(typing: {threadId: string, userId: string}) => unknown} handlers.inboxTyping
  * @param {(bandSpaceId: string) => unknown} handlers.chatPresence
  * @param {(change: {bandSpaceId: string, module: string} | null) => unknown} handlers.bandSpaceChanged
  */
@@ -55,6 +56,10 @@ export function routeLiveSignal(payload, handlers) {
   }
   if (type === 'band_space_typing' && payload.band_space_id && payload.user_id) {
     handlers.chatTyping({ bandSpaceId: payload.band_space_id, userId: payload.user_id })
+  }
+  // The same for a direct conversation (#1242), which only the inbox shows.
+  if (type === 'message_typing' && payload.thread_id && payload.user_id) {
+    handlers.inboxTyping({ threadId: payload.thread_id, userId: payload.user_id })
   }
   // A module of a space changed (#1102, #1157): the screen showing it refetches. A reconnect reaches
   // every screen, since whatever was published while we were down is gone.

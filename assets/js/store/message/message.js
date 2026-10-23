@@ -5,6 +5,7 @@ import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { CHAT_TESTER_ONLY } from '../../constants/bandSpace.js'
 import { i18n } from '../../i18n/index.js'
+import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
 import { isChannel } from '../../utils/conversationIdentity.js'
 import {
   hasOlderToLoad,
@@ -99,6 +100,7 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   async function selectThread(threadMeta) {
+    if (threadMeta.thread.id !== currentThreadId.value) forgetTyping()
     currentThreadId.value = threadMeta.thread.id
     currentThreadMetaId.value = threadMeta.id
 
@@ -275,6 +277,7 @@ export const useMessageStore = defineStore('message', () => {
       const newMessage = bandSpaceId
         ? asThreadMessage(await bandSpaceChatApi.postMessage(bandSpaceId, content))
         : await messageApi.postMessageInThread({ threadId, content })
+      typingNotifier.reset()
       // The signal for this very message can arrive before this promise resolves, because the server
       // publishes inside the send and answers afterwards. That refetch has already put the message in
       // the list, so pushing it again would show it twice.
@@ -336,6 +339,9 @@ export const useMessageStore = defineStore('message', () => {
       return
     }
     await loadMessages(openThreadId, { silent: true })
+    // Their message has landed, so they are no longer writing it. Not on a reconnect, which resyncs
+    // the same newest message and would hide somebody still writing the next one.
+    if (threadId !== null) typists.forget(messages.value.at(-1)?.author?.id)
 
     const threadMeta = plan.markRead
       ? threads.value.find((t) => t.thread.id === openThreadId)
@@ -345,7 +351,42 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
+  // --- « X écrit… » in a direct conversation (#1242) ------------------------------------------------
+
+  // The other participant while they write, as a list so the band chat's line reads it unchanged.
+  const currentTypists = ref([])
+  const typists = createTypistTracker({
+    onChange: (userIds) => {
+      currentTypists.value = userIds
+    }
+  })
+
+  function handleTyping({ threadId, userId }) {
+    if (threadId && threadId === currentThreadId.value) typists.seen(userId)
+  }
+
+  // Best effort: a lost signal only means nobody sees « écrit… » for three seconds. A channel opened
+  // here has its own endpoint, keyed by space, and is left out.
+  const typingNotifier = createTypingNotifier({
+    send: () => {
+      const threadId = currentThreadId.value
+      if (!threadId || bandSpaceIdFor(threadId)) return false
+      messageApi.sendTyping(threadId).catch(() => {})
+      return true
+    }
+  })
+
+  function notifyTyping() {
+    typingNotifier.notify()
+  }
+
+  function forgetTyping() {
+    typists.clear()
+    typingNotifier.reset()
+  }
+
   function clearCurrentThread() {
+    forgetTyping()
     currentThreadId.value = null
     currentThreadMetaId.value = null
     messages.value = []
@@ -354,6 +395,7 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   function reset() {
+    forgetTyping()
     threads.value = []
     messages.value = []
     currentThreadId.value = null
@@ -381,6 +423,9 @@ export const useMessageStore = defineStore('message', () => {
     postMessageInThread,
     loadOlderMessages,
     handleIncomingMessage,
+    handleTyping,
+    notifyTyping,
+    currentTypists: readonly(currentTypists),
     getOtherParticipant,
     clearCurrentThread,
     reset

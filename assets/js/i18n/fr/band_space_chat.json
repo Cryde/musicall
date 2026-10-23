@@ -43,9 +43,6 @@
     "many": "Vu par {names} et {count} autres"
   },
   "typing": {
-    "one": "{name} écrit…",
-    "two": "{first} et {second} écrivent…",
-    "many": "{count} personnes écrivent…",
     "unknown_member": "Un membre"
   },
   "pin": {

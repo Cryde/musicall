@@ -65,6 +65,11 @@ export default {
       .then((resp) => resp.data)
   },
 
+  /** « I am writing » in a direct conversation (#1242). Nothing is stored, so nothing comes back. */
+  sendTyping(threadId) {
+    return axios.post(Routing.generate('api_message_thread_typing', { threadId }))
+  },
+
   /**
    * Mark a thread as read
    */
