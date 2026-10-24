@@ -59,19 +59,18 @@ import Popover from 'primevue/popover'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CHAT_REACTIONS, chatReactionLabel } from '../../../constants/chatReactions.js'
-import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { hasReacted } from '../../../utils/chatReactionToggle.js'
 
 const props = defineProps({
-  bandSpaceId: { type: String, required: true },
-  messageId: { type: String, required: true },
   reactions: { type: Array, default: () => [] },
   /** A message of the viewer's own sits on the right, so its reactions line up under it. */
   alignEnd: { type: Boolean, default: false }
 })
 
+// The conversation that owns the message decides what a toggle calls.
+const emit = defineEmits(['toggle'])
+
 const { t } = useI18n()
-const chatStore = useBandSpaceChatStore()
 const pickerRef = ref(null)
 const isPickerOpen = ref(false)
 
@@ -96,7 +95,7 @@ function handleOpenPicker(event) {
 }
 
 function handleToggle(emojiKey) {
-  chatStore.toggleReaction(props.bandSpaceId, props.messageId, emojiKey)
+  emit('toggle', emojiKey)
 }
 
 function handlePick(emojiKey) {

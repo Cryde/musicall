@@ -64,189 +64,118 @@
       />
     </div>
 
-    <!-- Messages area -->
-    <div
-      ref="messagesContainer"
-      class="flex-1 overflow-y-auto p-4 space-y-4"
-    >
-      <ProgressSpinner
-        v-if="messageStore.isLoadingMessages"
-        class="flex justify-center"
-      />
-
-      <template v-else>
-        <div
-          v-if="messageStore.hasOlderMessages"
-          class="flex justify-center"
-        >
-          <Button
-            :label="t('message.thread.load_older')"
-            severity="secondary"
-            outlined
-            size="small"
-            :loading="messageStore.isLoadingOlderMessages"
-            @click="handleLoadOlder"
-          />
-        </div>
-        <Message
-          v-if="messageStore.loadOlderError"
-          severity="error"
-          :closable="false"
-        >
-          {{ messageStore.loadOlderError }}
-        </Message>
-
-        <!-- One block per burst (#1031). The bubbles keep their shape; what stops repeating is the
-             name, which only the first of a block carries, and the time, which only the last does. -->
-        <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
-        <!-- Dated only when the conversation resumes after a silence, so a busy exchange is marked
-             once at its start rather than every time the speaker changes. -->
-        <p
-          v-if="needsTimeSeparator(messageBlocks[blockIndex - 1], block)"
-          class="mb-2 text-center text-xs text-surface-500 dark:text-surface-400"
-        >
-          <time :datetime="block.messages[0].creation_datetime">
-            {{ absoluteDate(block.messages[0].creation_datetime) }}
-          </time>
-        </p>
-
-        <div
-          class="flex flex-col gap-1"
-          :class="{ 'items-end': isSender(block.messages[0]) }"
-        >
-          <div
-            v-for="(message, index) in block.messages"
-            :key="message['@id']"
-            class="flex max-w-[85%] flex-col"
-          >
-            <ContactOrigin
-              v-if="message.contact_origin"
-              :origin="message.contact_origin"
-              class="mt-2 mb-1"
-              :class="isSender(message) ? 'self-end' : 'self-start'"
-            />
-            <div
-              class="group/message flex items-center gap-2"
-              :class="isSender(message) ? 'flex-row-reverse' : 'flex-row'"
-            >
-              <div
-                class="rounded-2xl px-4 py-2"
-                :class="[
-                  message.is_deleted
-                    ? 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300'
-                    : isSender(message)
-                      ? 'bg-primary-700 text-white'
-                      : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0',
-                  bubbleCornerClasses(index, block.messages.length, isSender(message)),
-                ]"
-              >
-                <!-- A channel has many authors, so a bubble that is not yours has to say whose it is.
-                     A direct message has exactly one other author and the header already names them. -->
-                <div
-                  v-if="isCurrentChannel && !isSender(message) && index === 0"
-                  class="text-xs font-semibold mb-1 opacity-80"
-                >
-                  {{ message.author?.display_name ?? message.author?.username }}
-                </div>
-                <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
-                     inbox has to say so too rather than draw an empty bubble. A direct message carries no
-                     such flag: there is no endpoint that deletes one. -->
-                <p v-if="message.is_deleted" class="text-sm italic">{{ t('message.thread.deleted') }}</p>
-                <!-- Sent for its attachments alone (#971). This pane draws no attachment card, so it
-                     names what is there rather than drawing an empty bubble. -->
-                <p v-else-if="message.content === ''" class="text-sm italic opacity-80">{{ t('message.thread.attachment') }}</p>
-                <div
-                  v-else
-                  class="text-sm break-words"
-                  :class="isSender(message)
-                    ? '[&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
-                    : '[&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'"
-                  v-html="autoLink(message.content)"
-                />
-              </div>
-              <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
-                   or not there is a pointer to hover with. -->
-              <time
-                :datetime="message.creation_datetime"
-                class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
-              >
-                {{ absoluteDate(message.creation_datetime) }}
-              </time>
-              <!-- Revealed on hover from `lg` up only, so a touch screen can still reach it. -->
-              <button
-                v-if="!isSender(message) && !message.is_deleted"
-                type="button"
-                class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
-                :aria-label="t('message.thread.report')"
-                @click="openReport(message)"
-              >
-                <i class="pi pi-flag text-xs" aria-hidden="true" />
-              </button>
-            </div>
-            <!-- A sibling of the bubble, never markup injected into its `v-html`: the preview is
-                 built by the client from the link, not sent by the server (#975). -->
-            <MusicLinkPreview :content="message.content" :align-end="isSender(message)" />
-          </div>
-        </div>
-        </template>
-
-        <!-- Under your newest message only, once the other person has seen it (#1243). Once they reply,
-             their answer says it better. -->
-        <p v-if="isNewestSeen" class="-mt-3 text-right text-xs text-surface-500 dark:text-surface-400">
-          {{ t('message.thread.seen') }}
-        </p>
-      </template>
-    </div>
-
-    <!-- Empty for a channel opened here, which has its own typing signal. -->
-    <ChatTypingLine :names="typistNames" />
-
-    <!-- The band space tab's composer, so a mention is chipped and sent in the same `@[uuid]` format
-         from either place. It carries its own border and padding, hence sitting outside the block. -->
-    <ChatComposer
+    <!-- A channel is the band chat itself (#1244): reactions, media, « Vu par », typing, all of it,
+         read and written exactly as on the Band Space tab. -->
+    <BandChatPanel
       v-if="isCurrentChannel"
-      :members="settingsStore.members"
-      :send-message="sendToChannel"
-      :is-sending="messageStore.isAddingMessage"
-      @sent="scrollToBottom"
+      :key="currentThread.thread.band_space_id"
+      :band-space-id="currentThread.thread.band_space_id"
+      class="flex-1"
     />
 
-    <!-- Message input -->
-    <div v-else class="border-t border-surface-200 dark:border-surface-700 p-4">
-      <p v-if="isRecipientDeleted" class="text-sm text-surface-500 dark:text-surface-400 text-center">
+    <template v-else>
+      <!-- Messages area -->
+      <div
+        ref="messagesContainer"
+        class="@container flex-1 overflow-y-auto p-4 space-y-4"
+      >
+        <ProgressSpinner
+          v-if="messageStore.isLoadingMessages"
+          class="flex justify-center"
+        />
+
+        <template v-else>
+          <div
+            v-if="messageStore.hasOlderMessages"
+            class="flex justify-center"
+          >
+            <Button
+              :label="t('message.thread.load_older')"
+              severity="secondary"
+              outlined
+              size="small"
+              :loading="messageStore.isLoadingOlderMessages"
+              @click="handleLoadOlder"
+            />
+          </div>
+          <Message
+            v-if="messageStore.loadOlderError"
+            severity="error"
+            :closable="false"
+          >
+            {{ messageStore.loadOlderError }}
+          </Message>
+
+          <!-- One block per burst (#1031): consecutive messages from one side share their corners. -->
+          <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
+          <!-- Dated only when the conversation resumes after a silence, so a busy exchange is marked
+               once at its start rather than every time the speaker changes. -->
+          <p
+            v-if="needsTimeSeparator(messageBlocks[blockIndex - 1], block)"
+            class="mb-2 text-center text-xs text-surface-500 dark:text-surface-400"
+          >
+            <time :datetime="block.messages[0].creation_datetime">
+              {{ absoluteDate(block.messages[0].creation_datetime) }}
+            </time>
+          </p>
+
+          <div
+            class="flex flex-col gap-1"
+            :class="{ 'items-end': isSender(block.messages[0]) }"
+          >
+            <div
+              v-for="(message, index) in block.messages"
+              :key="message['@id']"
+              class="group/message flex max-w-[85%] flex-col"
+            >
+              <ContactOrigin
+                v-if="message.contact_origin"
+                :origin="message.contact_origin"
+                class="mt-2 mb-1"
+                :class="isSender(message) ? 'self-end' : 'self-start'"
+              />
+              <!-- The band chat's bubble (#1244). Reporting is all a direct message offers until it can
+                   be edited, deleted and reacted to (#1245). -->
+              <ChatMessageBubble
+                :message="message"
+                :is-mine="isSender(message)"
+                :corner-classes="bubbleCornerClasses(index, block.messages.length, isSender(message))"
+                can-report
+                @report="openReport(message)"
+              />
+            </div>
+          </div>
+          </template>
+
+          <!-- Under your newest message only, once the other person has seen it (#1243). Once they reply,
+               their answer says it better. -->
+          <p v-if="isNewestSeen" class="-mt-3 text-right text-xs text-surface-500 dark:text-surface-400">
+            {{ t('message.thread.seen') }}
+          </p>
+        </template>
+      </div>
+
+      <ChatTypingLine :names="typistNames" />
+
+      <p
+        v-if="isRecipientDeleted"
+        class="m-0 border-t border-surface-200 p-4 text-center text-sm text-surface-500 dark:border-surface-700 dark:text-surface-400"
+      >
         {{ t('message.thread.recipient_deleted') }}
       </p>
-      <template v-else>
-        <Message v-if="sendError" severity="error" :closable="true" class="mb-2" @close="sendError = ''">
-          {{ sendError }}
-        </Message>
-        <div class="flex gap-2">
-        <Textarea
-          ref="messageInput"
-          v-model="content"
-          :disabled="messageStore.isAddingMessage"
-          :placeholder="t('message.thread.placeholder')"
-          rows="2"
-          class="flex-1"
-          @keydown.enter.exact.prevent="send"
-          @input="handleInput"
-        />
-        <Button
-          icon="pi pi-send"
-          :aria-label="t('message.thread.send')"
-          :loading="messageStore.isAddingMessage"
-          :disabled="!content.trim() || messageStore.isAddingMessage"
-          @click="send"
-        />
-        </div>
-      </template>
-    </div>
+      <!-- The band chat's composer with nobody to mention: Enter sends, and the server's own sentence
+           shows when it refuses, a block from either side included. -->
+      <ChatComposer
+        v-else
+        :mentions="false"
+        :send-message="sendToThread"
+        :is-sending="messageStore.isAddingMessage"
+        @sent="scrollToBottom"
+        @typing="messageStore.notifyTyping()"
+      />
 
-    <ReportDialog
-      v-model:visible="isReportVisible"
-      :target-type="isCurrentChannel ? 'band_chat_message' : 'message'"
-      :target-id="reportedMessageId"
-    />
+      <ReportDialog v-model:visible="isReportVisible" target-type="message" :target-id="reportedMessageId" />
+    </template>
   </div>
 
   <div v-else class="hidden md:flex h-full items-center justify-center text-surface-500 dark:text-surface-400 p-4 text-center">
@@ -263,18 +192,18 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { handleApiError } from '../../api/utils/handleApiError.js'
+import BandChatPanel from '../../components/BandSpace/Chat/BandChatPanel.vue'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
+import ChatMessageBubble from '../../components/BandSpace/Chat/ChatMessageBubble.vue'
 import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
-import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import { autoLink } from '../../utils/autoLink.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
@@ -284,7 +213,6 @@ import ReportDialog from '../Report/ReportDialog.vue'
 import BlockUserButton from '../User/Block/BlockUserButton.vue'
 import UserName from '../User/UserName.vue'
 import ContactOrigin from './ContactOrigin.vue'
-import MusicLinkPreview from './MusicLinkPreview.vue'
 
 const emit = defineEmits(['back'])
 
@@ -292,14 +220,7 @@ const { t } = useI18n()
 const messageStore = useMessageStore()
 const securityStore = useUserSecurityStore()
 const notificationStore = useNotificationStore()
-// The roster the `@` dropdown filters, from the store the band space tab already fills. It is loaded
-// per conversation below rather than once, because switching channel here means switching band.
-const settingsStore = useBandSpaceSettingsStore()
-
-const content = ref('')
 const messagesContainer = ref(null)
-const messageInput = ref(null)
-const sendError = ref('')
 const isReportVisible = ref(false)
 const reportedMessageId = ref(null)
 
@@ -330,11 +251,6 @@ const isNewestSeen = computed(() => {
   return !!newest && isSender(newest) && newest.is_seen === true
 })
 
-// Whitespace is not writing anything yet.
-function handleInput() {
-  if (content.value.trim() !== '') messageStore.notifyTyping()
-}
-
 // The conversation leaves the inbox and its badge once blocked (#1117), so both are reloaded and the
 // pane closes with it. « Débloquer » stays on the profile and in the privacy settings.
 function handleBlocked() {
@@ -353,33 +269,14 @@ function openReport(message) {
   isReportVisible.value = true
 }
 
-function sendToChannel(content) {
-  return messageStore.postMessageInThread({ threadId: messageStore.currentThreadId, content })
-}
-
-async function send() {
-  if (!content.value.trim() || messageStore.isAddingMessage) return
-
-  sendError.value = ''
+/** Normalised so the composer shows the server's own sentence, or its rate limit wording on a 429. */
+async function sendToThread(content) {
   try {
-    await messageStore.postMessageInThread({
-      threadId: messageStore.currentThreadId,
-      content: content.value
-    })
-    trackUmamiEvent('message-send')
-    content.value = ''
-    scrollToBottom()
-    nextTick(() => messageInput.value?.$el?.focus())
+    await messageStore.postMessageInThread({ threadId: messageStore.currentThreadId, content })
   } catch (e) {
-    if (e.response?.status === 429) {
-      sendError.value = t('message.error.too_many_messages')
-    } else if (e.response?.status === 403 && e.response.data?.detail) {
-      // A block, from either side: the server says which conversation is closed, never by whom.
-      sendError.value = e.response.data.detail
-    } else {
-      console.error('Failed to send message:', e)
-    }
+    handleApiError(e)
   }
+  trackUmamiEvent('message-send')
 }
 
 function scrollToBottom() {
@@ -442,13 +339,6 @@ watch(
   () => messageStore.currentThreadId,
   () => {
     lastTailIri = null
-    // The roster belongs to the band this conversation is in, so it follows the conversation. Not
-    // awaited: a dropdown that is not usable for another moment costs nobody the message they came
-    // to read, the same call the band space tab makes on mount.
-    const bandSpaceId = currentThread.value?.thread?.band_space_id
-    if (bandSpaceId) {
-      settingsStore.loadMembers(bandSpaceId).catch(() => {})
-    }
   }
 )
 watch(

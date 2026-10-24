@@ -22,12 +22,7 @@
   "thread": {
     "load_older": "Load older messages",
     "load_older_error": "Could not load older messages.",
-    "deleted": "Message deleted",
-    "attachment": "Attachment",
-    "report": "Report this message",
     "recipient_deleted": "You can no longer send messages to this user.",
-    "placeholder": "Your message...",
-    "send": "Send message",
     "none_selected": "Select a conversation or send a new message.",
     "seen": "Seen"
   },

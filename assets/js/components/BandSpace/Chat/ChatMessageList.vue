@@ -1,7 +1,7 @@
 <template>
   <div
     ref="messagesContainer"
-    class="flex-1 overflow-y-auto p-4 space-y-4"
+    class="@container flex-1 overflow-y-auto p-4 space-y-4"
     role="log"
     :aria-label="t('band_space_chat.message_list.label')"
   >
@@ -73,13 +73,30 @@
             class="group/message rounded-2xl transition-shadow duration-300"
             :class="{ 'ring-2 ring-primary-500': highlightedMessageId === message.id }"
           >
-            <div
-              class="flex items-center gap-2"
-              :class="isMine(message) ? 'flex-row-reverse' : 'flex-row'"
+            <ChatMessageBubble
+              :message="message"
+              :is-mine="isMine(message)"
+              :corner-classes="bubbleCornerClasses(index, block.messages.length, isMine(message))"
+              :is-editing="editingId === message.id"
+              :image-src="message.image ? bandSpaceChatApi.imageUrl(bandSpaceId, message.image.file_id) : null"
+              :load-voice-note="loadVoiceNote"
+              reactable
+              can-pin
+              :is-pin-pending="chatPin.isPending(message)"
+              :pin-label="chatPin.actionLabel(message)"
+              can-create-task
+              :is-task-pending="chatStore.pendingTaskMessageId === message.id"
+              can-report
+              :can-edit="canEdit(message)"
+              :can-delete="canDelete(message)"
+              @pin="chatPin.togglePin(message)"
+              @create-task="handleCreateTask(message)"
+              @report="openReport(message)"
+              @edit="startEdit(message)"
+              @delete="confirmDelete(message)"
+              @react="(emojiKey) => chatStore.toggleReaction(bandSpaceId, message.id, emojiKey)"
             >
-              <!-- Editing happens where the bubble is, so the conversation keeps its shape around it
-                   and there is no dialog to lose your place in (#966). -->
-              <div v-if="editingId === message.id" class="min-w-0 flex-1 text-left">
+              <div class="min-w-0 flex-1 text-left">
                 <MentionEditor
                   ref="editor"
                   v-model="editContent"
@@ -113,147 +130,15 @@
                   />
                 </div>
               </div>
-
-              <template v-else>
-                <!-- A tombstone keeps its place in the block, muted and never coloured by side: what
-                     is left is the fact that somebody wrote here, not the message (#967). -->
-                <div
-                  v-if="message.is_deleted"
-                  class="inline-block rounded-2xl bg-surface-100 px-4 py-2 text-sm italic text-surface-600 dark:bg-surface-800 dark:text-surface-300"
-                  :class="bubbleCornerClasses(index, block.messages.length, isMine(message))"
-                >
-                  {{ t('band_space_chat.message_list.deleted') }}
-                </div>
-                <div
-                  v-else
-                  class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
-                  :class="[
-                    isMine(message)
-                      ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
-                      : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
-                    bubbleCornerClasses(index, block.messages.length, isMine(message)),
-                  ]"
-                >
-                  <ChatMessageImage
-                    v-if="message.image"
-                    :image="message.image"
-                    :band-space-id="bandSpaceId"
-                  />
-                  <ChatMessageVoiceNote
-                    v-if="message.voice_note"
-                    :voice-note="message.voice_note"
-                    :band-space-id="bandSpaceId"
-                  />
-                  <!-- An attachment-only message has no text (#971), and an empty line here would pad the
-                       bubble above its cards. -->
-                  <div v-if="message.content" v-html="autoLink(message.content)" />
-                  <ChatMessageAttachments
-                    v-if="message.attachments?.length"
-                    :attachments="message.attachments"
-                    :band-space-id="bandSpaceId"
-                    :is-mine="isMine(message)"
-                  />
-                </div>
-                <div
-                  class="flex shrink-0 items-center gap-1"
-                  :class="{ 'flex-row-reverse': isMine(message) }"
-                >
-                  <!-- Shown without hovering, unlike the time beside it: that an edit happened is part
-                       of what the message says, not a detail you go looking for. -->
-                  <span
-                    v-if="message.update_datetime && !message.is_deleted"
-                    class="whitespace-nowrap text-[11px] italic text-surface-500 dark:text-surface-400"
-                  >
-                    {{ t('band_space_chat.message_list.edited') }}
-                  </span>
-                  <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
-                       or not there is a pointer to hover with. -->
-                  <time
-                    :datetime="message.creation_datetime"
-                    class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
-                  >
-                    {{ absoluteDate(message.creation_datetime) }}
-                  </time>
-                  <!-- Reserves its space like the time above, so the row never moves, but reveals at
-                       once rather than after a second: this one is there to be clicked. A pinned
-                       message keeps its marker visible, because the bar says what is pinned and this
-                       says which one. -->
-                  <button
-                    v-if="!message.is_deleted"
-                    type="button"
-                    class="shrink-0 rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 transition-opacity duration-150 hover:text-primary-700 focus-visible:opacity-100 disabled:opacity-50 group-hover/message:opacity-100 dark:bg-surface-700 dark:text-surface-300 dark:hover:text-primary-300"
-                    :class="message.is_pinned ? 'opacity-100' : 'opacity-0'"
-                    :disabled="chatPin.isPending(message)"
-                    :aria-label="chatPin.actionLabel(message)"
-                    @click="chatPin.togglePin(message)"
-                  >
-                    <i
-                      class="pi"
-                      :class="message.is_pinned ? 'pi-bookmark-fill' : 'pi-bookmark'"
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <!-- « Ça, c'est une tâche » (#979). Same treatment as the pencil and the bin beside
-                       it, and open to every member rather than to the author: the one who knows the
-                       XLR cable will be forgotten is rarely the one who mentioned it. -->
-                  <button
-                    v-if="!message.is_deleted"
-                    type="button"
-                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary disabled:opacity-50 dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
-                    :disabled="chatStore.pendingTaskMessageId === message.id"
-                    :aria-label="t('band_space_chat.message_list.create_task')"
-                    @click="handleCreateTask(message)"
-                  >
-                    <i class="pi pi-check-square text-xs" aria-hidden="true" />
-                  </button>
-                  <button
-                    v-if="!isMine(message) && !message.is_deleted"
-                    type="button"
-                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
-                    :aria-label="t('band_space_chat.message_list.report')"
-                    @click="openReport(message)"
-                  >
-                    <i class="pi pi-flag text-xs" aria-hidden="true" />
-                  </button>
-                  <!-- Hidden until hover only from `lg` up, the treatment the task thread already uses
-                       for its own row controls: a touch screen has no hover, so a pencil that only
-                       appears on one would be unreachable. Opacity rather than display, so revealing it
-                       shifts nothing, and on focus too, or a keyboard lands on a control nothing on
-                       screen explains. -->
-                  <button
-                    v-if="canEdit(message)"
-                    type="button"
-                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
-                    :aria-label="t('band_space_chat.message_list.edit')"
-                    @click="startEdit(message)"
-                  >
-                    <i class="pi pi-pencil text-xs" aria-hidden="true" />
-                  </button>
-                  <!-- Shown outright below `lg`, where there is no pointer to hover with, and only on
-                       hover or focus above it, the same rule TaskCommentList uses. -->
-                  <button
-                    v-if="canDelete(message)"
-                    type="button"
-                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-300 dark:hover:text-red-400"
-                    :aria-label="t('band_space_chat.message_list.delete')"
-                    @click="confirmDelete(message)"
-                  >
-                    <i class="pi pi-trash text-xs" aria-hidden="true" />
-                  </button>
-                </div>
+              <template #attachments>
+                <ChatMessageAttachments
+                  v-if="message.attachments?.length"
+                  :attachments="message.attachments"
+                  :band-space-id="bandSpaceId"
+                  :is-mine="isMine(message)"
+                />
               </template>
-            </div>
-
-            <!-- A sibling of the bubble, never markup injected into its `v-html`: the preview is
-                 built by the client from the link, not sent by the server (#975). -->
-            <MusicLinkPreview :content="message.content" :align-end="isMine(message)" />
-
-            <ChatMessageReactions
-              :band-space-id="bandSpaceId"
-              :message-id="message.id"
-              :reactions="message.reactions"
-              :align-end="isMine(message)"
-            />
+            </ChatMessageBubble>
           </div>
         </div>
       </div>
@@ -309,30 +194,29 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { useChatPin } from '../../../composables/useChatPin.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { autoLink } from '../../../utils/autoLink.js'
 import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
 import { readReceiptLabel } from '../../../utils/chatReadReceipt.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
-import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
 import ReportDialog from '../../Report/ReportDialog.vue'
 import UserName from '../../User/UserName.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
-import ChatMessageImage from './ChatMessageImage.vue'
-import ChatMessageReactions from './ChatMessageReactions.vue'
-import ChatMessageVoiceNote from './ChatMessageVoiceNote.vue'
+import ChatMessageBubble from './ChatMessageBubble.vue'
 import ChatPresenceAvatar from './ChatPresenceAvatar.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  /** The roster the `@` dropdown of an open edit box filters, supplied by the view that holds it. */
+  /**
+   * The active roster, supplied by the view that holds it: the `@` dropdown of an open edit box filters
+   * it, and the viewer's own row says whether they may delete other people's messages.
+   */
   members: { type: Array, default: () => [] }
 })
 
@@ -342,7 +226,13 @@ const chatPin = useChatPin(props.bandSpaceId)
 const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
 const toast = useToast()
-const { isAdmin } = useBandSpaceNavigation()
+// From the roster rather than the route: « Messages » shows this list with no space in its URL, and
+// the space list holding the role is only loaded by the band layout (#1244).
+const isAdmin = computed(() =>
+  props.members.some(
+    (member) => member.user_id === userSecurityStore.userProfile?.id && member.role === 'admin'
+  )
+)
 const messagesContainer = ref(null)
 const isReportVisible = ref(false)
 const reportedMessageId = ref(null)
@@ -374,6 +264,10 @@ const editingId = ref(null)
 const editContent = ref('')
 const isSaving = ref(false)
 const saveError = ref('')
+
+function loadVoiceNote(fileId) {
+  return bandSpaceChatApi.getVoiceNote(props.bandSpaceId, fileId)
+}
 
 function openReport(message) {
   reportedMessageId.value = message.id

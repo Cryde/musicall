@@ -55,7 +55,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { formatVoiceNoteDuration, voiceNoteEnvelopePath } from '../../../utils/chatVoiceNote.js'
 
 const ENVELOPE_WIDTH = 170
@@ -64,7 +63,8 @@ const ENVELOPE_HEIGHT = 34
 const props = defineProps({
   /** The `voice_note` of one ChatMessage, straight from the API. */
   voiceNote: { type: Object, required: true },
-  bandSpaceId: { type: String, required: true }
+  /** Fetches the recording as a blob, from whichever conversation owns it. */
+  fetchBlob: { type: Function, required: true }
 })
 
 const { t } = useI18n()
@@ -119,7 +119,7 @@ function load() {
 async function fetchAudio() {
   isLoading.value = true
   try {
-    const blob = await bandSpaceChatApi.getVoiceNote(props.bandSpaceId, props.voiceNote.file_id)
+    const blob = await props.fetchBlob(props.voiceNote.file_id)
     objectUrl = URL.createObjectURL(blob)
     audio = new Audio(objectUrl)
     audio.addEventListener('play', () => (isPlaying.value = true))
