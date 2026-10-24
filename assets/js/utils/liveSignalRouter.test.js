@@ -19,6 +19,7 @@ function route(payload) {
     chatTyping: record('chatTyping'),
     inboxTyping: record('inboxTyping'),
     inboxRead: record('inboxRead'),
+    inboxMessageChanged: record('inboxMessageChanged'),
     chatPresence: record('chatPresence'),
     bandSpaceChanged: record('bandSpaceChanged')
   })
@@ -95,6 +96,15 @@ describe('routeLiveSignal', () => {
       ['inboxRead', 'thread-1']
     ])
     assert.deepEqual(route({ type: 'message_read' }), [])
+  })
+
+  it('sends a changed direct message to the inbox and nowhere else', () => {
+    // Not inboxMessage: an edit or a reaction is not new content, so nothing is marked read.
+    assert.deepEqual(
+      route({ type: 'message_changed', thread_id: 'thread-1', message_id: 'm1', change: 'edit' }),
+      [['inboxMessageChanged', { threadId: 'thread-1', messageId: 'm1', change: 'edit' }]]
+    )
+    assert.deepEqual(route({ type: 'message_changed', thread_id: 'thread-1' }), [])
   })
 
   it('drops a chat read that names no space', () => {

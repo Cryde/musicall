@@ -105,6 +105,9 @@
           >
             {{ messageStore.loadOlderError }}
           </Message>
+          <Message v-if="messageStore.reactionError" severity="error" :closable="false">
+            {{ messageStore.reactionError }}
+          </Message>
 
           <!-- One block per burst (#1031): consecutive messages from one side share their corners. -->
           <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
@@ -134,15 +137,32 @@
                 class="mt-2 mb-1"
                 :class="isSender(message) ? 'self-end' : 'self-start'"
               />
-              <!-- The band chat's bubble (#1244). Reporting is all a direct message offers until it can
-                   be edited, deleted and reacted to (#1245). -->
+              <!-- The band chat's bubble (#1244), with its edit, delete and reactions (#1245). No admin
+                   here, so only the author deletes. -->
               <ChatMessageBubble
                 :message="message"
                 :is-mine="isSender(message)"
                 :corner-classes="bubbleCornerClasses(index, block.messages.length, isSender(message))"
+                :is-editing="editingId === message.id"
+                reactable
                 can-report
+                :can-edit="canEdit(message)"
+                :can-delete="canDeleteChatMessage(message, isSender(message), false)"
                 @report="openReport(message)"
-              />
+                @edit="startEdit(message)"
+                @delete="confirmDelete(message)"
+                @react="(emojiKey) => messageStore.toggleReaction(message.id, emojiKey)"
+              >
+                <!-- Nobody to mention in a conversation of two, so `@` stays plain text. -->
+                <ChatMessageEditBox
+                  v-model="editContent"
+                  :is-saving="isSaving"
+                  :error="saveError"
+                  :can-save="hasEditChanges"
+                  @save="saveEdit"
+                  @cancel="cancelEdit"
+                />
+              </ChatMessageBubble>
             </div>
           </div>
           </template>
@@ -198,17 +218,19 @@ import { handleApiError } from '../../api/utils/handleApiError.js'
 import BandChatPanel from '../../components/BandSpace/Chat/BandChatPanel.vue'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageBubble from '../../components/BandSpace/Chat/ChatMessageBubble.vue'
+import ChatMessageEditBox from '../../components/BandSpace/Chat/ChatMessageEditBox.vue'
 import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
+import { useChatMessageActions } from '../../composables/useChatMessageActions.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
+import { canDeleteChatMessage } from '../../utils/chatMessageActions.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
-import { idFromIri } from '../../utils/reportTarget.js'
 import ReportDialog from '../Report/ReportDialog.vue'
 import BlockUserButton from '../User/Block/BlockUserButton.vue'
 import UserName from '../User/UserName.vue'
@@ -263,11 +285,33 @@ function isSender(message) {
   return message.author?.username === securityStore.user?.username
 }
 
-// The list serializes a message by its IRI only, so the id is read off it.
 function openReport(message) {
-  reportedMessageId.value = message.id ?? idFromIri(message['@id'])
+  reportedMessageId.value = message.id
   isReportVisible.value = true
 }
+
+const {
+  editingId,
+  editContent,
+  isSaving,
+  saveError,
+  hasEditChanges,
+  canEdit,
+  startEdit,
+  cancelEdit,
+  saveEdit,
+  confirmDelete
+} = useChatMessageActions({
+  messages: () => messageStore.messages,
+  edit: (messageId, content) => messageStore.editMessage(messageId, content),
+  remove: (messageId) => messageStore.deleteMessage(messageId)
+})
+
+// An edit box left open would follow the reader into the next conversation.
+watch(
+  () => messageStore.currentThreadId,
+  () => cancelEdit()
+)
 
 /** Normalised so the composer shows the server's own sentence, or its rate limit wording on a 429. */
 async function sendToThread(content) {

@@ -101,7 +101,7 @@
                appeared on one would be unreachable. Opacity rather than display, so revealing it shifts
                nothing, and on focus too, or a keyboard lands on a control nothing on screen explains. -->
           <button
-            v-if="canEdit"
+            v-if="canEdit && !message.is_deleted"
             type="button"
             class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
             :aria-label="t('band_space_chat.message_list.edit')"

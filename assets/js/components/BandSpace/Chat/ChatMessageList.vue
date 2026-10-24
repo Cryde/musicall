@@ -96,40 +96,15 @@
               @delete="confirmDelete(message)"
               @react="(emojiKey) => chatStore.toggleReaction(bandSpaceId, message.id, emojiKey)"
             >
-              <div class="min-w-0 flex-1 text-left">
-                <MentionEditor
-                  ref="editor"
-                  v-model="editContent"
-                  :members="suggestionSource"
-                  :aria-label="t('band_space_chat.message_list.edit')"
-                  editor-class="min-h-[3rem] max-h-40 rounded-2xl px-3 py-2"
-                  submit-on="enter"
-                  :disabled="isSaving"
-                  @submit="saveEdit(message)"
-                  @keydown.esc="cancelEdit"
-                />
-                <Message v-if="saveError" severity="error" :closable="false" class="mt-1">
-                  {{ saveError }}
-                </Message>
-                <div class="mt-1 flex justify-end gap-2">
-                  <Button
-                    :label="t('band_space_chat.message_list.cancel')"
-                    size="small"
-                    severity="secondary"
-                    text
-                    :disabled="isSaving"
-                    @click="cancelEdit"
-                  />
-                  <Button
-                    :label="t('band_space_chat.message_list.save')"
-                    size="small"
-                    icon="pi pi-check"
-                    :loading="isSaving"
-                    :disabled="!hasEditChanges || isSaving"
-                    @click="saveEdit(message)"
-                  />
-                </div>
-              </div>
+              <ChatMessageEditBox
+                v-model="editContent"
+                :members="suggestionSource"
+                :is-saving="isSaving"
+                :error="saveError"
+                :can-save="hasEditChanges"
+                @save="saveEdit"
+                @cancel="cancelEdit"
+              />
               <template #attachments>
                 <ChatMessageAttachments
                   v-if="message.attachments?.length"
@@ -190,11 +165,11 @@
 <script setup>
 import Button from 'primevue/button'
 import Message from 'primevue/message'
-import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
+import { useChatMessageActions } from '../../../composables/useChatMessageActions.js'
 import { useChatPin } from '../../../composables/useChatPin.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
@@ -204,11 +179,11 @@ import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
 import { readReceiptLabel } from '../../../utils/chatReadReceipt.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
-import MentionEditor from '../../Global/MentionEditor.vue'
 import ReportDialog from '../../Report/ReportDialog.vue'
 import UserName from '../../User/UserName.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageBubble from './ChatMessageBubble.vue'
+import ChatMessageEditBox from './ChatMessageEditBox.vue'
 import ChatPresenceAvatar from './ChatPresenceAvatar.vue'
 
 const props = defineProps({
@@ -224,7 +199,6 @@ const { t } = useI18n()
 const chatStore = useBandSpaceChatStore()
 const chatPin = useChatPin(props.bandSpaceId)
 const userSecurityStore = useUserSecurityStore()
-const confirm = useConfirm()
 const toast = useToast()
 // From the roster rather than the route: « Messages » shows this list with no space in its URL, and
 // the space list holding the role is only loaded by the band layout (#1244).
@@ -258,12 +232,22 @@ const lastMessage = computed(() => chatStore.messages.at(-1) ?? null)
 const readReceipt = computed(() => readReceiptLabel(lastMessage.value?.read_by_display_names))
 const lastMessageIsMine = computed(() => lastMessage.value !== null && isMine(lastMessage.value))
 
-const editor = ref(null)
-const editingId = ref(null)
-/** The stored `@[uuid]` format, which is what the editor reads and writes and what gets sent. */
-const editContent = ref('')
-const isSaving = ref(false)
-const saveError = ref('')
+const {
+  editingId,
+  editContent,
+  isSaving,
+  saveError,
+  hasEditChanges,
+  canEdit,
+  startEdit,
+  cancelEdit,
+  saveEdit,
+  confirmDelete
+} = useChatMessageActions({
+  messages: () => chatStore.messages,
+  edit: (messageId, content) => chatStore.editMessage(props.bandSpaceId, messageId, content),
+  remove: (messageId) => chatStore.deleteMessage(props.bandSpaceId, messageId)
+})
 
 function loadVoiceNote(fileId) {
   return bandSpaceChatApi.getVoiceNote(props.bandSpaceId, fileId)
@@ -276,35 +260,6 @@ function openReport(message) {
 
 function canDelete(message) {
   return canDeleteChatMessage(message, isMine(message), isAdmin.value)
-}
-
-function confirmDelete(message) {
-  confirm.require({
-    message: t('band_space_chat.message_list.delete_confirm_message'),
-    header: t('band_space_chat.message_list.delete_confirm_header'),
-    icon: 'pi pi-exclamation-triangle',
-    rejectLabel: t('band_space_chat.message_list.delete_confirm_reject'),
-    acceptLabel: t('band_space_chat.message_list.delete_confirm_accept'),
-    acceptClass: 'p-button-danger',
-    accept: () => handleDelete(message)
-  })
-}
-
-/**
- * The failure is shown rather than swallowed: the bubble stays exactly as it was, so without a toast
- * a refused delete looks like a click that did nothing.
- */
-async function handleDelete(message) {
-  try {
-    await chatStore.deleteMessage(props.bandSpaceId, message.id)
-  } catch (e) {
-    console.error('Failed to delete the chat message:', e)
-    toast.add({
-      severity: 'error',
-      summary: e.message || t('band_space_chat.message_list.delete_failed'),
-      life: 5000
-    })
-  }
 }
 
 /**
@@ -329,77 +284,6 @@ async function handleCreateTask(message) {
       summary: e.message || t('band_space_chat.message_list.task_failed'),
       life: 5000
     })
-  }
-}
-
-/**
- * The server sends `editable_content` only on the messages it will accept a PATCH for, so asking it
- * is asking the one authority there is. isMine() above is a different question: it decides which side
- * of the pane a bubble sits on, and it compares usernames.
- */
-function canEdit(message) {
-  return typeof message.editable_content === 'string'
-}
-
-/**
- * Both sides trimmed, not just the typed one: a contenteditable settles on whatever trailing
- * whitespace the browser wants, so comparing it against an untrimmed stored string would light up
- * « Enregistrer » on a message nobody touched and paint « modifié » for nothing.
- */
-const hasEditChanges = computed(() => {
-  if (editingId.value === null) {
-    return false
-  }
-
-  const trimmed = editContent.value.trim()
-  if (trimmed === '') {
-    return false
-  }
-
-  const held = chatStore.messages.find((message) => message.id === editingId.value)
-
-  return trimmed !== (held?.editable_content ?? '').trim()
-})
-
-function startEdit(message) {
-  editingId.value = message.id
-  editContent.value = message.editable_content
-  saveError.value = ''
-  // At the end, because you reopen a message to add to it rather than to overwrite it.
-  nextTick(() => editorRef()?.focusAtEnd())
-}
-
-/** The editor sits behind a `v-if` in a `v-for`, so Vue hands the ref back as a single element list. */
-function editorRef() {
-  return Array.isArray(editor.value) ? editor.value[0] : editor.value
-}
-
-function cancelEdit() {
-  editingId.value = null
-  editContent.value = ''
-  saveError.value = ''
-}
-
-/**
- * The box stays open when the save fails, which is the whole reason this awaits rather than closing
- * on the click: with mentions in it, losing the edit means picking every member again.
- */
-async function saveEdit(message) {
-  if (!hasEditChanges.value || isSaving.value) {
-    return
-  }
-
-  isSaving.value = true
-  saveError.value = ''
-
-  try {
-    await chatStore.editMessage(props.bandSpaceId, message.id, editContent.value.trim())
-    cancelEdit()
-  } catch (e) {
-    console.error('Failed to edit the message:', e)
-    saveError.value = e.message || t('band_space_chat.message_list.edit_failed')
-  } finally {
-    isSaving.value = false
   }
 }
 

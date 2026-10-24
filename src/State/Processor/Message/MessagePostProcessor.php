@@ -63,6 +63,7 @@ class MessagePostProcessor implements ProcessorInterface
 
         $message = $this->messageSenderProcedure->processByThread($thread, $user, $data->content);
 
-        return $this->messageBuilder->buildItem($message);
+        // With the sender as viewer, so the message lands on their screen ready to edit (#1245).
+        return $this->messageBuilder->buildItem($message, viewer: $user);
     }
 }

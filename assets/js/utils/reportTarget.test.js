@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   canReportContent,
-  idFromIri,
   reportContentLink,
   reportExcerpt,
   reportLiveState,
@@ -59,13 +58,6 @@ describe('reportExcerpt', () => {
     assert.equal(reportExcerpt('a\n\n  b'), 'a b')
     assert.equal(reportExcerpt('abcdefghij', 5), 'abcd…')
     assert.equal(reportExcerpt(null), '')
-  })
-})
-
-describe('idFromIri', () => {
-  it('takes the last segment', () => {
-    assert.equal(idFromIri('/api/messages/0199-abc'), '0199-abc')
-    assert.equal(idFromIri(undefined), '')
   })
 })
 

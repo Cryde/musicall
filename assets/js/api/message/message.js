@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
   /**
@@ -68,6 +69,50 @@ export default {
   /** « I am writing » in a direct conversation (#1242). Nothing is stored, so nothing comes back. */
   sendTyping(threadId) {
     return axios.post(Routing.generate('api_message_thread_typing', { threadId }))
+  },
+
+  /** Rewrites one of your messages (#1245); answers with the message as the list shows it. */
+  updateMessage({ threadId, messageId, content }) {
+    return axios
+      .patch(
+        Routing.generate('api_message_thread_messages_patch', { threadId, id: messageId }),
+        { content },
+        {
+          headers: { 'Content-Type': 'application/merge-patch+json', Accept: 'application/ld+json' }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  /** Leaves a tombstone in place of one of your messages (#1245). */
+  deleteMessage({ threadId, messageId }) {
+    return axios
+      .delete(Routing.generate('api_message_thread_messages_delete', { threadId, id: messageId }))
+      .catch(handleApiError)
+  },
+
+  addReaction({ threadId, messageId, emoji }) {
+    return axios
+      .post(
+        Routing.generate('api_message_thread_message_reactions_post', { threadId, id: messageId }),
+        { emoji },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  removeReaction({ threadId, messageId, emoji }) {
+    return axios
+      .delete(
+        Routing.generate('api_message_thread_message_reactions_delete', {
+          threadId,
+          id: messageId,
+          emoji
+        })
+      )
+      .catch(handleApiError)
   },
 
   /**

@@ -73,6 +73,9 @@ class MessageUserPostTest extends ApiTestCase
             ],
             'content'           => 'new content from user1',
             'content_preview'   => 'new content from user1',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'new content from user1',
         ]);
     }
 
@@ -128,6 +131,9 @@ class MessageUserPostTest extends ApiTestCase
             ],
             'content'           => 'new content from user1',
             'content_preview'   => 'new content from user1',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'new content from user1',
         ]);
     }
 
