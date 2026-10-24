@@ -63,6 +63,7 @@ class MessagePostToUserProcessor implements ProcessorInterface
         return $this->messageBuilder->buildItem(
             $message,
             contactOrigin: $this->messageContactOriginRepository->findByMessageIds([(string) $message->id])[(string) $message->id] ?? null,
+            viewer: $currentUser,
         );
     }
 }

@@ -72,7 +72,7 @@ class MessageResource
     public const string ITEM = 'message:item';
 
     #[ApiProperty(identifier: true)]
-    #[Groups([MessageResource::ITEM])]
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
     public string $id;
 
     #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageThreadMetaResource::LIST])]
@@ -101,4 +101,28 @@ class MessageResource
     /** The caller wrote it and the other person has seen it: « Vu » (#1243). Always false otherwise. */
     #[Groups([MessageResource::LIST])]
     public bool $isSeen = false;
+
+    /** Null until the author edits it, which is what the « modifié » marker reads (#1245). */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public ?DateTimeInterface $updateDatetime = null;
+
+    /** A tombstone: `content` comes back empty and the client says « Message supprimé » (#1245). */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public bool $isDeleted = false;
+
+    /**
+     * Same shape as the band chat's, see MessageReactionsBuilder (#1245).
+     *
+     * @var list<array{key: string, emoji: string, count: int, has_reacted: bool}>
+     */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public array $reactions = [];
+
+    /**
+     * The message as stored, for its author only and never on a tombstone: `content` above is
+     * sanitized HTML, which an edit box cannot be seeded from. Its presence is what says the PATCH will
+     * be accepted (#1245).
+     */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public ?string $editableContent = null;
 }

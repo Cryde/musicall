@@ -67,3 +67,68 @@ export function rolledBackReactions(reactions, emojiKey, wasReacted) {
 
   return toggledReactions(reactions, emojiKey)
 }
+
+/**
+ * The tap on a reaction pill, shared by the band chat and a direct conversation (#968, #1245).
+ *
+ * Optimistic, because a tap has to answer instantly. Everything is looked up by message id rather
+ * than by index, including the rollback: a live signal can replace the whole list while the request
+ * is in flight. A failure is undone against the row on screen, see rolledBackReactions(), and only
+ * reported when the message is still held, so an error about a tap made elsewhere never lands on the
+ * conversation that replaced it.
+ *
+ * Keyed `messageId:emoji`, so tapping the same pill twice before the first call answers is ignored
+ * while tapping a different one is not.
+ *
+ * @param {object} options
+ * @param {(messageId: string) => object | undefined} options.findMessage the held message, if any
+ * @param {(messageId: string, reactions: object[]) => void} options.patchReactions
+ * @param {(messageId: string, emojiKey: string, context: unknown) => Promise<object>} options.add
+ *   answers with the whole message, so counts others left meanwhile land too
+ * @param {(messageId: string, emojiKey: string, context: unknown) => Promise<unknown>} options.remove
+ * @param {(error: unknown) => void} options.onError
+ */
+export function createReactionToggle({ findMessage, patchReactions, add, remove, onError }) {
+  const pendingKeys = new Set()
+
+  async function toggle(messageId, emojiKey, context = null) {
+    const pendingKey = `${messageId}:${emojiKey}`
+    const held = findMessage(messageId)
+    if (!held || pendingKeys.has(pendingKey)) {
+      return
+    }
+
+    const wasReacted = hasReacted(held.reactions, emojiKey)
+    pendingKeys.add(pendingKey)
+    patchReactions(messageId, toggledReactions(held.reactions, emojiKey))
+
+    try {
+      if (wasReacted) {
+        await remove(messageId, emojiKey, context)
+
+        return
+      }
+      const updated = await add(messageId, emojiKey, context)
+      patchReactions(messageId, updated?.reactions ?? [])
+    } catch (e) {
+      const live = findMessage(messageId)
+      if (live) {
+        patchReactions(messageId, rolledBackReactions(live.reactions, emojiKey, wasReacted))
+        onError(e)
+      }
+    } finally {
+      pendingKeys.delete(pendingKey)
+    }
+  }
+
+  /** The messages with a tap in flight, whose pills a refetch must leave alone (withRefreshedHeld). */
+  function pendingMessageIds() {
+    return new Set([...pendingKeys].map((key) => key.split(':')[0]))
+  }
+
+  function reset() {
+    pendingKeys.clear()
+  }
+
+  return { toggle, pendingMessageIds, reset }
+}

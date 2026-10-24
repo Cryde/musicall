@@ -2,11 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
 import { i18n } from '../../i18n/index.js'
-import {
-  hasReacted,
-  rolledBackReactions,
-  toggledReactions
-} from '../../utils/chatReactionToggle.js'
+import { createReactionToggle } from '../../utils/chatReactionToggle.js'
 import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
 import {
   isHeld,
@@ -58,9 +54,6 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   const loadOlderError = ref(null)
   const isSending = ref(false)
   const reactionError = ref(null)
-  // Keyed `messageId:emoji`, so tapping the same pill twice before the first call answers is ignored
-  // while tapping a different one is not.
-  const pendingReactions = ref(new Set())
   // The « infos importantes » bar (#969). Its own list rather than a filter over `messages`, because
   // a pinned message is usually far up the history and therefore not on the page the pane holds.
   const pinnedMessages = ref([])
@@ -394,59 +387,28 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     messages.value = messages.value.map((message) => (message['@id'] === iri ? updated : message))
   }
 
-  /**
-   * Adds or takes back the viewer's reaction, whichever way the pill is currently pointing (#968).
-   *
-   * Optimistic, because a reaction is a tap and a tap has to answer instantly. Everything is looked
-   * up by message id rather than by index, including the rollback: a live signal can replace the
-   * whole list while the request is in flight, and patching position 4 of a list that has since
-   * grown at the top would rewrite the wrong message. For the same reason a failure is undone
-   * against the row on screen rather than against a copy taken before the tap, see
-   * rolledBackReactions().
-   */
-  async function toggleReaction(bandSpaceId, messageId, emojiKey) {
-    const pendingKey = `${messageId}:${emojiKey}`
-    const held = messages.value.find((message) => message.id === messageId)
-    if (!held || pendingReactions.value.has(pendingKey)) {
-      return
-    }
-
-    const wasReacted = hasReacted(held.reactions, emojiKey)
-
-    pendingReactions.value = new Set(pendingReactions.value).add(pendingKey)
-    reactionError.value = null
-    patchReactions(messageId, toggledReactions(held.reactions, emojiKey))
-
-    try {
-      if (wasReacted) {
-        await bandSpaceChatApi.removeReaction(bandSpaceId, messageId, emojiKey)
-
-        return
-      }
-      // The add answers with the whole message, so the counts other members left meanwhile land here
-      // too rather than waiting for the next refetch.
-      const updated = await bandSpaceChatApi.addReaction(bandSpaceId, messageId, emojiKey)
-      patchReactions(messageId, updated.reactions ?? [])
-    } catch (e) {
+  // The tap itself is shared with a direct conversation (#1245), see createReactionToggle().
+  const reactionToggle = createReactionToggle({
+    findMessage: (messageId) => messages.value.find((message) => message.id === messageId),
+    patchReactions,
+    add: (messageId, emojiKey, bandSpaceId) =>
+      bandSpaceChatApi.addReaction(bandSpaceId, messageId, emojiKey),
+    remove: (messageId, emojiKey, bandSpaceId) =>
+      bandSpaceChatApi.removeReaction(bandSpaceId, messageId, emojiKey),
+    onError: (e) => {
       console.error('Failed to toggle a chat reaction:', e)
-      // Both halves are gated on the message still being held: the member can move to another band
-      // while the request is in flight, and an error banner about a tap made somewhere else would
-      // then sit over a conversation it has nothing to do with.
-      const live = messages.value.find((message) => message.id === messageId)
-      if (live) {
-        patchReactions(messageId, rolledBackReactions(live.reactions, emojiKey, wasReacted))
-        // The server's own wording when the server answered, since every refusal on this endpoint
-        // is already French. A transport failure has no status and would otherwise surface axios'
-        // English one.
-        reactionError.value = e.status
-          ? e.message
-          : i18n.global.t('band_space_chat.error.reaction_failed')
-      }
-    } finally {
-      const stillPending = new Set(pendingReactions.value)
-      stillPending.delete(pendingKey)
-      pendingReactions.value = stillPending
+      // The server's own wording when the server answered, since every refusal on this endpoint is
+      // already French. A transport failure has no status and would otherwise surface axios' English.
+      reactionError.value = e.status
+        ? e.message
+        : i18n.global.t('band_space_chat.error.reaction_failed')
     }
+  })
+
+  /** Adds or takes back the viewer's reaction, whichever way the pill is currently pointing (#968). */
+  function toggleReaction(bandSpaceId, messageId, emojiKey) {
+    reactionError.value = null
+    return reactionToggle.toggle(messageId, emojiKey, bandSpaceId)
   }
 
   function patchReactions(messageId, reactions) {
@@ -665,7 +627,11 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
         for (const message of fetched) {
           refreshed.add(message.id)
         }
-        messages.value = withRefreshedHeld(messages.value, fetched, messagesWithPendingReaction())
+        messages.value = withRefreshedHeld(
+          messages.value,
+          fetched,
+          reactionToggle.pendingMessageIds()
+        )
       } catch (e) {
         // The next load puts it right; a live refresh must never turn a readable pane into an error.
         console.error('Failed to refresh a changed chat message:', e)
@@ -674,10 +640,6 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     if (refreshPinnedBar) {
       await loadPinnedMessages(bandSpaceId)
     }
-  }
-
-  function messagesWithPendingReaction() {
-    return new Set([...pendingReactions.value].map((key) => key.split(':')[0]))
   }
 
   // --- « X écrit… » (#1040) ------------------------------------------------------------------------
@@ -777,7 +739,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     loadOlderError.value = null
     isSending.value = false
     reactionError.value = null
-    pendingReactions.value = new Set()
+    reactionToggle.reset()
     pinnedMessages.value = []
     pendingPinMessageId.value = null
     pendingTaskMessageId.value = null

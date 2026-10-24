@@ -6,8 +6,9 @@
  */
 
 /**
- * Mirrors ChatMessageDeleteProcessor: the author, or an administrator of the band space. A message
- * that is already a tombstone takes nobody's delete, which is the 404 that endpoint answers with.
+ * Mirrors ChatMessageDeleteProcessor: the author, or an administrator of the band space. A direct
+ * conversation has no administrator, so MessageDeleteProcessor is the author alone (#1245). A message
+ * that is already a tombstone takes nobody's delete, which is the 404 both endpoints answer with.
  *
  * Authorship is decided by the caller rather than by comparing ids here, and deliberately. The chat
  * pane already has one notion of « mine », the one that colours the bubble, and the profile that

@@ -43,9 +43,9 @@ export function messageSignalPlan({ inboxLoaded, signalThreadId, openThreadId, t
  * The sender's own signal can beat their own POST response back, because the server publishes inside
  * the send and answers afterwards, so the refetch it triggers can already have added the message.
  *
- * Matched on `@id`, which API Platform emits whatever the serialization groups say, unlike `id`,
- * which the message collection does not carry. A message without one is treated as new: pushing a
- * duplicate is recoverable on the next refetch, silently swallowing somebody's message is not.
+ * Matched on `@id`, which API Platform emits whatever the serialization groups say. A message without
+ * one is treated as new: pushing a duplicate is recoverable on the next refetch, silently swallowing
+ * somebody's message is not.
  */
 export function isMessageAlreadyListed(messages, message) {
   const iri = message?.['@id']

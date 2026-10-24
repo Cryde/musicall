@@ -118,16 +118,6 @@ export function reportExcerpt(text, maxLength = 120) {
   return flattened.length > maxLength ? `${flattened.slice(0, maxLength - 1)}…` : flattened
 }
 
-/** The last segment of an IRI, for a payload that carries `@id` and no `id`. */
-export function idFromIri(iri) {
-  return (
-    String(iri ?? '')
-      .split('/')
-      .filter(Boolean)
-      .at(-1) ?? ''
-  )
-}
-
 /**
  * Whether the viewer may be offered « Signaler » on content by this author.
  *

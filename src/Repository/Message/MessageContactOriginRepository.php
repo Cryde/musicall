@@ -47,7 +47,8 @@ class MessageContactOriginRepository extends ServiceEntityRepository
 
     /**
      * The most recent origin of each thread, for the inbox rows. Origins are rare (one per contact
-     * from an announce or a profile), so reading them all and keeping the newest stays cheap.
+     * from an announce or a profile), so reading them all and keeping the newest stays cheap. A deleted
+     * message keeps nothing of what was sent, its card included (#1245).
      *
      * @param MessageThread[] $threads
      *
@@ -64,6 +65,7 @@ class MessageContactOriginRepository extends ServiceEntityRepository
             ->addSelect('m')
             ->join('o.message', 'm')
             ->where('m.thread IN (:threads)')
+            ->andWhere('m.deletionDatetime IS NULL')
             ->setParameter('threads', $threads)
             ->orderBy('m.creationDatetime', 'DESC')
             ->addOrderBy('m.id', 'DESC')

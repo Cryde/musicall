@@ -130,6 +130,7 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
         chatTyping: (typing) => useBandSpaceChatStore().handleTyping(typing),
         inboxTyping: (typing) => useMessageStore().handleTyping(typing),
         inboxRead: (threadId) => useMessageStore().handleThreadRead(threadId),
+        inboxMessageChanged: (change) => useMessageStore().handleMessageChanged(change),
         chatPresence: (bandSpaceId) => useBandSpaceChatStore().handlePresence(bandSpaceId),
         bandSpaceChanged: announceBandSpaceChange
       }),
