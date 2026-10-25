@@ -155,6 +155,8 @@
                 :is-mine="isSender(message)"
                 :corner-classes="bubbleCornerClasses(index, block.messages.length, isSender(message))"
                 :is-editing="editingId === message.id"
+                :image-src="message.image ? messageApi.imageUrl(messageStore.currentThreadId, message.image.file_id) : null"
+                :load-voice-note="loadVoiceNote"
                 reactable
                 can-report
                 :can-edit="canEdit(message)"
@@ -199,6 +201,7 @@
       <ChatComposer
         v-else
         :mentions="false"
+        :media="canSendMedia"
         :send-message="sendToThread"
         :is-sending="messageStore.isAddingMessage"
         @sent="scrollToBottom"
@@ -225,6 +228,7 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import BandChatPanel from '../../components/BandSpace/Chat/BandChatPanel.vue'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
@@ -296,6 +300,14 @@ const isOtherOnline = computed(
     messageStore.onlineUserIds.includes(otherParticipant.value.id)
 )
 
+// Images and voice notes once the other person has written here (#1247). The inbox says so, and a reply
+// arriving while the conversation is open says so before the inbox has reloaded.
+const canSendMedia = computed(
+  () =>
+    currentThread.value?.thread?.can_send_media === true ||
+    messageStore.messages.some((message) => !isSender(message))
+)
+
 // Two people in a conversation, so whoever is writing is the one the header names.
 const typistNames = computed(() => (messageStore.currentTypists.length > 0 ? [title.value] : []))
 
@@ -344,10 +356,22 @@ watch(
   () => cancelEdit()
 )
 
-/** Normalised so the composer shows the server's own sentence, or its rate limit wording on a 429. */
-async function sendToThread(content) {
+// Read at play time rather than bound to a thread, since the list is not remounted on a switch.
+function loadVoiceNote(fileId) {
+  return messageApi.getVoiceNote(messageStore.currentThreadId, fileId)
+}
+
+/**
+ * Normalised so the composer shows the server's own sentence, or its rate limit wording on a 429.
+ * A conversation carries no band attachments, only an image or a voice note (#1247).
+ */
+async function sendToThread(content, _attachments, media) {
   try {
-    await messageStore.postMessageInThread({ threadId: messageStore.currentThreadId, content })
+    await messageStore.postMessageInThread({
+      threadId: messageStore.currentThreadId,
+      content,
+      media
+    })
   } catch (e) {
     handleApiError(e)
   }

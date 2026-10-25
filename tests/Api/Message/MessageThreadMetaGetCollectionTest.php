@@ -129,6 +129,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             'content'           => 'basic_content with  in it',
                             'content_preview'   => 'basic_content with in it',
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],
@@ -482,6 +483,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             'content' => 'regarde &#64;[' . $user->id . ']',
                             'content_preview' => 'regarde @[' . $user->id . ']',
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],
@@ -630,6 +632,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             // what the thread puts on screen too: this field is text, not inert HTML.
                             'content_preview' => "Bonjour Harry, J'ai vu retour, on commence < 20h",
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],

@@ -17,7 +17,7 @@ use App\Event\BandSpaceChatMentionedEvent;
 use App\Repository\Message\MessageThreadRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\Chat\ChatMediaStore;
-use App\Service\BandSpace\Chat\StoredVoiceNote;
+use App\Service\Message\StoredVoiceNote;
 use App\Service\BandSpace\ChatMentionResolver;
 use App\Service\Builder\BandSpace\ChatMessageBuilder;
 use App\Service\Message\MessageAttachmentResolver;

@@ -28,6 +28,7 @@ readonly class MessageThreadBuilder
         MessageThread $entity,
         array $lastMessageMentionUsernamesById = [],
         ?MessageContactOrigin $latestContactOrigin = null,
+        ?bool $canSendMedia = null,
     ): MessageThreadResource {
         $dto = new MessageThreadResource();
         $dto->id = (string) $entity->id;
@@ -48,6 +49,8 @@ readonly class MessageThreadBuilder
             $dto->bandSpaceId = (string) $entity->bandSpace->id;
             $dto->bandSpaceName = $entity->bandSpace->name;
             $dto->channelName = $entity->name;
+        } else {
+            $dto->canSendMedia = $canSendMedia;
         }
 
         return $dto;

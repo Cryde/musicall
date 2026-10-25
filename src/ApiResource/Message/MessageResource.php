@@ -16,6 +16,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
+use App\Serializer\Encoder\MultipartDecoder;
 use App\State\Processor\Message\MessagePostProcessor;
 use App\State\Provider\Message\MessageCollectionProvider;
 use DateTimeInterface;
@@ -47,7 +48,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Post(
             uriTemplate: '/messages',
+            // Multipart for a message carrying an image or a voice note (#1247), JSON otherwise, as the
+            // band chat's one send operation does.
+            inputFormats: [
+                'jsonld' => ['application/ld+json'],
+                'json' => ['application/json'],
+                'multipart' => ['multipart/form-data'],
+            ],
             openapi: new Operation(tags: ['Message']),
+            denormalizationContext: [MultipartDecoder::RAW_FIELDS => ['content']],
             normalizationContext: ['groups' => [MessageResource::ITEM]],
             input: MessageCreation::class,
             name: 'api_message_post',
@@ -125,4 +134,23 @@ class MessageResource
      */
     #[Groups([MessageResource::LIST, MessageResource::ITEM])]
     public ?string $editableContent = null;
+
+    /**
+     * The image this message carries (#1247), in the band chat's shape: the client builds the URL
+     * from `file_id`, and `is_available` false (the sender deleted their account) reads « Image
+     * supprimée ».
+     *
+     * @var array{file_id: string, is_available: bool}|null
+     */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public ?array $image = null;
+
+    /**
+     * The voice note this message carries (#1247), with the server's duration and 48 peaks (0 to 255)
+     * so the player draws its waveform before loading any audio.
+     *
+     * @var array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool}|null
+     */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public ?array $voiceNote = null;
 }

@@ -493,6 +493,52 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Whether the other person has ever written in this conversation, the gate on sending them media
+     * (#1247): no image or voice note from a stranger they never answered. A reply deleted since still
+     * counts, since they did answer.
+     */
+    public function hasMessageFromOtherThan(MessageThread $thread, User $user): bool
+    {
+        $found = $this->createQueryBuilder('message')
+            ->select('message.id')
+            ->where('message.thread = :thread')
+            ->andWhere('message.author != :user')
+            ->setParameter('thread', $thread)
+            ->setParameter('user', $user)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $found !== null;
+    }
+
+    /**
+     * The same question for a page of the inbox at once.
+     *
+     * @param list<string> $threadIds
+     *
+     * @return list<string>
+     */
+    public function findThreadIdsWithMessageFromOtherThan(array $threadIds, User $user): array
+    {
+        if ($threadIds === []) {
+            return [];
+        }
+
+        /** @var list<array{threadId: string}> $rows */
+        $rows = $this->createQueryBuilder('message')
+            ->select('DISTINCT IDENTITY(message.thread) AS threadId')
+            ->where('message.thread IN (:threads)')
+            ->andWhere('message.author != :user')
+            ->setParameter('threads', $threadIds)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): string => (string) $row['threadId'], $rows);
+    }
+
+    /**
      * Count messages sent within a date range.
      */
     public function countMessagesSince(\DateTimeImmutable $since): int

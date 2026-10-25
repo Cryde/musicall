@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { mediaMessageForm } from '../../utils/chatMediaForm.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
@@ -26,21 +27,36 @@ export default {
   },
 
   /**
-   * Post a message in an existing thread
+   * Post a message in an existing thread. With an image or a voice note (#1247) the body is multipart,
+   * on the same endpoint, as in the band chat.
+   *
+   * @param {{image?: File, voiceNote?: File}|null} media
    */
-  postMessageInThread({ threadId, content }) {
+  postMessageInThread({ threadId, content, media = null }) {
+    const thread = `/api/message_threads/${threadId}`
+    const url = Routing.generate('api_message_post')
+    const request = media
+      ? axios.post(url, mediaMessageForm({ content, thread, ...media }), {
+          headers: { Accept: 'application/ld+json' }
+        })
+      : axios.post(url, { content, thread }, { headers: { 'Content-Type': 'application/ld+json' } })
+
+    return request.then((resp) => resp.data)
+  },
+
+  /** Streamed inline by the backend, to the two participants only (#1247). */
+  imageUrl(threadId, fileId) {
+    return Routing.generate('api_message_thread_images_get', { threadId, id: fileId })
+  },
+
+  /** The whole note as a blob, as in the band chat: the stream serves no byte ranges. */
+  getVoiceNote(threadId, fileId) {
     return axios
-      .post(
-        Routing.generate('api_message_post'),
-        {
-          content,
-          thread: `/api/message_threads/${threadId}`
-        },
-        {
-          headers: { 'Content-Type': 'application/ld+json' }
-        }
-      )
+      .get(Routing.generate('api_message_thread_voice_notes_get', { threadId, id: fileId }), {
+        responseType: 'blob'
+      })
       .then((resp) => resp.data)
+      .catch(handleApiError)
   },
 
   /**

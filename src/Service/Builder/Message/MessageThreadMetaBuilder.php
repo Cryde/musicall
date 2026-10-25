@@ -50,12 +50,19 @@ readonly class MessageThreadMetaBuilder
             array_map(static fn (MessageThreadMeta $entity): MessageThread => $entity->thread, $entities),
         );
 
+        // And one for which conversations already hold a reply, the gate on sending media (#1247).
+        $repliedThreadIds = $this->messageRepository->findThreadIdsWithMessageFromOtherThan(
+            array_values(array_map(static fn (MessageThreadMeta $entity): string => (string) $entity->thread->id, $entities)),
+            $user,
+        );
+
         return array_map(
             fn (MessageThreadMeta $entity): MessageThreadMetaResource => $this->build(
                 $entity,
                 $unreadCounts[(string) $entity->thread->id] ?? 0,
                 $mentions,
                 $origins[(string) $entity->thread->id] ?? null,
+                in_array((string) $entity->thread->id, $repliedThreadIds, true),
             ),
             $entities,
         );
@@ -68,6 +75,7 @@ readonly class MessageThreadMetaBuilder
             $this->messageRepository->countUnreadForThread($entity),
             $this->messageMentionRepository->findUsernamesByMessageIds($this->lastMessageIds([$entity]), $this->displayNames->deletedUser()),
             $this->messageContactOriginRepository->findLatestByThreads([$entity->thread])[(string) $entity->thread->id] ?? null,
+            $this->messageRepository->hasMessageFromOtherThan($entity->thread, $entity->user),
         );
     }
 
@@ -91,7 +99,7 @@ readonly class MessageThreadMetaBuilder
     /**
      * @param array<string, array<string, string>> $mentions message id => (user id => username)
      */
-    private function build(MessageThreadMeta $entity, int $unreadCount, array $mentions, ?MessageContactOrigin $latestContactOrigin): MessageThreadMetaResource
+    private function build(MessageThreadMeta $entity, int $unreadCount, array $mentions, ?MessageContactOrigin $latestContactOrigin, bool $canSendMedia): MessageThreadMetaResource
     {
         $lastMessage = $entity->thread->lastMessage;
         $dto = new MessageThreadMetaResource();
@@ -101,6 +109,7 @@ readonly class MessageThreadMetaBuilder
             $entity->thread,
             $lastMessage instanceof Message ? ($mentions[(string) $lastMessage->id] ?? []) : [],
             $latestContactOrigin,
+            $canSendMedia,
         );
 
         return $dto;

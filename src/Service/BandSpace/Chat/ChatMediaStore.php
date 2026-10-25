@@ -11,9 +11,10 @@ use App\Entity\User;
 use App\Service\BandSpace\File\BandSpaceFilePurger;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
+use App\Service\Message\ChatMediaPreparer;
+use App\Service\Message\StoredVoiceNote;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * A chat image or voice note is a band space file like any other (#973, #974): same storage, same
@@ -25,11 +26,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 readonly class ChatMediaStore
 {
-    private const string FALLBACK_IMAGE_BASENAME = 'image';
-
     public function __construct(
-        private ChatImageConverter $imageConverter,
-        private ChatVoiceNoteConverter $voiceNoteConverter,
+        private ChatMediaPreparer $mediaPreparer,
         private BandSpaceFileQuotaService $quotaService,
         private BandSpaceFilePurger $filePurger,
         private EntityManagerInterface $entityManager,
@@ -38,32 +36,21 @@ readonly class ChatMediaStore
 
     public function storeImage(File $image, BandSpace $bandSpace, User $uploader): BandSpaceFile
     {
-        $converted = $this->imageConverter->convert($image, $image->getMimeType() ?? '');
-
-        try {
-            return $this->persist($converted->file, $converted->mimeType, $this->imageName($image, $converted->mimeType), $bandSpace, $uploader);
-        } finally {
-            if ($converted->isTemporary) {
-                $this->removeTemporary($converted->file);
-            }
-        }
+        return $this->mediaPreparer->image(
+            $image,
+            fn (File $content, string $mimeType, string $name): BandSpaceFile => $this->persist($content, $mimeType, $name, $bandSpace, $uploader),
+        );
     }
 
+    /**
+     * @return StoredVoiceNote<BandSpaceFile>
+     */
     public function storeVoiceNote(File $recording, BandSpace $bandSpace, User $uploader): StoredVoiceNote
     {
-        $converted = $this->voiceNoteConverter->convert($recording, $recording->getMimeType() ?? '');
-
-        try {
-            $name = sprintf('note-vocale-%s.m4a', (new \DateTimeImmutable())->format('Y-m-d-His'));
-
-            return new StoredVoiceNote(
-                $this->persist($converted->file, ChatVoiceNoteConverter::OUTPUT_MIME_TYPE, $name, $bandSpace, $uploader),
-                $converted->durationSeconds,
-                $converted->peaks,
-            );
-        } finally {
-            $this->removeTemporary($converted->file);
-        }
+        return $this->mediaPreparer->voiceNote(
+            $recording,
+            fn (File $content, string $mimeType, string $name): BandSpaceFile => $this->persist($content, $mimeType, $name, $bandSpace, $uploader),
+        );
     }
 
     /**
@@ -118,22 +105,5 @@ readonly class ChatMediaStore
         $this->entityManager->flush();
 
         return $file;
-    }
-
-    private function removeTemporary(File $file): void
-    {
-        if (is_file($file->getPathname())) {
-            unlink($file->getPathname());
-        }
-    }
-
-    /** The name the sender's device gave it, with the extension of what is actually stored. */
-    private function imageName(File $image, string $mimeType): string
-    {
-        $clientName = $image instanceof UploadedFile ? $image->getClientOriginalName() : $image->getFilename();
-        $basename = pathinfo($clientName, PATHINFO_FILENAME);
-        $extension = $mimeType === ChatImageConverter::OUTPUT_MIME_TYPE ? 'webp' : 'gif';
-
-        return ($basename !== '' ? $basename : self::FALLBACK_IMAGE_BASENAME) . '.' . $extension;
     }
 }

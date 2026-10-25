@@ -113,12 +113,17 @@ class MessageSenderProcedure
         return $message;
     }
 
-    public function processByThread(MessageThread $thread, User $sender, string $content): Message
+    /**
+     * @param (callable(Message): void)|null $complete sets what the message carries besides its text
+     *                                                 (#1247) before the flush, so that a reader refetching
+     *                                                 on the live signal already finds it
+     */
+    public function processByThread(MessageThread $thread, User $sender, string $content, ?callable $complete = null): Message
     {
         /** @var MessageSentEvent[] $eventsToDispatch */
         $eventsToDispatch = [];
 
-        $message = $this->entityManager->wrapInTransaction(function () use ($thread, $sender, $content, &$eventsToDispatch): Message {
+        $message = $this->entityManager->wrapInTransaction(function () use ($thread, $sender, $content, $complete, &$eventsToDispatch): Message {
             // Users first, then the thread, in the same order process() uses. See lockThread().
             $this->lockUsers($this->threadMemberResolver->usersToLockFor($thread));
             $this->lockThread($thread);
@@ -126,6 +131,9 @@ class MessageSenderProcedure
             $eventsToDispatch = $this->handleReadMessage($thread, $sender);
 
             $message = $this->messageDirector->create($thread, $sender, $content);
+            if ($complete !== null) {
+                $complete($message);
+            }
             $this->entityManager->persist($message);
             $thread->lastMessage = $message;
             $this->entityManager->flush();

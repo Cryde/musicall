@@ -82,7 +82,7 @@
       />
       <!-- A button as well as paste and drop: on a phone, the picker is the only way to a photo. -->
       <Button
-        v-if="canAttach"
+        v-if="media"
         icon="pi pi-image"
         severity="secondary"
         outlined
@@ -91,7 +91,7 @@
         @click="imageInput?.click()"
       />
       <input
-        v-if="canAttach"
+        v-if="media"
         ref="imageInput"
         type="file"
         class="hidden"
@@ -179,9 +179,14 @@ const props = defineProps({
   isSending: { type: Boolean, default: false },
   /**
    * Which space the picker searches, and by its presence whether there is a picker at all (#971).
-   * A direct conversation has none, and no image or voice note either until #1247.
+   * A direct conversation has none.
    */
   bandSpaceId: { type: String, default: null },
+  /**
+   * Images and voice notes, on in the band chat. A direct conversation turns them on once the other
+   * person has replied, which the server also enforces (#1247).
+   */
+  media: { type: Boolean, default: false },
   /**
    * Off in a direct conversation (#1244): two people and nobody to mention, and the server leaves an
    * `@` there as plain text.
@@ -226,7 +231,7 @@ const isPickerVisible = ref(false)
 const canAttach = computed(() => !!props.bandSpaceId)
 
 const recorder = useVoiceRecorder({ onLimitReached: sendVoiceNote })
-const canRecord = computed(() => canAttach.value && recorder.isSupported.value)
+const canRecord = computed(() => props.media && recorder.isSupported.value)
 const pickedIds = computed(() => draftIdentifiers(attachments.value))
 
 const suggestionSource = computed(() => (props.mentions ? [EVERYONE_MEMBER, ...props.members] : []))
@@ -270,15 +275,14 @@ function removeImage() {
  * of this Band Space (#972), which becomes an attachment instead of a raw URL in the text.
  */
 function handlePaste(event) {
-  if (!canAttach.value) {
-    return
-  }
-
-  const file = firstImageAmong(event.clipboardData?.files ?? [])
+  const file = props.media ? firstImageAmong(event.clipboardData?.files ?? []) : null
   if (file) {
     event.preventDefault()
     event.stopPropagation()
     setImage(file)
+    return
+  }
+  if (!canAttach.value) {
     return
   }
 
@@ -313,7 +317,7 @@ async function attachPastedLink(identifier, url) {
 }
 
 function handleDrop(event) {
-  const file = canAttach.value ? firstImageAmong(event.dataTransfer?.files ?? []) : null
+  const file = props.media ? firstImageAmong(event.dataTransfer?.files ?? []) : null
   if (file) {
     setImage(file)
   }

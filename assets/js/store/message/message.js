@@ -231,10 +231,11 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  async function postMessageInThread({ threadId, content }) {
+  /** `media` is an image or a voice note (#1247), `{ image }` or `{ voiceNote }`. */
+  async function postMessageInThread({ threadId, content, media = null }) {
     isAddingMessage.value = true
     try {
-      const newMessage = await messageApi.postMessageInThread({ threadId, content })
+      const newMessage = await messageApi.postMessageInThread({ threadId, content, media })
       typingNotifier.reset()
       // The signal for this very message can arrive before this promise resolves, because the server
       // publishes inside the send and answers afterwards. That refetch has already put the message in

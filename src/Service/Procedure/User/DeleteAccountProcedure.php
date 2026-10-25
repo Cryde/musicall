@@ -6,6 +6,7 @@ namespace App\Service\Procedure\User;
 
 use App\Entity\User;
 use App\Event\BandSpaceMemberRoleChangedEvent;
+use App\Repository\Message\MessageFileRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Service\Procedure\BandSpace\WithdrawUserFromBandSpacesProcedure;
@@ -22,6 +23,7 @@ readonly class DeleteAccountProcedure
         private EventDispatcherInterface $eventDispatcher,
         private DeviceTokenRepository $deviceTokenRepository,
         private UserBlockRepository $userBlockRepository,
+        private MessageFileRepository $messageFileRepository,
     ) {
     }
 
@@ -87,6 +89,13 @@ readonly class DeleteAccountProcedure
         $profile->isPublic = false;
         $profile->coverPicture = null;
         $profile->socialLinks->clear();
+
+        // The images and voice notes sent in direct conversations go with the account (#1247): the
+        // messages stay, and the other person's bubble reads « Image supprimée ». Removed through the
+        // ORM so VichUploader deletes each stored object.
+        foreach ($this->messageFileRepository->findByUploader($user) as $messageFile) {
+            $this->entityManager->remove($messageFile);
+        }
 
         // Take the account out of its band spaces. Runs after the anonymization so the memberships it
         // closes and the notification it triggers carry the anonymized handle, not the old username.
