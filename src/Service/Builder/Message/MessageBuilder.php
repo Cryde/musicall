@@ -19,12 +19,10 @@ use App\Service\Message\MessagePlainTextExtractor;
 use App\Service\Message\ThreadSeenPosition;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class MessageBuilder
 {
-    private const string DELETED_PREVIEW = 'Message supprimé';
-    private const string ATTACHMENT_ONLY_PREVIEW = 'Pièce jointe';
-
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $contentSanitizer,
@@ -36,6 +34,7 @@ readonly class MessageBuilder
         private MessageReactionsBuilder $reactionsBuilder,
         private ThreadSeenPosition $threadSeenPosition,
         private MessageFileRepository $messageFileRepository,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -192,7 +191,7 @@ readonly class MessageBuilder
         // Its content is empty, and an empty preview makes ThreadList.vue fall back to « Aucun
         // message », which is a lie about a conversation that has one.
         if ($entity->isDeleted()) {
-            return self::DELETED_PREVIEW;
+            return $this->translator->trans('message.preview.deleted');
         }
 
         $isChannel = $entity->thread->bandSpace instanceof BandSpace;
@@ -200,7 +199,7 @@ readonly class MessageBuilder
         // Empty content no longer means deleted (#971): a live message with no text is one that was sent
         // for its attachments, image or voice note alone (#1247), so the preview says so.
         if ($entity->content === '') {
-            return self::ATTACHMENT_ONLY_PREVIEW;
+            return $this->translator->trans('message.preview.attachment_only');
         }
 
         $content = $isChannel
