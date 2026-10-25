@@ -92,7 +92,6 @@ class MessageVoiceNoteTest extends ApiTestCase
             'content_preview' => 'Pièce jointe',
             'is_deleted' => false,
             'reactions' => [],
-            'editable_content' => '',
             'voice_note' => [
                 'file_id' => (string) $file->id,
                 'duration_seconds' => 2,

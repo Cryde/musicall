@@ -103,4 +103,10 @@ class Message
     {
         return $this->deletionDatetime instanceof DateTimeImmutable;
     }
+
+    /** Sent alone, so there is no text to correct: an edit would only bolt a caption onto it. */
+    public function isVoiceNote(): bool
+    {
+        return $this->voiceNoteFileId !== null;
+    }
 }

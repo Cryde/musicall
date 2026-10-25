@@ -56,6 +56,9 @@ readonly class MessageUpdateProcessor implements ProcessorInterface
         if ($message->author->id !== $user->id) {
             throw new AccessDeniedHttpException('message.message.update_forbidden');
         }
+        if ($message->isVoiceNote()) {
+            throw new AccessDeniedHttpException('message.message.voice_note_not_editable');
+        }
 
         // An identical body is not an edit: stamping it would paint « modifié » on an unchanged message.
         if ($data->content !== $message->content) {

@@ -70,6 +70,10 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('band_space.chat.update_forbidden');
         }
 
+        if ($message->isVoiceNote()) {
+            throw new AccessDeniedHttpException('band_space.chat.voice_note_not_editable');
+        }
+
         // An identical body is not an edit. Stamping it would paint « modifié » on a message nobody
         // changed, and that marker is a claim about the message rather than a detail of it.
         if ($data->content === $message->content) {

@@ -97,7 +97,7 @@ readonly class ChatMessageBuilder
                 $reactionsByMessage[(string) $row['id']] ?? [],
                 $attachmentsByMessage[(string) $row['id']] ?? [],
                 $row['updateDatetime'],
-                $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content'], $row['deletionDatetime'] !== null),
+                $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content'], $row['deletionDatetime'] !== null || $row['voiceNoteFileId'] !== null),
                 $row['deletionDatetime'] !== null,
                 $row['pinnedDatetime'],
                 $row['pinnedById'] !== null ? (string) $row['pinnedById'] : null,
@@ -142,7 +142,7 @@ readonly class ChatMessageBuilder
             $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer->user)[$messageId] ?? [],
             $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId, $viewer)[$messageId] ?? [],
             $entity->updateDatetime,
-            $this->editableContentFor((string) $entity->author->id, (string) $viewer->user->id, $entity->content, $entity->isDeleted()),
+            $this->editableContentFor((string) $entity->author->id, (string) $viewer->user->id, $entity->content, $entity->isDeleted() || $entity->isVoiceNote()),
             $entity->isDeleted(),
             $entity->pinnedDatetime,
             $entity->pinnedBy?->id,
@@ -236,11 +236,12 @@ readonly class ChatMessageBuilder
     /**
      * The stored text, but only back to the member who wrote it: it is what the edit box is seeded
      * with, and only its author may PATCH it (#966). A deleted account never reads anything, so the
-     * `Utilisateur supprimé` substitution above cannot be undone through here.
+     * `Utilisateur supprimé` substitution above cannot be undone through here. A tombstone and a voice
+     * note take no edit at all.
      */
-    private function editableContentFor(string $authorId, string $viewerId, string $content, bool $isDeleted): ?string
+    private function editableContentFor(string $authorId, string $viewerId, string $content, bool $isLocked): ?string
     {
-        return !$isDeleted && $authorId === $viewerId ? $content : null;
+        return !$isLocked && $authorId === $viewerId ? $content : null;
     }
 
     /**

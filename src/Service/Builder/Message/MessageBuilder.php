@@ -145,7 +145,7 @@ readonly class MessageBuilder
         $dto->updateDatetime = $entity->updateDatetime;
         $dto->isDeleted = $entity->isDeleted();
         $dto->reactions = $this->reactionsBuilder->build($reactionTallies);
-        $dto->editableContent = $viewer instanceof User && $entity->author->id === $viewer->id && !$entity->isDeleted()
+        $dto->editableContent = $viewer instanceof User && $entity->author->id === $viewer->id && !$entity->isDeleted() && !$entity->isVoiceNote()
             ? $entity->content
             : null;
         $isLive = static fn (string $id): bool => $liveMediaIds === null || in_array($id, $liveMediaIds, true);
