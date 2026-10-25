@@ -147,6 +147,7 @@ class MessageBlockedContactTest extends ApiTestCase
                             'content' => 'avant le blocage',
                             'content_preview' => 'avant le blocage',
                         ],
+                        'can_send_media' => false,
                     ],
                 ],
             ],

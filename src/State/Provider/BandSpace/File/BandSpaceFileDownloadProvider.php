@@ -7,7 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
-use App\Http\ContentDisposition;
+use App\Http\StoredFileResponse;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -54,33 +54,6 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
      */
     public static function stream(BandSpaceFile $file, BandSpaceFileVersion $version, StorageInterface $vichStorage, bool $inline = false): StreamedResponse
     {
-        $stream = $vichStorage->resolveStream($version, 'uploadedFile');
-        if ($stream === null) {
-            throw new NotFoundHttpException('band_space.file.version_binary_not_found');
-        }
-
-        $response = new StreamedResponse(function () use ($stream): void {
-            if (is_resource($stream)) {
-                fpassthru($stream);
-                fclose($stream);
-            }
-        });
-
-        $response->headers->set('Content-Type', $version->mimeType);
-        // Stop browsers from MIME-sniffing the body into an executable type
-        // (defence-in-depth alongside the attachment disposition below).
-        $response->headers->set('X-Content-Type-Options', 'nosniff');
-        // ContentDisposition sanitises the (user-supplied) original filename so a
-        // non-ASCII or "/"-containing name cannot 500 the download. Shared by the
-        // authenticated, versioned and public-share paths via ::stream().
-        $response->headers->set(
-            'Content-Disposition',
-            $inline ? ContentDisposition::inline($file->originalName) : ContentDisposition::attachment($file->originalName),
-        );
-        if ($version->size !== null) {
-            $response->headers->set('Content-Length', (string) $version->size);
-        }
-
-        return $response;
+        return StoredFileResponse::stream($vichStorage, $version, 'uploadedFile', $version->mimeType, $file->originalName, $version->size, $inline);
     }
 }

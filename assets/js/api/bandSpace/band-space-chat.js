@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { mediaMessageForm } from '../../utils/chatMediaForm.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
@@ -122,7 +123,7 @@ export default {
   postMessage(bandSpaceId, content, attachments = [], media = null) {
     const url = Routing.generate('api_band_space_chat_messages_post', { bandSpaceId })
     const request = media
-      ? axios.post(url, mediaMessageForm(content, attachments, media), {
+      ? axios.post(url, mediaMessageForm({ content, attachments, ...media }), {
           headers: { Accept: 'application/ld+json' }
         })
       : axios.post(
@@ -218,20 +219,4 @@ export default {
       )
       .catch(handleApiError)
   }
-}
-
-/**
- * `attachments[]` rather than one JSON encoded field, so the array reaches the server as an array
- * whatever the multipart decoder does with a string. The browser sets the multipart boundary itself.
- */
-function mediaMessageForm(content, attachments, { image, voiceNote }) {
-  const form = new FormData()
-  form.append('content', content)
-  for (const attachment of attachments) {
-    form.append('attachments[]', attachment)
-  }
-  if (image) form.append('image', image)
-  if (voiceNote) form.append('voice_note', voiceNote)
-
-  return form
 }

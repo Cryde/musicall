@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\Message;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
@@ -129,6 +130,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             'content'           => 'basic_content with  in it',
                             'content_preview'   => 'basic_content with in it',
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],
@@ -336,6 +338,101 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    /**
+     * @return iterable<string, array{string, bool, string}>
+     */
+    public static function previewLabels(): iterable
+    {
+        yield 'deleted, in French' => ['fr', true, 'Message supprimé'];
+        yield 'deleted, in English' => ['en', true, 'Message deleted'];
+        yield 'image alone, in French' => ['fr', false, 'Pièce jointe'];
+        yield 'image alone, in English' => ['en', false, 'Attachment'];
+    }
+
+    /** The two previews the server writes itself follow the reader's language, as the rest of the page does. */
+    #[DataProvider('previewLabels')]
+    public function test_a_direct_preview_label_is_in_the_reader_locale(string $locale, bool $isDeleted, string $preview): void
+    {
+        $me = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $other = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
+        $thread = MessageThreadFactory::new()->create();
+        $myParticipation = MessageParticipantFactory::new(['thread' => $thread, 'participant' => $me])->create();
+        $otherParticipation = MessageParticipantFactory::new(['thread' => $thread, 'participant' => $other])->create();
+        $message = MessageFactory::new([
+            'author' => $me,
+            'thread' => $thread,
+            'content' => '',
+            'imageFileId' => $isDeleted ? null : '0199a3b4-0000-7000-8000-000000000001',
+            'creationDatetime' => new \DateTime('2026-10-20 10:00:00'),
+            'deletionDatetime' => $isDeleted ? new \DateTimeImmutable('2026-10-20 11:00:00') : null,
+        ])->create();
+        $thread->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($thread);
+        $meta = MessageThreadMetaFactory::new(['user' => $me, 'thread' => $thread])->create();
+
+        $this->client->loginUser($me);
+        $this->client->request('GET', '/api/message_thread_metas', server: ['HTTP_X_LOCALE' => $locale]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'   => '/api/contexts/MessageThreadMeta',
+            '@id'        => '/api/message_thread_metas',
+            '@type'      => 'Collection',
+            'member'     => [
+                [
+                    '@id'   => '/api/message_thread_metas/' . $meta->id,
+                    '@type' => 'MessageThreadMeta',
+                    'id'    => (string) $meta->id,
+                    'unread_count' => 0,
+                    'thread' => [
+                        '@id'   => '/api/message_threads/' . $thread->id,
+                        '@type' => 'MessageThread',
+                        'id'    => (string) $thread->id,
+                        'message_participants' => [
+                            [
+                                '@id' => '/api/message_participants/' . $myParticipation->id,
+                                '@type' => 'MessageParticipant',
+                                'participant' => [
+                                    '@id' => '/api/users/' . $me->id,
+                                    '@type' => 'User',
+                                    'username' => 'base_user_1',
+                                    'display_name' => 'base_user_1',
+                                    'id' => $me->id,
+                                ],
+                            ], [
+                                '@id' => '/api/message_participants/' . $otherParticipation->id,
+                                '@type' => 'MessageParticipant',
+                                'participant' => [
+                                    '@id' => '/api/users/' . $other->id,
+                                    '@type' => 'User',
+                                    'username' => 'base_user_2',
+                                    'display_name' => 'base_user_2',
+                                    'id' => $other->id,
+                                ],
+                            ],
+                        ],
+                        'last_message' => [
+                            '@id'   => '/api/messages/' . $message->id,
+                            '@type' => 'Message',
+                            'creation_datetime' => '2026-10-20T10:00:00+00:00',
+                            'author' => [
+                                '@id'   => '/api/users/' . $me->id,
+                                '@type' => 'User',
+                                'id'    => (string) $me->id,
+                                'username' => 'base_user_1',
+                                'display_name' => 'base_user_1',
+                            ],
+                            'content' => '',
+                            'content_preview' => $preview,
+                        ],
+                        'can_send_media' => false,
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
     public function test_a_channel_preview_names_who_was_mentioned(): void
     {
         // A mention is stored as `@[uuid]` and rendered only when the chat API reads it, so the inbox
@@ -482,6 +579,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             'content' => 'regarde &#64;[' . $user->id . ']',
                             'content_preview' => 'regarde @[' . $user->id . ']',
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],
@@ -630,6 +728,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             // what the thread puts on screen too: this field is text, not inert HTML.
                             'content_preview' => "Bonjour Harry, J'ai vu retour, on commence < 20h",
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],

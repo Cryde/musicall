@@ -64,6 +64,7 @@
     <ChatComposer
       :members="settingsStore.members"
       :band-space-id="bandSpaceId"
+      media
       :send-message="
         (content, attachments, media) =>
           chatStore.sendMessage(bandSpaceId, content, attachments, media)

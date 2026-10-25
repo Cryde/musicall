@@ -184,6 +184,38 @@ class ChatMessagePatchTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_voice_note_cannot_be_edited(): void
+    {
+        // Sent alone (#974), so an edit could only bolt a caption onto it.
+        $space = BandSpaceFactory::new()->create();
+        $author = $this->member($space, 'batteur');
+        $channel = $this->channelOf($space);
+        $message = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $author,
+            'content' => '',
+            'voiceNoteFileId' => '0199a3b4-0000-7000-8000-000000000001',
+            'voiceNoteDurationSeconds' => 12,
+        ])->create();
+        $messageId = (string) $message->id;
+
+        $this->client->loginUser($author);
+        $this->patch($space, $messageId, 'la légende');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une note vocale ne peut pas être modifiée',
+            'description' => 'Une note vocale ne peut pas être modifiée',
+            'status' => 403,
+            'type' => '/errors/403',
+        ]);
+        $this->assertSame('', self::getContainer()->get(MessageRepository::class)->find($messageId)->content);
+    }
+
     public function test_an_unknown_message_is_a_404(): void
     {
         $space = BandSpaceFactory::new()->create();

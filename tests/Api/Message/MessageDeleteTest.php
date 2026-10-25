@@ -201,6 +201,7 @@ class MessageDeleteTest extends ApiTestCase
                             'content' => '',
                             'content_preview' => 'Message supprimé',
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],

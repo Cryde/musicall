@@ -12,18 +12,17 @@ use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\Repository\Message\MessageContactOriginRepository;
+use App\Repository\Message\MessageFileRepository;
 use App\Repository\Message\MessageReactionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Message\MessagePlainTextExtractor;
 use App\Service\Message\ThreadSeenPosition;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class MessageBuilder
 {
-    private const string DELETED_PREVIEW = 'Message supprimé';
-    private const string ATTACHMENT_ONLY_PREVIEW = 'Pièce jointe';
-
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $contentSanitizer,
@@ -34,6 +33,8 @@ readonly class MessageBuilder
         private MessageReactionRepository $messageReactionRepository,
         private MessageReactionsBuilder $reactionsBuilder,
         private ThreadSeenPosition $threadSeenPosition,
+        private MessageFileRepository $messageFileRepository,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -52,6 +53,7 @@ readonly class MessageBuilder
         $origins = $this->messageContactOriginRepository->findByMessageIds($messageIds);
         $reactions = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer);
         $seenUntil = $this->threadSeenPosition->of($thread, $viewer);
+        $liveMediaIds = $this->messageFileRepository->findLiveIdsAmong(self::mediaIdsOf($messages));
 
         return array_map(
             fn (Message $message): MessageResource => $this->buildItem(
@@ -63,9 +65,29 @@ readonly class MessageBuilder
                     && $message->creationDatetime <= $seenUntil,
                 viewer: $viewer,
                 reactionTallies: $reactions[(string) $message->id] ?? [],
+                liveMediaIds: $liveMediaIds,
             ),
             $messages,
         );
+    }
+
+    /**
+     * @param Message[] $messages
+     *
+     * @return list<string>
+     */
+    private static function mediaIdsOf(array $messages): array
+    {
+        $ids = [];
+        foreach ($messages as $message) {
+            foreach ([$message->imageFileId, $message->voiceNoteFileId] as $id) {
+                if ($id !== null) {
+                    $ids[] = $id;
+                }
+            }
+        }
+
+        return $ids;
     }
 
     /**
@@ -88,6 +110,8 @@ readonly class MessageBuilder
      *                                                    written with a mention at all.
      * @param User|null $viewer who reads it, which decides whether it comes with its editable content
      * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
+     * @param list<string>|null $liveMediaIds the media files that still exist; null when the message
+     *                                        was just sent, and so are its files
      */
     public function buildItem(
         Message $entity,
@@ -96,6 +120,7 @@ readonly class MessageBuilder
         bool $isSeen = false,
         ?User $viewer = null,
         array $reactionTallies = [],
+        ?array $liveMediaIds = null,
     ): MessageResource
     {
         $dto = new MessageResource();
@@ -119,9 +144,21 @@ readonly class MessageBuilder
         $dto->updateDatetime = $entity->updateDatetime;
         $dto->isDeleted = $entity->isDeleted();
         $dto->reactions = $this->reactionsBuilder->build($reactionTallies);
-        $dto->editableContent = $viewer instanceof User && $entity->author->id === $viewer->id && !$entity->isDeleted()
+        $dto->editableContent = $viewer instanceof User && $entity->author->id === $viewer->id && !$entity->isDeleted() && !$entity->isVoiceNote()
             ? $entity->content
             : null;
+        $isLive = static fn (string $id): bool => $liveMediaIds === null || in_array($id, $liveMediaIds, true);
+        if ($entity->imageFileId !== null) {
+            $dto->image = ['file_id' => $entity->imageFileId, 'is_available' => $isLive($entity->imageFileId)];
+        }
+        if ($entity->voiceNoteFileId !== null) {
+            $dto->voiceNote = [
+                'file_id' => $entity->voiceNoteFileId,
+                'duration_seconds' => (int) $entity->voiceNoteDurationSeconds,
+                'peaks' => $entity->voiceNotePeaks ?? [],
+                'is_available' => $isLive($entity->voiceNoteFileId),
+            ];
+        }
 
         return $dto;
     }
@@ -154,15 +191,15 @@ readonly class MessageBuilder
         // Its content is empty, and an empty preview makes ThreadList.vue fall back to « Aucun
         // message », which is a lie about a conversation that has one.
         if ($entity->isDeleted()) {
-            return self::DELETED_PREVIEW;
+            return $this->translator->trans('message.preview.deleted');
         }
 
         $isChannel = $entity->thread->bandSpace instanceof BandSpace;
 
-        // Empty content no longer means deleted (#971): a live channel message with no text is one that
-        // was sent for its attachments alone, so the preview says so without loading them.
-        if ($isChannel && $entity->content === '') {
-            return self::ATTACHMENT_ONLY_PREVIEW;
+        // Empty content no longer means deleted (#971): a live message with no text is one that was sent
+        // for its attachments, image or voice note alone (#1247), so the preview says so.
+        if ($entity->content === '') {
+            return $this->translator->trans('message.preview.attachment_only');
         }
 
         $content = $isChannel

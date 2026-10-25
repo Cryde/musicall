@@ -69,4 +69,11 @@ class MessageThreadResource
      */
     #[Groups([MessageThreadMetaResource::LIST])]
     public ?array $latestContactOrigin = null;
+
+    /**
+     * Whether the reader may send an image or a voice note here (#1247): once the other person has
+     * written in it. Null for a channel, whose media goes through the band chat.
+     */
+    #[Groups([MessageThreadMetaResource::LIST])]
+    public ?bool $canSendMedia = null;
 }

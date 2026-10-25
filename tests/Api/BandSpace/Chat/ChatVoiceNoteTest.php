@@ -449,7 +449,7 @@ class ChatVoiceNoteTest extends ApiTestCase
             'reactions' => [],
             'attachments' => [],
             'update_datetime' => null,
-            'editable_content' => '',
+            'editable_content' => null,
             'is_deleted' => false,
             'is_pinned' => false,
             'pinned_datetime' => null,

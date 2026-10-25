@@ -397,6 +397,7 @@ class MessageContactOriginTest extends ApiTestCase
                             'styles' => $styles,
                             'location_name' => 'Lyon',
                         ],
+                        'can_send_media' => true,
                     ],
                 ],
             ],
