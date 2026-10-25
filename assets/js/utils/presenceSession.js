@@ -1,4 +1,5 @@
 import { browserTimers } from './browserTimers.js'
+import { createHeartbeat } from './heartbeat.js'
 
 /**
  * When a page counts as « here » (#1040): beating while shown, still here for `graceMs` once hidden,
@@ -40,5 +41,50 @@ export function createPresenceSession({ heartbeat, leave, graceMs, timers = brow
       }, graceMs)
     },
     leaveNow
+  }
+}
+
+/**
+ * A presence session for whichever conversation is open (#1246): a band's chat or a direct one. The
+ * conversations page swaps one for the next without remounting, so switching leaves the old one before
+ * beating the new, and `null` is « nothing to be present in » (a channel, which beats on its own).
+ *
+ * @param {object} options
+ * @param {(target: string) => unknown} options.beat
+ * @param {(target: string) => unknown} options.leave
+ * @param {number} options.intervalMs
+ * @param {number} options.graceMs
+ * @param {{ set: Function, clear: Function }} [options.timers] injected for tests
+ */
+export function createTargetedPresence({
+  beat,
+  leave,
+  intervalMs,
+  graceMs,
+  timers = browserTimers()
+}) {
+  let current = null
+  const session = createPresenceSession({
+    heartbeat: createHeartbeat({ intervalMs, beat: () => beat(current), timers }),
+    // Read when it runs, not when built: a switch leaves before it moves `current` on.
+    leave: () => leave(current),
+    graceMs,
+    timers
+  })
+
+  return {
+    target(next, isVisible) {
+      if ((next ?? null) === current) return
+      session.leaveNow()
+      current = next ?? null
+      if (current !== null && isVisible) session.shown()
+    },
+    shown() {
+      if (current !== null) session.shown()
+    },
+    hidden() {
+      if (current !== null) session.hidden()
+    },
+    leaveNow: () => session.leaveNow()
   }
 }

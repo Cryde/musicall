@@ -24,7 +24,8 @@
     "load_older_error": "Could not load older messages.",
     "recipient_deleted": "You can no longer send messages to this user.",
     "none_selected": "Select a conversation or send a new message.",
-    "seen": "Seen"
+    "seen": "Seen",
+    "online": "Online"
   },
   "send_modal": {
     "title": "New message",

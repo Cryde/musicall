@@ -71,6 +71,24 @@ export default {
     return axios.post(Routing.generate('api_message_thread_typing', { threadId }))
   },
 
+  /**
+   * « I have this conversation open », answered with whether the other person has too (#1246). `tab`
+   * tells this page apart from the member's other tabs, as in the band chat.
+   */
+  beatPresence(threadId, tab) {
+    return axios
+      .post(Routing.generate('api_message_thread_presence', { threadId, tab }))
+      .then((resp) => resp.data.online_user_ids ?? [])
+      .catch(handleApiError)
+  },
+
+  /** A beacon, as the band chat's: this runs as the page goes, and the TTL catches what it misses. */
+  leavePresence(threadId, tab) {
+    const url = Routing.generate('api_message_thread_presence_leave', { threadId, tab })
+    if (globalThis.navigator?.sendBeacon?.(url)) return
+    axios.post(url).catch(() => {})
+  },
+
   /** Rewrites one of your messages (#1245); answers with the message as the list shows it. */
   updateMessage({ threadId, messageId, content }) {
     return axios

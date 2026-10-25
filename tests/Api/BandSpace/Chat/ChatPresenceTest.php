@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Entity\User\UserNotificationPreference;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Mercure\MercureTopic;
+use App\Repository\Message\MessageThreadRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\RecordingHub;
@@ -338,9 +339,12 @@ class ChatPresenceTest extends ApiTestCase
         return $this->tabsOf($space, $user) !== [];
     }
 
+    /** The tracker keys by thread (#1246), so by the band's channel here. */
     private function key(BandSpace $space, User $user): string
     {
-        return 'chat_presence_' . $space->id . '_' . $user->id;
+        $channel = self::getContainer()->get(MessageThreadRepository::class)->findChannelForBandSpace($space);
+
+        return 'chat_presence_' . $channel->id . '_' . $user->id;
     }
 
     private function beat(BandSpace $space, string $tab = self::TAB): void

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { createPresenceSession } from './presenceSession.js'
+import { createPresenceSession, createTargetedPresence } from './presenceSession.js'
 
 function fakeTimers() {
   const pending = new Map()
@@ -110,5 +110,119 @@ describe('createPresenceSession', () => {
 
     assert.equal(timers.size, 0)
     assert.equal(leaves(), 0)
+  })
+})
+
+/** Timers that remember their delay, so a test can fire the hidden grace and leave the heartbeat be. */
+function delayedTimers() {
+  const pending = new Map()
+  let next = 1
+  return {
+    set: (fn, delayMs) => {
+      const id = next++
+      pending.set(id, { fn, delayMs })
+      return id
+    },
+    clear: (id) => pending.delete(id),
+    fireAfter(delayMs) {
+      for (const [id, timer] of pending) {
+        if (timer.delayMs !== delayMs) continue
+        pending.delete(id)
+        timer.fn()
+        return
+      }
+      throw new Error(`No timer of ${delayMs} ms pending`)
+    },
+    delays: () => [...pending.values()].map((timer) => timer.delayMs)
+  }
+}
+
+function setupTargeted() {
+  const timers = delayedTimers()
+  const beats = []
+  const leaves = []
+  const presence = createTargetedPresence({
+    beat: (target) => beats.push(target),
+    leave: (target) => leaves.push(target),
+    intervalMs: 30000,
+    graceMs: 15000,
+    timers
+  })
+  return { timers, presence, beats, leaves }
+}
+
+describe('createTargetedPresence', () => {
+  it('beats the open conversation at once, then on every interval', () => {
+    const { timers, presence, beats } = setupTargeted()
+
+    presence.target('thread-a', true)
+    timers.fireAfter(30000)
+
+    assert.deepEqual(beats, ['thread-a', 'thread-a'])
+  })
+
+  it('leaves the conversation it is switching away from before beating the next', () => {
+    const { presence, beats, leaves } = setupTargeted()
+
+    presence.target('thread-a', true)
+    presence.target('thread-b', true)
+
+    assert.deepEqual(leaves, ['thread-a'])
+    assert.deepEqual(beats, ['thread-a', 'thread-b'])
+  })
+
+  it('says nothing again for the conversation it is already in', () => {
+    const { presence, beats, leaves } = setupTargeted()
+
+    presence.target('thread-a', true)
+    presence.target('thread-a', true)
+
+    assert.deepEqual(beats, ['thread-a'])
+    assert.deepEqual(leaves, [])
+  })
+
+  it('beats nothing without a conversation, even when shown', () => {
+    const { timers, presence, beats, leaves } = setupTargeted()
+
+    presence.target('thread-a', true)
+    presence.target(null, true)
+    presence.shown()
+
+    assert.deepEqual(beats, ['thread-a'])
+    assert.deepEqual(leaves, ['thread-a'])
+    assert.deepEqual(timers.delays(), [])
+  })
+
+  it('waits until shown when the conversation opens in a hidden tab', () => {
+    const { presence, beats } = setupTargeted()
+
+    presence.target('thread-a', false)
+    assert.deepEqual(beats, [])
+    presence.shown()
+
+    assert.deepEqual(beats, ['thread-a'])
+  })
+
+  it('leaves the old conversation once when switching during the hidden grace', () => {
+    const { timers, presence, beats, leaves } = setupTargeted()
+
+    presence.target('thread-a', true)
+    presence.hidden()
+    presence.target('thread-b', false)
+
+    assert.deepEqual(leaves, ['thread-a'])
+    assert.deepEqual(beats, ['thread-a'])
+    assert.deepEqual(timers.delays(), [])
+  })
+
+  it('leaves the conversation it is in when the grace runs out', () => {
+    const { timers, presence, leaves } = setupTargeted()
+
+    presence.target('thread-a', true)
+    presence.hidden()
+    timers.fireAfter(15000)
+
+    assert.deepEqual(leaves, ['thread-a'])
+    assert.deepEqual(timers.delays(), [])
   })
 })

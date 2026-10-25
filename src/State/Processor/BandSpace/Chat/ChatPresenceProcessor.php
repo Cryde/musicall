@@ -7,7 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Chat\ChatPresence;
 use App\Entity\User;
 use App\Service\BandSpace\Chat\ChatChannelLocator;
-use App\Service\BandSpace\Chat\ChatPresenceTracker;
+use App\Service\Message\ChatPresenceTracker;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -37,11 +37,11 @@ readonly class ChatPresenceProcessor implements ProcessorInterface
         $this->presenceLimiter->create($user->getUserIdentifier())->consume()->ensureAccepted();
 
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
-        [$bandSpace, $channel] = $this->channelLocator->locate($bandSpaceId, $user);
+        $channel = $this->channelLocator->locate($bandSpaceId, $user);
 
         $presence = new ChatPresence();
         $presence->bandSpaceId = $bandSpaceId;
-        $presence->onlineUserIds = $this->presenceTracker->beat($bandSpace, $channel, $user, ChatPresence::tabOf($operation));
+        $presence->onlineUserIds = $this->presenceTracker->beat($channel, $user, ChatPresence::tabOf($operation));
 
         return $presence;
     }

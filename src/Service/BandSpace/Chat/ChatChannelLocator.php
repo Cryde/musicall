@@ -2,7 +2,6 @@
 
 namespace App\Service\BandSpace\Chat;
 
-use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\Repository\Message\MessageThreadRepository;
@@ -10,7 +9,7 @@ use App\Security\BandSpace\BandSpaceMemberChecker;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The band space and its channel for a member of it, the pair every presence request starts from.
+ * The band's channel for a member of it, where every band presence request starts from.
  */
 readonly class ChatChannelLocator
 {
@@ -22,10 +21,8 @@ readonly class ChatChannelLocator
 
     /**
      * checkMember, not ForWrite: being in a chat is reading it, which a space pending deletion allows.
-     *
-     * @return array{BandSpace, MessageThread}
      */
-    public function locate(string $bandSpaceId, User $user): array
+    public function locate(string $bandSpaceId, User $user): MessageThread
     {
         [$bandSpace] = $this->memberChecker->checkMember($bandSpaceId, $user);
 
@@ -34,6 +31,6 @@ readonly class ChatChannelLocator
             throw new NotFoundHttpException('band_space.chat.no_conversation');
         }
 
-        return [$bandSpace, $channel];
+        return $channel;
     }
 }

@@ -75,10 +75,10 @@
         />
       </div>
 
-      <!-- Band Space section -->
+      <!-- Chats section: the band chat and direct conversations (#1040, #1243, #1246) -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          {{ t('profile.settings.notifications.section_band_space') }}
+          {{ t('profile.settings.notifications.section_chats') }}
         </h3>
         <div class="border-b border-surface-200 dark:border-surface-700" />
 
@@ -88,15 +88,6 @@
           :description="t('profile.settings.notifications.email.show_online_presence.description')"
           :disabled="isUpdating"
         />
-      </div>
-
-      <!-- Direct messages section (#1243) -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
-          {{ t('profile.settings.notifications.section_direct_messages') }}
-        </h3>
-        <div class="border-b border-surface-200 dark:border-surface-700" />
-
         <NotificationToggle
           v-model="form.show_read_receipts"
           :label="t('profile.settings.notifications.email.show_read_receipts.label')"

@@ -21,6 +21,7 @@ function route(payload) {
     inboxRead: record('inboxRead'),
     inboxMessageChanged: record('inboxMessageChanged'),
     chatPresence: record('chatPresence'),
+    inboxPresence: record('inboxPresence'),
     bandSpaceChanged: record('bandSpaceChanged')
   })
 
@@ -105,6 +106,14 @@ describe('routeLiveSignal', () => {
       [['inboxMessageChanged', { threadId: 'thread-1', messageId: 'm1', change: 'edit' }]]
     )
     assert.deepEqual(route({ type: 'message_changed', thread_id: 'thread-1' }), [])
+  })
+
+  it('sends a direct conversation presence to the inbox presence handler and nowhere else', () => {
+    // Somebody opening a conversation is not new content: no badge, nothing marked read.
+    assert.deepEqual(route({ type: 'message_presence', thread_id: 'thread-1' }), [
+      ['inboxPresence', 'thread-1']
+    ])
+    assert.deepEqual(route({ type: 'message_presence' }), [])
   })
 
   it('drops a chat read that names no space', () => {
