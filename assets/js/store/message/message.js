@@ -22,6 +22,9 @@ import { useUserSecurityStore } from '../user/security.js'
 /** Changes signalled within this window are re-read together, as in the band chat (#1056). */
 const MESSAGE_CHANGE_COALESCE_MS = 1000
 
+/** A presence refusal means there is nobody to show: a block, or a conversation that is gone (#1246). */
+const PRESENCE_REFUSED_STATUSES = [403, 404]
+
 export const useMessageStore = defineStore('message', () => {
   const threads = ref([])
   const messages = ref([])
@@ -442,6 +445,50 @@ export const useMessageStore = defineStore('message', () => {
     typingNotifier.reset()
   }
 
+  // --- « En ligne » in a direct conversation (#1246) ----------------------------------------------
+
+  // The other participant while they have the conversation open, as a list like the band chat's.
+  // Thread.vue runs the heartbeat, since it owns the page's lifecycle; the store holds the answer.
+  const onlineUserIds = ref([])
+  // One per page load: the server keeps somebody online while any of their tabs still beats.
+  const presenceTab = crypto.randomUUID()
+  // The conversation this page is beating for, null once it has left, so that a tab hidden past its
+  // grace is not put back online by the other person's arrival.
+  let presentInThreadId = null
+
+  async function beatPresence(threadId) {
+    presentInThreadId = threadId
+    try {
+      const online = await messageApi.beatPresence(threadId, presenceTab)
+      if (presentInThreadId === threadId) onlineUserIds.value = online
+    } catch (e) {
+      if (!PRESENCE_REFUSED_STATUSES.includes(e?.status)) {
+        // Anything else leaves the header as it was; the next heartbeat puts it right.
+        console.error('Failed to send the conversation presence heartbeat:', e)
+      } else if (presentInThreadId === threadId) {
+        onlineUserIds.value = []
+      }
+    }
+  }
+
+  function leavePresence(threadId) {
+    messageApi.leavePresence(threadId, presenceTab)
+    if (presentInThreadId === threadId) presentInThreadId = null
+    onlineUserIds.value = []
+  }
+
+  // The other person's arrival and a second tab of theirs can land together; one heartbeat answers both.
+  const presenceRefresh = createCoalescedCall({
+    delayMs: 500,
+    call: () => {
+      if (presentInThreadId) beatPresence(presentInThreadId)
+    }
+  })
+
+  function handlePresence(threadId) {
+    if (threadId && threadId === presentInThreadId) presenceRefresh.request()
+  }
+
   /**
    * The other person read this conversation (#1243), so a « Vu » on screen may be stale. Refetched
    * quietly and never marked read in return: answering a read with a read is how two tabs feed each
@@ -455,6 +502,8 @@ export const useMessageStore = defineStore('message', () => {
 
   function forgetMessageState() {
     forgetTyping()
+    presenceRefresh.cancel()
+    onlineUserIds.value = []
     reactionError.value = null
     reactionToggle.reset()
     changedMessageIds.clear()
@@ -504,6 +553,10 @@ export const useMessageStore = defineStore('message', () => {
     handleTyping,
     handleThreadRead,
     handleMessageChanged,
+    handlePresence,
+    beatPresence,
+    leavePresence,
+    onlineUserIds: readonly(onlineUserIds),
     editMessage,
     deleteMessage,
     toggleReaction,

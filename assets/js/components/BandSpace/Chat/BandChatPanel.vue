@@ -81,11 +81,10 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useChatPresence } from '../../../composables/useChatPresence.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { memberNames } from '../../../utils/chatTyping.js'
-import { createHeartbeat } from '../../../utils/heartbeat.js'
-import { createPresenceSession } from '../../../utils/presenceSession.js'
 import ChatComposer from './ChatComposer.vue'
 import ChatMessageList from './ChatMessageList.vue'
 import ChatPinnedBar from './ChatPinnedBar.vue'
@@ -148,41 +147,11 @@ watch(
 
 onMounted(load)
 
-// « En ligne » (#1040): only while this page is open and on screen. A tab hidden for longer than the
-// grace says it has gone, and beats again, at once, when it is shown.
-const PRESENCE_INTERVAL_MS = 30000
-const PRESENCE_HIDDEN_GRACE_MS = 15000
-const presence = createPresenceSession({
-  heartbeat: createHeartbeat({
-    intervalMs: PRESENCE_INTERVAL_MS,
-    beat: () => chatStore.beatPresence(bandSpaceId)
-  }),
-  leave: () => chatStore.leavePresence(bandSpaceId),
-  graceMs: PRESENCE_HIDDEN_GRACE_MS
-})
-
-function syncPresenceWithVisibility() {
-  if (document.visibilityState === 'visible') presence.shown()
-  else presence.hidden()
-}
-
-// A page restored from the browser's back-forward cache fires no visibilitychange, only pageshow.
-function resumeOnPageShow(event) {
-  if (event.persisted) syncPresenceWithVisibility()
-}
-
-onMounted(() => {
-  syncPresenceWithVisibility()
-  document.addEventListener('visibilitychange', syncPresenceWithVisibility)
-  window.addEventListener('pagehide', presence.leaveNow)
-  window.addEventListener('pageshow', resumeOnPageShow)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('visibilitychange', syncPresenceWithVisibility)
-  window.removeEventListener('pagehide', presence.leaveNow)
-  window.removeEventListener('pageshow', resumeOnPageShow)
-  presence.leaveNow()
+// « En ligne » (#1040). The space never changes under this panel, which is keyed by it.
+useChatPresence({
+  target: () => bandSpaceId,
+  beat: (id) => chatStore.beatPresence(id),
+  leave: (id) => chatStore.leavePresence(id)
 })
 
 const onlineMembers = computed(() =>

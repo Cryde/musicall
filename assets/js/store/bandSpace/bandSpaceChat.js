@@ -688,11 +688,15 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   const onlineUserIds = ref([])
   // One per page load: the server keeps a member online while any of their tabs still beats.
   const presenceTab = crypto.randomUUID()
+  // The space this page is beating for, null once it has left: a tab hidden past its grace must not
+  // be put back online by somebody else's arrival.
+  let presentInBandSpaceId = null
 
   async function beatPresence(bandSpaceId) {
+    presentInBandSpaceId = bandSpaceId
     try {
       const online = await bandSpaceChatApi.beatPresence(bandSpaceId, presenceTab)
-      if (openBandSpaceId.value === bandSpaceId) onlineUserIds.value = online
+      if (presentInBandSpaceId === bandSpaceId) onlineUserIds.value = online
     } catch (e) {
       // A heartbeat that fails leaves the line as it was; the next one puts it right.
       console.error('Failed to send the chat presence heartbeat:', e)
@@ -701,6 +705,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
 
   function leavePresence(bandSpaceId) {
     bandSpaceChatApi.leavePresence(bandSpaceId, presenceTab)
+    if (presentInBandSpaceId === bandSpaceId) presentInBandSpaceId = null
     onlineUserIds.value = []
   }
 
@@ -709,12 +714,12 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   const presenceRefresh = createCoalescedCall({
     delayMs: 500,
     call: () => {
-      if (openBandSpaceId.value) beatPresence(openBandSpaceId.value)
+      if (presentInBandSpaceId) beatPresence(presentInBandSpaceId)
     }
   })
 
   function handlePresence(bandSpaceId) {
-    if (bandSpaceId && bandSpaceId === openBandSpaceId.value) presenceRefresh.request()
+    if (bandSpaceId && bandSpaceId === presentInBandSpaceId) presenceRefresh.request()
   }
 
   function clear() {

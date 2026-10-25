@@ -145,8 +145,7 @@
       "section_communication": "Communication",
       "section_updates": "Mises à jour",
       "section_reminders": "Rappels",
-      "section_band_space": "Band Space",
-      "section_direct_messages": "Messages privés",
+      "section_chats": "Discussions",
       "section_push": "Notifications mobiles",
       "section_marketing": "Marketing",
       "email": {
@@ -176,7 +175,7 @@
         },
         "show_online_presence": {
           "label": "Me montrer en ligne",
-          "description": "Les membres de tes groupes voient quand tu as leur discussion ouverte"
+          "description": "Les membres de tes groupes et les personnes avec qui tu échanges voient quand ta discussion avec eux est ouverte"
         },
         "show_read_receipts": {
           "label": "Confirmations de lecture",

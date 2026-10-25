@@ -19,6 +19,7 @@
  * @param {(threadId: string) => unknown} handlers.inboxRead
  * @param {(change: {threadId: string, messageId: string, change: string}) => unknown} handlers.inboxMessageChanged
  * @param {(bandSpaceId: string) => unknown} handlers.chatPresence
+ * @param {(threadId: string) => unknown} handlers.inboxPresence
  * @param {(change: {bandSpaceId: string, module: string} | null) => unknown} handlers.bandSpaceChanged
  */
 export function routeLiveSignal(payload, handlers) {
@@ -74,6 +75,10 @@ export function routeLiveSignal(payload, handlers) {
       messageId: payload.message_id,
       change: payload.change ?? null
     })
+  }
+  // The other person opened or closed a direct conversation (#1246): the band chat's presence, for two.
+  if (type === 'message_presence' && payload.thread_id) {
+    handlers.inboxPresence(payload.thread_id)
   }
   // A module of a space changed (#1102, #1157): the screen showing it refetches. A reconnect reaches
   // every screen, since whatever was published while we were down is gone.

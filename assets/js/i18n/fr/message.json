@@ -24,7 +24,8 @@
     "load_older_error": "Impossible de charger les messages plus anciens.",
     "recipient_deleted": "Tu ne peux plus envoyer de message à cet utilisateur.",
     "none_selected": "Sélectionne une conversation ou envoie un nouveau message.",
-    "seen": "Vu"
+    "seen": "Vu",
+    "online": "En ligne"
   },
   "send_modal": {
     "title": "Nouveau message",

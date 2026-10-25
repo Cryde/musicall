@@ -10,30 +10,38 @@
           @click="emit('back')"
         />
       </div>
-      <Avatar
-        v-if="isCurrentChannel"
-        icon="pi pi-users"
-        :style="getAvatarStyle(title)"
-        shape="circle"
-        role="img"
-        :aria-label="t('message.avatar.channel', { name: title })"
-      />
-      <Avatar
-        v-else-if="otherParticipant?.profile_picture?.small && !otherParticipant?.deletion_datetime"
-        :image="otherParticipant.profile_picture.small"
-        :pt="{ image: { alt: t('message.avatar.photo', { name: title }) } }"
-        shape="circle"
-        role="img"
-        :aria-label="t('message.avatar.photo', { name: title })"
-      />
-      <Avatar
-        v-else
-        :label="title.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(otherParticipant?.username ?? title)"
-        shape="circle"
-        role="img"
-        :aria-label="t('message.avatar.initial', { name: title })"
-      />
+      <!-- The dot is the band chat's (#1040): the other person has this conversation open (#1246). -->
+      <span class="relative inline-flex shrink-0">
+        <Avatar
+          v-if="isCurrentChannel"
+          icon="pi pi-users"
+          :style="getAvatarStyle(title)"
+          shape="circle"
+          role="img"
+          :aria-label="t('message.avatar.channel', { name: title })"
+        />
+        <Avatar
+          v-else-if="otherParticipant?.profile_picture?.small && !otherParticipant?.deletion_datetime"
+          :image="otherParticipant.profile_picture.small"
+          :pt="{ image: { alt: t('message.avatar.photo', { name: title }) } }"
+          shape="circle"
+          role="img"
+          :aria-label="t('message.avatar.photo', { name: title })"
+        />
+        <Avatar
+          v-else
+          :label="title.charAt(0).toUpperCase()"
+          :style="getAvatarStyle(otherParticipant?.username ?? title)"
+          shape="circle"
+          role="img"
+          :aria-label="t('message.avatar.initial', { name: title })"
+        />
+        <span
+          v-if="isOtherOnline"
+          class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface-0 dark:ring-surface-900"
+          aria-hidden="true"
+        />
+      </span>
       <!-- A channel points at the band's own discussion tab, the way a direct message points at the
            other party's profile: the header's name is a way back to where the conversation lives. -->
       <router-link
@@ -53,6 +61,9 @@
       </span>
       <span v-if="isCurrentChannel" class="text-sm text-surface-600 dark:text-surface-400 shrink-0">
         #{{ currentThread.thread.channel_name }}
+      </span>
+      <span v-if="isOtherOnline" class="text-xs text-emerald-700 dark:text-emerald-400 shrink-0">
+        {{ t('message.thread.online') }}
       </span>
       <BlockUserButton
         v-if="!isCurrentChannel && otherParticipant?.id && !isRecipientDeleted"
@@ -221,6 +232,7 @@ import ChatMessageBubble from '../../components/BandSpace/Chat/ChatMessageBubble
 import ChatMessageEditBox from '../../components/BandSpace/Chat/ChatMessageEditBox.vue'
 import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
 import { useChatMessageActions } from '../../composables/useChatMessageActions.js'
+import { useChatPresence } from '../../composables/useChatPresence.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
 import { useMessageStore } from '../../store/message/message.js'
@@ -264,6 +276,25 @@ const otherParticipant = computed(() => {
 const title = computed(() => conversationTitle(currentThread.value, otherParticipant.value))
 
 const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_datetime)
+
+// « En ligne » (#1246) for a direct conversation only: a channel is BandChatPanel's, which beats for
+// its band, and a deleted account has nobody to be present with. Not until the inbox has loaded the
+// thread, or a channel opened from a link would be beaten here as if it were direct.
+useChatPresence({
+  target: () =>
+    currentThread.value && !isCurrentChannel.value && !isRecipientDeleted.value
+      ? messageStore.currentThreadId
+      : null,
+  beat: (threadId) => messageStore.beatPresence(threadId),
+  leave: (threadId) => messageStore.leavePresence(threadId)
+})
+
+const isOtherOnline = computed(
+  () =>
+    !isCurrentChannel.value &&
+    !!otherParticipant.value?.id &&
+    messageStore.onlineUserIds.includes(otherParticipant.value.id)
+)
 
 // Two people in a conversation, so whoever is writing is the one the header names.
 const typistNames = computed(() => (messageStore.currentTypists.length > 0 ? [title.value] : []))

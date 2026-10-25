@@ -132,6 +132,7 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
         inboxRead: (threadId) => useMessageStore().handleThreadRead(threadId),
         inboxMessageChanged: (change) => useMessageStore().handleMessageChanged(change),
         chatPresence: (bandSpaceId) => useBandSpaceChatStore().handlePresence(bandSpaceId),
+        inboxPresence: (threadId) => useMessageStore().handlePresence(threadId),
         bandSpaceChanged: announceBandSpaceChange
       }),
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()

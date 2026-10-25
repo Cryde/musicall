@@ -45,7 +45,7 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $activityReminder = true;
 
-    /** Seen « en ligne » by the members of one's bands while their chat is open (#1040). */
+    /** Seen « en ligne » by bandmates and the people one messages while their chat is open (#1040, #1246). */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $showOnlinePresence = true;
 

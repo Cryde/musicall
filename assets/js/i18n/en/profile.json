@@ -145,8 +145,7 @@
       "section_communication": "Communication",
       "section_updates": "Updates",
       "section_reminders": "Reminders",
-      "section_band_space": "Band Space",
-      "section_direct_messages": "Direct messages",
+      "section_chats": "Chats",
       "section_push": "Mobile notifications",
       "section_marketing": "Marketing",
       "email": {
@@ -176,7 +175,7 @@
         },
         "show_online_presence": {
           "label": "Show me as online",
-          "description": "Members of your bands can see when you have their chat open"
+          "description": "Members of your bands and the people you message can see when you have your chat with them open"
         },
         "show_read_receipts": {
           "label": "Read receipts",
