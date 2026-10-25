@@ -6,13 +6,13 @@ use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
-use App\Enum\Message\MessageReactionEmoji;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageReactionRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\BandSpace\ChatMentionRenderer;
+use App\Service\Builder\Message\MessageReactionsBuilder;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use App\Service\Message\MessageAttachmentResolver;
 use App\Translation\DisplayNameTranslator;
@@ -33,6 +33,7 @@ readonly class ChatMessageBuilder
         private BandSpaceFileRepository $bandSpaceFileRepository,
         private BandSpaceMemberNames $memberNames,
         private DisplayNameTranslator $displayNames,
+        private MessageReactionsBuilder $reactionsBuilder,
     ) {
     }
 
@@ -291,7 +292,7 @@ readonly class ChatMessageBuilder
             $usernamesById,
         );
         $dto->creationDatetime = $creationDatetime;
-        $dto->reactions = $this->buildReactions($reactionTallies);
+        $dto->reactions = $this->reactionsBuilder->build($reactionTallies);
         $dto->attachments = $attachments;
         $dto->updateDatetime = $updateDatetime;
         // Raw on purpose, where `content` above is rendered: MentionEditor round trips the stored
@@ -320,33 +321,5 @@ readonly class ChatMessageBuilder
         $dto->voiceNote = $voiceNote;
 
         return $dto;
-    }
-
-    /**
-     * Driven by the enum rather than by the rows, which is what makes the order the declaration order
-     * whatever the database returns, and what keeps an emoji nobody used out of the payload.
-     *
-     * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies
-     *
-     * @return list<array{key: string, emoji: string, count: int, has_reacted: bool}>
-     */
-    private function buildReactions(array $reactionTallies): array
-    {
-        $reactions = [];
-        foreach (MessageReactionEmoji::cases() as $emoji) {
-            $tally = $reactionTallies[$emoji->value] ?? null;
-            if ($tally === null) {
-                continue;
-            }
-
-            $reactions[] = [
-                'key' => $emoji->value,
-                'emoji' => $emoji->character(),
-                'count' => $tally['count'],
-                'has_reacted' => $tally['hasReacted'],
-            ];
-        }
-
-        return $reactions;
     }
 }

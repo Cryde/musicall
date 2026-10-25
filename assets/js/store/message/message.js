@@ -4,16 +4,23 @@ import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { CHAT_TESTER_ONLY } from '../../constants/bandSpace.js'
 import { i18n } from '../../i18n/index.js'
+import { createReactionToggle } from '../../utils/chatReactionToggle.js'
 import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
+import { isHeld, withRefreshedHeld } from '../../utils/chatWindow.js'
+import { createCoalescedCall } from '../../utils/coalescedCall.js'
 import { isChannel } from '../../utils/conversationIdentity.js'
 import {
   hasOlderToLoad,
   mergeMessages,
-  nextOlderPageToLoad
+  nextOlderPageToLoad,
+  pageHoldingMessage
 } from '../../utils/messagePagination.js'
 import { isMessageAlreadyListed, messageSignalPlan } from '../../utils/messageSignal.js'
 import { useNotificationStore } from '../notification/notification.js'
 import { useUserSecurityStore } from '../user/security.js'
+
+/** Changes signalled within this window are re-read together, as in the band chat (#1056). */
+const MESSAGE_CHANGE_COALESCE_MS = 1000
 
 export const useMessageStore = defineStore('message', () => {
   const threads = ref([])
@@ -39,6 +46,7 @@ export const useMessageStore = defineStore('message', () => {
   const loadOlderError = ref(null)
   const totalMessages = ref(0)
   const isAddingMessage = ref(false)
+  const reactionError = ref(null)
 
   /**
    * Newest conversation first, and a Band Space channel only for a tester while CHAT_TESTER_ONLY
@@ -99,7 +107,7 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   async function selectThread(threadMeta) {
-    if (threadMeta.thread.id !== currentThreadId.value) forgetTyping()
+    if (threadMeta.thread.id !== currentThreadId.value) forgetMessageState()
     currentThreadId.value = threadMeta.thread.id
     currentThreadMetaId.value = threadMeta.id
 
@@ -241,6 +249,110 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
+  // --- Edit, delete, react (#1245) ------------------------------------------------------------------
+
+  /**
+   * The server's copy lands where the message already is, with its « modifié » and its « Vu ». Errors
+   * are left to the edit box, which stays open rather than losing what was typed.
+   */
+  async function editMessage(messageId, content) {
+    const threadId = currentThreadId.value
+    const message = await messageApi.updateMessage({ threadId, messageId, content })
+    if (threadId === currentThreadId.value) {
+      messages.value = mergeMessages(messages.value, [message])
+    }
+  }
+
+  /** A tombstone in place: the row stays, so nobody's scroll position moves (#967). */
+  async function deleteMessage(messageId) {
+    const threadId = currentThreadId.value
+    await messageApi.deleteMessage({ threadId, messageId })
+    if (threadId !== currentThreadId.value) return
+    messages.value = messages.value.map((message) =>
+      message.id === messageId
+        ? { ...message, content: '', is_deleted: true, editable_content: undefined }
+        : message
+    )
+  }
+
+  function patchReactions(messageId, reactions) {
+    messages.value = messages.value.map((message) =>
+      message.id === messageId ? { ...message, reactions } : message
+    )
+  }
+
+  const reactionToggle = createReactionToggle({
+    findMessage: (messageId) => messages.value.find((message) => message.id === messageId),
+    patchReactions,
+    add: (messageId, emoji, threadId) => messageApi.addReaction({ threadId, messageId, emoji }),
+    remove: (messageId, emoji, threadId) =>
+      messageApi.removeReaction({ threadId, messageId, emoji }),
+    onError: (e) => {
+      console.error('Failed to toggle a reaction:', e)
+      reactionError.value = e.status
+        ? e.message
+        : i18n.global.t('band_space_chat.error.reaction_failed')
+    }
+  })
+
+  function toggleReaction(messageId, emojiKey) {
+    reactionError.value = null
+    return reactionToggle.toggle(messageId, emojiKey, currentThreadId.value)
+  }
+
+  /**
+   * A message of a conversation changed in place, by either of the two (#1245). The open conversation
+   * re-reads the page holding it, quietly, and swaps in only what it already holds. No read and no
+   * badge: none of it is new content.
+   */
+  const changedMessageIds = new Set()
+  const messageChangeRefresh = createCoalescedCall({
+    delayMs: MESSAGE_CHANGE_COALESCE_MS,
+    call: () => refreshChangedMessages()
+  })
+
+  // The inbox row previews the last message, which an edit or a delete may have just changed, open
+  // conversation or not. A reaction never shows there.
+  const inboxRefresh = createCoalescedCall({
+    delayMs: MESSAGE_CHANGE_COALESCE_MS,
+    call: () => loadThreads({ silent: true })
+  })
+
+  function handleMessageChanged({ threadId, messageId, change }) {
+    if (hasLoadedThreads.value && change !== 'reaction') {
+      inboxRefresh.request()
+    }
+    if (!threadId || threadId !== currentThreadId.value || !isHeld(messages.value, messageId)) {
+      return
+    }
+    changedMessageIds.add(messageId)
+    messageChangeRefresh.request()
+  }
+
+  async function refreshChangedMessages() {
+    const threadId = currentThreadId.value
+    const pages = new Set(
+      [...changedMessageIds].map((messageId) => pageHoldingMessage(messages.value, messageId))
+    )
+    changedMessageIds.clear()
+    pages.delete(null)
+
+    for (const page of pages) {
+      try {
+        const response = await messageApi.getMessages({ threadId, page })
+        if (threadId !== currentThreadId.value) return
+        messages.value = withRefreshedHeld(
+          messages.value,
+          response.member ?? [],
+          reactionToggle.pendingMessageIds()
+        )
+      } catch (e) {
+        // The next load puts it right; a live refresh never turns a readable pane into an error.
+        console.error('Failed to refresh a changed message:', e)
+      }
+    }
+  }
+
   function getOtherParticipant(threadMeta) {
     const securityStore = useUserSecurityStore()
     const currentUsername = securityStore.user?.username
@@ -341,8 +453,16 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  function clearCurrentThread() {
+  function forgetMessageState() {
     forgetTyping()
+    reactionError.value = null
+    reactionToggle.reset()
+    changedMessageIds.clear()
+    messageChangeRefresh.cancel()
+  }
+
+  function clearCurrentThread() {
+    forgetMessageState()
     currentThreadId.value = null
     currentThreadMetaId.value = null
     messages.value = []
@@ -351,7 +471,8 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   function reset() {
-    forgetTyping()
+    forgetMessageState()
+    inboxRefresh.cancel()
     threads.value = []
     messages.value = []
     currentThreadId.value = null
@@ -371,6 +492,7 @@ export const useMessageStore = defineStore('message', () => {
     totalMessages: readonly(totalMessages),
     hasOlderMessages,
     isAddingMessage: readonly(isAddingMessage),
+    reactionError: readonly(reactionError),
     orderedThreads,
     currentThread,
     loadThreads,
@@ -381,6 +503,10 @@ export const useMessageStore = defineStore('message', () => {
     handleIncomingMessage,
     handleTyping,
     handleThreadRead,
+    handleMessageChanged,
+    editMessage,
+    deleteMessage,
+    toggleReaction,
     notifyTyping,
     currentTypists: readonly(currentTypists),
     getOtherParticipant,

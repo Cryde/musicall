@@ -9,8 +9,13 @@ use App\ApiResource\Message\MessageThreadResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageContactOrigin;
+use App\Entity\Message\MessageThread;
+use App\Entity\User;
+use App\Repository\Message\MessageContactOriginRepository;
+use App\Repository\Message\MessageReactionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Message\MessagePlainTextExtractor;
+use App\Service\Message\ThreadSeenPosition;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -25,7 +30,42 @@ readonly class MessageBuilder
         private MessagePlainTextExtractor $plainTextExtractor,
         private ChatMentionRenderer $chatMentionRenderer,
         private ContactOriginBuilder $contactOriginBuilder,
+        private MessageContactOriginRepository $messageContactOriginRepository,
+        private MessageReactionRepository $messageReactionRepository,
+        private MessageReactionsBuilder $reactionsBuilder,
+        private ThreadSeenPosition $threadSeenPosition,
     ) {
+    }
+
+    /**
+     * Messages of a direct conversation as the viewer reads them: the list, and the answer to an edit
+     * or a reaction, which has to keep its « Vu » (#1245). Origin cards and reactions are one query
+     * each for the whole page, never one per message.
+     *
+     * @param Message[] $messages
+     *
+     * @return MessageResource[]
+     */
+    public function buildForViewer(array $messages, MessageThread $thread, User $viewer): array
+    {
+        $messageIds = array_map(static fn (Message $message): string => (string) $message->id, $messages);
+        $origins = $this->messageContactOriginRepository->findByMessageIds($messageIds);
+        $reactions = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer);
+        $seenUntil = $this->threadSeenPosition->of($thread, $viewer);
+
+        return array_map(
+            fn (Message $message): MessageResource => $this->buildItem(
+                $message,
+                contactOrigin: $origins[(string) $message->id] ?? null,
+                isSeen: $seenUntil instanceof \DateTimeImmutable
+                    && $message->author->id === $viewer->id
+                    && !$message->isDeleted()
+                    && $message->creationDatetime <= $seenUntil,
+                viewer: $viewer,
+                reactionTallies: $reactions[(string) $message->id] ?? [],
+            ),
+            $messages,
+        );
     }
 
     /**
@@ -46,12 +86,16 @@ readonly class MessageBuilder
      *                                                    to, from MessageMentionRepository. Only a
      *                                                    channel has any; a direct message cannot be
      *                                                    written with a mention at all.
+     * @param User|null $viewer who reads it, which decides whether it comes with its editable content
+     * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
      */
     public function buildItem(
         Message $entity,
         array $mentionUsernamesById = [],
         ?MessageContactOrigin $contactOrigin = null,
         bool $isSeen = false,
+        ?User $viewer = null,
+        array $reactionTallies = [],
     ): MessageResource
     {
         $dto = new MessageResource();
@@ -59,14 +103,25 @@ readonly class MessageBuilder
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->author = $entity->author;
         $dto->thread = $this->buildShallowThread($entity->thread->id);
-        $dto->content = $this->renderMentions(
+        // Asked of the tombstone too, not only of the emptied column: an edit racing the delete could
+        // write text back, and a deleted message must not serve it.
+        $dto->content = $entity->isDeleted() ? '' : $this->renderMentions(
             $entity,
             $this->contentSanitizer->sanitize(nl2br($entity->content)),
             $mentionUsernamesById,
         );
         $dto->contentPreview = $this->toPreview($entity, $mentionUsernamesById);
-        $dto->contactOrigin = $contactOrigin instanceof MessageContactOrigin ? $this->contactOriginBuilder->build($contactOrigin) : null;
+        // A tombstone keeps nothing of what was sent, the card it was sent from included.
+        $dto->contactOrigin = $contactOrigin instanceof MessageContactOrigin && !$entity->isDeleted()
+            ? $this->contactOriginBuilder->build($contactOrigin)
+            : null;
         $dto->isSeen = $isSeen;
+        $dto->updateDatetime = $entity->updateDatetime;
+        $dto->isDeleted = $entity->isDeleted();
+        $dto->reactions = $this->reactionsBuilder->build($reactionTallies);
+        $dto->editableContent = $viewer instanceof User && $entity->author->id === $viewer->id && !$entity->isDeleted()
+            ? $entity->content
+            : null;
 
         return $dto;
     }

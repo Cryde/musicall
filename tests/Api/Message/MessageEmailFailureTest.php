@@ -63,6 +63,9 @@ class MessageEmailFailureTest extends ApiTestCase
             ],
             'content' => 'Salut !',
             'content_preview' => 'Salut !',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Salut !',
         ]);
 
         // The throttle flag was set before the email was attempted. Left set, this thread would

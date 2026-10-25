@@ -54,12 +54,12 @@ export function hasOlderToLoad(loadedCount, total) {
  * timestamps and keeping the input order on a tie is enough: the second granular column produces ties
  * constantly, and a stable merge simply does not care.
  *
- * Matched on `@id` because the `message:list` group carries no `id`, the same reason
- * `isMessageAlreadyListed` in messageSignal.js matches on it. A message with no `@id` is kept rather
- * than dropped: showing one twice is recoverable, losing one is not.
+ * Matched on `@id`, which every serialization carries, like `isMessageAlreadyListed` in
+ * messageSignal.js. A message with no `@id` is kept rather than dropped: showing one twice is
+ * recoverable, losing one is not.
  *
  * A known id keeps its position and takes the fetched copy, so a message the server has changed
- * refreshes in place. Nothing changes a message today, and editing one is #966.
+ * refreshes in place: an edit, a delete, a reaction (#966, #1245).
  *
  * @param {object[]} held oldest first
  * @param {object[]} incoming oldest first
@@ -114,4 +114,23 @@ function writtenAt(message) {
   const parsed = Date.parse(message?.creation_datetime ?? '')
 
   return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed
+}
+
+/**
+ * The page a held message sits on, to re-read it after a live change (#1245). Counted from the newest
+ * end like the pages themselves, so a message that arrived since shifts it by at most one page, and
+ * withRefreshedHeld() simply finds nothing to swap if it slid out.
+ *
+ * @param {object[]} held oldest first
+ * @param {string} messageId
+ * @param {number} pageSize
+ * @returns {number | null} 1 based page number, or null when the message is not held
+ */
+export function pageHoldingMessage(held, messageId, pageSize = MESSAGES_PAGE_SIZE) {
+  const index = held.findIndex((message) => message.id === messageId)
+  if (index === -1 || pageSize <= 0) {
+    return null
+  }
+
+  return Math.floor((held.length - 1 - index) / pageSize) + 1
 }

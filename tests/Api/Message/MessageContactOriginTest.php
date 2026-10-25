@@ -75,6 +75,9 @@ class MessageContactOriginTest extends ApiTestCase
             ],
             'content' => 'Toujours dispo pour le groupe ?',
             'content_preview' => 'Toujours dispo pour le groupe ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Toujours dispo pour le groupe ?',
             'contact_origin' => [
                 'type' => 'musician_announce',
                 'musician_announce_id' => $announce->id,
@@ -127,6 +130,9 @@ class MessageContactOriginTest extends ApiTestCase
             ],
             'content' => 'Bonjour, vous donnez des cours le samedi ?',
             'content_preview' => 'Bonjour, vous donnez des cours le samedi ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Bonjour, vous donnez des cours le samedi ?',
             'contact_origin' => [
                 'type' => 'teacher_profile',
                 'musician_announce_id' => null,
@@ -242,6 +248,9 @@ class MessageContactOriginTest extends ApiTestCase
             ],
             'content' => 'Je relance',
             'content_preview' => 'Je relance',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Je relance',
         ]);
         $this->assertSame(1, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
     }
@@ -284,6 +293,9 @@ class MessageContactOriginTest extends ApiTestCase
             ],
             'content' => 'Et pour la basse ?',
             'content_preview' => 'Et pour la basse ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Et pour la basse ?',
             'contact_origin' => [
                 'type' => 'musician_announce',
                 'musician_announce_id' => $second->id,
@@ -424,6 +436,7 @@ class MessageContactOriginTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $message->id,
                     '@type' => 'Message',
+                    'id' => (string) $message->id,
                     'creation_datetime' => $message->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $sender->id,
@@ -443,6 +456,8 @@ class MessageContactOriginTest extends ApiTestCase
                         'location_name' => 'Lyon',
                     ],
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
             ],
             'totalItems' => 1,
@@ -574,6 +589,7 @@ class MessageContactOriginTest extends ApiTestCase
         return [
             '@id' => '/api/messages/' . $message->id,
             '@type' => 'Message',
+            'id' => (string) $message->id,
             'creation_datetime' => $message->creationDatetime->format(\DateTimeInterface::ATOM),
             'author' => [
                 '@id' => '/api/users/' . $author->id,
@@ -585,6 +601,8 @@ class MessageContactOriginTest extends ApiTestCase
             'content' => $message->content,
             'contact_origin' => $contactOrigin,
             'is_seen' => false,
+            'is_deleted' => false,
+            'reactions' => [],
         ];
     }
 

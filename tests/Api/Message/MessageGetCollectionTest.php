@@ -86,6 +86,7 @@ class MessageGetCollectionTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $message2->id,
                     '@type' => 'Message',
+                    'id' => (string) $message2->id,
                     'creation_datetime' => '2023-01-02T02:03:04+00:00',
                     'author'            => [
                         '@id' => '/api/users/' . $user1->id,
@@ -96,10 +97,14 @@ class MessageGetCollectionTest extends ApiTestCase
                     ],
                     'content'           => 'first message from user 1',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'first message from user 1',
                 ],
                 [
                     '@id' => '/api/messages/' . $message3->id,
                     '@type' => 'Message',
+                    'id' => (string) $message3->id,
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'            => [
                         '@id' => '/api/users/' . $user2->id,
@@ -110,10 +115,13 @@ class MessageGetCollectionTest extends ApiTestCase
                     ],
                     'content'           => 'second message from user 2',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
                 [
                     '@id' => '/api/messages/' . $message4->id,
                     '@type' => 'Message',
+                    'id' => (string) $message4->id,
                     'creation_datetime' => '2021-01-02T02:03:04+00:00',
                     'author'            => [
                         '@id' => '/api/users/' . $user1->id,
@@ -124,10 +132,14 @@ class MessageGetCollectionTest extends ApiTestCase
                     ],
                     'content'           => 'third message from user 1',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'third message from user 1',
                 ],
                 [
                     '@id' => '/api/messages/' . $message1->id,
                     '@type' => 'Message',
+                    'id' => (string) $message1->id,
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'            => [
                         '@id' => '/api/users/' . $user1->id,
@@ -138,6 +150,9 @@ class MessageGetCollectionTest extends ApiTestCase
                     ],
                     'content'           => 'last message from user 1',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'last message from user 1',
                 ],
             ],
             'totalItems' => 4,
@@ -206,6 +221,7 @@ class MessageGetCollectionTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $message->id,
                     '@type' => 'Message',
+                    'id' => (string) $message->id,
                     'creation_datetime' => '2026-08-01T10:00:00+00:00',
                     'author' => [
                         '@id' => '/api/users/' . $gone->id,
@@ -217,6 +233,8 @@ class MessageGetCollectionTest extends ApiTestCase
                     ],
                     'content' => 'salut',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
             ],
             'totalItems' => 1,
@@ -269,6 +287,7 @@ class MessageGetCollectionTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $message->id,
                     '@type' => 'Message',
+                    'id' => (string) $message->id,
                     'creation_datetime' => $message->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $user2->id,
@@ -279,6 +298,8 @@ class MessageGetCollectionTest extends ApiTestCase
                     ],
                     'content' => '',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
             ],
             'totalItems' => 1,
@@ -497,18 +518,24 @@ class MessageGetCollectionTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $messages[2]->id,
                     '@type' => 'Message',
+                    'id' => (string) $messages[2]->id,
                     'creation_datetime' => '2026-09-11T10:02:00+00:00',
                     'author' => $writerJson,
                     'content' => 'message 2',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
                 [
                     '@id' => '/api/messages/' . $messages[1]->id,
                     '@type' => 'Message',
+                    'id' => (string) $messages[1]->id,
                     'creation_datetime' => '2026-09-11T10:01:00+00:00',
                     'author' => $writerJson,
                     'content' => 'message 1',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
             ],
             'totalItems' => 52,

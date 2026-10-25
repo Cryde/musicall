@@ -55,6 +55,7 @@ class MessageReadReceiptTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $mine->id,
                     '@type' => 'Message',
+                    'id' => (string) $mine->id,
                     'creation_datetime' => $mine->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -65,10 +66,14 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'tu es dispo samedi ?',
                     'is_seen' => true,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'tu es dispo samedi ?',
                 ],
                 [
                     '@id' => '/api/messages/' . $theirs->id,
                     '@type' => 'Message',
+                    'id' => (string) $theirs->id,
                     'creation_datetime' => $theirs->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $other->id,
@@ -79,10 +84,13 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'oui',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
                 [
                     '@id' => '/api/messages/' . $sameSecond->id,
                     '@type' => 'Message',
+                    'id' => (string) $sameSecond->id,
                     'creation_datetime' => $sameSecond->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -93,10 +101,14 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'super',
                     'is_seen' => true,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'super',
                 ],
                 [
                     '@id' => '/api/messages/' . $after->id,
                     '@type' => 'Message',
+                    'id' => (string) $after->id,
                     'creation_datetime' => $after->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -107,6 +119,9 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'à samedi',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'à samedi',
                 ],
             ],
             'totalItems' => 4,
@@ -154,6 +169,7 @@ class MessageReadReceiptTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $mine->id,
                     '@type' => 'Message',
+                    'id' => (string) $mine->id,
                     'creation_datetime' => $mine->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -164,10 +180,14 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'tu es dispo samedi ?',
                     'is_seen' => true,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'tu es dispo samedi ?',
                 ],
                 [
                     '@id' => '/api/messages/' . $reply->id,
                     '@type' => 'Message',
+                    'id' => (string) $reply->id,
                     'creation_datetime' => $reply->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $other->id,
@@ -178,6 +198,8 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'oui',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
             ],
             'totalItems' => 2,
@@ -229,6 +251,7 @@ class MessageReadReceiptTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $mine->id,
                     '@type' => 'Message',
+                    'id' => (string) $mine->id,
                     'creation_datetime' => $mine->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -239,10 +262,14 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'tu es dispo samedi ?',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'tu es dispo samedi ?',
                 ],
                 [
                     '@id' => '/api/messages/' . $reply->id,
                     '@type' => 'Message',
+                    'id' => (string) $reply->id,
                     'creation_datetime' => $reply->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $other->id,
@@ -253,6 +280,8 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'oui',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
                 ],
             ],
             'totalItems' => 2,
@@ -306,6 +335,7 @@ class MessageReadReceiptTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $mine->id,
                     '@type' => 'Message',
+                    'id' => (string) $mine->id,
                     'creation_datetime' => $mine->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -316,6 +346,9 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'tu es dispo samedi ?',
                     'is_seen' => true,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'tu es dispo samedi ?',
                 ],
             ],
             'totalItems' => 1,
@@ -385,6 +418,7 @@ class MessageReadReceiptTest extends ApiTestCase
                 [
                     '@id' => '/api/messages/' . $mine->id,
                     '@type' => 'Message',
+                    'id' => (string) $mine->id,
                     'creation_datetime' => $mine->creationDatetime->format(\DateTimeInterface::ATOM),
                     'author' => [
                         '@id' => '/api/users/' . $me->id,
@@ -395,6 +429,9 @@ class MessageReadReceiptTest extends ApiTestCase
                     ],
                     'content' => 'tu es dispo samedi ?',
                     'is_seen' => false,
+                    'is_deleted' => false,
+                    'reactions' => [],
+                    'editable_content' => 'tu es dispo samedi ?',
                 ],
             ],
             'totalItems' => 1,
