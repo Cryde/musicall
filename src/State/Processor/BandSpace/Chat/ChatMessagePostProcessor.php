@@ -149,7 +149,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
     private function discardQuietly(BandSpaceFile $media): void
     {
         try {
-            $this->chatMediaStore->discard($media);
+            $this->chatMediaStore->discardUnsent($media);
         } catch (\Throwable $e) {
             $this->logger->error('Could not discard unattached chat media', ['file_id' => (string) $media->id, 'exception' => $e]);
         }

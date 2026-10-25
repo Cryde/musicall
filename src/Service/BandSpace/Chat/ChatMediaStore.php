@@ -8,6 +8,8 @@ use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\Message\Message;
 use App\Entity\User;
+use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Service\BandSpace\File\BandSpaceFilePurger;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
@@ -15,6 +17,7 @@ use App\Service\Message\ChatMediaPreparer;
 use App\Service\Message\StoredVoiceNote;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Handler\UploadHandlerInterface;
 
 /**
  * A chat image or voice note is a band space file like any other (#973, #974): same storage, same
@@ -31,6 +34,9 @@ readonly class ChatMediaStore
         private BandSpaceFileQuotaService $quotaService,
         private BandSpaceFilePurger $filePurger,
         private EntityManagerInterface $entityManager,
+        private UploadHandlerInterface $uploadHandler,
+        private BandSpaceFileVersionRepository $versionRepository,
+        private BandSpaceFileRepository $fileRepository,
     ) {
     }
 
@@ -69,14 +75,28 @@ readonly class ChatMediaStore
     }
 
     /**
-     * For good, object included: a deleted message takes its media with it, and a message that could
-     * not be sent must not leave its media behind in the Files root.
+     * For good, object included: a deleted message takes its media with it.
      */
     public function discard(BandSpaceFile $file): void
     {
         $file->archiveDatetime ??= new \DateTimeImmutable();
         $this->entityManager->flush();
         $this->filePurger->purge($file);
+    }
+
+    /**
+     * discard() for a message that could not be sent: the failed send has closed the entity manager,
+     * so this deletes without flushing.
+     */
+    public function discardUnsent(BandSpaceFile $file): void
+    {
+        foreach ($this->versionRepository->findByFileNewestFirst($file) as $version) {
+            $this->uploadHandler->remove($version, 'uploadedFile');
+            // The handler has just cleared its storage path: a later flush must not write it.
+            $this->entityManager->detach($version);
+        }
+        $this->fileRepository->deleteWithVersionsById((string) $file->id);
+        $this->entityManager->detach($file);
     }
 
     private function persist(File $content, string $mimeType, string $name, BandSpace $bandSpace, User $uploader): BandSpaceFile

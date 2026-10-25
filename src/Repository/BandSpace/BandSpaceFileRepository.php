@@ -122,6 +122,25 @@ class BandSpaceFileRepository extends ServiceEntityRepository
             ->execute();
     }
 
+    /**
+     * DQL rather than remove() and flush(): this runs after a failed chat send, when the transaction
+     * that failed has closed the entity manager, and a closed manager refuses both. The versions go
+     * first so their SET NULL on `current_version_id` lands on a row that still exists; attachments,
+     * shares and tags follow by cascade. The stored objects are the caller's to delete.
+     */
+    public function deleteWithVersionsById(string $id): void
+    {
+        $entityManager = $this->getEntityManager();
+        $entityManager
+            ->createQuery('DELETE FROM App\Entity\BandSpace\BandSpaceFileVersion v WHERE v.bandSpaceFile = :id')
+            ->setParameter('id', $id)
+            ->execute();
+        $entityManager
+            ->createQuery('DELETE FROM App\Entity\BandSpace\BandSpaceFile bsf WHERE bsf.id = :id')
+            ->setParameter('id', $id)
+            ->execute();
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceFile
     {
         return $this->createQueryBuilder('bsf')
