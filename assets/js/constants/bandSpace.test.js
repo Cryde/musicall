@@ -3,7 +3,6 @@ import { describe, it } from 'node:test'
 import {
   BAND_SPACE_ROUTES,
   BAND_SPACE_SETTINGS_SECTIONS,
-  CHAT_TESTER_ONLY,
   filterSectionsByRole,
   NAVIGATION_ITEMS,
   RIDER_TESTER_ONLY,
@@ -43,24 +42,22 @@ describe('the Tech Riders curtain', () => {
     assert.equal(rider.testerOnly, RIDER_TESTER_ONLY)
   })
 
-  it('gates nothing beyond the two curtained modules, so a flip takes only its own', () => {
+  it('gates nothing beyond the tech riders, so the flip takes only its own module', () => {
     const gated = NAVIGATION_ITEMS.filter((item) => item.testerOnly !== undefined)
 
     assert.deepEqual(
       gated.map((item) => item.route),
-      [BAND_SPACE_ROUTES.CHAT, BAND_SPACE_ROUTES.RIDER]
+      [BAND_SPACE_ROUTES.RIDER]
     )
   })
 })
 
-describe('the Discussion curtain', () => {
-  // Same promise as the tech riders above, and the same trap: the sidebar entry and the route guard
-  // have to read one flag or releasing the chat stops being a single flip.
-  it('gates the sidebar entry on the shared flag', () => {
+describe('the Discussion sidebar entry', () => {
+  it('is released, hidden from nobody', () => {
     const chat = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.CHAT)
 
     assert.ok(chat)
-    assert.equal(chat.testerOnly, CHAT_TESTER_ONLY)
+    assert.equal(chat.testerOnly, undefined)
   })
 
   it('is named for the members rather than for the API it calls', () => {

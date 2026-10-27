@@ -38,16 +38,6 @@ export const TECH_RIDER_PREVIEW_KEY = 'techRiderPreview'
 export const RIDER_TESTER_ONLY = true
 
 /**
- * Same curtain as the tech riders above, for the same reason and with the same single flip. The chat
- * is piloted with one real band first: the epic's risk is half a band switching and the other half
- * staying on their old group conversation, and the only way to find that out is to ask one band.
- *
- * The route name says chat, matching the API it calls, while the tab reads « Discussion » because the
- * main navigation already spends the word « Messages » on direct messages.
- */
-export const CHAT_TESTER_ONLY = true
-
-/**
  * The modules a Band Space is described by, shared between the public presentation page and the
  * empty state a member lands on with no space, so the pitch cannot drift between the two.
  *
@@ -260,8 +250,7 @@ export const NAVIGATION_ITEMS = Object.freeze([
       return i18n.global.t('band_space.module_name.chat')
     },
     route: BAND_SPACE_ROUTES.CHAT,
-    icon: 'pi-comments',
-    testerOnly: CHAT_TESTER_ONLY
+    icon: 'pi-comments'
   },
   {
     get label() {

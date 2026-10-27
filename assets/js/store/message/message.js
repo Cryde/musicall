@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
-import { CHAT_TESTER_ONLY } from '../../constants/bandSpace.js'
 import { i18n } from '../../i18n/index.js'
 import { createReactionToggle } from '../../utils/chatReactionToggle.js'
 import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
@@ -51,25 +50,14 @@ export const useMessageStore = defineStore('message', () => {
   const isAddingMessage = ref(false)
   const reactionError = ref(null)
 
-  /**
-   * Newest conversation first, and a Band Space channel only for a tester while CHAT_TESTER_ONLY
-   * stands (#994).
-   *
-   * The curtain is drawn here rather than in PHP, like the chat tab's route guard and the band
-   * sidebar's filter: ROLE_TESTER is a feature flag and not a rank, and nothing on the server has
-   * ever consulted it. The chat API is open either way, which is what makes this a curtain.
-   */
-  const orderedThreads = computed(() => {
-    const hidesChannels = CHAT_TESTER_ONLY && !useUserSecurityStore().isTester
-
-    return [...threads.value]
-      .filter((threadMeta) => !hidesChannels || !isChannel(threadMeta))
-      .sort((a, b) => {
-        const dateA = new Date(a.thread.last_message?.creation_datetime || 0)
-        const dateB = new Date(b.thread.last_message?.creation_datetime || 0)
-        return dateB - dateA
-      })
-  })
+  // Newest conversation first.
+  const orderedThreads = computed(() =>
+    [...threads.value].sort((a, b) => {
+      const dateA = new Date(a.thread.last_message?.creation_datetime || 0)
+      const dateB = new Date(b.thread.last_message?.creation_datetime || 0)
+      return dateB - dateA
+    })
+  )
 
   const hasOlderMessages = computed(() =>
     hasOlderToLoad(messages.value.length, totalMessages.value)

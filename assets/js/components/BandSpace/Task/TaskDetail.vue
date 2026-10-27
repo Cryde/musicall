@@ -270,7 +270,7 @@ import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
-import { BAND_SPACE_ROUTES, CHAT_TESTER_ONLY } from '../../../constants/bandSpace.js'
+import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
@@ -319,15 +319,8 @@ const canDelete = computed(() =>
   canDeleteTask(task.value, userSecurityStore.userProfile?.id ?? null, isAdmin.value)
 )
 
-/**
- * Behind the same curtain as the tab itself: the route guard bounces a member without ROLE_TESTER
- * while the chat is piloted with one band, so offering them the link would offer a dead end.
- */
 const chatLink = computed(() => {
   if (!task.value?.linked_message_id) {
-    return null
-  }
-  if (CHAT_TESTER_ONLY && !userSecurityStore.isTester) {
     return null
   }
 
