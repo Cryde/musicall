@@ -73,7 +73,6 @@
     "demo": {
       "your_band": "Ton groupe",
       "tabs_aria_label": "Modules du Band Space",
-      "illustrative": "Aperçu illustratif",
       "done": "(fait)",
       "band_fund": "Caisse du groupe",
       "agenda": {
@@ -267,7 +266,14 @@
       "discoveries": "Découvertes vidéo partagées par la communauté",
       "news": "Actualités et tendances musicales",
       "cta": "Voir les publications",
-      "image_alt": "Publications MusicAll"
+      "image_alt": "Publications MusicAll",
+      "mock": {
+        "filter_all": "Tout",
+        "filter_articles": "Articles",
+        "filter_courses": "Cours",
+        "filter_discoveries": "Découvertes",
+        "discovery_by": "Découverte · par {name}"
+      }
     },
     "announces": {
       "title": "Annonces musiciens",
@@ -277,7 +283,17 @@
       "location_filters": "Filtres par localisation géographique",
       "direct_contact": "Contact direct via la messagerie intégrée",
       "cta": "Voir les annonces",
-      "image_alt": "Annonces musiciens MusicAll"
+      "image_alt": "Annonces musiciens MusicAll",
+      "mock": {
+        "search": "Batteur · Rock · Lyon",
+        "results": "{count} annonce près de toi | {count} annonces près de toi",
+        "velvet_title": "Velvet Static cherche un batteur",
+        "velvet_meta": "Rock, Indie · Lyon · 2 km",
+        "ondes_title": "Les Ondes cherchent un batteur",
+        "ondes_meta": "Pop rock · Villeurbanne · 5 km",
+        "nuit_title": "Nuit Blanche cherche un batteur",
+        "nuit_meta": "Rock, Funk · Lyon · 8 km"
+      }
     },
     "forum": {
       "title": "Forum",
@@ -287,7 +303,16 @@
       "introductions": "Espace de présentation pour les nouveaux",
       "moderation": "Sujets épinglés et modération active",
       "cta": "Accéder au forum",
-      "image_alt": "Forum MusicAll"
+      "image_alt": "Forum MusicAll",
+      "mock": {
+        "category": "Demande d'aide · Guitare",
+        "welcome_title": "Bienvenue : lis ceci avant de poster",
+        "amp_title": "Quel ampli pour jouer en appartement ?",
+        "buzz_title": "Ma guitare frise entre les cases 5 et 7",
+        "compressor_title": "Une pédale de compression, utile en rock ?",
+        "replies": "{count} réponse | {count} réponses",
+        "last_post": "Dernier message de {name}"
+      }
     },
     "photos": {
       "title": "Galeries photos",
@@ -297,7 +322,10 @@
       "quality": "Galeries haute qualité",
       "share": "Partage tes propres photos",
       "cta": "Voir les galeries",
-      "image_alt": "Galeries photos MusicAll"
+      "image_alt": "Galeries photos MusicAll",
+      "mock": {
+        "meta": "{count} photos · par {name}"
+      }
     },
     "messages": {
       "title": "Messagerie privée",

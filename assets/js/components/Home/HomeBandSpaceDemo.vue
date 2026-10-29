@@ -51,10 +51,7 @@
       :aria-labelledby="`home-demo-tab-${module.key}`"
       class="flex flex-col gap-4 p-5"
     >
-      <div class="flex items-baseline justify-between gap-3">
-        <h3 class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">{{ demo[module.key].title }}</h3>
-        <span class="text-xs text-surface-600 dark:text-surface-300">{{ t('home.band_space.demo.illustrative') }}</span>
-      </div>
+      <h3 class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">{{ demo[module.key].title }}</h3>
 
       <template v-if="module.key === 'agenda'">
         <div v-for="event in demo.agenda.events" :key="event.name" :class="TILE" class="flex items-center gap-4">

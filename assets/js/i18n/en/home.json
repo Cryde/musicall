@@ -73,7 +73,6 @@
     "demo": {
       "your_band": "Your band",
       "tabs_aria_label": "Band Space modules",
-      "illustrative": "Example preview",
       "done": "(done)",
       "band_fund": "Band fund",
       "agenda": {
@@ -267,7 +266,14 @@
       "discoveries": "Video discoveries shared by the community",
       "news": "Music news and trends",
       "cta": "See the publications",
-      "image_alt": "MusicAll publications"
+      "image_alt": "MusicAll publications",
+      "mock": {
+        "filter_all": "All",
+        "filter_articles": "Articles",
+        "filter_courses": "Lessons",
+        "filter_discoveries": "Discoveries",
+        "discovery_by": "Discovery - by {name}"
+      }
     },
     "announces": {
       "title": "Musician ads",
@@ -277,7 +283,17 @@
       "location_filters": "Filter by location",
       "direct_contact": "Get in touch directly through built-in messaging",
       "cta": "See the ads",
-      "image_alt": "MusicAll musician ads"
+      "image_alt": "MusicAll musician ads",
+      "mock": {
+        "search": "Drummer - Rock - Lyon",
+        "results": "{count} ad near you | {count} ads near you",
+        "velvet_title": "Velvet Static is looking for a drummer",
+        "velvet_meta": "Rock, Indie - Lyon - 2 km",
+        "ondes_title": "Les Ondes are looking for a drummer",
+        "ondes_meta": "Pop rock - Villeurbanne - 5 km",
+        "nuit_title": "Nuit Blanche is looking for a drummer",
+        "nuit_meta": "Rock, Funk - Lyon - 8 km"
+      }
     },
     "forum": {
       "title": "Forum",
@@ -287,7 +303,16 @@
       "introductions": "A place for newcomers to introduce themselves",
       "moderation": "Pinned topics and active moderation",
       "cta": "Go to the forum",
-      "image_alt": "MusicAll forum"
+      "image_alt": "MusicAll forum",
+      "mock": {
+        "category": "Help - Guitar",
+        "welcome_title": "Welcome: read this before posting",
+        "amp_title": "Which amp for playing in a flat?",
+        "buzz_title": "My guitar buzzes between frets 5 and 7",
+        "compressor_title": "Is a compressor pedal worth it for rock?",
+        "replies": "{count} reply | {count} replies",
+        "last_post": "Last post by {name}"
+      }
     },
     "photos": {
       "title": "Photo galleries",
@@ -297,7 +322,10 @@
       "quality": "High-quality galleries",
       "share": "Share your own photos",
       "cta": "See the galleries",
-      "image_alt": "MusicAll photo galleries"
+      "image_alt": "MusicAll photo galleries",
+      "mock": {
+        "meta": "{count} photos - by {name}"
+      }
     },
     "messages": {
       "title": "Private messaging",

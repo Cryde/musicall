@@ -79,12 +79,7 @@
       <div class="w-full xl:flex-1">
         <div class="relative">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-2xl -z-10 scale-95" />
-          <img
-            :src="discoverPublicationImage"
-            :alt="t('home.discover.publications.image_alt')"
-            loading="lazy"
-            class="w-full max-h-96 object-contain rounded-2xl"
-          />
+          <PublicationsMockup />
         </div>
       </div>
     </div>
@@ -115,12 +110,7 @@
       <div class="w-full xl:flex-1">
         <div class="relative">
           <div class="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl blur-2xl -z-10 scale-95" />
-          <img
-            :src="discoverAnnouncesImage"
-            :alt="t('home.discover.announces.image_alt')"
-            loading="lazy"
-            class="w-full max-h-96 object-contain rounded-2xl"
-          />
+          <AnnouncesMockup />
         </div>
       </div>
     </div>
@@ -151,12 +141,7 @@
       <div class="w-full xl:flex-1">
         <div class="relative">
           <div class="absolute inset-0 bg-gradient-to-br from-green-500/20 to-teal-500/20 rounded-2xl blur-2xl -z-10 scale-95" />
-          <img
-            :src="discoverForumImage"
-            :alt="t('home.discover.forum.image_alt')"
-            loading="lazy"
-            class="w-full max-h-96 object-contain rounded-2xl"
-          />
+          <ForumMockup />
         </div>
       </div>
     </div>
@@ -187,12 +172,7 @@
       <div class="w-full xl:flex-1">
         <div class="relative">
           <div class="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-pink-500/20 rounded-2xl blur-2xl -z-10 scale-95" />
-          <img
-            :src="discoverPhotoImage"
-            :alt="t('home.discover.photos.image_alt')"
-            loading="lazy"
-            class="w-full max-h-96 object-contain rounded-2xl"
-          />
+          <PhotosMockup />
         </div>
       </div>
     </div>
@@ -258,11 +238,11 @@
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
-import discoverAnnouncesImage from '../../../image/discover/discover-announces.png'
-import discoverForumImage from '../../../image/discover/discover-forum.png'
-import discoverPhotoImage from '../../../image/discover/discover-photo.png'
-import discoverPublicationImage from '../../../image/discover/discover-publication.png'
 import FeatureItem from '../../components/Discover/FeatureItem.vue'
+import AnnouncesMockup from '../../components/Discover/Mockup/AnnouncesMockup.vue'
+import ForumMockup from '../../components/Discover/Mockup/ForumMockup.vue'
+import PhotosMockup from '../../components/Discover/Mockup/PhotosMockup.vue'
+import PublicationsMockup from '../../components/Discover/Mockup/PublicationsMockup.vue'
 import HomeBandSpaceDemo from '../../components/Home/HomeBandSpaceDemo.vue'
 import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
