@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  BAND_SPACE_MODULES,
   BAND_SPACE_ROUTES,
   BAND_SPACE_SETTINGS_SECTIONS,
   filterSectionsByRole,
@@ -67,6 +68,10 @@ describe('the Discussion sidebar entry', () => {
 
     assert.equal(chat.label, 'Discussion')
     assert.equal(SECTION_NAMES[BAND_SPACE_ROUTES.CHAT], 'Discussion')
+  })
+
+  it('is advertised wherever the modules are pitched, now that a visitor finds it after signing up', () => {
+    assert.ok(BAND_SPACE_MODULES.some((module) => module.key === 'chat'))
   })
 })
 

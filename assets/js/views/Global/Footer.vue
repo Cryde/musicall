@@ -141,6 +141,7 @@ const columns = computed(() => [
     links: [
       { label: t('footer.band_space.presentation'), to: bandSpacePresentation },
       { label: t('footer.band_space.agenda'), to: bandSpaceModule('agenda') },
+      { label: t('footer.band_space.chat'), to: bandSpaceModule('chat') },
       { label: t('footer.band_space.setlists'), to: bandSpaceModule('setlists') },
       { label: t('footer.band_space.finances'), to: bandSpaceModule('finances') },
       // app_band_index sends a visitor to the presentation and a member to their space.

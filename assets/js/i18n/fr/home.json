@@ -88,6 +88,12 @@
         "recording": "Enregistrement démo",
         "recording_detail": "14:00 · Studio"
       },
+      "chat": {
+        "title": "Discussion",
+        "room": "Le local est réservé jeudi, 20:00.",
+        "snare": "Parfait, j'apporte la deuxième caisse claire.",
+        "demo": "La démo de « Nuit blanche » est dans les fichiers."
+      },
       "tasks": {
         "title": "Tâches",
         "send_rider": "Envoyer le tech rider",
@@ -347,6 +353,7 @@
     },
     "pains": {
       "agenda": "Trouver une date",
+      "chat": "Les discussions",
       "tasks": "Qui fait quoi",
       "setlists": "Les setlists",
       "finances": "L'argent",
@@ -415,6 +422,11 @@
         "covers_title": "Idées de reprises",
         "covers_body": "Trois propositions à voter avant jeudi."
       },
+      "chat": {
+        "reschedule": "On décale la répète de jeudi à 20:30 ?",
+        "amp": "Ok pour moi, je ramène l'ampli basse.",
+        "demo": "J'ai mis la nouvelle démo, dites-moi ce que vous en pensez."
+      },
       "expenses": {
         "van": "Location du camion",
         "room": "Local de répète",
@@ -438,6 +450,10 @@
       "members_invited_by_mail": "{members} · invitations par mail",
       "available": "{available} membres sur {size} disponibles",
       "back_to_notes": "Retour aux notes",
+      "chat_message_label": "Ton message",
+      "chat_message_placeholder": "Écris au groupe...",
+      "chat_send": "Envoyer",
+      "chat_open_attachment": "Ouvrir « {label} » dans {module}",
       "toolbar_bold": "B",
       "toolbar_italic": "I",
       "note_content": "Contenu de la note « {title} »",
@@ -461,6 +477,9 @@
         "agenda_subtitle": "Octobre 2026",
         "agenda_summary": "{available}/{size} dispos jeudi",
         "agenda_add": "Ajouter une date",
+        "chat_title": "Discussion",
+        "chat_subtitle": "Joins une date ou un fichier, le groupe l'ouvre en un clic",
+        "chat_summary": "{count} message | {count} messages",
         "tasks_title": "Tâches",
         "tasks_subtitle": "Chaque tâche a un responsable et une date",
         "tasks_summary": "{count} faite sur {total} | {count} faites sur {total}",
@@ -481,6 +500,9 @@
         "agenda_tag": "Agenda",
         "agenda_title": "Prochaine répète · jeu. 20:00",
         "agenda_meta": "{available}/{size} disponibles",
+        "chat_tag": "Discussion",
+        "chat_title": "{name} : {body}",
+        "chat_meta": "Dates et fichiers joints aux messages",
         "tasks_tag": "Tâches",
         "tasks_title": "{count} tâches ouvertes",
         "tasks_next": "Prochaine : {task}",

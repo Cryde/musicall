@@ -60,6 +60,16 @@ export const BAND_SPACE_MODULES = Object.freeze([
     }
   },
   {
+    key: 'chat',
+    icon: 'pi pi-comments',
+    get label() {
+      return i18n.global.t('band_space.module_name.chat')
+    },
+    get description() {
+      return i18n.global.t('band_space.module_description.chat')
+    }
+  },
+  {
     key: 'taches',
     icon: 'pi pi-check-square',
     get label() {

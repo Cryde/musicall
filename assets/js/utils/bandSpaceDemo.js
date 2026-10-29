@@ -27,6 +27,12 @@ export const DEMO_PAINS = Object.freeze([
     }
   },
   {
+    key: 'chat',
+    get label() {
+      return t('home.band_space_presentation.pains.chat')
+    }
+  },
+  {
     key: 'taches',
     get label() {
       return t('home.band_space_presentation.pains.tasks')
@@ -186,6 +192,28 @@ const DEMO_NOTES = [
   }
 ]
 
+// Each attachment opens the tab it names, the way a chip in the real chat opens the item.
+const DEMO_MESSAGES = [
+  {
+    id: 'reschedule',
+    bodyKey: 'home.band_space_presentation.demo.chat.reschedule',
+    author: 1,
+    attachment: { module: 'agenda', labelKey: 'home.band_space_presentation.demo.events.rehearsal' }
+  },
+  {
+    id: 'amp',
+    bodyKey: 'home.band_space_presentation.demo.chat.amp',
+    author: 2,
+    attachment: null
+  },
+  {
+    id: 'demo',
+    bodyKey: 'home.band_space_presentation.demo.chat.demo',
+    author: -1,
+    attachment: { module: 'files', labelKey: 'home.band_space_presentation.demo.files.demo' }
+  }
+]
+
 const BASE_EXPENSES = [
   {
     id: 'van',
@@ -303,6 +331,25 @@ export function demoNotes(size, editedBodies) {
   })
 }
 
+/** The band's messages, then whatever the visitor sent, signed by them. */
+export function demoChat(size, sentBodies) {
+  const received = DEMO_MESSAGES.map(({ bodyKey, attachment, ...message }) => ({
+    ...message,
+    body: t(bodyKey),
+    who: memberAt(size, message.author),
+    isMine: false,
+    attachment: attachment && { module: attachment.module, label: t(attachment.labelKey) }
+  }))
+  const sent = sentBodies.map((body, index) => ({
+    id: `sent-${index}`,
+    body,
+    who: memberAt(size, 0),
+    isMine: true,
+    attachment: null
+  }))
+  return [...received, ...sent]
+}
+
 export function demoFiles(size, deletedIds) {
   return DEMO_FILES.filter((file) => !deletedIds.includes(file.id)).map(
     ({ nameKey, folderKey, ...file }) => ({
@@ -365,6 +412,7 @@ export function describeBalance(cents) {
 // One colour per module, used across the preview.
 export const MODULE_ACCENTS = Object.freeze({
   agenda: { text: 'text-primary', dot: 'bg-primary' },
+  chat: { text: 'text-indigo-700 dark:text-indigo-300', dot: 'bg-indigo-500' },
   taches: { text: 'text-teal-700 dark:text-teal-300', dot: 'bg-teal-500' },
   notes: { text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-500' },
   setlists: { text: 'text-fuchsia-700 dark:text-fuchsia-300', dot: 'bg-fuchsia-500' },

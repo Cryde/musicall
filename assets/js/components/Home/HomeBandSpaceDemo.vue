@@ -69,6 +69,13 @@
         </div>
       </template>
 
+      <ul v-else-if="module.key === 'chat'" class="m-0 p-0 list-none flex flex-col gap-2">
+        <li v-for="message in demo.chat.messages" :key="message.body" :class="TILE" class="flex flex-col gap-0.5">
+          <span class="text-xs font-bold text-surface-700 dark:text-surface-200">{{ message.who }}</span>
+          <span class="text-sm text-surface-900 dark:text-surface-0">{{ message.body }}</span>
+        </li>
+      </ul>
+
       <ul v-else-if="module.key === 'taches'" class="m-0 p-0 list-none flex flex-col gap-2">
         <li v-for="task in demo.taches.tasks" :key="task.label" :class="TILE" class="flex items-center gap-3">
           <span
@@ -184,6 +191,14 @@ const demo = computed(() => ({
         detail: t('home.band_space.demo.agenda.recording_detail'),
         accent: 'text-primary'
       }
+    ]
+  },
+  chat: {
+    title: t('home.band_space.demo.chat.title'),
+    messages: [
+      { who: 'Léa', body: t('home.band_space.demo.chat.room') },
+      { who: 'Tom', body: t('home.band_space.demo.chat.snare') },
+      { who: 'Sam', body: t('home.band_space.demo.chat.demo') }
     ]
   },
   taches: {

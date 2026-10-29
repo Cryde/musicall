@@ -10,11 +10,11 @@
           {{ t('band_space.no_space.intro') }}
         </p>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full mb-12">
+        <div class="flex flex-wrap justify-center gap-4 w-full mb-12">
           <div
             v-for="module in BAND_SPACE_MODULES"
             :key="module.key"
-            class="flex flex-col items-center gap-2 p-4 bg-surface-0 dark:bg-surface-900 rounded-xl"
+            class="flex flex-col items-center gap-2 p-4 w-[calc(50%-0.5rem)] sm:w-36 bg-surface-0 dark:bg-surface-900 rounded-xl"
           >
             <i :class="['text-2xl text-primary', module.icon]" aria-hidden="true" />
             <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ module.label }}</span>

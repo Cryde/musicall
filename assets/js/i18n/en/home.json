@@ -88,6 +88,12 @@
         "recording": "Demo recording",
         "recording_detail": "14:00 - Studio"
       },
+      "chat": {
+        "title": "Chat",
+        "room": "The rehearsal room is booked for Thursday, 20:00.",
+        "snare": "Great, I'll bring the second snare.",
+        "demo": "The \"Sleepless Night\" demo is in the files."
+      },
       "tasks": {
         "title": "Tasks",
         "send_rider": "Send the tech rider",
@@ -347,6 +353,7 @@
     },
     "pains": {
       "agenda": "Finding a date",
+      "chat": "Group chat",
       "tasks": "Who does what",
       "setlists": "Setlists",
       "finances": "Money",
@@ -415,6 +422,11 @@
         "covers_title": "Cover ideas",
         "covers_body": "Three suggestions to vote on before Thursday."
       },
+      "chat": {
+        "reschedule": "Can we move Thursday's rehearsal to 20:30?",
+        "amp": "Fine by me, I'll bring the bass amp.",
+        "demo": "I've put up the new demo, tell me what you think."
+      },
       "expenses": {
         "van": "Van hire",
         "room": "Rehearsal room",
@@ -438,6 +450,10 @@
       "members_invited_by_mail": "{members} - invited by email",
       "available": "{available} of {size} members available",
       "back_to_notes": "Back to notes",
+      "chat_message_label": "Your message",
+      "chat_message_placeholder": "Write to the band...",
+      "chat_send": "Send",
+      "chat_open_attachment": "Open \"{label}\" in {module}",
       "toolbar_bold": "B",
       "toolbar_italic": "I",
       "note_content": "Content of the note \"{title}\"",
@@ -461,6 +477,9 @@
         "agenda_subtitle": "October 2026",
         "agenda_summary": "{available}/{size} available on Thursday",
         "agenda_add": "Add a date",
+        "chat_title": "Chat",
+        "chat_subtitle": "Attach a date or a file, the band opens it in one click",
+        "chat_summary": "{count} message | {count} messages",
         "tasks_title": "Tasks",
         "tasks_subtitle": "Every task has an owner and a date",
         "tasks_summary": "{count} of {total} done | {count} of {total} done",
@@ -481,6 +500,9 @@
         "agenda_tag": "Calendar",
         "agenda_title": "Next rehearsal - Thu 20:00",
         "agenda_meta": "{available}/{size} available",
+        "chat_tag": "Chat",
+        "chat_title": "{name}: {body}",
+        "chat_meta": "Dates and files attached to messages",
         "tasks_tag": "Tasks",
         "tasks_title": "{count} open tasks",
         "tasks_next": "Next: {task}",

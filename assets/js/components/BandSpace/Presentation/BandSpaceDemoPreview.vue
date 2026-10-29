@@ -97,7 +97,7 @@
                 @click="activeTab = widget.key"
               >
                 <span :class="['text-[11px] font-bold tracking-wider uppercase', MODULE_ACCENTS[widget.key].text]">{{ widget.tag }}</span>
-                <span class="font-bold text-surface-900 dark:text-surface-0">{{ widget.title }}</span>
+                <span class="line-clamp-2 break-words font-bold text-surface-900 dark:text-surface-0">{{ widget.title }}</span>
                 <span class="text-sm text-surface-600 dark:text-surface-400">{{ widget.meta }}</span>
               </button>
             </div>
@@ -127,6 +127,56 @@
                 </span>
               </li>
             </ul>
+
+            <template v-else-if="tab.key === 'chat'">
+              <ul class="m-0 p-0 list-none flex flex-col gap-3">
+                <li
+                  v-for="message in chat"
+                  :key="message.id"
+                  :class="['flex flex-col gap-1 max-w-[85%]', message.isMine ? 'self-end items-end' : 'self-start items-start']"
+                >
+                  <span class="text-xs font-bold text-surface-700 dark:text-surface-300">{{ message.who }}</span>
+                  <span
+                    :class="[
+                      'px-4 py-2.5 rounded-2xl leading-relaxed break-words',
+                      message.isMine
+                        ? 'rounded-br-md bg-primary-700 text-white'
+                        : 'rounded-bl-md bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-0'
+                    ]"
+                  >
+                    {{ message.body }}
+                  </span>
+                  <button
+                    v-if="message.attachment"
+                    type="button"
+                    :class="[ADD_BUTTON, 'h-9']"
+                    :aria-label="t('home.band_space_presentation.preview.chat_open_attachment', { label: message.attachment.label, module: tabFor(message.attachment.module).label })"
+                    @click="selectTab(message.attachment.module)"
+                  >
+                    <i :class="[tabFor(message.attachment.module).icon, MODULE_ACCENTS[message.attachment.module].text]" aria-hidden="true" />
+                    {{ message.attachment.label }}
+                  </button>
+                </li>
+              </ul>
+              <form class="flex gap-2" @submit.prevent="sendMessage">
+                <label for="demo-chat-message" class="sr-only">{{ t('home.band_space_presentation.preview.chat_message_label') }}</label>
+                <input
+                  id="demo-chat-message"
+                  v-model="draftMessage"
+                  type="text"
+                  maxlength="200"
+                  :placeholder="t('home.band_space_presentation.preview.chat_message_placeholder')"
+                  class="grow min-w-0 h-10 px-4 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-surface-900 dark:text-surface-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+                <button type="submit" :class="ADD_BUTTON" :aria-disabled="!canAddMore(sentMessages.length)">
+                  <i class="pi pi-send" aria-hidden="true" />
+                  {{ t('home.band_space_presentation.preview.chat_send') }}
+                </button>
+              </form>
+              <span v-if="!canAddMore(sentMessages.length)" class="text-sm text-surface-600 dark:text-surface-400">
+                {{ t('home.band_space_presentation.preview.demo_limit') }}
+              </span>
+            </template>
 
             <ul v-else-if="tab.key === 'taches'" class="m-0 p-0 list-none flex flex-col gap-2">
               <li v-for="task in tasks" :key="task.id">
@@ -314,6 +364,7 @@ import {
   dashboardModules,
   demoAgenda,
   demoBalances,
+  demoChat,
   demoExpenses,
   demoFiles,
   demoNotes,
@@ -385,6 +436,8 @@ const deletedFileIds = ref([])
 const addedEventCount = ref(0)
 const addedExpenseCount = ref(0)
 const editedNoteBodies = ref({})
+const sentMessages = ref([])
+const draftMessage = ref('')
 const openNoteId = ref(null)
 
 const shownName = computed(
@@ -398,6 +451,7 @@ const membersLabel = computed(() =>
 )
 
 const agenda = computed(() => demoAgenda(props.size, addedEventCount.value))
+const chat = computed(() => demoChat(props.size, sentMessages.value))
 const tasks = computed(() => demoTasks(props.size, doneTaskIds.value))
 const setlist = computed(() => demoSetlist(setlistOrder.value))
 const files = computed(() => demoFiles(props.size, deletedFileIds.value))
@@ -433,6 +487,11 @@ const panels = computed(() => {
       addLabel: t('home.band_space_presentation.preview.panels.agenda_add'),
       addedCount: addedEventCount.value,
       add: () => addedEventCount.value++
+    },
+    chat: {
+      title: t('home.band_space_presentation.preview.panels.chat_title'),
+      subtitle: t('home.band_space_presentation.preview.panels.chat_subtitle'),
+      summary: t('home.band_space_presentation.preview.panels.chat_summary', chat.value.length)
     },
     taches: {
       title: t('home.band_space_presentation.preview.panels.tasks_title'),
@@ -480,6 +539,7 @@ const panels = computed(() => {
 
 const widgets = computed(() => {
   const nextTask = panels.value.taches.openTasks[0]
+  const lastMessage = chat.value.at(-1)
   const content = {
     agenda: {
       tag: t('home.band_space_presentation.preview.widgets.agenda_tag'),
@@ -488,6 +548,14 @@ const widgets = computed(() => {
         available: Math.max(1, props.size - 1),
         size: props.size
       })
+    },
+    chat: {
+      tag: t('home.band_space_presentation.preview.widgets.chat_tag'),
+      title: t('home.band_space_presentation.preview.widgets.chat_title', {
+        name: lastMessage.who,
+        body: lastMessage.body
+      }),
+      meta: t('home.band_space_presentation.preview.widgets.chat_meta')
     },
     taches: {
       tag: t('home.band_space_presentation.preview.widgets.tasks_tag'),
@@ -551,8 +619,22 @@ async function deleteFile(id) {
   )?.focus()
 }
 
+// A blank message is not sent, and the field keeps focus so the visitor can type the next one.
+function sendMessage() {
+  const body = draftMessage.value.trim()
+  if (!body || !canAddMore(sentMessages.value.length)) {
+    return
+  }
+  sentMessages.value = [...sentMessages.value, body]
+  draftMessage.value = ''
+}
+
 function moveSongAt(index, step) {
   setlistOrder.value = moveSong(setlistOrder.value, index, step)
+}
+
+function tabFor(key) {
+  return TABS.find((tab) => tab.key === key)
 }
 
 function selectTab(key) {

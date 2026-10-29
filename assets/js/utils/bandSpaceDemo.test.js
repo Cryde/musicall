@@ -8,6 +8,7 @@ import {
   dashboardModules,
   demoAgenda,
   demoBalances,
+  demoChat,
   demoExpenses,
   demoFiles,
   demoNotes,
@@ -74,16 +75,11 @@ describe('canAddMore', () => {
 
 describe('dashboardModules', () => {
   it('puts the picked modules first, in module order', () => {
-    assert.deepEqual(dashboardModules(['files', 'agenda']), [
-      'agenda',
-      'files',
-      'taches',
-      'setlists'
-    ])
+    assert.deepEqual(dashboardModules(['files', 'agenda']), ['agenda', 'files', 'chat', 'taches'])
   })
 
   it('fills four slots with nothing picked', () => {
-    assert.deepEqual(dashboardModules([]), ['agenda', 'taches', 'setlists', 'finances'])
+    assert.deepEqual(dashboardModules([]), ['agenda', 'chat', 'taches', 'setlists'])
   })
 })
 
@@ -175,6 +171,34 @@ describe('demoNotes', () => {
   })
 })
 
+describe('demoChat', () => {
+  it('keeps every author inside a duo', () => {
+    assert.ok(demoChat(2, []).every((message) => ['Toi', 'Léa'].includes(message.who)))
+  })
+
+  it('attaches a date and a file that open their own tab', () => {
+    const modules = demoChat(4, [])
+      .filter((message) => message.attachment)
+      .map((message) => message.attachment.module)
+
+    assert.deepEqual(modules, ['agenda', 'files'])
+  })
+
+  it('appends what the visitor sent, signed by them', () => {
+    const messages = demoChat(4, ['Ok pour jeudi'])
+    const last = messages.at(-1)
+
+    assert.equal(messages.length, 4)
+    assert.deepEqual(last, {
+      id: 'sent-0',
+      body: 'Ok pour jeudi',
+      who: 'Toi',
+      isMine: true,
+      attachment: null
+    })
+  })
+})
+
 describe('demoFiles', () => {
   it('drops the deleted files', () => {
     const ids = demoFiles(4, ['demo', 'press']).map((file) => file.id)
@@ -245,7 +269,7 @@ describe('requestedDemoTab', () => {
 
   it('ignores a missing, unknown or repeated parameter', () => {
     assert.equal(requestedDemoTab(tabs, undefined), null)
-    assert.equal(requestedDemoTab(tabs, 'chat'), null)
+    assert.equal(requestedDemoTab(tabs, 'rider'), null)
     assert.equal(requestedDemoTab(tabs, ['finances', 'agenda']), null)
   })
 })

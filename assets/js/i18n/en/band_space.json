@@ -14,6 +14,7 @@
   },
   "module_description": {
     "agenda": "Every date brings together times, venue, availability and its setlist.",
+    "chat": "The band's thread, where you attach a date, a song or a file, and turn a message into a task.",
     "tasks": "Who books the rehearsal room, who chases the promoter, and where it all stands.",
     "notes": "Lyrics, arrangements and rehearsal notes, all in one place.",
     "setlists": "Running order, transitions and durations, ready to print or to follow on stage.",

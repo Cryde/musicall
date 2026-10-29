@@ -14,6 +14,7 @@
   },
   "module_description": {
     "agenda": "Chaque date réunit horaires, lieu, disponibilités et setlist associée.",
+    "chat": "Le fil du groupe, où l'on joint une date, un morceau ou un fichier, et où un message devient une tâche.",
     "tasks": "Qui réserve la salle, qui relance le programmateur, et où ça en est.",
     "notes": "Les paroles, les arrangements et les comptes rendus de répét, au même endroit.",
     "setlists": "L'ordre, les transitions et les durées, prêts à imprimer ou à suivre sur scène.",
