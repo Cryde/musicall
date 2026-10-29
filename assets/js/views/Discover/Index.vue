@@ -53,6 +53,9 @@
       </div>
     </div>
 
+    <!-- Application Android -->
+    <BandSpaceMobileApp />
+
     <!-- Publications -->
     <div class="flex flex-col-reverse xl:flex-row-reverse gap-12 xl:gap-20 items-center">
       <div class="flex-1">
@@ -238,6 +241,7 @@
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import BandSpaceMobileApp from '../../components/BandSpace/Presentation/BandSpaceMobileApp.vue'
 import FeatureItem from '../../components/Discover/FeatureItem.vue'
 import AnnouncesMockup from '../../components/Discover/Mockup/AnnouncesMockup.vue'
 import ForumMockup from '../../components/Discover/Mockup/ForumMockup.vue'
