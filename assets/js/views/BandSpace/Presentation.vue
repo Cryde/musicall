@@ -96,6 +96,8 @@
       </div>
     </section>
 
+    <BandSpaceMobileApp />
+
     <section class="flex flex-col md:flex-row md:items-center justify-between gap-8 p-8 lg:p-14 rounded-3xl bg-surface-0 dark:bg-surface-900">
       <div class="flex flex-col gap-2.5">
         <h2 class="m-0 text-3xl font-extrabold text-surface-900 dark:text-surface-0">{{ closingTitle }}</h2>
@@ -115,6 +117,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import BandSpaceDemoPreview from '../../components/BandSpace/Presentation/BandSpaceDemoPreview.vue'
+import BandSpaceMobileApp from '../../components/BandSpace/Presentation/BandSpaceMobileApp.vue'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { ctaLabel, DEMO_PAINS, DEMO_SIZES, sizeLabel } from '../../utils/bandSpaceDemo.js'

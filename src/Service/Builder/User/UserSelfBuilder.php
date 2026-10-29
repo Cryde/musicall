@@ -6,6 +6,7 @@ namespace App\Service\Builder\User;
 
 use App\ApiResource\User\UserSelf;
 use App\Entity\User;
+use App\Repository\User\DeviceTokenRepository;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -14,6 +15,7 @@ readonly class UserSelfBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager   $cacheManager,
+        private DeviceTokenRepository $deviceTokenRepository,
     ) {
     }
 
@@ -28,6 +30,7 @@ readonly class UserSelfBuilder
         $dto->usernameChangedDatetime = $user->usernameChangedDatetime;
         $dto->hasPassword = $user->password !== null;
         $dto->locale = $user->locale;
+        $dto->hasMobileApp = $this->deviceTokenRepository->hasTokenForUser($user);
 
         return $dto;
     }

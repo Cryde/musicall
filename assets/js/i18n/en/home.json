@@ -545,6 +545,27 @@
         "files_title": "Sheet music and demos",
         "files_meta": "{count} files, sorted into folders"
       }
+    },
+    "mobile_app": {
+      "eyebrow": "Android app",
+      "title": "Your band in your pocket",
+      "body": "The whole Band Space on your phone, with a notification when the band writes, a date is set or you're given a task.",
+      "features": {
+        "chat": "The band chat, photos and voice notes included",
+        "setlist": "Setlist Live mode, on stage",
+        "files": "The band's files, even offline",
+        "notes": "Ideas dictated straight into your notes"
+      },
+      "mockup_aria_label": "Phone screen with three band notifications: a message, a new event and a task",
+      "mock": {
+        "date": "Saturday, November 7",
+        "band_name": "Nuit Blanche",
+        "now": "now",
+        "minutes_ago": "{count} min ago",
+        "chat": "Léa: Shall we move rehearsal to 8pm?",
+        "agenda": "Tom added the event \"Gig at Le Ferrailleur\"",
+        "task": "Sam assigned you to the task \"Print the setlists\""
+      }
     }
   }
 }

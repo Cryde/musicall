@@ -197,5 +197,10 @@
     "one": "{name} is typing...",
     "two": "{first} and {second} are typing...",
     "many": "{count} people are typing..."
+  },
+  "mobile_app": {
+    "badge_alt": "Get it on Google Play",
+    "qr_alt": "QR code to the MusicAll app on Google Play",
+    "qr_caption": "Scan with your phone"
   }
 }

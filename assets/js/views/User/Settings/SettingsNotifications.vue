@@ -105,6 +105,12 @@
         <p class="text-sm text-surface-600 dark:text-surface-400">
           {{ t('profile.settings.notifications.push_help') }}
         </p>
+        <div v-if="offersApp" class="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span class="text-sm font-medium text-surface-700 dark:text-surface-200">
+            {{ t('profile.settings.notifications.push_get_app') }}
+          </span>
+          <GooglePlayBadge placement="notification-settings" class="h-10" />
+        </div>
 
         <NotificationToggle
           v-for="toggle in PUSH_TOGGLES"
@@ -152,8 +158,11 @@ import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import GooglePlayBadge from '../../../components/MobileApp/GooglePlayBadge.vue'
 import NotificationToggle from '../../../components/settings/NotificationToggle.vue'
 import { useNotificationPreferencesStore } from '../../../store/user/notificationPreferences.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
+import { offersMobileApp } from '../../../utils/mobileApp.js'
 
 /** Every switch, under its API name, with the value it has when nothing was saved yet. */
 const DEFAULTS = {
@@ -235,6 +244,10 @@ const PUSH_TOGGLES = [
 const notificationPreferencesStore = useNotificationPreferencesStore()
 const toast = useToast()
 const { t } = useI18n()
+const userSecurityStore = useUserSecurityStore()
+const offersApp = computed(() =>
+  offersMobileApp(userSecurityStore.userProfile, globalThis.navigator)
+)
 
 const isLoading = ref(true)
 const isUpdating = ref(false)

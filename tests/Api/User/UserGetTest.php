@@ -4,6 +4,7 @@ namespace App\Tests\Api\User;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\User\DeviceTokenFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -43,6 +44,32 @@ class UserGetTest extends ApiTestCase
             'username_changed_datetime' => null,
             'has_password' => true,
             'locale' => 'fr',
+            'has_mobile_app' => false,
+        ]);
+    }
+
+    public function test_get_self_signed_in_on_the_mobile_app(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create();
+        DeviceTokenFactory::new()->create(['user' => $user1]);
+        DeviceTokenFactory::new()->create();
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/users/self');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSelf',
+            '@id' => '/api/users/self',
+            '@type' => 'UserSelf',
+            'id'              => $user1->id,
+            'username'        => $user1->username,
+            'email'           => $user1->email,
+            'roles'           => ['ROLE_USER'],
+            'profile_picture' => null,
+            'username_changed_datetime' => null,
+            'has_password' => true,
+            'locale' => 'fr',
+            'has_mobile_app' => true,
         ]);
     }
 
@@ -65,6 +92,7 @@ class UserGetTest extends ApiTestCase
             'username_changed_datetime' => null,
             'has_password' => true,
             'locale' => 'fr',
+            'has_mobile_app' => false,
         ]);
     }
 

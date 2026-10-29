@@ -31,6 +31,7 @@
             <i class="pi pi-envelope" aria-hidden="true" />
           </RouterLink>
         </div>
+        <GooglePlayBadge v-if="offersApp" placement="footer" class="self-start h-10" />
       </div>
 
       <nav
@@ -79,7 +80,9 @@
 <script setup>
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import GooglePlayBadge from '../../components/MobileApp/GooglePlayBadge.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { offersMobileApp } from '../../utils/mobileApp.js'
 
 const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
 const AuthRequiredModal = defineAsyncComponent(
@@ -186,6 +189,9 @@ const legalLinks = computed(() => [
 ])
 
 const userSecurityStore = useUserSecurityStore()
+const offersApp = computed(() =>
+  offersMobileApp(userSecurityStore.userProfile, globalThis.navigator)
+)
 const showAnnounceModal = ref(false)
 const showAuthModal = ref(false)
 

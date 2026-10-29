@@ -15,6 +15,7 @@
         <AgendaWidget :band-space-id="bandSpaceId" />
       </div>
       <div class="flex flex-col gap-6">
+        <MobileAppWidget />
         <TasksWidget :band-space-id="bandSpaceId" />
         <StorageWidget :band-space-id="bandSpaceId" />
         <FinanceWidget :band-space-id="bandSpaceId" />
@@ -32,6 +33,7 @@ import ActivityWidget from '../../components/BandSpace/Dashboard/ActivityWidget.
 import AgendaWidget from '../../components/BandSpace/Dashboard/AgendaWidget.vue'
 import FinanceWidget from '../../components/BandSpace/Dashboard/FinanceWidget.vue'
 import InvitationsWidget from '../../components/BandSpace/Dashboard/InvitationsWidget.vue'
+import MobileAppWidget from '../../components/BandSpace/Dashboard/MobileAppWidget.vue'
 import StorageWidget from '../../components/BandSpace/Dashboard/StorageWidget.vue'
 import TasksWidget from '../../components/BandSpace/Dashboard/TasksWidget.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'

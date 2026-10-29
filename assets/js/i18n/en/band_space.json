@@ -144,6 +144,11 @@
       "done": "Done",
       "overdue": "{count} overdue",
       "load_error": "Could not load the tasks."
+    },
+    "mobile_app": {
+      "title": "The Android app",
+      "body": "Your band's chat, calendar and tasks on your phone, with a notification as soon as something happens.",
+      "dismiss": "Don't show again"
     }
   },
   "no_space": {

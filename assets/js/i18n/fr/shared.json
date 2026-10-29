@@ -197,5 +197,10 @@
     "one": "{name} écrit…",
     "two": "{first} et {second} écrivent…",
     "many": "{count} personnes écrivent…"
+  },
+  "mobile_app": {
+    "badge_alt": "Disponible sur Google Play",
+    "qr_alt": "QR code vers l'application MusicAll sur Google Play",
+    "qr_caption": "Scanne avec ton téléphone"
   }
 }

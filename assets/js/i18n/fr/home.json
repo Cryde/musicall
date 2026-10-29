@@ -545,6 +545,27 @@
         "files_title": "Partitions & démos",
         "files_meta": "{count} fichiers, rangés par dossier"
       }
+    },
+    "mobile_app": {
+      "eyebrow": "Application Android",
+      "title": "Ton groupe dans ta poche",
+      "body": "Tout le Band Space sur ton téléphone, et une notification quand le groupe écrit, qu'une date tombe ou qu'on te confie une tâche.",
+      "features": {
+        "chat": "Le chat du groupe, photos et notes vocales comprises",
+        "setlist": "Le mode Live des setlists, sur scène",
+        "files": "Les fichiers du groupe, même hors ligne",
+        "notes": "Une idée dictée à la voix dans les notes"
+      },
+      "mockup_aria_label": "Écran de téléphone avec trois notifications du groupe : un message, un nouvel événement et une tâche",
+      "mock": {
+        "date": "samedi 7 novembre",
+        "band_name": "Nuit Blanche",
+        "now": "maintenant",
+        "minutes_ago": "il y a {count} min",
+        "chat": "Léa : On décale la répète à 20 h ?",
+        "agenda": "Tom a ajouté l'événement « Concert au Ferrailleur »",
+        "task": "Sam t'a assigné à la tâche « Imprimer les setlists »"
+      }
     }
   }
 }

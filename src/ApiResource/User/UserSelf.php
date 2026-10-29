@@ -35,4 +35,6 @@ class UserSelf
     public ?\DateTimeImmutable $usernameChangedDatetime = null;
     public bool $hasPassword;
     public string $locale;
+    /** Signed in on the mobile app, which registers a push token, so the web stops advertising it. */
+    public bool $hasMobileApp;
 }

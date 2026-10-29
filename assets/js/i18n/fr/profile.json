@@ -235,7 +235,8 @@
       "load_error": "Impossible de charger les préférences de notification",
       "saved": "Préférences mises à jour",
       "saved_detail": "Tes préférences de notification ont été enregistrées",
-      "save_error": "Impossible de mettre à jour les préférences"
+      "save_error": "Impossible de mettre à jour les préférences",
+      "push_get_app": "Pas encore l'application ?"
     },
     "profile_general": {
       "cover": "Photo de couverture",

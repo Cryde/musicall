@@ -235,7 +235,8 @@
       "load_error": "Could not load your notification preferences",
       "saved": "Preferences updated",
       "saved_detail": "Your notification preferences have been saved",
-      "save_error": "Could not update your preferences"
+      "save_error": "Could not update your preferences",
+      "push_get_app": "Don't have the app yet?"
     },
     "profile_general": {
       "cover": "Cover photo",

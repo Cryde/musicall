@@ -54,6 +54,11 @@ class DeviceTokenRepository extends ServiceEntityRepository
             ->getSingleColumnResult()));
     }
 
+    public function hasTokenForUser(User $user): bool
+    {
+        return $this->count(['user' => $user]) > 0;
+    }
+
     /** Answers how many rows went, so a caller can tell "not yours or unknown" from a deletion. */
     public function deleteOneForUser(User $user, string $token): int
     {
