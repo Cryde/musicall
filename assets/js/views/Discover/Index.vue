@@ -28,8 +28,33 @@
       </i18n-t>
     </section>
 
+    <!-- Band Space -->
+    <div class="flex flex-col xl:flex-row gap-12 xl:gap-20 items-center">
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+            <i class="pi pi-users text-2xl text-purple-600 dark:text-purple-400" />
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold text-surface-900 dark:text-surface-0">{{ t('home.discover.band_space.title') }}</h2>
+        </div>
+        <p class="text-surface-600 dark:text-surface-400 text-lg md:text-xl leading-relaxed">
+          {{ t('home.discover.band_space.body') }}
+        </p>
+        <div class="h-px bg-surface-200 dark:bg-surface-800 w-full my-8" />
+        <div class="grid sm:grid-cols-2 gap-4">
+          <FeatureItem v-for="module in BAND_SPACE_MODULES" :key="module.key" :icon="module.icon">{{ module.label }}</FeatureItem>
+        </div>
+        <router-link :to="{ name: 'app_band_space_presentation' }" class="inline-block mt-8">
+          <Button :label="t('home.discover.band_space.cta')" icon="pi pi-arrow-right" iconPos="right" />
+        </router-link>
+      </div>
+      <div class="w-full xl:flex-1">
+        <HomeBandSpaceDemo />
+      </div>
+    </div>
+
     <!-- Publications -->
-    <div class="flex xl:flex-row flex-col-reverse gap-12 xl:gap-20 items-center">
+    <div class="flex flex-col-reverse xl:flex-row-reverse gap-12 xl:gap-20 items-center">
       <div class="flex-1">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
@@ -65,7 +90,7 @@
     </div>
 
     <!-- Annonces musiciens -->
-    <div class="flex flex-col-reverse xl:flex-row-reverse gap-12 xl:gap-20 items-center">
+    <div class="flex xl:flex-row flex-col-reverse gap-12 xl:gap-20 items-center">
       <div class="flex-1">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
@@ -101,7 +126,7 @@
     </div>
 
     <!-- Forum -->
-    <div class="flex xl:flex-row flex-col-reverse gap-12 xl:gap-20 items-center">
+    <div class="flex flex-col-reverse xl:flex-row-reverse gap-12 xl:gap-20 items-center">
       <div class="flex-1">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
@@ -137,7 +162,7 @@
     </div>
 
     <!-- Galeries photos -->
-    <div class="flex flex-col-reverse xl:flex-row-reverse gap-12 xl:gap-20 items-center">
+    <div class="flex xl:flex-row flex-col-reverse gap-12 xl:gap-20 items-center">
       <div class="flex-1">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
@@ -172,49 +197,24 @@
       </div>
     </div>
 
-    <!-- Messagerie & Espace groupe -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <!-- Messagerie -->
-      <div class="group relative bg-surface-50 dark:bg-surface-800 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 transition-all duration-300 hover:border-pink-300 dark:hover:border-pink-700 hover:shadow-lg hover:shadow-pink-500/10">
-        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div class="relative">
-          <div class="w-14 h-14 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-5">
-            <i class="pi pi-envelope text-2xl text-pink-600 dark:text-pink-400" />
-          </div>
-          <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0 mb-3">{{ t('home.discover.messages.title') }}</h2>
-          <p class="text-surface-600 dark:text-surface-400 leading-7 mb-6">
-            {{ t('home.discover.messages.body') }}
-          </p>
-          <div class="flex flex-col gap-3">
-            <FeatureItem>{{ t('home.discover.messages.private') }}</FeatureItem>
-            <FeatureItem>{{ t('home.discover.messages.realtime') }}</FeatureItem>
-            <FeatureItem>{{ t('home.discover.messages.from_announces') }}</FeatureItem>
-          </div>
+    <!-- Messagerie -->
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-8 lg:gap-12 items-center bg-surface-50 dark:bg-surface-800 rounded-2xl p-8 border border-surface-200 dark:border-surface-700">
+      <div>
+        <div class="w-14 h-14 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-5">
+          <i class="pi pi-envelope text-2xl text-pink-600 dark:text-pink-400" />
         </div>
+        <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0 mb-3">{{ t('home.discover.messages.title') }}</h2>
+        <p class="text-surface-600 dark:text-surface-400 leading-7">
+          {{ t('home.discover.messages.body') }}
+        </p>
       </div>
-
-      <!-- Espace groupe (Coming Soon) -->
-      <div class="relative bg-surface-50 dark:bg-surface-800 rounded-2xl p-8 border border-dashed border-surface-300 dark:border-surface-600">
-        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl" />
-        <div class="relative">
-          <div class="flex items-center gap-3 mb-5">
-            <div class="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <i class="pi pi-users text-2xl text-purple-600 dark:text-purple-400" />
-            </div>
-            <span class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow-sm">
-              {{ t('home.discover.band.soon') }}
-            </span>
-          </div>
-          <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0 mb-3">{{ t('home.discover.band.title') }}</h2>
-          <p class="text-surface-600 dark:text-surface-400 leading-7 mb-6">
-            {{ t('home.discover.band.body') }}
-          </p>
-          <div class="flex flex-col gap-3">
-            <FeatureItem soon>{{ t('home.discover.band.members') }}</FeatureItem>
-            <FeatureItem soon>{{ t('home.discover.band.calendar') }}</FeatureItem>
-            <FeatureItem soon>{{ t('home.discover.band.storage') }}</FeatureItem>
-          </div>
-        </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <FeatureItem>{{ t('home.discover.messages.private') }}</FeatureItem>
+        <FeatureItem>{{ t('home.discover.messages.from_announces') }}</FeatureItem>
+        <FeatureItem>{{ t('home.discover.messages.realtime') }}</FeatureItem>
+        <FeatureItem>{{ t('home.discover.messages.media') }}</FeatureItem>
+        <FeatureItem>{{ t('home.discover.messages.reactions') }}</FeatureItem>
+        <FeatureItem>{{ t('home.discover.messages.music_links') }}</FeatureItem>
       </div>
     </div>
 
@@ -263,6 +263,8 @@ import discoverForumImage from '../../../image/discover/discover-forum.png'
 import discoverPhotoImage from '../../../image/discover/discover-photo.png'
 import discoverPublicationImage from '../../../image/discover/discover-publication.png'
 import FeatureItem from '../../components/Discover/FeatureItem.vue'
+import HomeBandSpaceDemo from '../../components/Home/HomeBandSpaceDemo.vue'
+import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const { t } = useI18n()

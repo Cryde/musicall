@@ -254,6 +254,11 @@
     "brand": "MusicAll",
     "intro": "Explore toutes les fonctionnalités qui font de MusicAll {community}",
     "intro_community": "ta communauté musicale",
+    "band_space": {
+      "title": "Band Space",
+      "body": "L'espace privé de ton groupe. L'agenda, la discussion, les tâches, les setlists, les fichiers et les finances au même endroit, au lieu d'être éparpillés entre messages et tableurs. Gratuit, pour chaque groupe.",
+      "cta": "Découvrir le Band Space"
+    },
     "publications": {
       "title": "Publications",
       "body": "Découvre des articles, tutoriels et actualités rédigés par la communauté. Cours de musique, techniques instrumentales, théorie musicale et bien plus encore.",
@@ -298,16 +303,11 @@
       "title": "Messagerie privée",
       "body": "Communique en privé avec les autres membres de la communauté. Discute de projets, échange des conseils ou planifie des rencontres.",
       "private": "Messages privés entre membres",
-      "realtime": "Notifications en temps réel",
-      "from_announces": "Contact direct depuis les annonces"
-    },
-    "band": {
-      "soon": "Bientôt disponible",
-      "title": "Espace groupe",
-      "body": "Gère ton groupe de musique avec des outils collaboratifs. Organise tes répétitions et communique efficacement.",
-      "members": "Gestion des membres du groupe",
-      "calendar": "Calendrier partagé des répétitions",
-      "storage": "Espace de stockage pour tes morceaux"
+      "from_announces": "Contact direct depuis les annonces",
+      "realtime": "En temps réel : qui écrit, qui a lu, qui est en ligne",
+      "media": "Photos et notes vocales",
+      "reactions": "Réactions, modification et suppression des messages",
+      "music_links": "Liens YouTube, Spotify, SoundCloud et Bandcamp lisibles dans la conversation"
     },
     "cta": {
       "badge": "Rejoins une communauté active",

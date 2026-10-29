@@ -254,6 +254,11 @@
     "brand": "MusicAll",
     "intro": "Explore all the features that make MusicAll {community}",
     "intro_community": "your music community",
+    "band_space": {
+      "title": "Band Space",
+      "body": "Your band's private space. The calendar, the chat, tasks, setlists, files and finances in one place, instead of scattered across messages and spreadsheets. Free, for every band.",
+      "cta": "Discover the Band Space"
+    },
     "publications": {
       "title": "Publications",
       "body": "Read articles, tutorials and news written by the community. Music lessons, playing techniques, music theory and much more.",
@@ -298,16 +303,11 @@
       "title": "Private messaging",
       "body": "Talk privately with other members of the community. Discuss projects, swap tips or plan to meet up.",
       "private": "Private messages between members",
-      "realtime": "Real-time notifications",
-      "from_announces": "Get in touch straight from an ad"
-    },
-    "band": {
-      "soon": "Coming soon",
-      "title": "Band Space",
-      "body": "Run your band with collaborative tools. Organise your rehearsals and keep everyone in the loop.",
-      "members": "Band member management",
-      "calendar": "A shared rehearsal calendar",
-      "storage": "Storage space for your songs"
+      "from_announces": "Get in touch straight from an ad",
+      "realtime": "Live: who's typing, who has read it, who's online",
+      "media": "Photos and voice notes",
+      "reactions": "Reactions, editing and deleting messages",
+      "music_links": "YouTube, Spotify, SoundCloud and Bandcamp links play right in the conversation"
     },
     "cta": {
       "badge": "Join an active community",
