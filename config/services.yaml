@@ -35,6 +35,16 @@ parameters:
     app.android.min_supported_build: '%env(default:app.android.build.default:APP_ANDROID_MIN_SUPPORTED_BUILD)%'
     app.android.latest_build: '%env(default:app.android.build.default:APP_ANDROID_LATEST_BUILD)%'
 
+    # Sign in with Apple (#1269). Defaulted to empty, because a variable in the committed `.env` never
+    # reaches production: without the default, a server missing one of them would fail to build the
+    # native_oauth firewall and take Google sign-in down with it. Empty means not configured, and only
+    # the Apple calls fail. The private key is the absolute path to the .p8, like FIREBASE_CREDENTIALS.
+    app.apple.unset: ''
+    app.apple.team_id: '%env(default:app.apple.unset:APPLE_TEAM_ID)%'
+    app.apple.key_id: '%env(default:app.apple.unset:APPLE_KEY_ID)%'
+    app.apple.private_key_path: '%env(default:app.apple.unset:APPLE_PRIVATE_KEY_PATH)%'
+    app.apple.native_client_id: '%env(default:app.apple.unset:APPLE_NATIVE_CLIENT_ID)%'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -141,6 +151,15 @@ services:
 
     App\Service\OAuth\Google\GoogleIdTokenVerifierInterface: '@App\Service\OAuth\Google\GoogleIdTokenVerifier'
 
+    App\Service\OAuth\Apple\AppleIdentityTokenVerifierInterface: '@App\Service\OAuth\Apple\AppleIdentityTokenVerifier'
+    App\Service\OAuth\Apple\AppleTokenClientInterface: '@App\Service\OAuth\Apple\AppleTokenClient'
+
+    App\Service\OAuth\Apple\AppleClientSecret:
+        arguments:
+            $teamId: '%app.apple.team_id%'
+            $keyId: '%app.apple.key_id%'
+            $privateKeyPath: '%app.apple.private_key_path%'
+
     App\Controller\OAuth\GoogleController:
         arguments:
             $frontendUrl: '%env(DEFAULT_URI)%'
@@ -170,6 +189,14 @@ when@test:
         App\Tests\Double\FakeGoogleIdTokenVerifier:
             public: true
         App\Service\OAuth\Google\GoogleIdTokenVerifierInterface: '@App\Tests\Double\FakeGoogleIdTokenVerifier'
+
+        # Nor Apple (#1269), for the identity token or the authorization code.
+        App\Tests\Double\FakeAppleIdentityTokenVerifier:
+            public: true
+        App\Service\OAuth\Apple\AppleIdentityTokenVerifierInterface: '@App\Tests\Double\FakeAppleIdentityTokenVerifier'
+        App\Tests\Double\FakeAppleTokenClient:
+            public: true
+        App\Service\OAuth\Apple\AppleTokenClientInterface: '@App\Tests\Double\FakeAppleTokenClient'
 
         # NotificationCreator publishes a Mercure signal on every notification and fifteen source
         # files call it, so without this a large part of the suite would attempt an HTTP POST to a

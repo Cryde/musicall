@@ -13,15 +13,12 @@ use App\Service\OAuth\Google\GoogleUserDataMapper;
 use App\Service\OAuth\Google\InvalidGoogleIdTokenException;
 use App\Service\OAuth\OAuthUserService;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
@@ -49,8 +46,7 @@ final class GoogleIdTokenAuthenticator extends AbstractAuthenticator
         private readonly AuthenticationSuccessHandlerInterface $successHandler,
         #[Autowire(service: 'lexik_jwt_authentication.handler.authentication_failure')]
         private readonly AuthenticationFailureHandlerInterface $failureHandler,
-        #[Target('native_oauth')]
-        private readonly RateLimiterFactoryInterface $nativeOAuthLimiter,
+        private readonly NativeOAuthAttemptLimiter $attemptLimiter,
     ) {
     }
 
@@ -61,13 +57,7 @@ final class GoogleIdTokenAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        // Every attempt, refused ones included: each costs a round trip to check against Google.
-        $limit = $this->nativeOAuthLimiter->create((string) $request->getClientIp())->consume();
-        if (!$limit->isAccepted()) {
-            // In minutes, so the message reads as the password path's does.
-            $wait = $limit->getRetryAfter()->getTimestamp() - time();
-            throw new TooManyLoginAttemptsAuthenticationException(max(1, (int) ceil($wait / 60)));
-        }
+        $this->attemptLimiter->consume($request);
 
         try {
             $claims = $this->verifier->verify(self::idTokenOf($request));

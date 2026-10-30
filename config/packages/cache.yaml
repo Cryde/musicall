@@ -35,6 +35,10 @@ framework:
             cache.google_client:
                 adapter: cache.app
                 default_lifetime: 86400
+            # Apple's identity token signing keys (#1269), for the same reason. An unknown key id refetches.
+            cache.apple_client:
+                adapter: cache.app
+                default_lifetime: 86400
 
 when@test:
     framework:

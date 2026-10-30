@@ -13,3 +13,8 @@ framework:
                 timeout: 5
                 headers:
                     User-Agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
+            # Sign in with Apple (#1269): the signing keys, the code exchange and the revocation. Short,
+            # because a sign-in waits on it.
+            apple.client:
+                base_uri: 'https://appleid.apple.com/'
+                timeout: 5
