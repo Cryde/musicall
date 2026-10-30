@@ -92,6 +92,20 @@ const LINKS = {
           'song_file_detached'
         ]
       }
+    },
+    {
+      route: 'app_band_setlist',
+      key: 'lyrics',
+      query: { view: 'lyrics' },
+      types: {
+        only: [
+          'lyrics_added',
+          'lyrics_updated',
+          'lyrics_restored',
+          'lyrics_linked',
+          'lyrics_unlinked'
+        ]
+      }
     }
   ],
   rider: [
@@ -133,6 +147,6 @@ export function activityLink(activity, bandSpaceId) {
   return {
     name: link.route,
     params: { id: bandSpaceId },
-    query: { [link.key]: activity.resource_id }
+    query: { ...link.query, [link.key]: activity.resource_id }
   }
 }

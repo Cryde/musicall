@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    :header="t('band_space_setlist.lyrics_editor.header', { title: song?.title ?? '' })"
+    :header="t('band_space_setlist.lyrics_editor.header', { title })"
     :style="{ width: 'min(72rem, 100vw)' }"
     :breakpoints="{ '768px': '100vw' }"
     :content-style="{ paddingBottom: '0.5rem' }"
@@ -55,12 +55,12 @@
           @paste="handleRawPaste"
         />
         <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-3 overflow-auto max-h-[36rem]">
-          <LyricsSheet :lyrics="source" :singers="knownSingers" :tonality="song?.tonality" />
+          <LyricsSheet :lyrics="source" :singers="knownSingers" :tonality="tonality" />
         </div>
       </div>
 
       <div v-else class="border border-surface-200 dark:border-surface-700 rounded-lg p-4 overflow-auto max-h-[70vh]">
-        <LyricsSheet v-if="source.trim()" :lyrics="source" :singers="knownSingers" :tonality="song?.tonality" large />
+        <LyricsSheet v-if="source.trim()" :lyrics="source" :singers="knownSingers" :tonality="tonality" large />
         <p v-else class="text-surface-600 dark:text-surface-300 italic m-0">{{ t('band_space_setlist.lyrics_editor.empty') }}</p>
       </div>
     </div>
@@ -86,19 +86,23 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceSettingsApi from '../../../../api/bandSpace/band-space-settings.js'
-import bandSpaceSongsApi from '../../../../api/bandSpace/band-space-songs.js'
+import { useBandLyricsStore } from '../../../../store/bandSpace/bandSpaceLyrics.js'
 import { fromChordSite, SINGER_ALL } from '../../../../utils/chordpro.js'
 import LyricsSheet from './LyricsSheet.vue'
 import LyricsVisualEditor from './LyricsVisualEditor.vue'
 
-// Mirrors SongLyrics::MAX_LENGTH.
+// Mirrors SongLyrics::MAX_LENGTH, which the lyrics resource uses too.
 const MAX_LENGTH = 20000
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  song: { type: Object, default: null },
-  /** The lyrics as last read: { lyrics, lyrics_version, singers }. */
-  lyrics: { type: Object, default: null }
+  /** What the header names: the song's title for linked lyrics, their own otherwise. */
+  title: { type: String, default: '' },
+  /** The key the preview shows, the linked song's. */
+  tonality: { type: String, default: null },
+  /** The lyrics as last read: { id, content, version, singers }. Null writes new ones for `songId`. */
+  lyrics: { type: Object, default: null },
+  songId: { type: String, default: null }
 })
 
 /** `saved` after a save, `reloaded` when a conflict pulled in someone else's newer version. */
@@ -107,6 +111,7 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
 const toast = useToast()
+const lyricsStore = useBandLyricsStore()
 
 const modeOptions = computed(() => [
   { label: t('band_space_setlist.lyrics_editor.mode_simple'), value: 'simple' },
@@ -147,9 +152,9 @@ function nameOf(id) {
 }
 
 function startFrom(lyrics) {
-  source.value = lyrics?.lyrics ?? ''
+  source.value = lyrics?.content ?? ''
   startedFrom.value = source.value
-  version.value = lyrics?.lyrics_version ?? 1
+  version.value = lyrics?.version ?? 1
   savedSingers.value = lyrics?.singers ?? []
   conflict.value = null
 }
@@ -185,15 +190,30 @@ function handleRawPaste(event) {
   source.value = field.value
 }
 
+/** New lyrics left blank are not written: an empty set would still hold the song. */
+function write() {
+  if (props.lyrics) {
+    return lyricsStore.updateLyrics(props.bandSpaceId, props.lyrics.id, {
+      content: source.value,
+      expected_version: version.value
+    })
+  }
+  if (!source.value.trim()) return Promise.resolve(null)
+  return lyricsStore.createLyrics(props.bandSpaceId, {
+    title: props.title,
+    content: source.value,
+    song_id: props.songId
+  })
+}
+
 async function save() {
   isSaving.value = true
   try {
-    const saved = await bandSpaceSongsApi.updateLyrics(
-      props.bandSpaceId,
-      props.song.id,
-      source.value,
-      version.value
-    )
+    const saved = await write()
+    if (!saved) {
+      visible.value = false
+      return
+    }
     toast.add({
       severity: 'success',
       summary: t('band_space_setlist.lyrics_editor.saved'),
@@ -202,7 +222,8 @@ async function save() {
     emit('saved', saved)
     visible.value = false
   } catch (error) {
-    if (error.status === 409) {
+    // A create has no newer version to load: its 409 is the song having been given lyrics meanwhile.
+    if (error.status === 409 && props.lyrics) {
       conflict.value = error.message
     } else {
       toast.add({
@@ -219,7 +240,7 @@ async function save() {
 
 async function reloadLatest() {
   try {
-    const latest = await bandSpaceSongsApi.getLyrics(props.bandSpaceId, props.song.id)
+    const latest = await lyricsStore.reloadLyrics(props.bandSpaceId, props.lyrics.id)
     startFrom(latest)
     emit('reloaded', latest)
   } catch (error) {

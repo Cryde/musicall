@@ -30,6 +30,12 @@ describe('activityLink', () => {
       to('app_band_setlist', { setlist: 'item-1' })
     )
     assert.deepEqual(link('setlist', 'song_updated'), to('app_band_setlist', { song: 'item-1' }))
+    for (const type of ['lyrics_added', 'lyrics_updated', 'lyrics_linked', 'lyrics_unlinked']) {
+      assert.deepEqual(
+        link('setlist', type),
+        to('app_band_setlist', { view: 'lyrics', lyrics: 'item-1' })
+      )
+    }
     assert.deepEqual(link('rider', 'rider_renamed'), to('app_band_rider', { rider: 'item-1' }))
   })
 
@@ -41,6 +47,7 @@ describe('activityLink', () => {
     assert.equal(link('file', 'purged'), null)
     assert.equal(link('setlist', 'setlist_archived'), null)
     assert.equal(link('setlist', 'song_archived'), null)
+    assert.equal(link('setlist', 'lyrics_archived'), null)
     assert.equal(link('rider', 'rider_archived'), null)
   })
 

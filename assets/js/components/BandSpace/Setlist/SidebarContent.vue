@@ -3,12 +3,24 @@
     <button
       type="button"
       class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
-      :class="repertoireButtonClasses"
+      :class="navButtonClasses('repertoire')"
+      :aria-current="activeView === 'repertoire' ? 'true' : null"
       @click="emit('select-repertoire')"
     >
       <i class="pi pi-book text-emerald-600"></i>
       <span class="flex-1 truncate font-medium">{{ t('band_space_setlist.common.repertoire') }}</span>
       <Badge :value="songsCount" severity="secondary" />
+    </button>
+    <button
+      type="button"
+      class="w-full text-left flex items-center gap-2 px-3 py-2 mt-1 rounded-lg transition-colors"
+      :class="navButtonClasses('lyrics')"
+      :aria-current="activeView === 'lyrics' ? 'true' : null"
+      @click="emit('select-lyrics')"
+    >
+      <i class="pi pi-align-left text-sky-600" aria-hidden="true"></i>
+      <span class="flex-1 truncate font-medium">{{ t('band_space_setlist.sidebar.lyrics') }}</span>
+      <Badge :value="lyricsCount" severity="secondary" />
     </button>
 
     <h2 class="text-xs font-semibold uppercase tracking-wide text-surface-500 dark:text-surface-400 px-3 mt-5 mb-2">
@@ -77,21 +89,28 @@ import { programmeSummary } from '../../../utils/setlistProgramme.js'
 
 const props = defineProps({
   songsCount: { type: Number, required: true },
+  lyricsCount: { type: Number, default: 0 },
   setlists: { type: Array, required: true },
   isLoadingSetlists: { type: Boolean, default: false },
-  activeView: { type: String, required: true }, // 'repertoire' | 'setlist' | 'trash'
+  activeView: { type: String, required: true }, // 'repertoire' | 'lyrics' | 'setlist' | 'trash'
   activeSetlistId: { type: String, default: null },
   trashCount: { type: Number, default: 0 }
 })
 
-const emit = defineEmits(['select-repertoire', 'select-setlist', 'select-trash', 'new-setlist'])
+const emit = defineEmits([
+  'select-repertoire',
+  'select-lyrics',
+  'select-setlist',
+  'select-trash',
+  'new-setlist'
+])
 const { t } = useI18n()
 
-const repertoireButtonClasses = computed(() =>
-  props.activeView === 'repertoire'
+function navButtonClasses(view) {
+  return props.activeView === view
     ? 'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100'
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
-)
+}
 
 const trashButtonClasses = computed(() =>
   props.activeView === 'trash'

@@ -34,7 +34,8 @@
     "trash": "Corbeille",
     "setlist_empty": "Vide",
     "song_count": "{count} titre | {count} titres",
-    "song_count_with_duration": "{count} titre · {duration} | {count} titres · {duration}"
+    "song_count_with_duration": "{count} titre · {duration} | {count} titres · {duration}",
+    "lyrics": "Paroles"
   },
   "new_setlist_dialog": {
     "header": "Nouvelle setlist",
@@ -236,7 +237,7 @@
   },
   "trash": {
     "title": "Corbeille",
-    "intro": "Les setlists et les titres supprimés sont conservés ici sans limite de temps. Restaure-les quand tu veux.",
+    "intro": "Les setlists, les titres et les paroles supprimés sont conservés ici sans limite de temps. Restaure-les quand tu veux.",
     "empty": "La corbeille est vide.",
     "setlists": "Setlists",
     "songs": "Titres",
@@ -246,7 +247,12 @@
     "setlist_restored": "Setlist restaurée",
     "setlist_restore_failed": "Impossible de restaurer la setlist",
     "song_restored": "Titre restauré",
-    "song_restore_failed": "Impossible de restaurer le titre"
+    "song_restore_failed": "Impossible de restaurer le titre",
+    "lyrics": "Paroles",
+    "lyrics_line": "supprimées le {date}",
+    "lyrics_restored": "Paroles restaurées",
+    "lyrics_restored_detail": "Elles ne sont plus liées à un titre : lie-les de nouveau depuis « Paroles ».",
+    "lyrics_restore_failed": "Impossible de restaurer les paroles"
   },
   "song_drawer": {
     "title": "Titre",
@@ -285,7 +291,11 @@
     "semitones": "{semitones} demi-ton | {semitones} demi-tons",
     "semitones_with_key": "{semitones} demi-ton ({key}) | {semitones} demi-tons ({key})",
     "transposition_saved": "Tonalité enregistrée",
-    "transposition_failed": "Transposition impossible"
+    "transposition_failed": "Transposition impossible",
+    "open_in_lyrics": "Voir dans Paroles",
+    "write": "Écrire les paroles",
+    "link_existing": "Lier des paroles existantes",
+    "link_existing_empty": "Aucune parole en attente d'un titre"
   },
   "lyrics_editor": {
     "header": "Paroles · {title}",
@@ -307,6 +317,41 @@
     "discard_confirm_header": "Modifications non enregistrées",
     "discard_confirm_accept": "Fermer sans enregistrer",
     "discard_confirm_reject": "Continuer"
+  },
+  "lyrics_view": {
+    "search_placeholder": "Rechercher des paroles…",
+    "search_aria": "Rechercher dans les paroles",
+    "add": "Nouvelles paroles",
+    "filter_all": "Toutes ({count})",
+    "filter_linked": "Liées ({count})",
+    "filter_unlinked": "Non liées ({count})",
+    "empty": "Pas encore de paroles. Écris-les avant même que le titre existe.",
+    "no_match": "Aucune parole ne correspond.",
+    "column_title": "Titre",
+    "column_song": "Titre lié",
+    "column_updated": "Mise à jour",
+    "no_content": "Pas encore de texte",
+    "unlinked": "Non liées"
+  },
+  "lyrics_drawer": {
+    "title": "Titre",
+    "song": "Titre lié",
+    "open_song_aria": "Ouvrir le titre « {title} »",
+    "song_archived": "Titre archivé",
+    "song_archived_hint": "Le titre est archivé : ses paroles sont en lecture seule. Délie-les pour les modifier.",
+    "unlink": "Délier",
+    "link": "Lier à un titre",
+    "link_empty": "Tous les titres ont déjà des paroles",
+    "archive": "Mettre à la corbeille",
+    "archive_confirm_header": "Confirmer la mise à la corbeille",
+    "archive_confirm_message": "Mettre « {title} » à la corbeille ? Les paroles ne seront plus liées à leur titre.",
+    "archived": "Paroles mises à la corbeille"
+  },
+  "new_lyrics_dialog": {
+    "header": "Nouvelles paroles",
+    "title_label": "Titre de travail",
+    "hint": "Tu pourras les lier à un titre du répertoire plus tard.",
+    "title_required": "Indique un titre."
   },
   "lyrics_visual_editor": {
     "toolbar_aria": "Mise en forme des paroles",

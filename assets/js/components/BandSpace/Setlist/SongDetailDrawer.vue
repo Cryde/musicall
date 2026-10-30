@@ -289,18 +289,11 @@ async function saveField(field, value) {
   }
 }
 
-// The lyrics live on their own resource; the song only learns about them (has_lyrics, a moved key) here.
-async function handleLyricsChanged() {
-  try {
-    emit('updated', await songsStore.refreshSong(props.bandSpaceId, props.song.id))
-  } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.common.error'),
-      detail: e.message,
-      life: 5000
-    })
-  }
+// The lyrics live on their own resource. The lyrics store re-reads the song a write changed (has_lyrics,
+// a moved key), so the drawer takes that copy.
+function handleLyricsChanged() {
+  const fresh = songsStore.songs.find((candidate) => candidate.id === props.song?.id)
+  if (fresh) emit('updated', fresh)
 }
 
 function confirmArchive() {
