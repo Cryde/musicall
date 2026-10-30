@@ -82,16 +82,17 @@ security:
             pattern: ^/api/app/config$
             security: false
 
-        # Google sign-in for the app (#1133). Its own firewall for the reason the two above are: the
-        # login firewall's throttling charges any passport, and this one has no password to guess, so
-        # GoogleIdTokenAuthenticator limits per IP itself. Under the native prefix, so blinded to
-        # cookies like the rest.
+        # Google (#1133) and Apple (#1269) sign-in for the app. Its own firewall for the reason the two
+        # above are: the login firewall's throttling charges any passport, and this one has no password
+        # to guess, so NativeOAuthAttemptLimiter limits per IP instead. Under the native prefix, so
+        # blinded to cookies like the rest.
         native_oauth:
             pattern: ^/api/native/oauth/
             stateless: true
             user_checker: App\Security\UserChecker
             custom_authenticators:
                 - App\Security\Native\GoogleIdTokenAuthenticator
+                - App\Security\Native\AppleIdentityTokenAuthenticator
 
         api:
             pattern: ^/api/

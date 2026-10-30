@@ -12,6 +12,8 @@ readonly class OAuthUserData
         public string $username,
         public ?string $pictureUrl,
         public bool $emailVerified,
+        // A real name for the profile, when the provider gives one apart from the username (Apple, #1269).
+        public ?string $displayName = null,
     ) {
     }
 }

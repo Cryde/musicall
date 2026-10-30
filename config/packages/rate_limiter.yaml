@@ -41,8 +41,8 @@ framework:
             limit: 3
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
-        # Google sign-in from the app, per IP (#1133). Each attempt checks a token against Google, and
-        # a person signs in a handful of times at most.
+        # Google and Apple sign-in from the app, per IP and shared (#1133, #1269). Each attempt checks a
+        # token against the provider, and a person signs in a handful of times at most.
         native_oauth:
             policy: sliding_window
             limit: 10

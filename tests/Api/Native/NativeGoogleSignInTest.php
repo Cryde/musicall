@@ -7,7 +7,7 @@ namespace App\Tests\Api\Native;
 use App\Entity\SocialAccount;
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Security\Native\GoogleIdTokenAuthenticator;
+use App\Security\Native\NativeOAuthAttemptLimiter;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakeGoogleIdTokenVerifier;
@@ -166,7 +166,7 @@ class NativeGoogleSignInTest extends ApiTestCase
 
     /** The wait is rounded up from a sub-second window start, so the clock sits on a whole second. */
     #[TimeSensitive(SlidingWindowLimiter::class)]
-    #[TimeSensitive(GoogleIdTokenAuthenticator::class)]
+    #[TimeSensitive(NativeOAuthAttemptLimiter::class)]
     public function test_attempts_are_limited_per_ip(): void
     {
         ClockMock::withClockMock(strtotime('2026-10-30 10:00:00'));

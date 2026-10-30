@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class SocialAccount
 {
     final public const PROVIDER_GOOGLE = 'google';
+    final public const PROVIDER_APPLE = 'apple';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -35,6 +36,14 @@ class SocialAccount
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public \DateTimeImmutable $creationDatetime;
+
+    // Apple only (#1269): what is revoked when the account is deleted, and the client id it was
+    // issued to, since Apple refuses a revocation sent under any other.
+    #[ORM\Column(type: Types::STRING, length: 512, nullable: true)]
+    public ?string $refreshToken = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    public ?string $refreshTokenClientId = null;
 
     public function __construct()
     {

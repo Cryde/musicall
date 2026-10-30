@@ -73,7 +73,7 @@ readonly class OAuthUserService
         }
 
         // Create new user
-        $user = $this->createUser($userData->email, $userData->username);
+        $user = $this->createUser($userData->email, $userData->username, $userData->displayName);
         $this->createSocialAccount($user, $provider, $userData->id, $userData->email);
 
         // Import profile picture from OAuth provider
@@ -87,7 +87,7 @@ readonly class OAuthUserService
         return new OAuthResult($user, true);
     }
 
-    private function createUser(string $email, string $username): User
+    private function createUser(string $email, string $username, ?string $displayName): User
     {
         // Ensure username is unique
         $baseUsername = $this->sanitizeUsername($username);
@@ -107,6 +107,7 @@ readonly class OAuthUserService
         }
 
         $profile = new UserProfile();
+        $profile->displayName = $displayName;
         $user->profile = $profile;
 
         $this->entityManager->persist($user);

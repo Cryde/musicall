@@ -31,6 +31,9 @@ hosts.yml
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
 
+# The Sign in with Apple .p8 key (#1269)
+/config/apple/
+
 ###> phpunit/phpunit ###
 /phpunit.xml
 /.phpunit.cache/
