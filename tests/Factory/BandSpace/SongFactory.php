@@ -21,6 +21,19 @@ final class SongFactory extends PersistentObjectFactory
         ];
     }
 
+    public function withLyrics(string $content, int $version = 1): static
+    {
+        return $this->afterPersist(static function (Song $song) use ($content, $version): void {
+            LyricsFactory::createOne([
+                'bandSpace' => $song->bandSpace,
+                'song' => $song,
+                'title' => $song->title,
+                'content' => $content,
+                'version' => $version,
+            ]);
+        });
+    }
+
     public static function class(): string
     {
         return Song::class;

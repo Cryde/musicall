@@ -10,8 +10,10 @@ use App\Entity\BandSpace\Song;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSetlistActivityType;
+use App\Repository\BandSpace\LyricsRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\LyricsWriteGuard;
 use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\Song\ChordPro\ChordTransposer;
@@ -34,7 +36,9 @@ readonly class SongLyricsTransposeProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private SongWriteGuard $songWriteGuard,
+        private LyricsWriteGuard $lyricsWriteGuard,
         private SongRepository $songRepository,
+        private LyricsRepository $lyricsRepository,
         private ChordTransposer $transposer,
         private BandSpaceActivityRecorder $activityRecorder,
         private SongLyricsBuilder $lyricsBuilder,
@@ -60,12 +64,14 @@ readonly class SongLyricsTransposeProcessor implements ProcessorInterface
         }
 
         $this->songWriteGuard->assertWritable($song);
-        $this->songWriteGuard->assertLyricsVersion($song, $data->expectedLyricsVersion);
+        $lyrics = $this->lyricsRepository->findOneBySong($song);
+        $this->lyricsWriteGuard->assertVersion($lyrics, $data->expectedLyricsVersion);
 
         $semitones = (int) $data->semitones;
-        if ($song->lyrics !== null) {
-            $song->lyrics = $this->transposer->transposeSource($song->lyrics, $semitones, $song->tonality);
-            ++$song->lyricsVersion;
+        if ($lyrics?->content !== null) {
+            $lyrics->content = $this->transposer->transposeSource($lyrics->content, $semitones, $song->tonality);
+            ++$lyrics->version;
+            $lyrics->updateDatetime = new DateTime();
         }
         $song->tonality = $this->transposer->transposeKey($song->tonality, $semitones) ?? $song->tonality;
         $song->updateDatetime = new DateTime();
@@ -81,6 +87,6 @@ readonly class SongLyricsTransposeProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
-        return $this->lyricsBuilder->build($song);
+        return $this->lyricsBuilder->build($song, $lyrics);
     }
 }

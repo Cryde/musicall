@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Setlist\Song\SongLyrics;
 use App\Entity\BandSpace\Song;
 use App\Entity\User;
+use App\Repository\BandSpace\LyricsRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\SongLyricsBuilder;
@@ -22,6 +23,7 @@ readonly class SongLyricsProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private SongRepository $songRepository,
+        private LyricsRepository $lyricsRepository,
         private SongLyricsBuilder $lyricsBuilder,
         private Security $security,
     ) {
@@ -42,6 +44,6 @@ readonly class SongLyricsProvider implements ProviderInterface
             throw new NotFoundHttpException('band_space.song.not_found');
         }
 
-        return $this->lyricsBuilder->build($song);
+        return $this->lyricsBuilder->build($song, $this->lyricsRepository->findOneBySong($song));
     }
 }

@@ -7,6 +7,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\LyricsFactory;
 use App\Tests\Factory\BandSpace\SetlistFactory;
 use App\Tests\Factory\BandSpace\SetlistItemFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
@@ -169,6 +170,91 @@ class SetlistGetItemTest extends ApiTestCase
                 ],
             ],
             'total_duration_seconds' => 410,
+            'target_duration' => null,
+        ]);
+    }
+
+    /** Lyrics whose text was cleared are still linked, but there is nothing to read: no « has lyrics ». */
+    public function test_each_song_of_the_setlist_says_whether_it_has_lyrics(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $setlist = SetlistFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Live set',
+            'creationDatetime' => new \DateTime('2026-05-15T10:00:00+00:00'),
+        ])->create();
+        $written = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Écrite'])->withLyrics('[C]La')->create();
+        $cleared = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Effacée'])->create();
+        LyricsFactory::new(['bandSpace' => $bandSpace, 'song' => $cleared, 'content' => null, 'version' => 3])->create();
+        $itemWritten = SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $written, 'label' => null, 'position' => 0])->create();
+        $itemCleared = SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $cleared, 'label' => null, 'position' => 1])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Setlist',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id,
+            '@type' => 'Setlist',
+            'id' => $setlist->id,
+            'band_space_id' => $bandSpace->id,
+            'name' => 'Live set',
+            'archive_datetime' => null,
+            'creation_datetime' => $setlist->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+            'items' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items/' . $itemWritten->id,
+                    '@type' => 'SetlistItem',
+                    'id' => $itemWritten->id,
+                    'band_space_id' => $bandSpace->id,
+                    'setlist_id' => $setlist->id,
+                    'type' => 'song',
+                    'song' => [
+                        'id' => $written->id,
+                        'title' => 'Écrite',
+                        'tempo' => null,
+                        'tonality' => null,
+                        'reference_duration' => null,
+                        'has_lyrics' => true,
+                        'archive_datetime' => null,
+                        '@type' => 'SetlistItemSongInfo',
+                    ],
+                    'label' => null,
+                    'duration_override' => null,
+                    'note' => null,
+                    'transition' => null,
+                    'position' => 0,
+                ],
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items/' . $itemCleared->id,
+                    '@type' => 'SetlistItem',
+                    'id' => $itemCleared->id,
+                    'band_space_id' => $bandSpace->id,
+                    'setlist_id' => $setlist->id,
+                    'type' => 'song',
+                    'song' => [
+                        'id' => $cleared->id,
+                        'title' => 'Effacée',
+                        'tempo' => null,
+                        'tonality' => null,
+                        'reference_duration' => null,
+                        'has_lyrics' => false,
+                        'archive_datetime' => null,
+                        '@type' => 'SetlistItemSongInfo',
+                    ],
+                    'label' => null,
+                    'duration_override' => null,
+                    'note' => null,
+                    'transition' => null,
+                    'position' => 1,
+                ],
+            ],
+            'total_duration_seconds' => 0,
             'target_duration' => null,
         ]);
     }

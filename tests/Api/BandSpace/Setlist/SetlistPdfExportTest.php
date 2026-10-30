@@ -718,7 +718,7 @@ class SetlistPdfExportTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Live 2026'])->create();
-        $withLyrics = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Au clair de la lune', 'lyrics' => '[C]Au clair de la lune'])->create();
+        $withLyrics = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Au clair de la lune'])->withLyrics('[C]Au clair de la lune')->create();
         $withoutLyrics = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Instrumental'])->create();
         SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withLyrics, 'label' => null, 'position' => 0])->create();
         SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withoutLyrics, 'label' => null, 'position' => 1])->create();
@@ -742,7 +742,7 @@ class SetlistPdfExportTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Live 2026'])->create();
-        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Au clair de la lune', 'lyrics' => '[C]Au clair de la lune'])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Au clair de la lune'])->withLyrics('[C]Au clair de la lune')->create();
         SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $song, 'label' => null, 'position' => 0])->create();
 
         $this->client->loginUser($user);

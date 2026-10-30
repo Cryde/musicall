@@ -22,13 +22,25 @@ readonly class SetlistBuilder
      */
     public function buildFromList(array $entities): array
     {
+        $songIdsWithLyrics = $this->itemBuilder->songIdsWithLyrics(array_merge(
+            ...array_map(static fn (Setlist $entity): array => $entity->items->toArray(), $entities),
+        ));
+
         return array_map(
-            fn (Setlist $entity): SetlistResource => $this->buildItem($entity),
+            fn (Setlist $entity): SetlistResource => $this->build($entity, $songIdsWithLyrics),
             $entities,
         );
     }
 
     public function buildItem(Setlist $entity): SetlistResource
+    {
+        return $this->build($entity, $this->itemBuilder->songIdsWithLyrics($entity->items->toArray()));
+    }
+
+    /**
+     * @param array<string, true> $songIdsWithLyrics
+     */
+    private function build(Setlist $entity, array $songIdsWithLyrics): SetlistResource
     {
         $dto = new SetlistResource();
         $dto->id = (string) $entity->id;
@@ -44,10 +56,7 @@ readonly class SetlistBuilder
             $items,
             fn (SetlistItem $a, SetlistItem $b): int => $a->position <=> $b->position,
         );
-        $dto->items = array_map(
-            fn (SetlistItem $item) => $this->itemBuilder->buildItem($item),
-            $items,
-        );
+        $dto->items = $this->itemBuilder->buildFromList($items, $songIdsWithLyrics);
 
         $dto->totalDurationSeconds = $this->setlistRepository->totalDurationSeconds($entity);
 

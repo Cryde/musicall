@@ -3,15 +3,18 @@
 namespace App\Tests\Api\BandSpace\Setlist\Song;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\Lyrics;
 use App\Entity\BandSpace\Song;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\LyricsRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\LyricsFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,7 +49,7 @@ class SongLyricsTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $singer])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $former, 'status' => MembershipStatus::Left])->create();
         $lyrics = "{soc: Refrain}\n<span singer=\"@[{$former->id}] @[{$singer->id}]\">[Am]Hello</span> <span singer=\"all\">[G]world</span>\n{eoc}";
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'tonality' => 'Am', 'lyrics' => $lyrics]);
+        $song = SongFactory::new()->withLyrics($lyrics)->create(['bandSpace' => $space, 'tonality' => 'Am']);
 
         $this->client->loginUser($member);
         $this->client->jsonRequest('GET', $this->url($space, $song), [], ['HTTP_ACCEPT' => 'application/ld+json']);
@@ -71,7 +74,7 @@ class SongLyricsTest extends ApiTestCase
     public function test_a_non_member_cannot_read_the_lyrics(): void
     {
         $outsider = UserFactory::new()->asBaseUser()->create(['username' => 'intrus', 'email' => 'intrus@test.com']);
-        $song = SongFactory::new()->create(['lyrics' => 'Secret']);
+        $song = SongFactory::new()->withLyrics('Secret')->create();
 
         $this->client->loginUser($outsider);
         $this->client->jsonRequest('GET', $this->url($song->bandSpace, $song), [], ['HTTP_ACCEPT' => 'application/ld+json']);
@@ -94,7 +97,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $elsewhere = SongFactory::new()->create(['lyrics' => 'Secret']);
+        $elsewhere = SongFactory::new()->withLyrics('Secret')->create();
 
         $this->client->loginUser($member);
         $this->client->jsonRequest('GET', $this->url($space, $elsewhere), [], ['HTTP_ACCEPT' => 'application/ld+json']);
@@ -136,9 +139,9 @@ class SongLyricsTest extends ApiTestCase
             'singers' => [['id' => $member->id, 'name' => 'batteur', 'is_former_member' => false]],
         ]);
 
-        $refreshed = $this->refresh($song);
-        $this->assertSame($lyrics, $refreshed->lyrics);
-        $this->assertNotNull($refreshed->updateDatetime);
+        $this->assertNotNull($this->refresh($song)->updateDatetime);
+        $stored = $this->storedLyrics($song);
+        $this->assertSame([$lyrics, 2, $song->title], [$stored?->content, $stored?->version, $stored?->title]);
         $activities = self::getContainer()->get(BandSpaceActivityRepository::class)->findForResource($space, BandSpaceModule::Setlist, (string) $song->id);
         $this->assertCount(1, $activities);
         $this->assertSame('song_updated', $activities[0]->type);
@@ -150,7 +153,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'lyrics' => 'La la', 'lyricsVersion' => 4]);
+        $song = SongFactory::new()->withLyrics('La la', 4)->create(['bandSpace' => $space]);
 
         $this->client->loginUser($member);
         $this->patch($space, $song, ['lyrics' => "  \n ", 'expected_lyrics_version' => 4]);
@@ -167,7 +170,33 @@ class SongLyricsTest extends ApiTestCase
             'tonality' => null,
             'singers' => [],
         ]);
-        $this->assertNull($this->refresh($song)->lyrics);
+        $this->assertSame([null, 5], [$this->storedLyrics($song)?->content, $this->storedLyrics($song)?->version]);
+    }
+
+    /** A cleared text keeps its revision, so a copy opened before the clear is still refused. */
+    public function test_cleared_lyrics_keep_their_revision(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $song = SongFactory::new()->create(['bandSpace' => $space, 'tonality' => 'C']);
+        LyricsFactory::new(['bandSpace' => $space, 'song' => $song, 'content' => null, 'version' => 5])->create();
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest('GET', $this->url($space, $song), [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/SongLyrics',
+            '@id' => $this->url($space, $song),
+            '@type' => 'SongLyrics',
+            'id' => (string) $song->id,
+            'band_space_id' => (string) $space->id,
+            'lyrics' => null,
+            'lyrics_version' => 5,
+            'tonality' => 'C',
+            'singers' => [],
+        ]);
     }
 
     public function test_saving_the_same_lyrics_keeps_the_revision(): void
@@ -175,7 +204,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'lyrics' => 'La la', 'lyricsVersion' => 3]);
+        $song = SongFactory::new()->withLyrics('La la', 3)->create(['bandSpace' => $space]);
 
         $this->client->loginUser($member);
         $this->patch($space, $song, ['lyrics' => 'La la', 'expected_lyrics_version' => 3]);
@@ -200,7 +229,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'lyrics' => 'Version de la chanteuse', 'lyricsVersion' => 2]);
+        $song = SongFactory::new()->withLyrics('Version de la chanteuse', 2)->create(['bandSpace' => $space]);
 
         $this->client->loginUser($member);
         $this->patch($space, $song, ['lyrics' => 'Ma version', 'expected_lyrics_version' => 1]);
@@ -217,7 +246,7 @@ class SongLyricsTest extends ApiTestCase
             'type' => '/errors/409',
             'description' => $detail,
         ]);
-        $this->assertSame('Version de la chanteuse', $this->refresh($song)->lyrics);
+        $this->assertSame('Version de la chanteuse', $this->storedLyrics($song)?->content);
     }
 
     public function test_a_save_without_a_revision_is_refused(): void
@@ -336,11 +365,9 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create([
+        $song = SongFactory::new()->withLyrics("{soc: Refrain}\n[C]Au clair <span singer=\"all\">[G/B]de la</span> [Am]lune", 2)->create([
             'bandSpace' => $space,
             'tonality' => 'C',
-            'lyrics' => "{soc: Refrain}\n[C]Au clair <span singer=\"all\">[G/B]de la</span> [Am]lune",
-            'lyricsVersion' => 2,
         ]);
 
         $this->client->loginUser($member);
@@ -361,13 +388,39 @@ class SongLyricsTest extends ApiTestCase
         $this->assertSame('F', $this->refresh($song)->tonality);
     }
 
+    /** Nothing written yet: the key moves on its own and no lyrics are created for it. */
+    public function test_transposing_a_song_without_lyrics_moves_only_the_key(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $song = SongFactory::new()->create(['bandSpace' => $space, 'tonality' => 'C']);
+
+        $this->client->loginUser($member);
+        $this->transpose($space, $song, ['semitones' => 2, 'expected_lyrics_version' => 1]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/SongLyrics',
+            '@id' => $this->url($space, $song),
+            '@type' => 'SongLyrics',
+            'id' => (string) $song->id,
+            'band_space_id' => (string) $space->id,
+            'lyrics' => null,
+            'lyrics_version' => 1,
+            'tonality' => 'D',
+            'singers' => [],
+        ]);
+        $this->assertNull($this->storedLyrics($song));
+    }
+
     /** A key written as free text is kept rather than guessed at; the chords still move. */
     public function test_transposing_keeps_a_key_it_cannot_read(): void
     {
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'tonality' => 'Variable', 'lyrics' => '[A]Hey']);
+        $song = SongFactory::new()->withLyrics('[A]Hey')->create(['bandSpace' => $space, 'tonality' => 'Variable']);
 
         $this->client->loginUser($member);
         $this->transpose($space, $song, ['semitones' => -2, 'expected_lyrics_version' => 1]);
@@ -391,7 +444,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'tonality' => 'C', 'lyrics' => '[C]La', 'lyricsVersion' => 3]);
+        $song = SongFactory::new()->withLyrics('[C]La', 3)->create(['bandSpace' => $space, 'tonality' => 'C']);
 
         $this->client->loginUser($member);
         $this->transpose($space, $song, ['semitones' => 2, 'expected_lyrics_version' => 2]);
@@ -408,13 +461,13 @@ class SongLyricsTest extends ApiTestCase
             'type' => '/errors/409',
             'description' => $detail,
         ]);
-        $this->assertSame('[C]La', $this->refresh($song)->lyrics);
+        $this->assertSame('[C]La', $this->storedLyrics($song)?->content);
     }
 
     public function test_a_non_member_cannot_save_lyrics(): void
     {
         $outsider = UserFactory::new()->asBaseUser()->create(['username' => 'intrus', 'email' => 'intrus@test.com']);
-        $song = SongFactory::new()->create(['lyrics' => 'Secret']);
+        $song = SongFactory::new()->withLyrics('Secret')->create();
 
         $this->client->loginUser($outsider);
         $this->patch($song->bandSpace, $song, ['lyrics' => 'Piraté', 'expected_lyrics_version' => 1]);
@@ -430,13 +483,13 @@ class SongLyricsTest extends ApiTestCase
             'type' => '/errors/403',
             'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
-        $this->assertSame('Secret', $this->refresh($song)->lyrics);
+        $this->assertSame('Secret', $this->storedLyrics($song)?->content);
     }
 
     public function test_a_non_member_cannot_transpose(): void
     {
         $outsider = UserFactory::new()->asBaseUser()->create(['username' => 'intrus', 'email' => 'intrus@test.com']);
-        $song = SongFactory::new()->create(['tonality' => 'C', 'lyrics' => '[C]La']);
+        $song = SongFactory::new()->withLyrics('[C]La')->create(['tonality' => 'C']);
 
         $this->client->loginUser($outsider);
         $this->transpose($song->bandSpace, $song, ['semitones' => 2, 'expected_lyrics_version' => 1]);
@@ -452,7 +505,7 @@ class SongLyricsTest extends ApiTestCase
             'type' => '/errors/403',
             'description' => 'Tu n\'es pas membre de ce Band Space',
         ]);
-        $this->assertSame('[C]La', $this->refresh($song)->lyrics);
+        $this->assertSame('[C]La', $this->storedLyrics($song)?->content);
     }
 
     /** Same answer as PATCH lyrics without a revision: a precondition, not a validation error. */
@@ -461,7 +514,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'tonality' => 'C', 'lyrics' => '[C]La']);
+        $song = SongFactory::new()->withLyrics('[C]La')->create(['bandSpace' => $space, 'tonality' => 'C']);
 
         $this->client->loginUser($member);
         $this->transpose($space, $song, ['semitones' => 2]);
@@ -485,7 +538,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'lyrics' => '[C]La']);
+        $song = SongFactory::new()->withLyrics('[C]La')->create(['bandSpace' => $space]);
 
         $this->client->loginUser($member);
         $this->transpose($space, $song, ['semitones' => 12, 'expected_lyrics_version' => 1]);
@@ -515,7 +568,7 @@ class SongLyricsTest extends ApiTestCase
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
-        $song = SongFactory::new()->create(['bandSpace' => $space, 'lyrics' => '[C]La']);
+        $song = SongFactory::new()->withLyrics('[C]La')->create(['bandSpace' => $space]);
 
         $this->client->loginUser($member);
         $this->client->jsonRequest('GET', '/api/band_spaces/' . $space->id . '/songs/' . $song->id, [], ['HTTP_ACCEPT' => 'application/ld+json']);
@@ -568,5 +621,12 @@ class SongLyricsTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
 
         return self::getContainer()->get(SongRepository::class)->find((string) $song->id);
+    }
+
+    private function storedLyrics(Song $song): ?Lyrics
+    {
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+
+        return self::getContainer()->get(LyricsRepository::class)->findOneBy(['song' => (string) $song->id]);
     }
 }
