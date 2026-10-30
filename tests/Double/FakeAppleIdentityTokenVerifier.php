@@ -17,7 +17,7 @@ final class FakeAppleIdentityTokenVerifier implements AppleIdentityTokenVerifier
     /** @var array<string, array{audience: string, claims: array<string, mixed>}> */
     private array $tokens = [];
 
-    private bool $unreachable = false;
+    private ?\Throwable $failure = null;
 
     /** @param array<string, mixed> $claims */
     public function accept(string $identityToken, array $claims, string $audience = 'com.musicall.app'): void
@@ -27,13 +27,19 @@ final class FakeAppleIdentityTokenVerifier implements AppleIdentityTokenVerifier
 
     public function becomeUnreachable(): void
     {
-        $this->unreachable = true;
+        $this->failure = new AppleIdentityTokenUnverifiableException('Apple is unreachable');
+    }
+
+    /** Something no caller planned for, to prove it is still answered properly. */
+    public function failWith(\Throwable $failure): void
+    {
+        $this->failure = $failure;
     }
 
     public function verify(string $identityToken, string $audience): array
     {
-        if ($this->unreachable) {
-            throw new AppleIdentityTokenUnverifiableException('Apple is unreachable');
+        if ($this->failure instanceof \Throwable) {
+            throw $this->failure;
         }
         $token = $this->tokens[$identityToken] ?? null;
         if ($token === null || $token['audience'] !== $audience) {

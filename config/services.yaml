@@ -44,6 +44,8 @@ parameters:
     app.apple.key_id: '%env(default:app.apple.unset:APPLE_KEY_ID)%'
     app.apple.private_key_path: '%env(default:app.apple.unset:APPLE_PRIVATE_KEY_PATH)%'
     app.apple.native_client_id: '%env(default:app.apple.unset:APPLE_NATIVE_CLIENT_ID)%'
+    # The website's Services ID, grouped under the app's App ID so a person gets the same `sub` on both (#1271).
+    app.apple.web_client_id: '%env(default:app.apple.unset:APPLE_WEB_CLIENT_ID)%'
 
 services:
     # default configuration for services in *this* file
@@ -159,11 +161,6 @@ services:
             $teamId: '%app.apple.team_id%'
             $keyId: '%app.apple.key_id%'
             $privateKeyPath: '%app.apple.private_key_path%'
-
-    App\Controller\OAuth\GoogleController:
-        arguments:
-            $frontendUrl: '%env(DEFAULT_URI)%'
-            $refreshTokenTtl: '%gesdinet_jwt_refresh_token.ttl%'
 
     # Lazy so a server without credentials only fails when a push is actually sent, inside the worker
     # where PushNotifier logs it, never at boot or on an unrelated request.
