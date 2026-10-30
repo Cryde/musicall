@@ -13,6 +13,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 readonly class AppleTokenClient implements AppleTokenClientInterface
 {
     private const string TOKEN_PATH = 'auth/token';
+    private const string REVOKE_PATH = 'auth/revoke';
 
     public function __construct(
         #[Target('apple.client')]
@@ -23,12 +24,15 @@ readonly class AppleTokenClient implements AppleTokenClientInterface
 
     public function exchangeAuthorizationCode(string $authorizationCode, string $clientId): AppleTokens
     {
-        $answer = $this->post(self::TOKEN_PATH, [
+        $answer = json_decode($this->post(self::TOKEN_PATH, [
             'client_id' => $clientId,
             'client_secret' => $this->clientSecret->for($clientId),
             'code' => $authorizationCode,
             'grant_type' => 'authorization_code',
-        ]);
+        ]), true);
+        if (!is_array($answer)) {
+            throw new AppleTokenRequestException('Apple answered with something other than JSON');
+        }
 
         $refreshToken = $answer['refresh_token'] ?? null;
         $idToken = $answer['id_token'] ?? null;
@@ -37,6 +41,17 @@ readonly class AppleTokenClient implements AppleTokenClientInterface
         }
 
         return new AppleTokens($refreshToken, self::subjectOf($idToken));
+    }
+
+    public function revoke(string $refreshToken, string $clientId): void
+    {
+        // Apple answers a revocation with an empty 200: there is nothing to read, only a status to check.
+        $this->post(self::REVOKE_PATH, [
+            'client_id' => $clientId,
+            'client_secret' => $this->clientSecret->for($clientId),
+            'token' => $refreshToken,
+            'token_type_hint' => 'refresh_token',
+        ]);
     }
 
     /**
@@ -62,12 +77,12 @@ readonly class AppleTokenClient implements AppleTokenClientInterface
     /**
      * @param array<string, string> $body
      *
-     * @return array<mixed>
+     * @return string the body of a successful answer
      */
-    private function post(string $path, array $body): array
+    private function post(string $path, array $body): string
     {
         try {
-            return $this->appleClient->request('POST', $path, ['body' => $body])->toArray();
+            return $this->appleClient->request('POST', $path, ['body' => $body])->getContent();
         } catch (HttpExceptionInterface $exception) {
             throw new AppleTokenRequestException(sprintf('Apple refused the request: %s', self::reasonOf($exception)), 0, $exception);
         } catch (ExceptionInterface $exception) {
