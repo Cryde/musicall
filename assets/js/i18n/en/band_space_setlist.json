@@ -34,7 +34,8 @@
     "trash": "Bin",
     "setlist_empty": "Empty",
     "song_count": "{count} song | {count} songs",
-    "song_count_with_duration": "{count} song - {duration} | {count} songs - {duration}"
+    "song_count_with_duration": "{count} song - {duration} | {count} songs - {duration}",
+    "lyrics": "Lyrics"
   },
   "new_setlist_dialog": {
     "header": "New setlist",
@@ -236,7 +237,7 @@
   },
   "trash": {
     "title": "Bin",
-    "intro": "Deleted setlists and songs are kept here with no time limit. Restore them whenever you like.",
+    "intro": "Deleted setlists, songs and lyrics are kept here with no time limit. Restore them whenever you like.",
     "empty": "The bin is empty.",
     "setlists": "Setlists",
     "songs": "Songs",
@@ -246,7 +247,12 @@
     "setlist_restored": "Setlist restored",
     "setlist_restore_failed": "Could not restore the setlist",
     "song_restored": "Song restored",
-    "song_restore_failed": "Could not restore the song"
+    "song_restore_failed": "Could not restore the song",
+    "lyrics": "Lyrics",
+    "lyrics_line": "deleted on {date}",
+    "lyrics_restored": "Lyrics restored",
+    "lyrics_restored_detail": "They are no longer linked to a song: link them again from Lyrics.",
+    "lyrics_restore_failed": "Could not restore the lyrics"
   },
   "song_drawer": {
     "title": "Title",
@@ -285,7 +291,11 @@
     "semitones": "{semitones} semitone | {semitones} semitones",
     "semitones_with_key": "{semitones} semitone ({key}) | {semitones} semitones ({key})",
     "transposition_saved": "Key saved",
-    "transposition_failed": "Could not transpose"
+    "transposition_failed": "Could not transpose",
+    "open_in_lyrics": "Open in Lyrics",
+    "write": "Write the lyrics",
+    "link_existing": "Link existing lyrics",
+    "link_existing_empty": "No lyrics are waiting for a song"
   },
   "lyrics_editor": {
     "header": "Lyrics - {title}",
@@ -307,6 +317,41 @@
     "discard_confirm_header": "Unsaved changes",
     "discard_confirm_accept": "Close without saving",
     "discard_confirm_reject": "Keep editing"
+  },
+  "lyrics_view": {
+    "search_placeholder": "Search lyrics...",
+    "search_aria": "Search the lyrics",
+    "add": "New lyrics",
+    "filter_all": "All ({count})",
+    "filter_linked": "Linked ({count})",
+    "filter_unlinked": "Not linked ({count})",
+    "empty": "No lyrics yet. Write them before the song even exists.",
+    "no_match": "No lyrics match.",
+    "column_title": "Title",
+    "column_song": "Linked song",
+    "column_updated": "Updated",
+    "no_content": "No text yet",
+    "unlinked": "Not linked"
+  },
+  "lyrics_drawer": {
+    "title": "Title",
+    "song": "Linked song",
+    "open_song_aria": "Open the song \"{title}\"",
+    "song_archived": "Song archived",
+    "song_archived_hint": "The song is archived, so its lyrics are read only. Unlink them to edit them.",
+    "unlink": "Unlink",
+    "link": "Link to a song",
+    "link_empty": "Every song already has lyrics",
+    "archive": "Move to the bin",
+    "archive_confirm_header": "Confirm moving to the bin",
+    "archive_confirm_message": "Move \"{title}\" to the bin? The lyrics will no longer be linked to their song.",
+    "archived": "Lyrics moved to the bin"
+  },
+  "new_lyrics_dialog": {
+    "header": "New lyrics",
+    "title_label": "Working title",
+    "hint": "You can link them to a song from the repertoire later.",
+    "title_required": "Enter a title."
   },
   "lyrics_visual_editor": {
     "toolbar_aria": "Lyrics formatting",

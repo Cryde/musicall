@@ -1,150 +1,92 @@
 <template>
   <div>
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-      <div class="text-xs uppercase text-surface-500">{{ t('band_space_setlist.lyrics_panel.title') }}</div>
-      <div v-if="lyrics?.lyrics" class="flex items-center gap-1">
-        <Button
-          icon="pi pi-window-maximize"
-          size="small"
-          severity="secondary"
-          text
-          rounded
-          :aria-label="t('band_space_setlist.lyrics_panel.enlarge_aria')"
-          v-tooltip.bottom="t('band_space_setlist.lyrics_panel.enlarge')"
-          @click="isReading = true"
-        />
-        <Button
-          icon="pi pi-file-pdf"
-          size="small"
-          severity="secondary"
-          text
-          rounded
-          :aria-label="t('band_space_setlist.lyrics_panel.export_pdf_aria')"
-          v-tooltip.bottom="t('band_space_setlist.lyrics_panel.export_pdf')"
-          @click="pdfPopover?.toggle($event)"
-        />
-        <Button
-          icon="pi pi-pencil"
-          size="small"
-          severity="secondary"
-          text
-          rounded
-          :aria-label="t('band_space_setlist.lyrics_panel.edit_aria')"
-          v-tooltip.bottom="t('band_space_setlist.lyrics_panel.edit')"
-          :disabled="readOnly"
-          @click="isEditing = true"
-        />
-      </div>
-    </div>
-
     <div v-if="isLoading" class="flex flex-col gap-2">
+      <div class="text-xs uppercase text-surface-500 mb-2">{{ t('band_space_setlist.lyrics_panel.title') }}</div>
       <Skeleton v-for="i in 4" :key="i" height="1.25rem" />
     </div>
 
-    <template v-else-if="lyrics?.lyrics">
-      <div class="flex flex-wrap items-center gap-2 mb-3 text-sm">
-        <span class="text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.lyrics_panel.transpose') }}</span>
-        <Button icon="pi pi-minus" size="small" severity="secondary" outlined :aria-label="t('band_space_setlist.lyrics_panel.semitone_down_aria')" @click="shift(-1)" />
-        <span class="min-w-24 text-center tabular-nums" aria-live="polite">{{ transposeLabel }}</span>
-        <Button icon="pi pi-plus" size="small" severity="secondary" outlined :aria-label="t('band_space_setlist.lyrics_panel.semitone_up_aria')" @click="shift(1)" />
+    <LyricsPanel
+      v-else-if="lyrics"
+      :band-space-id="bandSpaceId"
+      :lyrics="lyrics"
+      @changed="handleChanged"
+    >
+      <template #actions>
         <Button
-          v-if="transpose !== 0 && !readOnly"
-          :label="t('band_space_setlist.lyrics_panel.save_transposition')"
+          :label="t('band_space_setlist.lyrics_panel.open_in_lyrics')"
+          icon="pi pi-external-link"
           size="small"
           severity="secondary"
           text
-          :loading="isTransposing"
-          @click="saveTransposition"
+          @click="openInLyrics"
         />
-      </div>
-      <LyricsSheet :lyrics="lyrics.lyrics" :singers="lyrics.singers" :tonality="lyrics.tonality" :transpose="transpose" />
-    </template>
+      </template>
+    </LyricsPanel>
 
-    <div v-else class="flex flex-col items-start gap-2">
-      <p class="text-xs text-surface-600 dark:text-surface-300 italic m-0">
+    <div v-else>
+      <div class="text-xs uppercase text-surface-500 mb-2">{{ t('band_space_setlist.lyrics_panel.title') }}</div>
+      <p class="text-xs text-surface-600 dark:text-surface-300 italic mt-0 mb-2">
         {{ t('band_space_setlist.lyrics_panel.empty') }}
       </p>
-      <Button
-        :label="t('band_space_setlist.lyrics_panel.add')"
-        icon="pi pi-plus"
-        severity="secondary"
-        size="small"
-        :disabled="readOnly || isLoading"
-        @click="isEditing = true"
-      />
-    </div>
-
-    <Popover ref="pdfPopover">
-      <div class="flex flex-col gap-3 w-64">
-        <div class="flex items-center gap-2">
-          <Checkbox v-model="pdfOptions.chords" :binary="true" input-id="song-pdf-chords" />
-          <label for="song-pdf-chords" class="text-sm">{{ t('band_space_setlist.pdf_export.lyrics_chords') }}</label>
-        </div>
-        <div class="flex items-center gap-2">
-          <Checkbox v-model="pdfOptions.singers" :binary="true" input-id="song-pdf-singers" />
-          <label for="song-pdf-singers" class="text-sm">{{ t('band_space_setlist.pdf_export.lyrics_singers') }}</label>
-        </div>
-        <p v-if="transpose !== 0" class="text-xs text-surface-600 dark:text-surface-300 m-0">
-          {{ t('band_space_setlist.lyrics_panel.pdf_transposed', { transposition: transposeLabel }) }}
-        </p>
+      <div class="flex flex-wrap items-center gap-2">
         <Button
-          :label="isExporting ? t('band_space_setlist.pdf_export.generating') : t('band_space_setlist.pdf_export.download')"
-          :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
-          :disabled="isExporting"
-          @click="exportPdf"
+          :label="t('band_space_setlist.lyrics_panel.write')"
+          icon="pi pi-plus"
+          severity="secondary"
+          size="small"
+          :disabled="readOnly"
+          @click="isWriting = true"
+        />
+        <Select
+          v-model="lyricsChoice"
+          :options="linkable"
+          option-label="title"
+          option-value="id"
+          filter
+          :placeholder="t('band_space_setlist.lyrics_panel.link_existing')"
+          :aria-label="t('band_space_setlist.lyrics_panel.link_existing')"
+          :empty-message="t('band_space_setlist.lyrics_panel.link_existing_empty')"
+          :disabled="readOnly || isLinking"
+          size="small"
+          class="min-w-56"
+          @change="link($event.value)"
         />
       </div>
-    </Popover>
-
-    <Dialog
-      v-model:visible="isReading"
-      modal
-      maximizable
-      :header="song.title"
-      :style="{ width: 'min(60rem, 100vw)' }"
-      :breakpoints="{ '768px': '100vw' }"
-    >
-      <LyricsSheet
-        v-if="lyrics?.lyrics"
-        :lyrics="lyrics.lyrics"
-        :singers="lyrics.singers"
-        :tonality="lyrics.tonality"
-        :transpose="transpose"
-        large
-      />
-    </Dialog>
+    </div>
 
     <LyricsEditorDialog
-      v-model:visible="isEditing"
+      v-model:visible="isWriting"
       :band-space-id="bandSpaceId"
-      :song="song"
-      :lyrics="lyrics"
-      @saved="handleSaved"
-      @reloaded="handleSaved"
+      :title="song.title"
+      :tonality="song.tonality"
+      :song-id="song.id"
+      @saved="handleChanged"
     />
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
-import Checkbox from 'primevue/checkbox'
-import Dialog from 'primevue/dialog'
-import Popover from 'primevue/popover'
+import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import bandSpaceSongsApi from '../../../../api/bandSpace/band-space-songs.js'
-import { transposeKey } from '../../../../utils/chordpro.js'
-import { downloadBlob } from '../../../../utils/downloadBlob.js'
+import { useRouter } from 'vue-router'
+import bandSpaceLyricsApi from '../../../../api/bandSpace/band-space-lyrics.js'
+import { useBandLyricsStore } from '../../../../store/bandSpace/bandSpaceLyrics.js'
+import { filterLyrics } from '../../../../utils/lyricsList.js'
 import LyricsEditorDialog from './LyricsEditorDialog.vue'
-import LyricsSheet from './LyricsSheet.vue'
-import './lyrics.css'
+import LyricsPanel from './LyricsPanel.vue'
 
+/**
+ * A song's lyrics (#1261): the lyrics linked to it, or a way to write some or to link a set already
+ * written. Found through the lyrics list, which says which lyrics each song holds.
+ */
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   song: { type: Object, required: true },
-  /** An archived song is read only. */
+  /** An archived song gets no new lyrics. */
   readOnly: { type: Boolean, default: false }
 })
 
@@ -153,116 +95,79 @@ const emit = defineEmits(['changed'])
 
 const { t } = useI18n()
 const toast = useToast()
+const router = useRouter()
+const lyricsStore = useBandLyricsStore()
 
 const lyrics = ref(null)
-const isLoading = ref(false)
-const isEditing = ref(false)
-const isReading = ref(false)
-const transpose = ref(0)
-const isTransposing = ref(false)
-const pdfPopover = ref(null)
-const isExporting = ref(false)
-const pdfOptions = reactive({ chords: true, singers: true })
+const isFetching = ref(false)
+const isWriting = ref(false)
+const isLinking = ref(false)
+const lyricsChoice = ref(null)
+let loadToken = 0
 
-async function load() {
-  transpose.value = 0
-  if (!props.song.has_lyrics) {
-    lyrics.value = null
-    return
-  }
-  isLoading.value = true
+const linkedId = computed(() => lyricsStore.forSong(props.song.id)?.id ?? null)
+const linkable = computed(() => filterLyrics(lyricsStore.lyrics, { filter: 'unlinked' }))
+const isLoading = computed(
+  () => isFetching.value || (lyricsStore.isLoading && lyricsStore.lyrics.length === 0)
+)
+
+function showError(error) {
+  toast.add({
+    severity: 'error',
+    summary: t('band_space_setlist.common.error'),
+    detail: error.message,
+    life: 5000
+  })
+}
+
+async function load(lyricsId) {
+  const token = ++loadToken
+  lyrics.value = null
+  if (!lyricsId) return
+  isFetching.value = true
   try {
-    lyrics.value = await bandSpaceSongsApi.getLyrics(props.bandSpaceId, props.song.id)
+    const loaded = await bandSpaceLyricsApi.getLyrics(props.bandSpaceId, lyricsId)
+    if (token === loadToken) lyrics.value = loaded
   } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.common.error'),
-      detail: error.message,
-      life: 5000
-    })
+    if (token === loadToken) showError(error)
   } finally {
-    isLoading.value = false
+    if (token === loadToken) isFetching.value = false
   }
 }
 
-watch(() => props.song.id, load, { immediate: true })
+// Read when the drawer shows another song, or when the list arrives after it opened (a deep link).
+// Once shown the lyrics stay, as the drawer keeps its copy: a live refetch never swaps or wipes them
+// under a member reading or editing.
+watch(
+  [() => props.song.id, linkedId],
+  ([songId, lyricsId], [previousSongId] = []) => {
+    if (songId !== previousSongId || !lyrics.value) load(lyricsId)
+  },
+  { immediate: true }
+)
 
-const transposeLabel = computed(() => {
-  if (transpose.value === 0) return t('band_space_setlist.lyrics_panel.original_key')
-  const semitones = `${transpose.value > 0 ? '+' : ''}${transpose.value}`
-  const count = Math.abs(transpose.value)
-  const key = transposeKey(lyrics.value?.tonality, transpose.value)
-  return key
-    ? t('band_space_setlist.lyrics_panel.semitones_with_key', { semitones, key }, count)
-    : t('band_space_setlist.lyrics_panel.semitones', { semitones }, count)
-})
-
-// Kept inside an octave: twelve semitones up is where it started.
-function shift(step) {
-  const next = transpose.value + step
-  transpose.value = next > 11 || next < -11 ? 0 : next
+/** The member's own write is the latest copy: a read started meanwhile is dropped. */
+function handleChanged(item) {
+  loadToken++
+  isFetching.value = false
+  lyrics.value = item
+  emit('changed')
 }
 
-async function saveTransposition() {
-  isTransposing.value = true
+async function link(lyricsId) {
+  if (!lyricsId) return
+  isLinking.value = true
   try {
-    lyrics.value = await bandSpaceSongsApi.transposeLyrics(
-      props.bandSpaceId,
-      props.song.id,
-      transpose.value,
-      lyrics.value.lyrics_version
-    )
-    transpose.value = 0
-    toast.add({
-      severity: 'success',
-      summary: t('band_space_setlist.lyrics_panel.transposition_saved'),
-      life: 3000
-    })
-    emit('changed')
+    handleChanged(await lyricsStore.linkLyrics(props.bandSpaceId, lyricsId, props.song.id))
   } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.lyrics_panel.transposition_failed'),
-      detail: error.message,
-      life: 6000
-    })
+    showError(error)
   } finally {
-    isTransposing.value = false
+    isLinking.value = false
+    lyricsChoice.value = null
   }
 }
 
-function handleSaved(saved) {
-  const hadLyrics = Boolean(lyrics.value?.lyrics)
-  lyrics.value = saved
-  transpose.value = 0
-  if (hadLyrics !== Boolean(saved.lyrics)) emit('changed')
-}
-
-async function exportPdf() {
-  if (isExporting.value) return
-  isExporting.value = true
-  try {
-    const { blob, filename } = await bandSpaceSongsApi.downloadPdf(
-      props.bandSpaceId,
-      props.song.id,
-      {
-        ...pdfOptions,
-        transpose: transpose.value
-      }
-    )
-    downloadBlob(blob, filename ?? 'paroles.pdf')
-    pdfPopover.value?.hide()
-  } catch (error) {
-    // A 401 already sends the member to log in; the body of a 5xx says nothing usable.
-    if (error?.response?.status === 401) return
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.pdf_export.failed_summary'),
-      detail: t('band_space_setlist.pdf_export.failed_detail'),
-      life: 6000
-    })
-  } finally {
-    isExporting.value = false
-  }
+function openInLyrics() {
+  router.replace({ query: { view: 'lyrics', lyrics: lyrics.value.id } })
 }
 </script>

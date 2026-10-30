@@ -3,7 +3,7 @@ import { readonly, ref } from 'vue'
 import bandSpaceSongsApi from '../../api/bandSpace/band-space-songs.js'
 import { intlLocale } from '../../i18n/formatLocale.js'
 
-function byTitle(a, b) {
+export function byTitle(a, b) {
   return a.title.localeCompare(b.title, intlLocale())
 }
 

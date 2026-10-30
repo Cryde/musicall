@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div v-if="songsStore.loadError || setlistsStore.loadError" class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4">
+    <div v-if="loadError" class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4">
       <Message severity="error" :closable="false">
-        {{ songsStore.loadError || setlistsStore.loadError }}
+        {{ loadError }}
       </Message>
       <Button :label="t('band_space_setlist.page.retry')" icon="pi pi-refresh" severity="secondary" @click="loadAll" />
     </div>
@@ -11,12 +11,14 @@
       <aside class="hidden lg:block w-64 shrink-0 bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
         <SidebarContent
           :songs-count="songsStore.songs.length"
+          :lyrics-count="lyricsStore.lyrics.length"
           :setlists="setlistsStore.setlists"
           :is-loading-setlists="setlistsStore.isLoading"
           :active-view="activeView"
           :active-setlist-id="activeSetlistId"
           :trash-count="trashCount"
           @select-repertoire="selectRepertoire"
+          @select-lyrics="selectLyrics"
           @select-setlist="selectSetlist"
           @select-trash="selectTrash"
           @new-setlist="newSetlistDialogOpen = true"
@@ -41,12 +43,14 @@
         </template>
         <SidebarContent
           :songs-count="songsStore.songs.length"
+          :lyrics-count="lyricsStore.lyrics.length"
           :setlists="setlistsStore.setlists"
           :is-loading-setlists="setlistsStore.isLoading"
           :active-view="activeView"
           :active-setlist-id="activeSetlistId"
           :trash-count="trashCount"
           @select-repertoire="selectRepertoire"
+          @select-lyrics="selectLyrics"
           @select-setlist="selectSetlist"
           @select-trash="selectTrash"
           @new-setlist="newSetlistDialogOpen = true"
@@ -65,6 +69,11 @@
           :band-space-id="bandSpaceId"
           :focus-song-id="focusSongId"
         />
+        <LyricsView
+          v-else-if="activeView === 'lyrics'"
+          :band-space-id="bandSpaceId"
+          :focus-lyrics-id="focusLyricsId"
+        />
         <SetlistEditor
           v-else-if="activeView === 'setlist' && activeSetlistId"
           :band-space-id="bandSpaceId"
@@ -77,7 +86,8 @@
           :band-space-id="bandSpaceId"
           :setlists="[...setlistsStore.archivedSetlists]"
           :songs="[...songsStore.archivedSongs]"
-          :is-loading="setlistsStore.isLoadingArchived || songsStore.isLoadingArchived"
+          :lyrics="[...lyricsStore.archivedLyrics]"
+          :is-loading="setlistsStore.isLoadingArchived || songsStore.isLoadingArchived || lyricsStore.isLoadingArchived"
         />
       </section>
     </div>
@@ -91,12 +101,14 @@ import Message from 'primevue/message'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import LyricsView from '../../components/BandSpace/Setlist/Lyrics/LyricsView.vue'
 import NewSetlistDialog from '../../components/BandSpace/Setlist/NewSetlistDialog.vue'
 import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vue'
 import SetlistEditor from '../../components/BandSpace/Setlist/SetlistEditor.vue'
 import SetlistTrashList from '../../components/BandSpace/Setlist/SetlistTrashList.vue'
 import SidebarContent from '../../components/BandSpace/Setlist/SidebarContent.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { useBandLyricsStore } from '../../store/bandSpace/bandSpaceLyrics.js'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../store/bandSpace/bandSpaceSongs.js'
 
@@ -105,14 +117,16 @@ const route = useRoute()
 const router = useRouter()
 const songsStore = useBandSongsStore()
 const setlistsStore = useBandSetlistsStore()
+const lyricsStore = useBandLyricsStore()
 
 // Wipe any previous space's data synchronously before first render.
 songsStore.clear()
 setlistsStore.clear()
+lyricsStore.clear()
 
 const bandSpaceId = computed(() => route.params.id)
 
-const activeView = ref('repertoire') // 'repertoire' | 'setlist' | 'trash'
+const activeView = ref('repertoire') // 'repertoire' | 'lyrics' | 'setlist' | 'trash'
 const activeSetlistId = ref(null)
 const mobileNavOpen = ref(false)
 const newSetlistDialogOpen = ref(false)
@@ -129,37 +143,39 @@ const activeSetlist = computed(() =>
  * repertoire, which is the view holding the songs.
  */
 const focusSongId = computed(() => (typeof route.query.song === 'string' ? route.query.song : null))
+const focusLyricsId = computed(() =>
+  typeof route.query.lyrics === 'string' ? route.query.lyrics : null
+)
+
+const loadError = computed(
+  () => songsStore.loadError || setlistsStore.loadError || lyricsStore.loadError
+)
 
 const trashCount = computed(
-  () => setlistsStore.archivedSetlists.length + songsStore.archivedSongs.length
+  () =>
+    setlistsStore.archivedSetlists.length +
+    songsStore.archivedSongs.length +
+    lyricsStore.archivedLyrics.length
 )
 
 const currentSelectionLabel = computed(() => {
   if (activeView.value === 'trash') return t('band_space_setlist.sidebar.trash')
+  if (activeView.value === 'lyrics') return t('band_space_setlist.sidebar.lyrics')
   if (activeView.value === 'setlist' && activeSetlist.value) return activeSetlist.value.name
   return t('band_space_setlist.common.repertoire')
 })
 
-function selectRepertoire() {
-  activeView.value = 'repertoire'
-  activeSetlistId.value = null
-  router.replace({ query: {} })
+function selectView(view, query, setlistId = null) {
+  activeView.value = view
+  activeSetlistId.value = setlistId
+  router.replace({ query })
   mobileNavOpen.value = false
 }
 
-function selectSetlist(id) {
-  activeView.value = 'setlist'
-  activeSetlistId.value = id
-  router.replace({ query: { setlist: id } })
-  mobileNavOpen.value = false
-}
-
-function selectTrash() {
-  activeView.value = 'trash'
-  activeSetlistId.value = null
-  router.replace({ query: { view: 'trash' } })
-  mobileNavOpen.value = false
-}
+const selectRepertoire = () => selectView('repertoire', {})
+const selectLyrics = () => selectView('lyrics', { view: 'lyrics' })
+const selectSetlist = (id) => selectView('setlist', { setlist: id }, id)
+const selectTrash = () => selectView('trash', { view: 'trash' })
 
 function syncFromQuery() {
   const setlistParam = route.query.setlist
@@ -170,6 +186,11 @@ function syncFromQuery() {
   }
   if (route.query.view === 'trash') {
     activeView.value = 'trash'
+    activeSetlistId.value = null
+    return
+  }
+  if (route.query.view === 'lyrics') {
+    activeView.value = 'lyrics'
     activeSetlistId.value = null
     return
   }
@@ -185,9 +206,12 @@ function loadAll() {
   // next to the live lists. Both collections are unpaginated and hold a handful of rows.
   songsStore.fetchArchivedSongs(bandSpaceId.value)
   setlistsStore.fetchArchivedSetlists(bandSpaceId.value)
+  // Loaded with the rest even when « Paroles » is closed: a song's drawer finds its lyrics in it.
+  lyricsStore.fetchLyrics(bandSpaceId.value)
+  lyricsStore.fetchArchivedLyrics(bandSpaceId.value)
 }
 
-// The song and item drawers keep the copy they were opened with, and the editor does not rebuild
+// The song, lyrics and item drawers keep the copy they were opened with, and the editor does not rebuild
 // its list while an item is being dragged, so a refetch never moves anything under the member.
 useBandSpaceLiveRefresh({
   bandSpaceId,
@@ -222,6 +246,7 @@ onMounted(() => {
 onUnmounted(() => {
   songsStore.clear()
   setlistsStore.clear()
+  lyricsStore.clear()
 })
 
 watch(
