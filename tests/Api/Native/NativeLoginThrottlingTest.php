@@ -7,8 +7,12 @@ namespace App\Tests\Api\Native;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Bridge\PhpUnit\Attribute\TimeSensitive;
+use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\Policy\SlidingWindowLimiter;
+use Symfony\Component\Security\Http\EventListener\LoginThrottlingListener;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -30,8 +34,12 @@ class NativeLoginThrottlingTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
+    /** The wait is rounded up from a sub-second window start, so the clock sits on a whole second. */
+    #[TimeSensitive(SlidingWindowLimiter::class)]
+    #[TimeSensitive(LoginThrottlingListener::class)]
     public function test_the_native_login_shares_the_web_firewall_s_limiter(): void
     {
+        ClockMock::withClockMock(strtotime('2026-10-30 10:00:00'));
         $user = UserFactory::new()->asBaseUser()->create();
 
         // DefaultLoginRateLimiter keys the local limiter on username plus client IP, both read off

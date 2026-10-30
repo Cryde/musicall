@@ -7,6 +7,7 @@ namespace App\Tests\Api\Native;
 use App\Entity\SocialAccount;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\Native\GoogleIdTokenAuthenticator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakeGoogleIdTokenVerifier;
@@ -15,7 +16,10 @@ use App\Tests\Factory\User\UserFactory;
 use App\Tests\JwtPayload;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Bridge\PhpUnit\Attribute\TimeSensitive;
+use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\Policy\SlidingWindowLimiter;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -160,8 +164,12 @@ class NativeGoogleSignInTest extends ApiTestCase
         $this->assertRefused(Response::HTTP_SERVICE_UNAVAILABLE, 'google_unavailable');
     }
 
+    /** The wait is rounded up from a sub-second window start, so the clock sits on a whole second. */
+    #[TimeSensitive(SlidingWindowLimiter::class)]
+    #[TimeSensitive(GoogleIdTokenAuthenticator::class)]
     public function test_attempts_are_limited_per_ip(): void
     {
+        ClockMock::withClockMock(strtotime('2026-10-30 10:00:00'));
         /** @var RateLimiterFactoryInterface $limiter */
         $limiter = self::getContainer()->get('limiter.native_oauth');
         $limiter->create('127.0.0.1')->consume(10);
@@ -172,7 +180,7 @@ class NativeGoogleSignInTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
-            'message' => 'Plusieurs tentatives de connexion ont échoué, veuillez réessayer dans 1 minute.',
+            'message' => 'Trop de tentatives de connexion échouées, veuillez réessayer dans 10 minutes.',
         ]);
         $this->assertNull(self::getContainer()->get(UserRepository::class)->findOneBy(['email' => 'nouveau@example.com']));
     }
