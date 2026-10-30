@@ -2,6 +2,7 @@
 
 namespace App\Repository\BandSpace;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Lyrics;
 use App\Entity\BandSpace\Song;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -15,6 +16,39 @@ class LyricsRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Lyrics::class);
+    }
+
+    /**
+     * Live lyrics or the Corbeille, never both, with their song joined so the list asks once.
+     *
+     * @return Lyrics[]
+     */
+    public function findByBandSpace(BandSpace $bandSpace, bool $archivedOnly = false): array
+    {
+        return $this->createQueryBuilder('l')
+            ->addSelect('s')
+            ->leftJoin('l.song', 's')
+            ->where('l.bandSpace = :bandSpace')
+            ->andWhere($archivedOnly ? 'l.archiveDatetime IS NOT NULL' : 'l.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('l.title', 'ASC')
+            ->addOrderBy('l.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** Archived lyrics included, which is what the Corbeille and its restore need. */
+    public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?Lyrics
+    {
+        return $this->createQueryBuilder('l')
+            ->addSelect('s')
+            ->leftJoin('l.song', 's')
+            ->where('l.id = :id')
+            ->andWhere('l.bandSpace = :bandSpace')
+            ->setParameter('id', $id)
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function findOneBySong(Song $song): ?Lyrics

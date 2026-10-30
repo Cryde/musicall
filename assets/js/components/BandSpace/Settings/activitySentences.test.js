@@ -123,3 +123,42 @@ describe('finance activity sentences', () => {
     })
   })
 })
+
+const setlist = (type, payload) => ({ module: 'setlist', type, payload })
+
+describe('lyrics activity sentences (#1260)', () => {
+  it('name the song only when the lyrics were written for one', () => {
+    assert.equal(
+      activitySentence(setlist('lyrics_added', { title: 'Idée', song_title: null })),
+      'a écrit les paroles « Idée »'
+    )
+    assert.equal(
+      activitySentence(setlist('lyrics_added', { title: 'Idée', song_title: 'Enfin' })),
+      'a écrit les paroles « Idée » pour la chanson « Enfin »'
+    )
+  })
+
+  it('name both the lyrics and the song on a link and an unlink', () => {
+    assert.equal(
+      activitySentence(setlist('lyrics_linked', { title: 'Idée', song_title: 'Enfin' })),
+      'a lié les paroles « Idée » à la chanson « Enfin »'
+    )
+    assert.equal(
+      activitySentence(setlist('lyrics_unlinked', { title: 'Idée', song_title: 'Enfin' })),
+      'a délié les paroles « Idée » de la chanson « Enfin »'
+    )
+  })
+
+  it('read the edit, archive and restore by title', () => {
+    assert.deepEqual(
+      ['lyrics_updated', 'lyrics_archived', 'lyrics_restored'].map((type) =>
+        activitySentence(setlist(type, { title: 'Idée' }))
+      ),
+      [
+        'a modifié les paroles « Idée »',
+        'a mis les paroles « Idée » à la corbeille',
+        'a restauré les paroles « Idée »'
+      ]
+    )
+  })
+})

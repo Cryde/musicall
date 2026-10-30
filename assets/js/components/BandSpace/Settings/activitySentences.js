@@ -235,6 +235,31 @@ const SENTENCES = {
       name: a.payload?.original_name ?? noValue()
     }),
 
+  // Setlist, lyrics written apart from a song (#1260)
+  'setlist.lyrics_added': (a) =>
+    a.payload?.song_title
+      ? t('band_space_activity.setlist.lyrics_added_for_song', {
+          title: a.payload?.title ?? noValue(),
+          song: a.payload.song_title
+        })
+      : t('band_space_activity.setlist.lyrics_added', { title: a.payload?.title ?? noValue() }),
+  'setlist.lyrics_updated': (a) =>
+    t('band_space_activity.setlist.lyrics_updated', { title: a.payload?.title ?? noValue() }),
+  'setlist.lyrics_archived': (a) =>
+    t('band_space_activity.setlist.lyrics_archived', { title: a.payload?.title ?? noValue() }),
+  'setlist.lyrics_restored': (a) =>
+    t('band_space_activity.setlist.lyrics_restored', { title: a.payload?.title ?? noValue() }),
+  'setlist.lyrics_linked': (a) =>
+    t('band_space_activity.setlist.lyrics_linked', {
+      title: a.payload?.title ?? noValue(),
+      song: a.payload?.song_title ?? noValue()
+    }),
+  'setlist.lyrics_unlinked': (a) =>
+    t('band_space_activity.setlist.lyrics_unlinked', {
+      title: a.payload?.title ?? noValue(),
+      song: a.payload?.song_title ?? noValue()
+    }),
+
   // Setlist — setlists
   'setlist.setlist_created': (a) =>
     t('band_space_activity.setlist.setlist_created', { name: a.payload?.name ?? noValue() }),

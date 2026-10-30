@@ -4,6 +4,7 @@ namespace App\Entity\BandSpace;
 
 use App\Repository\BandSpace\LyricsRepository;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -42,6 +43,10 @@ class Lyrics
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
     public int $version = 1;
 
+    /** In the Corbeille. Archiving unlinks, so a song never points at lyrics in the trash. */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $archiveDatetime = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 
@@ -51,5 +56,30 @@ class Lyrics
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+    }
+
+    /** Blank lyrics are stored as none, so they read as « no lyrics » everywhere, has_lyrics included. */
+    public static function storedContent(?string $content): ?string
+    {
+        return trim((string) $content) === '' ? null : $content;
+    }
+
+    /**
+     * Only a real change moves the revision: saving the same text again loses nobody any work.
+     *
+     * @return bool whether the text changed
+     */
+    public function replaceContent(?string $content): bool
+    {
+        $content = self::storedContent($content);
+        if ($content === $this->content) {
+            return false;
+        }
+
+        $this->content = $content;
+        ++$this->version;
+        $this->updateDatetime = new DateTime();
+
+        return true;
     }
 }

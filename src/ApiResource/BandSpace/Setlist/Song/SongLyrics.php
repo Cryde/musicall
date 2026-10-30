@@ -12,7 +12,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\Setlist\Song\SongLyricsTransposeProcessor;
 use App\State\Processor\BandSpace\Setlist\Song\SongLyricsUpdateProcessor;
 use App\State\Provider\BandSpace\Setlist\Song\SongLyricsProvider;
-use App\Validator\BandSpace\SongSingersAreMembers;
+use App\Validator\BandSpace\LyricsSingersAreMembers;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -49,18 +49,18 @@ use Symfony\Component\Validator\Constraints as Assert;
     security: "is_granted('ROLE_USER')",
     provider: SongLyricsProvider::class,
 )]
-#[SongSingersAreMembers]
 class SongLyrics
 {
     public const int MAX_LENGTH = 20000;
 
-    #[ApiProperty(identifier: true)]
+    #[ApiProperty(identifier: true, writable: false)]
     public string $id;
 
-    #[ApiProperty(identifier: true)]
+    #[ApiProperty(identifier: true, writable: false)]
     public string $bandSpaceId;
 
     #[Assert\Length(max: self::MAX_LENGTH, maxMessage: 'band_space.song.lyrics_too_long')]
+    #[LyricsSingersAreMembers]
     public ?string $lyrics = null;
 
     /** The revision of the lyrics this payload carries. The server owns it. */
