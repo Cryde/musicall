@@ -9,6 +9,7 @@ use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Repository\Message\MessageFileRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
+use App\Service\OAuth\Apple\AppleTokenRevoker;
 use App\Service\Procedure\BandSpace\WithdrawUserFromBandSpacesProcedure;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,11 +25,15 @@ readonly class DeleteAccountProcedure
         private DeviceTokenRepository $deviceTokenRepository,
         private UserBlockRepository $userBlockRepository,
         private MessageFileRepository $messageFileRepository,
+        private AppleTokenRevoker $appleTokenRevoker,
     ) {
     }
 
     public function process(User $user): void
     {
+        // Read before the anonymization clears the social accounts that hold them.
+        $appleRefreshTokens = $this->appleTokenRevoker->refreshTokensOf($user);
+
         // One transaction, because not every step below waits for the flush: the band space
         // withdrawal deletes future planned finance entries with a bulk DQL query and the refresh
         // tokens go out through the connection, so both reach the database straight away. Without
@@ -42,6 +47,9 @@ readonly class DeleteAccountProcedure
         foreach ($promotions as $promotion) {
             $this->eventDispatcher->dispatch($promotion);
         }
+
+        // Revoked only once the deletion is committed, and last, so a slow Apple delays nothing else (#1270).
+        $this->appleTokenRevoker->revoke($appleRefreshTokens, $user->id);
     }
 
     /**

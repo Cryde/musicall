@@ -80,6 +80,41 @@ class AppleTokenClientTest extends TestCase
         $this->assertSame(300, $claims['exp'] - $claims['iat']);
     }
 
+    public function test_a_refresh_token_is_revoked_under_its_client_id(): void
+    {
+        $this->client(new MockResponse(''))->revoke('r.apple-refresh-token', 'com.musicall.web');
+
+        $this->assertCount(1, $this->requests);
+        $request = $this->requests[0];
+        $this->assertSame('POST', $request['method']);
+        $this->assertSame('https://appleid.apple.com/auth/revoke', $request['url']);
+        $clientSecret = $request['body']['client_secret'];
+        unset($request['body']['client_secret']);
+        $this->assertSame([
+            'client_id' => 'com.musicall.web',
+            'token' => 'r.apple-refresh-token',
+            'token_type_hint' => 'refresh_token',
+        ], $request['body']);
+        $this->assertIsString($clientSecret);
+        $this->assertSame('com.musicall.web', ((array) JWT::decode($clientSecret, new Key(self::$publicKey, 'ES256')))['sub']);
+    }
+
+    public function test_apple_refusing_a_revocation_names_its_reason(): void
+    {
+        $this->expectException(AppleTokenRequestException::class);
+        $this->expectExceptionMessage('Apple refused the request: invalid_client');
+
+        $this->client(new MockResponse('{"error": "invalid_client"}', ['http_code' => 400]))->revoke('r.apple-refresh-token', self::CLIENT_ID);
+    }
+
+    public function test_apple_out_of_reach_fails_a_revocation(): void
+    {
+        $this->expectException(AppleTokenRequestException::class);
+        $this->expectExceptionMessage('Apple could not be reached');
+
+        $this->client(new TransportException('Connection refused'))->revoke('r.apple-refresh-token', self::CLIENT_ID);
+    }
+
     public function test_apple_refusing_the_code_names_its_reason(): void
     {
         $this->expectException(AppleTokenRequestException::class);
@@ -102,6 +137,14 @@ class AppleTokenClientTest extends TestCase
         $this->expectExceptionMessage('Apple could not be reached');
 
         $this->client(new TransportException('Connection refused'))->exchangeAuthorizationCode('the-code', self::CLIENT_ID);
+    }
+
+    public function test_an_answer_that_is_not_json_is_a_failed_request(): void
+    {
+        $this->expectException(AppleTokenRequestException::class);
+        $this->expectExceptionMessage('Apple answered with something other than JSON');
+
+        $this->client(new MockResponse('<html>maintenance</html>'))->exchangeAuthorizationCode('the-code', self::CLIENT_ID);
     }
 
     /** @return iterable<string, array{array<string, mixed>}> */
