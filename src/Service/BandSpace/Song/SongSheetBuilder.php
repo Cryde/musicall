@@ -4,10 +4,10 @@ namespace App\Service\BandSpace\Song;
 
 use App\Entity\BandSpace\Lyrics;
 use App\Entity\BandSpace\Song;
+use App\Service\BandSpace\Lyrics\LyricsSingerResolver;
 use App\Service\BandSpace\Song\ChordPro\ChordProParser;
 use App\Service\BandSpace\Song\ChordPro\ChordTransposer;
 use App\Service\BandSpace\Song\ChordPro\SingerPalette;
-use App\Service\Builder\BandSpace\SongLyricsBuilder;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -36,7 +36,7 @@ readonly class SongSheetBuilder
     public function __construct(
         private ChordProParser $parser,
         private ChordTransposer $transposer,
-        private SongLyricsBuilder $lyricsBuilder,
+        private LyricsSingerResolver $singerResolver,
         private TranslatorInterface $translator,
     ) {
     }
@@ -46,18 +46,37 @@ readonly class SongSheetBuilder
      */
     public function build(Song $song, ?Lyrics $lyrics, SongSheetOptions $options): array
     {
+        return $this->sheet($song->title, $song, $lyrics, $options);
+    }
+
+    /**
+     * Linked lyrics print as their song. Unlinked ones only have a title: no key, no tempo.
+     *
+     * @return SongSheet
+     */
+    public function buildFromLyrics(Lyrics $lyrics, SongSheetOptions $options): array
+    {
+        return $this->sheet($lyrics->song->title ?? $lyrics->title, $lyrics->song, $lyrics, $options);
+    }
+
+    /**
+     * @return SongSheet
+     */
+    private function sheet(string $title, ?Song $song, ?Lyrics $lyrics, SongSheetOptions $options): array
+    {
+        $tonality = $song?->tonality;
         $source = $options->transpose === 0
             ? $lyrics?->content
-            : $this->transposer->transposeSource($lyrics?->content, $options->transpose, $song->tonality);
+            : $this->transposer->transposeSource($lyrics?->content, $options->transpose, $tonality);
 
         return [
-            'title' => $song->title,
+            'title' => $title,
             'tonality' => $options->transpose === 0
-                ? $song->tonality
-                : ($this->transposer->transposeKey($song->tonality, $options->transpose) ?? $song->tonality),
-            'tempo' => $song->tempo,
+                ? $tonality
+                : ($this->transposer->transposeKey($tonality, $options->transpose) ?? $tonality),
+            'tempo' => $song?->tempo,
             'blocks' => $this->parser->sheet($source),
-            'singers' => $options->showSingers ? $this->singers($song, $lyrics) : [],
+            'singers' => $options->showSingers && $lyrics instanceof Lyrics ? $this->singers($lyrics) : [],
             'show_chords' => $options->showChords,
             'show_singers' => $options->showSingers,
             'section_labels' => ChordProParser::SECTION_KINDS,
@@ -67,16 +86,16 @@ readonly class SongSheetBuilder
     /**
      * @return array<string, array{name: string, color: string, former: bool}>
      */
-    private function singers(Song $song, ?Lyrics $lyrics): array
+    private function singers(Lyrics $lyrics): array
     {
         $members = [];
-        foreach ($this->lyricsBuilder->build($song, $lyrics)->singers as $singer) {
+        foreach ($this->singerResolver->singers((string) $lyrics->bandSpace->id, $lyrics->content) as $singer) {
             $members[$singer['id']] = $singer;
         }
 
         $singers = [];
         $index = 0;
-        foreach ($this->parser->singerIds($lyrics?->content) as $id) {
+        foreach ($this->parser->singerIds($lyrics->content) as $id) {
             if ($id === ChordProParser::SINGER_ALL) {
                 $singers[$id] = ['name' => self::ALL_LABEL, 'color' => SingerPalette::ALL, 'former' => false];
                 continue;
