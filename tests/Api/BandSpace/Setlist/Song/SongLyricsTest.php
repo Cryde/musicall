@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\Setlist\Song;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\Lyrics;
 use App\Entity\BandSpace\Song;
 use App\Enum\BandSpace\BandSpaceModule;
@@ -142,9 +143,12 @@ class SongLyricsTest extends ApiTestCase
         $this->assertNotNull($this->refresh($song)->updateDatetime);
         $stored = $this->storedLyrics($song);
         $this->assertSame([$lyrics, 2, $song->title], [$stored?->content, $stored?->version, $stored?->title]);
-        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)->findForResource($space, BandSpaceModule::Setlist, (string) $song->id);
-        $this->assertCount(1, $activities);
-        $this->assertSame('song_updated', $activities[0]->type);
+        // On the lyrics, so the feed reads the same as an edit from the « Paroles » screen (#1260).
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)->findForResource($space, BandSpaceModule::Setlist, (string) $stored?->id);
+        $this->assertSame([['lyrics_updated', ['title' => 'Au clair de la lune']]], array_map(
+            static fn (BandSpaceActivity $activity): array => [$activity->type, $activity->payload],
+            $activities,
+        ));
     }
 
     /** Blank lyrics clear the song rather than store whitespace, so « has lyrics » stays honest. */
@@ -305,6 +309,45 @@ class SongLyricsTest extends ApiTestCase
             'title' => 'An error occurred',
             'description' => 'lyrics: Un chanteur attribué n\'est pas membre de ce Band Space',
         ]);
+    }
+
+    /** The body cannot point the singer check at another space, where the stranger is a member. */
+    public function test_the_body_cannot_choose_the_space_the_singers_are_checked_in(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $stranger = UserFactory::new()->asBaseUser()->create(['username' => 'inconnu', 'email' => 'inconnu@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        $otherSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $otherSpace, 'user' => $stranger])->create();
+        $song = SongFactory::new()->create(['bandSpace' => $space]);
+
+        $this->client->loginUser($member);
+        $this->patch($space, $song, [
+            'lyrics' => "<span singer=\"@[{$stranger->id}]\">La</span>",
+            'expected_lyrics_version' => 1,
+            'band_space_id' => (string) $otherSpace->id,
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_5c1f0e2a-8b7d-4f3e-9a6c-2d4b8e1f7a90',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'lyrics',
+                    'message' => 'Un chanteur attribué n\'est pas membre de ce Band Space',
+                    'code' => 'music_all_5c1f0e2a-8b7d-4f3e-9a6c-2d4b8e1f7a90',
+                ],
+            ],
+            'detail' => 'lyrics: Un chanteur attribué n\'est pas membre de ce Band Space',
+            'type' => '/validation_errors/music_all_5c1f0e2a-8b7d-4f3e-9a6c-2d4b8e1f7a90',
+            'title' => 'An error occurred',
+            'description' => 'lyrics: Un chanteur attribué n\'est pas membre de ce Band Space',
+        ]);
+        $this->assertNull($this->storedLyrics($song));
     }
 
     public function test_lyrics_over_the_limit_are_refused(): void

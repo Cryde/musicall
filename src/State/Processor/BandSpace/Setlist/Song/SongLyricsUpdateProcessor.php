@@ -63,23 +63,22 @@ readonly class SongLyricsUpdateProcessor implements ProcessorInterface
         $lyrics = $this->lyricsRepository->findOneBySong($song);
         $this->lyricsWriteGuard->assertVersion($lyrics, $data->expectedLyricsVersion);
 
-        $content = trim((string) $data->lyrics) === '' ? null : $data->lyrics;
+        $content = Lyrics::storedContent($data->lyrics);
 
-        // Only a real change bumps the revision: re-saving the same text loses nobody any work.
+        // A song with no lyrics only gets a row once there is something to store.
         if ($content !== $lyrics?->content) {
             $lyrics ??= $this->createLyrics($song);
-            $lyrics->content = $content;
-            ++$lyrics->version;
-            $lyrics->updateDatetime = new DateTime();
+            $lyrics->replaceContent($content);
             $song->updateDatetime = new DateTime();
 
             $this->activityRecorder->recordCoalesced(
                 bandSpace: $bandSpace,
                 module: BandSpaceModule::Setlist,
-                type: BandSpaceSetlistActivityType::SongUpdated,
-                resourceId: (string) $song->id,
+                // The same entry as an edit from the « Paroles » screen, whichever one was used.
+                type: BandSpaceSetlistActivityType::LyricsUpdated,
+                resourceId: (string) $lyrics->id,
                 actor: $user,
-                payload: ['title' => $song->title],
+                payload: ['title' => $lyrics->title],
             );
 
             try {

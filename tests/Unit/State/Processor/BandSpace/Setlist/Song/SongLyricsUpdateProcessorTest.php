@@ -55,7 +55,7 @@ class SongLyricsUpdateProcessorTest extends TestCase
             $entityManager,
             $memberChecker,
             new SongWriteGuard(),
-            new LyricsWriteGuard(),
+            new LyricsWriteGuard(new SongWriteGuard()),
             $songRepository,
             $lyricsRepository,
             $this->createStub(BandSpaceActivityRecorder::class),

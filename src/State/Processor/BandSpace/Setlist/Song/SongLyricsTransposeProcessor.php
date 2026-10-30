@@ -16,18 +16,14 @@ use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\LyricsWriteGuard;
 use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\BandSpace\Song\ChordPro\ChordTransposer;
+use App\Service\BandSpace\Lyrics\LyricsTransposition;
 use App\Service\Builder\BandSpace\SongLyricsBuilder;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * « Enregistrer dans cette tonalité » (#1055): the chords and the key move in one write. A key this
- * cannot read (« ? », free text) is left as it was rather than guessed at.
- *
  * @implements ProcessorInterface<SongLyricsTranspose, SongLyrics>
  */
 readonly class SongLyricsTransposeProcessor implements ProcessorInterface
@@ -39,7 +35,7 @@ readonly class SongLyricsTransposeProcessor implements ProcessorInterface
         private LyricsWriteGuard $lyricsWriteGuard,
         private SongRepository $songRepository,
         private LyricsRepository $lyricsRepository,
-        private ChordTransposer $transposer,
+        private LyricsTransposition $transposition,
         private BandSpaceActivityRecorder $activityRecorder,
         private SongLyricsBuilder $lyricsBuilder,
         private Security $security,
@@ -67,14 +63,7 @@ readonly class SongLyricsTransposeProcessor implements ProcessorInterface
         $lyrics = $this->lyricsRepository->findOneBySong($song);
         $this->lyricsWriteGuard->assertVersion($lyrics, $data->expectedLyricsVersion);
 
-        $semitones = (int) $data->semitones;
-        if ($lyrics?->content !== null) {
-            $lyrics->content = $this->transposer->transposeSource($lyrics->content, $semitones, $song->tonality);
-            ++$lyrics->version;
-            $lyrics->updateDatetime = new DateTime();
-        }
-        $song->tonality = $this->transposer->transposeKey($song->tonality, $semitones) ?? $song->tonality;
-        $song->updateDatetime = new DateTime();
+        $this->transposition->apply($lyrics, $song, (int) $data->semitones);
 
         $this->activityRecorder->record(
             bandSpace: $bandSpace,

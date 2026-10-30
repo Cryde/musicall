@@ -14,6 +14,14 @@ enum BandSpaceSetlistActivityType: string
     case SongFileAttached = 'song_file_attached';
     case SongFileDetached = 'song_file_detached';
 
+    // Lyrics, written apart from a song and linked to one later (#1260)
+    case LyricsAdded = 'lyrics_added';
+    case LyricsUpdated = 'lyrics_updated';
+    case LyricsArchived = 'lyrics_archived';
+    case LyricsRestored = 'lyrics_restored';
+    case LyricsLinked = 'lyrics_linked';
+    case LyricsUnlinked = 'lyrics_unlinked';
+
     // Setlist
     case SetlistCreated = 'setlist_created';
     case SetlistRenamed = 'setlist_renamed';
