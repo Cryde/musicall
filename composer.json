@@ -9,7 +9,7 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-intl": "*",
-        "api-platform/core": "^4.2.6",
+        "api-platform/core": "^5",
         "aws/aws-sdk-php": "^3.369",
         "doctrine/dbal": "^4.3.4",
         "doctrine/doctrine-bundle": "^3.0",

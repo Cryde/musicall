@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\Constraint\ArraySubset;
+use ApiPlatform\Test\Constraint\ArraySubset;
 use Symfony\Component\HttpFoundation\Response;
 
 trait ApiTestAssertionsTrait
