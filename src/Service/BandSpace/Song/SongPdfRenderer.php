@@ -11,6 +11,8 @@ use Twig\Environment;
 /**
  * One song's lyrics to PDF (#1055). Bytes rather than a stream, for the reason SetlistPdfRenderer
  * records: App\Http\ContentDisposition keeps owning that header.
+ *
+ * @phpstan-import-type SongSheet from SongSheetBuilder
  */
 readonly class SongPdfRenderer
 {
@@ -25,8 +27,16 @@ readonly class SongPdfRenderer
 
     public function render(Song $song, ?Lyrics $lyrics, SongSheetOptions $options): string
     {
+        return $this->renderSheet($this->sheetBuilder->build($song, $lyrics, $options));
+    }
+
+    /**
+     * @param SongSheet $sheet
+     */
+    public function renderSheet(array $sheet): string
+    {
         $html = $this->twig->render('pdf/song/song.html.twig', [
-            'sheet' => $this->sheetBuilder->build($song, $lyrics, $options),
+            'sheet' => $sheet,
             'font' => self::FONT,
         ]);
 

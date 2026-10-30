@@ -3,7 +3,6 @@
 namespace App\State\Provider\BandSpace\Setlist\Song;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ParameterNotFound;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\BandSpace\Song;
 use App\Entity\User;
@@ -46,28 +45,11 @@ readonly class SongPdfExportProvider implements ProviderInterface
             throw new NotFoundHttpException('band_space.song.not_found');
         }
 
-        $parameters = $operation->getParameters();
-        $options = new SongSheetOptions(
-            showChords: $this->flag($parameters?->get('chords')?->getValue()),
-            showSingers: $this->flag($parameters?->get('singers')?->getValue()),
-            transpose: (int) $this->valueOf($parameters?->get('transpose')?->getValue(), '0'),
-        );
-
+        $options = SongSheetOptions::fromParameters($operation->getParameters());
         $response = new Response($this->pdfRenderer->render($song, $this->lyricsRepository->findOneBySong($song), $options));
         $response->headers->set('Content-Type', 'application/pdf');
         $response->headers->set('Content-Disposition', ContentDisposition::attachment($song->title . '.pdf'));
 
         return $response;
-    }
-
-    /** Both default to on: a printed song sheet is read with its chords and its singers. */
-    private function flag(mixed $value): bool
-    {
-        return in_array($this->valueOf($value, '1'), ['1', 'true'], true);
-    }
-
-    private function valueOf(mixed $value, string $default): string
-    {
-        return $value instanceof ParameterNotFound || $value === null || $value === '' ? $default : (string) $value;
     }
 }

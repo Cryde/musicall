@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Service\BandSpace\Song\SongSheetOptions;
 use App\State\Provider\BandSpace\Setlist\Song\SongPdfExportProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -29,8 +30,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'api_band_space_songs_pdf_export',
             provider: SongPdfExportProvider::class,
             parameters: [
-                'chords' => new QueryParameter(key: 'chords', constraints: [new Assert\Choice(choices: self::BOOLEANS, message: 'band_space.song.pdf_option_invalid')]),
-                'singers' => new QueryParameter(key: 'singers', constraints: [new Assert\Choice(choices: self::BOOLEANS, message: 'band_space.song.pdf_option_invalid')]),
+                'chords' => new QueryParameter(key: 'chords', constraints: [new Assert\Choice(choices: SongSheetOptions::FLAG_VALUES, message: 'band_space.song.pdf_option_invalid')]),
+                'singers' => new QueryParameter(key: 'singers', constraints: [new Assert\Choice(choices: SongSheetOptions::FLAG_VALUES, message: 'band_space.song.pdf_option_invalid')]),
                 'transpose' => new QueryParameter(key: 'transpose', constraints: [
                     new Assert\Sequentially([
                         new Assert\Regex(pattern: '/^-?\d{1,2}\z/', message: 'band_space.song.transpose_not_a_number'),
@@ -43,8 +44,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class SongPdfExport
 {
-    public const array BOOLEANS = ['0', '1', 'true', 'false'];
-
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
