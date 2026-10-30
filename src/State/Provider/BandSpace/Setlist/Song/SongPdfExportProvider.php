@@ -8,6 +8,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\BandSpace\Song;
 use App\Entity\User;
 use App\Http\ContentDisposition;
+use App\Repository\BandSpace\LyricsRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\Song\SongPdfRenderer;
@@ -25,6 +26,7 @@ readonly class SongPdfExportProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private SongRepository $songRepository,
+        private LyricsRepository $lyricsRepository,
         private SongPdfRenderer $pdfRenderer,
         private Security $security,
     ) {
@@ -51,7 +53,7 @@ readonly class SongPdfExportProvider implements ProviderInterface
             transpose: (int) $this->valueOf($parameters?->get('transpose')?->getValue(), '0'),
         );
 
-        $response = new Response($this->pdfRenderer->render($song, $options));
+        $response = new Response($this->pdfRenderer->render($song, $this->lyricsRepository->findOneBySong($song), $options));
         $response->headers->set('Content-Type', 'application/pdf');
         $response->headers->set('Content-Disposition', ContentDisposition::attachment($song->title . '.pdf'));
 

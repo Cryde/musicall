@@ -39,7 +39,7 @@ class SongPdfExportTest extends ApiTestCase
     public function test_a_non_member_cannot_export(): void
     {
         $outsider = UserFactory::new()->asBaseUser()->create(['username' => 'intrus', 'email' => 'intrus@test.com']);
-        $song = SongFactory::new()->create(['lyrics' => 'Secret']);
+        $song = SongFactory::new()->withLyrics('Secret')->create();
 
         $this->client->loginUser($outsider);
         $this->client->request('GET', '/api/band_spaces/' . $song->bandSpace->id . '/songs/' . $song->id . '/pdf', server: ['HTTP_ACCEPT' => 'application/ld+json']);
@@ -137,10 +137,9 @@ class SongPdfExportTest extends ApiTestCase
     public function test_a_singer_who_is_nobody_reads_as_unknown_in_the_reader_locale(string $locale, string $unknownName): void
     {
         [$space, $member] = $this->songSungBy('batteur');
-        $song = SongFactory::new()->create([
+        $song = SongFactory::new()->withLyrics("[C]Au clair <span singer=\"@[6ba7b810-9dad-11d1-80b4-00c04fd430c8]\">de la</span> lune")->create([
             'bandSpace' => $space,
             'title' => 'Au clair de la lune',
-            'lyrics' => "[C]Au clair <span singer=\"@[6ba7b810-9dad-11d1-80b4-00c04fd430c8]\">de la</span> lune",
         ]);
 
         $this->client->loginUser($member);
@@ -186,11 +185,10 @@ class SongPdfExportTest extends ApiTestCase
         $singer = UserFactory::new()->asBaseUser()->create(['username' => $username, 'email' => $username . '@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $singer, 'status' => $status])->create();
-        $song = SongFactory::new()->create([
+        $song = SongFactory::new()->withLyrics("{soc}\n[C]Au clair <span singer=\"@[{$singer->id}]\">de la</span> [G]<span singer=\"all\">lune</span>\n{eoc}")->create([
             'bandSpace' => $space,
             'title' => 'Au clair de la lune',
             'tonality' => 'C',
-            'lyrics' => "{soc}\n[C]Au clair <span singer=\"@[{$singer->id}]\">de la</span> [G]<span singer=\"all\">lune</span>\n{eoc}",
         ]);
 
         return [$space, $singer, $song];

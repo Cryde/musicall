@@ -2,6 +2,7 @@
 
 namespace App\Service\BandSpace\Song;
 
+use App\Entity\BandSpace\Lyrics;
 use App\Entity\BandSpace\Song;
 use App\Enum\BandSpace\SetlistPdfFont;
 use App\Service\Pdf\HtmlPdfGenerator;
@@ -22,10 +23,10 @@ readonly class SongPdfRenderer
     ) {
     }
 
-    public function render(Song $song, SongSheetOptions $options): string
+    public function render(Song $song, ?Lyrics $lyrics, SongSheetOptions $options): string
     {
         $html = $this->twig->render('pdf/song/song.html.twig', [
-            'sheet' => $this->sheetBuilder->build($song, $options),
+            'sheet' => $this->sheetBuilder->build($song, $lyrics, $options),
             'font' => self::FONT,
         ]);
 

@@ -5,6 +5,7 @@ namespace App\Service\Setlist;
 use App\Entity\BandSpace\Setlist;
 use App\Enum\BandSpace\SetlistPdfFont;
 use App\Enum\BandSpace\SetlistPdfLayout;
+use App\Repository\BandSpace\LyricsRepository;
 use App\Service\BandSpace\Song\SongSheetBuilder;
 use App\Service\BandSpace\Song\SongSheetOptions;
 use App\Service\Pdf\HtmlPdfGenerator;
@@ -54,6 +55,7 @@ readonly class SetlistPdfRenderer
         private Environment $twig,
         private HtmlPdfGenerator $pdf,
         private SongSheetBuilder $sheetBuilder,
+        private LyricsRepository $lyricsRepository,
     ) {
     }
 
@@ -198,16 +200,23 @@ readonly class SetlistPdfRenderer
     private function lyricsSheets(Setlist $setlist, SetlistPdfOptions $options): array
     {
         $sheetOptions = new SongSheetOptions(showChords: $options->lyricsChords, showSingers: $options->lyricsSingers);
-        $sheets = [];
+        $songs = [];
         foreach ($setlist->items as $item) {
-            $song = $item->song;
-            if ($song === null || $song->lyrics === null || isset($sheets[(string) $song->id])) {
-                continue;
+            if ($item->song !== null) {
+                $songs[(string) $item->song->id] = $item->song;
             }
-            $sheets[(string) $song->id] = $this->sheetBuilder->build($song, $sheetOptions);
+        }
+        $lyricsBySong = $this->lyricsRepository->findBySongIds(array_keys($songs));
+
+        $sheets = [];
+        foreach ($songs as $songId => $song) {
+            $lyrics = $lyricsBySong[$songId] ?? null;
+            if ($lyrics?->content !== null) {
+                $sheets[] = $this->sheetBuilder->build($song, $lyrics, $sheetOptions);
+            }
         }
 
-        return array_values($sheets);
+        return $sheets;
     }
 
     private function template(SetlistPdfLayout $layout): string

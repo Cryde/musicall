@@ -2,6 +2,7 @@
 
 namespace App\Service\BandSpace\Song;
 
+use App\Entity\BandSpace\Lyrics;
 use App\Entity\BandSpace\Song;
 use App\Service\BandSpace\Song\ChordPro\ChordProParser;
 use App\Service\BandSpace\Song\ChordPro\ChordTransposer;
@@ -43,11 +44,11 @@ readonly class SongSheetBuilder
     /**
      * @return SongSheet
      */
-    public function build(Song $song, SongSheetOptions $options): array
+    public function build(Song $song, ?Lyrics $lyrics, SongSheetOptions $options): array
     {
-        $lyrics = $options->transpose === 0
-            ? $song->lyrics
-            : $this->transposer->transposeSource($song->lyrics, $options->transpose, $song->tonality);
+        $source = $options->transpose === 0
+            ? $lyrics?->content
+            : $this->transposer->transposeSource($lyrics?->content, $options->transpose, $song->tonality);
 
         return [
             'title' => $song->title,
@@ -55,8 +56,8 @@ readonly class SongSheetBuilder
                 ? $song->tonality
                 : ($this->transposer->transposeKey($song->tonality, $options->transpose) ?? $song->tonality),
             'tempo' => $song->tempo,
-            'blocks' => $this->parser->sheet($lyrics),
-            'singers' => $options->showSingers ? $this->singers($song) : [],
+            'blocks' => $this->parser->sheet($source),
+            'singers' => $options->showSingers ? $this->singers($song, $lyrics) : [],
             'show_chords' => $options->showChords,
             'show_singers' => $options->showSingers,
             'section_labels' => ChordProParser::SECTION_KINDS,
@@ -66,16 +67,16 @@ readonly class SongSheetBuilder
     /**
      * @return array<string, array{name: string, color: string, former: bool}>
      */
-    private function singers(Song $song): array
+    private function singers(Song $song, ?Lyrics $lyrics): array
     {
         $members = [];
-        foreach ($this->lyricsBuilder->build($song)->singers as $singer) {
+        foreach ($this->lyricsBuilder->build($song, $lyrics)->singers as $singer) {
             $members[$singer['id']] = $singer;
         }
 
         $singers = [];
         $index = 0;
-        foreach ($this->parser->singerIds($song->lyrics) as $id) {
+        foreach ($this->parser->singerIds($lyrics?->content) as $id) {
             if ($id === ChordProParser::SINGER_ALL) {
                 $singers[$id] = ['name' => self::ALL_LABEL, 'color' => SingerPalette::ALL, 'former' => false];
                 continue;

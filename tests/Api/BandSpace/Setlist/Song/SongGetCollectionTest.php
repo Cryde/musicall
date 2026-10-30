@@ -6,6 +6,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\LyricsFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -62,6 +63,80 @@ class SongGetCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 1,
+        ]);
+    }
+
+    /** Lyrics whose text was cleared are still linked, but there is nothing to read: no « has lyrics ». */
+    public function test_the_repertoire_says_which_songs_have_lyrics(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $written = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'A écrite'])->withLyrics('[C]La')->create();
+        $cleared = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'B effacée'])->create();
+        LyricsFactory::new(['bandSpace' => $bandSpace, 'song' => $cleared, 'content' => null, 'version' => 3])->create();
+        $none = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'C sans paroles'])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/songs');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Song',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $written->id,
+                    '@type' => 'Song',
+                    'id' => $written->id,
+                    'band_space_id' => $bandSpace->id,
+                    'title' => 'A écrite',
+                    'tempo' => null,
+                    'tonality' => null,
+                    'reference_duration' => null,
+                    'notes' => null,
+                    'has_lyrics' => true,
+                    'setlists' => [],
+                    'archive_datetime' => null,
+                    'creation_datetime' => $written->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'update_datetime' => null,
+                ],
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $cleared->id,
+                    '@type' => 'Song',
+                    'id' => $cleared->id,
+                    'band_space_id' => $bandSpace->id,
+                    'title' => 'B effacée',
+                    'tempo' => null,
+                    'tonality' => null,
+                    'reference_duration' => null,
+                    'notes' => null,
+                    'has_lyrics' => false,
+                    'setlists' => [],
+                    'archive_datetime' => null,
+                    'creation_datetime' => $cleared->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'update_datetime' => null,
+                ],
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $none->id,
+                    '@type' => 'Song',
+                    'id' => $none->id,
+                    'band_space_id' => $bandSpace->id,
+                    'title' => 'C sans paroles',
+                    'tempo' => null,
+                    'tonality' => null,
+                    'reference_duration' => null,
+                    'notes' => null,
+                    'has_lyrics' => false,
+                    'setlists' => [],
+                    'archive_datetime' => null,
+                    'creation_datetime' => $none->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'update_datetime' => null,
+                ],
+            ],
+            'totalItems' => 3,
         ]);
     }
 
