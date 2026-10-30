@@ -7,18 +7,12 @@ namespace App\Controller\OAuth;
 use App\Entity\User;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
-use App\Http\ReturnUrl;
-use App\Mercure\MercureSubscriberCookie;
-use App\Security\SuspensionChecker;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
-use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
-use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
+use App\Service\OAuth\OAuthWebSignIn;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -29,13 +23,8 @@ abstract class AbstractOAuthController extends AbstractController
     public function __construct(
         protected readonly ClientRegistry $clientRegistry,
         protected readonly OAuthUserService $oAuthUserService,
-        protected readonly JWTTokenManagerInterface $jwtManager,
-        protected readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
-        protected readonly RefreshTokenManagerInterface $refreshTokenManager,
+        protected readonly OAuthWebSignIn $webSignIn,
         protected readonly LoggerInterface $logger,
-        protected readonly MercureSubscriberCookie $mercureSubscriberCookie,
-        protected readonly string $frontendUrl,
-        protected readonly int $refreshTokenTtl,
     ) {
     }
 
@@ -55,7 +44,7 @@ abstract class AbstractOAuthController extends AbstractController
         $returnUrl = $request->query->getString('return_url');
         $options = [];
 
-        if ($returnUrl !== '' && $this->isValidReturnUrl($returnUrl)) {
+        if ($returnUrl !== '' && $this->webSignIn->isSafeReturnUrl($returnUrl)) {
             // Use a random, unguessable state nonce (KnpU stores it in the session
             // and verifies it on callback for CSRF) and stash the return URL against
             // it, rather than encoding the return URL into the state itself - which
@@ -68,11 +57,6 @@ abstract class AbstractOAuthController extends AbstractController
         return $this->clientRegistry
             ->getClient($this->getClientName())
             ->redirect($this->getScopes(), $options);
-    }
-
-    private function isValidReturnUrl(string $url): bool
-    {
-        return ReturnUrl::isSafe($url, $this->frontendUrl);
     }
 
     public function callback(Request $request): RedirectResponse
@@ -94,89 +78,28 @@ abstract class AbstractOAuthController extends AbstractController
                 $currentUser
             );
 
-            // Minted here by hand, so no user checker runs: the suspension is checked explicitly.
-            if ($result->user->isSuspended()) {
-                return $this->redirectWithError(SuspensionChecker::MESSAGE_KEY);
-            }
+            $redirectUrl = $this->webSignIn->redirectUrlFor($this->extractReturnUrlFromState($request));
 
-            return $this->createAuthenticatedRedirect($result->user, $request);
+            return $this->webSignIn->complete($result->user, $redirectUrl, $request);
         } catch (OAuthEmailExistsException) {
-            return $this->redirectWithError('email_exists');
+            return $this->webSignIn->fail('email_exists');
         } catch (OAuthEmailNotVerifiedException) {
-            return $this->redirectWithError('email_not_verified');
+            return $this->webSignIn->fail('email_not_verified');
         } catch (\Exception $e) {
             $this->logger->error('OAuth authentication failed', [
                 'provider' => $this->getProviderName(),
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->redirectWithError('oauth_failed');
+            return $this->webSignIn->fail('oauth_failed');
         }
     }
 
-    protected function createAuthenticatedRedirect(User $user, Request $request): RedirectResponse
-    {
-        $jwt = $this->jwtManager->create($user);
-
-        // Split JWT into header.payload and signature for security
-        $parts = explode('.', $jwt);
-        $headerPayload = $parts[0] . '.' . $parts[1];
-        $signature = $parts[2];
-
-        // Extract return_url from state parameter
-        $redirectUrl = $this->extractReturnUrlFromState($request);
-
-        $response = new RedirectResponse($redirectUrl);
-
-        // Set cookies matching the lexik_jwt configuration
-        $response->headers->setCookie(
-            Cookie::create('jwt_hp')
-                ->withValue($headerPayload)
-                ->withExpires(time() + 3600)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(false)
-                ->withSameSite('strict')
-        );
-
-        $response->headers->setCookie(
-            Cookie::create('jwt_s')
-                ->withValue($signature)
-                ->withExpires(time() + 3600)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('strict')
-        );
-
-        // Create and set refresh token
-        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, $this->refreshTokenTtl);
-        $this->refreshTokenManager->save($refreshToken);
-
-        $response->headers->setCookie(
-            Cookie::create('refresh_token')
-                ->withValue($refreshToken->getRefreshToken())
-                ->withExpires(time() + $this->refreshTokenTtl)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('lax')
-        );
-
-        // This path mints its own cookies and never reaches Lexik's success handler, so the listener
-        // that renews the Mercure subscriber cookie on login and on refresh does not fire here.
-        // Without this call a Google sign-in would have no subscriber token until the first refresh,
-        // an hour later.
-        $this->mercureSubscriberCookie->attachTo($response, $user, $request);
-
-        return $response;
-    }
-
-    private function extractReturnUrlFromState(Request $request): string
+    private function extractReturnUrlFromState(Request $request): ?string
     {
         $state = $request->query->getString('state');
         if ($state === '') {
-            return $this->frontendUrl;
+            return null;
         }
 
         // The state is now an opaque nonce; the return URL was stashed against it in
@@ -186,19 +109,6 @@ abstract class AbstractOAuthController extends AbstractController
         $returnUrl = $session->get($sessionKey);
         $session->remove($sessionKey);
 
-        if (is_string($returnUrl) && $returnUrl !== '' && $this->isValidReturnUrl($returnUrl)) {
-            // Ensure it's a full URL
-            if (str_starts_with($returnUrl, '/')) {
-                return $this->frontendUrl . $returnUrl;
-            }
-            return $returnUrl;
-        }
-
-        return $this->frontendUrl;
-    }
-
-    protected function redirectWithError(string $error): RedirectResponse
-    {
-        return new RedirectResponse($this->frontendUrl . '/login?oauth_error=' . $error);
+        return is_string($returnUrl) ? $returnUrl : null;
     }
 }
