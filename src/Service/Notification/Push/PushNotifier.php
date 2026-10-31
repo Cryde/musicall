@@ -10,6 +10,7 @@ use Kreait\Firebase\Exception\Messaging\QuotaExceeded;
 use Kreait\Firebase\Exception\Messaging\ServerError;
 use Kreait\Firebase\Exception\Messaging\ServerUnavailable;
 use Kreait\Firebase\Messaging\AndroidConfig;
+use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\MulticastSendReport;
 use Kreait\Firebase\Messaging\Notification;
@@ -55,7 +56,9 @@ readonly class PushNotifier
             ->withAndroidConfig(AndroidConfig::fromArray([
                 'priority' => 'high',
                 'notification' => ['channel_id' => self::ANDROID_CHANNEL_ID],
-            ]));
+            ]))
+            // APNs has no channel to carry a sound, so without one iOS shows the notification silently.
+            ->withApnsConfig(ApnsConfig::new()->withDefaultSound()->withImmediatePriority());
 
         try {
             $report = $this->messaging->sendMulticast($message, $tokens);
