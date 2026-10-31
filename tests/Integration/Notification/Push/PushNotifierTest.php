@@ -49,6 +49,7 @@ class PushNotifierTest extends KernelTestCase
             'data' => ['route' => '/band/42/agenda'],
             'notification' => ['title' => 'Nouvelle répétition', 'body' => 'Jeudi 20h au studio'],
             'android' => ['priority' => 'high', 'notification' => ['channel_id' => 'musicall_default']],
+            'apns' => ['headers' => ['apns-priority' => '10'], 'payload' => ['aps' => ['sound' => 'default']]],
         ], $this->messaging->multicasts[0]['message']);
     }
 
