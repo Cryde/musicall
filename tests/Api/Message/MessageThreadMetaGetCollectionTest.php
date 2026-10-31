@@ -440,8 +440,13 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $writer = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
         $bandSpace = BandSpaceFactory::new(['name' => 'Les Trois Accords'])->create();
+        // Pinned before the message: a channel only counts as unread what was posted after you joined.
         foreach ([$user, $writer] as $member) {
-            BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+            BandSpaceMembershipFactory::new([
+                'bandSpace' => $bandSpace,
+                'user' => $member,
+                'creationDatetime' => new \DateTime('2026-08-01 10:00:00'),
+            ])->create();
         }
 
         $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();

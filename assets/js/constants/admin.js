@@ -35,7 +35,7 @@ export const ADMIN_MODULES = [
     key: 'band-space',
     label: 'Band Space',
     icon: 'pi-objects-column',
-    route: 'admin_band_space_coming_soon',
+    route: 'admin_band_spaces_index',
     description: 'Espaces de groupe et leurs activités',
     color: '#f59e0b'
   },

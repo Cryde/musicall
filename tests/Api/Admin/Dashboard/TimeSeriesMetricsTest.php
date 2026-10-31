@@ -10,8 +10,11 @@ use App\Enum\Search\MusicianSearchKind;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\Comment\CommentFactory;
 use App\Tests\Factory\Forum\ForumPostFactory;
+use App\Tests\Factory\Message\MessageFactory;
+use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -207,6 +210,70 @@ class TimeSeriesMetricsTest extends ApiTestCase
         $this->assertJsonEquals([
             'code' => 401,
             'message' => 'JWT Token not found',
+        ]);
+    }
+
+    public function test_get_time_series_band_spaces(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $today = new \DateTimeImmutable();
+        $todayStr = $today->format('Y-m-d');
+        $yesterdayStr = $today->modify('-1 day')->format('Y-m-d');
+
+        BandSpaceFactory::new()->many(2)->create(['creationDatetime' => new \DateTime()]);
+        BandSpaceFactory::new()->create(['creationDatetime' => new \DateTime('-1 day')]);
+        // Outside the range.
+        BandSpaceFactory::new()->create(['creationDatetime' => new \DateTime('-5 days')]);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=band_spaces&from=' . $yesterdayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'band_spaces',
+            'from' => $yesterdayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $yesterdayStr, 'count' => 1],
+                ['date_label' => $todayStr, 'count' => 2],
+            ],
+            'total' => 3,
+        ]);
+    }
+
+    public function test_get_time_series_band_chat_messages_leaves_direct_messages_and_leaving_spaces_out(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $today = new \DateTimeImmutable();
+        $todayStr = $today->format('Y-m-d');
+        $yesterdayStr = $today->modify('-1 day')->format('Y-m-d');
+
+        $channel = MessageThreadFactory::new()->create(['bandSpace' => BandSpaceFactory::new()->create(), 'name' => 'general']);
+        MessageFactory::new()->many(2)->create(['thread' => $channel, 'creationDatetime' => new \DateTime()]);
+        // A direct message, and a space pending deletion.
+        MessageFactory::new()->create(['creationDatetime' => new \DateTime()]);
+        $leaving = BandSpaceFactory::new()->create(['deletionScheduledDatetime' => new \DateTimeImmutable('+20 days')]);
+        MessageFactory::new()->create([
+            'thread' => MessageThreadFactory::new()->create(['bandSpace' => $leaving, 'name' => 'general']),
+            'creationDatetime' => new \DateTime(),
+        ]);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=band_chat_messages&from=' . $yesterdayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'band_chat_messages',
+            'from' => $yesterdayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $todayStr, 'count' => 2],
+            ],
+            'total' => 2,
         ]);
     }
 

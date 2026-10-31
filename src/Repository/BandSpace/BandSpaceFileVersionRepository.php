@@ -154,4 +154,44 @@ class BandSpaceFileVersionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /** Bytes held by the non-archived files of every live space, as the quota counts them. */
+    public function sumActiveBytesOfLiveBandSpaces(): int
+    {
+        return (int) $this->createQueryBuilder('v')
+            ->select('COALESCE(SUM(v.size), 0)')
+            ->innerJoin('v.bandSpaceFile', 'f')
+            ->innerJoin('f.bandSpace', 'bs')
+            ->where('f.archiveDatetime IS NULL')
+            ->andWhere('bs.deletionScheduledDatetime IS NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * The live spaces using the most storage, as the quota counts it.
+     *
+     * @return list<array{bandSpace: BandSpace, bytes: int}>
+     */
+    public function findLiveBandSpacesByActiveBytes(int $limit): array
+    {
+        /** @var list<array{0: BandSpace, bytes: int|string}> $rows */
+        $rows = $this->getEntityManager()
+            ->createQuery(
+                'SELECT bs, SUM(v.size) AS bytes
+                 FROM App\Entity\BandSpace\BandSpace bs
+                 JOIN App\Entity\BandSpace\BandSpaceFile f WITH f.bandSpace = bs AND f.archiveDatetime IS NULL
+                 JOIN App\Entity\BandSpace\BandSpaceFileVersion v WITH v.bandSpaceFile = f
+                 WHERE bs.deletionScheduledDatetime IS NULL
+                 GROUP BY bs.id
+                 ORDER BY bytes DESC, bs.name ASC, bs.id ASC'
+            )
+            ->setMaxResults($limit)
+            ->getResult();
+
+        return array_map(
+            static fn (array $row): array => ['bandSpace' => $row[0], 'bytes' => (int) $row['bytes']],
+            $rows,
+        );
+    }
 }

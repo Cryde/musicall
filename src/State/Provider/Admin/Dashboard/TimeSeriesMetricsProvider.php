@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Admin\Dashboard\TimeSeriesMetrics;
 use App\Enum\Search\MusicianSearchKind;
+use App\Repository\BandSpace\BandSpaceRepository;
 use App\Repository\Comment\CommentRepository;
 use App\Repository\Forum\ForumPostRepository;
 use App\Repository\Message\MessageRepository;
@@ -29,6 +30,7 @@ readonly class TimeSeriesMetricsProvider implements ProviderInterface
         private ForumPostRepository $forumPostRepository,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private MusicianSearchLogRepository $musicianSearchLogRepository,
+        private BandSpaceRepository $bandSpaceRepository,
     ) {
     }
 
@@ -50,6 +52,8 @@ readonly class TimeSeriesMetricsProvider implements ProviderInterface
             'musician_announces' => $this->musicianAnnounceRepository->countMusicianAnnouncesByDate($from, $to),
             'musician_searches' => $this->musicianSearchLogRepository->countByDate(MusicianSearchKind::Filters, $from, $to),
             'ai_searches' => $this->musicianSearchLogRepository->countByDate(MusicianSearchKind::Ai, $from, $to),
+            'band_spaces' => $this->bandSpaceRepository->countCreationsByDate($from, $to),
+            'band_chat_messages' => $this->messageRepository->countBandChatMessagesByDate($from, $to),
             default => [],
         };
 
