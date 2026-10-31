@@ -74,14 +74,9 @@ export default {
       component: () => import('../views/Admin/Report/Show.vue')
     },
     {
-      name: 'admin_band_space_coming_soon',
+      name: 'admin_band_spaces_index',
       path: 'band-spaces',
-      component: () => import('../views/Admin/ComingSoonPage.vue'),
-      props: {
-        title: 'Band Space',
-        icon: 'pi-objects-column',
-        description: 'Espaces de groupe et leurs activités.'
-      }
+      component: () => import('../views/Admin/BandSpace/Index.vue')
     }
   ]
 }

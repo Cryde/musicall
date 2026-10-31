@@ -103,4 +103,79 @@ class BandSpaceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function countLive(): int
+    {
+        return (int) $this->createQueryBuilder('bs')
+            ->select('COUNT(bs.id)')
+            ->where('bs.deletionScheduledDatetime IS NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countPendingDeletion(): int
+    {
+        return (int) $this->createQueryBuilder('bs')
+            ->select('COUNT(bs.id)')
+            ->where('bs.deletionScheduledDatetime IS NOT NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** Live spaces with a module activity or a band chat message since the given instant. */
+    public function countLiveActiveSince(\DateTimeImmutable $since): int
+    {
+        return (int) $this->getEntityManager()
+            ->createQuery(
+                'SELECT COUNT(bs.id) FROM App\Entity\BandSpace\BandSpace bs
+                 WHERE bs.deletionScheduledDatetime IS NULL
+                   AND (
+                     EXISTS (SELECT a.id FROM App\Entity\BandSpace\BandSpaceActivity a WHERE a.bandSpace = bs AND a.creationDatetime >= :since)
+                     OR EXISTS (SELECT m.id FROM App\Entity\Message\Message m JOIN m.thread t WHERE t.bandSpace = bs AND m.creationDatetime >= :since)
+                   )'
+            )
+            ->setParameter('since', $since)
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * The active member count of every live space, one entry per space.
+     *
+     * @return list<int>
+     */
+    public function findLiveActiveMemberCounts(): array
+    {
+        $rows = $this->createQueryBuilder('bs')
+            ->select('COUNT(m.id) AS members')
+            ->leftJoin('bs.memberships', 'm', 'WITH', 'm.status = :active')
+            ->where('bs.deletionScheduledDatetime IS NULL')
+            ->groupBy('bs.id')
+            ->setParameter('active', MembershipStatus::Active)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        return array_values(array_map(intval(...), $rows));
+    }
+
+    /**
+     * Spaces created per day, the ones pending deletion included: it is a history of creations.
+     *
+     * @return array<int, array{date_label: string, count: int}>
+     */
+    public function countCreationsByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            'SELECT DATE(creation_datetime) AS date_label, COUNT(id) AS count
+             FROM band_space
+             WHERE creation_datetime >= :from AND creation_datetime < :to
+             GROUP BY DATE(creation_datetime)
+             ORDER BY date_label ASC',
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')],
+        );
+
+        return array_map(
+            fn (array $row): array => ['date_label' => (string) $row['date_label'], 'count' => (int) $row['count']],
+            $rows,
+        );
+    }
 }

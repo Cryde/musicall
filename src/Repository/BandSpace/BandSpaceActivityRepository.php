@@ -144,4 +144,33 @@ class BandSpaceActivityRepository extends ServiceEntityRepository
 
         return $qb;
     }
+
+    /**
+     * Per module: how many live spaces recorded an activity in the period, and how many activities.
+     *
+     * @return array<string, array{spaces: int, activities: int}> keyed by BandSpaceModule value
+     */
+    public function summarizeModulesBetween(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var list<array{module: BandSpaceModule|string, spaces: int|string, activities: int|string}> $rows */
+        $rows = $this->createQueryBuilder('a')
+            ->select('a.module AS module', 'COUNT(DISTINCT bs.id) AS spaces', 'COUNT(a.id) AS activities')
+            ->innerJoin('a.bandSpace', 'bs')
+            ->where('bs.deletionScheduledDatetime IS NULL')
+            ->andWhere('a.creationDatetime >= :from')
+            ->andWhere('a.creationDatetime < :to')
+            ->groupBy('a.module')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getArrayResult();
+
+        $summary = [];
+        foreach ($rows as $row) {
+            $module = $row['module'] instanceof BandSpaceModule ? $row['module']->value : $row['module'];
+            $summary[$module] = ['spaces' => (int) $row['spaces'], 'activities' => (int) $row['activities']];
+        }
+
+        return $summary;
+    }
 }

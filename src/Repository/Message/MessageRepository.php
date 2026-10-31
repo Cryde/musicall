@@ -622,4 +622,52 @@ class MessageRepository extends ServiceEntityRepository
             ];
         }, $results);
     }
+
+    /**
+     * Messages posted in the channels of live Band Spaces, and how many spaces they came from.
+     *
+     * @return array{messages: int, spaces: int}
+     */
+    public function summarizeBandChatBetween(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var array{messages: int|string, spaces: int|string} $row */
+        $row = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id) AS messages', 'COUNT(DISTINCT bs.id) AS spaces')
+            ->innerJoin('m.thread', 't')
+            ->innerJoin('t.bandSpace', 'bs')
+            ->where('bs.deletionScheduledDatetime IS NULL')
+            ->andWhere('m.creationDatetime >= :from')
+            ->andWhere('m.creationDatetime < :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getSingleResult();
+
+        return ['messages' => (int) $row['messages'], 'spaces' => (int) $row['spaces']];
+    }
+
+    /**
+     * Messages posted in the channels of live Band Spaces, per day.
+     *
+     * @return array<int, array{date_label: string, count: int}>
+     */
+    public function countBandChatMessagesByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            'SELECT DATE(m.creation_datetime) AS date_label, COUNT(m.id) AS count
+             FROM message m
+             INNER JOIN message_thread t ON t.id = m.thread_id
+             INNER JOIN band_space bs ON bs.id = t.band_space_id
+             WHERE bs.deletion_scheduled_datetime IS NULL
+               AND m.creation_datetime >= :from AND m.creation_datetime < :to
+             GROUP BY DATE(m.creation_datetime)
+             ORDER BY date_label ASC',
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')],
+        );
+
+        return array_map(
+            fn (array $row): array => ['date_label' => (string) $row['date_label'], 'count' => (int) $row['count']],
+            $rows,
+        );
+    }
 }
