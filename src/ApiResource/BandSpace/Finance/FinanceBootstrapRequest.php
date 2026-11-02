@@ -15,6 +15,7 @@ use App\State\Processor\BandSpace\FinanceBootstrapProcessor;
     openapi: new Operation(tags: ['Band Space Finance']),
     security: "is_granted('ROLE_USER')",
     status: 201,
+    input: false,
     name: 'api_band_space_finance_bootstrap',
     processor: FinanceBootstrapProcessor::class,
 )]

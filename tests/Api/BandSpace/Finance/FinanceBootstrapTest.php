@@ -62,6 +62,25 @@ class FinanceBootstrapTest extends ApiTestCase
         $this->assertSame(['count' => 8], $activities[0]->payload);
     }
 
+    public function test_bootstrap_accepts_an_empty_body(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        // The mobile app posts this command with no body at all, unlike the web client's `{}`.
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/bootstrap',
+            server: ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $categoryRepository = self::getContainer()->get(FinanceCategoryRepository::class);
+        $this->assertCount(8, $categoryRepository->findByBandSpace($bandSpace));
+    }
+
     public function test_bootstrap_idempotent(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
