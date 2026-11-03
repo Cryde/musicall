@@ -25,6 +25,18 @@ html {
     @apply bg-gradient-to-r from-primary-600 via-fuchsia-500 to-cyan-500 dark:from-primary-400 dark:via-fuchsia-400 dark:to-cyan-400 bg-clip-text text-transparent;
 }
 
+/* A still glow in the brand's steel blue and teal. `--halo-at` places it behind the visual, not the headline. */
+@utility bg-brand-halo {
+    --halo-strength: 45%;
+    background-image:
+        radial-gradient(36rem 26rem at var(--halo-at, 78% 35%), color-mix(in oklab, var(--p-primary-400) var(--halo-strength), transparent), transparent 70%),
+        radial-gradient(24rem 18rem at 95% 100%, color-mix(in oklab, var(--p-teal-400) calc(var(--halo-strength) * 0.7), transparent), transparent 70%);
+
+    @variant dark {
+        --halo-strength: 40%;
+    }
+}
+
 /* Cosmic hero particles */
 @keyframes particle-drift {
     0%, 100% { transform: translate(0, 0); }

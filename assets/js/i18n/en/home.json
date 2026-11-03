@@ -16,7 +16,7 @@
   },
   "hero": {
     "title": "Find the musicians {highlight}",
-    "title_highlight": "your band is missing.",
+    "title_highlight": "your band is missing",
     "intro": "Musician and band ads, a private space to run your band, lessons, and a community of music lovers."
   },
   "search_form": {
@@ -65,7 +65,7 @@
     "eyebrow": "Band Space",
     "private": "Private to your band",
     "title": "Found your band? {highlight}",
-    "title_highlight": "Get organised here.",
+    "title_highlight": "Get organised here",
     "intro": "A workspace for your band members only: no more details lost in group chats.",
     "discover": "Discover Band Space",
     "open_mine": "Open my Band Space",

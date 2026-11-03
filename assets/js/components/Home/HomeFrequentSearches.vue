@@ -5,7 +5,7 @@
       v-for="link in links"
       :key="link.label"
       :to="link.route"
-      class="rounded-full border border-surface-300 dark:border-surface-600 bg-surface-0/70 dark:bg-surface-800/70 px-3 py-1 text-sm text-surface-800 dark:text-surface-100 hover:bg-surface-0 dark:hover:bg-surface-700"
+      class="rounded-full border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 px-3 py-1 text-sm text-surface-800 dark:text-surface-100 transition-colors duration-150 hover:bg-surface-100 dark:hover:bg-surface-700"
     >
       {{ link.label }}
     </router-link>

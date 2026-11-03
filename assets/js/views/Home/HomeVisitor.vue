@@ -20,48 +20,28 @@
 
     <HomeTeachers :teachers="teachers" @create-teacher-profile="handleCreateTeacherProfile" />
 
-    <!-- CTA Section - Cosmic Style -->
-    <section v-if="!userSecurityStore.isAuthenticated" class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-surface-950 via-primary-950/50 to-surface-950 dark:from-surface-950 dark:via-primary-950/50 dark:to-surface-950">
-      <!-- Light mode background -->
-      <div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-purple-50 to-primary-100 dark:hidden" />
-
-      <!-- Gradient orbs -->
-      <div class="absolute top-10 left-1/4 w-48 h-48 bg-primary-600/30 dark:bg-primary-600/30 rounded-full blur-[80px] animate-drift" />
-      <div class="absolute bottom-10 right-1/4 w-64 h-64 bg-fuchsia-600/20 dark:bg-fuchsia-600/20 rounded-full blur-[100px] animate-drift" style="animation-delay: -5s;" />
-
-      <!-- Floating particles -->
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute top-[20%] right-[15%] w-3 h-3 bg-primary-400 rounded-full animate-glow shadow-lg shadow-primary-400/50" />
-        <div class="absolute top-[60%] left-[20%] w-2 h-2 bg-fuchsia-400 rounded-full animate-glow shadow-lg shadow-fuchsia-400/50" style="animation-delay: -1s;" />
-        <div class="absolute top-[40%] right-[25%] w-2 h-2 bg-cyan-400 rounded-full animate-glow shadow-lg shadow-cyan-400/50" style="animation-delay: -2s;" />
-        <div class="absolute top-[70%] right-[40%] w-1 h-1 bg-white rounded-full animate-particle-slow" />
-        <div class="absolute top-[30%] left-[30%] w-1 h-1 bg-white/80 rounded-full animate-particle-slow" style="animation-delay: -2s;" />
-        <div class="absolute top-[80%] left-[15%] w-1.5 h-1.5 bg-primary-300/80 rounded-full animate-particle" style="animation-delay: -3s;" />
-        <div class="absolute top-[15%] left-[40%] w-1 h-1 bg-white rounded-full animate-particle-slow" style="animation-delay: -4s;" />
-      </div>
-
-      <!-- Content -->
-      <div class="relative z-10 text-center py-16 px-8">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">
-          <i18n-t keypath="home.visitor.cta.title" tag="span" class="text-surface-900 dark:text-white">
-            <template #brand>
-              <span class="text-brand-gradient">{{ t('home.visitor.cta.brand') }}</span>
-            </template>
-          </i18n-t>
-        </h2>
-        <p class="text-lg text-surface-600 dark:text-surface-400 mb-8 max-w-md mx-auto">
-          {{ t('home.visitor.cta.subtitle') }}
-        </p>
-        <router-link :to="{ name: 'app_register' }">
-          <Button
-            :label="t('home.visitor.cta.button')"
-            icon="pi pi-user-plus"
-            size="large"
-            rounded
-            class="!bg-gradient-to-r !from-[#6b97be] !to-[#4a7599] dark:!from-[#7ba7ce] dark:!to-[#5b87ae] hover:!from-[#5b87ae] hover:!to-[#3a6589] dark:hover:!from-[#8bb7de] dark:hover:!to-[#6b97be] !shadow-xl !shadow-[#5b87ae]/30 dark:!shadow-[#5b87ae]/40 hover:!shadow-[#5b87ae]/50 hover:!-translate-y-1 !transition-all !duration-300"
-          />
-        </router-link>
-      </div>
+    <section
+      v-if="!userSecurityStore.isAuthenticated"
+      class="flex flex-col items-center gap-4 rounded-3xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 bg-brand-halo [--halo-at:50%_0%] px-6 py-16 text-center"
+    >
+      <h2 class="m-0 text-3xl md:text-4xl font-semibold tracking-tight">
+        <i18n-t keypath="home.visitor.cta.title" tag="span" class="text-surface-900 dark:text-surface-0">
+          <template #brand>
+            <span class="text-primary">{{ t('home.visitor.cta.brand') }}</span>
+          </template>
+        </i18n-t>
+      </h2>
+      <p class="m-0 max-w-md text-lg text-surface-600 dark:text-surface-300">
+        {{ t('home.visitor.cta.subtitle') }}
+      </p>
+      <Button
+        as="router-link"
+        :to="{ name: 'app_register' }"
+        :label="t('home.visitor.cta.button')"
+        icon="pi pi-user-plus"
+        size="large"
+        class="mt-4"
+      />
     </section>
 
     <!-- Modals -->

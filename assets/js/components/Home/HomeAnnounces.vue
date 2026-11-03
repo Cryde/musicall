@@ -2,7 +2,7 @@
   <section class="flex flex-col gap-6" aria-labelledby="home-announces-title">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div class="flex flex-col gap-4">
-        <h2 id="home-announces-title" class="m-0 text-2xl lg:text-3xl font-bold text-surface-900 dark:text-surface-0">
+        <h2 id="home-announces-title" class="m-0 text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
           {{ t('home.announces.title') }}
         </h2>
         <SelectButton
@@ -22,7 +22,7 @@
         </SelectButton>
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        <Button :label="t('home.announces.post')" icon="pi pi-plus" severity="info" @click="$emit('open-announce-modal')" />
+        <Button :label="t('home.announces.post')" icon="pi pi-plus" severity="secondary" outlined @click="$emit('open-announce-modal')" />
         <router-link
           :to="{ name: 'app_search_musician' }"
           class="inline-flex items-center gap-2 font-semibold text-primary hover:underline"
@@ -42,7 +42,7 @@
           v-for="announce in announces"
           :key="announce.id"
           :announce="announce"
-          class="transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+          class="transition-colors duration-150 hover:border-surface-300 dark:hover:border-surface-600"
           @contact="$emit('contact-announce', $event)"
         />
       </FadeList>

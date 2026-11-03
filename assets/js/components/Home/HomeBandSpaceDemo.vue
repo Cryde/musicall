@@ -1,11 +1,11 @@
 <template>
   <div
-    class="grid sm:grid-cols-[11rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-950 shadow-2xl sm:min-h-[26rem]"
+    class="grid sm:grid-cols-[11rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-950 shadow-[0_8px_24px_rgb(0_0_0/0.06)] dark:shadow-none sm:min-h-[26rem]"
   >
     <div class="flex flex-col gap-1 border-b sm:border-b-0 sm:border-r border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 p-3">
       <div class="hidden sm:flex items-center gap-2.5 px-2 pb-4 pt-1">
-        <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-fuchsia-400" aria-hidden="true" />
-        <span class="text-sm font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space.demo.your_band') }}</span>
+        <span class="w-8 h-8 rounded-lg bg-primary-600 dark:bg-primary-400" aria-hidden="true" />
+        <span class="text-sm font-semibold text-surface-900 dark:text-surface-0">{{ t('home.band_space.demo.your_band') }}</span>
       </div>
       <div
         class="flex sm:flex-col flex-wrap gap-1"
@@ -24,7 +24,7 @@
           :class="[
             'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-left cursor-pointer transition-colors',
             module.key === activeKey
-              ? 'bg-primary-100 text-primary-800 font-semibold dark:bg-surface-800 dark:text-surface-0'
+              ? 'bg-primary-100 text-primary-800 font-medium dark:bg-surface-800 dark:text-surface-0'
               : 'text-surface-700 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-800'
           ]"
           @click="activeKey = module.key"
@@ -35,7 +35,7 @@
           @keydown.home.prevent="select(BAND_SPACE_MODULES[0].key)"
           @keydown.end.prevent="select(BAND_SPACE_MODULES.at(-1).key)"
         >
-          <i :class="module.icon" aria-hidden="true" />
+          <i :class="[module.icon, 'w-4']" aria-hidden="true" />
           {{ module.label }}
         </button>
       </div>
@@ -51,24 +51,24 @@
       :aria-labelledby="`home-demo-tab-${module.key}`"
       class="flex flex-col gap-4 p-5"
     >
-      <h3 class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">{{ demo[module.key].title }}</h3>
+      <h3 class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">{{ demo[module.key].title }}</h3>
 
       <template v-if="module.key === 'agenda'">
         <div v-for="event in demo.agenda.events" :key="event.name" :class="TILE" class="flex items-center gap-4">
           <div class="flex flex-col items-center w-12 shrink-0">
-            <span class="text-xs font-bold" :class="event.accent">{{ event.day }}</span>
-            <span class="text-2xl font-bold text-surface-900 dark:text-surface-0">{{ event.date }}</span>
+            <span class="text-xs font-medium" :class="event.accent">{{ event.day }}</span>
+            <span class="text-2xl font-semibold tabular-nums text-surface-900 dark:text-surface-0">{{ event.date }}</span>
           </div>
           <div class="flex flex-col min-w-0">
             <span class="font-semibold text-surface-900 dark:text-surface-0">{{ event.name }}</span>
-            <span class="text-sm text-surface-600 dark:text-surface-300">{{ event.detail }}</span>
+            <span class="text-sm tabular-nums text-surface-600 dark:text-surface-300">{{ event.detail }}</span>
           </div>
         </div>
       </template>
 
       <ul v-else-if="module.key === 'chat'" class="m-0 p-0 list-none flex flex-col gap-2">
         <li v-for="message in demo.chat.messages" :key="message.body" :class="TILE" class="flex flex-col gap-0.5">
-          <span class="text-xs font-bold text-surface-700 dark:text-surface-200">{{ message.who }}</span>
+          <span class="text-xs font-semibold text-surface-700 dark:text-surface-200">{{ message.who }}</span>
           <span class="text-sm text-surface-900 dark:text-surface-0">{{ message.body }}</span>
         </li>
       </ul>
@@ -98,34 +98,34 @@
       <div v-else-if="module.key === 'setlists'" :class="TILE" class="flex flex-col gap-2">
         <div class="flex justify-between gap-3">
           <span class="font-semibold text-surface-900 dark:text-surface-0">{{ demo.setlists.name }}</span>
-          <span class="text-sm text-surface-600 dark:text-surface-300">{{ demo.setlists.total }}</span>
+          <span class="text-sm tabular-nums text-surface-600 dark:text-surface-300">{{ demo.setlists.total }}</span>
         </div>
         <ol class="m-0 p-0 list-none flex flex-col gap-1.5">
           <li v-for="(song, index) in demo.setlists.songs" :key="song.title" class="flex justify-between gap-3 text-sm">
             <span class="text-surface-900 dark:text-surface-0">{{ index + 1 }}. {{ song.title }}</span>
-            <span class="text-surface-600 dark:text-surface-300">{{ song.duration }}</span>
+            <span class="tabular-nums text-surface-600 dark:text-surface-300">{{ song.duration }}</span>
           </li>
         </ol>
       </div>
 
       <ul v-else-if="module.key === 'files'" class="m-0 p-0 list-none flex flex-col gap-2">
         <li v-for="file in demo.files.files" :key="file.name" :class="TILE" class="flex items-center gap-3">
-          <i :class="[file.icon, 'text-fuchsia-700 dark:text-fuchsia-300']" aria-hidden="true" />
+          <i :class="[file.icon, 'w-4 text-surface-500 dark:text-surface-400']" aria-hidden="true" />
           <span class="flex-1 min-w-0 truncate text-sm text-surface-900 dark:text-surface-0">{{ file.name }}</span>
-          <span class="text-xs text-surface-600 dark:text-surface-300">{{ file.size }}</span>
+          <span class="text-xs tabular-nums text-surface-600 dark:text-surface-300">{{ file.size }}</span>
         </li>
       </ul>
 
       <template v-else-if="module.key === 'finances'">
         <div :class="TILE" class="flex items-center justify-between gap-3">
           <span class="text-sm text-surface-700 dark:text-surface-200">{{ t('home.band_space.demo.band_fund') }}</span>
-          <span class="text-xl font-bold text-surface-900 dark:text-surface-0">{{ demo.finances.balance }}</span>
+          <span class="text-xl font-semibold tabular-nums text-surface-900 dark:text-surface-0">{{ demo.finances.balance }}</span>
         </div>
         <ul class="m-0 p-0 list-none flex flex-col gap-2">
           <li v-for="entry in demo.finances.entries" :key="entry.label" :class="TILE" class="flex items-center justify-between gap-3 text-sm">
             <span class="text-surface-900 dark:text-surface-0">{{ entry.label }}</span>
             <span
-              class="font-semibold"
+              class="font-medium tabular-nums"
               :class="entry.income ? 'text-green-700 dark:text-green-400' : 'text-surface-700 dark:text-surface-200'"
             >
               {{ entry.amount }}
@@ -172,21 +172,21 @@ const demo = computed(() => ({
         date: '01',
         name: t('home.band_space.demo.agenda.rehearsal'),
         detail: t('home.band_space.demo.agenda.rehearsal_detail'),
-        accent: 'text-primary'
+        accent: 'text-surface-600 dark:text-surface-300'
       },
       {
         day: t('home.band_space.demo.agenda.sat'),
         date: '03',
         name: t('home.band_space.demo.agenda.gig'),
         detail: t('home.band_space.demo.agenda.gig_detail'),
-        accent: 'text-fuchsia-700 dark:text-fuchsia-300'
+        accent: 'text-primary'
       },
       {
         day: t('home.band_space.demo.agenda.tue'),
         date: '06',
         name: t('home.band_space.demo.agenda.recording'),
         detail: t('home.band_space.demo.agenda.recording_detail'),
-        accent: 'text-primary'
+        accent: 'text-surface-600 dark:text-surface-300'
       }
     ]
   },

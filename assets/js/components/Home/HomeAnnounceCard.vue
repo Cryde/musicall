@@ -29,12 +29,12 @@
           class="font-semibold truncate text-surface-900 dark:text-surface-0 hover:text-primary"
         />
         <span v-else class="font-semibold truncate text-surface-600 dark:text-surface-300">{{ authorName }}</span>
-        <span v-if="announce.creation_datetime" class="text-sm text-surface-600 dark:text-surface-300">
+        <span v-if="announce.creation_datetime" class="text-sm tabular-nums text-surface-600 dark:text-surface-300">
           {{ relativeDate(announce.creation_datetime, { showHours: false }) }}
         </span>
       </div>
       <span
-        class="shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
+        class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium"
         :class="
           announce.type === TYPES_ANNOUNCE_MUSICIAN
             ? 'bg-teal-100 text-teal-800 dark:bg-teal-400/15 dark:text-teal-300'
@@ -45,7 +45,7 @@
       </span>
     </div>
 
-    <h3 class="m-0 text-lg font-bold text-surface-900 dark:text-surface-0">{{ announceHeadline(announce) }}</h3>
+    <h3 class="m-0 text-lg font-semibold text-surface-900 dark:text-surface-0">{{ announceHeadline(announce) }}</h3>
 
     <ul v-if="styleTags.tags.length > 0" class="m-0 p-0 list-none flex flex-wrap gap-1.5" :aria-label="t('home.announce_card.styles')">
       <li

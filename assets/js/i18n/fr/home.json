@@ -16,7 +16,7 @@
   },
   "hero": {
     "title": "Trouve les musiciens {highlight}",
-    "title_highlight": "qui manquent à ton groupe.",
+    "title_highlight": "qui manquent à ton groupe",
     "intro": "Annonces de musiciens et de groupes, un espace privé pour gérer ton groupe, des cours et une communauté de passionné·e·s."
   },
   "search_form": {
@@ -65,7 +65,7 @@
     "eyebrow": "Band Space",
     "private": "Privé à ton groupe",
     "title": "Tu as trouvé ton groupe ? {highlight}",
-    "title_highlight": "Organise-le ici.",
+    "title_highlight": "Organise-le ici",
     "intro": "Un espace de travail réservé aux membres du groupe : fini les infos perdues dans les conversations.",
     "discover": "Découvrir le Band Space",
     "open_mine": "Ouvrir mon Band Space",

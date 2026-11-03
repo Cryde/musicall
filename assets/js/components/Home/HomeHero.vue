@@ -1,28 +1,16 @@
 <template>
-  <section class="relative overflow-hidden rounded-3xl bg-surface-950">
-    <!-- Light mode background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-purple-50 to-primary-100 dark:hidden" aria-hidden="true" />
-
-    <!-- Gradient orbs and a few particles, as the rest of the site's hero cards -->
-    <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div class="absolute top-10 left-[10%] w-72 h-72 bg-cyan-500/10 rounded-full blur-[100px]" />
-      <div class="absolute bottom-0 right-[20%] w-96 h-96 bg-fuchsia-600/20 rounded-full blur-[120px] animate-drift" />
-      <div class="absolute top-[12%] right-[14%] w-3.5 h-3.5 bg-cyan-400 rounded-full animate-glow shadow-lg shadow-cyan-400/50" />
-      <div class="absolute top-[82%] left-[52%] w-2 h-2 bg-fuchsia-400 rounded-full animate-glow" style="animation-delay: -1s;" />
-      <div class="absolute top-[88%] right-[8%] w-1 h-1 bg-white rounded-full animate-particle-slow" />
-    </div>
-
-    <div class="relative z-10 grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-12 items-center p-6 sm:p-10 lg:p-16 xl:p-20">
+  <section class="overflow-hidden rounded-3xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 bg-brand-halo">
+    <div class="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-12 items-center p-6 sm:p-10 lg:p-16 xl:p-20">
       <div class="flex flex-col gap-6">
-        <h1 class="m-0 text-4xl sm:text-5xl xl:text-6xl font-extrabold leading-[1.06]">
+        <h1 class="m-0 text-4xl sm:text-5xl xl:text-6xl font-semibold leading-[1.06] tracking-tight">
           <i18n-t keypath="home.hero.title" tag="span" class="text-surface-900 dark:text-white">
             <template #highlight>
               <br />
-              <span class="text-brand-gradient">{{ t('home.hero.title_highlight') }}</span>
+              <span class="text-primary">{{ t('home.hero.title_highlight') }}</span>
             </template>
           </i18n-t>
         </h1>
-        <p class="m-0 text-lg lg:text-xl leading-relaxed text-surface-700 dark:text-surface-300 max-w-2xl">
+        <p class="m-0 text-lg lg:text-xl leading-relaxed text-surface-600 dark:text-surface-300 max-w-xl">
           {{ t('home.hero.intro') }}
         </p>
 
@@ -42,7 +30,7 @@
         <div
           v-for="(announce, index) in previewAnnounces"
           :key="announce.id"
-          class="absolute w-[26rem] max-w-full shadow-2xl shadow-surface-950/30 rounded-2xl"
+          class="absolute w-[26rem] max-w-full rounded-2xl shadow-[0_8px_24px_rgb(0_0_0/0.08)] dark:shadow-[0_8px_24px_rgb(0_0_0/0.4)]"
           :class="STACK_POSITIONS[index]"
         >
           <HomeAnnounceCard :announce="announce" compact />

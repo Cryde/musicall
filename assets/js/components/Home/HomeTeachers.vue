@@ -30,10 +30,10 @@
       </ul>
       <div class="flex flex-col gap-1">
         <div class="flex flex-wrap items-center gap-2">
-          <h2 id="home-teachers-title" class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">
+          <h2 id="home-teachers-title" class="m-0 text-xl font-semibold text-surface-900 dark:text-surface-0">
             {{ t('home.teachers.title') }}
           </h2>
-          <span class="rounded-full bg-primary-100 dark:bg-primary-400/15 px-2.5 py-0.5 text-xs font-bold text-primary-800 dark:text-primary-300">
+          <span class="rounded-full bg-primary-100 dark:bg-primary-400/15 px-2.5 py-0.5 text-xs font-medium text-primary-800 dark:text-primary-300">
             {{ t('home.teachers.soon') }}
           </span>
         </div>

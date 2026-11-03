@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="flex justify-between items-center mb-6">
-      <h2 class="m-0 text-2xl lg:text-3xl font-bold text-surface-900 dark:text-surface-0">
+      <h2 class="m-0 text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
         {{ t('home.publications.title') }}
       </h2>
       <div class="flex gap-2">
@@ -9,7 +9,8 @@
           v-tooltip.bottom="t('home.publications.post_discovery_tooltip')"
           :label="t('home.publications.post_discovery')"
           icon="pi pi-plus"
-          severity="info"
+          severity="secondary"
+          outlined
           size="small"
           class="hidden md:inline-flex"
           @click="$emit('open-discover-modal')"

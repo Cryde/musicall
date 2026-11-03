@@ -1,6 +1,6 @@
 <template>
   <form
-    class="flex flex-col gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0/90 dark:bg-surface-900/85 p-3 sm:p-4 shadow-xl backdrop-blur-sm"
+    class="flex flex-col gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950 p-3 sm:p-4"
     role="search"
     :aria-label="t('home.search_form.aria_label')"
     @submit.prevent="submit"
@@ -17,7 +17,7 @@
 
     <div class="flex flex-col md:flex-row gap-3 md:items-end">
       <div class="flex flex-col gap-1 flex-1 min-w-0">
-        <label id="home-search-instrument" class="text-xs font-semibold uppercase tracking-wide text-surface-600 dark:text-surface-300">
+        <label id="home-search-instrument" class="text-sm font-medium text-surface-700 dark:text-surface-200">
           {{ t('home.search_form.instrument') }}
         </label>
         <Select
@@ -33,7 +33,7 @@
         />
       </div>
       <div class="flex flex-col gap-1 flex-1 min-w-0">
-        <label for="home-search-city" class="text-xs font-semibold uppercase tracking-wide text-surface-600 dark:text-surface-300">
+        <label for="home-search-city" class="text-sm font-medium text-surface-700 dark:text-surface-200">
           {{ t('home.search_form.city') }}
         </label>
         <CityAutoComplete
