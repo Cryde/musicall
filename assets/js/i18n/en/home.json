@@ -153,10 +153,7 @@
     "i_am_teacher": "I'm a teacher"
   },
   "member": {
-    "greeting": {
-      "day": "Hello, {username}",
-      "evening": "Good evening, {username}"
-    },
+    "title": "Home",
     "intro_band": "Here's what's happening for you and your band.",
     "intro_search": "Find the musicians and bands that suit you.",
     "post_announce": "Post an ad",

@@ -13,9 +13,9 @@
 
     <!-- A band first: what is next for it, then the rest. -->
     <template v-else-if="layout === MEMBER_LAYOUT_BAND">
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.55fr)] gap-5">
+      <div class="flex flex-col gap-5">
         <HomeMemberBandSpace />
-        <div class="flex flex-col gap-5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <HomeMemberMessages />
           <HomeMemberActivity />
         </div>

@@ -1,10 +1,10 @@
 <template>
   <section class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
     <div class="flex flex-col gap-1.5">
-      <h1 class="m-0 text-3xl lg:text-4xl font-extrabold text-surface-900 dark:text-surface-0">
-        {{ greeting }}
+      <h1 class="m-0 text-3xl lg:text-4xl font-semibold tracking-tight text-surface-900 dark:text-surface-0">
+        {{ t('home.member.title') }}
       </h1>
-      <p class="m-0 text-lg text-surface-700 dark:text-surface-300">
+      <p class="m-0 text-lg text-surface-600 dark:text-surface-300">
         {{ hasBand ? t('home.member.intro_band') : t('home.member.intro_search') }}
       </p>
     </div>
@@ -26,10 +26,7 @@
 
 <script setup>
 import Button from 'primevue/button'
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useUserSecurityStore } from '../../../store/user/security.js'
-import { greetingFor } from '../../../utils/memberHome.js'
 
 defineProps({
   /** Whether the member already has a Band Space, which is what the page talks about first. */
@@ -39,10 +36,4 @@ defineProps({
 defineEmits(['post-announce', 'post-discovery'])
 
 const { t } = useI18n()
-const userSecurityStore = useUserSecurityStore()
-
-// Read once: a greeting that flipped from « Bonjour » to « Bonsoir » under the reader would be odd.
-const greetedAt = new Date()
-const name = computed(() => userSecurityStore.user?.username ?? '')
-const greeting = computed(() => greetingFor(greetedAt, name.value))
 </script>

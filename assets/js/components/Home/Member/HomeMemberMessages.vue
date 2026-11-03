@@ -1,7 +1,7 @@
 <template>
   <HomeMemberPanel :title="t('home.member.messages.title')" :link-label="t('home.member.messages.link')" :link-to="{ name: 'app_messages' }">
     <template #aside>
-      <span v-if="notificationStore.unreadMessages > 0" class="text-sm font-bold text-orange-700 dark:text-orange-300">
+      <span v-if="notificationStore.unreadMessages > 0" class="text-sm font-medium tabular-nums text-orange-700 dark:text-orange-300">
         {{ t('home.member.messages.unread_count', notificationStore.unreadMessages) }}
       </span>
     </template>
@@ -17,7 +17,7 @@
         >
           <Avatar :label="initialOf(threadMeta)" :style="getAvatarStyle(colourKeyOf(threadMeta))" shape="circle" aria-hidden="true" />
           <span class="flex flex-col min-w-0 flex-1">
-            <span class="text-sm truncate text-surface-900 dark:text-surface-0" :class="threadMeta.unread_count > 0 ? 'font-bold' : 'font-medium'">
+            <span class="text-sm truncate text-surface-900 dark:text-surface-0" :class="threadMeta.unread_count > 0 ? 'font-semibold' : 'font-medium'">
               {{ nameOf(threadMeta) }}
             </span>
             <span class="text-sm truncate text-surface-600 dark:text-surface-300">{{ threadMeta.thread.last_message?.content_preview }}</span>

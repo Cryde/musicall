@@ -1,31 +1,33 @@
 <template>
   <section
-    class="flex flex-col gap-5 rounded-2xl border border-primary-200 dark:border-surface-700 bg-gradient-to-br from-primary-50 to-purple-50 dark:from-surface-900 dark:to-surface-900 p-5 lg:p-7"
+    class="flex flex-col gap-5 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5 lg:p-6"
     aria-labelledby="home-member-band-space-title"
   >
     <template v-if="space">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center gap-3.5 min-w-0">
-          <span class="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-primary-400 to-fuchsia-400" aria-hidden="true" />
+          <span class="w-12 h-12 shrink-0 rounded-xl bg-primary-600 dark:bg-primary-400" aria-hidden="true" />
           <div class="flex flex-col min-w-0">
-            <span class="text-xs font-bold uppercase tracking-widest text-primary">{{ t('home.member.band_space.eyebrow') }}</span>
-            <h2 id="home-member-band-space-title" class="m-0 text-xl font-bold truncate text-surface-900 dark:text-surface-0">
-              {{ space.name }}
+            <span class="text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.band_space.eyebrow') }}</span>
+            <!-- The name is the switcher: that is where the eye already is, and it does not repeat it. -->
+            <h2 id="home-member-band-space-title" class="m-0 min-w-0 text-xl font-semibold text-surface-900 dark:text-surface-0">
+              <button
+                v-if="bandSpaceStore.spaces.length > 1"
+                type="button"
+                class="-mx-2 inline-flex max-w-[calc(100%+1rem)] items-center gap-2 rounded-lg px-2 py-0.5 cursor-pointer transition-colors duration-150 hover:bg-surface-100 dark:hover:bg-surface-800"
+                aria-haspopup="menu"
+                @click="switcherMenu.toggle($event)"
+              >
+                <span class="truncate">{{ space.name }}</span>
+                <span class="sr-only">, {{ t('home.member.band_space.switch') }}</span>
+                <i class="pi pi-chevron-down text-sm text-surface-500 dark:text-surface-400" aria-hidden="true" />
+              </button>
+              <span v-else class="block truncate">{{ space.name }}</span>
             </h2>
+            <Menu ref="switcherMenu" :model="switcherItems" popup />
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <Select
-            v-if="bandSpaceStore.spaces.length > 1"
-            :model-value="space.id"
-            :options="bandSpaceStore.spaces"
-            option-label="name"
-            option-value="id"
-            :aria-label="t('home.member.band_space.switch')"
-            :placeholder="t('home.member.band_space.switch')"
-            class="w-48"
-            @update:model-value="switchTo"
-          />
           <Button
             as="router-link"
             :to="{ name: 'app_band_dashboard', params: { id: space.id } }"
@@ -38,17 +40,17 @@
 
       <div class="grid md:grid-cols-3 gap-3">
         <router-link :to="nextEventLink" :class="TILE">
-          <span class="text-xs font-bold uppercase tracking-wide text-primary">{{ t('home.member.band_space.next_event') }}</span>
+          <span :class="TILE_LABEL">{{ t('home.member.band_space.next_event') }}</span>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <template v-else-if="nextEvents.length > 0">
             <div class="flex items-center gap-3">
               <div class="flex flex-col items-center w-11 shrink-0">
-                <span class="text-xs font-bold uppercase text-primary">{{ dayOf(nextEvents[0]) }}</span>
-                <span class="text-2xl font-bold text-surface-900 dark:text-surface-0">{{ dateOf(nextEvents[0]) }}</span>
+                <span class="text-xs font-medium uppercase text-primary">{{ dayOf(nextEvents[0]) }}</span>
+                <span class="text-2xl font-semibold tabular-nums text-surface-900 dark:text-surface-0">{{ dateOf(nextEvents[0]) }}</span>
               </div>
               <div class="flex flex-col min-w-0">
                 <span class="font-semibold truncate text-surface-900 dark:text-surface-0">{{ nextEvents[0].title }}</span>
-                <span class="text-sm text-surface-600 dark:text-surface-300">{{ timeOf(nextEvents[0]) }}</span>
+                <span class="text-sm tabular-nums text-surface-600 dark:text-surface-300">{{ timeOf(nextEvents[0]) }}</span>
               </div>
             </div>
             <span v-if="nextEvents[1]" class="text-sm text-surface-600 dark:text-surface-300 truncate">
@@ -62,7 +64,7 @@
         <div :class="TILE_FRAME">
           <router-link
             :to="{ name: 'app_band_tasks', params: { id: space.id } }"
-            class="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-300 hover:underline focus-visible:underline"
+            class="self-start hover:underline focus-visible:underline" :class="TILE_LABEL"
           >
             {{ t('home.member.band_space.open_tasks') }}<template v-if="!isLoadingDetails">{{ ` ${separator()} ${openTaskCount}` }}</template>
           </router-link>
@@ -82,11 +84,11 @@
         </div>
 
         <router-link :to="setlistLink" :class="TILE">
-          <span class="text-xs font-bold uppercase tracking-wide text-fuchsia-700 dark:text-fuchsia-300">{{ t('home.member.band_space.last_setlist') }}</span>
+          <span :class="TILE_LABEL">{{ t('home.member.band_space.last_setlist') }}</span>
           <span v-if="isLoadingDetails" :class="PLACEHOLDER" />
           <template v-else-if="setlist">
             <span class="font-semibold truncate text-surface-900 dark:text-surface-0">{{ setlist.setlist.name }}</span>
-            <span class="text-sm text-surface-600 dark:text-surface-300">
+            <span class="text-sm tabular-nums text-surface-600 dark:text-surface-300">
               {{ t('home.member.band_space.setlist_meta', { duration: formatDuration(setlist.setlist.total_duration_seconds) }, setlist.songCount) }}
             </span>
             <span class="text-sm text-surface-600 dark:text-surface-300">{{ t('home.member.band_space.modified', { date: relativeDate(setlist.changedAt, { showHours: false }) }) }}</span>
@@ -96,7 +98,7 @@
       </div>
 
       <p v-if="detailsError" class="m-0 text-sm text-red-700 dark:text-red-400" role="alert">{{ detailsError }}</p>
-      <p class="m-0 mt-auto flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
+      <p class="m-0 flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
         <i class="pi pi-lock text-xs" aria-hidden="true" />
         {{ t('home.member.band_space.private') }}
       </p>
@@ -108,8 +110,8 @@
 <script setup>
 import { format, parseISO } from 'date-fns'
 import Button from 'primevue/button'
-import Select from 'primevue/select'
-import { computed, onMounted, ref } from 'vue'
+import Menu from 'primevue/menu'
+import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
@@ -132,9 +134,10 @@ import { formatDuration } from '../../../utils/setlistDuration.js'
 const AGENDA_DAYS = 30
 const TASKS_SHOWN = 3
 const TILE_FRAME =
-  'flex flex-col gap-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0/80 dark:bg-surface-950 p-4 min-w-0'
+  'flex flex-col gap-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950 p-4 min-w-0'
 // A whole tile is a link; the tasks tile is not, so it keeps the frame without the hover.
-const TILE = `${TILE_FRAME} hover:border-primary-300 dark:hover:border-surface-500 transition-colors`
+const TILE = `${TILE_FRAME} hover:border-surface-300 dark:hover:border-surface-500 transition-colors duration-150`
+const TILE_LABEL = 'text-sm font-medium text-surface-600 dark:text-surface-300'
 const PLACEHOLDER = 'h-10 rounded-md bg-surface-100 dark:bg-surface-800 animate-pulse'
 
 const { t } = useI18n()
@@ -168,6 +171,16 @@ const setlistLink = computed(() => ({
 onMounted(() => {
   if (space.value) loadDetails(space.value.id)
 })
+
+const switcherMenu = useTemplateRef('switcherMenu')
+// The blank fixed-width icon keeps every name on the same column as the ticked one.
+const switcherItems = computed(() =>
+  bandSpaceStore.spaces.map((bandSpace) => ({
+    label: bandSpace.name,
+    icon: bandSpace.id === space.value?.id ? 'pi pi-fw pi-check' : 'pi pi-fw',
+    command: () => switchTo(bandSpace.id)
+  }))
+)
 
 function switchTo(spaceId) {
   space.value = bandSpaceStore.getById(spaceId) ?? space.value

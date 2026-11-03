@@ -2,7 +2,7 @@
   <section class="flex flex-col gap-5" aria-labelledby="home-member-announces-title">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
       <div class="flex flex-wrap items-center gap-3">
-        <h2 id="home-member-announces-title" class="m-0 text-2xl font-bold text-surface-900 dark:text-surface-0">
+        <h2 id="home-member-announces-title" class="m-0 text-2xl font-semibold text-surface-900 dark:text-surface-0">
           {{ title }}
         </h2>
         <router-link

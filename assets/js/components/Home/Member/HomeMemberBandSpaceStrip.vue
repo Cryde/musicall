@@ -1,15 +1,15 @@
 <template>
   <section
-    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-gradient-to-r from-primary-50 to-purple-50 dark:from-surface-900 dark:to-surface-900 p-5"
+    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5"
     aria-labelledby="home-member-band-strip-title"
   >
     <div class="flex items-center gap-3.5">
-      <span class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-primary-400 to-fuchsia-400" aria-hidden="true" />
+      <span class="w-10 h-10 shrink-0 rounded-xl bg-primary-600 dark:bg-primary-400" aria-hidden="true" />
       <div class="flex flex-col gap-0.5">
-        <h2 id="home-member-band-strip-title" class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">
+        <h2 id="home-member-band-strip-title" class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">
           {{ t('home.member.band_space_strip.title') }}
         </h2>
-        <p class="m-0 text-sm text-surface-700 dark:text-surface-300">
+        <p class="m-0 text-sm text-surface-600 dark:text-surface-300">
           {{ t('home.member.band_space_strip.intro') }}
         </p>
       </div>

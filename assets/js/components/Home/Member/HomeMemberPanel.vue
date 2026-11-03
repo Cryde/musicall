@@ -4,7 +4,7 @@
     :aria-labelledby="titleId"
   >
     <div class="flex items-center justify-between gap-3">
-      <h2 :id="titleId" class="m-0 text-lg font-bold text-surface-900 dark:text-surface-0">{{ title }}</h2>
+      <h2 :id="titleId" class="m-0 text-lg font-semibold text-surface-900 dark:text-surface-0">{{ title }}</h2>
       <slot name="aside" />
     </div>
     <slot />

@@ -5,7 +5,7 @@
     aria-labelledby="home-member-my-announces-title"
   >
     <div class="flex flex-col gap-1 min-w-0">
-      <h2 id="home-member-my-announces-title" class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">
+      <h2 id="home-member-my-announces-title" class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">
         {{ t('home.member.my_announces.title', { count: announces.length }) }}
       </h2>
       <ul class="m-0 p-0 list-none flex flex-wrap gap-x-4 gap-y-1 text-sm text-surface-700 dark:text-surface-300">

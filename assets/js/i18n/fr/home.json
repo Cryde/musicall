@@ -153,10 +153,7 @@
     "i_am_teacher": "Je suis prof"
   },
   "member": {
-    "greeting": {
-      "day": "Bonjour, {username}",
-      "evening": "Bonsoir, {username}"
-    },
+    "title": "Accueil",
     "intro_band": "Voici ce qui bouge pour toi et ton groupe.",
     "intro_search": "Trouve les musiciens et les groupes qui te correspondent.",
     "post_announce": "Poster une annonce",

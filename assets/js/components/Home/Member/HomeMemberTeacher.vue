@@ -5,8 +5,8 @@
   >
     <div class="flex flex-col gap-0.5">
       <div class="flex flex-wrap items-center gap-2">
-        <h2 id="home-member-teacher-title" class="m-0 text-base font-bold text-surface-900 dark:text-surface-0">{{ t('home.member.teacher.title') }}</h2>
-        <span class="rounded-full bg-primary-100 dark:bg-primary-400/15 px-2.5 py-0.5 text-xs font-bold text-primary-800 dark:text-primary-300">{{ t('home.member.teacher.soon') }}</span>
+        <h2 id="home-member-teacher-title" class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('home.member.teacher.title') }}</h2>
+        <span class="rounded-full bg-primary-100 dark:bg-primary-400/15 px-2.5 py-0.5 text-xs font-medium text-primary-800 dark:text-primary-300">{{ t('home.member.teacher.soon') }}</span>
       </div>
       <p class="m-0 text-sm text-surface-700 dark:text-surface-300">{{ t('home.member.teacher.intro') }}</p>
     </div>
