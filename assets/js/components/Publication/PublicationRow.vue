@@ -4,7 +4,7 @@
       :src="cover"
       alt=""
       loading="lazy"
-      class="h-14 w-24 shrink-0 rounded-lg bg-surface-200 object-cover dark:bg-surface-800"
+      class="h-12 w-20 sm:h-14 sm:w-24 shrink-0 rounded-lg bg-surface-200 object-cover dark:bg-surface-800"
     />
     <span class="flex min-w-0 flex-1 flex-col">
       <span class="line-clamp-2 text-sm font-semibold text-surface-900 dark:text-surface-0">{{ title }}</span>

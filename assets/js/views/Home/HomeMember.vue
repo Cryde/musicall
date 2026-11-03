@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-10 lg:gap-14">
+  <div class="flex flex-col gap-7 sm:gap-10 lg:gap-14">
     <HomeMemberGreeting
       :has-band="layout === MEMBER_LAYOUT_BAND"
       @post-announce="showAnnounceModal = true"
@@ -13,9 +13,9 @@
 
     <!-- A band first: what is next for it, then the rest. -->
     <template v-else-if="layout === MEMBER_LAYOUT_BAND">
-      <div class="flex flex-col gap-5">
+      <div class="flex flex-col gap-7 sm:gap-5">
         <HomeMemberBandSpace />
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 sm:gap-5">
           <HomeMemberMessages />
           <HomeMemberActivity />
         </div>
@@ -26,14 +26,14 @@
     <!-- No band yet: most likely still looking, so the search first and the Band Space as one line. -->
     <template v-else>
       <HomeMemberSearch />
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.55fr)] gap-5">
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.55fr)] gap-7 sm:gap-5">
         <HomeMemberAnnounces
           :key="announcesKey"
           :limit="SEARCH_LAYOUT_ANNOUNCES"
           :columns="2"
           @contact-announce="openMessageTo"
         />
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-7 sm:gap-5">
           <HomeMemberMessages />
           <HomeMemberActivity />
         </div>
@@ -42,10 +42,10 @@
     </template>
 
     <!-- Below the fold: asked for once it comes into view, not with the rest of the page. -->
-    <div v-if="layout !== null" ref="lowerBlocks" class="flex flex-col gap-5 min-h-64">
-      <div v-if="showLowerBlocks" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div v-if="layout !== null" ref="lowerBlocks" class="flex flex-col gap-7 sm:gap-5 min-h-64">
+      <div v-if="showLowerBlocks" class="grid grid-cols-1 lg:grid-cols-2 gap-7 sm:gap-5">
         <HomeMemberDiscoveries :key="discoveriesKey" />
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-7 sm:gap-5">
           <HomeMemberForum />
           <HomeMemberTeacher />
         </div>

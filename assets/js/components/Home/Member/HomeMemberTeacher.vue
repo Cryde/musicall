@@ -1,6 +1,6 @@
 <template>
   <section
-    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5"
+    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 sm:p-5"
     aria-labelledby="home-member-teacher-title"
   >
     <div class="flex flex-col gap-0.5">
@@ -8,7 +8,8 @@
         <h2 id="home-member-teacher-title" class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('home.member.teacher.title') }}</h2>
         <span class="rounded-full bg-primary-100 dark:bg-primary-400/15 px-2.5 py-0.5 text-xs font-medium text-primary-800 dark:text-primary-300">{{ t('home.member.teacher.soon') }}</span>
       </div>
-      <p class="m-0 text-sm text-surface-700 dark:text-surface-300">{{ t('home.member.teacher.intro') }}</p>
+      <!-- Not on a phone: the « Bientôt » badge already says the search is on its way. -->
+      <p class="max-sm:hidden m-0 text-sm text-surface-700 dark:text-surface-300">{{ t('home.member.teacher.intro') }}</p>
     </div>
     <router-link
       v-if="hasTeacherProfile !== null"

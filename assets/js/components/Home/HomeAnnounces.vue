@@ -44,34 +44,27 @@
     </div>
 
     <!-- A phone gets a list of lines rather than a column of cards: the cards were two screens tall there. -->
-    <div
+    <HomePhoneList
       v-if="isPhone"
-      class="overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900"
-      :aria-busy="isLoading"
+      :is-loading="isLoading"
+      :is-empty="announces.length === 0"
+      :placeholders="PHONE_ANNOUNCES"
+      :empty-text="t('home.announces.empty')"
     >
-      <div v-if="isLoading" class="divide-y divide-surface-200 dark:divide-surface-700">
-        <div v-for="i in PHONE_ANNOUNCES" :key="i" class="flex items-center gap-3 px-4 py-3">
-          <div class="size-10 shrink-0 rounded-full bg-surface-100 dark:bg-surface-800 animate-pulse" />
-          <div class="h-9 flex-1 rounded-md bg-surface-100 dark:bg-surface-800 animate-pulse" />
-        </div>
-      </div>
-      <ul v-else-if="announces.length > 0" class="m-0 p-0 list-none divide-y divide-surface-200 dark:divide-surface-700">
-        <li v-for="announce in phoneAnnounces" :key="announce.id">
-          <HomeAnnounceRow :announce="announce" @contact="$emit('contact-announce', $event)" />
-        </li>
-      </ul>
-      <p v-else class="m-0 px-4 py-8 text-center text-sm text-surface-600 dark:text-surface-300">
-        {{ t('home.announces.empty') }}
-      </p>
-      <button
-        type="button"
-        class="flex h-12 w-full cursor-pointer items-center justify-center gap-2 border-0 border-t border-surface-200 dark:border-surface-700 bg-transparent text-sm font-semibold text-primary hover:underline"
-        @click="$emit('open-announce-modal')"
-      >
-        <i class="pi pi-plus text-xs" aria-hidden="true" />
-        {{ t('home.announces.post') }}
-      </button>
-    </div>
+      <li v-for="announce in phoneAnnounces" :key="announce.id">
+        <HomeAnnounceRow :announce="announce" @contact="$emit('contact-announce', $event)" />
+      </li>
+      <template #footer>
+        <button
+          type="button"
+          class="flex h-12 w-full cursor-pointer items-center justify-center gap-2 border-0 border-t border-surface-200 dark:border-surface-700 bg-transparent text-sm font-semibold text-primary hover:underline"
+          @click="$emit('open-announce-modal')"
+        >
+          <i class="pi pi-plus text-xs" aria-hidden="true" />
+          {{ t('home.announces.post') }}
+        </button>
+      </template>
+    </HomePhoneList>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5" :aria-busy="isLoading">
       <template v-if="isLoading">
@@ -105,6 +98,7 @@ import FadeList from '../Global/FadeList.vue'
 import AnnounceCardSkeleton from '../Skeleton/AnnounceCardSkeleton.vue'
 import HomeAnnounceCard from './HomeAnnounceCard.vue'
 import HomeAnnounceRow from './HomeAnnounceRow.vue'
+import HomePhoneList from './HomePhoneList.vue'
 
 // The filter is who posted the announce, which is the announce type. A phone gets the short labels.
 const { t } = useI18n()

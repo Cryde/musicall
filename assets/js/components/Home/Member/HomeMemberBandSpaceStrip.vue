@@ -1,10 +1,15 @@
 <template>
   <section
-    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5"
+    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 sm:p-5"
     aria-labelledby="home-member-band-strip-title"
   >
-    <div class="flex items-center gap-3.5">
-      <span class="w-10 h-10 shrink-0 rounded-xl bg-primary-600 dark:bg-primary-400" aria-hidden="true" />
+    <!-- On a phone the whole strip is one tappable line to the Band Space home, instead of two buttons. -->
+    <component
+      :is="isPhone ? RouterLink : 'div'"
+      v-bind="isPhone ? { to: { name: 'app_band_index' }, 'aria-labelledby': 'home-member-band-strip-title' } : {}"
+      class="flex items-center gap-3.5"
+    >
+      <span class="size-8 sm:size-10 shrink-0 rounded-lg sm:rounded-xl bg-primary-600 dark:bg-primary-400" aria-hidden="true" />
       <div class="flex flex-col gap-0.5">
         <h2 id="home-member-band-strip-title" class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0">
           {{ t('home.member.band_space_strip.title') }}
@@ -13,8 +18,9 @@
           {{ t('home.member.band_space_strip.intro') }}
         </p>
       </div>
-    </div>
-    <div class="flex flex-wrap gap-2 shrink-0">
+      <i v-if="isPhone" class="pi pi-chevron-right ml-auto text-xs text-surface-500 dark:text-surface-400" aria-hidden="true" />
+    </component>
+    <div v-if="!isPhone" class="flex flex-wrap gap-2 shrink-0">
       <Button as="router-link" :to="{ name: 'app_band_index' }" :label="t('home.member.band_space_strip.create')" icon="pi pi-plus" size="small" />
       <Button
         as="router-link"
@@ -31,7 +37,10 @@
 <script setup>
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
+import { useIsPhone } from '../../../composables/useIsPhone.js'
 
 /** The Band Space for a member who has none yet (#1078): one line, rather than a big empty card. */
 const { t } = useI18n()
+const isPhone = useIsPhone()
 </script>
