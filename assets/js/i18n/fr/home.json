@@ -162,6 +162,12 @@
     "post_announce": "Poster une annonce",
     "post_discovery": "Poster une découverte",
     "new_topic": "Nouveau sujet",
+    "publish": "Publier",
+    "publish_menu": {
+      "announce": "Une annonce",
+      "discovery": "Une découverte",
+      "topic": "Un sujet"
+    },
     "activity": {
       "title": "Activité",
       "link": "Toutes les notifications",
@@ -231,6 +237,7 @@
       "eyebrow": "Mon Band Space",
       "switch": "Changer de groupe",
       "open": "Ouvrir le Band Space",
+      "open_short": "Ouvrir",
       "next_event": "Prochain événement",
       "then": "Puis : {title}, {date}",
       "nothing_planned": "Rien de prévu ces {days} prochains jours.",

@@ -1,7 +1,7 @@
 <template>
   <section
     v-if="announces.length > 0"
-    class="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5"
+    class="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 sm:p-5"
     aria-labelledby="home-member-my-announces-title"
   >
     <div class="flex flex-col gap-1 min-w-0">
@@ -29,6 +29,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import musicianAnnounceApi from '../../../api/announce/musician.js'
+import { useIsPhone } from '../../../composables/useIsPhone.js'
 import { separator } from '../../../i18n/formatLocale.js'
 import { announceHeadline } from '../../../utils/homeSearch.js'
 
@@ -39,8 +40,10 @@ import { announceHeadline } from '../../../utils/homeSearch.js'
 const SHOWN = 2
 
 const { t } = useI18n()
+const isPhone = useIsPhone()
 const announces = ref([])
-const shown = computed(() => announces.value.slice(0, SHOWN))
+// One line on a phone, the « et N autres » after it says the rest.
+const shown = computed(() => announces.value.slice(0, isPhone.value ? 1 : SHOWN))
 
 onMounted(async () => {
   try {

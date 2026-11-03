@@ -1,32 +1,39 @@
 <template>
-  <section class="flex flex-col gap-5" aria-labelledby="home-member-announces-title">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <div class="flex flex-wrap items-center gap-3">
-        <h2 id="home-member-announces-title" class="m-0 text-2xl font-semibold text-surface-900 dark:text-surface-0">
+  <section class="flex flex-col gap-3 sm:gap-5" aria-labelledby="home-member-announces-title">
+    <!-- On a phone the header becomes a grid: the title and its link on the first line, the filters on
+         a second line that scrolls sideways. From sm the filters' wrapper dissolves back into the row. -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 max-sm:grid max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:items-baseline max-sm:gap-y-2">
+      <div class="flex flex-wrap items-center gap-3 max-sm:contents">
+        <h2 id="home-member-announces-title" class="m-0 text-[17px] sm:text-2xl font-semibold text-surface-900 dark:text-surface-0 max-sm:col-start-1 max-sm:row-start-1">
           {{ title }}
         </h2>
-        <router-link
-          v-if="criteria"
-          :to="{ name: 'app_user_settings_profile_musician' }"
-          :class="CHIP"
-          :aria-label="t('home.member.announces.criteria_aria_label', { instrument: criteria.instrumentName })"
+        <div
+          v-if="criteria || (city && !isChangingCity)"
+          class="flex items-center gap-3 sm:contents max-sm:col-span-2 max-sm:row-start-2 max-sm:-mx-6 max-sm:gap-2 max-sm:overflow-x-auto max-sm:px-6 max-sm:py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {{ t('home.member.announces.criteria', { instrument: criteria.instrumentName }) }}
-        </router-link>
-        <button
-          v-if="city && !isChangingCity"
-          type="button"
-          :class="[CHIP, 'cursor-pointer']"
-          :aria-label="t('home.member.announces.city_aria_label', { city: city.name })"
-          @click="isChangingCity = true"
-        >
-          <i class="pi pi-map-marker text-xs" aria-hidden="true" />
-          {{ t('home.member.announces.city', { city: city.name }) }}
-        </button>
+          <router-link
+            v-if="criteria"
+            :to="{ name: 'app_user_settings_profile_musician' }"
+            :class="CHIP"
+            :aria-label="t('home.member.announces.criteria_aria_label', { instrument: criteria.instrumentName })"
+          >
+            {{ t('home.member.announces.criteria', { instrument: criteria.instrumentName }) }}
+          </router-link>
+          <button
+            v-if="city && !isChangingCity"
+            type="button"
+            :class="[CHIP, 'cursor-pointer']"
+            :aria-label="t('home.member.announces.city_aria_label', { city: city.name })"
+            @click="isChangingCity = true"
+          >
+            <i class="pi pi-map-marker text-xs" aria-hidden="true" />
+            {{ t('home.member.announces.city', { city: city.name }) }}
+          </button>
+        </div>
       </div>
-      <router-link :to="allAnnouncesRoute" class="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline">
+      <router-link :to="allAnnouncesRoute" class="inline-flex shrink-0 items-center gap-1.5 font-semibold text-primary hover:underline max-sm:col-start-2 max-sm:row-start-1 max-sm:text-sm">
         {{ t('home.member.announces.see_all') }}
-        <i class="pi pi-arrow-right text-sm" aria-hidden="true" />
+        <i class="pi pi-arrow-right text-sm max-sm:text-xs" aria-hidden="true" />
       </router-link>
     </div>
 
@@ -49,7 +56,20 @@
       </template>
     </i18n-t>
 
-    <div :class="['grid grid-cols-1 md:grid-cols-2 gap-4', columns === 3 && 'lg:grid-cols-3']" :aria-busy="isLoading">
+    <!-- A phone gets lines rather than cards, as on the visitor's homepage. -->
+    <HomePhoneList
+      v-if="isPhone"
+      :is-loading="isLoading"
+      :is-empty="announces.length === 0"
+      :placeholders="phoneCount"
+      :empty-text="t('home.member.announces.empty')"
+    >
+      <li v-for="announce in phoneAnnounces" :key="announce.id">
+        <HomeAnnounceRow :announce="announce" @contact="$emit('contact-announce', $event)" />
+      </li>
+    </HomePhoneList>
+
+    <div v-else :class="['grid grid-cols-1 md:grid-cols-2 gap-4', columns === 3 && 'lg:grid-cols-3']" :aria-busy="isLoading">
       <template v-if="isLoading">
         <AnnounceCardSkeleton v-for="i in limit" :key="i" />
       </template>
@@ -75,11 +95,14 @@ import musicianAnnounceApi from '../../../api/announce/musician.js'
 import searchApi from '../../../api/search/musician.js'
 import musicianProfileApi from '../../../api/user/musicianProfile.js'
 import profileApi from '../../../api/user/profile.js'
+import { useIsPhone } from '../../../composables/useIsPhone.js'
 import { LOOKING_FOR_BAND, musicianSearchRoute } from '../../../utils/homeSearch.js'
 import { announceCriteriaFor, searchResultAsAnnounce } from '../../../utils/memberHome.js'
 import { profileCity } from '../../../utils/profileLocation.js'
 import AnnounceCardSkeleton from '../../Skeleton/AnnounceCardSkeleton.vue'
 import HomeAnnounceCard from '../HomeAnnounceCard.vue'
+import HomeAnnounceRow from '../HomeAnnounceRow.vue'
+import HomePhoneList from '../HomePhoneList.vue'
 import HomeMemberCityPrompt from './HomeMemberCityPrompt.vue'
 
 /**
@@ -88,7 +111,10 @@ import HomeMemberCityPrompt from './HomeMemberCityPrompt.vue'
  * every announce near that city, or the latest ones, and a nudge to fill in a musician profile.
  */
 const CHIP =
-  'inline-flex items-center gap-1.5 rounded-full bg-primary-100 dark:bg-primary-400/15 px-3 py-1 text-sm text-primary-800 dark:text-primary-200 hover:underline'
+  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-primary-100 dark:bg-primary-400/15 px-3 py-1 text-sm text-primary-800 dark:text-primary-200 hover:underline'
+
+// Five lines at most on a phone, where the search layout's six cards were two screens tall.
+const PHONE_ANNOUNCES = 5
 
 const props = defineProps({
   /** Three next to the band, more when the search is what the page is about. */
@@ -100,6 +126,7 @@ const props = defineProps({
 defineEmits(['contact-announce'])
 
 const { t } = useI18n()
+const isPhone = useIsPhone()
 
 const isLoading = ref(true)
 const criteria = ref(null)
@@ -113,6 +140,9 @@ const title = computed(() => {
     ? t('home.member.announces.title_near')
     : t('home.member.announces.title_latest')
 })
+
+const phoneCount = computed(() => Math.min(props.limit, PHONE_ANNOUNCES))
+const phoneAnnounces = computed(() => announces.value.slice(0, phoneCount.value))
 
 const allAnnouncesRoute = computed(() => {
   if (criteria.value) {

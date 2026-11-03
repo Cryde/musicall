@@ -162,6 +162,12 @@
     "post_announce": "Post an ad",
     "post_discovery": "Post a discovery",
     "new_topic": "New topic",
+    "publish": "Post",
+    "publish_menu": {
+      "announce": "An ad",
+      "discovery": "A discovery",
+      "topic": "A topic"
+    },
     "activity": {
       "title": "Activity",
       "link": "All notifications",
@@ -231,6 +237,7 @@
       "eyebrow": "My Band Space",
       "switch": "Switch band",
       "open": "Open Band Space",
+      "open_short": "Open",
       "next_event": "Next event",
       "then": "Then: {title}, {date}",
       "nothing_planned": "Nothing planned for the next {days} days.",

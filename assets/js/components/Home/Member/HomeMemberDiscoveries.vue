@@ -5,10 +5,10 @@
     :link-to="{ name: 'app_publications_by_category', params: { slug: DISCOVERIES_SLUG } }"
   >
     <div v-if="isLoading" class="flex flex-col gap-3" aria-busy="true">
-      <div v-for="i in DISCOVERIES_SHOWN" :key="i" class="h-16 rounded-lg bg-surface-100 dark:bg-surface-800 animate-pulse" />
+      <div v-for="i in shownCount" :key="i" class="h-16 rounded-lg bg-surface-100 dark:bg-surface-800 animate-pulse" />
     </div>
     <ul v-else-if="discoveries.length > 0" class="m-0 p-0 list-none flex flex-col gap-2">
-      <li v-for="discovery in discoveries" :key="discovery.id">
+      <li v-for="discovery in shownDiscoveries" :key="discovery.id">
         <PublicationRow
           :to="{ name: 'app_publication_show', params: { slug: discovery.slug } }"
           :cover="discovery.cover"
@@ -29,19 +29,24 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import publicationsApi from '../../../api/publication/publications.js'
+import { useIsPhone } from '../../../composables/useIsPhone.js'
 import PublicationRow from '../../Publication/PublicationRow.vue'
 import HomeMemberPanel from './HomeMemberPanel.vue'
 
 /** The videos the community shared last (#1078). */
 const DISCOVERIES_SLUG = 'decouvertes'
 const DISCOVERIES_SHOWN = 4
+const PHONE_DISCOVERIES_SHOWN = 3
 
 const { t } = useI18n()
+const isPhone = useIsPhone()
 const isLoading = ref(true)
 const discoveries = ref([])
+const shownCount = computed(() => (isPhone.value ? PHONE_DISCOVERIES_SHOWN : DISCOVERIES_SHOWN))
+const shownDiscoveries = computed(() => discoveries.value.slice(0, shownCount.value))
 
 onMounted(async () => {
   try {

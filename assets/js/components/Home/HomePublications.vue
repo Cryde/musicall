@@ -43,32 +43,27 @@
     </div>
 
     <!-- A phone gets three compact lines: four cover cards were a screen and a half there. -->
-    <div
+    <HomePhoneList
       v-if="isPhone"
-      class="overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900"
-      :aria-busy="isLoading"
+      :is-loading="isLoading"
+      :is-empty="publications.length === 0"
+      :placeholders="PHONE_PUBLICATIONS"
+      :empty-text="t('home.publications.empty')"
     >
-      <div v-if="isLoading" class="divide-y divide-surface-200 dark:divide-surface-700">
-        <div v-for="i in PHONE_PUBLICATIONS" :key="i" class="flex items-center gap-3.5 px-4 py-3">
-          <div class="h-14 w-24 shrink-0 rounded-lg bg-surface-100 dark:bg-surface-800 animate-pulse" />
-          <div class="h-9 flex-1 rounded-md bg-surface-100 dark:bg-surface-800 animate-pulse" />
-        </div>
-      </div>
-      <ul v-else-if="publications.length > 0" class="m-0 p-0 list-none divide-y divide-surface-200 dark:divide-surface-700">
-        <li v-for="publication in phonePublications" :key="publication.id">
-          <PublicationRow
-            :to="publicationRoute(publication)"
-            :cover="publication.cover"
-            :title="publication.title"
-            :author="publication.author"
-            class="px-4 py-3 hover:bg-surface-50 dark:hover:bg-surface-800/60"
-          />
-        </li>
-      </ul>
-      <p v-else class="m-0 px-4 py-8 text-center text-sm text-surface-600 dark:text-surface-300">
-        {{ t('home.publications.empty') }}
-      </p>
-    </div>
+      <template #placeholder>
+        <div class="h-12 w-20 shrink-0 rounded-lg bg-surface-100 dark:bg-surface-800 animate-pulse" />
+        <div class="h-9 flex-1 rounded-md bg-surface-100 dark:bg-surface-800 animate-pulse" />
+      </template>
+      <li v-for="publication in phonePublications" :key="publication.id">
+        <PublicationRow
+          :to="publicationRoute(publication)"
+          :cover="publication.cover"
+          :title="publication.title"
+          :author="publication.author"
+          class="px-4 py-3 hover:bg-surface-50 dark:hover:bg-surface-800/60"
+        />
+      </li>
+    </HomePhoneList>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <template v-if="isLoading">
@@ -107,6 +102,7 @@ import PublicationListItem from '../../views/Publication/PublicationListItem.vue
 import FadeList from '../Global/FadeList.vue'
 import PublicationRow from '../Publication/PublicationRow.vue'
 import PublicationListItemSkeleton from '../Skeleton/PublicationListItemSkeleton.vue'
+import HomePhoneList from './HomePhoneList.vue'
 
 const props = defineProps({
   publications: {
