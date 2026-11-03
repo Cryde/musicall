@@ -3,23 +3,7 @@
     class="flex flex-col gap-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5"
   >
     <div class="flex items-center gap-3">
-      <Avatar
-        v-if="announce.author.profile_picture_url && !isDeleted"
-        :image="announce.author.profile_picture_url"
-        :pt="{ image: { alt: '' } }"
-        shape="circle"
-        size="large"
-        class="shrink-0"
-      />
-      <Avatar
-        v-else
-        :label="authorName.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(announce.author.username)"
-        shape="circle"
-        size="large"
-        class="shrink-0"
-        aria-hidden="true"
-      />
+      <HomeAnnounceAvatar :author="announce.author" />
       <div class="flex flex-col min-w-0 flex-1">
         <UserName
           v-if="!isDeleted"
@@ -102,7 +86,6 @@
 </template>
 
 <script setup>
-import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -110,11 +93,17 @@ import { TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import { getAvatarStyle } from '../../utils/avatar.js'
-import { announceHeadline, announceKindLabel, announceStyleTags } from '../../utils/homeSearch.js'
+import {
+  announceAuthorRoute,
+  announceHeadline,
+  announceKindLabel,
+  announceStyleTags,
+  canContactAnnounceAuthor
+} from '../../utils/homeSearch.js'
 import AnnounceNoteButton from '../Announce/AnnounceNoteButton.vue'
 import ReportButton from '../Report/ReportButton.vue'
 import UserName from '../User/UserName.vue'
+import HomeAnnounceAvatar from './HomeAnnounceAvatar.vue'
 
 /** One musician announce as the homepage shows it (#1074); `compact` is the hero's preview. */
 const props = defineProps({
@@ -130,15 +119,8 @@ const userSecurityStore = useUserSecurityStore()
 const authorName = computed(() => displayName(props.announce.author))
 const isDeleted = computed(() => !!props.announce.author.deletion_datetime)
 const styleTags = computed(() => announceStyleTags(props.announce))
-const canContact = computed(
-  () => !isDeleted.value && userSecurityStore.userProfile?.id !== props.announce.author.id
+const canContact = computed(() =>
+  canContactAnnounceAuthor(props.announce, userSecurityStore.userProfile?.id)
 )
-const profileRoute = computed(() => ({
-  name: props.announce.author.has_musician_profile
-    ? 'app_user_musician_profile'
-    : 'app_user_public_profile',
-  params: { username: props.announce.author.username },
-  // For the profile's contextual « back » link.
-  query: { from: 'home' }
-}))
+const profileRoute = computed(() => announceAuthorRoute(props.announce))
 </script>

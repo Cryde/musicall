@@ -20,6 +20,7 @@
     "like": "Like",
     "dislike": "Dislike",
     "byline": "by {author} {date}",
+    "by": "by {author}",
     "sort_by": "Sort by",
     "sort_newest": "Newest",
     "sort_oldest": "Oldest",

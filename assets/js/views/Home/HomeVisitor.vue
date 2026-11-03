@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-16 lg:gap-24">
+  <div class="flex flex-col gap-10 sm:gap-16 lg:gap-24">
     <HomeHero :preview-announces="heroAnnounces" :frequent-searches="frequentSearches" />
 
     <HomeAnnounces
@@ -22,25 +22,26 @@
 
     <section
       v-if="!userSecurityStore.isAuthenticated"
-      class="flex flex-col items-center gap-4 rounded-3xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 bg-brand-halo [--halo-at:50%_0%] px-6 py-16 text-center"
+      class="flex flex-col items-center gap-4 rounded-3xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 bg-brand-halo [--halo-at:50%_0%] px-5 py-10 sm:px-6 sm:py-16 text-center"
     >
-      <h2 class="m-0 text-3xl md:text-4xl font-semibold tracking-tight">
+      <h2 class="m-0 text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
         <i18n-t keypath="home.visitor.cta.title" tag="span" class="text-surface-900 dark:text-surface-0">
           <template #brand>
             <span class="text-primary">{{ t('home.visitor.cta.brand') }}</span>
           </template>
         </i18n-t>
       </h2>
-      <p class="m-0 max-w-md text-lg text-surface-600 dark:text-surface-300">
+      <p class="m-0 max-w-md text-base sm:text-lg text-surface-600 dark:text-surface-300">
         {{ t('home.visitor.cta.subtitle') }}
       </p>
+      <!-- On a phone the large button with its icon wrapped its label under the icon: full width, no icon. -->
       <Button
         as="router-link"
         :to="{ name: 'app_register' }"
         :label="t('home.visitor.cta.button')"
-        icon="pi pi-user-plus"
-        size="large"
-        class="mt-4"
+        :icon="isPhone ? undefined : 'pi pi-user-plus'"
+        :size="isPhone ? undefined : 'large'"
+        class="mt-4 max-sm:w-full"
       />
     </section>
 
@@ -66,6 +67,7 @@ import HomeHero from '../../components/Home/HomeHero.vue'
 import HomePublications from '../../components/Home/HomePublications.vue'
 import HomeTeachers from '../../components/Home/HomeTeachers.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import { useIsPhone } from '../../composables/useIsPhone.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
@@ -89,6 +91,7 @@ const userSecurityStore = useUserSecurityStore()
 
 const router = useRouter()
 const { t } = useI18n()
+const isPhone = useIsPhone()
 
 const HERO_PREVIEW_COUNT = 3
 

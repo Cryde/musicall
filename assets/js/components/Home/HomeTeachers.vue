@@ -1,6 +1,6 @@
 <template>
   <section
-    class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-6 lg:px-10 lg:py-8"
+    class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5 sm:p-6 lg:px-10 lg:py-8"
     aria-labelledby="home-teachers-title"
   >
     <div class="flex flex-col sm:flex-row sm:items-center gap-5">

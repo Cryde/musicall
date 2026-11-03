@@ -24,6 +24,8 @@
     "looking_for_aria_label": "Ce que tu cherches",
     "looking_for_musician": "Je cherche un musicien",
     "looking_for_band": "Je cherche un groupe",
+    "looking_for_musician_short": "Un musicien",
+    "looking_for_band_short": "Un groupe",
     "instrument": "Instrument",
     "instrument_placeholder": "Tous les instruments",
     "city": "Où",
@@ -32,7 +34,7 @@
   },
   "frequent_searches": {
     "aria_label": "Recherches fréquentes",
-    "label": "Recherches fréquentes :",
+    "label": "Recherches fréquentes :",
     "band_looking_for": "Groupe cherchant un {instrument} à {city}",
     "musician_in": "{instrument} à {city}"
   },
@@ -48,6 +50,7 @@
     },
     "post": "Poster une annonce",
     "see_all": "Voir toutes les annonces",
+    "see_all_short": "Tout voir",
     "empty": "Aucune annonce pour le moment."
   },
   "announce_card": {
@@ -56,7 +59,7 @@
     "kind_band": "Groupe",
     "kind_musician": "Musicien·ne",
     "styles": "Styles",
-    "more_styles": "Et aussi : {styles}",
+    "more_styles": "Et aussi : {styles}",
     "contact": "Contacter",
     "contact_author": "Contacter {name}",
     "report": "Signaler l'annonce de {name}"
@@ -64,9 +67,9 @@
   "band_space": {
     "eyebrow": "Band Space",
     "private": "Privé à ton groupe",
-    "title": "Tu as trouvé ton groupe ? {highlight}",
+    "title": "Tu as trouvé ton groupe ? {highlight}",
     "title_highlight": "Organise-le ici",
-    "intro": "Un espace de travail réservé aux membres du groupe : fini les infos perdues dans les conversations.",
+    "intro": "Un espace de travail réservé aux membres du groupe : fini les infos perdues dans les conversations.",
     "discover": "Découvrir le Band Space",
     "open_mine": "Ouvrir mon Band Space",
     "create": "Créer l'espace de mon groupe",
@@ -188,7 +191,6 @@
     "discoveries": {
       "title": "Découvertes",
       "link": "Voir plus",
-      "by": "par {author}",
       "upvotes": "{count} vote positif | {count} votes positifs",
       "empty": "Pas encore de découverte."
     },

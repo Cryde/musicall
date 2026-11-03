@@ -49,6 +49,7 @@ const MIGRATED_PATHS = [
   'components/Publication/AddTranslationModal.vue',
   'components/Publication/PublicationDetailLayout.vue',
   'components/Publication/PublicationLanguageLabel.vue',
+  'components/Publication/PublicationRow.vue',
   'components/Publication/PublicationSettingsPanel.vue',
   'components/Publication/PublicationShareBar.vue',
   'components/Publication/PublicationTranslationLinks.vue',

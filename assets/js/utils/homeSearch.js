@@ -1,4 +1,5 @@
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../constants/types.js'
+import { separator } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 
 export const LOOKING_FOR_MUSICIAN = 'musician'
@@ -77,4 +78,26 @@ export function announceKindLabel(announce) {
 export function announceStyleTags(announce, limit = 3) {
   const names = announce.styles.map((style) => style.name)
   return { tags: names.slice(0, limit), hidden: names.slice(limit) }
+}
+
+/** Where an announce's author leads: their musician profile when they have one, with a way back home. */
+export function announceAuthorRoute(announce) {
+  return {
+    name: announce.author.has_musician_profile
+      ? 'app_user_musician_profile'
+      : 'app_user_public_profile',
+    params: { username: announce.author.username },
+    // For the profile's contextual « back » link.
+    query: { from: 'home' }
+  }
+}
+
+/** Anyone but the author can write about an announce, and nobody once the author closed the account. */
+export function canContactAnnounceAuthor(announce, viewerId) {
+  return !announce.author.deletion_datetime && viewerId !== announce.author.id
+}
+
+/** The line under an announce on a phone, who, where and when, leaving out what the announce does not say. */
+export function announceRowMeta(parts) {
+  return parts.filter(Boolean).join(` ${separator()} `)
 }

@@ -24,6 +24,8 @@
     "looking_for_aria_label": "What you're looking for",
     "looking_for_musician": "I'm looking for a musician",
     "looking_for_band": "I'm looking for a band",
+    "looking_for_musician_short": "A musician",
+    "looking_for_band_short": "A band",
     "instrument": "Instrument",
     "instrument_placeholder": "All instruments",
     "city": "Where",
@@ -48,6 +50,7 @@
     },
     "post": "Post an ad",
     "see_all": "See all ads",
+    "see_all_short": "See all",
     "empty": "No ads yet."
   },
   "announce_card": {
@@ -188,7 +191,6 @@
     "discoveries": {
       "title": "Discoveries",
       "link": "See more",
-      "by": "by {author}",
       "upvotes": "{count} upvote | {count} upvotes",
       "empty": "No discoveries yet."
     },

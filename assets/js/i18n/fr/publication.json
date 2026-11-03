@@ -20,6 +20,7 @@
     "like": "J'aime",
     "dislike": "Je n'aime pas",
     "byline": "par {author} {date}",
+    "by": "par {author}",
     "sort_by": "Trier par",
     "sort_newest": "Nouveau",
     "sort_oldest": "Ancien",

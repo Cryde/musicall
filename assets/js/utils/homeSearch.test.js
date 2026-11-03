@@ -2,10 +2,13 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   ANNOUNCE_FILTER_ALL,
+  announceAuthorRoute,
   announceHeadline,
   announceKindLabel,
+  announceRowMeta,
   announceStyleTags,
   announceTypeForFilter,
+  canContactAnnounceAuthor,
   frequentSearchLink,
   LOOKING_FOR_BAND,
   LOOKING_FOR_MUSICIAN,
@@ -85,6 +88,53 @@ describe('announce card text', () => {
       tags: ['Rock', 'Pop'],
       hidden: []
     })
+  })
+})
+
+describe('announce author', () => {
+  const author = {
+    id: 'author-id',
+    username: 'aoife',
+    has_musician_profile: true,
+    deletion_datetime: null
+  }
+
+  it('leads to the musician profile, with the way back to the home', () => {
+    assert.deepEqual(announceAuthorRoute({ author }), {
+      name: 'app_user_musician_profile',
+      params: { username: 'aoife' },
+      query: { from: 'home' }
+    })
+  })
+
+  it('leads to the public profile of an author without a musician profile', () => {
+    const route = announceAuthorRoute({ author: { ...author, has_musician_profile: false } })
+    assert.equal(route.name, 'app_user_public_profile')
+  })
+
+  it('can be contacted by a visitor or another member, never by the author', () => {
+    assert.equal(canContactAnnounceAuthor({ author }, undefined), true)
+    assert.equal(canContactAnnounceAuthor({ author }, 'someone-else'), true)
+    assert.equal(canContactAnnounceAuthor({ author }, 'author-id'), false)
+  })
+
+  it('cannot be contacted once the account is closed', () => {
+    const closed = { ...author, deletion_datetime: '2026-10-01T09:00:00+00:00' }
+    assert.equal(canContactAnnounceAuthor({ author: closed }, 'someone-else'), false)
+  })
+})
+
+describe('announceRowMeta', () => {
+  it('joins who, where and when with the locale separator', () => {
+    assert.equal(
+      announceRowMeta(['Aoife Ryan', 'Dublin', '29 octobre']),
+      'Aoife Ryan · Dublin · 29 octobre'
+    )
+  })
+
+  it('leaves out what the announce does not say', () => {
+    assert.equal(announceRowMeta(['Aoife Ryan', null, '29 octobre']), 'Aoife Ryan · 29 octobre')
+    assert.equal(announceRowMeta(['Aoife Ryan', '', null]), 'Aoife Ryan')
   })
 })
 

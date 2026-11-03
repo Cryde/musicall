@@ -1,14 +1,15 @@
 <template>
   <div
-    class="grid sm:grid-cols-[11rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-950 shadow-[0_8px_24px_rgb(0_0_0/0.06)] dark:shadow-none sm:min-h-[26rem]"
+    class="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-[11rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-950 shadow-[0_8px_24px_rgb(0_0_0/0.06)] dark:shadow-none sm:min-h-[26rem]"
   >
     <div class="flex flex-col gap-1 border-b sm:border-b-0 sm:border-r border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 p-3">
       <div class="hidden sm:flex items-center gap-2.5 px-2 pb-4 pt-1">
         <span class="w-8 h-8 rounded-lg bg-primary-600 dark:bg-primary-400" aria-hidden="true" />
         <span class="text-sm font-semibold text-surface-900 dark:text-surface-0">{{ t('home.band_space.demo.your_band') }}</span>
       </div>
+      <!-- One row that scrolls sideways on a phone, rather than four rows of wrapped tabs. -->
       <div
-        class="flex sm:flex-col flex-wrap gap-1"
+        class="flex sm:flex-col sm:flex-wrap gap-1 overflow-x-auto sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
         :aria-label="t('home.band_space.demo.tabs_aria_label')"
       >
@@ -22,7 +23,7 @@
           :aria-controls="`home-demo-panel-${module.key}`"
           :tabindex="module.key === activeKey ? 0 : -1"
           :class="[
-            'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-left cursor-pointer transition-colors',
+            'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm text-left cursor-pointer transition-colors',
             module.key === activeKey
               ? 'bg-primary-100 text-primary-800 font-medium dark:bg-surface-800 dark:text-surface-0'
               : 'text-surface-700 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-800'

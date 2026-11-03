@@ -12,12 +12,18 @@
       option-value="value"
       :allow-empty="false"
       :aria-label="t('home.search_form.looking_for_aria_label')"
-      class="self-start max-w-full"
-    />
+      class="w-full sm:w-auto sm:self-start max-w-full max-sm:[&_.p-togglebutton]:flex-1"
+    >
+      <template #option="{ option }">
+        <span class="sm:hidden">{{ option.short }}</span>
+        <span class="hidden sm:inline">{{ option.label }}</span>
+      </template>
+    </SelectButton>
 
-    <div class="flex flex-col md:flex-row gap-3 md:items-end">
+    <!-- On a phone the labels are read out but not shown: the placeholders already say what goes where. -->
+    <div class="flex flex-col md:flex-row gap-2 sm:gap-3 md:items-end">
       <div class="flex flex-col gap-1 flex-1 min-w-0">
-        <label id="home-search-instrument" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+        <label id="home-search-instrument" class="max-sm:sr-only text-sm font-medium text-surface-700 dark:text-surface-200">
           {{ t('home.search_form.instrument') }}
         </label>
         <Select
@@ -33,7 +39,7 @@
         />
       </div>
       <div class="flex flex-col gap-1 flex-1 min-w-0">
-        <label for="home-search-city" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+        <label for="home-search-city" class="max-sm:sr-only text-sm font-medium text-surface-700 dark:text-surface-200">
           {{ t('home.search_form.city') }}
         </label>
         <CityAutoComplete
@@ -75,9 +81,18 @@ import CityAutoComplete from '../Global/CityAutoComplete.vue'
 /** The homepage's way into the musician search (#1074): it only builds the search page's link. */
 const { t } = useI18n()
 
+// A phone gets the short labels, so the two options fit on one line.
 const lookingForOptions = computed(() => [
-  { label: t('home.search_form.looking_for_musician'), value: LOOKING_FOR_MUSICIAN },
-  { label: t('home.search_form.looking_for_band'), value: LOOKING_FOR_BAND }
+  {
+    label: t('home.search_form.looking_for_musician'),
+    short: t('home.search_form.looking_for_musician_short'),
+    value: LOOKING_FOR_MUSICIAN
+  },
+  {
+    label: t('home.search_form.looking_for_band'),
+    short: t('home.search_form.looking_for_band_short'),
+    value: LOOKING_FOR_BAND
+  }
 ])
 
 const router = useRouter()

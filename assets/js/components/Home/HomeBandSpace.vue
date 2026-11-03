@@ -1,6 +1,6 @@
 <template>
   <section
-    class="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-10 lg:gap-16 items-center rounded-3xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-6 sm:p-10 lg:p-16"
+    class="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-10 lg:gap-16 items-center rounded-3xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5 sm:p-10 lg:p-16"
     aria-labelledby="home-band-space-title"
   >
     <div class="flex flex-col gap-6">
@@ -19,10 +19,11 @@
           </template>
         </i18n-t>
       </h2>
-      <p class="m-0 text-lg leading-relaxed text-surface-600 dark:text-surface-300">
+      <p class="m-0 text-base sm:text-lg leading-relaxed text-surface-600 dark:text-surface-300">
         {{ t('home.band_space.intro') }}
       </p>
-      <ul class="m-0 p-0 list-none grid sm:grid-cols-2 gap-x-6 gap-y-3">
+      <!-- Not on a phone: the demo's tabs right below already name every module. -->
+      <ul class="m-0 p-0 list-none hidden sm:grid sm:grid-cols-2 gap-x-6 gap-y-3">
         <li v-for="module in BAND_SPACE_MODULES" :key="module.key" class="flex items-center gap-3 text-surface-800 dark:text-surface-100">
           <i :class="[module.icon, 'w-4 text-surface-500 dark:text-surface-400']" aria-hidden="true" />
           {{ module.label }}
