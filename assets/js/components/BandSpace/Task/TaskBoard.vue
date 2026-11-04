@@ -1,5 +1,7 @@
 <template>
-  <div class="flex gap-4 overflow-x-auto pb-2">
+  <!-- Positioned, so the screen reader hint in a column head stays inside the scroller rather than
+       widening the page past the screen. -->
+  <div class="relative flex gap-4 overflow-x-auto pb-2">
     <TaskColumn
       v-for="col in columns"
       :key="col.status"

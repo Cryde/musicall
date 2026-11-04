@@ -152,5 +152,14 @@
     "board_changed": "Le tableau a été modifié entre temps, il vient d'être rechargé.",
     "reload_failed": "Rechargement du tableau impossible",
     "reorder_failed": "Impossible de réordonner les tâches"
+  },
+  "phone": {
+    "title": "Tâches",
+    "search": "Rechercher une tâche",
+    "close_search": "Fermer la recherche",
+    "filters": "Filtres",
+    "filters_active": "Filtres ({count})",
+    "tabs": "Statut des tâches",
+    "change_status": "Changer le statut de {title}"
   }
 }

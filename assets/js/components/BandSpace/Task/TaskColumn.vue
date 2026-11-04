@@ -1,6 +1,7 @@
 <template>
-  <div class="flex-1 min-w-[280px] bg-surface-100 dark:bg-surface-800 rounded-xl p-3">
-    <div class="flex items-center justify-between mb-3">
+  <!-- On a phone the tab above says which status this is, so the column has no frame or head. -->
+  <div :class="compact ? '' : 'flex-1 min-w-[280px] bg-surface-100 dark:bg-surface-800 rounded-xl p-3'">
+    <div v-if="!compact" class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-1.5 min-w-0">
         <h3 class="font-semibold text-sm text-surface-700 dark:text-surface-200">{{ label }}</h3>
         <span
@@ -23,6 +24,9 @@
       :sort="!isDoneColumn"
       :disabled="tasksStore.isSelectionMode || tasksStore.isReorderDisabled"
       ghost-class="opacity-30"
+      :delay="TOUCH_HOLD_MS"
+      delay-on-touch-only
+      :touch-start-threshold="TOUCH_DRIFT_PX"
       :data-status="status"
       class="flex flex-col gap-2 min-h-[100px]"
       @start="tasksStore.setDragging(true)"
@@ -34,7 +38,9 @@
         :task="task"
         :band-space-id="bandSpaceId"
         :category-color="getCategoryColor(task.category_id)"
+        :compact="compact"
         @open-task="$emit('open-task', $event)"
+        @pick-status="$emit('pick-status', $event)"
       />
     </VueDraggable>
 
@@ -61,6 +67,12 @@ const { t } = useI18n()
 
 const MAX_DONE_VISIBLE = 5
 
+// A finger holds a card this long before it lifts, so a swipe across the list scrolls it instead. A
+// mouse drags at once, as before.
+const TOUCH_HOLD_MS = 250
+// How far a finger may drift during that hold: SortableJS's own few pixels cancel most real presses.
+const TOUCH_DRIFT_PX = 8
+
 const completionOrderHint = computed(() => t('band_space_tasks.column.completion_order_hint'))
 
 const props = defineProps({
@@ -68,10 +80,12 @@ const props = defineProps({
   tasks: { type: Array, required: true },
   label: { type: String, required: true },
   categories: { type: Array, default: () => [] },
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  // One status of the phone's tabs: no frame, compact cards.
+  compact: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['open-task', 'reorder', 'status-change', 'show-all-done'])
+const emit = defineEmits(['open-task', 'pick-status', 'reorder', 'status-change', 'show-all-done'])
 
 const localTasks = ref([...props.tasks])
 

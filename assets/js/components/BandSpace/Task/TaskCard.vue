@@ -18,10 +18,30 @@
         class="mt-0.5"
         @click.stop="tasksStore.toggleTaskSelection(task.id)"
       />
-      <p class="font-medium text-sm text-surface-800 dark:text-surface-100 flex-1">{{ task.title }}</p>
+      <!-- On a phone the status is moved from here, in two taps, rather than by dragging a card across
+           a screen that shows one status at a time. -->
+      <button
+        v-else-if="compact"
+        type="button"
+        class="-m-1 shrink-0 rounded-lg p-1 focus-visible:outline-2 focus-visible:outline-primary-500"
+        :aria-label="t('band_space_tasks.phone.change_status', { title: task.title })"
+        aria-haspopup="dialog"
+        @click.stop="emit('pick-status', task)"
+      >
+        <TaskStatusMark :status="task.status" />
+      </button>
+      <!-- A button, so the card is reached by a keyboard and named by a screen reader; the card's own
+           click stays for the mouse. -->
+      <button
+        type="button"
+        class="flex-1 min-w-0 text-left font-medium text-sm [overflow-wrap:anywhere] text-surface-800 dark:text-surface-100 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+        @click.stop="handleClick"
+      >
+        {{ task.title }}
+      </button>
     </div>
 
-    <div class="flex flex-wrap gap-1.5 mt-2">
+    <div v-if="hasBadges" class="flex flex-wrap gap-1.5 mt-2" :class="{ 'pl-8': compact }">
       <span
         v-if="task.priority === 'urgent'"
         class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
@@ -43,7 +63,7 @@
       </span>
     </div>
 
-    <div class="flex items-center justify-between mt-2">
+    <div class="flex items-center justify-between mt-2" :class="{ 'pl-8': compact }">
       <div class="flex items-center -space-x-1.5">
         <div
           v-for="assignee in visibleAssignees"
@@ -102,7 +122,9 @@
         >
           {{ formattedDueDate }}
         </span>
+        <!-- Its only items move the task, which the mark does on a phone. -->
         <button
+          v-if="!compact"
           type="button"
           class="ml-1 w-7 h-7 -mr-1 rounded hover:bg-surface-100 dark:hover:bg-surface-800 flex items-center justify-center text-surface-500"
           :aria-label="t('band_space_tasks.card.more_actions')"
@@ -111,7 +133,7 @@
         >
           <i class="pi pi-ellipsis-v text-sm" aria-hidden="true" />
         </button>
-        <Menu ref="actionMenuRef" :model="actionMenuItems" :popup="true" />
+        <Menu v-if="!compact" ref="actionMenuRef" :model="actionMenuItems" :popup="true" />
       </div>
     </div>
   </div>
@@ -123,18 +145,22 @@ import Menu from 'primevue/menu'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { TASK_STATUSES } from '../../../constants/taskStatuses.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
 import TaskCommentPopover from './TaskCommentPopover.vue'
+import TaskStatusMark from './TaskStatusMark.vue'
 
 const props = defineProps({
   task: { type: Object, required: true },
   categoryColor: { type: String, default: null },
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  // The phone's list: a status mark in place of the « ⋮ » menu.
+  compact: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['open-task'])
+const emit = defineEmits(['open-task', 'pick-status'])
 
 const tasksStore = useBandTasksStore()
 const toast = useToast()
@@ -146,14 +172,8 @@ const actionMenuRef = ref()
 // server-side filter has drag turned off: build "Déplacer vers ..." items for the statuses that
 // aren't the task's current one. There is no drop point, so the task goes to the end of the
 // target column.
-const STATUS_OPTIONS = [
-  { value: 'todo', labelKey: 'band_space_tasks.status.todo' },
-  { value: 'in_progress', labelKey: 'band_space_tasks.status.in_progress' },
-  { value: 'done', labelKey: 'band_space_tasks.status.done' }
-]
-
 const actionMenuItems = computed(() => {
-  return STATUS_OPTIONS.filter((s) => s.value !== props.task.status).map((s) => ({
+  return TASK_STATUSES.filter((s) => s.value !== props.task.status).map((s) => ({
     label: t('band_space_tasks.card.move_to', { status: t(s.labelKey) }),
     icon: 'pi pi-arrow-right',
     command: () => moveToStatus(s.value)
@@ -173,6 +193,11 @@ async function moveToStatus(newStatus) {
 }
 
 const isSelected = computed(() => tasksStore.selectedTaskIds.has(props.task.id))
+
+// Only drawn with something in it, or a card without a badge carries an empty line.
+const hasBadges = computed(
+  () => ['urgent', 'high'].includes(props.task.priority) || Boolean(props.task.category_name)
+)
 
 function handleClick() {
   if (tasksStore.isSelectionMode) {

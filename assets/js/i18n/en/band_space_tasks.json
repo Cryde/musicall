@@ -152,5 +152,14 @@
     "board_changed": "The board was changed in the meantime and has just been reloaded.",
     "reload_failed": "Could not reload the board",
     "reorder_failed": "Could not reorder the tasks"
+  },
+  "phone": {
+    "title": "Tasks",
+    "search": "Search tasks",
+    "close_search": "Close the search",
+    "filters": "Filters",
+    "filters_active": "Filters ({count})",
+    "tabs": "Task status",
+    "change_status": "Change the status of {title}"
   }
 }

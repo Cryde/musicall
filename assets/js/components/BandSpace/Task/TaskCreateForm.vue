@@ -74,7 +74,6 @@
         <label class="text-sm font-medium">{{ t('band_space_tasks.field.due_date') }}</label>
         <DatePicker
           v-model="form.dueDate"
-          dateFormat="yy-mm-dd"
           showIcon
           showButtonBar
           :aria-label="t('band_space_tasks.field.due_date')"

@@ -8,7 +8,12 @@
         <Skeleton width="8rem" height="2rem" borderRadius="0.375rem" />
       </div>
       <div class="flex gap-4">
-        <div v-for="i in 3" :key="i" class="flex-1 min-w-[280px] bg-surface-100 dark:bg-surface-800 rounded-xl p-3">
+        <div
+          v-for="i in 3"
+          :key="i"
+          class="flex-1 md:min-w-[280px] bg-surface-100 dark:bg-surface-800 rounded-xl p-3"
+          :class="{ 'max-md:hidden': i > 1 }"
+        >
           <Skeleton width="40%" height="1rem" class="mb-3" />
           <div class="flex flex-col gap-2">
             <Skeleton v-for="j in 3" :key="j" width="100%" height="5rem" borderRadius="0.5rem" />
@@ -25,7 +30,25 @@
 
     <!-- Main content -->
     <div v-else>
+      <!-- A phone gets the app's screen: one status at a time, the filters in a sheet. -->
+      <TaskPhoneBoard
+        v-if="isPhone"
+        :show-tabs="!tasksStore.filters.showArchived && !showAllDone"
+        :tasks-by-status="tasksStore.tasksByStatus"
+        :categories="tasksStore.categories"
+        :members="tasksStore.members"
+        :filters="tasksStore.filters"
+        :band-space-id="bandSpaceId"
+        @open-task="handleOpenTask"
+        @reorder="handleReorder"
+        @status-change="handleStatusChange"
+        @show-all-done="showAllDone = true"
+        @update-filter="handleFilterUpdate"
+        @open-categories="categoryManagerVisible = true"
+        @create-task="createFormVisible = true"
+      />
       <TaskFilterBar
+        v-else
         :categories="tasksStore.categories"
         :members="tasksStore.members"
         :filters="tasksStore.filters"
@@ -107,7 +130,7 @@
       </div>
 
       <!-- Kanban board -->
-      <div v-else>
+      <div v-else-if="!isPhone">
         <Message
           v-if="tasksStore.isReorderDisabled"
           severity="info"
@@ -159,6 +182,7 @@
 </template>
 
 <script setup>
+import { useMediaQuery } from '@vueuse/core'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
@@ -172,6 +196,7 @@ import TaskCategoryManager from '../../components/BandSpace/Task/TaskCategoryMan
 import TaskCreateForm from '../../components/BandSpace/Task/TaskCreateForm.vue'
 import TaskDetail from '../../components/BandSpace/Task/TaskDetail.vue'
 import TaskFilterBar from '../../components/BandSpace/Task/TaskFilterBar.vue'
+import TaskPhoneBoard from '../../components/BandSpace/Task/TaskPhoneBoard.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { intlLocale } from '../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../store/bandSpace/bandSpaceTasks.js'
@@ -199,6 +224,8 @@ const detailVisible = ref(false)
 const categoryManagerVisible = ref(false)
 const createFormVisible = ref(false)
 const showAllDone = ref(false)
+// Below `md` the board's three columns do not fit side by side.
+const isPhone = useMediaQuery('(width < 48rem)')
 
 useBandSpaceLiveRefresh({
   bandSpaceId,

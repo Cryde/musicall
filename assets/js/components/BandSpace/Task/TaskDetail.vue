@@ -1,5 +1,6 @@
 <template>
-  <Drawer v-model:visible="visibleModel" position="right" class="w-full md:w-[48rem]!">
+  <!-- `!`, or PrimeVue's own width wins and a phone gets a 20rem strip beside the board. -->
+  <Drawer v-model:visible="visibleModel" position="right" class="w-full! md:w-[48rem]!">
     <template #header>
       <span class="text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
     </template>
@@ -41,17 +42,21 @@
 
       <!-- Title (inline edit, save on Enter or via Save button) -->
       <div>
-        <input
+        <!-- Grows with the title, so a long one wraps on a phone instead of being cut; Enter still
+             saves it, a title having no line break. -->
+        <textarea
+          ref="titleField"
           v-model="editTitle"
+          rows="1"
           :readonly="isArchived"
           :aria-label="t('band_space_tasks.detail.title_aria')"
-          class="w-full text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1 read-only:text-surface-500 dark:read-only:text-surface-400"
+          class="block w-full resize-none overflow-hidden text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1 read-only:text-surface-500 dark:read-only:text-surface-400"
           @keydown.enter.prevent="saveTextFields"
         />
       </div>
 
       <!-- Metadata grid -->
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.status') }}</label>
           <Select
@@ -97,7 +102,6 @@
           <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.due') }}</label>
           <DatePicker
             v-model="editDueDate"
-            dateFormat="yy-mm-dd"
             showIcon
             showButtonBar
             size="small"
@@ -253,6 +257,7 @@
 </template>
 
 <script setup>
+import { useTextareaAutosize } from '@vueuse/core'
 import { format } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
@@ -264,7 +269,7 @@ import Skeleton from 'primevue/skeleton'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
@@ -276,6 +281,7 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import { canDeleteTask } from '../../../utils/taskActions.js'
+import { singleLineTitle } from '../../../utils/taskTitle.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import TaskActivityFeed from './TaskActivityFeed.vue'
 import TaskCommentForm from './TaskCommentForm.vue'
@@ -337,6 +343,7 @@ const isSubmittingComment = ref(false)
 
 // Edit state
 const editTitle = ref('')
+useTextareaAutosize({ element: useTemplateRef('titleField'), input: editTitle })
 const editStatus = ref('todo')
 const editPriority = ref('normal')
 const editCategoryId = ref(null)
@@ -507,7 +514,7 @@ function takeServerTextWhereUntouched() {
 
 const hasTextChanges = computed(() => {
   if (!task.value) return false
-  const trimmedTitle = editTitle.value.trim()
+  const trimmedTitle = singleLineTitle(editTitle.value)
   const titleChanged = trimmedTitle !== '' && trimmedTitle !== textBase.value.title
   const descriptionChanged = editDescription.value !== textBase.value.description
   return titleChanged || descriptionChanged
@@ -524,7 +531,7 @@ function resetTextFields() {
 async function saveTextFields() {
   if (!task.value) return
 
-  const trimmedTitle = editTitle.value.trim()
+  const trimmedTitle = singleLineTitle(editTitle.value)
   if (!trimmedTitle) {
     toast.add({ severity: 'error', summary: t('band_space_tasks.detail.title_empty'), life: 5000 })
     editTitle.value = task.value.title
