@@ -56,8 +56,6 @@
     "retry": "Try again",
     "deletion_banner": "This space will be permanently deleted on {date}. Editing is disabled, but you can still view and download your files. {link}",
     "manage_deletion": "Manage deletion",
-    "navigation": "Navigation",
-    "my_account": "My account",
     "account_settings": "Account settings",
     "page_title_with_space": "{section} - {space} {separator} MusicAll",
     "page_title": "{section} {separator} MusicAll",

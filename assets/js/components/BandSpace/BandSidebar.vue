@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currentSpaceId" class="flex flex-col h-full p-3 gap-1">
+  <div v-if="currentSpaceId" :class="['flex flex-col gap-1', inDrawer ? 'py-2' : 'h-full p-3']">
     <nav
       class="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto"
       :aria-label="t('band_space.sidebar.modules_aria')"
@@ -19,7 +19,7 @@
           :class="linkClasses(isExactActive)"
           v-tooltip.right="tooltipFor(item.label)"
         >
-          <i :class="['pi', item.icon, 'text-base shrink-0']" aria-hidden="true"></i>
+          <i :class="['pi', item.icon, iconClass]" aria-hidden="true"></i>
           <!-- The badge is pulled into the row's right padding: « Discussion » is the longest label
                that carries one, and at 11rem it needs those few pixels back to avoid ellipsising. -->
           <span v-if="!collapsed" class="font-medium truncate">{{ item.label }}</span>
@@ -33,17 +33,13 @@
         </a>
       </RouterLink>
 
-      <slot name="after-work" />
     </nav>
 
     <div
       v-if="settingsItem"
       class="mt-auto pt-3 border-t border-surface-200 dark:border-surface-700"
     >
-      <slot name="above-settings" />
-      <!-- Inside the component rather than passed through the slot above, because AppBandLayout
-           renders this sidebar twice (the desktop aside and the mobile drawer) and only the mobile
-           one fills slots. -->
+      <!-- Inside the component, so the desktop aside and the phone menu both have it. -->
       <button
         type="button"
         :disabled="disabled"
@@ -52,7 +48,7 @@
         v-tooltip.right="tooltipFor(t('band_space.sidebar.feedback'))"
         @click="handleFeedbackClick"
       >
-        <i class="pi pi-comment text-base shrink-0" aria-hidden="true"></i>
+        <i :class="['pi pi-comment', iconClass]" aria-hidden="true"></i>
         <span v-if="!collapsed" class="font-medium truncate">{{ t('band_space.sidebar.feedback') }}</span>
       </button>
       <RouterLink
@@ -68,7 +64,7 @@
           :class="linkClasses(isExactActive)"
           v-tooltip.right="tooltipFor(settingsItem.label)"
         >
-          <i :class="['pi', settingsItem.icon, 'text-base shrink-0']" aria-hidden="true"></i>
+          <i :class="['pi', settingsItem.icon, iconClass]" aria-hidden="true"></i>
           <span v-if="!collapsed" class="font-medium truncate">{{ settingsItem.label }}</span>
         </a>
       </RouterLink>
@@ -105,7 +101,9 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 
 const props = defineProps({
   disabled: { type: Boolean, default: false },
-  showToggle: { type: Boolean, default: false }
+  showToggle: { type: Boolean, default: false },
+  /** In the phone menu the lines take the menu's measures, so they line up with its other lines. */
+  inDrawer: { type: Boolean, default: false }
 })
 
 const collapsed = defineModel('collapsed', { type: Boolean, default: false })
@@ -165,9 +163,14 @@ const settingsItem = computed(
   () => visibleItems.value.find((item) => item.route === BAND_SPACE_ROUTES.PARAMETERS) ?? null
 )
 
+const iconClass = computed(() =>
+  props.inDrawer ? 'w-5 shrink-0 text-center text-base' : 'text-base shrink-0'
+)
+
 function linkClasses(isActive) {
   return [
-    'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-150',
+    'flex items-center px-3 rounded-lg transition-colors duration-150',
+    props.inDrawer ? 'gap-3 py-2.5' : 'gap-2 py-2',
     collapsed.value ? 'justify-center' : '',
     props.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
     isActive
@@ -176,7 +179,7 @@ function linkClasses(isActive) {
   ]
 }
 
-// Tooltip only shows when collapsed (labels are hidden) — passing null
+// Tooltip only shows when collapsed (labels are hidden): passing null
 // suppresses the tooltip in expanded mode.
 function tooltipFor(label) {
   return collapsed.value ? label : null
@@ -188,6 +191,5 @@ function handleClick(event, navigate) {
     return
   }
   navigate(event)
-  emit('navigate')
 }
 </script>
