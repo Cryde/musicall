@@ -94,8 +94,8 @@
 
       <!-- Editor Container (same styling as publication display) -->
       <div class="content publication-container bg-surface-0 dark:bg-surface-800 rounded-md min-w-0">
-        <!-- Toolbar (sticky inside container) -->
-        <div class="sticky top-0 z-30 bg-surface-50 dark:bg-surface-700 border-b border-surface-200 dark:border-surface-600 rounded-t-md p-2">
+        <!-- Toolbar (sticky inside container), under the site header where that one stays on screen -->
+        <div class="sticky top-0 max-lg:top-16 z-30 bg-surface-50 dark:bg-surface-700 border-b border-surface-200 dark:border-surface-600 rounded-t-md p-2">
         <div class="flex flex-wrap items-center gap-1">
           <!-- Text formatting -->
           <div class="flex items-center gap-1 pr-2 border-r border-surface-200 dark:border-surface-700">

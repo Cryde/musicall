@@ -2,7 +2,8 @@
     <div class="relative min-h-200 bg-surface-50 dark:bg-surface-950">
         <SkipLink />
         <Toast />
-        <header>
+        <!-- Below lg the header stays on screen: the menu and a member's unread counts are always one tap away. -->
+        <header class="max-lg:sticky max-lg:top-0 max-lg:z-30">
             <Menu />
         </header>
         <main id="main-content" tabindex="-1" class="bg-surface-200 dark:bg-surface-950 px-6 py-8 md:px-12 lg:px-20">

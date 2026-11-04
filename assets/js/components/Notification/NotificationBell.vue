@@ -103,8 +103,6 @@ import NotificationItem from './NotificationItem.vue'
 // minute it used to be. The focus listener below still gives an immediate refresh on tab switch.
 const POLL_INTERVAL_MS = 5 * 60_000
 
-const emit = defineEmits(['navigate'])
-
 const { t } = useI18n()
 const store = useUserNotificationStore()
 const notificationStore = useNotificationStore()
@@ -138,7 +136,6 @@ function onPopoverShow() {
 
 function onItemNavigate() {
   popover.value?.hide()
-  emit('navigate')
 }
 
 let intervalId = null
