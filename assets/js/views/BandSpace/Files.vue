@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="filesStore.isLoadingFolders && !filesStore.hasLoadedFolders" class="flex gap-4">
-      <div class="w-64 flex flex-col gap-2">
+      <div class="w-64 flex flex-col gap-2 max-md:hidden">
         <Skeleton v-for="i in 5" :key="i" width="100%" height="2rem" borderRadius="0.375rem" />
       </div>
       <div class="flex-1 flex flex-col gap-2">
@@ -20,6 +20,7 @@
 
     <div v-else class="flex flex-col lg:flex-row gap-6">
       <aside
+        v-if="!isBelowMd"
         class="w-full lg:w-64 shrink-0 bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700"
       >
         <h2 class="text-sm font-semibold text-surface-700 dark:text-surface-200 px-3 mb-3">
@@ -42,48 +43,37 @@
           {{ t('band_space_files.page.no_folder') }}
         </p>
 
-        <!-- Under the tree rather than in it: neither is a folder. One is every file in the space
-             whatever folder it sits in, the other is what has been deleted. -->
-        <div
-          class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 flex flex-col gap-1"
-        >
-          <button
-            type="button"
-            class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
-            :class="
-              isAllFilesActive
-                ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 font-medium'
-                : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
-            "
-            :aria-current="isAllFilesActive ? 'true' : null"
-            v-tooltip.top="t('band_space_files.page.all_files_hint')"
-            @click="handleFolderSelect(null)"
-          >
-            <i class="pi pi-list" aria-hidden="true"></i>
-            <span class="flex-1 truncate">{{ t('band_space_files.page.all_files') }}</span>
-          </button>
-
-          <button
-            type="button"
-            class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
-            :class="
-              isTrashActive
-                ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 font-medium'
-                : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
-            "
-            :aria-current="isTrashActive ? 'true' : null"
-            @click="handleFolderSelect(TRASH_FOLDER_ID)"
-          >
-            <i class="pi pi-trash" aria-hidden="true"></i>
-            <span class="flex-1 truncate">{{ t('band_space_files.page.trash') }}</span>
-            <span class="text-xs text-surface-500 tabular-nums">{{ filesStore.archivedCount }}</span>
-          </button>
-        </div>
+        <FileSpaceShortcuts
+          class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700"
+          :active-folder-id="filesStore.activeFolderId"
+          :archived-count="filesStore.archivedCount"
+          @select="handleFolderSelect"
+        />
       </aside>
 
-      <section class="flex-1 flex flex-col gap-4 min-w-0">
+      <section class="flex-1 flex flex-col gap-4 min-w-0 max-md:gap-0">
+        <!-- A phone has no room for the sidebar, the breadcrumb and the toolbar above the files: one head
+             holds where the panel stands, the search and the filters. -->
+        <FilePhoneHead
+          v-if="isBelowMd"
+          v-model:selecting="isSelecting"
+          :band-space-id="bandSpaceId"
+          :is-admin="isAdmin"
+          :folders="filesStore.folders"
+          :virtual-folders="filesStore.virtualFolders"
+          :active-folder-id="filesStore.activeFolderId"
+          :archived-count="filesStore.archivedCount"
+          :filters="filesStore.filters"
+          :tags="filesStore.tags"
+          :with-filters="!isTrashActive"
+          :can-create-folder="!isVirtualFolderActive && !isTrashActive"
+          @select-folder="handleFolderSelect"
+          @update-filter="handleFilterUpdate"
+          @create-folder="createFolderDialogVisible = true"
+        />
+
         <div
-          v-if="showBreadcrumb"
+          v-if="showBreadcrumb && !isBelowMd"
           class="bg-surface-0 dark:bg-surface-900 rounded-2xl px-4 py-3 border border-surface-200 dark:border-surface-700"
         >
           <FolderBreadcrumb
@@ -94,7 +84,7 @@
         </div>
 
         <div
-          v-if="!isTrashActive"
+          v-if="!isTrashActive && !isBelowMd"
           class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700"
         >
           <!-- Two rows on purpose: the four filters need about 700px and the two actions about 340px,
@@ -136,7 +126,10 @@
           </div>
         </div>
 
-        <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
+        <div
+          class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700"
+          :class="{ 'mb-36': isBelowMd }"
+        >
           <!-- The count and the load more control sit here rather than inside the two lists: both
                page identically, and the trash needs it most, since a file it cannot reach is a file
                app:band-space:purge eventually destroys. -->
@@ -190,6 +183,8 @@
               :is-loading="filesStore.isLoadingFiles"
               :empty-message="emptyMessage"
               :show-location="showFileLocation"
+              :compact="isBelowMd"
+              :selecting="isSelecting"
               @select="handleFileSelect"
               @open-rename="handleOpenRename"
               @open-share="handleOpenShare"
@@ -223,6 +218,17 @@
       :parent-id="activeRealFolderId"
     />
 
+    <!-- Below md « Importer » floats, where the thumb is, as « Nouvelle tâche » does. The selection bar
+         takes the bottom while files are being selected. -->
+    <Button
+      v-if="isBelowMd && canUpload && !isSelecting && filesStore.selectedFileIds.size === 0"
+      :label="t('band_space_files.phone.upload')"
+      icon="pi pi-cloud-upload"
+      rounded
+      class="fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
+      @click="uploadDialogVisible = true"
+    />
+
     <FileBulkActionBar :band-space-id="bandSpaceId" :is-trash="isTrashActive" />
 
     <FileUploadDialog
@@ -241,6 +247,7 @@
       @deleted="handleFileDeleted"
       @share="handleOpenShare"
       @versions="handleOpenVersions"
+      @move="handleOpenMove"
     />
 
     <FileShareDialog
@@ -280,7 +287,9 @@ import FileDetailDrawer from '../../components/BandSpace/Files/FileDetailDrawer.
 import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
 import FileMoveDialog from '../../components/BandSpace/Files/FileMoveDialog.vue'
+import FilePhoneHead from '../../components/BandSpace/Files/FilePhoneHead.vue'
 import FileShareDialog from '../../components/BandSpace/Files/FileShareDialog.vue'
+import FileSpaceShortcuts from '../../components/BandSpace/Files/FileSpaceShortcuts.vue'
 import FileTrashList from '../../components/BandSpace/Files/FileTrashList.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
@@ -290,6 +299,7 @@ import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { directChildren } from '../../composables/useFolderDragDrop.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import {
   isVirtualFolderId,
   listedFolderId,
@@ -326,6 +336,21 @@ const moveDialogVisible = ref(false)
 const moveDialogFile = ref(null)
 const autoStartRename = ref(false)
 
+const isBelowMd = useIsBelowMd()
+// The phone's selection mode: checkboxes on every row, and a tap selects instead of opening.
+const isSelecting = ref(false)
+
+watch(isSelecting, (selecting) => {
+  if (!selecting) filesStore.clearSelection()
+})
+
+// A selection belongs to the layout it was made in: a computer's ctrl-click selection would leave the
+// phone's bar up with no checkbox on screen, and a computer has no switch for the phone's mode.
+watch(isBelowMd, () => {
+  isSelecting.value = false
+  filesStore.clearSelection()
+})
+
 const bandSpaceId = computed(() => route.params.id)
 
 /** null at the root, the folder id inside a folder, NO_FOLDER_LISTED anywhere that is not a place. */
@@ -337,8 +362,6 @@ const isInTree = computed(() => listedFolder.value !== NO_FOLDER_LISTED)
 const showBreadcrumb = computed(() => isInTree.value)
 
 const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_ID)
-
-const isAllFilesActive = computed(() => filesStore.activeFolderId === null)
 
 /**
  * The place the rows on screen belong to, which is the selected one until a search widens the listing
@@ -369,6 +392,14 @@ const inlineFolders = computed(() =>
 )
 
 const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
+
+/** Where the toolbar's « Importer » is enabled: a source is filled by attachments, the trash by deletes. */
+const canUpload = computed(() => !isVirtualFolderActive.value && !isTrashActive.value)
+
+// The trash lists its own checkboxes, always on.
+watch(isTrashActive, (inTrash) => {
+  if (inTrash) isSelecting.value = false
+})
 
 /** A virtual folder is filled by attachments, so an empty one is phrased per source. */
 const VIRTUAL_EMPTY_MESSAGE_KEYS = {

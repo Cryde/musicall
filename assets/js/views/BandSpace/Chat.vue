@@ -9,10 +9,11 @@
 </template>
 
 <script setup>
-import { useMediaQuery, useScrollLock } from '@vueuse/core'
+import { useScrollLock } from '@vueuse/core'
 import { computed, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import BandChatPanel from '../../components/BandSpace/Chat/BandChatPanel.vue'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 
 const route = useRoute()
 // Read once: AppBandLayout keys <router-view> on the space id, so this view is remounted rather than
@@ -25,7 +26,7 @@ const focusMessageId = computed(() =>
 
 // The page under the phone's full screen chat stays put while the conversation scrolls. Tailwind's `md`
 // is 48rem: keep this query in step with the `max-md:` classes above.
-const isFullScreen = useMediaQuery('(width < 48rem)')
+const isFullScreen = useIsBelowMd()
 const isPageLocked = useScrollLock(typeof document === 'undefined' ? null : document.body)
 watchEffect(() => {
   isPageLocked.value = isFullScreen.value

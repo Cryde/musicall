@@ -7,6 +7,7 @@ import {
   ROOT_FOLDER_ID
 } from '../../constants/folderSelection.js'
 import { i18n } from '../../i18n/index.js'
+import { DEFAULT_FILE_SORT } from '../../utils/fileFilters.js'
 import {
   fileListingParams,
   folderPathOf,
@@ -55,8 +56,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     mime: null,
     tagId: null,
     source: null,
-    sort: 'date',
-    order: 'desc'
+    ...DEFAULT_FILE_SORT
   })
 
   const isLoadingFiles = ref(false)
@@ -650,8 +650,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     filters.mime = null
     filters.tagId = null
     filters.source = null
-    filters.sort = 'date'
-    filters.order = 'desc'
+    filters.sort = DEFAULT_FILE_SORT.sort
+    filters.order = DEFAULT_FILE_SORT.order
     loadError.value = null
     loadMoreError.value = null
     activeFileError.value = null

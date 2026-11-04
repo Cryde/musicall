@@ -2,52 +2,44 @@
   <Drawer
     v-model:visible="visible"
     position="right"
-    :style="{ width: '36rem' }"
-    :show-close-icon="true"
+    class="w-full! md:w-[36rem]!"
+    :show-close-icon="!isBelowMd"
+    :close-on-escape="!isActionsSheetOpen"
     @hide="emit('close')"
   >
     <template #header>
-      <div class="flex items-center gap-2 min-w-0 flex-1">
-        <i :class="iconForMime(file?.mime_type)" class="text-xl text-surface-500"></i>
-        <template v-if="!isRenaming">
-          <span class="font-semibold truncate">{{ file?.original_name }}</span>
-          <Button
-            icon="pi pi-pencil"
-            :aria-label="t('band_space_files.file_list.menu.rename')"
-            size="small"
-            text
-            rounded
-            :disabled="!file"
-            @click="startRename"
-          />
-        </template>
-        <template v-else>
-          <InputText
-            v-model="renameValue"
-            size="small"
-            class="flex-1"
-            :disabled="filesStore.isSavingFile"
-            @keydown.enter.prevent="commitRename"
-            @keydown.escape="cancelRename"
-          />
-          <Button
-            icon="pi pi-check"
-            :aria-label="t('band_space_files.detail.confirm_rename')"
-            size="small"
-            severity="primary"
-            :loading="filesStore.isSavingFile"
-            @click="commitRename"
-          />
-          <Button
-            icon="pi pi-times"
-            :aria-label="t('band_space_files.common.cancel')"
-            size="small"
-            text
-            severity="secondary"
-            :disabled="filesStore.isSavingFile"
-            @click="cancelRename"
-          />
-        </template>
+      <!-- A phone shows the file as a screen of its own: back, what it is, and more. The name moves
+           under the preview, where it has the width to be read. -->
+      <div v-if="isBelowMd" class="flex items-center gap-1 min-w-0 flex-1 -ml-2">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_files.detail.back')"
+          @click="visible = false"
+        />
+        <span class="flex-1 font-semibold">{{ t('band_space_files.detail.title') }}</span>
+        <Button
+          icon="pi pi-ellipsis-v"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_files.detail.more_actions')"
+          aria-haspopup="dialog"
+          :disabled="!file"
+          @click="isActionsSheetOpen = true"
+        />
+      </div>
+      <div v-else class="flex items-center gap-2 min-w-0 flex-1">
+        <i :class="fileIconClass(file?.mime_type)" class="text-xl text-surface-500"></i>
+        <FileNameHeading
+          v-model:editing="isRenaming"
+          :name="file?.original_name"
+          :saving="filesStore.isSavingFile"
+          :disabled="!file"
+          @rename="commitRename"
+        />
       </div>
     </template>
 
@@ -64,26 +56,45 @@
 
     <div v-else-if="file" class="flex flex-col gap-6">
       <div class="rounded-lg overflow-hidden border border-surface-200 dark:border-surface-700">
+        <!-- A phone browser draws nothing inside an <embed>: the PDF opens in its own viewer instead. -->
+        <div
+          v-if="isPdf && isBelowMd"
+          class="flex flex-col items-center justify-center p-6 gap-3 bg-surface-50 dark:bg-surface-950"
+        >
+          <i class="pi pi-file-pdf text-5xl! text-surface-400" aria-hidden="true"></i>
+          <Button
+            :label="t('band_space_files.detail.open_pdf')"
+            icon="pi pi-external-link"
+            size="small"
+            @click="openPreview"
+          />
+          <p class="m-0 text-xs text-surface-500 dark:text-surface-400">
+            {{ t('band_space_files.detail.open_pdf_hint') }}
+          </p>
+        </div>
         <component
           :is="previewComponent.tag"
           v-bind="previewComponent.attrs"
-          v-if="previewComponent"
+          v-else-if="previewComponent"
           class="block w-full bg-surface-50 dark:bg-surface-950"
         />
         <div v-else class="flex flex-col items-center justify-center p-8 gap-3 bg-surface-50 dark:bg-surface-950">
-          <i :class="iconForMime(file.mime_type)" class="text-5xl text-surface-400"></i>
+          <i :class="fileIconClass(file.mime_type)" class="text-5xl! text-surface-400" aria-hidden="true"></i>
           <p class="text-sm text-surface-500 italic">
             {{ t('band_space_files.detail.preview_unavailable') }}
           </p>
-          <Button
-            :label="t('band_space_files.file_list.menu.download')"
-            icon="pi pi-download"
-            size="small"
-            severity="secondary"
-            @click="openDownload"
-          />
         </div>
       </div>
+
+      <FileNameHeading
+        v-if="isBelowMd"
+        v-model:editing="isRenaming"
+        tag="h2"
+        name-class="text-lg"
+        :name="file.original_name"
+        :saving="filesStore.isSavingFile"
+        @rename="commitRename"
+      />
 
       <div class="grid grid-cols-2 gap-3 text-sm">
         <div>
@@ -111,7 +122,7 @@
           <p class="text-xs text-surface-400 uppercase tracking-wide">
             {{ t('band_space_files.detail.type') }}
           </p>
-          <p class="mt-1 truncate">{{ file.mime_type || noValue() }}</p>
+          <p class="mt-1 truncate" :title="file.mime_type">{{ fileTypeLabel(file.mime_type) ?? noValue() }}</p>
         </div>
         <div>
           <p class="text-xs text-surface-400 uppercase tracking-wide">
@@ -200,34 +211,36 @@
       <FileActivityFeed :activities="filesStore.fileActivities" />
     </div>
 
+    <BottomSheet
+      v-if="isBelowMd"
+      v-model:visible="isActionsSheetOpen"
+      :title="file?.original_name ?? t('band_space_files.detail.title')"
+    >
+      <SheetAction icon="pi-pencil" @click="runSheetAction(() => (isRenaming = true))">
+        {{ t('band_space_files.file_list.menu.rename') }}
+      </SheetAction>
+      <SheetAction icon="pi-arrows-h" @click="runSheetAction(() => emit('move', file))">
+        {{ t('band_space_files.file_move.submit') }}
+      </SheetAction>
+    </BottomSheet>
+
     <template #footer>
-      <div class="flex flex-wrap gap-2 justify-end">
+      <!-- Four equal buttons across a phone, a label under each icon; a row of buttons on the right on a
+           computer. « Télécharger » is always offered: a preview is no download. -->
+      <div class="flex gap-2 max-md:-mx-2 max-md:gap-0 md:flex-wrap md:justify-end">
         <Button
-          v-if="isAdmin"
-          :label="t('band_space_files.file_list.menu.share')"
-          icon="pi pi-share-alt"
+          v-for="action in footerActions"
+          :key="action.key"
+          :label="action.label"
+          :icon="action.icon"
           size="small"
-          severity="secondary"
-          :disabled="!file"
-          @click="emit('share', file)"
-        />
-        <Button
-          :label="t('band_space_files.file_list.menu.versions')"
-          icon="pi pi-history"
-          size="small"
-          severity="secondary"
-          :disabled="!file"
-          @click="emit('versions', file)"
-        />
-        <Button
-          :label="t('band_space_files.common.delete')"
-          icon="pi pi-trash"
-          size="small"
-          severity="danger"
-          :disabled="!canDelete || isAttachedToSource"
-          :loading="filesStore.isDeletingFile"
-          v-tooltip.top="deleteDisabledReason"
-          @click="confirmDelete"
+          :severity="action.severity"
+          :text="isBelowMd"
+          :disabled="action.disabled"
+          :loading="action.loading"
+          v-tooltip.top="action.tooltip"
+          class="max-md:flex-1 max-md:flex-col! max-md:gap-1! max-md:px-1! max-md:text-xs!"
+          @click="action.run"
         />
       </div>
     </template>
@@ -245,6 +258,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import {
   deleteBlockingAttachments,
   fileSourceAttachedMessage,
@@ -257,18 +271,23 @@ import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
+import { formatDateWithWeekday } from '../../../utils/date.js'
 import { rootDestinationRefusal } from '../../../utils/fileListing.js'
+import { fileIconClass, fileTypeLabel } from '../../../utils/fileType.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
+import FileNameHeading from './FileNameHeading.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   autoStartRename: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['close', 'share', 'versions', 'deleted'])
+const emit = defineEmits(['close', 'share', 'versions', 'move', 'deleted'])
 const { t } = useI18n()
 
 const visible = defineModel('visible', { type: Boolean, default: false })
@@ -281,8 +300,14 @@ const confirm = useConfirm()
 const file = computed(() => filesStore.activeFile)
 const isAdmin = computed(() => bandSpaceStore.getById(props.bandSpaceId)?.role === 'admin')
 
+const isBelowMd = useIsBelowMd()
 const isRenaming = ref(false)
-const renameValue = ref('')
+// The phone's ⋮ sheet. Escape closes it alone rather than the file under it.
+const isActionsSheetOpen = ref(false)
+
+watch(visible, (isVisible) => {
+  if (!isVisible) isActionsSheetOpen.value = false
+})
 const initialTagIds = ref([])
 const selectedTagIds = ref([])
 
@@ -344,15 +369,20 @@ const folderOptions = computed(() => {
   return out
 })
 
+// Cache-bust on current_version_id so preview/audio/PDF refresh when a new
+// version is uploaded or a previous one is restored.
+const previewUrl = computed(() => {
+  const f = file.value
+  if (!f?.download_url) return null
+  const sep = f.download_url.includes('?') ? '&' : '?'
+
+  return f.current_version_id ? `${f.download_url}${sep}v=${f.current_version_id}` : f.download_url
+})
+
 const previewComponent = computed(() => {
   const f = file.value
   if (!f?.mime_type) return null
-  // Cache-bust on current_version_id so preview/audio/PDF refresh when a new
-  // version is uploaded or a previous one is restored.
-  const sep = f.download_url.includes('?') ? '&' : '?'
-  const url = f.current_version_id
-    ? `${f.download_url}${sep}v=${f.current_version_id}`
-    : f.download_url
+  const url = previewUrl.value
   if (f.mime_type === 'application/pdf') {
     return {
       tag: 'embed',
@@ -384,7 +414,6 @@ watch(
     if (f) {
       initialTagIds.value = (f.tags || []).map((t) => t.id)
       selectedTagIds.value = [...initialTagIds.value]
-      renameValue.value = f.original_name
       if (props.autoStartRename) {
         isRenaming.value = true
       }
@@ -393,22 +422,60 @@ watch(
   { immediate: true }
 )
 
-function startRename() {
-  if (!file.value) return
-  renameValue.value = file.value.original_name
-  isRenaming.value = true
-}
+const isPdf = computed(() => file.value?.mime_type === 'application/pdf')
 
-function cancelRename() {
-  isRenaming.value = false
-}
-
-async function commitRename() {
-  const trimmed = renameValue.value.trim()
-  if (!trimmed || !file.value || trimmed === file.value.original_name) {
-    isRenaming.value = false
-    return
+const footerActions = computed(() => {
+  const actions = [
+    {
+      key: 'download',
+      label: t('band_space_files.file_list.menu.download'),
+      icon: 'pi pi-download',
+      severity: 'secondary',
+      disabled: !file.value,
+      run: openDownload
+    }
+  ]
+  if (isAdmin.value) {
+    actions.push({
+      key: 'share',
+      label: t('band_space_files.file_list.menu.share'),
+      icon: 'pi pi-share-alt',
+      severity: 'secondary',
+      disabled: !file.value,
+      run: () => emit('share', file.value)
+    })
   }
+  actions.push(
+    {
+      key: 'versions',
+      label: t('band_space_files.file_list.menu.versions'),
+      icon: 'pi pi-history',
+      severity: 'secondary',
+      disabled: !file.value,
+      run: () => emit('versions', file.value)
+    },
+    {
+      key: 'delete',
+      label: t('band_space_files.common.delete'),
+      icon: 'pi pi-trash',
+      severity: 'danger',
+      disabled: !canDelete.value || isAttachedToSource.value,
+      loading: filesStore.isDeletingFile,
+      tooltip: deleteDisabledReason.value,
+      run: confirmDelete
+    }
+  )
+
+  return actions
+})
+
+function runSheetAction(action) {
+  isActionsSheetOpen.value = false
+  action()
+}
+
+async function commitRename(trimmed) {
+  if (!file.value) return
   await filesStore.updateFile(props.bandSpaceId, file.value.id, { original_name: trimmed })
   isRenaming.value = false
   filesStore.fetchFileActivities(props.bandSpaceId, file.value.id)
@@ -456,30 +523,25 @@ function confirmDelete() {
   })
 }
 
+/** The PDF in the browser's own viewer, at its current version as the preview would show it. */
+function openPreview() {
+  if (previewUrl.value) window.open(previewUrl.value, '_blank', 'noopener')
+}
+
 function openDownload() {
   if (file.value?.download_url) {
     window.open(file.value.download_url, '_blank', 'noopener')
   }
 }
 
-function iconForMime(mime) {
-  if (!mime) return 'pi pi-file'
-  if (mime.startsWith('audio/')) return 'pi pi-volume-up'
-  if (mime.startsWith('image/')) return 'pi pi-image'
-  if (mime.startsWith('video/')) return 'pi pi-video'
-  if (mime === 'application/pdf') return 'pi pi-file-pdf'
-  return 'pi pi-file'
-}
-
+/** « mer. 4 nov. 2026 à 08:56 »: the day placed in its week, then the time. */
 function formatDate(iso) {
   if (!iso) return noValue()
-  const date = new Date(iso)
-  return date.toLocaleDateString(intlLocale(), {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  const time = new Date(iso).toLocaleTimeString(intlLocale(), {
     hour: '2-digit',
     minute: '2-digit'
   })
+
+  return t('band_space_files.detail.date_at', { date: formatDateWithWeekday(iso), time })
 }
 </script>

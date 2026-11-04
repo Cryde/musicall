@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="dialogHeader"
-    :style="{ width: '28rem' }"
+    v-bind="sheetDialog"
     @hide="resetState"
   >
     <div class="flex flex-col gap-4">
@@ -68,8 +68,11 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { treeIndent } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+
+const sheetDialog = useSheetDialog('28rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

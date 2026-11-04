@@ -182,7 +182,6 @@
 </template>
 
 <script setup>
-import { useMediaQuery } from '@vueuse/core'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
@@ -198,6 +197,7 @@ import TaskDetail from '../../components/BandSpace/Task/TaskDetail.vue'
 import TaskFilterBar from '../../components/BandSpace/Task/TaskFilterBar.vue'
 import TaskPhoneBoard from '../../components/BandSpace/Task/TaskPhoneBoard.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { intlLocale } from '../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../store/bandSpace/bandSpaceTasks.js'
 
@@ -225,7 +225,7 @@ const categoryManagerVisible = ref(false)
 const createFormVisible = ref(false)
 const showAllDone = ref(false)
 // Below `md` the board's three columns do not fit side by side.
-const isPhone = useMediaQuery('(width < 48rem)')
+const isPhone = useIsBelowMd()
 
 useBandSpaceLiveRefresh({
   bandSpaceId,

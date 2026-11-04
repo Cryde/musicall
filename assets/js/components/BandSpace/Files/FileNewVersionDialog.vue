@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="t('band_space_files.new_version_dialog.title')"
-    :style="{ width: '32rem' }"
+    v-bind="sheetDialog"
     :closable="!isUploading"
     :close-on-escape="!isUploading"
     @hide="resetForm"
@@ -92,9 +92,12 @@ import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { uploadRejectionReason } from '../../../utils/fileUploadQueue.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
+
+const sheetDialog = useSheetDialog('32rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

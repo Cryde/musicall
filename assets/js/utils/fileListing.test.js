@@ -3,10 +3,13 @@ import { describe, it } from 'node:test'
 import { NO_FOLDER_LISTED, ROOT_FOLDER_ID, TRASH_FOLDER_ID } from '../constants/folderSelection.js'
 import { i18n } from '../i18n/index.js'
 import {
+  activeLocationLabel,
   canFileSitAtRoot,
+  canHoldSubfolder,
   fileListingParams,
   fileLocation,
   fileVirtualFolders,
+  findFolder,
   folderFileCountLabel,
   folderPathOf,
   folderSelectOptions,
@@ -359,5 +362,52 @@ describe('folderSelectOptions', () => {
 
   it('offers Racine alone for an empty tree', () => {
     assert.deepEqual(folderSelectOptions([]), [{ label: 'Racine', value: null, disabled: false }])
+  })
+})
+
+describe('activeLocationLabel', () => {
+  const tree = [
+    { id: 'f1', name: 'Concert Petit Bain', children: [{ id: 'f2', name: 'Photos', children: [] }] }
+  ]
+  const virtualFolders = [{ source: 'task', name: 'Tâches', file_count: 2 }]
+
+  it('names the root, and a folder by its path from the root', () => {
+    assert.equal(activeLocationLabel(ROOT_FOLDER_ID, tree), 'Racine')
+    assert.equal(activeLocationLabel('f1', tree), 'Racine › Concert Petit Bain')
+    assert.equal(activeLocationLabel('f2', tree), 'Racine › Concert Petit Bain › Photos')
+  })
+
+  it('names the selections that are not a place', () => {
+    assert.equal(activeLocationLabel(null, tree), 'Tous les fichiers')
+    assert.equal(activeLocationLabel(TRASH_FOLDER_ID, tree), 'Corbeille')
+    assert.equal(activeLocationLabel('virtual:task', tree, virtualFolders), 'Tâches')
+  })
+
+  it('falls back to the root for a folder the tree no longer holds', () => {
+    assert.equal(activeLocationLabel('gone', tree), 'Racine')
+  })
+})
+
+describe('findFolder', () => {
+  const paris = { id: 'paris', depth: 2, children: [] }
+  const tree = [{ id: 'live', depth: 0, children: [{ id: '2026', depth: 1, children: [paris] }] }]
+
+  it('finds a folder at any depth', () => {
+    assert.equal(findFolder(tree, 'paris'), paris)
+    assert.equal(findFolder(tree, 'live').id, 'live')
+  })
+
+  it('finds nothing for a folder that is gone, or for no folder', () => {
+    assert.equal(findFolder(tree, 'deleted'), null)
+    assert.equal(findFolder(tree, null), null)
+  })
+})
+
+describe('canHoldSubfolder', () => {
+  it('stops one level before the deepest the tree allows', () => {
+    assert.equal(canHoldSubfolder({ depth: 0 }), true)
+    assert.equal(canHoldSubfolder({ depth: 4 }), true)
+    assert.equal(canHoldSubfolder({ depth: 5 }), false)
+    assert.equal(canHoldSubfolder({}), true)
   })
 })

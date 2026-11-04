@@ -69,10 +69,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { canDrop, collectFolderAndDescendants } from '../../../composables/useFolderDragDrop.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
-import { folderFileCountLabel } from '../../../utils/fileListing.js'
+import { canHoldSubfolder, folderFileCountLabel } from '../../../utils/fileListing.js'
 import FolderTreeRail from './FolderTreeRail.vue'
-
-const MAX_DEPTH = 6
 
 const props = defineProps({
   folder: { type: Object, required: true },
@@ -130,7 +128,7 @@ const rowClasses = computed(() => {
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
 })
 
-const canCreateSub = computed(() => (props.folder.depth ?? 0) < MAX_DEPTH - 1)
+const canCreateSub = computed(() => canHoldSubfolder(props.folder))
 
 function handleDragStart(event) {
   // Collect descendant ids (including self) to prevent dropping on a descendant

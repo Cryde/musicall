@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="dialogHeader"
-    :style="{ width: '40rem' }"
+    v-bind="sheetDialog"
     :closable="!filesStore.isUploadingVersion && !filesStore.isRollingBack"
   >
     <div class="flex flex-col gap-4">
@@ -35,7 +35,7 @@
           :key="version.id"
           class="flex items-center gap-3 p-3 rounded-lg border border-surface-200 dark:border-surface-700"
         >
-          <div class="flex flex-col items-center w-10">
+          <div class="flex flex-col items-center min-w-10 shrink-0">
             <span class="font-mono text-xs text-surface-500">{{
               t('band_space_files.version_panel.version_number', { number: version.version_number })
             }}</span>
@@ -48,7 +48,7 @@
           </div>
 
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 text-xs text-surface-500">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-surface-500">
               <Avatar
                 v-if="version.created_by"
                 :username="version.created_by.username"
@@ -60,9 +60,9 @@
                 <UserName v-if="version.created_by" :username="version.created_by.username" :display-name="version.created_by.display_name" :picture-url="version.created_by.profile_picture_url" /><template v-else>{{ noValue() }}</template>
               </span>
               <span>{{ separator() }}</span>
-              <span class="tabular-nums">{{ formatBytes(version.size) }}</span>
+              <span class="tabular-nums whitespace-nowrap">{{ formatBytes(version.size) }}</span>
               <span>{{ separator() }}</span>
-              <span>{{ formatDate(version.creation_datetime) }}</span>
+              <span class="whitespace-nowrap">{{ formatDate(version.creation_datetime) }}</span>
             </div>
           </div>
 
@@ -110,12 +110,15 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { intlLocale, noValue, separator } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 import FileNewVersionDialog from './FileNewVersionDialog.vue'
+
+const sheetDialog = useSheetDialog('40rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

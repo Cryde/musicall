@@ -91,7 +91,13 @@
     "attached_to": "Attaché à ({count})",
     "detach_hint": "Pour détacher ce fichier, utilise la ressource d'origine.",
     "attached_to_several": "Ce fichier est attaché à {count} ressources. Détache-le d'abord depuis chacune.",
-    "delete_not_owner": "Seul le créateur ou un administrateur peut supprimer ce fichier"
+    "delete_not_owner": "Seul le créateur ou un administrateur peut supprimer ce fichier",
+    "title": "Fichier",
+    "back": "Retour",
+    "more_actions": "Plus d'actions",
+    "open_pdf": "Ouvrir le PDF",
+    "open_pdf_hint": "S'ouvre dans la visionneuse du navigateur",
+    "date_at": "{date} à {time}"
   },
   "breadcrumb": {
     "aria_label": "Fil d'Ariane"
@@ -221,7 +227,8 @@
       "skipped": "Non envoyé",
       "cancelled": "Interrompu",
       "rejected": "Refusé"
-    }
+    },
+    "pick_files": "Choisir des fichiers"
   },
   "share_dialog": {
     "title": "Partager le fichier",
@@ -388,5 +395,14 @@
       "summary": "Fichier téléversé | Fichiers téléversés",
       "single_detail": "Le fichier a bien été ajouté."
     }
+  },
+  "phone": {
+    "title": "Fichiers",
+    "select": "Sélectionner",
+    "change_location": "Changer de dossier, actuellement {location}",
+    "filters": "Filtres",
+    "all_tags": "Tous les tags",
+    "all_types": "Tous les types",
+    "upload": "Importer"
   }
 }

@@ -25,7 +25,7 @@
   <BottomSheet :visible="openSheet === 'priority'" :title="t('band_space_tasks.field.priority')" @update:visible="close">
     <ul class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
       <li v-for="option in priorityOptions" :key="option.value">
-        <button type="button" :class="CHOICE" :aria-pressed="priority === option.value" @click="choose('priority', option.value)">
+        <button type="button" :class="SHEET_CHOICE" :aria-pressed="priority === option.value" @click="choose('priority', option.value)">
           {{ option.label }}
           <i v-if="priority === option.value" class="pi pi-check ml-auto text-primary" aria-hidden="true" />
         </button>
@@ -44,7 +44,7 @@
     <ul class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
       <li v-for="member in members" :key="member.user_id">
         <!-- Each tap saves, as the desktop's multi select does, and the sheet stays open for the next. -->
-        <button type="button" :class="CHOICE" :aria-pressed="assigneeIds.includes(member.user_id)" @click="toggleAssignee(member.user_id)">
+        <button type="button" :class="SHEET_CHOICE" :aria-pressed="assigneeIds.includes(member.user_id)" @click="toggleAssignee(member.user_id)">
           <Avatar :username="member.username" :display-name="member.display_name" :picture-url="member.profile_picture_url" size="sm" />
           {{ member.display_name }}
           <i v-if="assigneeIds.includes(member.user_id)" class="pi pi-check ml-auto text-primary" aria-hidden="true" />
@@ -56,13 +56,13 @@
   <BottomSheet :visible="openSheet === 'category'" :title="t('band_space_tasks.field.category')" @update:visible="close">
     <ul class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
       <li>
-        <button type="button" :class="CHOICE" :aria-pressed="!categoryId" @click="choose('category', null)">
+        <button type="button" :class="SHEET_CHOICE" :aria-pressed="!categoryId" @click="choose('category', null)">
           {{ t('band_space_tasks.field.no_category') }}
           <i v-if="!categoryId" class="pi pi-check ml-auto text-primary" aria-hidden="true" />
         </button>
       </li>
       <li v-for="category in categories" :key="category.id">
-        <button type="button" :class="CHOICE" :aria-pressed="categoryId === category.id" @click="choose('category', category.id)">
+        <button type="button" :class="SHEET_CHOICE" :aria-pressed="categoryId === category.id" @click="choose('category', category.id)">
           <span class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: category.color }" aria-hidden="true" />
           {{ category.name }}
           <i v-if="categoryId === category.id" class="pi pi-check ml-auto text-primary" aria-hidden="true" />
@@ -76,6 +76,7 @@
 import DatePicker from 'primevue/datepicker'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { SHEET_CHOICE } from '../../../constants/phoneControls.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import Avatar from '../../User/Avatar.vue'
@@ -98,9 +99,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['change'])
-
-const CHOICE =
-  'flex w-full items-center gap-3 px-5 py-3.5 text-left text-surface-900 transition-colors hover:bg-surface-100 dark:text-surface-0 dark:hover:bg-surface-800'
 
 const { t } = useI18n()
 // Which sheet is open, for the drawer holding the rows: one Escape should close the sheet, not both.

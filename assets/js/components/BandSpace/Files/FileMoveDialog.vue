@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="t('band_space_files.file_move.title')"
-    :style="{ width: '28rem' }"
+    v-bind="sheetDialog"
     @hide="resetState"
   >
     <div class="flex flex-col gap-4">
@@ -60,8 +60,11 @@ import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { folderSelectOptions, rootDestinationRefusal } from '../../../utils/fileListing.js'
+
+const sheetDialog = useSheetDialog('28rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

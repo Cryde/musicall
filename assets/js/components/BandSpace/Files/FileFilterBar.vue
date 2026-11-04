@@ -55,6 +55,12 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  fileSortOptions,
+  fileSortValue,
+  fileTypeOptions,
+  parseFileSort
+} from '../../../utils/fileFilters.js'
 
 const props = defineProps({
   filters: { type: Object, required: true },
@@ -66,28 +72,16 @@ const { t } = useI18n()
 
 const tagOptions = computed(() => props.tags.map((tag) => ({ label: tag.name, value: tag.id })))
 
-const mimeOptions = computed(() => [
-  { label: t('band_space_files.filter.mime.audio'), value: 'audio/' },
-  { label: t('band_space_files.filter.mime.image'), value: 'image/' },
-  { label: t('band_space_files.filter.mime.pdf'), value: 'application/pdf' },
-  { label: t('band_space_files.filter.mime.video'), value: 'video/' }
-])
+const mimeOptions = computed(() => fileTypeOptions())
 
-const sortOptions = computed(() => [
-  { label: t('band_space_files.filter.sort.newest'), value: 'date:desc' },
-  { label: t('band_space_files.filter.sort.oldest'), value: 'date:asc' },
-  { label: t('band_space_files.filter.sort.name_asc'), value: 'name:asc' },
-  { label: t('band_space_files.filter.sort.name_desc'), value: 'name:desc' },
-  { label: t('band_space_files.filter.sort.size_desc'), value: 'size:desc' },
-  { label: t('band_space_files.filter.sort.size_asc'), value: 'size:asc' }
-])
+const sortOptions = computed(() => fileSortOptions())
 
-const sortValue = computed(() => `${props.filters.sort}:${props.filters.order}`)
+const sortValue = computed(() => fileSortValue(props.filters))
 
 function handleSortChange(value) {
-  if (!value) return
-  const [sort, order] = value.split(':')
-  emit('update-filter', { key: 'sort', value: sort })
-  emit('update-filter', { key: 'order', value: order })
+  const sort = parseFileSort(value)
+  if (!sort) return
+  emit('update-filter', { key: 'sort', value: sort.sort })
+  emit('update-filter', { key: 'order', value: sort.order })
 }
 </script>

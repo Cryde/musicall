@@ -1,20 +1,31 @@
 <template>
   <div
     v-if="selectedFiles.length > 0"
-    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-900 dark:bg-surface-800 text-white rounded-xl shadow-xl px-4 py-2 flex items-center gap-3"
+    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-900 dark:bg-surface-800 text-white rounded-xl shadow-xl px-4 py-2 flex items-center gap-3 max-md:left-3 max-md:right-3 max-md:translate-x-0 max-md:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] max-md:grid max-md:grid-cols-2 max-md:gap-2 max-md:p-3"
     role="region"
     :aria-label="t('band_space_files.bulk_bar.region_label')"
   >
-    <span class="text-sm font-medium">
+    <!-- A panel across a phone: the count and ✕ on top, the actions full width under them. -->
+    <span class="text-sm font-medium max-md:self-center">
       {{ t('band_space_files.bulk_bar.selected_count', selectedFiles.length) }}
     </span>
+    <!-- Right after the count on a phone, where it is drawn, so the tab order follows the eye. -->
+    <Button
+      icon="pi pi-times"
+      size="small"
+      text
+      severity="secondary"
+      class="!text-white justify-self-end md:hidden!"
+      :aria-label="t('band_space_files.bulk_bar.clear_selection')"
+      @click="filesStore.clearSelection"
+    />
 
-    <div class="w-px h-6 bg-surface-600"></div>
+    <div class="w-px h-6 bg-surface-600 max-md:hidden"></div>
 
     <template v-if="isTrash">
       <!-- The tooltip sits on the wrapper, since a disabled button fires no pointer event of its
            own, and a tooltip carries no accessible name either, hence the sr-only twin. -->
-      <span v-tooltip.top="restoreBlockedReason">
+      <span v-tooltip.top="restoreBlockedReason" class="max-md:col-span-2">
         <Button
           :label="t('band_space_files.common.restore')"
           icon="pi pi-undo"
@@ -22,6 +33,7 @@
           severity="secondary"
           :loading="busy === 'restore'"
           :disabled="!!busy || restoreBlockedReason !== null"
+          class="max-md:w-full!"
           @click="handleRestore"
         />
         <span v-if="restoreBlockedReason" class="sr-only">{{ restoreBlockedReason }}</span>
@@ -35,6 +47,7 @@
         size="small"
         severity="secondary"
         :disabled="!!busy"
+        class="max-md:w-full!"
         @click="(event) => movePopover.toggle(event)"
       />
       <Popover ref="movePopover">
@@ -61,20 +74,21 @@
           severity="danger"
           :loading="busy === 'delete'"
           :disabled="!!busy || deleteBlocked !== null"
+          class="max-md:w-full!"
           @click="confirmDelete"
         />
         <span v-if="deleteBlocked" class="sr-only">{{ deleteBlocked }}</span>
       </span>
     </template>
 
-    <div class="w-px h-6 bg-surface-600"></div>
+    <div class="w-px h-6 bg-surface-600 max-md:hidden"></div>
 
     <Button
       icon="pi pi-times"
       size="small"
       text
       severity="secondary"
-      class="!text-white"
+      class="!text-white max-md:hidden!"
       v-tooltip.top="t('band_space_files.bulk_bar.clear_selection')"
       :aria-label="t('band_space_files.bulk_bar.clear_selection')"
       @click="filesStore.clearSelection"

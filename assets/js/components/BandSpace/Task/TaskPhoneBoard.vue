@@ -40,8 +40,7 @@
     <div class="flex flex-wrap gap-2 pb-3">
       <button
         type="button"
-        class="inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors"
-        :class="filters.myTasks ? CHIP_ON : CHIP_OFF"
+        :class="[PHONE_CHIP, filters.myTasks ? PHONE_CHIP_ON : PHONE_CHIP_OFF]"
         :aria-pressed="filters.myTasks"
         @click="$emit('update-filter', 'myTasks', !filters.myTasks)"
       >
@@ -49,8 +48,7 @@
       </button>
       <button
         type="button"
-        class="inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors"
-        :class="activeFilterCount > 0 ? CHIP_ON : CHIP_OFF"
+        :class="[PHONE_CHIP, activeFilterCount > 0 ? PHONE_CHIP_ON : PHONE_CHIP_OFF]"
         aria-haspopup="dialog"
         :aria-expanded="isFilterSheetOpen"
         @click="isFilterSheetOpen = true"
@@ -170,6 +168,7 @@ import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useTaskSearchInput } from '../../../composables/useTaskSearchInput.js'
+import { PHONE_CHIP, PHONE_CHIP_OFF, PHONE_CHIP_ON } from '../../../constants/phoneControls.js'
 import { TASK_STATUSES } from '../../../constants/taskStatuses.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { sheetFilterCount } from '../../../utils/taskFilters.js'
@@ -204,11 +203,6 @@ const emit = defineEmits([
   'open-categories',
   'create-task'
 ])
-
-const CHIP_ON =
-  'border-primary bg-primary-50 text-primary-800 dark:bg-primary-950 dark:text-primary-200'
-const CHIP_OFF =
-  'border-surface-300 bg-surface-0 text-surface-700 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-200'
 
 const { t } = useI18n()
 const route = useRoute()

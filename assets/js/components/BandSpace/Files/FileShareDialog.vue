@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="t('band_space_files.share_dialog.title')"
-    :style="{ width: '36rem' }"
+    v-bind="sheetDialog"
     @hide="resetDialog"
   >
     <div class="flex flex-col gap-5">
@@ -167,8 +167,11 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { dateFnsLocale, intlLocale, noValue } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+
+const sheetDialog = useSheetDialog('36rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
