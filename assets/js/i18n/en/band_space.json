@@ -159,8 +159,7 @@
       "last": "Last: {title}, {date}"
     },
     "chat": {
-      "open": "Open the conversation",
-      "yesterday": "Yesterday"
+      "open": "Open the conversation"
     },
     "tiles": {
       "upcoming_dates": "{count} upcoming date | {count} upcoming dates",

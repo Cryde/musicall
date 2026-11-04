@@ -24,7 +24,7 @@ import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { displayName } from '../../../helper/user/displayName.js'
 import { useMessageStore } from '../../../store/message/message.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
-import { chatTimeLabel } from '../../../utils/bandHomeStatus.js'
+import { conversationTimeLabel } from '../../../utils/conversationTime.js'
 
 /**
  * The band chat on the phone home: its latest message and what is unread, as the app's chat row.
@@ -58,7 +58,7 @@ const preview = computed(() =>
 
 const unread = computed(() => notificationStore.chatUnreadFor(props.bandSpaceId))
 const time = computed(() =>
-  lastMessage.value ? chatTimeLabel(lastMessage.value.creation_datetime, props.now) : null
+  lastMessage.value ? conversationTimeLabel(lastMessage.value.creation_datetime, props.now) : null
 )
 
 const ariaLabel = computed(() =>

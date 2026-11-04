@@ -3,6 +3,7 @@
     v-model:visible="visible"
     modal
     :style="{ width: '500px' }"
+    :breakpoints="{ '575px': '95vw' }"
     :pt="{
       header: { class: 'pb-0 border-0' },
       content: { class: 'pt-4' }

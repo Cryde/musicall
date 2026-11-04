@@ -1,8 +1,7 @@
 {
   "index": {
     "title": "Messages",
-    "new_message": "New message",
-    "new_conversation": "New conversation"
+    "new_message": "New message"
   },
   "avatar": {
     "channel": "{name} band chat",
@@ -17,7 +16,9 @@
     "unread_aria_label": "{count} unread message(s)",
     "last_message_author": "{author}:",
     "no_message": "No messages",
-    "empty": "You don't have any messages yet."
+    "empty": "You don't have any messages yet.",
+    "search_placeholder": "Search conversations",
+    "no_match": "No conversation matches."
   },
   "thread": {
     "load_older": "Load older messages",
@@ -25,7 +26,10 @@
     "recipient_deleted": "You can no longer send messages to this user.",
     "none_selected": "Select a conversation or send a new message.",
     "seen": "Seen",
-    "online": "Online"
+    "online": "Online",
+    "back": "Back to conversations",
+    "more_actions": "More actions",
+    "view_profile": "View profile"
   },
   "send_modal": {
     "title": "New message",
@@ -57,5 +61,17 @@
       "artist": "{provider} artist"
     },
     "open_aria_label": "{title}: open {href} in a new tab"
+  },
+  "time": {
+    "yesterday": "Yesterday"
+  },
+  "actions": {
+    "open": "Message actions",
+    "copy": "Copy text",
+    "copied": "Message copied",
+    "copy_failed": "Could not copy the message"
+  },
+  "preview": {
+    "see_all": "See all messages"
   }
 }

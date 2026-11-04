@@ -2,10 +2,11 @@
   <div>
     <!-- Side by side where the list is wide, as on the Band Space tab. Where it is narrow (a phone, or
          the « Messages » pane) the actions go under the bubble rather than past the edge (#1251). The
-         list holding the bubble is the `@container` this asks. -->
+         list holding the bubble is the `@container` this asks. With the actions in a sheet nothing
+         is left to go under it, and a wrapped line would only push the reactions away. -->
     <div
-      class="flex items-center gap-2 @max-4xl:flex-wrap"
-      :class="isMine ? 'flex-row-reverse' : 'flex-row'"
+      class="flex items-center gap-2"
+      :class="[isMine ? 'flex-row-reverse' : 'flex-row', { '@max-4xl:flex-wrap': !actionsInSheet }]"
     >
       <!-- The edit box, which the list owns, takes the bubble's place so the conversation keeps its
            shape around it (#966). -->
@@ -21,15 +22,22 @@
         >
           {{ t('band_space_chat.message_list.deleted') }}
         </div>
+        <!-- With the actions in a sheet, a long press or a context menu opens it, and the press is
+             not also a text selection or the image preview's click. -->
         <div
           v-else
+          ref="bubble"
           class="inline-block min-w-0 max-w-full rounded-2xl px-4 py-2 text-sm break-words text-left"
           :class="[
             isMine
               ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
               : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
             cornerClasses,
+            { 'select-none [-webkit-touch-callout:none]': actionsInSheet }
           ]"
+          @contextmenu="openActionsFromMenu"
+          @pointerdown="forgetLongPress"
+          @click.capture="swallowClickAfterLongPress"
         >
           <ChatMessageImage v-if="message.image && imageSrc" :image="message.image" :src="imageSrc" />
           <ChatMessageVoiceNote v-if="message.voice_note && loadVoiceNote" :voice-note="message.voice_note" :fetch-blob="loadVoiceNote" />
@@ -51,10 +59,15 @@
             {{ t('band_space_chat.message_list.edited') }}
           </span>
           <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether or
-               not there is a pointer to hover with. -->
+               not there is a pointer to hover with. Where nothing hovers it is only read out: the
+               sheet shows the time. -->
           <time
             :datetime="message.creation_datetime"
-            class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
+            :class="
+              actionsInSheet
+                ? 'sr-only'
+                : 'shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300'
+            "
           >
             {{ absoluteDate(message.creation_datetime) }}
           </time>
@@ -62,7 +75,7 @@
                rather than after a second: this one is there to be clicked. A pinned message keeps its
                marker visible, because the bar says what is pinned and this says which one. -->
           <button
-            v-if="canPin && !message.is_deleted"
+            v-if="canPin && !message.is_deleted && !actionsInSheet"
             type="button"
             class="shrink-0 rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 transition-opacity duration-150 hover:text-primary-700 focus-visible:opacity-100 disabled:opacity-50 group-hover/message:opacity-100 dark:bg-surface-700 dark:text-surface-300 dark:hover:text-primary-300"
             :class="message.is_pinned ? 'opacity-100' : 'opacity-0'"
@@ -76,10 +89,20 @@
               aria-hidden="true"
             />
           </button>
+          <!-- In a sheet, the actions are reached from here by a keyboard or a screen reader: out of
+               sight until focused, since a finger opens them with a long press. -->
+          <button
+            v-if="actionsInSheet && !message.is_deleted"
+            type="button"
+            class="sr-only focus-visible:not-sr-only focus-visible:shrink-0 focus-visible:rounded-full focus-visible:bg-surface-200 focus-visible:px-2 focus-visible:py-0.5 focus-visible:text-[11px] dark:focus-visible:bg-surface-700"
+            @click="emit('open-actions')"
+          >
+            {{ t('message.actions.open') }}
+          </button>
           <!-- « Ça, c'est une tâche » (#979), open to every member rather than to the author: the one
                who knows the XLR cable will be forgotten is rarely the one who mentioned it. -->
           <button
-            v-if="canCreateTask && !message.is_deleted"
+            v-if="canCreateTask && !message.is_deleted && !actionsInSheet"
             type="button"
             class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary disabled:opacity-50 dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
             :disabled="isTaskPending"
@@ -89,7 +112,7 @@
             <i class="pi pi-check-square text-xs" aria-hidden="true" />
           </button>
           <button
-            v-if="canReport && !isMine && !message.is_deleted"
+            v-if="canReport && !isMine && !message.is_deleted && !actionsInSheet"
             type="button"
             class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-400 dark:hover:text-red-400"
             :aria-label="t('band_space_chat.message_list.report')"
@@ -101,7 +124,7 @@
                appeared on one would be unreachable. Opacity rather than display, so revealing it shifts
                nothing, and on focus too, or a keyboard lands on a control nothing on screen explains. -->
           <button
-            v-if="canEdit && !message.is_deleted"
+            v-if="canEdit && !message.is_deleted && !actionsInSheet"
             type="button"
             class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
             :aria-label="t('band_space_chat.message_list.edit')"
@@ -110,7 +133,7 @@
             <i class="pi pi-pencil text-xs" aria-hidden="true" />
           </button>
           <button
-            v-if="canDelete"
+            v-if="canDelete && !actionsInSheet"
             type="button"
             class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-300 dark:hover:text-red-400"
             :aria-label="t('band_space_chat.message_list.delete')"
@@ -130,12 +153,15 @@
       v-if="reactable"
       :reactions="message.reactions"
       :align-end="isMine"
+      :can-add="!actionsInSheet"
       @toggle="(emojiKey) => emit('react', emojiKey)"
     />
   </div>
 </template>
 
 <script setup>
+import { onLongPress } from '@vueuse/core'
+import { useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { autoLink } from '../../../utils/autoLink.js'
@@ -150,7 +176,7 @@ import ChatMessageVoiceNote from './ChatMessageVoiceNote.vue'
  * `group/message` element, which the hover reveals of the time and the buttons key on, and is itself
  * an `@container`, which decides whether the actions fit beside the bubble.
  */
-defineProps({
+const props = defineProps({
   message: { type: Object, required: true },
   isMine: { type: Boolean, default: false },
   /** From bubbleCornerClasses(), which needs the message's place in its block. */
@@ -167,10 +193,58 @@ defineProps({
   isTaskPending: { type: Boolean, default: false },
   canReport: { type: Boolean, default: false },
   canEdit: { type: Boolean, default: false },
-  canDelete: { type: Boolean, default: false }
+  canDelete: { type: Boolean, default: false },
+  /**
+   * Where there is no hover to reveal them, the actions leave the row for a sheet the list opens on
+   * `open-actions`: a direct conversation on a touch screen. The band chat never sets it.
+   */
+  actionsInSheet: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['pin', 'create-task', 'report', 'edit', 'delete', 'react'])
+const emit = defineEmits([
+  'pin',
+  'create-task',
+  'report',
+  'edit',
+  'delete',
+  'react',
+  'open-actions'
+])
 
 const { t } = useI18n()
+
+const LONG_PRESS_MS = 500
+
+const bubble = useTemplateRef('bubble')
+let longPressed = false
+
+onLongPress(
+  bubble,
+  () => {
+    if (!props.actionsInSheet || props.message.is_deleted) return
+    longPressed = true
+    emit('open-actions')
+  },
+  { delay: LONG_PRESS_MS, distanceThreshold: 10 }
+)
+
+function openActionsFromMenu(event) {
+  if (!props.actionsInSheet || props.message.is_deleted) return
+  event.preventDefault()
+  emit('open-actions')
+}
+
+// A long press does not always end in a click (Android shows its context menu instead), so each new
+// press starts clean, or the next real tap on the bubble would be swallowed.
+function forgetLongPress() {
+  longPressed = false
+}
+
+// The finger lifting after a long press is a click too: it would also open an image's preview.
+function swallowClickAfterLongPress(event) {
+  if (!longPressed) return
+  longPressed = false
+  event.preventDefault()
+  event.stopPropagation()
+}
 </script>

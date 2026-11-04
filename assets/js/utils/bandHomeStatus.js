@@ -1,9 +1,10 @@
-import { differenceInCalendarDays, format, startOfDay } from 'date-fns'
-import { intlLocale, separator } from '../i18n/formatLocale.js'
+import { differenceInCalendarDays } from 'date-fns'
+import { separator } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 import { toAgendaDate } from './agendaDate.js'
 import { isAllDayItem } from './agendaItem.js'
 import { formatAmount } from './currency.js'
+import { formatDateCompact } from './date.js'
 import { formatBytes } from './formatBytes.js'
 
 /**
@@ -39,7 +40,7 @@ export function shownDate(item) {
 
 /** « 4 nov. » in French, "4 Nov" in English. */
 export function shortDay(date) {
-  return date.toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short' })
+  return formatDateCompact(date)
 }
 
 /**
@@ -266,13 +267,4 @@ export function relativeAgeLabel(value, now = new Date()) {
 
   const days = Math.floor(elapsed / DAY)
   return days === 1 ? t('band_space.home.age.yesterday') : t('band_space.home.age.days', days)
-}
-
-/** When the band chat last spoke: « 09:07 » today, « Hier », then « 3 nov. ». */
-export function chatTimeLabel(value, now = new Date()) {
-  const date = new Date(value)
-  const days = differenceInCalendarDays(startOfDay(now), startOfDay(date))
-  if (days === 0) return format(date, 'HH:mm')
-  if (days === 1) return t('band_space.home.chat.yesterday')
-  return shortDay(date)
 }

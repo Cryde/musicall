@@ -7,6 +7,7 @@
           icon="pi pi-arrow-left"
           text
           rounded
+          :aria-label="t('message.thread.back')"
           @click="emit('back')"
         />
       </div>
@@ -65,14 +66,10 @@
       <span v-if="isOtherOnline" class="text-xs text-emerald-700 dark:text-emerald-400 shrink-0">
         {{ t('message.thread.online') }}
       </span>
-      <BlockUserButton
-        v-if="!isCurrentChannel && otherParticipant?.id && !isRecipientDeleted"
-        :user-id="otherParticipant.id"
-        :username="otherParticipant.username"
-        icon-only
-        class="ml-auto"
-        @blocked="handleBlocked"
-      />
+      <!-- The profile, reporting and blocking, behind one « ⋮ »: a sheet on a phone, a menu elsewhere. -->
+      <div v-if="!isCurrentChannel && otherParticipant?.id && !isRecipientDeleted" class="ml-auto shrink-0">
+        <ConversationActions :participant="otherParticipant" :name="title" @blocked="handleBlocked" />
+      </div>
     </div>
 
     <!-- A channel is the band chat itself (#1244): reactions, media, « Vu par », typing, all of it,
@@ -161,6 +158,8 @@
                 can-report
                 :can-edit="canEdit(message)"
                 :can-delete="canDeleteChatMessage(message, isSender(message), false)"
+                :actions-in-sheet="actionsInSheet"
+                @open-actions="openActions(message)"
                 @report="openReport(message)"
                 @edit="startEdit(message)"
                 @delete="confirmDelete(message)"
@@ -209,6 +208,19 @@
       />
 
       <ReportDialog v-model:visible="isReportVisible" target-type="message" :target-id="reportedMessageId" />
+
+      <MessageActionsSheet
+        v-model:visible="isActionsOpen"
+        :message="actionsMessage"
+        :is-mine="actionsMessage ? isSender(actionsMessage) : false"
+        :can-edit="actionsMessage ? canEdit(actionsMessage) : false"
+        :can-delete="actionsMessage ? canDeleteChatMessage(actionsMessage, isSender(actionsMessage), false) : false"
+        :can-report="actionsMessage ? !isSender(actionsMessage) && !actionsMessage.is_deleted : false"
+        @react="(emojiKey) => messageStore.toggleReaction(actionsMessage.id, emojiKey)"
+        @edit="startEdit(actionsMessage)"
+        @delete="confirmDelete(actionsMessage)"
+        @report="openReport(actionsMessage)"
+      />
     </template>
   </div>
 
@@ -222,6 +234,7 @@
 
 <script setup>
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import { useMediaQuery } from '@vueuse/core'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
@@ -248,9 +261,10 @@ import { conversationTitle, isChannel } from '../../utils/conversationIdentity.j
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
 import ReportDialog from '../Report/ReportDialog.vue'
-import BlockUserButton from '../User/Block/BlockUserButton.vue'
 import UserName from '../User/UserName.vue'
 import ContactOrigin from './ContactOrigin.vue'
+import ConversationActions from './ConversationActions.vue'
+import MessageActionsSheet from './MessageActionsSheet.vue'
 
 const emit = defineEmits(['back'])
 
@@ -333,6 +347,20 @@ function openReport(message) {
   isReportVisible.value = true
 }
 
+// A touch screen has no hover to reveal a message's actions: they move to a sheet a long press opens.
+const actionsInSheet = useMediaQuery('(hover: none)')
+const actionsMessageId = ref(null)
+const isActionsOpen = ref(false)
+// Read from the list, so the sheet follows the message if it changes while open.
+const actionsMessage = computed(
+  () => messageStore.messages.find((message) => message.id === actionsMessageId.value) ?? null
+)
+
+function openActions(message) {
+  actionsMessageId.value = message.id
+  isActionsOpen.value = true
+}
+
 const {
   editingId,
   editContent,
@@ -350,10 +378,13 @@ const {
   remove: (messageId) => messageStore.deleteMessage(messageId)
 })
 
-// An edit box left open would follow the reader into the next conversation.
+// An edit box or a message's sheet left open would follow the reader into the next conversation.
 watch(
   () => messageStore.currentThreadId,
-  () => cancelEdit()
+  () => {
+    cancelEdit()
+    isActionsOpen.value = false
+  }
 )
 
 // Read at play time rather than bound to a thread, since the list is not remounted on a switch.
