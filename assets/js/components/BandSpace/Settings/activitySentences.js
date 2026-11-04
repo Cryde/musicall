@@ -1,3 +1,4 @@
+import { fileSourceDefiniteNoun } from '../../../constants/fileSources.js'
 import { noValue } from '../../../i18n/formatLocale.js'
 import { i18n } from '../../../i18n/index.js'
 import { formatEurosFromCents } from '../../../utils/currency.js'
@@ -39,6 +40,23 @@ function member(username) {
 
 function untitled(title) {
   return title ?? t('band_space_activity.untitled')
+}
+
+function fileName(activity) {
+  return activity.payload?.original_name ?? noValue()
+}
+
+// The source a file hangs on, worded to read after « à » or « de » (fileSources.js), and its own label
+// when the payload carries one. `bare` is the sentence for a payload that names no source at all.
+function fileSourceSentence(activity, keys) {
+  const sourceType = activity.payload?.source_type
+  // A type this front does not know has no noun either.
+  const noun = sourceType ? fileSourceDefiniteNoun(sourceType) : null
+  if (!noun && keys.bare) return t(keys.bare)
+
+  const source = noun ?? t('band_space_files.activity.associated_resource')
+  const label = activity.payload?.source_label
+  return label ? t(keys.labelled, { source, label }) : t(keys.plain, { source })
 }
 
 // What the inviter typed: an address, or a username for an invitation made by username (#1119).
@@ -139,6 +157,61 @@ const SENTENCES = {
   // No notes.note_file_detached — note detach is automatic cleanup when an
   // image is removed from the note body; the parallel note_content_updated
   // activity already covers it in the Notes feed.
+
+  // Files and folders. Only some payloads name the file, so the others speak of « un fichier ».
+  'file.uploaded': (a) => t('band_space_activity.file.uploaded', { name: fileName(a) }),
+  'file.archived': (a) => t('band_space_activity.file.archived', { name: fileName(a) }),
+  'file.restored': (a) => t('band_space_activity.file.restored', { name: fileName(a) }),
+  'file.purged': (a) => t('band_space_activity.file.purged', { name: fileName(a) }),
+  'file.renamed': (a) =>
+    t('band_space_activity.file.renamed', { from: raw(a.payload?.from), to: raw(a.payload?.to) }),
+  // No folder name: the file went to the root.
+  'file.moved': (a) =>
+    a.payload?.to_folder_name
+      ? t('band_space_activity.file.moved_to', { folder: a.payload.to_folder_name })
+      : t('band_space_activity.file.moved'),
+  'file.tagged': (a) =>
+    t('band_space_activity.file.tagged', { tag: a.payload?.tag_name ?? noValue() }),
+  'file.untagged': (a) =>
+    t('band_space_activity.file.untagged', { tag: a.payload?.tag_name ?? noValue() }),
+  'file.version_added': (a) =>
+    t('band_space_activity.file.version_added', { number: a.payload?.version_number ?? noValue() }),
+  'file.rolled_back': (a) =>
+    t('band_space_activity.file.rolled_back', {
+      number: a.payload?.to_version_number ?? noValue()
+    }),
+  'file.shared': () => t('band_space_activity.file.shared'),
+  'file.share_revoked': () => t('band_space_activity.file.share_revoked'),
+  'file.public_accessed': () => t('band_space_activity.file.public_accessed'),
+  'file.attached': (a) =>
+    fileSourceSentence(a, {
+      bare: 'band_space_activity.file.attached',
+      plain: 'band_space_activity.file.attached_to',
+      labelled: 'band_space_activity.file.attached_to_labelled'
+    }),
+  'file.detached': (a) =>
+    fileSourceSentence(a, {
+      bare: 'band_space_activity.file.detached',
+      plain: 'band_space_activity.file.detached_from',
+      labelled: 'band_space_activity.file.detached_from_labelled'
+    }),
+  // Released because its source was deleted, so the actor is not credited with detaching it.
+  'file.source_deleted': (a) =>
+    fileSourceSentence(a, {
+      bare: null,
+      plain: 'band_space_activity.file.source_deleted',
+      labelled: 'band_space_activity.file.source_deleted_labelled'
+    }),
+  'file.folder_created': (a) =>
+    t('band_space_activity.file.folder_created', { name: a.payload?.name ?? noValue() }),
+  'file.folder_renamed': (a) =>
+    t('band_space_activity.file.folder_renamed', {
+      from: raw(a.payload?.from),
+      to: raw(a.payload?.to)
+    }),
+  'file.folder_moved': () => t('band_space_activity.file.folder_moved'),
+  'file.folder_archived': (a) =>
+    t('band_space_activity.file.folder_archived', { name: a.payload?.name ?? noValue() }),
 
   // Finance — entries
   'finance.entry_created': (a) =>

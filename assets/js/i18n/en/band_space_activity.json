@@ -136,5 +136,33 @@
     "deletion_scheduled": "scheduled the Band Space for deletion",
     "deletion_cancelled": "cancelled the deletion of the Band Space"
   },
+  "file": {
+    "uploaded": "uploaded the file \"{name}\"",
+    "archived": "archived the file \"{name}\"",
+    "restored": "restored the file \"{name}\"",
+    "purged": "deleted the file \"{name}\" for good",
+    "renamed": "renamed the file \"{from}\" to \"{to}\"",
+    "moved": "moved a file",
+    "moved_to": "moved a file to \"{folder}\"",
+    "tagged": "added the tag \"{tag}\" to a file",
+    "untagged": "removed the tag \"{tag}\" from a file",
+    "version_added": "added version {number} of a file",
+    "rolled_back": "went back to version {number} of a file",
+    "shared": "created a share link for a file",
+    "share_revoked": "revoked a share link",
+    "public_accessed": "a file share link was opened",
+    "attached": "attached a file",
+    "attached_to": "attached a file to {source}",
+    "attached_to_labelled": "attached a file to {source} \"{label}\"",
+    "detached": "detached a file",
+    "detached_from": "detached a file from {source}",
+    "detached_from_labelled": "detached a file from {source} \"{label}\"",
+    "source_deleted": "deleted {source}, its file was detached",
+    "source_deleted_labelled": "deleted {source} \"{label}\", its file was detached",
+    "folder_created": "created the folder \"{name}\"",
+    "folder_renamed": "renamed the folder \"{from}\" to \"{to}\"",
+    "folder_moved": "moved a folder",
+    "folder_archived": "deleted the folder \"{name}\""
+  },
   "unknown": "performed the action \"{type}\" in the {module} module"
 }

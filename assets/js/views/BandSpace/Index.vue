@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <BandHome v-if="isCompact && bandSpaceId" :band-space-id="bandSpaceId" />
+  <div v-else>
     <div class="mb-6 lg:mb-8">
       <h1 class="text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
         {{ t('band_space.dashboard.title') }}
@@ -26,20 +27,26 @@
 </template>
 
 <script setup>
+import { useMediaQuery } from '@vueuse/core'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import ActivityWidget from '../../components/BandSpace/Dashboard/ActivityWidget.vue'
 import AgendaWidget from '../../components/BandSpace/Dashboard/AgendaWidget.vue'
+import BandHome from '../../components/BandSpace/Dashboard/BandHome.vue'
 import FinanceWidget from '../../components/BandSpace/Dashboard/FinanceWidget.vue'
 import InvitationsWidget from '../../components/BandSpace/Dashboard/InvitationsWidget.vue'
 import MobileAppWidget from '../../components/BandSpace/Dashboard/MobileAppWidget.vue'
 import StorageWidget from '../../components/BandSpace/Dashboard/StorageWidget.vue'
 import TasksWidget from '../../components/BandSpace/Dashboard/TasksWidget.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
+import { COMPACT_NAV_MEDIA_QUERY } from '../../composables/useCompactMenu.js'
 
 const route = useRoute()
 const { t } = useI18n()
+// Below lg the sidebar is hidden, so the dashboard becomes the app's band home, whose tiles open the
+// modules. One layout or the other, so each only makes its own requests.
+const isCompact = useMediaQuery(COMPACT_NAV_MEDIA_QUERY)
 const { currentSpace } = useBandSpaceNavigation()
 
 const bandSpaceId = computed(() => route.params.id || null)

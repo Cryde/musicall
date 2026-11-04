@@ -104,7 +104,8 @@ const FILE_ACTIVITY_SENTENCES = {
       : { keypath: 'band_space_files.activity.version_added' }
   },
   rolled_back: (a) => {
-    const num = a.payload?.version_number
+    // The server writes the version gone back to as `to_version_number`.
+    const num = a.payload?.to_version_number
     return num
       ? { keypath: 'band_space_files.activity.rolled_back_number', params: { number: num } }
       : { keypath: 'band_space_files.activity.rolled_back' }

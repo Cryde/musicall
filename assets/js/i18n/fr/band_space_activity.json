@@ -136,5 +136,33 @@
     "deletion_scheduled": "a programmé la suppression du Band Space",
     "deletion_cancelled": "a annulé la suppression du Band Space"
   },
+  "file": {
+    "uploaded": "a téléversé le fichier « {name} »",
+    "archived": "a archivé le fichier « {name} »",
+    "restored": "a restauré le fichier « {name} »",
+    "purged": "a supprimé définitivement le fichier « {name} »",
+    "renamed": "a renommé le fichier « {from} » en « {to} »",
+    "moved": "a déplacé un fichier",
+    "moved_to": "a déplacé un fichier vers « {folder} »",
+    "tagged": "a ajouté le tag « {tag} » à un fichier",
+    "untagged": "a retiré le tag « {tag} » d'un fichier",
+    "version_added": "a ajouté la version {number} d'un fichier",
+    "rolled_back": "est revenu à la version {number} d'un fichier",
+    "shared": "a créé un lien de partage pour un fichier",
+    "share_revoked": "a révoqué un lien de partage",
+    "public_accessed": "le lien de partage d'un fichier a été consulté",
+    "attached": "a attaché un fichier",
+    "attached_to": "a attaché un fichier à {source}",
+    "attached_to_labelled": "a attaché un fichier à {source} « {label} »",
+    "detached": "a détaché un fichier",
+    "detached_from": "a détaché un fichier de {source}",
+    "detached_from_labelled": "a détaché un fichier de {source} « {label} »",
+    "source_deleted": "a supprimé {source}, son fichier a été détaché",
+    "source_deleted_labelled": "a supprimé {source} « {label} », son fichier a été détaché",
+    "folder_created": "a créé le dossier « {name} »",
+    "folder_renamed": "a renommé le dossier « {from} » en « {to} »",
+    "folder_moved": "a déplacé un dossier",
+    "folder_archived": "a supprimé le dossier « {name} »"
+  },
   "unknown": "a effectué l'action « {type} » sur le module {module}"
 }

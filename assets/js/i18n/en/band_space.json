@@ -149,6 +149,49 @@
       "dismiss": "Don't show again"
     }
   },
+  "home": {
+    "members": "{count} member | {count} members",
+    "other_bands": "{count} other band | {count} other bands",
+    "nothing_planned": "Nothing planned",
+    "next_date": {
+      "label": "Next date",
+      "in_days": "In {count} day | In {count} days",
+      "last": "Last: {title}, {date}"
+    },
+    "chat": {
+      "open": "Open the conversation",
+      "yesterday": "Yesterday"
+    },
+    "tiles": {
+      "upcoming_dates": "{count} upcoming date | {count} upcoming dates",
+      "last_date": "Last: {date}",
+      "tasks_mine": "{count} for you",
+      "tasks_todo": "{count} to do",
+      "tasks_in_progress": "{count} in progress",
+      "tasks_none": "Nothing to do",
+      "tasks_unassigned": "{count} unassigned",
+      "setlists_none": "No setlists",
+      "setlists_count": "{count} setlist | {count} setlists",
+      "riders_none": "No riders",
+      "rider_edited": "Edited {age}",
+      "files_count": "No files | {count} file | {count} files",
+      "storage_used": "{used} of {total}",
+      "finance_nothing": "Nothing this month",
+      "finance_forecast": "Projected balance this month",
+      "notes_none": "No notes",
+      "notes_count": "{count} note | {count} notes",
+      "note_edited": "Edited {age}",
+      "invite_someone": "Invite someone",
+      "pending_invitations": "{count} pending invitation | {count} pending invitations"
+    },
+    "age": {
+      "just_now": "just now",
+      "minutes": "{count} min ago",
+      "hours": "{count} h ago",
+      "yesterday": "yesterday",
+      "days": "{count} day ago | {count} days ago"
+    }
+  },
   "no_space": {
     "title": "Welcome to Band Spaces",
     "intro": "A Band Space is your band's shared workspace: calendar, tasks, notes, files and finances in one place, open to every invited member.",
