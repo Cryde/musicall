@@ -212,7 +212,6 @@
       <MessageActionsSheet
         v-model:visible="isActionsOpen"
         :message="actionsMessage"
-        :is-mine="actionsMessage ? isSender(actionsMessage) : false"
         :can-edit="actionsMessage ? canEdit(actionsMessage) : false"
         :can-delete="actionsMessage ? canDeleteChatMessage(actionsMessage, isSender(actionsMessage), false) : false"
         :can-report="actionsMessage ? !isSender(actionsMessage) && !actionsMessage.is_deleted : false"
@@ -234,7 +233,6 @@
 
 <script setup>
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { useMediaQuery } from '@vueuse/core'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
@@ -250,6 +248,7 @@ import ChatMessageEditBox from '../../components/BandSpace/Chat/ChatMessageEditB
 import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
 import { useChatMessageActions } from '../../composables/useChatMessageActions.js'
 import { useChatPresence } from '../../composables/useChatPresence.js'
+import { useMessageActionsSheet } from '../../composables/useMessageActionsSheet.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
 import { useMessageStore } from '../../store/message/message.js'
@@ -347,19 +346,9 @@ function openReport(message) {
   isReportVisible.value = true
 }
 
-// A touch screen has no hover to reveal a message's actions: they move to a sheet a long press opens.
-const actionsInSheet = useMediaQuery('(hover: none)')
-const actionsMessageId = ref(null)
-const isActionsOpen = ref(false)
-// Read from the list, so the sheet follows the message if it changes while open.
-const actionsMessage = computed(
-  () => messageStore.messages.find((message) => message.id === actionsMessageId.value) ?? null
+const { actionsInSheet, isActionsOpen, actionsMessage, openActions } = useMessageActionsSheet(
+  () => messageStore.messages
 )
-
-function openActions(message) {
-  actionsMessageId.value = message.id
-  isActionsOpen.value = true
-}
 
 const {
   editingId,

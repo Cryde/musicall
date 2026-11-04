@@ -89,6 +89,14 @@
               aria-hidden="true"
             />
           </button>
+          <!-- The button leaves for the sheet, the marker stays: the bar still needs to say which one. -->
+          <span
+            v-else-if="canPin && message.is_pinned && !message.is_deleted"
+            class="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 dark:bg-surface-700 dark:text-surface-300"
+          >
+            <i class="pi pi-bookmark-fill" aria-hidden="true" />
+            {{ t('band_space_chat.pin.pinned') }}
+          </span>
           <!-- In a sheet, the actions are reached from here by a keyboard or a screen reader: out of
                sight until focused, since a finger opens them with a long press. -->
           <button

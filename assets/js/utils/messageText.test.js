@@ -30,6 +30,13 @@ describe('htmlToText', () => {
     assert.equal(htmlToText('a &unknown; b'), 'a &unknown; b')
   })
 
+  it('keeps a band chat mention as the name it shows, not the stored token', () => {
+    assert.equal(
+      htmlToText('Salut <span class="chat-mention">@Léa</span>, on charge à 16h'),
+      'Salut @Léa, on charge à 16h'
+    )
+  })
+
   it('reads nothing as an empty text', () => {
     assert.equal(htmlToText(null), '')
     assert.equal(htmlToText(''), '')

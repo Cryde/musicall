@@ -47,7 +47,8 @@
   },
   "pin": {
     "pin": "Pin this message",
-    "unpin": "Unpin this message"
+    "unpin": "Unpin this message",
+    "pinned": "Pinned"
   },
   "pinned_bar": {
     "headline": "{count} pinned messages | {count} pinned message | {count} pinned messages",

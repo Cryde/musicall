@@ -89,6 +89,8 @@
               can-report
               :can-edit="canEdit(message)"
               :can-delete="canDelete(message)"
+              :actions-in-sheet="actionsInSheet"
+              @open-actions="openActions(message)"
               @pin="chatPin.togglePin(message)"
               @create-task="handleCreateTask(message)"
               @report="openReport(message)"
@@ -159,6 +161,24 @@
     </template>
 
     <ReportDialog v-model:visible="isReportVisible" target-type="band_chat_message" :target-id="reportedMessageId" />
+
+    <MessageActionsSheet
+      v-model:visible="isActionsOpen"
+      :message="actionsMessage"
+      :can-edit="actionsMessage ? canEdit(actionsMessage) : false"
+      :can-delete="actionsMessage ? canDelete(actionsMessage) : false"
+      :can-report="actionsMessage ? !isMine(actionsMessage) && !actionsMessage.is_deleted : false"
+      :can-pin="actionsMessage ? !actionsMessage.is_deleted : false"
+      :is-pin-pending="actionsMessage ? chatPin.isPending(actionsMessage) : false"
+      :can-create-task="actionsMessage ? !actionsMessage.is_deleted : false"
+      :is-task-pending="actionsMessage ? chatStore.pendingTaskMessageId === actionsMessage.id : false"
+      @react="(emojiKey) => chatStore.toggleReaction(bandSpaceId, actionsMessage.id, emojiKey)"
+      @edit="startEdit(actionsMessage)"
+      @pin="chatPin.togglePin(actionsMessage)"
+      @create-task="handleCreateTask(actionsMessage)"
+      @report="openReport(actionsMessage)"
+      @delete="confirmDelete(actionsMessage)"
+    />
   </div>
 </template>
 
@@ -171,6 +191,7 @@ import { useI18n } from 'vue-i18n'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { useChatMessageActions } from '../../../composables/useChatMessageActions.js'
 import { useChatPin } from '../../../composables/useChatPin.js'
+import { useMessageActionsSheet } from '../../../composables/useMessageActionsSheet.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
@@ -179,6 +200,7 @@ import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
 import { readReceiptLabel } from '../../../utils/chatReadReceipt.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
+import MessageActionsSheet from '../../Message/MessageActionsSheet.vue'
 import ReportDialog from '../../Report/ReportDialog.vue'
 import UserName from '../../User/UserName.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
@@ -261,6 +283,10 @@ function openReport(message) {
 function canDelete(message) {
   return canDeleteChatMessage(message, isMine(message), isAdmin.value)
 }
+
+const { actionsInSheet, isActionsOpen, actionsMessage, openActions } = useMessageActionsSheet(
+  () => chatStore.messages
+)
 
 /**
  * The message keeps its card whatever happens next: the store adds it from the answer, so the bubble
