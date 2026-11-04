@@ -13,7 +13,17 @@
     </div>
 
     <div v-else class="flex flex-col">
+      <!-- A phone has no header row; selecting there gets its own « Tout sélectionner » line, since the
+           header's checkbox was the only way to select every row. -->
+      <label
+        v-if="compact && selecting"
+        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium border-b border-surface-200 dark:border-surface-700 cursor-pointer"
+      >
+        <Checkbox :model-value="allSelected" binary @update:model-value="toggleAll" />
+        {{ t('band_space_files.common.select_all') }}
+      </label>
       <div
+        v-if="!compact"
         class="hidden md:flex items-center gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wide text-surface-400 border-b border-surface-200 dark:border-surface-700"
       >
         <Checkbox
@@ -42,9 +52,12 @@
         role="button"
         tabindex="0"
         :aria-label="t('band_space_files.file_list.open_folder', { name: folder.name })"
-        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-500"
-        :class="dropTargetId === folder.id ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400' : ''"
-        :draggable="true"
+        class="flex items-center gap-2 px-3 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-500"
+        :class="[
+          compact ? 'min-h-14 py-2' : 'py-2',
+          dropTargetId === folder.id ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400' : ''
+        ]"
+        :draggable="!compact"
         @click="emit('open-folder', folder.id)"
         @keydown.enter.prevent="emit('open-folder', folder.id)"
         @keydown.space.prevent="emit('open-folder', folder.id)"
@@ -54,7 +67,20 @@
         @dragleave="handleFolderDragLeave"
         @drop.prevent="() => handleFolderDrop(folder)"
       >
-        <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
+        <template v-if="compact">
+          <i class="pi pi-folder text-lg text-primary-500 shrink-0 w-6 text-center" aria-hidden="true"></i>
+          <div class="min-w-0 flex-1">
+            <span class="block truncate font-medium">{{ folder.name }}</span>
+            <span
+              v-if="folderFileCountLabel(folder.file_count)"
+              class="block text-xs text-surface-500 dark:text-surface-400"
+            >
+              {{ folderFileCountLabel(folder.file_count) }}
+            </span>
+          </div>
+          <i class="pi pi-chevron-right text-xs text-surface-400 shrink-0 px-2" aria-hidden="true"></i>
+        </template>
+        <div v-else class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
           <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
             <i class="pi pi-folder text-lg text-primary-500 shrink-0" aria-hidden="true"></i>
             <div class="min-w-0">
@@ -78,25 +104,27 @@
           </div>
         </div>
 
-        <span class="shrink-0 w-7 h-7" aria-hidden="true"></span>
+        <span v-if="!compact" class="shrink-0 w-7 h-7" aria-hidden="true"></span>
       </div>
 
       <div
         v-for="file in files"
         :key="file.id"
-        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 cursor-pointer"
-        :class="
+        class="flex items-center gap-2 px-3 text-sm border-b border-surface-100 dark:border-surface-800 cursor-pointer"
+        :class="[
+          compact ? 'min-h-14 py-2' : 'py-2',
           isSelected(file)
             ? 'bg-primary-50 dark:bg-primary-900/30'
             : 'hover:bg-surface-50 dark:hover:bg-surface-800/40'
-        "
-        :draggable="!hasSelection"
+        ]"
+        :draggable="!hasSelection && !compact"
         @click="(event) => handleRowClick(event, file)"
-        @contextmenu="(event) => openContextMenu(event, file)"
+        @contextmenu="(event) => openActions(event, file)"
         @dragstart="(event) => handleDragStart(event, file)"
         @dragend="handleDragEnd"
       >
         <Checkbox
+          v-if="!compact || selecting"
           :model-value="isSelected(file)"
           binary
           size="small"
@@ -107,9 +135,28 @@
           @keydown="rememberModifiers"
           @update:model-value="() => toggleFromCheckbox(file)"
         />
-        <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
+        <div v-if="compact" class="flex items-center gap-2 flex-1 min-w-0">
+          <i :class="fileIconClass(file.mime_type)" class="text-lg text-surface-500 shrink-0 w-6 text-center" aria-hidden="true"></i>
+          <div class="min-w-0 flex-1">
+            <span class="block truncate font-medium">{{ file.original_name }}</span>
+            <span class="block truncate text-xs text-surface-500 dark:text-surface-400 tabular-nums">
+              {{ formatBytes(file.size) }} · {{ formatRowDate(file.creation_datetime) }}
+            </span>
+            <button
+              v-if="showLocation"
+              type="button"
+              class="flex items-center gap-1 max-w-full text-xs text-surface-500 dark:text-surface-400 hover:underline"
+              :aria-label="t('band_space_files.file_list.open_location', { location: locationOf(file).label })"
+              @click.stop="emit('open-location', locationOf(file).folderId)"
+            >
+              <i class="pi pi-folder text-[10px] shrink-0" aria-hidden="true"></i>
+              <span class="truncate">{{ locationOf(file).label }}</span>
+            </button>
+          </div>
+        </div>
+        <div v-else class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
           <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
-            <i :class="iconForMime(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
+            <i :class="fileIconClass(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
             <div class="min-w-0">
               <span class="block truncate font-medium">{{ file.original_name }}</span>
               <!-- Where the file actually lives, for a listing that is not one place. A search result
@@ -147,18 +194,47 @@
         </div>
 
         <button
+          v-if="!(compact && selecting)"
           type="button"
-          class="shrink-0 w-7 h-7 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
+          class="shrink-0 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
+          :class="compact ? 'w-10 h-10 -mr-2' : 'w-7 h-7'"
           :aria-label="t('band_space_files.file_list.file_actions')"
-          aria-haspopup="menu"
-          @click.stop="(event) => openContextMenu(event, file)"
+          :aria-haspopup="compact ? 'dialog' : 'menu'"
+          @click.stop="(event) => openActions(event, file)"
         >
           <i class="pi pi-ellipsis-v text-xs" aria-hidden="true"></i>
         </button>
       </div>
     </div>
 
-    <ContextMenu ref="contextMenuRef" :model="contextMenuItems" />
+    <ContextMenu v-if="!compact" ref="contextMenuRef" :model="contextMenuItems" />
+
+    <!-- The same actions as the menu, as a sheet: a menu anchored to a finger is hard to read and harder
+         to hit. -->
+    <BottomSheet
+      v-if="compact"
+      v-model:visible="isActionsSheetOpen"
+      :title="contextMenuFile?.original_name ?? ''"
+    >
+      <template #header>
+        <div class="min-w-0">
+          <p class="m-0 truncate text-lg font-semibold text-surface-900 dark:text-surface-0">
+            {{ contextMenuFile?.original_name }}
+          </p>
+          <p class="m-0 text-xs text-surface-500 dark:text-surface-400">{{ actionsSheetSubtitle }}</p>
+        </div>
+      </template>
+      <SheetAction
+        v-for="item in sheetItems"
+        :key="item.label"
+        :icon="item.icon.replace('pi ', '')"
+        :danger="item.class === 'p-menuitem-danger'"
+        :disabled="item.disabled"
+        @click="runSheetItem(item)"
+      >
+        {{ item.label }}
+      </SheetAction>
+    </BottomSheet>
   </div>
 </template>
 
@@ -183,9 +259,13 @@ import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
+import { formatDateCompactInYear } from '../../../utils/date.js'
 import { fileLocation, folderFileCountLabel } from '../../../utils/fileListing.js'
 import { areAllSelected, selectionAfterClick } from '../../../utils/fileSelection.js'
+import { fileIconClass, fileTypeLabel } from '../../../utils/fileType.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -196,7 +276,11 @@ const props = defineProps({
   /** Direct subfolders of the folder being shown, rendered above the files. */
   folders: { type: Array, default: () => [] },
   /** Show each file's folder, for a listing whose rows can come from anywhere. */
-  showLocation: { type: Boolean, default: false }
+  showLocation: { type: Boolean, default: false },
+  /** The phone's rows: two lines, no columns, no drag, the actions in a sheet. */
+  compact: { type: Boolean, default: false },
+  /** The phone's selection mode, where a tap selects a row instead of opening it. */
+  selecting: { type: Boolean, default: false }
 })
 
 const emit = defineEmits([
@@ -235,6 +319,11 @@ function isSelected(file) {
  * selection, so the default gesture on a file list keeps meaning "show me this one".
  */
 function handleRowClick(event, file) {
+  if (props.compact && props.selecting) {
+    applySelection(file, false)
+
+    return
+  }
   if (event.ctrlKey || event.metaKey || event.shiftKey) {
     applySelection(file, event.shiftKey)
 
@@ -351,10 +440,32 @@ const contextMenuItems = computed(() => {
   return items
 })
 
-function openContextMenu(event, file) {
+const isActionsSheetOpen = ref(false)
+
+const sheetItems = computed(() => contextMenuItems.value.filter((item) => !item.separator))
+
+const actionsSheetSubtitle = computed(() => {
+  const file = contextMenuFile.value
+  if (!file) return ''
+
+  return [fileTypeLabel(file.mime_type), formatBytes(file.size)].filter(Boolean).join(' · ')
+})
+
+/** The ⋮ button, or a right click or long press on the row: the menu on a computer, a sheet on a phone. */
+function openActions(event, file) {
   event.preventDefault()
   contextMenuFile.value = file
+  if (props.compact) {
+    if (!props.selecting) isActionsSheetOpen.value = true
+
+    return
+  }
   contextMenuRef.value?.show(event)
+}
+
+function runSheetItem(item) {
+  isActionsSheetOpen.value = false
+  item.command()
 }
 
 function confirmDelete(file) {
@@ -443,13 +554,8 @@ function handleDragEnd() {
   filesStore.endDrag()
 }
 
-function iconForMime(mime) {
-  if (!mime) return 'pi pi-file'
-  if (mime.startsWith('audio/')) return 'pi pi-volume-up'
-  if (mime.startsWith('image/')) return 'pi pi-image'
-  if (mime.startsWith('video/')) return 'pi pi-video'
-  if (mime === 'application/pdf') return 'pi pi-file-pdf'
-  return 'pi pi-file'
+function formatRowDate(iso) {
+  return iso ? formatDateCompactInYear(iso) : noValue()
 }
 
 function formatDate(iso) {

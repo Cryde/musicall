@@ -108,6 +108,34 @@ export function folderFileCountLabel(fileCount) {
 }
 
 /**
+ * Where the panel stands, in one line, for the phone's location button: « Racine », « Racine › Concert
+ * Petit Bain », a source's name, « Tous les fichiers » or « Corbeille ». The sidebar says the same thing
+ * on a computer by highlighting the entry.
+ *
+ * @param {string|null} activeFolderId
+ * @param {Array} tree
+ * @param {Array<{source: string, name: string}>} virtualFolders
+ * @returns {string}
+ */
+export function activeLocationLabel(activeFolderId, tree, virtualFolders = []) {
+  const t = i18n.global.t
+  if (activeFolderId === null) return t('band_space_files.page.all_files')
+  if (activeFolderId === TRASH_FOLDER_ID) return t('band_space_files.page.trash')
+
+  const source = virtualFolderSource(activeFolderId)
+  if (source !== null) {
+    return (
+      virtualFolders.find((folder) => folder.source === source)?.name ?? fileSourceLabel(source)
+    )
+  }
+
+  const folderId = listedFolderId(activeFolderId)
+  const path = folderId === NO_FOLDER_LISTED ? [] : folderPathOf(tree, folderId)
+
+  return [t('band_space_files.folder.root'), ...path.map((segment) => segment.name)].join(' › ')
+}
+
+/**
  * Whether a folder is still somewhere in the tree.
  *
  * Asked after a folder was deleted, because a delete takes a whole subtree with it depending on the
@@ -120,9 +148,37 @@ export function folderFileCountLabel(fileCount) {
  * @returns {boolean}
  */
 export function treeHoldsFolder(tree, folderId) {
-  if (!Array.isArray(tree) || folderId === null) return false
+  return findFolder(tree, folderId) !== null
+}
 
-  return tree.some((node) => node.id === folderId || treeHoldsFolder(node.children ?? [], folderId))
+/**
+ * A folder of the tree, with its `depth` and `children`, or null when the tree does not hold it.
+ *
+ * @param {Array} tree nested folders, each with an optional `children`
+ * @param {string|null} folderId
+ * @returns {object|null}
+ */
+export function findFolder(tree, folderId) {
+  if (!Array.isArray(tree) || folderId === null) return null
+
+  for (const node of tree) {
+    if (node.id === folderId) return node
+    const below = findFolder(node.children ?? [], folderId)
+    if (below !== null) return below
+  }
+
+  return null
+}
+
+/** How deep the tree may go: a folder at the last level can hold files, not subfolders. */
+export const MAX_FOLDER_DEPTH = 6
+
+/**
+ * @param {{depth?: number}} folder
+ * @returns {boolean}
+ */
+export function canHoldSubfolder(folder) {
+  return (folder?.depth ?? 0) < MAX_FOLDER_DEPTH - 1
 }
 
 /**

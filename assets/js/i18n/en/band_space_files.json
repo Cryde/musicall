@@ -91,7 +91,13 @@
     "attached_to": "Attached to ({count})",
     "detach_hint": "To detach this file, go to the resource it is attached to.",
     "attached_to_several": "This file is attached to {count} resources. Detach it from each of them first.",
-    "delete_not_owner": "Only the uploader or an admin can delete this file"
+    "delete_not_owner": "Only the uploader or an admin can delete this file",
+    "title": "File",
+    "back": "Back",
+    "more_actions": "More actions",
+    "open_pdf": "Open the PDF",
+    "open_pdf_hint": "Opens in the browser's viewer",
+    "date_at": "{date} at {time}"
   },
   "breadcrumb": {
     "aria_label": "Breadcrumb"
@@ -221,7 +227,8 @@
       "skipped": "Not sent",
       "cancelled": "Stopped",
       "rejected": "Rejected"
-    }
+    },
+    "pick_files": "Choose files"
   },
   "share_dialog": {
     "title": "Share file",
@@ -388,5 +395,14 @@
       "summary": "File uploaded | Files uploaded",
       "single_detail": "The file was added."
     }
+  },
+  "phone": {
+    "title": "Files",
+    "select": "Select",
+    "change_location": "Change folder, now {location}",
+    "filters": "Filters",
+    "all_tags": "All tags",
+    "all_types": "All types",
+    "upload": "Upload"
   }
 }

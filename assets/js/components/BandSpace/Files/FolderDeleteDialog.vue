@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="t('band_space_files.folder_delete.title')"
-    :style="{ width: '32rem' }"
+    v-bind="sheetDialog"
     @hide="resetState"
   >
     <div class="flex flex-col gap-4">
@@ -91,8 +91,11 @@ import Message from 'primevue/message'
 import RadioButton from 'primevue/radiobutton'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { fileSourceListLabel } from '../../../constants/fileSources.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+
+const sheetDialog = useSheetDialog('32rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

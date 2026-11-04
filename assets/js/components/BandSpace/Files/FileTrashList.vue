@@ -48,7 +48,7 @@
           @keydown="rememberModifiers"
           @update:model-value="() => toggleFromCheckbox(file)"
         />
-        <i class="pi pi-file text-lg text-surface-500 shrink-0" aria-hidden="true"></i>
+        <i :class="fileIconClass(file.mime_type)" class="text-lg text-surface-500 shrink-0" aria-hidden="true"></i>
 
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-surface-800 dark:text-surface-100 truncate">
@@ -61,8 +61,10 @@
           </span>
         </div>
 
+        <!-- The icon alone on a phone, where the label would squeeze the name. -->
         <Button
-          :label="t('band_space_files.common.restore')"
+          :label="isBelowMd ? undefined : t('band_space_files.common.restore')"
+          :aria-label="t('band_space_files.common.restore')"
           icon="pi pi-replay"
           text
           size="small"
@@ -95,12 +97,14 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { separator } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { formatDateLong } from '../../../utils/date.js'
 import { areAllSelected, selectionAfterClick } from '../../../utils/fileSelection.js'
+import { fileIconClass } from '../../../utils/fileType.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
 const props = defineProps({
@@ -110,6 +114,7 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false }
 })
 
+const isBelowMd = useIsBelowMd()
 const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()

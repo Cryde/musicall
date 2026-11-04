@@ -3,7 +3,7 @@
     v-model:visible="visible"
     modal
     :header="t('band_space_files.upload_dialog.title')"
-    :style="{ width: '36rem' }"
+    v-bind="sheetDialog"
     :close-on-escape="!isUploading"
     @hide="handleHide"
   >
@@ -28,12 +28,16 @@
         <i18n-t
           keypath="band_space_files.upload_dialog.drop_zone"
           tag="p"
-          class="text-sm text-surface-600 dark:text-surface-300"
+          class="text-sm text-surface-600 dark:text-surface-300 max-md:hidden"
         >
           <template #browse>
             <span class="text-primary-500 underline">{{ t('band_space_files.common.browse') }}</span>
           </template>
         </i18n-t>
+        <!-- A phone has nothing to drag a file from. -->
+        <p class="text-sm font-medium text-primary-600 dark:text-primary-300 md:hidden">
+          {{ t('band_space_files.upload_dialog.pick_files') }}
+        </p>
       </div>
 
       <ul
@@ -199,6 +203,7 @@ import ProgressBar from 'primevue/progressbar'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import {
   isVirtualFolderId,
   listedFolderId,
@@ -224,6 +229,8 @@ import {
   withQueueItem
 } from '../../../utils/fileUploadQueue.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
+
+const sheetDialog = useSheetDialog('36rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true }

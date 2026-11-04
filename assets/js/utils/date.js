@@ -22,6 +22,27 @@ export function formatDateCompactWithYear(dateString) {
   return date.toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+// « mer. 4 nov. 2026 », from an ISO string or a Date: a day a member can place in their week.
+export function formatDateWithWeekday(value) {
+  if (!value) return ''
+  const date = typeof value === 'string' ? parseISO(value) : value
+  return date.toLocaleDateString(intlLocale(), {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
+}
+
+// A list row's day: « 4 nov. » this year, « 4 nov. 2025 » before, where there is no column to repeat
+// the year in. `now` is the clock, for tests.
+export function formatDateCompactInYear(value, now = new Date()) {
+  if (!value) return ''
+  const date = typeof value === 'string' ? parseISO(value) : value
+  if (date.getFullYear() === now.getFullYear()) return formatDateCompact(date)
+  return date.toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 // Spelled-out date, for copy that has to read as a sentence: « supprimé le 29 août 2026 ».
 export function formatDateLong(dateString) {
   if (!dateString) return ''

@@ -336,7 +336,7 @@
 </template>
 
 <script setup>
-import { useMediaQuery, useTextareaAutosize } from '@vueuse/core'
+import { useTextareaAutosize } from '@vueuse/core'
 import { format } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
@@ -354,6 +354,7 @@ import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
@@ -452,7 +453,7 @@ const priorityOptions = computed(() => [
 // ---------- A phone: the app's task screen ----------
 
 // The board's own breakpoint: below it the drawer is the whole screen.
-const isPhone = useMediaQuery('(width < 48rem)')
+const isPhone = useIsBelowMd()
 const isStatusSheetOpen = ref(false)
 const isActionSheetOpen = ref(false)
 const openFieldSheet = ref(null)
