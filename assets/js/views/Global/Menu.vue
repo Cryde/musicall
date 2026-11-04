@@ -1,5 +1,5 @@
 <template>
-    <nav :aria-label="t('menu.aria_label')" class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
+    <nav :aria-label="t('menu.aria_label')" class="relative flex items-center justify-between gap-8 px-6 md:px-12 lg:px-20 py-3 lg:py-4 bg-surface-0 dark:bg-surface-900">
       <div class="flex items-center gap-4">
         <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" :aria-label="t('common.musicall_home')">
           <img
@@ -11,28 +11,30 @@
           />
         </RouterLink>
       </div>
-      <button
-        v-styleclass="{
-            selector: '@next',
-            enterFromClass: 'hidden',
-            enterActiveClass: 'animate-fadein',
-            leaveToClass: 'hidden',
-            leaveActiveClass: 'animate-fadeout',
-            hideOnOutsideClick: true
-          }"
-        class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100 bg-transparent border-0 p-0"
-        :aria-label="t('common.open_navigation_menu')"
-        aria-expanded="false"
-        aria-controls="mobile-menu"
-      >
-        <i class="pi pi-bars text-xl! leading-normal!" aria-hidden="true" />
-      </button>
 
-      <div
-          ref="mobileMenu"
-          class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow lg:shadow-none border lg:border-0 border-surface-800"
-      >
-        <div class="flex-1 flex items-start gap-4 px-6 lg:px-0 py-4 lg:py-0 flex-col lg:flex-row">
+      <!-- Below lg the links wait in a drawer; a member's inboxes stay in the header with their counts.
+           The negative margin lines the last icon up with the page's edge rather than its button's. -->
+      <template v-if="isCompactNav">
+        <div class="flex items-center gap-1 -mr-2.5">
+          <NavbarInbox v-if="userSecurityStore.isAuthenticated" />
+          <button
+            ref="menuButton"
+            type="button"
+            class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer text-surface-900 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+            :aria-label="t('common.open_navigation_menu')"
+            aria-haspopup="dialog"
+            :aria-expanded="isMenuOpen"
+            :aria-controls="isMenuOpen ? MENU_ID : undefined"
+            @click="isMenuOpen = true"
+          >
+            <i class="pi pi-bars text-xl" aria-hidden="true" />
+          </button>
+        </div>
+        <MobileNavDrawer :id="MENU_ID" v-model:visible="isMenuOpen" @after-hide="returnFocus" />
+      </template>
+
+      <div v-else class="flex flex-1 items-center justify-between">
+        <div class="flex-1 flex items-start gap-4">
           <template v-for="(item, i) in navs" :key="i">
             <RouterLink
               :to="{name: item.to}"
@@ -43,9 +45,9 @@
                 v-bind="$attrs"
                 :href="href"
                 :aria-current="isExactActive ? 'page' : undefined"
-                @click="onNavClick($event, navigate)"
+                @click="navigate"
                 :class="[
-                  'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border w-full lg:w-auto',
+                  'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border',
                   isExactActive
                   ? 'bg-surface-100 dark:bg-surface-800 border-surface-200 dark:border-surface-700'
                   : 'border-transparent hover:bg-surface-50 dark:hover:bg-surface-800 hover:border-surface-200 dark:hover:border-surface-700'
@@ -59,14 +61,14 @@
             <div
               v-if="item.to === 'app_course'"
               ref="searchDropdownWrapper"
-              class="relative w-full lg:w-auto"
+              class="relative"
               @mouseenter="showSearchDropdown"
               @mouseleave="hideSearchDropdown"
             >
               <button
                 type="button"
                 :class="[
-                  'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border w-full lg:w-auto',
+                  'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border',
                   isSearchActive
                   ? 'bg-surface-100 dark:bg-surface-800 border-surface-200 dark:border-surface-700'
                   : 'border-transparent hover:bg-surface-50 dark:hover:bg-surface-800 hover:border-surface-200 dark:hover:border-surface-700'
@@ -80,14 +82,14 @@
               </button>
               <div
                 v-show="searchDropdownVisible"
-                class="lg:absolute w-full lg:w-48 bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow-md rounded-lg overflow-hidden animate-fadein"
+                class="absolute w-48 bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow-md rounded-lg overflow-hidden animate-fadein"
               >
                 <ul class="list-none p-0 m-0">
                   <li>
                     <RouterLink
                       :to="{ name: 'app_search_musician' }"
                       class="flex items-center gap-3 px-4 py-3 text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
-                      @click="onSearchItemClick"
+                      @click="searchDropdownVisible = false"
                     >
                       <i class="pi pi-users" aria-hidden="true" />
                       <span class="font-medium">{{ t('menu.search_musicians') }}</span>
@@ -97,7 +99,7 @@
                     <RouterLink
                       :to="{ name: 'app_search_teacher' }"
                       class="flex items-center gap-3 px-4 py-3 text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
-                      @click="onSearchItemClick"
+                      @click="searchDropdownVisible = false"
                     >
                       <i class="pi pi-graduation-cap" aria-hidden="true" />
                       <span class="font-medium">{{ t('menu.search_teachers') }}</span>
@@ -108,48 +110,53 @@
             </div>
           </template>
         </div>
-          <AppNavbarUserCluster @navigate="closeMobileMenu" />
+        <AppNavbarUserCluster />
       </div>
     </nav>
 </template>
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
+import MobileNavDrawer from '../../components/Global/MobileNavDrawer.vue'
+import NavbarInbox from '../../components/Global/NavbarInbox.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+
+const MENU_ID = 'mobile-menu'
 
 const { t } = useI18n()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 
-const mobileMenu = ref(null)
+// Tailwind's lg: the links collapse into the drawer below it, as they always have.
+const isCompactNav = useMediaQuery('(width < 64rem)')
+const isMenuOpen = ref(false)
+const menuButton = useTemplateRef('menuButton')
+
+// Widening past lg removes the drawer; it must not come back open when the window narrows again.
+watch(isCompactNav, (isCompact) => {
+  if (!isCompact) isMenuOpen.value = false
+})
+
+// PrimeVue's drawer does not hand focus back. After a link, the next page may have taken it already.
+function returnFocus() {
+  if (document.activeElement === document.body) {
+    menuButton.value?.focus()
+  }
+}
+
 const searchDropdownWrapper = ref(null)
 const searchDropdownVisible = ref(false)
 let searchDropdownHideTimeout = null
 
-function closeMobileMenu() {
-  if (mobileMenu.value && window.innerWidth < 1024) {
-    mobileMenu.value.classList.add('hidden')
-  }
-}
-
-function onNavClick(event, navigate) {
-  navigate(event)
-  closeMobileMenu()
-}
-
-// Search dropdown functions
 function showSearchDropdown() {
-  // Only for desktop hover
-  if (window.innerWidth < 1024) return
   clearTimeout(searchDropdownHideTimeout)
   searchDropdownVisible.value = true
 }
 
 function hideSearchDropdown() {
-  // Only for desktop hover
-  if (window.innerWidth < 1024) return
   searchDropdownHideTimeout = setTimeout(() => {
     searchDropdownVisible.value = false
   }, 100)
@@ -157,11 +164,6 @@ function hideSearchDropdown() {
 
 function toggleSearchDropdown() {
   searchDropdownVisible.value = !searchDropdownVisible.value
-}
-
-function onSearchItemClick() {
-  searchDropdownVisible.value = false
-  closeMobileMenu()
 }
 
 const isSearchActive = computed(() => {

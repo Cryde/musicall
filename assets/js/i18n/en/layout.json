@@ -21,7 +21,13 @@
     "band_space": "Band Space",
     "search": "Search",
     "search_musicians": "Musicians",
-    "search_teachers": "Teachers"
+    "search_teachers": "Teachers",
+    "title": "Menu",
+    "close": "Close the menu",
+    "explore": "Explore",
+    "my_band_spaces": "My Band Spaces",
+    "my_account": "My account",
+    "create_band_space": "Create a Band Space"
   },
   "band_menu": {
     "search_aria_label": "Search the Band Space",

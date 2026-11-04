@@ -1,39 +1,9 @@
 <template>
   <template v-if="!userSecurityStore.isAuthenticatedLoading">
-    <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2 px-6 lg:px-0">
-      <LocaleSwitcher v-if="CAN_CHOOSE_LOCALE" @chosen="emit('navigate')" />
+    <div class="flex items-center gap-2">
+      <LocaleSwitcher v-if="CAN_CHOOSE_LOCALE" />
       <template v-if="userSecurityStore.isAuthenticated">
-        <RouterLink
-          :to="{ name: 'app_messages' }"
-          class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-          :aria-label="notificationStore.unreadMessages > 0 ? t('user_menu.messages_unread', { count: notificationStore.unreadMessages }) : t('user_menu.messages')"
-          @click="emit('navigate')"
-        >
-          <OverlayBadge
-            v-if="notificationStore.unreadMessages > 0"
-            :value="notificationStore.unreadMessages"
-            severity="danger"
-            size="small"
-          >
-            <i class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
-          </OverlayBadge>
-          <i v-else class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
-        </RouterLink>
-        <NotificationBell @navigate="emit('navigate')" />
-        <!-- Admins only, and only while something is waiting: an always-on icon would be permanent
-             clutter for the one or two people who see it. Replaces the email notification the
-             feedback module would otherwise need. -->
-        <RouterLink
-          v-if="userSecurityStore.isAdmin && notificationStore.newFeedbacks > 0"
-          :to="{ name: 'admin_feedbacks_index' }"
-          class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-          :aria-label="t('user_menu.feedbacks_pending', { count: notificationStore.newFeedbacks })"
-          @click="emit('navigate')"
-        >
-          <OverlayBadge :value="notificationStore.newFeedbacks" severity="warn" size="small">
-            <i class="pi pi-comment text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
-          </OverlayBadge>
-        </RouterLink>
+        <NavbarInbox />
         <Avatar
           v-if="userSecurityStore.profilePictureUrl"
           :image="userSecurityStore.profilePictureUrl"
@@ -60,10 +30,10 @@
       </template>
       <template v-else>
         <Button asChild v-slot="slotProps" severity="info" outlined>
-          <RouterLink :to="{ name: 'app_login' }" :class="slotProps.class" @click="emit('navigate')">{{ t('common.login') }}</RouterLink>
+          <RouterLink :to="{ name: 'app_login' }" :class="slotProps.class">{{ t('common.login') }}</RouterLink>
         </Button>
         <Button asChild v-slot="slotProps" severity="primary">
-          <RouterLink :to="{ name: 'app_register' }" :class="slotProps.class" @click="emit('navigate')">{{ t('common.register') }}</RouterLink>
+          <RouterLink :to="{ name: 'app_register' }" :class="slotProps.class">{{ t('common.register') }}</RouterLink>
         </Button>
       </template>
     </div>
@@ -71,108 +41,40 @@
 </template>
 
 <script setup>
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
-import OverlayBadge from 'primevue/overlaybadge'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { CAN_CHOOSE_LOCALE } from '../composables/useLocaleChoice.js'
-import { useNotificationStore } from '../store/notification/notification.js'
+import { useUserMenu } from '../composables/useUserMenu.js'
 import { useUserSecurityStore } from '../store/user/security.js'
 import { getAvatarStyle } from '../utils/avatar.js'
 import LocaleSwitcher from './Global/LocaleSwitcher.vue'
-
-// Authenticated-only (guarded by v-if) — load the bell + its notification machinery
-// on demand so anonymous visitors never download it.
-const NotificationBell = defineAsyncComponent(() => import('./Notification/NotificationBell.vue'))
-
-const emit = defineEmits(['navigate'])
+import NavbarInbox from './Global/NavbarInbox.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
-const notificationStore = useNotificationStore()
+const { entries, logout } = useUserMenu()
 
 const userMenu = ref(null)
 
-onMounted(async () => {
-  if (userSecurityStore.isAuthenticated) {
-    await notificationStore.loadNotifications()
-  }
-})
+// The rules between the profile, the member's content, the settings and the administration.
+const SEPARATED_BEFORE = new Set(['announces', 'settings', 'admin'])
 
-const menuItems = computed(() => {
-  const items = [
-    {
-      label: t('user_menu.profile'),
-      icon: 'pi pi-user',
-      command: () => {
-        router.push({
-          name: 'app_user_public_profile',
-          params: { username: userSecurityStore.user.username }
-        })
-      }
-    },
-    { separator: true },
-    {
-      label: t('user_menu.announces'),
-      icon: 'pi pi-megaphone',
-      command: () => router.push({ name: 'app_user_announces' })
-    },
-    {
-      label: t('user_menu.publications'),
-      icon: 'pi pi-file-edit',
-      command: () => router.push({ name: 'app_user_publications' })
-    },
-    {
-      label: t('user_menu.courses'),
-      icon: 'pi pi-book',
-      command: () => router.push({ name: 'app_user_courses' })
-    },
-    {
-      label: t('user_menu.photos'),
-      icon: 'pi pi-images',
-      command: () => router.push({ name: 'app_user_galleries' })
-    },
-    { separator: true },
-    {
-      label: t('user_menu.settings'),
-      icon: 'pi pi-cog',
-      command: () => router.push({ name: 'app_user_settings' })
-    }
-  ]
-
-  if (userSecurityStore.isAdmin) {
-    items.push(
+const menuItems = computed(() => [
+  {
+    label: userSecurityStore.user?.username,
+    items: [
+      ...entries.value.flatMap((entry) => [
+        ...(SEPARATED_BEFORE.has(entry.key) ? [{ separator: true }] : []),
+        { label: entry.label, icon: entry.icon, command: () => router.push(entry.to) }
+      ]),
       { separator: true },
-      {
-        label: t('user_menu.admin'),
-        icon: 'pi pi-shield',
-        command: () => router.push({ name: 'admin_dashboard' })
-      }
-    )
+      { label: t('user_menu.logout'), icon: 'pi pi-sign-out', command: logout }
+    ]
   }
-
-  items.push(
-    { separator: true },
-    {
-      label: t('user_menu.logout'),
-      icon: 'pi pi-sign-out',
-      command: () => {
-        trackUmamiEvent('user-logout')
-        userSecurityStore.logout()
-      }
-    }
-  )
-
-  return [
-    {
-      label: userSecurityStore.user?.username,
-      items
-    }
-  ]
-})
+])
 </script>

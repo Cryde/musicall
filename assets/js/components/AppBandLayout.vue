@@ -107,18 +107,17 @@
                     </span>
                     <i class="pi pi-chevron-down text-sm ml-auto" aria-hidden="true"></i>
                   </button>
-                  <!-- Mirror of AppNavbarUserCluster's menuItems — keep in sync. -->
                   <ul class="hidden list-none p-0 m-0 mt-1 flex flex-col gap-1 pl-3">
                     <li
                       v-for="entry in userMenuEntries"
-                      :key="entry.label"
+                      :key="entry.key"
                     >
                       <button
                         type="button"
                         @click="() => handleUserMenuClick(entry)"
                         class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer text-sm"
                       >
-                        <i :class="['pi', entry.icon, 'text-sm shrink-0']" aria-hidden="true"></i>
+                        <i :class="[entry.icon, 'text-sm shrink-0']" aria-hidden="true"></i>
                         <span class="truncate">{{ entry.label }}</span>
                       </button>
                     </li>
@@ -155,7 +154,6 @@
 </template>
 
 <script setup>
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useHead } from '@unhead/vue'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
@@ -168,6 +166,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
 import { CAN_CHOOSE_LOCALE } from '../composables/useLocaleChoice.js'
+import { useUserMenu } from '../composables/useUserMenu.js'
 import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
 import { useNotificationStore } from '../store/notification/notification.js'
@@ -188,69 +187,20 @@ const router = useRouter()
 const toast = useToast()
 const { t } = useI18n()
 
-// Mirror of AppNavbarUserCluster's menuItems for the mobile drawer's
-// collapsible account section. Keep in sync if the desktop avatar menu
-// changes — extracting to a composable would be cleaner once a third
-// consumer appears.
-const userMenuEntries = computed(() => {
-  const entries = [
-    {
-      label: t('user_menu.profile'),
-      icon: 'pi-user',
-      to: () => ({
-        name: 'app_user_public_profile',
-        params: { username: userSecurityStore.user?.username }
-      })
-    },
-    {
-      label: t('user_menu.announces'),
-      icon: 'pi-megaphone',
-      to: () => ({ name: 'app_user_announces' })
-    },
-    {
-      label: t('user_menu.publications'),
-      icon: 'pi-file-edit',
-      to: () => ({ name: 'app_user_publications' })
-    },
-    {
-      label: t('user_menu.courses'),
-      icon: 'pi-book',
-      to: () => ({ name: 'app_user_courses' })
-    },
-    {
-      label: t('user_menu.photos'),
-      icon: 'pi-images',
-      to: () => ({ name: 'app_user_galleries' })
-    },
-    {
-      label: t('band_space.layout.account_settings'),
-      icon: 'pi-cog',
-      to: () => ({ name: 'app_user_settings' })
-    }
-  ]
-  if (userSecurityStore.isAdmin) {
-    entries.push({
-      label: t('user_menu.admin'),
-      icon: 'pi-shield',
-      to: () => ({ name: 'admin_dashboard' })
-    })
-  }
-  entries.push({
-    label: t('user_menu.logout'),
-    icon: 'pi-sign-out',
-    action: () => {
-      trackUmamiEvent('user-logout')
-      userSecurityStore.logout()
-    }
-  })
-  return entries
-})
+// The account menu every menu shares, with its settings named apart from the band's own below it.
+const { entries: accountEntries, logout } = useUserMenu()
+const userMenuEntries = computed(() => [
+  ...accountEntries.value.map((entry) =>
+    entry.key === 'settings' ? { ...entry, label: t('band_space.layout.account_settings') } : entry
+  ),
+  { key: 'logout', label: t('user_menu.logout'), icon: 'pi pi-sign-out', action: logout }
+])
 
 function handleUserMenuClick(entry) {
   if (entry.action) {
     entry.action()
-  } else if (entry.to) {
-    router.push(entry.to())
+  } else {
+    router.push(entry.to)
   }
   mobileNavOpen.value = false
 }
