@@ -30,7 +30,7 @@
             <template v-else>{{ item.title }}</template>
           </p>
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">
-            {{ formatDayLabel(item) }}<template v-if="!isAllDayItem(item)"> - {{ formatTime(item.datetime) }}</template>
+            {{ sourcePrefix(item) }}{{ formatDayLabel(item) }}<template v-if="!isAllDayItem(item)"> - {{ formatTime(item.datetime) }}</template>
           </p>
           <div
             v-if="item.source === 'manual' && item.metadata?.ask_availability"
@@ -62,8 +62,8 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
-import { agendaSourceFor } from '../../../constants/agendaSources.js'
-import { dateFnsLocale } from '../../../i18n/formatLocale.js'
+import { agendaSourceFor, agendaSourceLabel } from '../../../constants/agendaSources.js'
+import { dateFnsLocale, separator } from '../../../i18n/formatLocale.js'
 import {
   availabilitySummary,
   canAnswerFromAgenda,
@@ -128,5 +128,10 @@ function formatTime(datetimeStr) {
 
 function sourceBorderClass(source) {
   return agendaSourceFor(source).widgetBorderClass
+}
+
+// A deadline, a payment or an absence says so in a word, not only with the colour of its border.
+function sourcePrefix(item) {
+  return item.source === 'manual' ? '' : `${agendaSourceLabel(item.source)} ${separator()} `
 }
 </script>

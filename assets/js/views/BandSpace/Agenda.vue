@@ -548,6 +548,12 @@ onMounted(() => {
   }
 
   fetchWithCurrentRange()
+
+  // The « + » of the phone band home, with nothing planned: straight to « Nouvel événement ».
+  if (route.query.new) {
+    openCreateDialog()
+    router.replace({ query: { ...route.query, new: undefined } })
+  }
 })
 
 function linkedEntryIdFromRoute() {

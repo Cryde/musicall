@@ -1,7 +1,7 @@
 <template>
   <section
     v-if="isOffered"
-    class="relative bg-surface-0 dark:bg-surface-900 rounded-2xl p-6 flex flex-col gap-4"
+    class="relative bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 lg:p-6 flex flex-col gap-4"
     :aria-labelledby="titleId"
   >
     <Button

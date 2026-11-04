@@ -34,7 +34,7 @@
         <span class="tabular-nums text-red-600 dark:text-red-400">{{ formatAmount(summary.total_expense_all) }}</span>
       </div>
       <p v-if="paidShare" class="text-xs text-surface-500 dark:text-surface-400 mt-1">
-        {{ t('band_space.dashboard.finance.already_paid', { amount: formatAmount(summary.total_paid) }) }}
+        {{ t('band_space.dashboard.finance.already_paid', { amount: formatAmount(summary.total_expense) }) }}
       </p>
     </div>
   </DashboardWidget>
@@ -93,5 +93,7 @@ const balanceClass = computed(() => {
   return 'text-surface-700 dark:text-surface-200'
 })
 
-const paidShare = computed(() => (summary.value?.total_paid ?? 0) > 0)
+// The expenses already paid, under the expenses line. `total_paid` adds the income received to them,
+// which could read as more paid than was ever spent.
+const paidShare = computed(() => (summary.value?.total_expense ?? 0) > 0)
 </script>

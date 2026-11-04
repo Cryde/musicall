@@ -10,7 +10,7 @@
     <template #header-action>
       <RouterLink
         :to="{ name: 'app_band_parameters', params: { id: bandSpaceId }, query: { section: 'activity' } }"
-        class="text-xs text-primary hover:underline"
+        class="text-xs text-primary hover:underline max-lg:-mx-2 max-lg:-my-3.5 max-lg:px-2 max-lg:py-3.5"
       >
         {{ t('band_space.dashboard.activity.see_all') }}
       </RouterLink>
@@ -52,10 +52,10 @@ import UserName from '../../User/UserName.vue'
 import { activitySentence as buildSentence } from '../Settings/activitySentences.js'
 import DashboardWidget from './DashboardWidget.vue'
 
-const ITEMS_LIMIT = 10
-
 const props = defineProps({
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  // The phone band home keeps three lines under its tiles.
+  limit: { type: Number, default: 10 }
 })
 
 const items = ref([])
@@ -67,7 +67,7 @@ const { t } = useI18n()
 async function load({ quiet = false } = {}) {
   try {
     const data = await bandSpaceActivityApi.list(props.bandSpaceId, { page: 1 })
-    items.value = (data.member ?? []).slice(0, ITEMS_LIMIT)
+    items.value = (data.member ?? []).slice(0, props.limit)
     error.value = null
   } catch {
     if (quiet) return
@@ -101,6 +101,7 @@ const MODULE_ICONS = {
   notes: 'pi-file-edit',
   file: 'pi-folder-open',
   setlist: 'pi-list',
+  rider: 'pi-sliders-h',
   settings: 'pi-cog'
 }
 

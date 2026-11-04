@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6 flex flex-col h-full">
+  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 lg:p-6 flex flex-col h-full">
     <div class="flex items-center justify-between mb-4 gap-2">
       <h2 class="font-semibold text-base lg:text-lg flex items-center gap-2 text-surface-900 dark:text-surface-0">
         <i v-if="icon" :class="['text-xl text-primary', icon]" aria-hidden="true" />

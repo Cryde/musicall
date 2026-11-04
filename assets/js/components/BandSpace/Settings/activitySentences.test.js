@@ -162,3 +162,150 @@ describe('lyrics activity sentences (#1260)', () => {
     )
   })
 })
+
+const file = (type, payload) => ({ module: 'file', type, payload })
+
+describe('file and folder activity sentences', () => {
+  it('name the file when the payload carries its name', () => {
+    assert.deepEqual(
+      ['uploaded', 'archived', 'restored', 'purged'].map((type) =>
+        activitySentence(file(type, { original_name: 'Fiche technique.pdf' }))
+      ),
+      [
+        'a téléversé le fichier « Fiche technique.pdf »',
+        'a archivé le fichier « Fiche technique.pdf »',
+        'a restauré le fichier « Fiche technique.pdf »',
+        'a supprimé définitivement le fichier « Fiche technique.pdf »'
+      ]
+    )
+  })
+
+  it('read a rename from the old name to the new one', () => {
+    assert.equal(
+      activitySentence(file('renamed', { from: 'demo.mp3', to: 'Nuit blanche.mp3' })),
+      'a renommé le fichier « demo.mp3 » en « Nuit blanche.mp3 »'
+    )
+  })
+
+  it('name the folder a file moved to, and say nothing of the root', () => {
+    assert.equal(
+      activitySentence(file('moved', { to_folder_id: 'f', to_folder_name: 'Concerts' })),
+      'a déplacé un fichier vers « Concerts »'
+    )
+    assert.equal(
+      activitySentence(file('moved', { to_folder_id: null, to_folder_name: null })),
+      'a déplacé un fichier'
+    )
+  })
+
+  it('name the tag and the version number', () => {
+    assert.equal(
+      activitySentence(file('tagged', { tag_name: 'Live' })),
+      'a ajouté le tag « Live » à un fichier'
+    )
+    assert.equal(
+      activitySentence(file('untagged', { tag_name: 'Live' })),
+      "a retiré le tag « Live » d'un fichier"
+    )
+    assert.equal(
+      activitySentence(file('version_added', { version_number: 3 })),
+      "a ajouté la version 3 d'un fichier"
+    )
+  })
+
+  it('read the version a rollback went back to, as the server writes it', () => {
+    assert.equal(
+      activitySentence(file('rolled_back', { from_version_number: 3, to_version_number: 1 })),
+      "est revenu à la version 1 d'un fichier"
+    )
+  })
+
+  it('word the share links without a file name, which their payload does not carry', () => {
+    assert.deepEqual(
+      ['shared', 'share_revoked', 'public_accessed'].map((type) =>
+        activitySentence(file(type, {}))
+      ),
+      [
+        'a créé un lien de partage pour un fichier',
+        'a révoqué un lien de partage',
+        "le lien de partage d'un fichier a été consulté"
+      ]
+    )
+  })
+
+  it('name what a file was attached to or detached from, with its label when there is one', () => {
+    assert.equal(
+      activitySentence(
+        file('attached', { source_type: 'task', source_label: 'Imprimer les setlists' })
+      ),
+      'a attaché un fichier à la tâche « Imprimer les setlists »'
+    )
+    assert.equal(
+      activitySentence(file('detached', { source_type: 'task' })),
+      'a détaché un fichier de la tâche'
+    )
+    assert.equal(
+      activitySentence(file('attached', { source_type: 'robot' })),
+      'a attaché un fichier'
+    )
+  })
+
+  it('credit a deleted source, not a detach, when a file was released by it', () => {
+    assert.equal(
+      activitySentence(file('source_deleted', { source_type: 'task', source_label: 'Flyers' })),
+      'a supprimé la tâche « Flyers », son fichier a été détaché'
+    )
+    assert.equal(
+      activitySentence(file('source_deleted', {})),
+      'a supprimé la ressource associée, son fichier a été détaché'
+    )
+  })
+
+  it('word the folder actions', () => {
+    assert.equal(
+      activitySentence(file('folder_created', { name: 'Concerts', parent_id: null })),
+      'a créé le dossier « Concerts »'
+    )
+    assert.equal(
+      activitySentence(file('folder_renamed', { from: 'Live', to: 'Concerts' })),
+      'a renommé le dossier « Live » en « Concerts »'
+    )
+    assert.equal(
+      activitySentence(file('folder_moved', { from_parent_id: 'a', to_parent_id: null })),
+      'a déplacé un dossier'
+    )
+    assert.equal(
+      activitySentence(
+        file('folder_archived', { name: 'Concerts', strategy: 'archive', file_count: 4 })
+      ),
+      'a supprimé le dossier « Concerts »'
+    )
+  })
+
+  it('never fall back to the raw action name', () => {
+    for (const type of [
+      'uploaded',
+      'archived',
+      'restored',
+      'purged',
+      'renamed',
+      'moved',
+      'tagged',
+      'untagged',
+      'version_added',
+      'rolled_back',
+      'shared',
+      'share_revoked',
+      'public_accessed',
+      'attached',
+      'detached',
+      'source_deleted',
+      'folder_created',
+      'folder_renamed',
+      'folder_moved',
+      'folder_archived'
+    ]) {
+      assert.doesNotMatch(activitySentence(file(type, {})), /a effectué l'action/, type)
+    }
+  })
+})
