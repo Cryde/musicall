@@ -47,7 +47,8 @@
   },
   "pin": {
     "pin": "Épingler ce message",
-    "unpin": "Détacher ce message"
+    "unpin": "Détacher ce message",
+    "pinned": "Épinglé"
   },
   "pinned_bar": {
     "headline": "{count} messages épinglés | {count} message épinglé | {count} messages épinglés",
