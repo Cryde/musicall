@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-1 flex flex-wrap items-center gap-1" :class="{ 'justify-end': alignEnd }">
+  <div v-if="canAdd || reactions.length > 0" class="mt-1 flex flex-wrap items-center gap-1" :class="{ 'justify-end': alignEnd }">
     <button
       v-for="reaction in reactions"
       :key="reaction.key"
@@ -19,8 +19,10 @@
     </button>
 
     <!-- Always in the DOM so it stays reachable by keyboard and by a screen reader, and only
-         revealed on hover or focus so a quiet conversation is not a column of smileys. -->
+         revealed on hover or focus so a quiet conversation is not a column of smileys. Left out where
+         the message's actions sheet carries the reactions instead. -->
     <button
+      v-if="canAdd"
       type="button"
       class="inline-flex h-6 w-6 items-center justify-center rounded-full text-surface-600 transition-opacity hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-600"
       :class="
@@ -36,7 +38,7 @@
       <i class="pi pi-face-smile text-sm" aria-hidden="true" />
     </button>
 
-    <Popover ref="pickerRef" @show="isPickerOpen = true" @hide="isPickerOpen = false">
+    <Popover v-if="canAdd" ref="pickerRef" @show="isPickerOpen = true" @hide="isPickerOpen = false">
       <div class="flex gap-1" role="group" :aria-label="t('band_space_chat.reaction.choose')">
         <button
           v-for="choice in CHAT_REACTIONS"
@@ -64,7 +66,9 @@ import { hasReacted } from '../../../utils/chatReactionToggle.js'
 const props = defineProps({
   reactions: { type: Array, default: () => [] },
   /** A message of the viewer's own sits on the right, so its reactions line up under it. */
-  alignEnd: { type: Boolean, default: false }
+  alignEnd: { type: Boolean, default: false },
+  /** The « + » and its picker; false where a sheet offers the reactions (a touch screen has no hover). */
+  canAdd: { type: Boolean, default: true }
 })
 
 // The conversation that owns the message decides what a toggle calls.

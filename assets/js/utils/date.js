@@ -9,9 +9,10 @@ export function formatDateShort(dateString) {
   return format(parseISO(dateString), 'dd/MM/yyyy')
 }
 
-export function formatDateCompact(dateString) {
-  if (!dateString) return ''
-  const date = parseISO(dateString)
+// « 10 août », « 3 févr. », from an ISO string or a Date.
+export function formatDateCompact(value) {
+  if (!value) return ''
+  const date = typeof value === 'string' ? parseISO(value) : value
   return date.toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short' })
 }
 

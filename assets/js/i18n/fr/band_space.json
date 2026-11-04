@@ -69,7 +69,7 @@
     "feedback": "Un retour ?",
     "expand": "Étendre le menu",
     "collapse": "Réduire le menu",
-    "unread_aria": "{label} ({unread} non lus)"
+    "unread_aria": "{label} ({unread} non lu) | {label} ({unread} non lus)"
   },
   "selector": {
     "placeholder": "Sélectionne ton band space",
@@ -159,8 +159,7 @@
       "last": "Dernière : {title}, {date}"
     },
     "chat": {
-      "open": "Ouvrir la conversation",
-      "yesterday": "Hier"
+      "open": "Ouvrir la conversation"
     },
     "tiles": {
       "upcoming_dates": "{count} date à venir | {count} dates à venir",

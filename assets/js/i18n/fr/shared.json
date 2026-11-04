@@ -202,5 +202,8 @@
     "badge_alt": "Disponible sur Google Play",
     "qr_alt": "QR code vers l'application MusicAll sur Google Play",
     "qr_caption": "Scanne avec ton téléphone"
+  },
+  "sheet": {
+    "close": "Fermer"
   }
 }

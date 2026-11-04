@@ -3,7 +3,7 @@
     <button
       type="button"
       class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-      :aria-label="store.unreadCount > 0 ? t('notification.bell.aria_label_unread', { count: store.unreadCount }) : t('notification.title')"
+      :aria-label="store.unreadCount > 0 ? t('notification.bell.aria_label_unread', store.unreadCount) : t('notification.title')"
       aria-haspopup="dialog"
       :aria-expanded="isPopoverOpen"
       @click="toggle"

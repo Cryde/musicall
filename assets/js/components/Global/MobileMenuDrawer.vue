@@ -29,7 +29,7 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import { followsInPlace } from '../../utils/linkClick.js'
+import { followsLinkInPlace } from '../../utils/linkClick.js'
 import MobileMenuProfile from './MobileMenuProfile.vue'
 
 /** The phone menu's frame, the site's and the Band Space's alike: a drawer from the right, the member on top. */
@@ -54,8 +54,7 @@ function close() {
 // A link followed from the menu closes it, the page already shown included, which the route cannot tell.
 // One opened in another tab leaves this page, and so the menu, as they are.
 function closeOnFollowedLink(event) {
-  const link = event.target.closest('a[href]')
-  if (link && followsInPlace(event, link.getAttribute('target'))) {
+  if (followsLinkInPlace(event)) {
     close()
   }
 }

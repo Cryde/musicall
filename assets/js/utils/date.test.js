@@ -23,6 +23,10 @@ for (const timeZone of ['Europe/Paris', 'America/New_York']) {
       assert.equal(formatDateCompact('2026-02-03'), '3 févr.')
     })
 
+    it('takes a Date as well as a string', () => {
+      assert.equal(formatDateCompact(new Date(2026, 7, 10, 18, 30)), '10 août')
+    })
+
     it('adds the year when asked', () => {
       assert.equal(formatDateCompactWithYear('2026-08-10'), '10 août 2026')
       assert.equal(formatDateCompactWithYear('2026-12-01'), '1 déc. 2026')

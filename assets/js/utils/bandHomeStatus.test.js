@@ -5,7 +5,6 @@ import { i18n } from '../i18n/index.js'
 import {
   agendaStatus,
   bandSubtitle,
-  chatTimeLabel,
   fileStatus,
   financeStatus,
   lastPastDate,
@@ -150,16 +149,6 @@ for (const timeZone of TIME_ZONES) {
           whenLabel(new Date('2026-03-30T12:00:00Z'), new Date('2026-03-28T12:00:00Z')),
           'Dans 2 jours'
         )
-      })
-    })
-
-    describe('chatTimeLabel', () => {
-      it('shows the time today, « Hier », then the day', () => {
-        const morning = new Date(2026, 10, 4, 9, 30)
-
-        assert.equal(chatTimeLabel(new Date(2026, 10, 4, 9, 7), morning), '09:07')
-        assert.equal(chatTimeLabel(new Date(2026, 10, 3, 23, 50), morning), 'Hier')
-        assert.equal(chatTimeLabel(new Date(2026, 10, 1, 18, 0), morning), '1 nov.')
       })
     })
   })

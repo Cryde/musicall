@@ -272,6 +272,7 @@ import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
+import { foldForSearch } from '../../../utils/searchText.js'
 import ProfilePictureModal from './ProfilePictureModal.vue'
 
 const COOLDOWN_DAYS = 30
@@ -491,18 +492,10 @@ const deleteAccountConfirmation = ref('')
 const deleteAccountError = ref('')
 const isDeletingAccount = ref(false)
 
-function normalize(str) {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-}
-
 const isConfirmationValid = computed(
   () =>
-    normalize(deleteAccountConfirmation.value) ===
-    normalize(t('profile.settings.general.delete_account.confirm_phrase'))
+    foldForSearch(deleteAccountConfirmation.value) ===
+    foldForSearch(t('profile.settings.general.delete_account.confirm_phrase'))
 )
 
 async function handleDeleteAccount() {

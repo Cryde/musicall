@@ -11,3 +11,12 @@ export function followsInPlace(event, target = null) {
   }
   return !/\b_blank\b/i.test(target ?? '')
 }
+
+/**
+ * Whether a click inside a menu or a sheet followed one of its links in this tab: what closes the panel,
+ * the page already shown included, which a change of route cannot tell.
+ */
+export function followsLinkInPlace(event) {
+  const link = event.target?.closest?.('a[href]')
+  return Boolean(link) && followsInPlace(event, link.getAttribute('target'))
+}
