@@ -1,7 +1,24 @@
 <template>
-  <Drawer v-model:visible="visibleModel" position="right" class="w-full md:w-[48rem]!">
+  <!-- `!`, or PrimeVue's own width wins and a phone gets a 20rem strip beside the board. -->
+  <Drawer v-model:visible="visibleModel" position="right" class="w-full! md:w-[48rem]!" :show-close-icon="!isPhone" :close-on-escape="!isAnySheetOpen">
     <template #header>
-      <span class="text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
+      <!-- A phone gets the app's screen: back to the list on the left, the task's actions on the right. -->
+      <div v-if="isPhone" class="-ml-2 flex flex-1 items-center gap-1">
+        <Button icon="pi pi-arrow-left" text rounded severity="secondary" :aria-label="t('band_space_tasks.detail.back')" @click="visibleModel = false" />
+        <span class="flex-1 text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
+        <Button
+          v-if="hasTaskActions"
+          icon="pi pi-ellipsis-v"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_tasks.detail.more_actions')"
+          aria-haspopup="dialog"
+          :aria-expanded="isActionSheetOpen"
+          @click="isActionSheetOpen = true"
+        />
+      </div>
+      <span v-else class="text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
     </template>
 
     <div
@@ -40,18 +57,77 @@
       </RouterLink>
 
       <!-- Title (inline edit, save on Enter or via Save button) -->
-      <div>
-        <input
+      <div class="flex items-start gap-3">
+        <button
+          v-if="isPhone"
+          type="button"
+          class="-m-1 mt-0 shrink-0 rounded-lg p-1 focus-visible:outline-2 focus-visible:outline-primary-500 disabled:cursor-default"
+          :aria-label="t('band_space_tasks.detail.change_status', { status: statusLabel })"
+          aria-haspopup="dialog"
+          :disabled="isArchived"
+          @click="isStatusSheetOpen = true"
+        >
+          <TaskStatusMark :status="editStatus" />
+        </button>
+        <!-- Grows with the title, so a long one wraps on a phone instead of being cut; Enter still
+             saves it, a title having no line break. -->
+        <textarea
+          ref="titleField"
           v-model="editTitle"
+          rows="1"
           :readonly="isArchived"
           :aria-label="t('band_space_tasks.detail.title_aria')"
-          class="w-full text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1 read-only:text-surface-500 dark:read-only:text-surface-400"
+          class="block w-full resize-none overflow-hidden text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1 read-only:text-surface-500 dark:read-only:text-surface-400"
           @keydown.enter.prevent="saveTextFields"
         />
       </div>
 
+      <TaskFieldRows
+        v-if="isPhone"
+        v-model:open-sheet="openFieldSheet"
+        :priority="editPriority"
+        :due-date="editDueDate"
+        :assignee-ids="editAssigneeIds"
+        :category-id="editCategoryId"
+        :priority-options="priorityOptions"
+        :categories="categories"
+        :members="members"
+        :disabled="isArchived"
+        @change="handleFieldChange"
+      >
+        <template #priority>
+          <span v-if="editPriority !== 'normal'" class="rounded px-1.5 py-0.5 text-xs font-semibold" :class="PRIORITY_BADGE[editPriority]">
+            {{ priorityLabel }}
+          </span>
+          <template v-else>{{ priorityLabel }}</template>
+        </template>
+        <template #due>{{ dueLabel }}</template>
+        <template #assignees>
+          <template v-if="assignedMembers.length === 0">{{ t('band_space_tasks.detail.no_assignee') }}</template>
+          <template v-else>
+            <span class="flex -space-x-1.5">
+              <Avatar
+                v-for="member in assignedMembers.slice(0, 3)"
+                :key="member.user_id"
+                :username="member.username"
+                :display-name="member.display_name"
+                :picture-url="member.profile_picture_url"
+                size="sm"
+              />
+            </span>
+            <span class="truncate">
+              {{ assignedMembers.length === 1 ? assignedMembers[0].display_name : t('band_space_tasks.detail.assignee_count', assignedMembers.length) }}
+            </span>
+          </template>
+        </template>
+        <template #category>
+          <span v-if="activeCategory" class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: activeCategory.color }" aria-hidden="true" />
+          <span class="truncate">{{ activeCategory?.name ?? t('band_space_tasks.field.no_category') }}</span>
+        </template>
+      </TaskFieldRows>
+
       <!-- Metadata grid -->
-      <div class="grid grid-cols-2 gap-3">
+      <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.status') }}</label>
           <Select
@@ -97,7 +173,6 @@
           <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.due') }}</label>
           <DatePicker
             v-model="editDueDate"
-            dateFormat="yy-mm-dd"
             showIcon
             showButtonBar
             size="small"
@@ -110,7 +185,7 @@
       </div>
 
       <!-- Assignees -->
-      <div class="flex flex-col gap-1">
+      <div v-if="!isPhone" class="flex flex-col gap-1">
         <label class="text-xs font-medium text-surface-500">{{ t('band_space_tasks.field.assignees') }}</label>
         <MultiSelect
           v-model="editAssigneeIds"
@@ -214,9 +289,9 @@
       <!-- Activity -->
       <TaskActivityFeed :activities="activities" />
 
-      <!-- Archive / Unarchive / Delete -->
+      <!-- Archive / Unarchive / Delete: behind « ⋮ » on a phone -->
       <div
-        v-if="canArchive || isArchived || canDelete"
+        v-if="hasTaskActions && !isPhone"
         class="border-t border-surface-200 dark:border-surface-700 pt-4 flex flex-col gap-2"
       >
         <Button
@@ -249,10 +324,19 @@
         />
       </div>
     </div>
+
+    <TaskStatusSheet v-if="isPhone" v-model:visible="isStatusSheetOpen" :task="task" @choose="handleFieldChange('status', $event)" />
+
+    <BottomSheet v-if="isPhone" v-model:visible="isActionSheetOpen" :title="t('band_space_tasks.detail.more_actions')">
+      <SheetAction v-if="canArchive" icon="pi-box" @click="runTaskAction(handleArchive)">{{ t('band_space_tasks.common.archive') }}</SheetAction>
+      <SheetAction v-if="isArchived" icon="pi-replay" @click="runTaskAction(handleUnarchive)">{{ t('band_space_tasks.common.unarchive') }}</SheetAction>
+      <SheetAction v-if="canDelete" icon="pi-trash" danger @click="runTaskAction(handleDelete)">{{ t('band_space_tasks.detail.delete') }}</SheetAction>
+    </BottomSheet>
   </Drawer>
 </template>
 
 <script setup>
+import { useMediaQuery, useTextareaAutosize } from '@vueuse/core'
 import { format } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
@@ -264,22 +348,30 @@ import Skeleton from 'primevue/skeleton'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
+import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import { canDeleteTask } from '../../../utils/taskActions.js'
+import { singleLineTitle } from '../../../utils/taskTitle.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
+import Avatar from '../../User/Avatar.vue'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import TaskActivityFeed from './TaskActivityFeed.vue'
 import TaskCommentForm from './TaskCommentForm.vue'
 import TaskCommentList from './TaskCommentList.vue'
+import TaskFieldRows from './TaskFieldRows.vue'
+import TaskStatusMark from './TaskStatusMark.vue'
+import TaskStatusSheet from './TaskStatusSheet.vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -337,6 +429,7 @@ const isSubmittingComment = ref(false)
 
 // Edit state
 const editTitle = ref('')
+useTextareaAutosize({ element: useTemplateRef('titleField'), input: editTitle })
 const editStatus = ref('todo')
 const editPriority = ref('normal')
 const editCategoryId = ref(null)
@@ -355,6 +448,85 @@ const priorityOptions = computed(() => [
   { label: t('band_space_tasks.priority.high'), value: 'high' },
   { label: t('band_space_tasks.priority.urgent'), value: 'urgent' }
 ])
+
+// ---------- A phone: the app's task screen ----------
+
+// The board's own breakpoint: below it the drawer is the whole screen.
+const isPhone = useMediaQuery('(width < 48rem)')
+const isStatusSheetOpen = ref(false)
+const isActionSheetOpen = ref(false)
+const openFieldSheet = ref(null)
+// Every open drawer closes itself on Escape, so the task's waits while one of its sheets is open.
+const isAnySheetOpen = computed(
+  () => isStatusSheetOpen.value || isActionSheetOpen.value || openFieldSheet.value !== null
+)
+
+const statusLabel = computed(
+  () => statusOptions.value.find((option) => option.value === editStatus.value)?.label ?? ''
+)
+
+const hasTaskActions = computed(() => canArchive.value || isArchived.value || canDelete.value)
+
+// The badges the board's cards show.
+const PRIORITY_BADGE = {
+  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+  urgent: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+}
+
+const priorityLabel = computed(
+  () => priorityOptions.value.find((option) => option.value === editPriority.value)?.label ?? ''
+)
+
+const dueLabel = computed(() =>
+  editDueDate.value
+    ? editDueDate.value.toLocaleDateString(intlLocale(), {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+      })
+    : t('band_space_tasks.detail.no_due')
+)
+
+const assignedMembers = computed(() =>
+  members.value.filter((member) => editAssigneeIds.value.includes(member.user_id))
+)
+
+const activeCategory = computed(
+  () => categories.value.find((category) => category.id === editCategoryId.value) ?? null
+)
+
+// A choice made in one of the phone's sheets, saved the way the desktop field it stands for saves it.
+const FIELD_SAVERS = {
+  status: (value) => {
+    editStatus.value = value
+    saveField('status', value)
+  },
+  priority: (value) => {
+    editPriority.value = value
+    saveField('priority', value)
+  },
+  category: (value) => {
+    editCategoryId.value = value
+    saveField('category_id', value)
+  },
+  due: (value) => {
+    editDueDate.value = value
+    saveDueDate()
+  },
+  assignees: (value) => {
+    editAssigneeIds.value = value
+    saveAssignees()
+  }
+}
+
+function handleFieldChange(field, value) {
+  FIELD_SAVERS[field](value)
+}
+
+function runTaskAction(action) {
+  isActionSheetOpen.value = false
+  action()
+}
 
 // Track which task id we've loaded comments/activities for, so we don't
 // refetch on every task update (e.g. after saveField).
@@ -393,7 +565,7 @@ watch(task, async () => {
     editPriority.value = task.value.priority
     editCategoryId.value = task.value.category_id
     editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
-    editAssigneeIds.value = assigneeIdsStillInTheBand()
+    syncAssigneeIds()
     takeServerTextWhereUntouched()
     return
   }
@@ -405,6 +577,15 @@ watch(task, async () => {
  * longer in the band renders as no chip at all while staying in the model, and saving any other
  * change writes it straight back. Dropping it here means the next edit of the task clears it.
  */
+// Each tap in the phone's sheet (and each pick in the multi select) saves at once, so a quick second
+// one can still be on its way when the first answer lands: until every save has answered, the ticks on
+// screen are the newest choice rather than the first answer.
+let assigneeSavesInFlight = 0
+
+function syncAssigneeIds() {
+  if (assigneeSavesInFlight === 0) editAssigneeIds.value = assigneeIdsStillInTheBand()
+}
+
 function assigneeIdsStillInTheBand() {
   const assignedIds = task.value.assignees.map((a) => a.id)
   // An empty roster means it has not loaded, never that the band is empty: reading it the other way
@@ -422,7 +603,7 @@ function populateForm() {
   editPriority.value = task.value.priority
   editCategoryId.value = task.value.category_id
   editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
-  editAssigneeIds.value = assigneeIdsStillInTheBand()
+  syncAssigneeIds()
   editDescription.value = task.value.description || ''
   lastPopulatedId.value = task.value.id
   textBase.value = textBaseOf(task.value)
@@ -507,7 +688,7 @@ function takeServerTextWhereUntouched() {
 
 const hasTextChanges = computed(() => {
   if (!task.value) return false
-  const trimmedTitle = editTitle.value.trim()
+  const trimmedTitle = singleLineTitle(editTitle.value)
   const titleChanged = trimmedTitle !== '' && trimmedTitle !== textBase.value.title
   const descriptionChanged = editDescription.value !== textBase.value.description
   return titleChanged || descriptionChanged
@@ -524,7 +705,7 @@ function resetTextFields() {
 async function saveTextFields() {
   if (!task.value) return
 
-  const trimmedTitle = editTitle.value.trim()
+  const trimmedTitle = singleLineTitle(editTitle.value)
   if (!trimmedTitle) {
     toast.add({ severity: 'error', summary: t('band_space_tasks.detail.title_empty'), life: 5000 })
     editTitle.value = task.value.title
@@ -579,19 +760,29 @@ async function saveDueDate() {
 }
 
 async function saveAssignees() {
+  assigneeSavesInFlight++
+  let failure = null
   try {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, {
       assignee_ids: editAssigneeIds.value
     })
+  } catch (e) {
+    failure = e
+  } finally {
+    assigneeSavesInFlight--
+  }
+
+  if (!failure) {
     toast.add({
       severity: 'success',
       summary: t('band_space_tasks.common.changes_saved'),
       life: 2000
     })
-  } catch (e) {
-    toast.add({ severity: 'error', summary: e.message, life: 5000 })
-    populateForm()
+    return
   }
+  toast.add({ severity: 'error', summary: failure.message, life: 5000 })
+  // Put back what the server holds once nothing newer is on its way, or a later tap would be undone.
+  if (assigneeSavesInFlight === 0) populateForm()
 }
 
 /**

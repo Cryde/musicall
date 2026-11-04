@@ -1,7 +1,21 @@
 <template>
   <div v-if="activities.length > 0" class="flex flex-col gap-3">
-    <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-200">{{ t('band_space_tasks.activity_feed.title') }}</h4>
-    <div class="flex flex-col gap-2 border-l-2 border-surface-200 dark:border-surface-700 pl-3">
+    <!-- Folded at first: a task's history is looked up now and then, and left open it pushes the
+         actions below it a screen further down. -->
+    <h4 class="m-0">
+      <button
+        type="button"
+        class="flex items-center gap-2 rounded text-sm font-semibold text-surface-700 hover:text-surface-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 dark:text-surface-200 dark:hover:text-surface-0"
+        :aria-expanded="isOpen"
+        aria-controls="task-activity-list"
+        @click="isOpen = !isOpen"
+      >
+        <i class="pi text-xs" :class="isOpen ? 'pi-chevron-down' : 'pi-chevron-right'" aria-hidden="true" />
+        {{ t('band_space_tasks.activity_feed.title') }}
+        <span class="font-normal text-surface-500 dark:text-surface-400">{{ activities.length }}</span>
+      </button>
+    </h4>
+    <div v-show="isOpen" id="task-activity-list" class="flex flex-col gap-2 border-l-2 border-surface-200 dark:border-surface-700 pl-3">
       <div
         v-for="activity in activities"
         :key="activity.id"
@@ -30,6 +44,7 @@
 
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import Avatar from '../../User/Avatar.vue'
@@ -40,6 +55,7 @@ defineProps({
 })
 
 const { t } = useI18n()
+const isOpen = ref(false)
 
 const STATUS_LABEL_KEYS = {
   todo: 'band_space_tasks.status.todo',
