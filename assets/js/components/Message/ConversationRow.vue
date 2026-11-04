@@ -64,7 +64,7 @@
         </span>
         <template v-if="isUnread">
           <Badge :value="threadMeta.unread_count > 99 ? '99+' : String(threadMeta.unread_count)" severity="danger" aria-hidden="true" />
-          <span class="sr-only">{{ t('message.thread_list.unread_aria_label', { count: threadMeta.unread_count }) }}</span>
+          <span class="sr-only">{{ t('message.thread_list.unread_aria_label', threadMeta.unread_count) }}</span>
         </template>
       </span>
     </span>

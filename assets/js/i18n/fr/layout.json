@@ -36,7 +36,7 @@
   },
   "user_menu": {
     "messages": "Messages",
-    "messages_unread": "Messages ({count} non lus)",
+    "messages_unread": "Messages ({count} non lu) | Messages ({count} non lus)",
     "feedbacks_pending": "Retours utilisateurs ({count} à traiter)",
     "avatar_alt": "Photo de {username}",
     "open": "Menu utilisateur de {username}",

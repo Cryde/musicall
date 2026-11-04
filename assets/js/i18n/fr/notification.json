@@ -6,7 +6,7 @@
     "empty": "Tu n'as aucune notification pour le moment."
   },
   "bell": {
-    "aria_label_unread": "Notifications ({count} non lues)",
+    "aria_label_unread": "Notifications ({count} non lue) | Notifications ({count} non lues)",
     "filter_aria_label": "Filtrer les notifications",
     "tab_unread": "Non lues",
     "tab_all": "Toutes",

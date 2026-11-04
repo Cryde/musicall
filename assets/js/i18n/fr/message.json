@@ -13,7 +13,7 @@
     "unknown_user": "Utilisateur inconnu"
   },
   "thread_list": {
-    "unread_aria_label": "{count} message(s) non lu(s)",
+    "unread_aria_label": "{count} message non lu | {count} messages non lus",
     "last_message_author": "{author} :",
     "no_message": "Aucun message",
     "empty": "Tu n'as pas encore de message.",

@@ -136,7 +136,7 @@ function ariaLabelFor(item) {
   const unread = unreadFor(item)
 
   return unread > 0
-    ? t('band_space.sidebar.unread_aria', { label: item.label, unread })
+    ? t('band_space.sidebar.unread_aria', { label: item.label, unread }, unread)
     : item.label
 }
 

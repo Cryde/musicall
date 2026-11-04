@@ -2,7 +2,7 @@
   <MobileMenuItem
     :to="{ name: 'app_notifications_index' }"
     icon="pi pi-bell"
-    :aria-label="store.unreadCount > 0 ? t('notification.bell.aria_label_unread', { count: store.unreadCount }) : undefined"
+    :aria-label="store.unreadCount > 0 ? t('notification.bell.aria_label_unread', store.unreadCount) : undefined"
   >
     {{ t('notification.title') }}
     <template v-if="store.unreadCount > 0" #end>

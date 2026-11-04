@@ -4,7 +4,7 @@
     ref="envelope"
     type="button"
     class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-    :aria-label="notificationStore.unreadMessages > 0 ? t('user_menu.messages_unread', { count: notificationStore.unreadMessages }) : t('user_menu.messages')"
+    :aria-label="notificationStore.unreadMessages > 0 ? t('user_menu.messages_unread', notificationStore.unreadMessages) : t('user_menu.messages')"
     aria-haspopup="dialog"
     :aria-expanded="isPreviewOpen"
     @click="togglePreview"

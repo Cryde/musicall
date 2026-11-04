@@ -3,7 +3,7 @@
     <MobileMenuItem
       :to="{ name: 'app_messages' }"
       icon="pi pi-envelope"
-      :aria-label="notificationStore.unreadMessages > 0 ? t('user_menu.messages_unread', { count: notificationStore.unreadMessages }) : undefined"
+      :aria-label="notificationStore.unreadMessages > 0 ? t('user_menu.messages_unread', notificationStore.unreadMessages) : undefined"
     >
       {{ t('user_menu.messages') }}
       <template v-if="notificationStore.unreadMessages > 0" #end>

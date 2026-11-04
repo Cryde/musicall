@@ -36,7 +36,7 @@
   },
   "user_menu": {
     "messages": "Messages",
-    "messages_unread": "Messages ({count} unread)",
+    "messages_unread": "Messages ({count} unread) | Messages ({count} unread)",
     "feedbacks_pending": "User feedback ({count} to review)",
     "avatar_alt": "Photo of {username}",
     "open": "User menu for {username}",
