@@ -56,8 +56,6 @@
     "retry": "Réessayer",
     "deletion_banner": "Cet espace sera définitivement supprimé le {date}. Les modifications sont désactivées, mais tu peux toujours consulter et télécharger les fichiers. {link}",
     "manage_deletion": "Gérer la suppression",
-    "navigation": "Navigation",
-    "my_account": "Mon compte",
     "account_settings": "Paramètres du compte",
     "page_title_with_space": "{section} - {space} {separator} MusicAll",
     "page_title": "{section} {separator} MusicAll",

@@ -17,11 +17,12 @@
   <NotificationBell />
   <!-- Admins only, and only while something is waiting: an always-on icon would be permanent
        clutter for the one or two people who see it. Replaces the email notification the
-       feedback module would otherwise need. -->
+       feedback module would otherwise need. A phone has no room for a fourth icon, so there the
+       phone menu lists it instead. -->
   <RouterLink
     v-if="userSecurityStore.isAdmin && notificationStore.newFeedbacks > 0"
     :to="{ name: 'admin_feedbacks_index' }"
-    class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+    class="flex max-sm:hidden items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
     :aria-label="t('user_menu.feedbacks_pending', { count: notificationStore.newFeedbacks })"
   >
     <OverlayBadge :value="notificationStore.newFeedbacks" severity="warn" size="small">

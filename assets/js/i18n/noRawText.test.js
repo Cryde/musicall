@@ -19,6 +19,7 @@ const MIGRATED_PATHS = [
   'components/Auth/SignupOptions.vue',
   'components/BandSpace/Agenda/',
   'components/BandSpace/BandSidebar.vue',
+  'components/BandSpace/BandSpaceMobileMenu.vue',
   'components/BandSpace/BandSpaceSearchResultRow.vue',
   'components/BandSpace/BandSpaceSearchResults.vue',
   'components/BandSpace/BandSpaceSelector.vue',

@@ -115,13 +115,13 @@
     </nav>
 </template>
 <script setup>
-import { useMediaQuery } from '@vueuse/core'
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
 import MobileNavDrawer from '../../components/Global/MobileNavDrawer.vue'
 import NavbarInbox from '../../components/Global/NavbarInbox.vue'
+import { useCompactMenu } from '../../composables/useCompactMenu.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const MENU_ID = 'mobile-menu'
@@ -130,22 +130,9 @@ const { t } = useI18n()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 
-// Tailwind's lg: the links collapse into the drawer below it, as they always have.
-const isCompactNav = useMediaQuery('(width < 64rem)')
-const isMenuOpen = ref(false)
+// Below lg the links collapse into the drawer, as they always have.
 const menuButton = useTemplateRef('menuButton')
-
-// Widening past lg removes the drawer; it must not come back open when the window narrows again.
-watch(isCompactNav, (isCompact) => {
-  if (!isCompact) isMenuOpen.value = false
-})
-
-// PrimeVue's drawer does not hand focus back. After a link, the next page may have taken it already.
-function returnFocus() {
-  if (document.activeElement === document.body) {
-    menuButton.value?.focus()
-  }
-}
+const { isCompactNav, isMenuOpen, returnFocus } = useCompactMenu(menuButton)
 
 const searchDropdownWrapper = ref(null)
 const searchDropdownVisible = ref(false)
