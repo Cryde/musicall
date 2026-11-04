@@ -18,37 +18,27 @@
 </template>
 
 <script setup>
-import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { TASK_STATUSES } from '../../../constants/taskStatuses.js'
-import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import TaskStatusMark from './TaskStatusMark.vue'
 
 /**
- * What a task's mark opens on a phone: its three statuses, the current one ticked. A move goes to the
- * end of the chosen status, as the desktop card's « Déplacer vers » does.
+ * What a task's mark opens on a phone: its three statuses, the current one ticked. It only says which
+ * one was chosen: the list moves the task to the end of that status, the task screen saves its field.
  */
 const props = defineProps({
-  task: { type: Object, default: null },
-  bandSpaceId: { type: String, required: true }
+  task: { type: Object, default: null }
 })
+
+const emit = defineEmits(['choose'])
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
-const toast = useToast()
-const tasksStore = useBandTasksStore()
 
-async function choose(status) {
-  const task = props.task
+function choose(status) {
   visible.value = false
-  if (task.status === status) return
-
-  try {
-    await tasksStore.moveTaskToColumn(props.bandSpaceId, task.id, status, null)
-  } catch {
-    toast.add({ severity: 'error', summary: t('band_space_tasks.common.move_failed'), life: 5000 })
-  }
+  if (props.task.status !== status) emit('choose', status)
 }
 </script>

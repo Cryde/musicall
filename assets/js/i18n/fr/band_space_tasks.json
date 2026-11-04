@@ -16,7 +16,14 @@
     "comment_deleted": "Commentaire supprimé",
     "archived": "Tâche archivée",
     "deleted": "Tâche supprimée",
-    "delete_confirm": "Es-tu sûr de vouloir supprimer cette tâche ?"
+    "delete_confirm": "Es-tu sûr de vouloir supprimer cette tâche ?",
+    "back": "Retour aux tâches",
+    "more_actions": "Plus d'actions",
+    "no_due": "Aucune",
+    "no_assignee": "Personne",
+    "assignee_count": "{count} membre | {count} membres",
+    "clear_due": "Retirer l'échéance",
+    "change_status": "Changer le statut, actuellement {status}"
   },
   "status": {
     "todo": "À faire",

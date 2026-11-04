@@ -16,7 +16,14 @@
     "comment_deleted": "Comment deleted",
     "archived": "Task archived",
     "deleted": "Task deleted",
-    "delete_confirm": "Are you sure you want to delete this task?"
+    "delete_confirm": "Are you sure you want to delete this task?",
+    "back": "Back to the tasks",
+    "more_actions": "More actions",
+    "no_due": "None",
+    "no_assignee": "Nobody",
+    "assignee_count": "{count} member | {count} members",
+    "clear_due": "Remove the due date",
+    "change_status": "Change the status, now {status}"
   },
   "status": {
     "todo": "To do",

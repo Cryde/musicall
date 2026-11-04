@@ -135,7 +135,7 @@
       @click="$emit('create-task')"
     />
 
-    <TaskStatusSheet v-model:visible="isStatusSheetOpen" :task="statusSheetTask" :band-space-id="bandSpaceId" />
+    <TaskStatusSheet v-model:visible="isStatusSheetOpen" :task="statusSheetTask" @choose="moveStatusSheetTask" />
 
     <BottomSheet v-model:visible="isFilterSheetOpen" :title="t('band_space_tasks.phone.filters')">
       <div class="flex flex-col gap-4 px-5 pb-4">
@@ -165,6 +165,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
+import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -213,6 +214,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const tasksStore = useBandTasksStore()
+const toast = useToast()
 
 // ---------- Tabs ----------
 
@@ -322,5 +324,14 @@ const statusSheetTask = computed(
 function openStatusSheet(task) {
   statusSheetTaskId.value = task.id
   isStatusSheetOpen.value = true
+}
+
+// To the end of the chosen status, as the desktop card's « Déplacer vers » does.
+async function moveStatusSheetTask(status) {
+  try {
+    await tasksStore.moveTaskToColumn(props.bandSpaceId, statusSheetTaskId.value, status, null)
+  } catch {
+    toast.add({ severity: 'error', summary: t('band_space_tasks.common.move_failed'), life: 5000 })
+  }
 }
 </script>
