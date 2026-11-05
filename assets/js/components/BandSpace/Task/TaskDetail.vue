@@ -3,21 +3,26 @@
   <Drawer v-model:visible="visibleModel" position="right" class="w-full! md:w-[48rem]!" :show-close-icon="!isPhone" :close-on-escape="!isAnySheetOpen">
     <template #header>
       <!-- A phone gets the app's screen: back to the list on the left, the task's actions on the right. -->
-      <div v-if="isPhone" class="-ml-2 flex flex-1 items-center gap-1">
-        <Button icon="pi pi-arrow-left" text rounded severity="secondary" :aria-label="t('band_space_tasks.detail.back')" @click="visibleModel = false" />
-        <span class="flex-1 text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
-        <Button
-          v-if="hasTaskActions"
-          icon="pi pi-ellipsis-v"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_tasks.detail.more_actions')"
-          aria-haspopup="dialog"
-          :aria-expanded="isActionSheetOpen"
-          @click="isActionSheetOpen = true"
-        />
-      </div>
+      <PhoneBackBar
+        v-if="isPhone"
+        :back-label="t('band_space_tasks.detail.back')"
+        :title="t('band_space_tasks.detail.title')"
+        @back="visibleModel = false"
+      >
+        <template #actions>
+          <Button
+            v-if="hasTaskActions"
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_tasks.detail.more_actions')"
+            aria-haspopup="dialog"
+            :aria-expanded="isActionSheetOpen"
+            @click="isActionSheetOpen = true"
+          />
+        </template>
+      </PhoneBackBar>
       <span v-else class="text-base font-semibold">{{ t('band_space_tasks.detail.title') }}</span>
     </template>
 
@@ -364,6 +369,7 @@ import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import { canDeleteTask } from '../../../utils/taskActions.js'
 import { singleLineTitle } from '../../../utils/taskTitle.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import Avatar from '../../User/Avatar.vue'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'

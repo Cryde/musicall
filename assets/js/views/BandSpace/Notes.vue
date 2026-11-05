@@ -36,32 +36,32 @@
       >
         <!-- A phone's bar over the note: back to the list, where the save stands, and the note's ⋯.
              Stuck under the site header; the editor's toolbar sticks under it. -->
-        <div
+        <PhoneBackBar
           v-if="mobileView === 'editor'"
-          class="md:hidden sticky top-16 z-30 flex h-14 shrink-0 items-center gap-1 border-b border-surface-200 bg-surface-0 px-1 dark:border-surface-700 dark:bg-surface-900"
+          variant="screen"
+          sticky
+          class="md:hidden"
+          :back-label="t('band_space_notes.page.back')"
+          @back="handleBack"
         >
-          <Button
-            icon="pi pi-arrow-left"
-            :aria-label="t('band_space_notes.page.back')"
-            text
-            rounded
-            severity="secondary"
-            @click="handleBack"
-          />
-          <span class="min-w-0 flex-1 truncate text-sm text-surface-600 dark:text-surface-300">{{ t('band_space_notes.page.heading') }}</span>
-          <!-- A note just opened has nothing waiting to be saved. -->
-          <NoteSaveStatus v-if="notesStore.selectedNote" :status="notesStore.saveStatus ?? 'saved'" class="mr-1" />
-          <Button
-            v-if="notesStore.selectedNoteId && noteTreeRef?.hasActions(notesStore.selectedNoteId)"
-            icon="pi pi-ellipsis-h"
-            text
-            rounded
-            severity="secondary"
-            :aria-label="t('band_space_notes.tree.note_actions')"
-            aria-haspopup="dialog"
-            @click="noteTreeRef.openActions(notesStore.selectedNoteId, $event)"
-          />
-        </div>
+          <template #title>
+            <span class="min-w-0 flex-1 truncate text-sm text-surface-600 dark:text-surface-300">{{ t('band_space_notes.page.heading') }}</span>
+          </template>
+          <template #actions>
+            <!-- A note just opened has nothing waiting to be saved. -->
+            <NoteSaveStatus v-if="notesStore.selectedNote" :status="notesStore.saveStatus ?? 'saved'" class="mr-1" />
+            <Button
+              v-if="notesStore.selectedNoteId && noteTreeRef?.hasActions(notesStore.selectedNoteId)"
+              icon="pi pi-ellipsis-h"
+              text
+              rounded
+              severity="secondary"
+              :aria-label="t('band_space_notes.tree.note_actions')"
+              aria-haspopup="dialog"
+              @click="noteTreeRef.openActions(notesStore.selectedNoteId, $event)"
+            />
+          </template>
+        </PhoneBackBar>
 
         <div v-if="notesStore.isLoading" class="flex items-center justify-center flex-1">
           <ProgressSpinner />
@@ -139,6 +139,7 @@ import CreateNoteDialog from '../../components/BandSpace/Notes/CreateNoteDialog.
 import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
 import NoteSaveStatus from '../../components/BandSpace/Notes/NoteSaveStatus.vue'
 import NoteTree from '../../components/BandSpace/Notes/NoteTree.vue'
+import PhoneBackBar from '../../components/Global/PhoneBackBar.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { useBandSpaceNotesStore } from '../../store/bandSpace/bandSpaceNotes.js'

@@ -8,17 +8,11 @@
     :close-on-escape="!isAnySheetOpen"
   >
     <template v-if="isBelowMd" #header>
-      <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_agenda.phone.back')"
-          @click="isVisible = false"
-        />
-        <span class="font-semibold">{{ t('band_space_agenda.common.absences') }}</span>
-      </div>
+      <PhoneBackBar
+        :back-label="t('band_space_agenda.phone.back')"
+        :title="t('band_space_agenda.common.absences')"
+        @back="isVisible = false"
+      />
     </template>
 
     <div class="flex flex-col gap-4">
@@ -318,6 +312,7 @@ import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSet
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { formatAbsenceRange, groupAbsencesByMonth } from '../../../utils/absenceRange.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
