@@ -53,6 +53,6 @@ class FinanceSummary
     /** @var array<int, array{member_id: string, name: string, username: string, total: int}> */
     public array $memberContributions = [];
 
-    /** @var array<int, array{id: string, label: string, amount: ?int, amount_min: ?int, amount_max: ?int, date: ?string, status: string}> */
+    /** @var array<int, array{id: string, label: string, type: string, category_id: string, amount: ?int, amount_min: ?int, amount_max: ?int, date: ?string, status: string}> */
     public array $upcomingEntries = [];
 }

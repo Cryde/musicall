@@ -142,6 +142,88 @@ class FinanceSummaryTest extends ApiTestCase
     }
 
     /**
+     * An échéance says whether it comes in or goes out and where it belongs, so a list of them can
+     * sign its amount and name its category without the period's entries at hand.
+     */
+    public function test_upcoming_entries_carry_their_type_and_category(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Live',
+            'position' => 0,
+        ])->create();
+
+        $date = new \DateTimeImmutable('+10 days');
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Location du local',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Committed,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 12000,
+            'date' => \DateTime::createFromImmutable($date->setTime(0, 0)),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            [],
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceSummary',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            '@type' => 'FinanceSummary',
+            'band_space_id' => $bandSpace->id,
+            'current_membership_id' => $membership->id,
+            'total_income' => 0,
+            'total_expense' => 0,
+            'total_income_all' => 0,
+            'total_expense_all' => 12000,
+            'total_planned' => 0,
+            'total_committed' => 12000,
+            'total_paid' => 0,
+            'total_personal' => 0,
+            'total_personal_income' => 0,
+            'total_personal_expense' => 0,
+            'has_estimates' => false,
+            'min_date' => $date->format('Y-m-d') . 'T00:00:00+00:00',
+            'max_date' => $date->format('Y-m-d') . 'T00:00:00+00:00',
+            'by_category' => [
+                [
+                    'id' => $category->id,
+                    'name' => 'Live',
+                    'paid' => 0,
+                    'committed' => 12000,
+                    'planned' => 0,
+                ],
+            ],
+            'member_contributions' => [],
+            'upcoming_entries' => [
+                [
+                    'id' => $entry->id,
+                    'label' => 'Location du local',
+                    'type' => 'expense',
+                    'category_id' => $category->id,
+                    'amount' => 12000,
+                    'amount_min' => null,
+                    'amount_max' => null,
+                    'date' => $date->format('Y-m-d'),
+                    'status' => 'committed',
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * The « Personnel » card shows the reader's personal incomes and expenses apart (#1168): added up,
      * a 300 € income and a 500 € expense read 800 €. The sum stays for the mobile app.
      */

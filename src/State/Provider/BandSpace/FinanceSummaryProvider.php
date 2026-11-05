@@ -78,6 +78,8 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         $summary->upcomingEntries = array_map(fn (\App\Entity\BandSpace\FinanceEntry $entry): array => [
             'id' => (string) $entry->id,
             'label' => $entry->label,
+            'type' => $entry->type->value,
+            'category_id' => (string) $entry->category->id,
             'amount' => $entry->amount,
             'amount_min' => $entry->amountMin,
             'amount_max' => $entry->amountMax,

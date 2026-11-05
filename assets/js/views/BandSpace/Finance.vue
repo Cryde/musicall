@@ -1,6 +1,7 @@
 <template>
-  <div class="max-md:pb-24">
-    <h1 v-if="isBelowMd" class="mb-3 text-xl font-bold">{{ t('band_space_finance.phone.title') }}</h1>
+  <!-- On a phone the boxes run 16px from the edges, the title stays on the page's 24px. -->
+  <div class="max-md:-mx-2 max-md:pb-24">
+    <h1 v-if="isBelowMd" class="mb-3 px-2 text-2xl font-semibold">{{ t('band_space_finance.phone.title') }}</h1>
 
     <div v-if="financeStore.isLoading">
       <!-- Initial load skeleton -->
@@ -34,20 +35,28 @@
         <button
           v-if="viewMode !== 'chart'"
           type="button"
-          class="flex min-h-12 w-full items-center gap-3 rounded-xl border border-surface-300 bg-surface-0 px-3 py-2 text-left dark:border-surface-600 dark:bg-surface-900"
+          class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-surface-200 bg-surface-0 px-3 text-left dark:border-surface-700 dark:bg-surface-900"
           aria-haspopup="dialog"
           :aria-label="t('band_space_finance.phone.change_period', { period: periodLabel })"
           @click="isPeriodSheetOpen = true"
         >
           <i class="pi pi-calendar text-surface-500 dark:text-surface-400" aria-hidden="true" />
           <span class="flex min-w-0 flex-1 flex-col">
-            <span v-if="activePreset" class="text-sm font-semibold">{{ activePreset.label }}</span>
-            <span :class="activePreset ? 'text-xs text-surface-600 dark:text-surface-300' : 'text-sm font-semibold'">{{ periodDates }}</span>
+            <span v-if="activePreset" class="text-sm leading-tight font-semibold">{{ activePreset.label }}</span>
+            <span
+              class="truncate leading-tight"
+              :class="activePreset ? 'text-xs text-surface-600 dark:text-surface-300' : 'text-sm font-semibold'"
+            >
+              {{ periodDates }}
+            </span>
           </span>
           <i class="pi pi-chevron-down text-xs text-surface-500" aria-hidden="true" />
         </button>
-        <span v-else class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
-          <i class="pi pi-clock" aria-hidden="true" />
+        <span
+          v-else
+          class="flex h-11 items-center gap-2.5 self-start rounded-xl border border-surface-200 bg-surface-0 px-3 text-sm font-semibold dark:border-surface-700 dark:bg-surface-900"
+        >
+          <i class="pi pi-clock text-surface-500 dark:text-surface-400" aria-hidden="true" />
           {{ t('band_space_finance.page.all_periods') }}
         </span>
         <div
@@ -59,10 +68,10 @@
             v-for="mode in VIEW_MODES"
             :key="mode.key"
             type="button"
-            class="flex h-9 items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors"
+            class="flex h-9 items-center justify-center gap-1.5 rounded-lg px-1 text-[0.8125rem] font-semibold transition-colors"
             :class="
               viewMode === mode.key
-                ? 'bg-surface-0 text-surface-900 shadow-sm dark:bg-surface-700 dark:text-surface-0'
+                ? 'bg-surface-0 text-surface-900 shadow-sm dark:bg-surface-900 dark:text-surface-0'
                 : 'text-surface-600 dark:text-surface-300'
             "
             :aria-pressed="viewMode === mode.key"
@@ -121,7 +130,7 @@
       </div>
 
       <template v-if="viewMode !== 'chart'">
-      <FinanceMetricCards :summary="financeStore.summary" class="mb-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }" />
+      <FinanceMetricCards :summary="financeStore.summary" class="mb-6 max-md:mb-0" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }" />
 
       <div class="flex flex-col lg:flex-row gap-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }">
         <div class="flex-1 min-w-0">
@@ -148,7 +157,7 @@
           />
 
           <!-- Mobile: sidebar content below accordion -->
-          <div class="lg:hidden mt-6 flex flex-col gap-6">
+          <div class="lg:hidden mt-6 flex flex-col gap-6 max-md:mt-5 max-md:gap-5">
             <FinanceSidebar :summary="financeStore.summary" @open-entry="openEntry" />
 
             <RecurrenceList
@@ -194,6 +203,8 @@
     <PeriodSheet
       v-if="isBelowMd"
       v-model:visible="isPeriodSheetOpen"
+      preset-layout="list"
+      date-format="dd/mm/yy"
       :from="financeStore.dateFrom"
       :to="financeStore.dateTo"
       :presets="financePresets"

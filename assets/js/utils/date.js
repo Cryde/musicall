@@ -34,6 +34,24 @@ export function formatDateWithWeekday(value) {
   })
 }
 
+// The two halves of a small calendar leaf, « sam. » over « 7 », from an ISO string. Empty without a day.
+export function formatWeekdayShort(dateString) {
+  if (!dateString) return ''
+  return parseISO(dateString).toLocaleDateString(intlLocale(), { weekday: 'short' })
+}
+
+export function formatDayOfMonth(dateString) {
+  if (!dateString) return ''
+  return String(parseISO(dateString).getDate())
+}
+
+// « lun. 30 nov. », from an ISO string or a Date: the weekday a row in a list can place, no year.
+export function formatDayWithWeekday(value) {
+  if (!value) return ''
+  const date = typeof value === 'string' ? parseISO(value) : value
+  return date.toLocaleDateString(intlLocale(), { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
 // A list row's day: « 4 nov. » this year, « 4 nov. 2025 » before, where there is no column to repeat
 // the year in. `now` is the clock, for tests.
 export function formatDateCompactInYear(value, now = new Date()) {

@@ -6,7 +6,10 @@ import {
   formatDateCompactWithYear,
   formatDateLong,
   formatDateRangeCompact,
-  formatDateWithWeekday
+  formatDateWithWeekday,
+  formatDayOfMonth,
+  formatDayWithWeekday,
+  formatWeekdayShort
 } from './date.js'
 
 // A bare day is read as local midnight, so the runner's timezone must not move it. West of UTC is
@@ -62,6 +65,19 @@ for (const timeZone of ['Europe/Paris', 'America/New_York']) {
       assert.equal(formatDateWithWeekday('2026-11-04'), 'mer. 4 nov. 2026')
       assert.equal(formatDateWithWeekday(new Date(2026, 7, 10, 18, 30)), 'lun. 10 août 2026')
       assert.equal(formatDateWithWeekday(null), '')
+    })
+
+    it('splits a day into the weekday and the day of the month, for a calendar leaf', () => {
+      assert.equal(formatWeekdayShort('2026-11-07'), 'sam.')
+      assert.equal(formatDayOfMonth('2026-11-07'), '7')
+      assert.equal(formatWeekdayShort(null), '')
+      assert.equal(formatDayOfMonth(null), '')
+    })
+
+    it('puts the weekday before a day of a list, with no year', () => {
+      assert.equal(formatDayWithWeekday('2026-11-30'), 'lun. 30 nov.')
+      assert.equal(formatDayWithWeekday(new Date(2026, 10, 7, 23, 30)), 'sam. 7 nov.')
+      assert.equal(formatDayWithWeekday(null), '')
     })
 
     it('spells the month out for a sentence', () => {

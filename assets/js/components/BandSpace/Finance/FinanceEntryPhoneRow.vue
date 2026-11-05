@@ -2,14 +2,14 @@
   <component
     :is="canOpen ? 'button' : 'div'"
     :type="canOpen ? 'button' : undefined"
-    class="flex w-full items-center gap-3 px-2 py-2.5 text-left"
+    class="flex min-h-15 w-full items-center gap-3 px-3.5 py-2.5 text-left"
     :class="{ 'transition-colors hover:bg-surface-100 dark:hover:bg-surface-700': canOpen }"
     @click="canOpen && emit('open', entry)"
   >
-    <FinanceStatusDot :status="entry.status" />
+    <FinanceStatusDot :status="entry.status" class="w-5 justify-center [&>i]:!text-base" />
     <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-      <span class="line-clamp-2 text-sm [overflow-wrap:anywhere]">{{ entry.label }}</span>
-      <span class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-surface-600 dark:text-surface-300">
+      <span class="line-clamp-2 text-[0.9375rem] leading-snug font-medium [overflow-wrap:anywhere]">{{ entry.label }}</span>
+      <span class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[0.8125rem] text-surface-600 dark:text-surface-400">
         <i
           v-if="entry.recurrence_id"
           class="pi pi-sync text-[0.625rem]"
@@ -27,7 +27,7 @@
     </span>
     <FinanceSplitWarning v-if="entry.split_warning" />
     <span
-      class="shrink-0 text-right text-sm font-semibold tabular-nums"
+      class="shrink-0 text-right text-[0.9375rem] font-semibold tabular-nums"
       :class="entry.type === 'expense' ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'"
     >
       {{ formatSignedEntryAmount(entry) }}

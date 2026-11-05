@@ -347,6 +347,7 @@
     "title": "Period",
     "from": "From",
     "to": "To",
-    "apply": "Apply"
+    "apply": "Apply",
+    "custom": "Custom dates"
   }
 }

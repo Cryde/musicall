@@ -1,7 +1,23 @@
 <template>
   <BottomSheet v-model:visible="visible" :title="t('band_space.period_sheet.title')">
+    <!-- As a list (finances): one row per preset, the current one ticked, then the custom dates. -->
+    <template v-if="presetLayout === 'list'">
+      <button
+        v-for="preset in presets"
+        :key="preset.key"
+        type="button"
+        :class="[SHEET_CHOICE, 'border-surface-200 not-first:border-t dark:border-surface-700']"
+        :aria-current="isPresetActive(preset) ? 'true' : undefined"
+        @click="applyPreset(preset)"
+      >
+        <span class="flex-1">{{ preset.label }}</span>
+        <i v-if="isPresetActive(preset)" class="pi pi-check text-primary" aria-hidden="true" />
+      </button>
+      <p class="px-5 pt-4 pb-1 text-[0.8125rem] font-semibold">{{ t('band_space.period_sheet.custom') }}</p>
+    </template>
+
     <div class="flex flex-col gap-4 px-5 pb-4">
-      <div class="flex flex-wrap gap-2">
+      <div v-if="presetLayout === 'chips'" class="flex flex-wrap gap-2">
         <button
           v-for="preset in presets"
           :key="preset.key"
@@ -20,7 +36,7 @@
           <DatePicker
             v-model="draftFrom"
             :input-id="`${uid}-from`"
-            date-format="d M yy"
+            :date-format="dateFormat"
             :manual-input="false"
             show-icon
             fluid
@@ -31,7 +47,7 @@
           <DatePicker
             v-model="draftTo"
             :input-id="`${uid}-to`"
-            date-format="d M yy"
+            :date-format="dateFormat"
             :manual-input="false"
             :min-date="draftFrom ?? undefined"
             show-icon
@@ -40,8 +56,17 @@
         </div>
       </div>
 
-      <Button :label="t('band_space.period_sheet.apply')" :disabled="!canApply" @click="applyDraft" />
+      <Button
+        v-if="presetLayout === 'chips'"
+        :label="t('band_space.period_sheet.apply')"
+        :disabled="!canApply"
+        @click="applyDraft"
+      />
     </div>
+
+    <template v-if="presetLayout === 'list'" #footer>
+      <Button :label="t('band_space.period_sheet.apply')" :disabled="!canApply" fluid @click="applyDraft" />
+    </template>
   </BottomSheet>
 </template>
 
@@ -51,7 +76,12 @@ import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { PHONE_CHIP, PHONE_CHIP_OFF, PHONE_CHIP_ON } from '../../constants/phoneControls.js'
+import {
+  PHONE_CHIP,
+  PHONE_CHIP_OFF,
+  PHONE_CHIP_ON,
+  SHEET_CHOICE
+} from '../../constants/phoneControls.js'
 import BottomSheet from '../Global/BottomSheet.vue'
 
 /**
@@ -62,7 +92,10 @@ const props = defineProps({
   from: { type: Date, required: true },
   to: { type: Date, required: true },
   // [{ key, label, from: () => Date, to: () => Date }]
-  presets: { type: Array, default: () => [] }
+  presets: { type: Array, default: () => [] },
+  // 'chips' (agenda) or 'list' (finances), as each module's phone screen draws it
+  presetLayout: { type: String, default: 'chips' },
+  dateFormat: { type: String, default: 'd M yy' }
 })
 
 const emit = defineEmits(['apply'])

@@ -4,15 +4,15 @@
   </div>
   <div v-else class="flex flex-col gap-6">
     <!-- Doughnuts + per-category legend -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-md:gap-4">
       <section
         v-for="chart in charts"
         :key="chart.key"
-        class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4"
+        class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4 max-md:rounded-2xl max-md:dark:bg-surface-900"
       >
         <div class="flex items-center justify-between mb-3 gap-2">
-          <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-300">{{ chart.title }}</h3>
-          <span class="text-sm font-semibold tabular-nums">{{ formatAmount(chart.total) }}</span>
+          <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-300 max-md:text-[0.9375rem] max-md:text-surface-900 max-md:dark:text-surface-0">{{ chart.title }}</h3>
+          <span class="text-sm font-semibold tabular-nums max-md:text-[0.9375rem]">{{ formatAmount(chart.total) }}</span>
         </div>
 
         <template v-if="chart.rows.length > 0">
@@ -21,9 +21,10 @@
             :data="chart.data"
             :options="chartOptions"
             :canvas-props="{ role: 'img', 'aria-label': chart.title }"
-            class="h-64"
+            class="h-64 max-md:mx-auto max-md:h-42 max-md:w-42"
           />
-          <ul class="mt-4 space-y-1.5">
+          <!-- On a phone the legend starts under a rule, as the proposal draws it. -->
+          <ul class="mt-4 space-y-1.5 max-md:border-t max-md:border-surface-200 max-md:pt-3 dark:max-md:border-surface-700">
             <li v-for="row in chart.rows" :key="row.id" class="flex items-center gap-2 text-sm">
               <span class="w-3 h-3 rounded-full shrink-0" :style="{ backgroundColor: row.color }" />
               <span class="flex-1 min-w-0 truncate text-surface-700 dark:text-surface-300">{{ row.name }}</span>
@@ -43,7 +44,7 @@
       <section
         v-for="top in topLists"
         :key="top.key"
-        class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4"
+        class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4 max-md:rounded-2xl max-md:dark:bg-surface-900"
       >
         <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-3">{{ top.title }}</h3>
         <ol v-if="top.rows.length > 0" class="space-y-2">

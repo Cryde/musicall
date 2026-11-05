@@ -10,12 +10,13 @@
     <!-- A phone shows the entry as a screen of its own: back, what it is, and more. -->
     <template v-if="isBelowMd" #header>
       <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
+        <!-- Back from an entry, × out of a form not yet saved. -->
         <Button
-          icon="pi pi-arrow-left"
+          :icon="isEditMode ? 'pi pi-arrow-left' : 'pi pi-times'"
           text
           rounded
           severity="secondary"
-          :aria-label="t('band_space_finance.phone.back')"
+          :aria-label="isEditMode ? t('band_space_finance.phone.back') : t('band_space_finance.common.cancel')"
           @click="visibleModel = false"
         />
         <span class="min-w-0 flex-1 truncate font-semibold">
@@ -35,14 +36,18 @@
     </template>
 
     <!-- What the entry is, before its fields: its amount, in or out, and where it stands. -->
-    <div v-if="isBelowMd && isEditMode" class="mb-4 flex flex-col items-start gap-2">
+    <div v-if="isBelowMd && isEditMode" class="mb-4 flex flex-col items-start gap-1.5">
       <span
-        class="text-2xl font-semibold tabular-nums"
+        class="text-[2.125rem] leading-tight font-bold tracking-tight tabular-nums"
         :class="props.entry.type === 'expense' ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'"
       >
         {{ formatSignedEntryAmount(props.entry) }}
       </span>
-      <span class="text-xs font-semibold px-2.5 py-1 rounded-full" :class="statusBadgeClass(form.status)">
+      <span
+        class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[0.8125rem] font-semibold"
+        :class="statusBadgeClass(form.status)"
+      >
+        <i class="pi text-xs" :class="STATUS_ICONS[form.status]" aria-hidden="true" />
         {{ statusLabel(form.status) }}
       </span>
     </div>
@@ -61,6 +66,19 @@
         <InputText id="finance-label" v-model="form.label" :disabled="isLocked" :placeholder="t('band_space_finance.entry_drawer.label_placeholder')" />
       </div>
 
+      <!-- On a phone a saved entry reads label, status, category: the status is what changes most. -->
+      <FinanceEntryStatusField
+        v-if="statusComesFirst"
+        v-model:status="form.status"
+        :is-edit-mode="isEditMode"
+        :can-edit="canEditEntry"
+        :transitions="availableTransitions"
+        :options="statusOptions"
+        :status-label="statusLabel(form.status)"
+        :badge-class="statusBadgeClass(form.status)"
+        @transition="handleStatusTransition"
+      />
+
       <div v-if="showCategorySelect" class="flex flex-col gap-1">
         <label for="finance-category" class="text-sm font-medium">{{ t('band_space_finance.common.category') }} <span class="text-red-500">*</span></label>
         <Select
@@ -72,6 +90,22 @@
           :placeholder="t('band_space_finance.common.select_category')"
           :disabled="isLocked"
         />
+      </div>
+
+      <!-- An entry's category, changed from the sheet: the API moves an entry on its own request. -->
+      <div v-if="isBelowMd && isEditMode" class="flex flex-col gap-1">
+        <span :id="`${uid}-category`" class="text-sm font-medium">{{ t('band_space_finance.common.category') }}</span>
+        <button
+          type="button"
+          class="flex min-h-10 items-center justify-between gap-2 rounded-md border border-surface-300 bg-surface-0 px-3 py-2 text-left disabled:opacity-60 dark:border-surface-700 dark:bg-surface-950"
+          :aria-labelledby="`${uid}-category ${uid}-category-value`"
+          aria-haspopup="dialog"
+          :disabled="isLocked || !canEditEntry"
+          @click="openCategorySheet"
+        >
+          <span :id="`${uid}-category-value`" class="min-w-0 truncate">{{ entryCategoryName }}</span>
+          <i class="pi pi-chevron-down text-sm text-surface-500" aria-hidden="true" />
+        </button>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -87,39 +121,17 @@
         />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.status') }}</label>
-        <div v-if="isEditMode" class="flex items-center gap-2 flex-wrap">
-          <span
-            v-if="!isBelowMd"
-            class="text-xs font-semibold px-2.5 py-1 rounded-full"
-            :class="statusBadgeClass(form.status)"
-          >
-            {{ statusLabel(form.status) }}
-          </span>
-          <template v-if="canEditEntry">
-            <Button
-              v-for="transition in availableTransitions"
-              :key="transition.value"
-              :label="transition.label"
-              :severity="transition.severity"
-              size="small"
-              text
-              @click="handleStatusTransition(transition.value)"
-            />
-          </template>
-        </div>
-        <Select
-          v-else
-          id="finance-status"
-          :aria-label="t('band_space_finance.entry_drawer.status')"
-          v-model="form.status"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          :placeholder="t('band_space_finance.entry_drawer.select_status')"
-        />
-      </div>
+      <FinanceEntryStatusField
+        v-if="!statusComesFirst"
+        v-model:status="form.status"
+        :is-edit-mode="isEditMode"
+        :can-edit="canEditEntry"
+        :transitions="availableTransitions"
+        :options="statusOptions"
+        :status-label="statusLabel(form.status)"
+        :badge-class="statusBadgeClass(form.status)"
+        @transition="handleStatusTransition"
+      />
 
       <div class="flex flex-col gap-2">
         <label class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.amount') }}</label>
@@ -130,7 +142,7 @@
           optionLabel="label"
           optionValue="value"
           :allowEmpty="false"
-          class="text-sm"
+          class="text-sm max-md:w-full max-md:[&>.p-togglebutton]:flex-1"
           :disabled="isLocked"
         />
         <div v-if="form.amountMode === 'exact'" class="flex flex-col gap-1">
@@ -179,7 +191,7 @@
         <DatePicker
           id="finance-date"
           v-model="form.date"
-          :dateFormat="isBelowMd ? 'd M yy' : 'dd/mm/yy'"
+          dateFormat="dd/mm/yy"
           :manualInput="!isBelowMd"
           showIcon
           :disabled="isLocked"
@@ -229,7 +241,11 @@
         />
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-4">
+      <!-- On a phone Enregistrer stays in reach at the bottom of the screen, however long the form;
+           -bottom-5 cancels the drawer's bottom padding, which a sticky box otherwise stops at. -->
+      <div
+        class="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 max-md:sticky max-md:-bottom-5 max-md:z-10 max-md:-mx-5 max-md:-mb-5 max-md:mt-0 max-md:border-t max-md:border-surface-200 max-md:bg-surface-0 max-md:px-5 max-md:pt-3 max-md:pb-5 dark:max-md:border-surface-700 dark:max-md:bg-surface-900"
+      >
         <Button
           v-if="canEditEntry && !isLocked"
           type="submit"
@@ -241,8 +257,7 @@
           type="button"
           :label="t('band_space_finance.common.cancel')"
           severity="secondary"
-          :text="!isBelowMd"
-          :outlined="isBelowMd"
+          text
           class="max-md:flex-1"
           @click="visibleModel = false"
         />
@@ -272,6 +287,9 @@
         <p v-if="isLocked" class="-mt-2 pr-5 pb-2 pl-13 text-sm text-surface-600 dark:text-surface-300">
           {{ t('band_space_finance.entry_drawer.locked') }}
         </p>
+        <SheetAction icon="pi-link" @click="actionsSheet.run(copyEntryLink)">
+          {{ t('band_space_finance.phone.copy_link') }}
+        </SheetAction>
         <SheetAction v-if="canDelete" icon="pi-trash" danger @click="actionsSheet.run(handleDelete)">
           {{ t('band_space_finance.common.delete') }}
         </SheetAction>
@@ -307,7 +325,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
 import { useIsBelowMd } from '../../../composables/useIsPhone.js'
@@ -321,6 +339,7 @@ import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
+import FinanceEntryStatusField from './FinanceEntryStatusField.vue'
 import SplitManager from './SplitManager.vue'
 
 const props = defineProps({
@@ -686,6 +705,33 @@ const categoryChoices = computed(() =>
     ...pole.children.map((child) => ({ id: child.id, name: child.name, isChild: true }))
   ])
 )
+
+const uid = useId()
+
+const statusComesFirst = computed(() => isBelowMd.value && isEditMode.value)
+
+const STATUS_ICONS = { planned: 'pi-circle', committed: 'pi-clock', paid: 'pi-check-circle' }
+
+const entryCategoryName = computed(
+  () =>
+    financeStore.categories.find((category) => category.id === entryCategoryId.value)?.name ?? ''
+)
+
+// The page opens an entry from its address, so the link is this page with the entry named in it.
+async function copyEntryLink() {
+  const url = new URL(window.location.pathname, window.location.origin)
+  url.searchParams.set('entry', props.entry.id)
+  try {
+    await navigator.clipboard.writeText(url.toString())
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_finance.phone.link_copied'),
+      life: 3000
+    })
+  } catch {
+    toast.add({ severity: 'error', summary: t('band_space_finance.common.error'), life: 4000 })
+  }
+}
 
 function openCategorySheet() {
   isCategorySheetOpen.value = true

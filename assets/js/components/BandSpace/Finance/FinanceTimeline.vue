@@ -1,5 +1,7 @@
 <template>
-  <div class="flex justify-end gap-2 mb-4">
+  <!-- On a phone the dates come straight after the totals: « Ajouter une entrée » floats at the
+       bottom of the page, and categories are added from their own view. -->
+  <div v-if="!isBelowMd" class="flex justify-end gap-2 mb-4">
     <Button
       icon="pi pi-plus"
       :label="t('band_space_finance.common.add_category')"
@@ -7,9 +9,7 @@
       outlined
       @click="emit('add-category')"
     />
-    <!-- On a phone « Ajouter une entrée » floats at the bottom of the page. -->
     <Button
-      v-if="!isBelowMd"
       icon="pi pi-plus"
       :label="t('band_space_finance.common.add_entry')"
       size="small"
@@ -21,12 +21,12 @@
     {{ t('band_space_finance.timeline.empty') }}
   </div>
   <div v-else>
-    <div v-for="group in groupedEntries" :key="group.date" class="mb-4">
-      <div class="flex items-center gap-2 mb-1 px-2">
-        <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">{{ formatDateLabel(group.date) }}</span>
+    <div v-for="group in groupedEntries" :key="group.date" class="mb-4 max-md:mb-0 max-md:mt-4">
+      <div class="flex items-center gap-2 mb-1 px-2 max-md:mb-1.5 max-md:px-1">
+        <span class="text-sm font-semibold text-surface-600 dark:text-surface-300 max-md:text-surface-800 max-md:dark:text-surface-100">{{ formatDateLabel(group.date) }}</span>
         <span class="text-xs text-surface-400">{{ t('band_space_finance.common.entry_count', group.entries.length) }}</span>
       </div>
-      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 px-2 py-1 max-md:divide-y max-md:divide-surface-200 dark:max-md:divide-surface-700">
+      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 px-2 py-1 max-md:overflow-hidden max-md:rounded-2xl max-md:p-0 max-md:dark:bg-surface-900 max-md:divide-y max-md:divide-surface-200 dark:max-md:divide-surface-700">
         <template v-if="isBelowMd">
           <FinanceEntryPhoneRow
             v-for="entry in group.entries"
