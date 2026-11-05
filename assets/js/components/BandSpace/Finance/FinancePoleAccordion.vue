@@ -1,5 +1,15 @@
 <template>
-  <div class="flex justify-end mb-4">
+  <div v-if="isBelowMd" class="mb-2 flex items-center justify-between gap-2">
+    <h2 class="font-semibold">{{ t('band_space_finance.phone.categories') }}</h2>
+    <Button
+      icon="pi pi-plus"
+      :label="t('band_space_finance.common.add_category')"
+      size="small"
+      text
+      @click="emit('add-category', null)"
+    />
+  </div>
+  <div v-else class="flex justify-end mb-4">
     <Button
       icon="pi pi-plus"
       :label="t('band_space_finance.common.add_category')"
@@ -11,15 +21,17 @@
   <Accordion v-model:value="openPanels" multiple>
     <AccordionPanel v-for="pole in poles" :key="pole.id" :value="pole.id">
       <AccordionHeader>
-        <div class="flex flex-wrap items-center justify-between w-full pr-2 gap-x-3 gap-y-1">
-          <span class="font-semibold min-w-0 truncate">{{ pole.name }}</span>
+        <div class="flex flex-wrap items-center justify-between w-full min-w-0 pr-2 gap-x-3 gap-y-1 max-md:flex-col max-md:items-start max-md:gap-y-0.5">
+          <span class="font-semibold min-w-0 max-w-full truncate">{{ pole.name }}</span>
           <span class="flex items-baseline gap-2 sm:gap-3 shrink-0">
             <FinanceTypeTotals :totals="poleTotals(pole)" class="text-sm font-semibold" />
             <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('band_space_finance.common.entry_count', countEntries(pole)) }}</span>
           </span>
         </div>
       </AccordionHeader>
-      <AccordionContent>
+      <!-- PrimeVue's content is a grid whose wrapper may grow to its widest row: without the
+           min-w-0 an entry's label pushed the page wider than a phone. -->
+      <AccordionContent :pt="{ contentWrapper: { class: 'min-w-0' } }">
         <!-- Share paid, one bar per type: money in and money out are never added up -->
         <div v-if="progressRows(pole).length > 0" class="mb-4 flex flex-col gap-2">
           <div v-for="row in progressRows(pole)" :key="row.label">
@@ -65,6 +77,7 @@
               <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
                 <template v-if="editingId === child.id">
                   <InputText
+                    :id="renameInputId(child)"
                     v-model="editingName"
                     class="flex-1 text-sm"
                     size="small"
@@ -78,7 +91,7 @@
                   <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300 min-w-0 truncate">{{ child.name }}</h4>
                   <div class="flex items-center gap-0.5 shrink-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <button
-                      class="p-1 text-surface-400 hover:text-primary"
+                      class="p-1 text-surface-400 hover:text-primary max-md:flex max-md:h-11 max-md:w-11 max-md:items-center max-md:justify-center"
                       :title="t('band_space_finance.pole_accordion.rename_child')"
                       :aria-label="t('band_space_finance.pole_accordion.rename_child')"
                       @click="startRename(child)"
@@ -86,7 +99,7 @@
                       <i class="pi pi-pencil text-xs"></i>
                     </button>
                     <button
-                      class="p-1 text-red-500 hover:text-red-700"
+                      class="p-1 text-red-500 hover:text-red-700 max-md:flex max-md:h-11 max-md:w-11 max-md:items-center max-md:justify-center"
                       :title="t('band_space_finance.pole_accordion.delete_child')"
                       :aria-label="t('band_space_finance.pole_accordion.delete_child')"
                       @click="emit('delete-category', child.id)"
@@ -122,6 +135,7 @@
         <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
           <div v-if="editingId === pole.id" class="flex items-center gap-2">
             <InputText
+              :id="renameInputId(pole)"
               v-model="editingName"
               class="flex-1 text-sm"
               size="small"
@@ -130,6 +144,26 @@
             />
             <Button icon="pi pi-check" :aria-label="t('band_space_finance.pole_accordion.validate')" text rounded size="small" @click="saveRename(pole)" />
             <Button icon="pi pi-times" :aria-label="t('band_space_finance.common.cancel')" text rounded size="small" @click="cancelRename" />
+          </div>
+          <!-- A phone: the entry first, the rest of the category behind its ⋮ -->
+          <div v-else-if="isBelowMd" class="flex items-center gap-2">
+            <Button
+              icon="pi pi-plus"
+              :label="t('band_space_finance.common.add_entry')"
+              severity="secondary"
+              outlined
+              class="flex-1"
+              @click="emit('add-entry', pole.id)"
+            />
+            <Button
+              icon="pi pi-ellipsis-v"
+              severity="secondary"
+              text
+              rounded
+              :aria-label="t('band_space_finance.phone.category_actions', { name: pole.name })"
+              aria-haspopup="dialog"
+              @click="openCategorySheet(pole)"
+            />
           </div>
           <div v-else class="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
@@ -165,6 +199,23 @@
       </AccordionContent>
     </AccordionPanel>
   </Accordion>
+
+  <BottomSheet
+    v-if="isBelowMd"
+    v-model:visible="isCategorySheetOpen"
+    :title="categorySheetTarget?.name ?? ''"
+    @after-hide="onCategorySheetHidden"
+  >
+    <SheetAction icon="pi-plus" @click="runCategoryAction((pole) => emit('add-category', pole.id))">
+      {{ t('band_space_finance.pole_accordion.add_child') }}
+    </SheetAction>
+    <SheetAction icon="pi-pencil" @click="runCategoryAction(startRenameAndFocus)">
+      {{ t('band_space_finance.pole_accordion.rename') }}
+    </SheetAction>
+    <SheetAction icon="pi-trash" danger @click="runCategoryAction((pole) => emit('delete-category', pole.id))">
+      {{ t('band_space_finance.pole_accordion.delete_category') }}
+    </SheetAction>
+  </BottomSheet>
 </template>
 
 <script setup>
@@ -174,10 +225,14 @@ import AccordionHeader from 'primevue/accordionheader'
 import AccordionPanel from 'primevue/accordionpanel'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { financeCategoryTotals } from '../../../utils/financeCategoryTotals.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 import EntryList from './EntryList.vue'
 import FinanceTypeTotals from './FinanceTypeTotals.vue'
 
@@ -200,8 +255,14 @@ const emit = defineEmits([
   'rename-category'
 ])
 
+const isBelowMd = useIsBelowMd()
+const uid = useId()
 const editingId = ref(null)
 const editingName = ref('')
+
+function renameInputId(category) {
+  return `${uid}-rename-${category.id}`
+}
 
 function startRename(category) {
   editingId.value = category.id
@@ -212,6 +273,33 @@ function cancelRename() {
   editingId.value = null
   editingName.value = ''
 }
+
+// From the sheet the field appears where the ⋮ was, so it takes the focus the sheet hands back.
+async function startRenameAndFocus(category) {
+  startRename(category)
+  await nextTick()
+  document.getElementById(renameInputId(category))?.focus()
+}
+
+const isCategorySheetOpen = ref(false)
+const categorySheetTarget = ref(null)
+const categorySheetAction = useActionAfterSheetHide(isCategorySheetOpen)
+const onCategorySheetHidden = categorySheetAction.onAfterHide
+
+function openCategorySheet(pole) {
+  categorySheetTarget.value = pole
+  isCategorySheetOpen.value = true
+}
+
+// Given the category the sheet was opened for.
+function runCategoryAction(action) {
+  const pole = categorySheetTarget.value
+  categorySheetAction.run(() => action(pole))
+}
+
+watch(isBelowMd, () => {
+  isCategorySheetOpen.value = false
+})
 
 function saveRename(category) {
   const name = editingName.value.trim()

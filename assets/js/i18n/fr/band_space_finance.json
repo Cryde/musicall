@@ -223,5 +223,20 @@
     "top_income": "Top 10 des revenus",
     "top_expense": "Top 10 des dépenses",
     "tooltip": "{label} : {amount}"
+  },
+  "phone": {
+    "title": "Finances",
+    "views": "Affichage",
+    "view_categories": "Catégories",
+    "view_timeline": "Chronologie",
+    "view_chart": "Graphique",
+    "change_period": "Changer la période, actuellement {period}",
+    "totals_help": "Que comptent ces totaux ?",
+    "categories": "Catégories",
+    "category_actions": "Actions de la catégorie {name}",
+    "more_actions": "Plus d'actions",
+    "back": "Retour",
+    "change_category": "Changer de catégorie",
+    "category_changed": "Entrée déplacée dans {name}"
   }
 }

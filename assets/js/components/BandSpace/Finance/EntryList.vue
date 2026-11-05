@@ -4,16 +4,28 @@
       v-model="localEntries"
       group="finance-entries"
       :sort="false"
-      :disabled="financeStore.isSaving"
+      :disabled="financeStore.isSaving || isBelowMd"
       :animation="200"
       handle=".finance-entry-drag-handle"
       ghost-class="opacity-30"
       :data-category-id="categoryId"
-      class="flex flex-col min-h-[1.75rem]"
+      class="flex flex-col min-h-[1.75rem] max-md:divide-y max-md:divide-surface-200 dark:max-md:divide-surface-700"
       @end="handleDragEnd"
     >
+      <!-- A phone moves an entry from its own screen (« Changer de catégorie »), not by dragging. -->
+      <template v-if="isBelowMd">
+        <FinanceEntryPhoneRow
+          v-for="entry in localEntries"
+          :key="entry.id"
+          :entry="entry"
+          :meta="`${formatDateCompact(entry.date)} · ${typeLabel(entry.type)}`"
+          :can-open="canEdit(entry)"
+          @open="emit('edit', entry)"
+        />
+      </template>
       <div
         v-for="entry in localEntries"
+        v-else
         :key="entry.id"
         :data-entry-id="entry.id"
         class="group flex items-center gap-1.5 sm:gap-2 py-2 px-1 sm:px-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer"
@@ -69,7 +81,7 @@
           class="hidden sm:inline text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
           :class="typeBadgeClass(entry.type)"
         >
-          {{ entry.type === 'expense' ? t('band_space_finance.type.expense') : t('band_space_finance.type.income') }}
+          {{ typeLabel(entry.type) }}
         </span>
 
         <!-- Répartition that no longer matches the amount. Sits against the amount because that is
@@ -87,6 +99,7 @@
           v-if="canEdit(entry)"
           class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-surface-400 hover:text-primary flex-shrink-0 p-1"
           :title="t('band_space_finance.common.edit')"
+          :aria-label="t('band_space_finance.common.edit')"
           @click.stop="emit('edit', entry)"
         >
           <i class="pi pi-pencil text-sm"></i>
@@ -103,9 +116,11 @@
 import { ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
-import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
+import { formatEntryAmount } from '../../../utils/financeEntryAmount.js'
+import FinanceEntryPhoneRow from './FinanceEntryPhoneRow.vue'
 import FinanceSplitWarning from './FinanceSplitWarning.vue'
 import FinanceStatusDot from './FinanceStatusDot.vue'
 
@@ -123,6 +138,7 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'move'])
 
 const financeStore = useBandSpaceFinanceStore()
+const isBelowMd = useIsBelowMd()
 
 // VueDraggable needs a mutable model, but the store's entries are readonly. Keep a local copy and
 // re-sync whenever props change - after a move the store reloads, which is the authoritative state.
@@ -159,14 +175,10 @@ function handleDragEnd(event) {
   emit('move', entryId, toCategoryId)
 }
 
-function formatEntryAmount(entry) {
-  if (entry.amount != null) {
-    return formatAmount(entry.amount)
-  }
-  if (entry.amount_min != null && entry.amount_max != null) {
-    return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
-  }
-  return formatAmount(0)
+function typeLabel(type) {
+  return type === 'expense'
+    ? t('band_space_finance.type.expense')
+    : t('band_space_finance.type.income')
 }
 
 function typeBadgeClass(type) {

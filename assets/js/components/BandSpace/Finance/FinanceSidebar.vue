@@ -24,25 +24,27 @@
       </div>
     </div>
 
-    <!-- Prochaines échéances -->
-    <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+    <!-- Prochaines échéances: on a phone first, since they are what comes next -->
+    <div class="max-md:order-first bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
       <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-3">{{ t('band_space_finance.sidebar.upcoming') }}</h3>
 
       <div v-if="!upcomingEntries.length" class="text-sm text-surface-400 italic">
         {{ t('band_space_finance.sidebar.no_upcoming') }}
       </div>
 
-      <div v-else class="flex flex-col gap-2">
-        <div
+      <div v-else class="-mx-2 flex flex-col">
+        <button
           v-for="entry in upcomingEntries"
           :key="entry.id"
-          class="flex items-center gap-2 text-sm"
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-surface-100 max-md:py-2.5 dark:hover:bg-surface-700"
+          @click="emit('open-entry', entry.id)"
         >
           <FinanceStatusDot :status="entry.status" />
           <span class="flex-1 truncate">{{ entry.label }}</span>
           <span class="text-surface-400 text-xs flex-shrink-0">{{ formatDateCompact(entry.date) }}</span>
           <span class="font-medium tabular-nums flex-shrink-0">{{ formatEntryAmount(entry) }}</span>
-        </div>
+        </button>
       </div>
     </div>
   </div>
@@ -54,6 +56,7 @@ import { useI18n } from 'vue-i18n'
 import { contributionPercent, largestContribution } from '../../../utils/contributionBar.js'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
+import { formatEntryAmount } from '../../../utils/financeEntryAmount.js'
 import FinanceStatusDot from './FinanceStatusDot.vue'
 
 const { t } = useI18n()
@@ -62,6 +65,8 @@ const props = defineProps({
   summary: { type: Object, default: null }
 })
 
+const emit = defineEmits(['open-entry'])
+
 const memberContributions = computed(() => props.summary?.member_contributions ?? [])
 const upcomingEntries = computed(() => props.summary?.upcoming_entries ?? [])
 
@@ -69,13 +74,5 @@ const maxContribution = computed(() => largestContribution(memberContributions.v
 
 function barWidth(total) {
   return contributionPercent(total, maxContribution.value)
-}
-
-function formatEntryAmount(entry) {
-  if (entry.amount != null) return formatAmount(entry.amount)
-  if (entry.amount_min != null && entry.amount_max != null) {
-    return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
-  }
-  return formatAmount(0)
 }
 </script>

@@ -223,5 +223,20 @@
     "top_income": "Top 10 income entries",
     "top_expense": "Top 10 expenses",
     "tooltip": "{label}: {amount}"
+  },
+  "phone": {
+    "title": "Finances",
+    "views": "View",
+    "view_categories": "Categories",
+    "view_timeline": "Timeline",
+    "view_chart": "Chart",
+    "change_period": "Change the period, currently {period}",
+    "totals_help": "What do these totals count?",
+    "categories": "Categories",
+    "category_actions": "Actions for the {name} category",
+    "more_actions": "More actions",
+    "back": "Back",
+    "change_category": "Change category",
+    "category_changed": "Entry moved to {name}"
   }
 }
