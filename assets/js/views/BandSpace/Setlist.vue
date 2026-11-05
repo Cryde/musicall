@@ -81,17 +81,14 @@
       />
 
       <section v-else class="flex-1 min-w-0">
-        <div v-if="isBelowMd && (phoneScreen === 'lyrics' || phoneScreen === 'trash')" class="mb-3 -ml-2 flex items-center gap-1">
-          <Button
-            icon="pi pi-arrow-left"
-            text
-            rounded
-            severity="secondary"
-            :aria-label="t('band_space_setlist.phone.back_to_setlists')"
-            @click="goHome"
-          />
-          <h1 class="text-2xl font-semibold">{{ currentSelectionLabel }}</h1>
-        </div>
+        <PhoneBackBar
+          v-if="isBelowMd && (phoneScreen === 'lyrics' || phoneScreen === 'trash')"
+          variant="page"
+          class="mb-3"
+          :back-label="t('band_space_setlist.phone.back_to_setlists')"
+          :title="currentSelectionLabel"
+          @back="goHome"
+        />
         <RepertoireView
           v-if="activeView === 'repertoire'"
           :band-space-id="bandSpaceId"
@@ -138,6 +135,7 @@ import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vu
 import SetlistEditor from '../../components/BandSpace/Setlist/SetlistEditor.vue'
 import SetlistTrashList from '../../components/BandSpace/Setlist/SetlistTrashList.vue'
 import SidebarContent from '../../components/BandSpace/Setlist/SidebarContent.vue'
+import PhoneBackBar from '../../components/Global/PhoneBackBar.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { useBandLyricsStore } from '../../store/bandSpace/bandSpaceLyrics.js'

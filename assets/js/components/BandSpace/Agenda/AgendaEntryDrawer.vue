@@ -10,17 +10,13 @@
     <!-- A phone reads a saved entry first, as a screen of its own; editing it is one tap away and
          comes back to it. -->
     <template v-if="isBelowMd" #header>
-      <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
-        <Button
-          :icon="isReading || !isEditMode ? 'pi pi-arrow-left' : 'pi pi-times'"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="isReading || !isEditMode ? t('band_space_agenda.phone.back') : t('band_space_agenda.common.cancel')"
-          @click="leaveCurrentScreen"
-        />
-        <span class="min-w-0 flex-1 truncate font-semibold">{{ phoneHeaderTitle }}</span>
-        <template v-if="isReading">
+      <PhoneBackBar
+        :back-icon="isReading || !isEditMode ? 'pi pi-arrow-left' : 'pi pi-times'"
+        :back-label="isReading || !isEditMode ? t('band_space_agenda.phone.back') : t('band_space_agenda.common.cancel')"
+        :title="phoneHeaderTitle"
+        @back="leaveCurrentScreen"
+      >
+        <template v-if="isReading" #actions>
           <Button
             icon="pi pi-pencil"
             text
@@ -39,7 +35,7 @@
             @click="isActionsSheetOpen = true"
           />
         </template>
-      </div>
+      </PhoneBackBar>
     </template>
 
     <AgendaEntryReadView v-if="isReading" :item="agendaItem" class="mb-4" />
@@ -430,6 +426,7 @@ import {
 } from '../../../utils/agendaSeriesEdit.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import AgendaAskAvailabilityToggle from './AgendaAskAvailabilityToggle.vue'
 import AgendaAvailabilityPanel from './AgendaAvailabilityPanel.vue'

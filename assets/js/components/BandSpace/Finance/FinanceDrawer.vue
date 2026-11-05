@@ -9,30 +9,26 @@
   >
     <!-- A phone shows the entry as a screen of its own: back, what it is, and more. -->
     <template v-if="isBelowMd" #header>
-      <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
-        <!-- Back from an entry, × out of a form not yet saved. -->
-        <Button
-          :icon="isEditMode ? 'pi pi-arrow-left' : 'pi pi-times'"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="isEditMode ? t('band_space_finance.phone.back') : t('band_space_finance.common.cancel')"
-          @click="visibleModel = false"
-        />
-        <span class="min-w-0 flex-1 truncate font-semibold">
-          {{ isEditMode ? t('band_space_finance.entry_drawer.title_edit') : t('band_space_finance.entry_drawer.title_new') }}
-        </span>
-        <Button
-          v-if="isEditMode && canEditEntry"
-          icon="pi pi-ellipsis-v"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_finance.phone.more_actions')"
-          aria-haspopup="dialog"
-          @click="isActionsSheetOpen = true"
-        />
-      </div>
+      <!-- Back from an entry, × out of a form not yet saved. -->
+      <PhoneBackBar
+        :back-icon="isEditMode ? 'pi pi-arrow-left' : 'pi pi-times'"
+        :back-label="isEditMode ? t('band_space_finance.phone.back') : t('band_space_finance.common.cancel')"
+        :title="isEditMode ? t('band_space_finance.entry_drawer.title_edit') : t('band_space_finance.entry_drawer.title_new')"
+        @back="visibleModel = false"
+      >
+        <template #actions>
+          <Button
+            v-if="isEditMode && canEditEntry"
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_finance.phone.more_actions')"
+            aria-haspopup="dialog"
+            @click="isActionsSheetOpen = true"
+          />
+        </template>
+      </PhoneBackBar>
     </template>
 
     <!-- What the entry is, before its fields: its amount, in or out, and where it stands. -->
@@ -337,6 +333,7 @@ import { centsToCurrency, currencyToCents, MAX_AMOUNT_EUROS } from '../../../uti
 import { formatSignedEntryAmount } from '../../../utils/financeEntryAmount.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import FinanceEntryStatusField from './FinanceEntryStatusField.vue'

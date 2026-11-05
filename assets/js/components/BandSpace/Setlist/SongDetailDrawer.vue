@@ -9,39 +9,35 @@
   >
     <!-- A phone shows the song as a screen: back, its title (tapped to rename), and ⋮. -->
     <template v-if="isBelowMd" #header>
-      <div class="flex h-14 min-w-0 flex-1 items-center gap-1 border-b border-surface-200 px-1 dark:border-surface-700">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_setlist.live.back')"
-          @click="visible = false"
-        />
-        <InlineEditField
-          v-if="song"
-          ref="phoneTitleField"
-          :model-value="song.title"
-          :label="t('band_space_setlist.song_drawer.title')"
-          required
-          class="min-w-0 flex-1"
-          input-class="font-semibold"
-          :readonly="isLocked('title')"
-          :save="(value) => saveField('title', value)"
-        >
-          <template #default="{ value }"><span class="text-[1.0625rem] font-semibold">{{ value }}</span></template>
-        </InlineEditField>
-        <Button
-          v-if="!readOnly"
-          icon="pi pi-ellipsis-v"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_setlist.phone.song_actions')"
-          aria-haspopup="dialog"
-          @click="isSongSheetOpen = true"
-        />
-      </div>
+      <PhoneBackBar variant="screen" :back-label="t('band_space_setlist.live.back')" @back="visible = false">
+        <template #title>
+          <InlineEditField
+            v-if="song"
+            ref="phoneTitleField"
+            :model-value="song.title"
+            :label="t('band_space_setlist.song_drawer.title')"
+            required
+            class="min-w-0 flex-1"
+            input-class="font-semibold"
+            :readonly="isLocked('title')"
+            :save="(value) => saveField('title', value)"
+          >
+            <template #default="{ value }"><span class="text-[1.0625rem] font-semibold">{{ value }}</span></template>
+          </InlineEditField>
+        </template>
+        <template #actions>
+          <Button
+            v-if="!readOnly"
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_setlist.phone.song_actions')"
+            aria-haspopup="dialog"
+            @click="isSongSheetOpen = true"
+          />
+        </template>
+      </PhoneBackBar>
     </template>
     <!-- Every value is edited where it is shown (#1067): there is no separate edit form. -->
     <template v-else #header>
@@ -259,6 +255,7 @@ import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
 import InlineEditField from './Song/InlineEditField.vue'

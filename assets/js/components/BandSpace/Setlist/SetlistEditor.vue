@@ -18,40 +18,38 @@
         class="flex-1 min-w-0 flex flex-col bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 max-md:-mx-6 max-md:-mt-8 max-md:min-h-[calc(100dvh-4rem)] max-md:rounded-none max-md:border-0 max-md:pb-24"
       >
         <!-- A phone shows the set as a screen of its own: back to the list, its name, and ⋮. -->
-        <div
+        <PhoneBackBar
           v-if="isBelowMd"
-          class="sticky top-16 z-20 flex h-14 shrink-0 items-center gap-1 border-b border-surface-200 bg-surface-0 px-1 dark:border-surface-700 dark:bg-surface-900"
+          variant="screen"
+          sticky
+          :back-label="t('band_space_setlist.phone.back_to_setlists')"
+          :title="setlist.name"
+          @back="emit('back')"
         >
-          <Button
-            icon="pi pi-arrow-left"
-            text
-            rounded
-            severity="secondary"
-            :aria-label="t('band_space_setlist.phone.back_to_setlists')"
-            @click="emit('back')"
-          />
-          <InputText
-            v-if="editingName"
-            v-model="nameDraft"
-            autofocus
-            :aria-label="t('band_space_setlist.editor.name_aria')"
-            class="min-w-0 flex-1 font-semibold"
-            @blur="commitRename"
-            @keyup.enter="commitRename"
-            @keyup.esc="cancelRename"
-          />
-          <h2 v-else class="m-0 min-w-0 flex-1 truncate text-[1.0625rem] font-semibold">{{ setlist.name }}</h2>
-          <Button
-            ref="phoneMoreButton"
-            icon="pi pi-ellipsis-v"
-            text
-            rounded
-            severity="secondary"
-            :aria-label="t('band_space_setlist.phone.setlist_actions')"
-            aria-haspopup="dialog"
-            @click="isSetlistSheetOpen = true"
-          />
-        </div>
+          <template v-if="editingName" #title>
+            <InputText
+              v-model="nameDraft"
+              autofocus
+              :aria-label="t('band_space_setlist.editor.name_aria')"
+              class="min-w-0 flex-1 font-semibold"
+              @blur="commitRename"
+              @keyup.enter="commitRename"
+              @keyup.esc="cancelRename"
+            />
+          </template>
+          <template #actions>
+            <Button
+              ref="phoneMoreButton"
+              icon="pi pi-ellipsis-v"
+              text
+              rounded
+              severity="secondary"
+              :aria-label="t('band_space_setlist.phone.setlist_actions')"
+              aria-haspopup="dialog"
+              @click="isSetlistSheetOpen = true"
+            />
+          </template>
+        </PhoneBackBar>
 
         <div class="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 border-b border-surface-200 dark:border-surface-700 max-md:gap-2 max-md:border-b-0 max-md:pt-3 max-md:pb-0">
           <Message v-if="isArchived" severity="warn" :closable="false" icon="pi pi-archive">
@@ -492,6 +490,7 @@ import {
   writeColumns
 } from '../../../utils/setlistProgramme.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import DurationPrompt from './Editor/DurationPrompt.vue'
 import { INTERMISSION_KINDS, intermissionKind } from './Editor/intermissionKinds.js'

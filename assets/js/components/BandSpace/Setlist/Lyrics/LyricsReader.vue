@@ -8,27 +8,20 @@
     :pt="{ header: { class: '!p-0' }, content: { class: '!p-0' }, footer: { class: '!p-0' } }"
   >
     <template #header>
-      <div class="flex h-14 min-w-0 flex-1 items-center gap-1 border-b border-surface-200 px-1 dark:border-surface-700">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_setlist.live.back')"
-          @click="visible = false"
-        />
-        <h2 class="min-w-0 flex-1 truncate text-[1.0625rem] font-semibold">{{ song?.title }}</h2>
-        <Button
-          v-if="lyrics"
-          icon="pi pi-file-pdf"
-          text
-          rounded
-          severity="secondary"
-          :loading="isExporting"
-          :aria-label="t('band_space_setlist.lyrics_panel.export_pdf_aria')"
-          @click="exportPdf(bandSpaceId, lyrics.id, { chords: true, singers: true, transpose })"
-        />
-      </div>
+      <PhoneBackBar variant="screen" :back-label="t('band_space_setlist.live.back')" :title="song?.title" @back="visible = false">
+        <template #actions>
+          <Button
+            v-if="lyrics"
+            icon="pi pi-file-pdf"
+            text
+            rounded
+            severity="secondary"
+            :loading="isExporting"
+            :aria-label="t('band_space_setlist.lyrics_panel.export_pdf_aria')"
+            @click="exportPdf(bandSpaceId, lyrics.id, { chords: true, singers: true, transpose })"
+          />
+        </template>
+      </PhoneBackBar>
     </template>
 
     <div class="px-5 pt-3 pb-6">
@@ -94,6 +87,7 @@ import { useLyricsTranspose } from '../../../../composables/useLyricsTranspose.j
 import { useBandLyricsStore } from '../../../../store/bandSpace/bandSpaceLyrics.js'
 import { lyricsReaderStep } from '../../../../utils/lyricsReaderStep.js'
 import { formatDuration } from '../../../../utils/setlistDuration.js'
+import PhoneBackBar from '../../../Global/PhoneBackBar.vue'
 import LyricsSheet from './LyricsSheet.vue'
 import './lyrics.css'
 

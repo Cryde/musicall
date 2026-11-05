@@ -1,139 +1,140 @@
 <template>
   <div class="flex flex-col gap-4">
     <!-- A phone: the songs as a list under a back bar, the selection switched on from that bar. -->
-    <div v-if="isBelowMd" class="-mx-2 flex flex-col" :class="selected.size > 0 ? 'pb-40' : 'pb-24'">
-      <div class="mb-2 flex items-center gap-1">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_setlist.phone.back_to_setlists')"
-          @click="emit('back')"
-        />
-        <h1 class="min-w-0 flex-1 truncate text-2xl font-semibold">{{ t('band_space_setlist.common.repertoire') }}</h1>
-        <Button
-          :icon="selecting ? 'pi pi-times' : 'pi pi-check-square'"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="selecting ? t('band_space_setlist.repertoire.clear_selection') : t('band_space_setlist.phone.select')"
-          :aria-pressed="selecting"
-          @click="toggleSelecting"
-        />
-      </div>
-      <IconField icon-position="left" class="mb-2">
-        <InputIcon class="pi pi-search" />
-        <InputText
-          v-model="query"
-          type="search"
-          :placeholder="t('band_space_setlist.common.search_song_placeholder')"
-          :aria-label="t('band_space_setlist.common.search_repertoire_aria')"
-          class="h-11 w-full !rounded-xl"
-        />
-      </IconField>
-      <div class="mb-3 flex gap-2 overflow-x-auto [scrollbar-width:none]">
-        <button
-          type="button"
-          :class="[PHONE_CHIP, withoutLyrics ? PHONE_CHIP_ON : PHONE_CHIP_OFF]"
-          :aria-pressed="withoutLyrics"
-          @click="withoutLyrics = !withoutLyrics"
-        >
-          {{ t('band_space_setlist.repertoire.filter_without_lyrics', { count: counts.withoutLyrics }) }}
-        </button>
-        <button
-          type="button"
-          :class="[PHONE_CHIP, missingInfo ? PHONE_CHIP_ON : PHONE_CHIP_OFF]"
-          :aria-pressed="missingInfo"
-          @click="missingInfo = !missingInfo"
-        >
-          {{ t('band_space_setlist.repertoire.filter_missing_info', { count: counts.missingInfo }) }}
-        </button>
-      </div>
-
-      <div v-if="songsStore.isLoading && songsStore.songs.length === 0" class="flex flex-col gap-2">
-        <Skeleton v-for="i in 4" :key="i" width="100%" height="3.75rem" border-radius="1rem" />
-      </div>
-      <p v-else-if="visibleSongs.length === 0" class="p-8 text-center text-surface-600 dark:text-surface-300">
-        {{ songsStore.songs.length > 0 ? t('band_space_setlist.common.no_matching_song') : t('band_space_setlist.repertoire.empty') }}
-      </p>
-      <ul
-        v-else
-        class="m-0 list-none divide-y divide-surface-200 overflow-hidden rounded-2xl border border-surface-200 bg-surface-0 p-0 dark:divide-surface-700 dark:border-surface-700 dark:bg-surface-900"
+    <div v-if="isBelowMd" class="flex flex-col" :class="selected.size > 0 ? 'pb-40' : 'pb-24'">
+      <PhoneBackBar
+        variant="page"
+        class="mb-2"
+        :back-label="t('band_space_setlist.phone.back_to_setlists')"
+        :title="t('band_space_setlist.common.repertoire')"
+        @back="emit('back')"
       >
-        <li
-          v-for="song in visibleSongs"
-          :key="song.id"
-          class="flex min-h-15 items-center gap-2.5 py-1.5 pr-1 pl-4"
-          :class="{ 'bg-primary-50 dark:bg-primary-900/30': selected.has(song.id) }"
-        >
-          <Checkbox
-            v-if="selecting"
-            :model-value="selected.has(song.id)"
-            :binary="true"
-            :aria-label="t('band_space_setlist.repertoire.select_song_aria', { title: song.title })"
-            @update:model-value="toggleSelected(song.id)"
-          />
-          <button
-            type="button"
-            class="flex min-w-0 flex-1 flex-col gap-0.5 text-left"
-            @click="selecting ? toggleSelected(song.id) : openDrawer(song)"
-          >
-            <span class="flex items-center gap-2 font-medium">
-              <span class="truncate">{{ song.title }}</span>
-              <i
-                v-if="song.has_lyrics"
-                class="pi pi-align-left shrink-0 text-xs text-primary"
-                role="img"
-                :aria-label="t('band_space_setlist.common.lyrics_present')"
-              />
-            </span>
-            <span class="text-[0.8125rem] text-surface-600 dark:text-surface-300">{{ songFacts(song) }}</span>
-          </button>
-          <button
-            v-if="!song.reference_duration"
-            type="button"
-            class="shrink-0 rounded-full border border-dashed border-amber-500 px-2 py-0.5 text-xs text-amber-800 dark:text-amber-300"
-            :aria-label="t('band_space_setlist.common.add_duration_aria', { title: song.title })"
-            @click="promptDuration($event, song)"
-          >
-            {{ t('band_space_setlist.common.add_duration') }}
-          </button>
-          <span v-else class="shrink-0 text-[0.9375rem] tabular-nums">{{ formatDuration(song.reference_duration) }}</span>
+        <template #actions>
           <Button
-            icon="pi pi-ellipsis-v"
-            severity="secondary"
+            :icon="selecting ? 'pi pi-times' : 'pi pi-check-square'"
             text
             rounded
-            class="h-11! w-10! shrink-0"
-            aria-haspopup="dialog"
-            :aria-label="t('band_space_setlist.repertoire.song_actions_aria', { title: song.title })"
-            @click="openSongSheet(song)"
+            severity="secondary"
+            :aria-label="selecting ? t('band_space_setlist.repertoire.clear_selection') : t('band_space_setlist.phone.select')"
+            :aria-pressed="selecting"
+            @click="toggleSelecting"
           />
-        </li>
-      </ul>
+        </template>
+      </PhoneBackBar>
+      <div class="-mx-2 flex flex-col">
+        <IconField icon-position="left" class="mb-2">
+          <InputIcon class="pi pi-search" />
+          <InputText
+            v-model="query"
+            type="search"
+            :placeholder="t('band_space_setlist.common.search_song_placeholder')"
+            :aria-label="t('band_space_setlist.common.search_repertoire_aria')"
+            class="h-11 w-full !rounded-xl"
+          />
+        </IconField>
+        <div class="mb-3 flex gap-2 overflow-x-auto [scrollbar-width:none]">
+          <button
+            type="button"
+            :class="[PHONE_CHIP, withoutLyrics ? PHONE_CHIP_ON : PHONE_CHIP_OFF]"
+            :aria-pressed="withoutLyrics"
+            @click="withoutLyrics = !withoutLyrics"
+          >
+            {{ t('band_space_setlist.repertoire.filter_without_lyrics', { count: counts.withoutLyrics }) }}
+          </button>
+          <button
+            type="button"
+            :class="[PHONE_CHIP, missingInfo ? PHONE_CHIP_ON : PHONE_CHIP_OFF]"
+            :aria-pressed="missingInfo"
+            @click="missingInfo = !missingInfo"
+          >
+            {{ t('band_space_setlist.repertoire.filter_missing_info', { count: counts.missingInfo }) }}
+          </button>
+        </div>
 
-      <Button
-        v-if="selected.size === 0"
-        :label="t('band_space_setlist.repertoire.add_song')"
-        icon="pi pi-plus"
-        rounded
-        class="fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
-        @click="openCreateDialog"
-      />
+        <div v-if="songsStore.isLoading && songsStore.songs.length === 0" class="flex flex-col gap-2">
+          <Skeleton v-for="i in 4" :key="i" width="100%" height="3.75rem" border-radius="1rem" />
+        </div>
+        <p v-else-if="visibleSongs.length === 0" class="p-8 text-center text-surface-600 dark:text-surface-300">
+          {{ songsStore.songs.length > 0 ? t('band_space_setlist.common.no_matching_song') : t('band_space_setlist.repertoire.empty') }}
+        </p>
+        <ul
+          v-else
+          class="m-0 list-none divide-y divide-surface-200 overflow-hidden rounded-2xl border border-surface-200 bg-surface-0 p-0 dark:divide-surface-700 dark:border-surface-700 dark:bg-surface-900"
+        >
+          <li
+            v-for="song in visibleSongs"
+            :key="song.id"
+            class="flex min-h-15 items-center gap-2.5 py-1.5 pr-1 pl-4"
+            :class="{ 'bg-primary-50 dark:bg-primary-900/30': selected.has(song.id) }"
+          >
+            <Checkbox
+              v-if="selecting"
+              :model-value="selected.has(song.id)"
+              :binary="true"
+              :aria-label="t('band_space_setlist.repertoire.select_song_aria', { title: song.title })"
+              @update:model-value="toggleSelected(song.id)"
+            />
+            <button
+              type="button"
+              class="flex min-w-0 flex-1 flex-col gap-0.5 text-left"
+              @click="selecting ? toggleSelected(song.id) : openDrawer(song)"
+            >
+              <span class="flex items-center gap-2 font-medium">
+                <span class="truncate">{{ song.title }}</span>
+                <i
+                  v-if="song.has_lyrics"
+                  class="pi pi-align-left shrink-0 text-xs text-primary"
+                  role="img"
+                  :aria-label="t('band_space_setlist.common.lyrics_present')"
+                />
+              </span>
+              <span class="text-[0.8125rem] text-surface-600 dark:text-surface-300">{{ songFacts(song) }}</span>
+            </button>
+            <button
+              v-if="!song.reference_duration"
+              type="button"
+              class="shrink-0 rounded-full border border-dashed border-amber-500 px-2 py-0.5 text-xs text-amber-800 dark:text-amber-300"
+              :aria-label="t('band_space_setlist.common.add_duration_aria', { title: song.title })"
+              @click="promptDuration($event, song)"
+            >
+              {{ t('band_space_setlist.common.add_duration') }}
+            </button>
+            <span v-else class="shrink-0 text-[0.9375rem] tabular-nums">{{ formatDuration(song.reference_duration) }}</span>
+            <Button
+              icon="pi pi-ellipsis-v"
+              severity="secondary"
+              text
+              rounded
+              class="h-11! w-10! shrink-0"
+              aria-haspopup="dialog"
+              :aria-label="t('band_space_setlist.repertoire.song_actions_aria', { title: song.title })"
+              @click="openSongSheet(song)"
+            />
+          </li>
+        </ul>
 
-      <BottomSheet
-        v-model:visible="isSongSheetOpen"
-        :title="menuTargetSong?.title ?? ''"
-        @after-hide="songSheet.onAfterHide"
-      >
-        <SheetAction icon="pi-pencil" @click="songSheet.run(() => openDrawer(menuTargetSong))">
-          {{ t('band_space_setlist.common.edit') }}
-        </SheetAction>
-        <SheetAction icon="pi-archive" danger @click="songSheet.run(() => confirmArchive(menuTargetSong))">
-          {{ t('band_space_setlist.common.archive') }}
-        </SheetAction>
-      </BottomSheet>
+        <Button
+          v-if="selected.size === 0"
+          :label="t('band_space_setlist.repertoire.add_song')"
+          icon="pi pi-plus"
+          rounded
+          class="fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
+          @click="openCreateDialog"
+        />
+
+        <BottomSheet
+          v-model:visible="isSongSheetOpen"
+          :title="menuTargetSong?.title ?? ''"
+          @after-hide="songSheet.onAfterHide"
+        >
+          <SheetAction icon="pi-pencil" @click="songSheet.run(() => openDrawer(menuTargetSong))">
+            {{ t('band_space_setlist.common.edit') }}
+          </SheetAction>
+          <SheetAction icon="pi-archive" danger @click="songSheet.run(() => confirmArchive(menuTargetSong))">
+            {{ t('band_space_setlist.common.archive') }}
+          </SheetAction>
+        </BottomSheet>
+      </div>
     </div>
 
     <template v-else>
@@ -366,6 +367,7 @@ import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { filterCounts, filterSongs } from '../../../utils/repertoireFilters.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import DurationPrompt from './Editor/DurationPrompt.vue'
 import LyricsReader from './Lyrics/LyricsReader.vue'

@@ -10,27 +10,25 @@
     <template #header>
       <!-- A phone shows the file as a screen of its own: back, what it is, and more. The name moves
            under the preview, where it has the width to be read. -->
-      <div v-if="isBelowMd" class="flex items-center gap-1 min-w-0 flex-1 -ml-2">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_files.detail.back')"
-          @click="visible = false"
-        />
-        <span class="flex-1 font-semibold">{{ t('band_space_files.detail.title') }}</span>
-        <Button
-          icon="pi pi-ellipsis-v"
-          text
-          rounded
-          severity="secondary"
-          :aria-label="t('band_space_files.detail.more_actions')"
-          aria-haspopup="dialog"
-          :disabled="!file"
-          @click="isActionsSheetOpen = true"
-        />
-      </div>
+      <PhoneBackBar
+        v-if="isBelowMd"
+        :back-label="t('band_space_files.detail.back')"
+        :title="t('band_space_files.detail.title')"
+        @back="visible = false"
+      >
+        <template #actions>
+          <Button
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_files.detail.more_actions')"
+            aria-haspopup="dialog"
+            :disabled="!file"
+            @click="isActionsSheetOpen = true"
+          />
+        </template>
+      </PhoneBackBar>
       <div v-else class="flex items-center gap-2 min-w-0 flex-1">
         <i :class="fileIconClass(file?.mime_type)" class="text-xl text-surface-500"></i>
         <FileNameHeading
@@ -276,6 +274,7 @@ import { rootDestinationRefusal } from '../../../utils/fileListing.js'
 import { fileIconClass, fileTypeLabel } from '../../../utils/fileType.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
+import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
