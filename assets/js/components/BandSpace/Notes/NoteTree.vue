@@ -14,7 +14,7 @@
         @click="emit('create-root')"
       />
     </div>
-    <div class="flex-1 overflow-y-auto overflow-x-hidden p-2">
+    <div class="flex-1 overflow-y-auto overflow-x-hidden p-2 max-md:p-0">
       <Tree
         v-if="nodes.length > 0"
         :value="nodes"
@@ -26,9 +26,9 @@
       >
         <template #default="{ node }">
           <div class="flex items-center w-full min-w-0">
-            <span class="text-sm min-w-0 flex-1 truncate">
-              <span v-if="node.data.emoji" class="mr-1">{{ node.data.emoji }}</span>
-              <span v-else class="mr-1 text-surface-400">📄</span>
+            <span class="note-tree-title text-sm min-w-0 flex-1 truncate">
+              <span v-if="node.data.emoji" class="note-tree-emoji mr-1">{{ node.data.emoji }}</span>
+              <span v-else class="note-tree-emoji mr-1 text-surface-400">📄</span>
               {{ node.label }}
             </span>
             <Button
@@ -65,6 +65,15 @@
       :title="actionsSheetTitle"
       @after-hide="actionsSheet.onAfterHide"
     >
+      <!-- Said up front, since « Supprimer » takes the sub-notes with it. -->
+      <template #header>
+        <span class="flex min-w-0 flex-col">
+          <span class="truncate text-lg font-semibold text-surface-900 dark:text-surface-0">{{ actionsSheetTitle }}</span>
+          <span v-if="actionsSheetNode?.children?.length" class="text-sm text-surface-600 dark:text-surface-400">
+            {{ t('band_space_notes.phone.has_children') }}
+          </span>
+        </span>
+      </template>
       <SheetAction
         v-for="item in nodeMenuItems"
         :key="item.label"
@@ -279,16 +288,54 @@ async function handleSelect(node) {
   opacity: 1;
 }
 
-/* A phone: rows a finger can hit, the arrow to the sub-notes at 40px. */
+/* A phone: one row per note across the box, a line between rows, the arrow to the sub-notes at
+   40px, and a sub-note indented on a rail under its parent. */
 @media (width < 48rem) {
-  .note-tree .p-tree-node-content {
-    min-height: 3rem;
-    padding: 0.125rem 0.25rem !important;
+  .note-tree .p-tree-root-children,
+  .note-tree .p-tree-node-children {
+    gap: 0 !important;
   }
 
-  .note-tree .p-tree-node-label .text-sm {
+  .note-tree .p-tree-node-children {
+    padding-left: 0 !important;
+  }
+
+  .note-tree .p-tree-node-content {
+    min-height: 3.5rem;
+    padding: 0.375rem 0.25rem 0.375rem 0.5rem !important;
+    border-top: 1px solid var(--p-content-border-color);
+    border-radius: 0;
+  }
+
+  .note-tree .p-tree-root-children > .p-tree-node:first-child > .p-tree-node-content {
+    border-top: 0;
+  }
+
+  .note-tree .p-tree-node-children .p-tree-node-content {
+    padding-left: 2rem !important;
+    background-image: linear-gradient(var(--p-content-border-color), var(--p-content-border-color));
+    background-position: 1.375rem 0;
+    background-size: 2px 100%;
+    background-repeat: no-repeat;
+  }
+
+  .note-tree .p-tree-node-children .p-tree-node-children .p-tree-node-content {
+    padding-left: 3.5rem !important;
+    background-position: 2.875rem 0;
+  }
+
+  .note-tree .note-tree-title {
     font-size: 1rem;
+    font-weight: 500;
     line-height: 1.5rem;
+  }
+
+  .note-tree .note-tree-emoji {
+    display: inline-block;
+    width: 1.75rem;
+    margin-right: 0.375rem;
+    font-size: 1.25rem;
+    text-align: center;
   }
 
   .note-tree .p-tree-node-toggle-button {

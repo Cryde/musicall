@@ -1,15 +1,21 @@
 <template>
   <div :class="{ 'max-md:pb-24': mobileView === 'tree' }">
-    <h1 v-if="isBelowMd && mobileView === 'tree'" class="mb-3 text-xl font-bold">{{ t('band_space_notes.page.heading') }}</h1>
+    <h1 v-if="isBelowMd && mobileView === 'tree'" class="mb-3 text-2xl font-semibold">{{ t('band_space_notes.page.heading') }}</h1>
 
     <!-- On md and up the card clips its corners. Not on a phone, where a clipping ancestor would stop
-         the editor's toolbar from sticking while the note is typed in. -->
+         the editor's toolbar from sticking while the note is typed in. There the list is a bordered
+         box, and a note takes the whole screen under the site header, edge to edge. -->
     <div
       class="flex bg-surface-0 dark:bg-surface-900 rounded-2xl md:overflow-hidden md:min-h-[600px]"
+      :class="
+        mobileView === 'editor'
+          ? 'max-md:-mx-6 max-md:-mt-8 max-md:min-h-[calc(100dvh-4rem)] max-md:rounded-none'
+          : 'max-md:-mx-2 max-md:border max-md:border-surface-200 dark:max-md:border-surface-700'
+      "
     >
       <!-- Sidebar: always visible on md+, toggle on mobile -->
       <div
-        class="md:border-r border-surface-200 dark:border-surface-700 flex-shrink-0 overflow-hidden"
+        class="md:border-r border-surface-200 dark:border-surface-700 flex-shrink-0 overflow-hidden max-md:rounded-2xl"
         :class="mobileView === 'editor' ? 'hidden md:block md:w-56 lg:w-72' : 'w-full md:w-56 lg:w-72'"
       >
         <NoteTree
@@ -32,7 +38,7 @@
              Stuck under the site header; the editor's toolbar sticks under it. -->
         <div
           v-if="mobileView === 'editor'"
-          class="md:hidden sticky top-16 z-30 flex h-13 items-center gap-1 rounded-t-2xl border-b border-surface-200 bg-surface-0 px-1 dark:border-surface-700 dark:bg-surface-900"
+          class="md:hidden sticky top-16 z-30 flex h-14 shrink-0 items-center gap-1 border-b border-surface-200 bg-surface-0 px-1 dark:border-surface-700 dark:bg-surface-900"
         >
           <Button
             icon="pi pi-arrow-left"
@@ -43,7 +49,8 @@
             @click="handleBack"
           />
           <span class="min-w-0 flex-1 truncate text-sm text-surface-600 dark:text-surface-300">{{ t('band_space_notes.page.heading') }}</span>
-          <NoteSaveStatus :status="notesStore.saveStatus" />
+          <!-- A note just opened has nothing waiting to be saved. -->
+          <NoteSaveStatus v-if="notesStore.selectedNote" :status="notesStore.saveStatus ?? 'saved'" class="mr-1" />
           <Button
             v-if="notesStore.selectedNoteId && noteTreeRef?.hasActions(notesStore.selectedNoteId)"
             icon="pi pi-ellipsis-h"
@@ -109,6 +116,13 @@
       />
 
     </div>
+
+    <p
+      v-if="isBelowMd && mobileView === 'tree' && notesStore.tree.length > 0"
+      class="mt-3 text-[0.8125rem] text-surface-600 dark:text-surface-400"
+    >
+      {{ t('band_space_notes.phone.hint') }}
+    </p>
   </div>
 </template>
 
