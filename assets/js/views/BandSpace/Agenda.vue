@@ -379,7 +379,7 @@
       @click="openCreateDialog"
     />
 
-    <AgendaPeriodSheet
+    <PeriodSheet
       v-if="isBelowMd"
       v-model:visible="isPeriodSheetOpen"
       :from="dateFrom"
@@ -441,8 +441,8 @@ import AbsencesDrawer from '../../components/BandSpace/Agenda/AbsencesDrawer.vue
 import AgendaAvailabilityButtons from '../../components/BandSpace/Agenda/AgendaAvailabilityButtons.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
-import AgendaPeriodSheet from '../../components/BandSpace/Agenda/AgendaPeriodSheet.vue'
 import AgendaPhoneItem from '../../components/BandSpace/Agenda/AgendaPhoneItem.vue'
+import PeriodSheet from '../../components/BandSpace/PeriodSheet.vue'
 import Avatar from '../../components/User/Avatar.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'

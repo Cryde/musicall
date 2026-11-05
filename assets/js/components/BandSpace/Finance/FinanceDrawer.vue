@@ -4,7 +4,49 @@
     position="right"
     :header="isEditMode ? t('band_space_finance.entry_drawer.title_edit') : t('band_space_finance.entry_drawer.title_new')"
     class="w-full! md:w-[28rem]!"
+    :show-close-icon="!isBelowMd"
+    :close-on-escape="!isActionsSheetOpen && !isCategorySheetOpen"
   >
+    <!-- A phone shows the entry as a screen of its own: back, what it is, and more. -->
+    <template v-if="isBelowMd" #header>
+      <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_finance.phone.back')"
+          @click="visibleModel = false"
+        />
+        <span class="min-w-0 flex-1 truncate font-semibold">
+          {{ isEditMode ? t('band_space_finance.entry_drawer.title_edit') : t('band_space_finance.entry_drawer.title_new') }}
+        </span>
+        <Button
+          v-if="isEditMode && canEditEntry"
+          icon="pi pi-ellipsis-v"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_finance.phone.more_actions')"
+          aria-haspopup="dialog"
+          @click="isActionsSheetOpen = true"
+        />
+      </div>
+    </template>
+
+    <!-- What the entry is, before its fields: its amount, in or out, and where it stands. -->
+    <div v-if="isBelowMd && isEditMode" class="mb-4 flex flex-col items-start gap-2">
+      <span
+        class="text-2xl font-semibold tabular-nums"
+        :class="props.entry.type === 'expense' ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'"
+      >
+        {{ formatSignedEntryAmount(props.entry) }}
+      </span>
+      <span class="text-xs font-semibold px-2.5 py-1 rounded-full" :class="statusBadgeClass(form.status)">
+        {{ statusLabel(form.status) }}
+      </span>
+    </div>
+
     <form class="flex flex-col gap-4" @submit.prevent="handleSave">
       <Message v-if="formError" severity="error" :closable="true" @close="formError = null" class="text-sm">
         {{ formError }}
@@ -49,6 +91,7 @@
         <label class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.status') }}</label>
         <div v-if="isEditMode" class="flex items-center gap-2 flex-wrap">
           <span
+            v-if="!isBelowMd"
             class="text-xs font-semibold px-2.5 py-1 rounded-full"
             :class="statusBadgeClass(form.status)"
           >
@@ -133,7 +176,14 @@
 
       <div class="flex flex-col gap-1">
         <label for="finance-date" class="text-sm font-medium">{{ t('band_space_finance.entry_drawer.date') }} <span class="text-red-500">*</span></label>
-        <DatePicker id="finance-date" v-model="form.date" dateFormat="dd/mm/yy" showIcon :disabled="isLocked" />
+        <DatePicker
+          id="finance-date"
+          v-model="form.date"
+          :dateFormat="isBelowMd ? 'd M yy' : 'dd/mm/yy'"
+          :manualInput="!isBelowMd"
+          showIcon
+          :disabled="isLocked"
+        />
       </div>
 
       <div class="flex flex-col gap-1">
@@ -185,16 +235,19 @@
           type="submit"
           :label="t('band_space_finance.common.save')"
           :loading="financeStore.isCreating || financeStore.isSaving"
+          class="max-md:flex-1"
         />
         <Button
           type="button"
           :label="t('band_space_finance.common.cancel')"
           severity="secondary"
-          text
+          :text="!isBelowMd"
+          :outlined="isBelowMd"
+          class="max-md:flex-1"
           @click="visibleModel = false"
         />
         <Button
-          v-if="isEditMode && canEditEntry && !isLocked"
+          v-if="canDelete && !isBelowMd"
           type="button"
           :label="t('band_space_finance.common.delete')"
           severity="danger"
@@ -205,6 +258,39 @@
         />
       </div>
     </form>
+
+    <template v-if="isBelowMd && isEditMode">
+      <BottomSheet
+        v-model:visible="isActionsSheetOpen"
+        :title="props.entry.label"
+        @after-hide="actionsSheet.onAfterHide"
+      >
+        <!-- The API refuses to move a paid entry: it has to go back to « Engagé » first. -->
+        <SheetAction icon="pi-folder" :disabled="isLocked" @click="actionsSheet.run(openCategorySheet)">
+          {{ t('band_space_finance.phone.change_category') }}
+        </SheetAction>
+        <p v-if="isLocked" class="-mt-2 pr-5 pb-2 pl-13 text-sm text-surface-600 dark:text-surface-300">
+          {{ t('band_space_finance.entry_drawer.locked') }}
+        </p>
+        <SheetAction v-if="canDelete" icon="pi-trash" danger @click="actionsSheet.run(handleDelete)">
+          {{ t('band_space_finance.common.delete') }}
+        </SheetAction>
+      </BottomSheet>
+
+      <BottomSheet v-model:visible="isCategorySheetOpen" :title="t('band_space_finance.phone.change_category')">
+        <button
+          v-for="category in categoryChoices"
+          :key="category.id"
+          type="button"
+          :class="[SHEET_CHOICE, { 'pl-10': category.isChild }]"
+          :aria-current="category.id === entryCategoryId ? 'true' : undefined"
+          @click="handleMoveToCategory(category)"
+        >
+          <span class="min-w-0 flex-1 truncate">{{ category.name }}</span>
+          <i v-if="category.id === entryCategoryId" class="pi pi-check text-primary" aria-hidden="true" />
+        </button>
+      </BottomSheet>
+    </template>
   </Drawer>
 </template>
 
@@ -220,13 +306,20 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { ERROR_CODES } from '../../../constants/errorCodes.js'
+import { SHEET_CHOICE } from '../../../constants/phoneControls.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import { centsToCurrency, currencyToCents, MAX_AMOUNT_EUROS } from '../../../utils/currency.js'
+import { formatSignedEntryAmount } from '../../../utils/financeEntryAmount.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import SplitManager from './SplitManager.vue'
 
@@ -241,7 +334,9 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'saved', 'deleted'])
 const { t } = useI18n()
 const confirm = useConfirm()
+const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
+const isBelowMd = useIsBelowMd()
 const splitManagerRef = ref(null)
 const formError = ref(null)
 const attachedFileCount = ref(0)
@@ -258,6 +353,7 @@ const canEditEntry = computed(() => {
   return props.entry.member_id === props.currentMembershipId
 })
 const isLocked = computed(() => isEditMode.value && form.status === 'paid')
+const canDelete = computed(() => isEditMode.value && canEditEntry.value && !isLocked.value)
 
 const typeOptions = computed(() => [
   { label: t('band_space_finance.type.expense'), value: 'expense' },
@@ -561,6 +657,60 @@ async function restoreScopeIfSplitsBlockedIt(error) {
   form.scope = 'band'
   await nextTick()
   await splitManagerRef.value?.reset(props.entry?.id ?? null)
+}
+
+const isActionsSheetOpen = ref(false)
+const isCategorySheetOpen = ref(false)
+// The confirm, or the category sheet, opens once the actions sheet has gone.
+const actionsSheet = useActionAfterSheetHide(isActionsSheetOpen)
+
+watch([() => props.visible, isBelowMd], () => {
+  isActionsSheetOpen.value = false
+  isCategorySheetOpen.value = false
+})
+
+// Followed locally once moved: the entry handed in keeps the category it was opened with.
+const entryCategoryId = ref(null)
+watch(
+  () => props.entry,
+  (entry) => {
+    entryCategoryId.value = entry?.category_id ?? null
+  },
+  { immediate: true }
+)
+
+// The categories in their tree order, each sub-category under its own.
+const categoryChoices = computed(() =>
+  financeStore.categoryTree.flatMap((pole) => [
+    { id: pole.id, name: pole.name, isChild: false },
+    ...pole.children.map((child) => ({ id: child.id, name: child.name, isChild: true }))
+  ])
+)
+
+function openCategorySheet() {
+  isCategorySheetOpen.value = true
+}
+
+async function handleMoveToCategory(category) {
+  isCategorySheetOpen.value = false
+  if (category.id === entryCategoryId.value) return
+  try {
+    await financeStore.moveEntryToCategory(props.bandSpaceId, props.entry.id, category.id)
+    entryCategoryId.value = category.id
+    trackUmamiEvent('finance-entry-move')
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_finance.phone.category_changed', { name: category.name }),
+      life: 3000
+    })
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: t('band_space_finance.common.error'),
+      detail: t('band_space_finance.page.move_entry_error'),
+      life: 5000
+    })
+  }
 }
 
 function handleDelete() {

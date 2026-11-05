@@ -1,5 +1,5 @@
 <template>
-  <BottomSheet v-model:visible="visible" :title="t('band_space_agenda.phone.period')">
+  <BottomSheet v-model:visible="visible" :title="t('band_space.period_sheet.title')">
     <div class="flex flex-col gap-4 px-5 pb-4">
       <div class="flex flex-wrap gap-2">
         <button
@@ -16,10 +16,10 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div class="flex min-w-0 flex-col gap-1">
-          <label for="agenda-period-from" class="text-sm font-medium">{{ t('band_space_agenda.phone.from') }}</label>
+          <label :for="`${uid}-from`" class="text-sm font-medium">{{ t('band_space.period_sheet.from') }}</label>
           <DatePicker
             v-model="draftFrom"
-            input-id="agenda-period-from"
+            :input-id="`${uid}-from`"
             date-format="d M yy"
             :manual-input="false"
             show-icon
@@ -27,10 +27,10 @@
           />
         </div>
         <div class="flex min-w-0 flex-col gap-1">
-          <label for="agenda-period-to" class="text-sm font-medium">{{ t('band_space_agenda.phone.to') }}</label>
+          <label :for="`${uid}-to`" class="text-sm font-medium">{{ t('band_space.period_sheet.to') }}</label>
           <DatePicker
             v-model="draftTo"
-            input-id="agenda-period-to"
+            :input-id="`${uid}-to`"
             date-format="d M yy"
             :manual-input="false"
             :min-date="draftFrom ?? undefined"
@@ -40,7 +40,7 @@
         </div>
       </div>
 
-      <Button :label="t('band_space_agenda.phone.apply')" :disabled="!canApply" @click="applyDraft" />
+      <Button :label="t('band_space.period_sheet.apply')" :disabled="!canApply" @click="applyDraft" />
     </div>
   </BottomSheet>
 </template>
@@ -49,14 +49,14 @@
 import { isSameDay, startOfDay } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { PHONE_CHIP, PHONE_CHIP_OFF, PHONE_CHIP_ON } from '../../../constants/phoneControls.js'
-import BottomSheet from '../../Global/BottomSheet.vue'
+import { PHONE_CHIP, PHONE_CHIP_OFF, PHONE_CHIP_ON } from '../../constants/phoneControls.js'
+import BottomSheet from '../Global/BottomSheet.vue'
 
 /**
- * The agenda's period on a phone: the presets one tap away, or two days and « Appliquer ». The same
- * `apply` as the desktop's range picker, so the page has one way in.
+ * A module's period on a phone (agenda, finances): the presets one tap away, or two days and
+ * « Appliquer ». The same `apply` as the desktop's range picker, so the page has one way in.
  */
 const props = defineProps({
   from: { type: Date, required: true },
@@ -68,6 +68,7 @@ const props = defineProps({
 const emit = defineEmits(['apply'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 const { t } = useI18n()
+const uid = useId()
 
 const draftFrom = ref(props.from)
 const draftTo = ref(props.to)

@@ -325,5 +325,11 @@
     "leave_message": "Are you sure you want to leave this Band Space?",
     "leave_header": "Confirm leaving",
     "left": "You have left the Band Space"
+  },
+  "period_sheet": {
+    "title": "Period",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply"
   }
 }

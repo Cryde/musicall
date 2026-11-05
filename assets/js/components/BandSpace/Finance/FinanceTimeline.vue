@@ -7,7 +7,9 @@
       outlined
       @click="emit('add-category')"
     />
+    <!-- On a phone « Ajouter une entrée » floats at the bottom of the page. -->
     <Button
+      v-if="!isBelowMd"
       icon="pi pi-plus"
       :label="t('band_space_finance.common.add_entry')"
       size="small"
@@ -24,9 +26,20 @@
         <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">{{ formatDateLabel(group.date) }}</span>
         <span class="text-xs text-surface-400">{{ t('band_space_finance.common.entry_count', group.entries.length) }}</span>
       </div>
-      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 px-2 py-1">
+      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 px-2 py-1 max-md:divide-y max-md:divide-surface-200 dark:max-md:divide-surface-700">
+        <template v-if="isBelowMd">
+          <FinanceEntryPhoneRow
+            v-for="entry in group.entries"
+            :key="entry.id"
+            :entry="entry"
+            :meta="`${categoryName(entry.category_id)} · ${typeLabel(entry.type)}`"
+            :can-open="canEdit(entry)"
+            @open="emit('edit-entry', entry)"
+          />
+        </template>
         <div
           v-for="entry in group.entries"
+          v-else
           :key="entry.id"
           class="group flex items-center gap-1.5 sm:gap-2 py-2 px-1 sm:px-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer"
           @click="canEdit(entry) && emit('edit-entry', entry)"
@@ -62,7 +75,7 @@
             class="hidden sm:inline text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
             :class="typeBadgeClass(entry.type)"
           >
-            {{ entry.type === 'expense' ? t('band_space_finance.type.expense') : t('band_space_finance.type.income') }}
+            {{ typeLabel(entry.type) }}
           </span>
 
           <!-- Répartition that no longer matches the amount, against the amount it disagrees with -->
@@ -78,6 +91,7 @@
             v-if="canEdit(entry)"
             class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-surface-400 hover:text-primary flex-shrink-0 p-1"
             :title="t('band_space_finance.common.edit')"
+            :aria-label="t('band_space_finance.common.edit')"
             @click.stop="emit('edit-entry', entry)"
           >
             <i class="pi pi-pencil text-sm"></i>
@@ -92,12 +106,15 @@
 import Button from 'primevue/button'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { formatAmount } from '../../../utils/currency.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
+import { formatEntryAmount } from '../../../utils/financeEntryAmount.js'
+import FinanceEntryPhoneRow from './FinanceEntryPhoneRow.vue'
 import FinanceSplitWarning from './FinanceSplitWarning.vue'
 import FinanceStatusDot from './FinanceStatusDot.vue'
 
 const { t } = useI18n()
+const isBelowMd = useIsBelowMd()
 
 const props = defineProps({
   entries: { type: Array, required: true },
@@ -140,14 +157,10 @@ function canEdit(entry) {
   return entry.member_id === props.currentMembershipId
 }
 
-function formatEntryAmount(entry) {
-  if (entry.amount != null) {
-    return formatAmount(entry.amount)
-  }
-  if (entry.amount_min != null && entry.amount_max != null) {
-    return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
-  }
-  return formatAmount(0)
+function typeLabel(type) {
+  return type === 'expense'
+    ? t('band_space_finance.type.expense')
+    : t('band_space_finance.type.income')
 }
 
 function typeBadgeClass(type) {

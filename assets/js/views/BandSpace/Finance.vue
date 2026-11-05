@@ -1,5 +1,7 @@
 <template>
-  <div>
+  <div class="max-md:pb-24">
+    <h1 v-if="isBelowMd" class="mb-3 text-xl font-bold">{{ t('band_space_finance.phone.title') }}</h1>
+
     <div v-if="financeStore.isLoading">
       <!-- Initial load skeleton -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -28,7 +30,51 @@
     />
 
     <div v-else>
-      <div class="flex items-center justify-between mb-6">
+      <div v-if="isBelowMd" class="mb-4 flex flex-col gap-3">
+        <button
+          v-if="viewMode !== 'chart'"
+          type="button"
+          class="flex min-h-12 w-full items-center gap-3 rounded-xl border border-surface-300 bg-surface-0 px-3 py-2 text-left dark:border-surface-600 dark:bg-surface-900"
+          aria-haspopup="dialog"
+          :aria-label="t('band_space_finance.phone.change_period', { period: periodLabel })"
+          @click="isPeriodSheetOpen = true"
+        >
+          <i class="pi pi-calendar text-surface-500 dark:text-surface-400" aria-hidden="true" />
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span v-if="activePreset" class="text-sm font-semibold">{{ activePreset.label }}</span>
+            <span :class="activePreset ? 'text-xs text-surface-600 dark:text-surface-300' : 'text-sm font-semibold'">{{ periodDates }}</span>
+          </span>
+          <i class="pi pi-chevron-down text-xs text-surface-500" aria-hidden="true" />
+        </button>
+        <span v-else class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
+          <i class="pi pi-clock" aria-hidden="true" />
+          {{ t('band_space_finance.page.all_periods') }}
+        </span>
+        <div
+          class="grid grid-cols-3 gap-0.5 rounded-xl bg-surface-100 p-1 dark:bg-surface-800"
+          role="group"
+          :aria-label="t('band_space_finance.phone.views')"
+        >
+          <button
+            v-for="mode in VIEW_MODES"
+            :key="mode.key"
+            type="button"
+            class="flex h-9 items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors"
+            :class="
+              viewMode === mode.key
+                ? 'bg-surface-0 text-surface-900 shadow-sm dark:bg-surface-700 dark:text-surface-0'
+                : 'text-surface-600 dark:text-surface-300'
+            "
+            :aria-pressed="viewMode === mode.key"
+            @click="viewMode = mode.key"
+          >
+            <i class="pi text-xs" :class="mode.icon" aria-hidden="true" />
+            {{ t(mode.phoneLabelKey) }}
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="flex items-center justify-between mb-6">
         <DateRangePicker
           v-if="viewMode !== 'chart'"
           :from="financeStore.dateFrom"
@@ -48,6 +94,7 @@
             :outlined="viewMode !== 'categories'"
             :text="viewMode !== 'categories'"
             :title="t('band_space_finance.page.view_categories')"
+            :aria-label="t('band_space_finance.page.view_categories')"
             @click="viewMode = 'categories'"
           />
           <Button
@@ -57,6 +104,7 @@
             :outlined="viewMode !== 'timeline'"
             :text="viewMode !== 'timeline'"
             :title="t('band_space_finance.page.view_timeline')"
+            :aria-label="t('band_space_finance.page.view_timeline')"
             @click="viewMode = 'timeline'"
           />
           <Button
@@ -66,6 +114,7 @@
             :outlined="viewMode !== 'chart'"
             :text="viewMode !== 'chart'"
             :title="t('band_space_finance.page.view_chart')"
+            :aria-label="t('band_space_finance.page.view_chart')"
             @click="viewMode = 'chart'"
           />
         </div>
@@ -100,7 +149,7 @@
 
           <!-- Mobile: sidebar content below accordion -->
           <div class="lg:hidden mt-6 flex flex-col gap-6">
-            <FinanceSidebar :summary="financeStore.summary" />
+            <FinanceSidebar :summary="financeStore.summary" @open-entry="openEntry" />
 
             <RecurrenceList
               :recurrences="financeStore.recurrences"
@@ -112,7 +161,7 @@
 
         <!-- Desktop: sidebar -->
         <div class="hidden lg:block w-80 flex-shrink-0">
-          <FinanceSidebar :summary="financeStore.summary" />
+          <FinanceSidebar :summary="financeStore.summary" @open-entry="openEntry" />
 
           <RecurrenceList
             :recurrences="financeStore.recurrences"
@@ -131,6 +180,25 @@
         :isLoading="financeStore.isLoadingAllTime"
       />
     </div>
+
+    <!-- On a phone « Ajouter une entrée » floats where the thumb is, as on the other modules. -->
+    <Button
+      v-if="isBelowMd && hasCategories && viewMode !== 'chart'"
+      :label="t('band_space_finance.common.add_entry')"
+      icon="pi pi-plus"
+      rounded
+      class="fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
+      @click="handleAddEntry(null)"
+    />
+
+    <PeriodSheet
+      v-if="isBelowMd"
+      v-model:visible="isPeriodSheetOpen"
+      :from="financeStore.dateFrom"
+      :to="financeStore.dateTo"
+      :presets="financePresets"
+      @apply="handleDateRangeApply"
+    />
 
     <CreateCategoryDialog
       v-model:visible="showCategoryDialog"
@@ -166,6 +234,7 @@ import {
   endOfMonth,
   endOfYear,
   format,
+  isSameDay,
   parseISO,
   startOfDay,
   startOfMonth,
@@ -193,8 +262,11 @@ import FinanceSidebar from '../../components/BandSpace/Finance/FinanceSidebar.vu
 import FinanceTimeline from '../../components/BandSpace/Finance/FinanceTimeline.vue'
 import RecurrenceDrawer from '../../components/BandSpace/Finance/RecurrenceDrawer.vue'
 import RecurrenceList from '../../components/BandSpace/Finance/RecurrenceList.vue'
+import PeriodSheet from '../../components/BandSpace/PeriodSheet.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { useBandSpaceFinanceStore } from '../../store/bandSpace/bandSpaceFinance.js'
+import { formatDateRangeCompact } from '../../utils/date.js'
 import { categoryDeleteMessage } from '../../utils/financeConfirmations.js'
 
 const { t } = useI18n()
@@ -203,6 +275,7 @@ const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
+const isBelowMd = useIsBelowMd()
 // Wipe any previous space's categories/entries/summary synchronously before
 // first render so switching from /band/A/finances to /band/B/finances doesn't
 // flash A's numbers. The :key on <router-view> remounts this view but Pinia
@@ -276,6 +349,35 @@ const financePresets = computed(() => {
     }
   ]
 })
+
+// The phone's view switch: the same three views, named rather than icons alone.
+const VIEW_MODES = [
+  {
+    key: 'categories',
+    icon: 'pi-objects-column',
+    phoneLabelKey: 'band_space_finance.phone.view_categories'
+  },
+  { key: 'timeline', icon: 'pi-list', phoneLabelKey: 'band_space_finance.phone.view_timeline' },
+  { key: 'chart', icon: 'pi-chart-pie', phoneLabelKey: 'band_space_finance.phone.view_chart' }
+]
+
+const isPeriodSheetOpen = ref(false)
+// The range as the phone's button reads it: the preset's name when it is one, then its dates.
+const activePreset = computed(() =>
+  financePresets.value.find(
+    (preset) =>
+      isSameDay(preset.from(), financeStore.dateFrom) && isSameDay(preset.to(), financeStore.dateTo)
+  )
+)
+const periodDates = computed(() =>
+  formatDateRangeCompact(financeStore.dateFrom, financeStore.dateTo)
+)
+const periodLabel = computed(() =>
+  activePreset.value ? `${activePreset.value.label}, ${periodDates.value}` : periodDates.value
+)
+const hasCategories = computed(
+  () => !financeStore.isLoading && !financeStore.loadError && financeStore.categories.length > 0
+)
 
 const bandSpaceId = route.params.id
 const dateRangeStorageKey = `finance_date_range_${bandSpaceId}`
@@ -422,6 +524,11 @@ function handleAddEntry(categoryId) {
   editingEntry.value = null
   drawerCategoryId.value = categoryId
   drawerVisible.value = true
+}
+
+// « Prochaines échéances » carry only a summary of the entry: the route loads the whole of it.
+function openEntry(entryId) {
+  router.replace({ query: { ...route.query, entry: entryId } })
 }
 
 function handleEditEntry(entry) {
