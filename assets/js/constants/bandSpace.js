@@ -169,6 +169,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.members')
     },
+    icon: 'pi-users',
     adminOnly: false
   },
   {
@@ -176,6 +177,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.activity')
     },
+    icon: 'pi-history',
     adminOnly: false
   },
   {
@@ -183,6 +185,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.shares')
     },
+    icon: 'pi-link',
     adminOnly: false
   },
   {
@@ -190,6 +193,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.calendar')
     },
+    icon: 'pi-calendar-plus',
     adminOnly: false
   },
   {
@@ -197,6 +201,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.storage')
     },
+    icon: 'pi-database',
     adminOnly: false
   },
   {
@@ -204,6 +209,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.general')
     },
+    icon: 'pi-pencil',
     adminOnly: false
   },
   {
@@ -211,6 +217,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
     get label() {
       return i18n.global.t('band_space.settings.section.danger')
     },
+    icon: 'pi-exclamation-triangle',
     adminOnly: false
   }
 ])

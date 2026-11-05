@@ -31,7 +31,24 @@
       "general": "Général",
       "danger": "Zone de danger"
     },
-    "coming_soon": "Bientôt disponible — cette fonctionnalité est en cours de développement !"
+    "coming_soon": "Bientôt disponible — cette fonctionnalité est en cours de développement !",
+    "phone": {
+      "title": "Paramètres",
+      "sections_nav": "Sections des paramètres",
+      "all_sections": "Toutes les sections",
+      "member_actions": "Actions pour {name}",
+      "filters": "Filtres",
+      "modules_chip": "Modules",
+      "authors_chip": "Auteurs",
+      "dates_chip": "Dates",
+      "show_activity": "Voir l'activité",
+      "refresh": "Actualiser",
+      "share_access_count": "{count} accès",
+      "share_last_access": "dernier {when}",
+      "share_never_opened": "jamais ouvert",
+      "password_protected": "Protégé par mot de passe",
+      "filter_set": "(filtre actif)"
+    }
   },
   "search": {
     "type": {

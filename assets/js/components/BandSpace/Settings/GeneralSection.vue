@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
+  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
     <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">
       {{ t('band_space.create_modal.name_label') }}
     </h3>
@@ -26,7 +26,7 @@
         type="submit"
         :label="t('band_space.general.save')"
         icon="pi pi-check"
-        class="shrink-0 self-start"
+        class="shrink-0 self-stretch sm:self-start"
         :loading="bandSpaceStore.isRenaming"
         :disabled="!canSubmit"
       />

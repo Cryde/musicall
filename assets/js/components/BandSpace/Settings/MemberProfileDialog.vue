@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:visible="visible" modal :header="t('band_space.member_profile.header')" :style="{ width: '30rem' }">
+  <Dialog v-model:visible="visible" modal :header="t('band_space.member_profile.header')" v-bind="sheetDialog">
     <form v-if="member" class="flex flex-col gap-4" @submit.prevent="handleSave">
       <div>
         <label :for="`${uid}-stage-name`" class="block text-sm font-medium mb-1">{{ t('band_space.member_profile.stage_name') }}</label>
@@ -9,7 +9,7 @@
           class="w-full"
           maxlength="60"
           :placeholder="member.username"
-          autofocus
+          :autofocus="!isBelowMd"
         />
         <small class="text-surface-600 dark:text-surface-300">
           {{ t('band_space.member_profile.stage_name_help', { username: member.username }) }}
@@ -71,6 +71,8 @@ import MultiSelect from 'primevue/multiselect'
 import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import instrumentApi from '../../../api/attribute/instrument.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 
 const props = defineProps({
@@ -88,6 +90,10 @@ const MAX_INSTRUMENTS = 6
 
 const settingsStore = useBandSpaceSettingsStore()
 const { t } = useI18n()
+const isBelowMd = useIsBelowMd()
+// A sheet on a phone: 30rem is wider than the screen. No focus on the name there, so the keyboard
+// does not cover the form on opening.
+const sheetDialog = useSheetDialog('30rem')
 
 const stageName = ref('')
 const instrumentIds = ref([])
