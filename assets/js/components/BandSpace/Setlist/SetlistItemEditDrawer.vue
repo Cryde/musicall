@@ -2,7 +2,7 @@
   <Drawer
     v-model:visible="visible"
     position="right"
-    :style="{ width: '400px' }"
+    class="w-full! md:w-[400px]!"
     :header="item?.song?.title || item?.label || t('band_space_setlist.item_drawer.header_fallback')"
   >
     <div v-if="item" class="flex flex-col gap-4">

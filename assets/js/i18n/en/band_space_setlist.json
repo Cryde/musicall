@@ -399,5 +399,25 @@
     "previous": "Previous",
     "position": "Position",
     "next": "Next"
+  },
+  "phone": {
+    "lyrics_count": "{count} text | {count} texts",
+    "live_aria": "Live mode: {name}",
+    "back_to_setlists": "Back to the setlists",
+    "select": "Select songs",
+    "read_lyrics_of": "Read the lyrics of {title}",
+    "setlist_actions": "Setlist actions",
+    "programme": "Programme",
+    "add_songs_short": "Songs",
+    "add_songs": "Add songs",
+    "add_count": "Add ({count})",
+    "rename": "Rename",
+    "export_pdf": "Export as PDF",
+    "edit_item": "Edit: duration, transition, note",
+    "song_actions": "Song actions",
+    "read_lyrics": "Read the lyrics",
+    "no_lyrics": "No lyrics for this song.",
+    "next_up": "Next: {title}",
+    "next_song": "Next song"
   }
 }

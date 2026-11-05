@@ -133,10 +133,9 @@ import Popover from 'primevue/popover'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import bandSpaceLyricsApi from '../../../../api/bandSpace/band-space-lyrics.js'
+import { useLyricsPdf } from '../../../../composables/useLyricsPdf.js'
+import { useLyricsTranspose } from '../../../../composables/useLyricsTranspose.js'
 import { useBandLyricsStore } from '../../../../store/bandSpace/bandSpaceLyrics.js'
-import { transposeKey } from '../../../../utils/chordpro.js'
-import { downloadBlob } from '../../../../utils/downloadBlob.js'
 import { isLyricsReadOnly } from '../../../../utils/lyricsList.js'
 import LyricsEditorDialog from './LyricsEditorDialog.vue'
 import LyricsSheet from './LyricsSheet.vue'
@@ -159,10 +158,8 @@ const idPrefix = useId()
 
 const isEditing = ref(false)
 const isReading = ref(false)
-const transpose = ref(0)
 const isTransposing = ref(false)
 const pdfPopover = ref(null)
-const isExporting = ref(false)
 const pdfOptions = reactive({ chords: true, singers: true })
 
 const readOnly = computed(() => isLyricsReadOnly(props.lyrics))
@@ -170,6 +167,8 @@ const readOnly = computed(() => isLyricsReadOnly(props.lyrics))
 /** Unlinked lyrics have no key: the chords move on their own. */
 const tonality = computed(() => props.lyrics.song?.tonality ?? null)
 const sheetTitle = computed(() => props.lyrics.song?.title ?? props.lyrics.title)
+const { transpose, transposeLabel, shift } = useLyricsTranspose(tonality)
+const { isExporting, exportPdf: downloadPdf } = useLyricsPdf()
 
 watch(
   () => props.lyrics.id,
@@ -177,22 +176,6 @@ watch(
     transpose.value = 0
   }
 )
-
-const transposeLabel = computed(() => {
-  if (transpose.value === 0) return t('band_space_setlist.lyrics_panel.original_key')
-  const semitones = `${transpose.value > 0 ? '+' : ''}${transpose.value}`
-  const count = Math.abs(transpose.value)
-  const key = transposeKey(tonality.value, transpose.value)
-  return key
-    ? t('band_space_setlist.lyrics_panel.semitones_with_key', { semitones, key }, count)
-    : t('band_space_setlist.lyrics_panel.semitones', { semitones }, count)
-})
-
-// Kept inside an octave: twelve semitones up is where it started.
-function shift(step) {
-  const next = transpose.value + step
-  transpose.value = next > 11 || next < -11 ? 0 : next
-}
 
 async function saveTransposition() {
   isTransposing.value = true
@@ -228,28 +211,11 @@ function handleSaved(saved) {
 }
 
 async function exportPdf() {
-  if (isExporting.value) return
-  isExporting.value = true
-  try {
-    const { blob, filename } = await bandSpaceLyricsApi.downloadPdf(
-      props.bandSpaceId,
-      props.lyrics.id,
-      { ...pdfOptions, transpose: transpose.value }
-    )
-    downloadBlob(blob, filename ?? 'paroles.pdf')
-    pdfPopover.value?.hide()
-  } catch (error) {
-    // A 401 already sends the member to log in; the body of a 5xx says nothing usable.
-    if (error?.response?.status === 401) return
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.pdf_export.failed_summary'),
-      detail: t('band_space_setlist.pdf_export.failed_detail'),
-      life: 6000
-    })
-  } finally {
-    isExporting.value = false
-  }
+  const done = await downloadPdf(props.bandSpaceId, props.lyrics.id, {
+    ...pdfOptions,
+    transpose: transpose.value
+  })
+  if (done) pdfPopover.value?.hide()
 }
 
 function edit() {

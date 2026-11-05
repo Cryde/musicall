@@ -3,9 +3,48 @@
     v-model:visible="visible"
     position="right"
     :style="{ width: 'min(40rem, 100vw)' }"
+    :show-close-icon="!isBelowMd"
+    :close-on-escape="!isSongSheetOpen"
+    :pt="isBelowMd ? { header: { class: '!p-0' }, content: { class: '!px-0' } } : undefined"
   >
+    <!-- A phone shows the song as a screen: back, its title (tapped to rename), and ⋮. -->
+    <template v-if="isBelowMd" #header>
+      <div class="flex h-14 min-w-0 flex-1 items-center gap-1 border-b border-surface-200 px-1 dark:border-surface-700">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_setlist.live.back')"
+          @click="visible = false"
+        />
+        <InlineEditField
+          v-if="song"
+          ref="phoneTitleField"
+          :model-value="song.title"
+          :label="t('band_space_setlist.song_drawer.title')"
+          required
+          class="min-w-0 flex-1"
+          input-class="font-semibold"
+          :readonly="isLocked('title')"
+          :save="(value) => saveField('title', value)"
+        >
+          <template #default="{ value }"><span class="text-[1.0625rem] font-semibold">{{ value }}</span></template>
+        </InlineEditField>
+        <Button
+          v-if="!readOnly"
+          icon="pi pi-ellipsis-v"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_setlist.phone.song_actions')"
+          aria-haspopup="dialog"
+          @click="isSongSheetOpen = true"
+        />
+      </div>
+    </template>
     <!-- Every value is edited where it is shown (#1067): there is no separate edit form. -->
-    <template #header>
+    <template v-else #header>
       <InlineEditField
         v-if="song"
         :model-value="song.title"
@@ -20,8 +59,27 @@
       </InlineEditField>
     </template>
 
-    <div v-if="song" class="flex flex-col gap-4">
-      <div class="grid grid-cols-3 gap-3 text-sm">
+    <div v-if="song" class="flex flex-col gap-4 max-md:gap-0">
+      <!-- A phone lists the fields as rows, each edited where it is, as the desktop's grid does. -->
+      <div v-if="isBelowMd" class="divide-y divide-surface-200 border-b border-surface-200 dark:divide-surface-700 dark:border-surface-700">
+        <div v-for="field in PHONE_FIELDS" :key="field.key" class="flex min-h-13 items-center gap-3.5 px-5 py-1.5">
+          <i :class="['pi w-4.5 text-center text-surface-600 dark:text-surface-300', field.icon]" aria-hidden="true" />
+          <span class="w-24 shrink-0 text-[0.9375rem] text-surface-600 dark:text-surface-300">{{ t(field.labelKey) }}</span>
+          <InlineEditField
+            :model-value="song[field.key]"
+            :label="t(field.labelKey)"
+            :kind="field.kind"
+            :multiline="field.multiline"
+            :placeholder="field.placeholderKey ? t(field.placeholderKey) : undefined"
+            class="min-w-0 flex-1 text-[0.9375rem] [&_button]:text-right"
+            :readonly="isLocked(field.key)"
+            :save="(value) => saveField(field.key, value)"
+          />
+          <i class="pi pi-chevron-right shrink-0 text-xs text-surface-500" aria-hidden="true" />
+        </div>
+      </div>
+
+      <div v-else class="grid grid-cols-3 gap-3 text-sm">
         <div>
           <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">{{ t('band_space_setlist.song_drawer.tonality') }}</div>
           <InlineEditField
@@ -54,7 +112,7 @@
         </div>
       </div>
 
-      <div>
+      <div v-if="!isBelowMd">
         <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">{{ t('band_space_setlist.song_drawer.notes') }}</div>
         <InlineEditField
           :model-value="song.notes"
@@ -67,20 +125,50 @@
         />
       </div>
 
-      <Divider />
+      <Divider v-if="!isBelowMd" />
 
+      <!-- A phone reads the words in their own screen, the next songs of the set after them. -->
+      <template v-if="isBelowMd && song.has_lyrics">
+        <h3 :class="PHONE_SECTION">{{ t('band_space_setlist.lyrics_panel.title') }}</h3>
+        <button
+          type="button"
+          class="flex min-h-13 w-full items-center gap-3 px-5 text-left text-[0.9375rem]"
+          @click="emit('read-lyrics', song)"
+        >
+          <i class="pi pi-align-left text-primary" aria-hidden="true" />
+          {{ t('band_space_setlist.phone.read_lyrics') }}
+          <i class="pi pi-chevron-right ml-auto text-xs text-surface-500" aria-hidden="true" />
+        </button>
+        <p class="px-5 text-[0.9375rem] text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.common.lyrics_present') }}</p>
+      </template>
       <SongLyricsPanel
+        v-else
         :band-space-id="bandSpaceId"
         :song="song"
         :read-only="readOnly"
+        :class="{ 'px-5 pt-4': isBelowMd }"
         @changed="handleLyricsChanged"
       />
 
-      <Divider />
+      <template v-if="isBelowMd && song.setlists?.length">
+        <h3 :class="PHONE_SECTION">{{ t('band_space_setlist.repertoire.column_setlists') }}</h3>
+        <button
+          v-for="setlist in song.setlists"
+          :key="setlist.id"
+          type="button"
+          class="flex min-h-13 w-full items-center gap-3 border-surface-200 px-5 text-left text-[0.9375rem] not-first-of-type:border-t dark:border-surface-700"
+          @click="openSetlist(setlist.id)"
+        >
+          <i class="pi pi-list text-surface-600 dark:text-surface-300" aria-hidden="true" />
+          <span class="truncate">{{ setlist.name }}</span>
+        </button>
+      </template>
 
-      <div>
-        <div class="flex items-center justify-between mb-2">
-          <div class="text-xs uppercase text-surface-500">{{ t('band_space_setlist.attached_files.title') }}</div>
+      <Divider v-if="!isBelowMd" />
+
+      <div :class="{ 'px-5': isBelowMd }">
+        <div class="flex items-center justify-between mb-2" :class="{ 'mt-5': isBelowMd }">
+          <div class="text-xs uppercase text-surface-500" :class="{ '!text-[0.8125rem] font-semibold text-surface-600 dark:text-surface-300': isBelowMd }">{{ t('band_space_setlist.attached_files.title') }}</div>
           <span v-if="files.length > 0" class="text-xs text-surface-400 tabular-nums">
             {{ files.length }}
           </span>
@@ -131,12 +219,26 @@
         />
       </div>
 
-      <Divider />
+      <Divider v-if="!isBelowMd" />
 
-      <div v-if="!readOnly" class="flex gap-2">
+      <div v-if="!readOnly && !isBelowMd" class="flex gap-2">
         <Button :label="t('band_space_setlist.common.archive')" icon="pi pi-archive" severity="danger" outlined @click="confirmArchive" />
       </div>
     </div>
+
+    <BottomSheet
+      v-if="isBelowMd && song"
+      v-model:visible="isSongSheetOpen"
+      :title="song.title"
+      @after-hide="songSheet.onAfterHide"
+    >
+      <SheetAction icon="pi-pencil" @click="songSheet.run(() => phoneTitleField?.startEditing())">
+        {{ t('band_space_setlist.phone.rename') }}
+      </SheetAction>
+      <SheetAction icon="pi-archive" danger @click="songSheet.run(confirmArchive)">
+        {{ t('band_space_setlist.common.archive') }}
+      </SheetAction>
+    </BottomSheet>
   </Drawer>
 </template>
 
@@ -149,10 +251,15 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
+import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
 import InlineEditField from './Song/InlineEditField.vue'
 
@@ -161,8 +268,51 @@ const props = defineProps({
   song: { type: Object, default: null }
 })
 
-const emit = defineEmits(['archived', 'updated'])
+const emit = defineEmits(['archived', 'updated', 'read-lyrics'])
 const visible = defineModel('visible', { type: Boolean, default: false })
+const isBelowMd = useIsBelowMd()
+const router = useRouter()
+
+// The song's fields as a phone lists them, one row each.
+const PHONE_FIELDS = [
+  {
+    key: 'tonality',
+    icon: 'pi-key',
+    labelKey: 'band_space_setlist.song_drawer.tonality',
+    placeholderKey: 'band_space_setlist.song_drawer.tonality_placeholder'
+  },
+  {
+    key: 'tempo',
+    icon: 'pi-stopwatch',
+    labelKey: 'band_space_setlist.song_drawer.tempo',
+    kind: 'number'
+  },
+  {
+    key: 'reference_duration',
+    icon: 'pi-clock',
+    labelKey: 'band_space_setlist.song_drawer.duration',
+    kind: 'duration'
+  },
+  {
+    key: 'notes',
+    icon: 'pi-pen-to-square',
+    labelKey: 'band_space_setlist.song_drawer.notes',
+    multiline: true,
+    placeholderKey: 'band_space_setlist.song_drawer.notes_placeholder'
+  }
+]
+const PHONE_SECTION =
+  'mx-5 mt-5 mb-1.5 text-[0.8125rem] font-semibold uppercase text-surface-600 dark:text-surface-300'
+
+const phoneTitleField = ref(null)
+const isSongSheetOpen = ref(false)
+// « Archiver » asks first: the confirm waits for the sheet to be gone.
+const songSheet = useActionAfterSheetHide(isSongSheetOpen)
+
+function openSetlist(setlistId) {
+  visible.value = false
+  router.replace({ query: { setlist: setlistId } })
+}
 
 const { t } = useI18n()
 const songsStore = useBandSongsStore()

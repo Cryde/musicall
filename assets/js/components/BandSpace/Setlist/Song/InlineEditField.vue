@@ -151,4 +151,7 @@ async function commit() {
     saving.value = false
   }
 }
+
+// For a « Renommer » offered elsewhere, such as a phone's ⋮ on the song.
+defineExpose({ startEditing })
 </script>
