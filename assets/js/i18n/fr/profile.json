@@ -496,6 +496,7 @@
       "step_location": "Localisation",
       "step_profile": "Profil",
       "step_note": "Note",
+      "step_progress": "Étape {current} sur {total} : {label}",
       "type_question": "Quel type de recherche souhaites-tu effectuer ?",
       "type_band": "Je recherche un groupe",
       "type_band_hint": "Tu es musicien et cherches un groupe",

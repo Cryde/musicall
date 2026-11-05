@@ -1,22 +1,32 @@
 <template>
-    <div class="flex justify-end">
+  <!-- One root: as several, the layout's gap-8 fell between every block, a screen of air on a phone. -->
+  <div class="flex flex-col gap-3 md:gap-8 max-md:pb-20">
+    <div class="flex justify-end max-md:hidden">
         <breadcrumb :items="[{'label': breadcrumbLabel}]"/>
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 md:mb-6">
         <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
             {{ h1Title }}
         </h1>
 
+        <!-- On a phone it floats at the bottom instead, in reach and out of the way of the search. -->
         <Button
             :label="t('search.musician.post_announce')"
             icon="pi pi-megaphone"
             severity="info"
             size="small"
-            class="w-full sm:w-auto"
+            class="w-full sm:w-auto max-md:hidden!"
             @click="handleOpenAnnounceModal"
         />
     </div>
+    <Button
+        :label="t('search.musician.post_announce')"
+        icon="pi pi-megaphone"
+        rounded
+        class="md:hidden! fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
+        @click="handleOpenAnnounceModal"
+    />
 
     <!-- The guided mode (#1084): three questions instead of the filters, over the same results. -->
     <GuidedSearch
@@ -36,7 +46,7 @@
 
     <template v-else-if="!isGuided">
     <!-- Quick Search Section -->
-    <div class="mb-6">
+    <div class="md:mb-6">
         <Message severity="error" v-if="quickSearchErrors.length" class="mb-4">
             <span v-for="error in quickSearchErrors" :key="error">{{ error }}</span>
         </Message>
@@ -57,21 +67,22 @@
             <button
                 @click="generateQuickSearchFilters"
                 :disabled="isSearching || isFilterGenerating || !isQuickSearchParamEnough"
-                class="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-5 py-2 sm:py-2.5 bg-primary text-white rounded-xl flex items-center gap-2 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                :aria-label="t('search.musician.search')"
+                class="absolute right-2 top-1/2 -translate-y-1/2 max-sm:w-10 max-sm:h-10 max-sm:justify-center sm:px-5 sm:py-2.5 bg-primary text-white rounded-xl flex items-center gap-2 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-                <i :class="isFilterGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-search'"></i>
-                <span class="hidden sm:inline">{{ t('search.musician.search') }}</span>
+                <i :class="isFilterGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-search'" aria-hidden="true"></i>
+                <span class="hidden sm:inline" aria-hidden="true">{{ t('search.musician.search') }}</span>
             </button>
         </div>
 
-        <!-- Examples -->
-        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-sm text-surface-600 dark:text-surface-400">
-            <span>{{ t('search.musician.try') }}</span>
-            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">{{ t('search.musician.example_guitarist') }}</button>
-            <span class="text-surface-300 dark:text-surface-600">•</span>
-            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">{{ t('search.musician.example_band') }}</button>
-            <span class="text-surface-300 dark:text-surface-600">•</span>
-            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">{{ t('search.musician.example_drummer') }}</button>
+        <!-- Examples: one row of chips that scrolls sideways on a phone, so each is a finger wide. -->
+        <div class="flex items-center gap-x-2 gap-y-1 mt-3 text-sm text-surface-600 dark:text-surface-400 md:flex-wrap max-md:overflow-x-auto max-md:-mx-6 max-md:px-6 [scrollbar-width:none]">
+            <span class="shrink-0">{{ t('search.musician.try') }}</span>
+            <button :class="EXAMPLE" @click="insertExample">{{ t('search.musician.example_guitarist') }}</button>
+            <span class="text-surface-300 dark:text-surface-600 max-md:hidden" aria-hidden="true">•</span>
+            <button :class="EXAMPLE" @click="insertExample">{{ t('search.musician.example_band') }}</button>
+            <span class="text-surface-300 dark:text-surface-600 max-md:hidden" aria-hidden="true">•</span>
+            <button :class="EXAMPLE" @click="insertExample">{{ t('search.musician.example_drummer') }}</button>
         </div>
 
         <!-- AI Warning -->
@@ -81,69 +92,47 @@
         </Message>
     </div>
 
-    <Divider class="w-full my-0!"/>
+    <Divider class="w-full my-0! max-md:hidden!"/>
 
     <!-- Type selector with clear descriptions -->
-    <div>
-        <p class="text-sm text-surface-600 dark:text-surface-400 mb-3">{{ t('search.musician.looking_for') }}</p>
-        <div :class="['grid grid-cols-2 gap-3 max-w-lg transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-            <div
-                @click="selectType(selectSearchTypeOption[0])"
+    <div class="max-md:mt-1">
+        <p class="text-sm text-surface-600 dark:text-surface-400 mb-2 md:mb-3">{{ t('search.musician.looking_for') }}</p>
+        <div :class="['grid grid-cols-2 gap-2 md:gap-3 max-w-lg transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+            <button
+                v-for="option in TYPE_CHOICES"
+                :key="option.key"
+                type="button"
+                :aria-pressed="selectSearchType?.key === option.key"
                 :class="[
-                    'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
-                    selectSearchType?.key === 2
+                    'flex items-center gap-2.5 md:gap-3 min-w-0 max-md:h-14 px-3 md:p-3 rounded-xl border-2 text-left cursor-pointer transition-all',
+                    selectSearchType?.key === option.key
                         ? 'border-primary bg-primary/10 dark:bg-primary/20'
                         : 'border-surface-300 dark:border-surface-700 bg-surface-50 dark:bg-transparent hover:border-surface-400 dark:hover:border-surface-600 hover:bg-surface-100 dark:hover:bg-surface-800'
                 ]"
+                @click="selectType(selectSearchTypeOption.find((type) => type.key === option.key))"
             >
-                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 2 ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-800 text-surface-600 dark:text-surface-300']">
-                    <i class="pi pi-user text-lg" />
-                </div>
-                <div>
-                    <div class="font-medium text-surface-900 dark:text-surface-0">{{ t('search.musician.type_musician') }}</div>
-                    <div class="text-xs text-surface-500 dark:text-surface-400">{{ t('search.musician.type_musician_hint') }}</div>
-                </div>
-            </div>
-            <div
-                @click="selectType(selectSearchTypeOption[1])"
-                :class="[
-                    'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
-                    selectSearchType?.key === 1
-                        ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                        : 'border-surface-300 dark:border-surface-700 bg-surface-50 dark:bg-transparent hover:border-surface-400 dark:hover:border-surface-600 hover:bg-surface-100 dark:hover:bg-surface-800'
-                ]"
-            >
-                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 1 ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-800 text-surface-600 dark:text-surface-300']">
-                    <i class="pi pi-users text-lg" />
-                </div>
-                <div>
-                    <div class="font-medium text-surface-900 dark:text-surface-0">{{ t('search.musician.type_band') }}</div>
-                    <div class="text-xs text-surface-500 dark:text-surface-400">{{ t('search.musician.type_band_hint') }}</div>
-                </div>
-            </div>
+                <span :class="['flex items-center justify-center shrink-0 md:w-10 md:h-10 rounded-full', selectSearchType?.key === option.key ? 'max-md:text-primary md:bg-primary md:text-white' : 'text-surface-600 dark:text-surface-300 md:bg-surface-200 md:dark:bg-surface-800']">
+                    <i :class="[option.icon, 'text-lg']" aria-hidden="true" />
+                </span>
+                <span class="min-w-0">
+                    <span class="block truncate font-medium text-surface-900 dark:text-surface-0">{{ t(option.label) }}</span>
+                    <span class="block truncate text-xs text-surface-500 dark:text-surface-400">{{ t(option.hint) }}</span>
+                </span>
+            </button>
         </div>
     </div>
 
-    <!-- Mobile: Filter toggle + Search button always visible -->
-    <div class="lg:hidden flex gap-2 mb-3">
+    <!-- Below lg the filters fold behind one button; they search as they change, no button needed. -->
+    <div class="lg:hidden flex gap-2 md:mb-3">
         <Button
-            :label="showMobileFilters ? t('search.musician.hide_filters') : t('search.musician.show_filters')"
+            :label="showMobileFilters ? t('search.musician.hide_filters') : filterToggleLabel"
             :icon="showMobileFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
             icon-pos="right"
             severity="secondary"
             outlined
-            size="small"
-            class="flex-1"
+            class="flex-1 max-md:h-11 !border-surface-300 dark:!border-surface-600"
+            :aria-expanded="showMobileFilters"
             @click="showMobileFilters = !showMobileFilters"
-        />
-        <Button
-            severity="info"
-            icon="pi pi-search"
-            :disabled="isSearching || isFilterGenerating || isCityLoading"
-            :loading="isCityLoading"
-            :label="t('search.musician.search')"
-            size="small"
-            @click="handleSearchClick"
         />
     </div>
 
@@ -177,6 +166,7 @@
                     v-model="selectedLocation"
                     v-model:loading="isCityLoading"
                     :placeholder="t('search.musician.city_placeholder')"
+                    @blur="cityField?.pickFirstSuggestion()"
                 />
             </div>
             <div class="w-full lg:w-auto">
@@ -191,32 +181,15 @@
                     class="w-full lg:w-48"
                 />
             </div>
-            <!-- Desktop: Search buttons inside filters row -->
-            <div class="hidden lg:block">
-                <Button
-                    severity="info"
-                    icon="pi pi-search"
-                    :disabled="isSearching || isFilterGenerating || isCityLoading"
-                    :loading="isCityLoading"
-                    :label="t('search.musician.search')"
-                    @click="handleSearchClick"
-                />
+            <!-- An icon in the filter row from lg, a worded button under the stacked fields below it. -->
+            <div>
                 <Button
                     text
                     icon="pi pi-times"
                     severity="secondary"
+                    :label="isLargeScreen ? undefined : t('search.musician.clear_filters')"
                     :aria-label="t('search.musician.clear_filters')"
-                    v-tooltip.bottom="t('search.musician.clear_filters')"
-                    @click="clearAllFilters"
-                />
-            </div>
-            <!-- Mobile: Clear button only (search button is above) -->
-            <div class="lg:hidden">
-                <Button
-                    text
-                    icon="pi pi-times"
-                    severity="secondary"
-                    :label="t('search.musician.clear_filters')"
+                    v-tooltip.bottom="isLargeScreen ? t('search.musician.clear_filters') : undefined"
                     @click="clearAllFilters"
                 />
             </div>
@@ -224,8 +197,8 @@
     </div>
 
     <!-- Active filters summary -->
-    <div v-if="hasActiveFilters" ref="filtersSummary" class="flex flex-wrap items-center gap-2 mt-4 scroll-mt-4">
-        <span class="text-sm text-surface-500 dark:text-surface-400">{{ t('search.musician.active_filters') }}</span>
+    <div v-if="hasActiveFilters" ref="filtersSummary" class="flex items-center gap-2 md:mt-4 scroll-mt-20 md:flex-wrap max-md:overflow-x-auto max-md:-mx-6 max-md:px-6 [scrollbar-width:none] [&_.p-chip]:shrink-0">
+        <span class="shrink-0 text-sm text-surface-500 dark:text-surface-400">{{ t('search.musician.active_filters') }}</span>
         <Chip
             v-if="selectSearchType"
             :label="selectSearchType.key === 2 ? t('search.musician.chip_musician') : t('search.musician.chip_band')"
@@ -359,16 +332,23 @@
                 <template #sought><strong class="text-surface-900 dark:text-surface-0">{{ guidedSought }}</strong></template>
             </i18n-t>
         </p>
-        <div v-else-if="hasActiveFilters" class="flex flex-wrap items-center justify-end gap-4 mt-6">
+        <div v-else-if="hasActiveFilters" class="flex flex-wrap items-center justify-end gap-4 md:mt-6">
             <Button
                 :label="t('search.musician.create_announce_from_search')"
                 icon="pi pi-plus"
                 severity="success"
                 size="small"
+                class="max-md:w-full"
                 @click="handleOpenAnnounceModalFromSearch"
             />
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-4 items-stretch">
+        <!-- Dimmed while the filters' next answer comes in. A tap on a result is a member reading this
+             search, which is when it counts as one (#1075). -->
+        <div
+            :class="['grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 md:mt-4 items-stretch transition-opacity', isRefreshing && 'opacity-60']"
+            :aria-busy="isRefreshing"
+            @click.capture="autoRun.settleNow()"
+        >
             <MusicianAnnounceBlockItem
                 v-for="announce in musicianSearchStore.announces"
                 :key="announce.id"
@@ -388,7 +368,7 @@
         </div>
 
         <!-- Load more button -->
-        <div v-if="showLoadMoreButton && !showGuidedSignup" class="flex justify-center mt-8 mb-9">
+        <div v-if="showLoadMoreButton && !showGuidedSignup" class="flex justify-center mt-2 md:mt-8 md:mb-9">
             <Button
                 :label="userSecurityStore.isAuthenticated ? t('search.musician.see_more_results') : t('search.musician.see_more')"
                 :icon="isLoadingMore ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-down'"
@@ -398,7 +378,7 @@
                 @click="loadMore"
             />
         </div>
-        <div v-else class="mb-9"></div>
+        <div v-else class="md:mb-9"></div>
     </template>
 
     <AddAnnounceModal
@@ -417,6 +397,7 @@
         :variant="authModalVariant"
         :message="authModalMessage"
     />
+  </div>
 </template>
 <script setup>
 defineOptions({ name: 'MusicianSearch' })
@@ -430,7 +411,16 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
-import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
@@ -455,6 +445,7 @@ import {
 } from '../../utils/guidedSearch.js'
 import { profileCity } from '../../utils/profileLocation.js'
 import { needsReveal } from '../../utils/revealTarget.js'
+import { createSearchAutoRun } from '../../utils/searchAutoRun.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
@@ -502,6 +493,23 @@ const selectSearchTypeOption = [
   { key: 2, name: 'Musiciens' },
   { key: 1, name: 'Groupe' }
 ]
+const TYPE_CHOICES = [
+  {
+    key: 2,
+    icon: 'pi pi-user',
+    label: 'search.musician.type_musician',
+    hint: 'search.musician.type_musician_hint'
+  },
+  {
+    key: 1,
+    icon: 'pi pi-users',
+    label: 'search.musician.type_band',
+    hint: 'search.musician.type_band_hint'
+  }
+]
+// A text link from md; on a phone a chip a finger can hit.
+const EXAMPLE =
+  'text-primary hover:underline cursor-pointer max-md:shrink-0 max-md:h-10 max-md:px-4 max-md:rounded-full max-md:border max-md:border-surface-300 max-md:dark:border-surface-600 max-md:whitespace-nowrap max-md:hover:no-underline'
 
 // URL <-> primitive sync. The entity refs above stay the source of truth for
 // the form (they back the v-model bindings); we mirror their derived
@@ -539,6 +547,18 @@ const MAX_GUEST_PAGES = 3
 // Mobile responsive
 const showMobileFilters = ref(false)
 const isLargeScreen = useMediaQuery('(min-width: 1024px)')
+const activeFilterCount = computed(
+  () =>
+    [selectSearchType.value, selectedInstrument.value, selectedLanguage.value].filter(Boolean)
+      .length +
+    selectedStyles.value.length +
+    (selectedLocation.value && typeof selectedLocation.value === 'object' ? 1 : 0)
+)
+const filterToggleLabel = computed(() =>
+  activeFilterCount.value > 0
+    ? t('search.musician.show_filters_count', { count: activeFilterCount.value })
+    : t('search.musician.show_filters')
+)
 
 const prefilledInstrumentSlug = computed(() => route.meta.instrumentSlug || null)
 
@@ -565,7 +585,8 @@ const breadcrumbLabel = computed(() => {
   return t('search.musician.heading.default')
 })
 
-useTitle(pageTitle)
+// Not put back on unmount: the cached page unmounts after the next page has set its own title.
+useTitle(pageTitle, { restoreOnUnmount: false })
 
 onMounted(async () => {
   // Instruments and styles only feed the filter dropdowns — load them in
@@ -608,6 +629,7 @@ function hasUrlFilters() {
 }
 
 async function loadInitialResults({ landing = false } = {}) {
+  markSearched()
   isSearching.value = true
   isSearchMade.value = true
   const params = { ...buildSearchParams(), landing }
@@ -632,8 +654,12 @@ function applyPrefilledInstrument() {
 }
 
 // Watch for route changes to update pre-filled instrument
-watch(prefilledInstrumentSlug, () => {
+// From one instrument page to another, the kept-alive page loads that instrument's list. Leaving for
+// any other page also changes the slug, to nothing, which loads nothing.
+watch(prefilledInstrumentSlug, (slug) => {
+  if (!slug || isGuided.value) return
   applyPrefilledInstrument()
+  loadInitialResults({ landing: true })
 })
 
 // Track which fields were auto-filled from quick search
@@ -923,16 +949,12 @@ async function search({ record = true } = {}) {
   isSearching.value = true
   // Typed but never picked, the city used to be dropped from the search without a word.
   await cityField.value?.pickFirstSuggestion()
+  // After the pick, which may have changed the filters: the search below is the one that counts.
+  markSearched()
 
   quickSearchErrors.value = []
   guestPagesLoaded.value = 1 // Reset on new search
-  const searchFilters = {
-    type: selectSearchType.value?.name || null,
-    instrument: selectedInstrument.value?.musician_name || null,
-    styles: selectedStyles.value.map((s) => s.name).join(', ') || null,
-    location: selectedLocation.value?.name || null,
-    language: selectedLanguage.value
-  }
+  const searchFilters = umamiSearchFilters()
   trackUmamiEvent(
     isGuided.value ? 'musician-guided-search' : 'musician-search-submit',
     searchFilters
@@ -952,9 +974,85 @@ async function search({ record = true } = {}) {
   if (isGuided.value) await loadGuidedWidening()
 }
 
+// --- The filters search on their own -----------------------------------------------------------------
+// Members did not press « Rechercher »: a change refreshes the results, and the search is recorded
+// only once it settles, so the search log keeps searches, not every step on the way to one (#1075).
+
+const autoRun = createSearchAutoRun({ refresh: refreshResults, record: recordSettledSearch })
+const isRefreshing = ref(false)
+const filtersKey = computed(() => JSON.stringify(buildSearchParams()))
+// What the list on screen was searched with. Code that fills the filters itself (an address, an
+// instrument page, the AI search) runs its own search right after, so the watch below sees nothing new.
+let searchedKey = null
+// Only the latest refresh lifts the dimming, as only its answer shows.
+let refreshToken = 0
+// Kept alive between pages: a hidden search must not search, nor write its filters onto another page.
+const isActive = ref(true)
+onActivated(() => {
+  isActive.value = true
+})
+onDeactivated(() => {
+  isActive.value = false
+  autoRun.cancel()
+})
+
+function markSearched() {
+  autoRun.cancel()
+  refreshToken++
+  isRefreshing.value = false
+  searchedKey = filtersKey.value
+}
+
+async function refreshResults() {
+  const token = ++refreshToken
+  searchedKey = filtersKey.value
+  isRefreshing.value = true
+  let applied = false
+  try {
+    applied = await musicianSearchStore.searchAnnounces({ ...buildSearchParams(), landing: true })
+  } finally {
+    if (token === refreshToken) isRefreshing.value = false
+  }
+  if (!applied || !isActive.value) return
+  isSearchMade.value = true
+  guestPagesLoaded.value = 1
+  syncEntityRefsToUrlFilters()
+  pushUrlFilters()
+}
+
+function recordSettledSearch() {
+  const searchFilters = umamiSearchFilters()
+  trackUmamiEvent('musician-search-submit', searchFilters)
+  if (musicianSearchStore.announces.length === 0) {
+    trackUmamiEvent('musician-search-no-results', searchFilters)
+  }
+  musicianSearchStore.recordSearch(buildSearchParams()).catch(() => {
+    // Best effort, as on the server: the member already has their results.
+  })
+}
+
+// The guided mode and the AI search search themselves (a filter touched while the AI one works is
+// overwritten by its answer anyway); a city counts once picked, not while it is typed.
+watch(filtersKey, (key) => {
+  if (!isActive.value || isGuided.value || isFilterGenerating.value || key === searchedKey) return
+  autoRun.changed()
+})
+
+function umamiSearchFilters() {
+  return {
+    type: selectSearchType.value?.name || null,
+    instrument: selectedInstrument.value?.musician_name || null,
+    styles: selectedStyles.value.map((s) => s.name).join(', ') || null,
+    location: selectedLocation.value?.name || null,
+    language: selectedLanguage.value
+  }
+}
+
 const isLoadingMore = ref(false)
 
 async function loadMore() {
+  // The page after the one on screen, so a refresh still on its way lands first.
+  await autoRun.settleNow()
   const nextPage = musicianSearchStore.currentPage + 1
   trackUmamiEvent('musician-load-more', { page: nextPage })
 
@@ -970,9 +1068,9 @@ async function loadMore() {
   const params = buildSearchParams()
   params.page = nextPage
   params.append = true
-  await musicianSearchStore.searchAnnounces(params)
+  const applied = await musicianSearchStore.searchAnnounces(params)
 
-  if (!userSecurityStore.isAuthenticated) {
+  if (applied && !userSecurityStore.isAuthenticated) {
     guestPagesLoaded.value++
   }
 
@@ -1069,13 +1167,9 @@ async function revealSearchResults() {
   target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
 }
 
-async function handleSearchClick() {
-  await search()
-  await revealSearchResults()
-}
-
+// Also a click handler, whose event must not read as « skip ».
 function clearAllFilters(skipTracking = false) {
-  if (!skipTracking) {
+  if (skipTracking !== true) {
     trackUmamiEvent('musician-filter-clear')
   }
   quickSearchErrors.value = []
@@ -1085,12 +1179,15 @@ function clearAllFilters(skipTracking = false) {
   selectedLanguage.value = null
   quickSearch.value = ''
   selectSearchType.value = null
-  // Reset results to initial state
-  musicianSearchStore.clear()
-  isSearchMade.value = false
   // Clear URL params
   clearUrlFilters()
   pushUrlFilters()
+  // The AI search fills the filters and searches itself; a member clearing them gets the opening list.
+  if (skipTracking === true) {
+    markSearched()
+    return
+  }
+  loadInitialResults()
 }
 
 function handleOpenAnnounceModal() {

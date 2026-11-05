@@ -8,12 +8,16 @@
       severity="secondary"
       :aria-label="t('search.announce_note.read', { name: authorName })"
       aria-haspopup="dialog"
-      :aria-expanded="isOpen"
+      :aria-expanded="isOpen || isSheetOpen"
       @pointerenter="handlePointerEnter"
       @pointerleave="handlePointerLeave"
       @click="handleClick"
     />
-    <Popover ref="popover" @show="handleShow" @hide="handleHide">
+    <!-- On a phone a sheet, read at the size of the page; a popover from md, by the icon. -->
+    <BottomSheet v-if="isBelowMd" v-model:visible="isSheetOpen" :title="t('search.announce_note.title', { name: authorName })">
+      <p class="m-0 px-5 pb-5 text-base whitespace-pre-line break-words text-surface-700 dark:text-surface-200">{{ text }}</p>
+    </BottomSheet>
+    <Popover v-else ref="popover" @show="handleShow" @hide="handleHide">
       <!-- Scrolls rather than growing past the screen: a note has no length limit. Focusable so a note
            opened from the keyboard or by a tap is where focus goes, and Escape brings it back. -->
       <p
@@ -28,8 +32,10 @@
 <script setup>
 import Button from 'primevue/button'
 import Popover from 'primevue/popover'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
+import BottomSheet from '../Global/BottomSheet.vue'
 
 /**
  * The note an author left on their announce (#1139), behind a « comment » icon: shown while a mouse
@@ -45,6 +51,12 @@ const { t } = useI18n()
 const popover = ref(null)
 const noteText = ref(null)
 const isOpen = ref(false)
+const isSheetOpen = ref(false)
+const isBelowMd = useIsBelowMd()
+// Across md the sheet goes away with its open state; the icon must not still claim it is open.
+watch(isBelowMd, () => {
+  isSheetOpen.value = false
+})
 // Opened on purpose rather than by passing over it, so leaving the icon does not close it.
 let pinned = false
 
@@ -63,6 +75,10 @@ function handlePointerLeave(event) {
 }
 
 function handleClick(event) {
+  if (isBelowMd.value) {
+    isSheetOpen.value = true
+    return
+  }
   pinned = !pinned
   if (pinned) {
     popover.value?.show(event)

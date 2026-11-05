@@ -26,6 +26,7 @@
     "type_band_hint": "Pour rejoindre",
     "hide_filters": "Masquer les filtres",
     "show_filters": "Afficher les filtres",
+    "show_filters_count": "Afficher les filtres · {count}",
     "instrument_placeholder": "Sélectionne un instrument",
     "styles_placeholder": "Styles musicaux",
     "city_placeholder": "Ville (optionnel)",
@@ -58,10 +59,12 @@
     "languages_label": "Langues parlées :",
     "profile": "Profil",
     "contact": "Contacter",
-    "report": "Signaler l'annonce de {name}"
+    "report": "Signaler l'annonce de {name}",
+    "all_styles_aria": "+{count} : {styles}"
   },
   "announce_note": {
-    "read": "Lire la note de {name}"
+    "read": "Lire la note de {name}",
+    "title": "La note de {name}"
   },
   "guided": {
     "intro": "3 questions, et on te montre les profils qui correspondent.",
