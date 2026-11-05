@@ -16,7 +16,11 @@ defineProps({
   backLabel: { type: String, required: true },
   title: { type: String, default: '' },
   // drawer: in a Drawer's header; screen: 56px edge to edge; page: a page heading
-  variant: { type: String, default: 'drawer', validator: (value) => ['drawer', 'screen', 'page'].includes(value) },
+  variant: {
+    type: String,
+    default: 'drawer',
+    validator: (value) => ['drawer', 'screen', 'page'].includes(value)
+  },
   // A screen bar stays under the site header while the page scrolls
   sticky: { type: Boolean, default: false },
   // A form not yet saved is left with ×, not ←
