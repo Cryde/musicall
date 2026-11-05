@@ -1,13 +1,13 @@
 <template>
-  <div v-if="isBelowMd" class="mb-2 flex items-center justify-between gap-2">
-    <h2 class="font-semibold">{{ t('band_space_finance.phone.categories') }}</h2>
-    <Button
-      icon="pi pi-plus"
-      :label="t('band_space_finance.common.add_category')"
-      size="small"
-      text
+  <div v-if="isBelowMd" class="mx-1 mb-2 mt-5 flex items-center justify-between gap-2">
+    <h2 class="text-[0.9375rem] font-semibold">{{ t('band_space_finance.phone.categories') }}</h2>
+    <button
+      type="button"
+      class="text-sm font-semibold text-primary-700 dark:text-primary-300"
       @click="emit('add-category', null)"
-    />
+    >
+      + {{ t('band_space_finance.common.add_category') }}
+    </button>
   </div>
   <div v-else class="flex justify-end mb-4">
     <Button
@@ -18,14 +18,14 @@
       @click="emit('add-category', null)"
     />
   </div>
-  <Accordion v-model:value="openPanels" multiple>
+  <Accordion v-model:value="openPanels" multiple class="finance-accordion">
     <AccordionPanel v-for="pole in poles" :key="pole.id" :value="pole.id">
       <AccordionHeader>
         <div class="flex flex-wrap items-center justify-between w-full min-w-0 pr-2 gap-x-3 gap-y-1 max-md:flex-col max-md:items-start max-md:gap-y-0.5">
-          <span class="font-semibold min-w-0 max-w-full truncate">{{ pole.name }}</span>
+          <span class="font-semibold min-w-0 max-w-full truncate max-md:text-[0.9375rem] max-md:text-surface-900 max-md:dark:text-surface-0">{{ pole.name }}</span>
           <span class="flex items-baseline gap-2 sm:gap-3 shrink-0">
-            <FinanceTypeTotals :totals="poleTotals(pole)" class="text-sm font-semibold" />
-            <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('band_space_finance.common.entry_count', countEntries(pole)) }}</span>
+            <FinanceTypeTotals :totals="poleTotals(pole)" class="text-sm max-md:text-[0.8125rem] font-semibold" />
+            <span class="text-xs max-md:text-[0.8125rem] text-surface-500 dark:text-surface-400">{{ t('band_space_finance.common.entry_count', countEntries(pole)) }}</span>
           </span>
         </div>
       </AccordionHeader>
@@ -132,7 +132,7 @@
         </div>
 
         <!-- Pole-level actions -->
-        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
+        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 max-md:mt-0 max-md:pt-2.5 max-md:border-t-0">
           <div v-if="editingId === pole.id" class="flex items-center gap-2">
             <InputText
               :id="renameInputId(pole)"
@@ -152,6 +152,7 @@
               :label="t('band_space_finance.common.add_entry')"
               severity="secondary"
               outlined
+              size="small"
               class="flex-1"
               @click="emit('add-entry', pole.id)"
             />
@@ -365,3 +366,40 @@ function progressRows(pole) {
   ].filter((row) => row.total > 0)
 }
 </script>
+
+<style>
+/* A phone: the categories in one bordered box, a row of 60px each, and the open one set apart
+   with its body on the raised tone, as its entries sit in a box of their own. The backgrounds need
+   !important: PrimeVue's active-panel rule is unlayered and more specific. */
+@media (width < 48rem) {
+  .finance-accordion {
+    overflow: hidden;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 1rem;
+  }
+
+  .finance-accordion .p-accordionpanel:last-child {
+    border-bottom-width: 0;
+  }
+
+  .finance-accordion .p-accordionheader {
+    box-sizing: border-box;
+    min-height: 3.75rem;
+    padding: 0.625rem 0.875rem 0.625rem 1rem;
+  }
+
+  .finance-accordion .p-accordioncontent-content {
+    padding: 0.25rem 1rem 0.875rem;
+  }
+
+  .finance-accordion .p-accordionpanel-active > .p-accordionheader,
+  .finance-accordion .p-accordionpanel-active .p-accordioncontent-content {
+    background: var(--p-surface-50) !important;
+  }
+
+  .dark-mode .finance-accordion .p-accordionpanel-active > .p-accordionheader,
+  .dark-mode .finance-accordion .p-accordionpanel-active .p-accordioncontent-content {
+    background: var(--p-surface-950) !important;
+  }
+}
+</style>

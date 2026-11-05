@@ -10,6 +10,7 @@
       ghost-class="opacity-30"
       :data-category-id="categoryId"
       class="flex flex-col min-h-[1.75rem] max-md:divide-y max-md:divide-surface-200 dark:max-md:divide-surface-700"
+      :class="{ 'max-md:overflow-hidden max-md:rounded-xl max-md:border max-md:border-surface-200 max-md:bg-surface-0 dark:max-md:border-surface-700 dark:max-md:bg-surface-900': localEntries.length > 0 }"
       @end="handleDragEnd"
     >
       <!-- A phone moves an entry from its own screen (« Changer de catégorie »), not by dragging. -->
@@ -18,7 +19,7 @@
           v-for="entry in localEntries"
           :key="entry.id"
           :entry="entry"
-          :meta="`${formatDateCompact(entry.date)} · ${typeLabel(entry.type)}`"
+          :meta="`${formatDayWithWeekday(entry.date)} · ${typeLabel(entry.type)}`"
           :can-open="canEdit(entry)"
           @open="emit('edit', entry)"
         />
@@ -118,7 +119,7 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
 import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
-import { formatDateCompact } from '../../../utils/date.js'
+import { formatDateCompact, formatDayWithWeekday } from '../../../utils/date.js'
 import { formatEntryAmount } from '../../../utils/financeEntryAmount.js'
 import FinanceEntryPhoneRow from './FinanceEntryPhoneRow.vue'
 import FinanceSplitWarning from './FinanceSplitWarning.vue'

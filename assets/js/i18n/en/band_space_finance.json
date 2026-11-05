@@ -237,6 +237,8 @@
     "more_actions": "More actions",
     "back": "Back",
     "change_category": "Change category",
-    "category_changed": "Entry moved to {name}"
+    "category_changed": "Entry moved to {name}",
+    "copy_link": "Copy link",
+    "link_copied": "Link copied"
   }
 }

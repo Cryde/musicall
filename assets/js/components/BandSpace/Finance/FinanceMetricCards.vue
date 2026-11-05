@@ -1,49 +1,49 @@
 <template>
   <div>
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4">
-      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-3 md:p-4 border border-surface-200 dark:border-surface-700">
-        <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
+      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl px-3 py-2.5 md:p-4 border max-md:dark:bg-surface-900 border-surface-200 dark:border-surface-700">
+        <p class="text-sm max-md:text-[0.8125rem] text-surface-500 dark:text-surface-400 md:mb-1">
           {{ t('band_space_finance.totals.income') }}
           <i class="pi pi-info-circle text-xs ml-1 cursor-help max-md:hidden!" v-tooltip.top="t('band_space_finance.metric_cards.income_hint')"></i>
         </p>
-        <p class="text-lg md:text-xl font-semibold text-green-700 dark:text-green-400">{{ formatAmount(summary?.total_income) }}</p>
+        <p class="text-lg leading-snug md:text-xl font-semibold text-green-700 dark:text-green-400">{{ formatAmount(summary?.total_income) }}</p>
       </div>
 
-      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-3 md:p-4 border border-surface-200 dark:border-surface-700">
-        <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
+      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl px-3 py-2.5 md:p-4 border max-md:dark:bg-surface-900 border-surface-200 dark:border-surface-700">
+        <p class="text-sm max-md:text-[0.8125rem] text-surface-500 dark:text-surface-400 md:mb-1">
           {{ t('band_space_finance.totals.expense') }}
           <i class="pi pi-info-circle text-xs ml-1 cursor-help max-md:hidden!" v-tooltip.top="t('band_space_finance.metric_cards.expense_hint')"></i>
         </p>
-        <p class="text-lg md:text-xl font-semibold text-red-600 dark:text-red-400">{{ formatAmount(summary?.total_expense) }}</p>
+        <p class="text-lg leading-snug md:text-xl font-semibold text-red-600 dark:text-red-400">{{ formatAmount(summary?.total_expense) }}</p>
       </div>
 
-      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-3 md:p-4 border border-surface-200 dark:border-surface-700">
-        <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
+      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl px-3 py-2.5 md:p-4 border max-md:dark:bg-surface-900 border-surface-200 dark:border-surface-700">
+        <p class="text-sm max-md:text-[0.8125rem] text-surface-500 dark:text-surface-400 md:mb-1">
           {{ t('band_space_finance.status.committed') }}
           <i class="pi pi-info-circle text-xs ml-1 cursor-help max-md:hidden!" v-tooltip.top="t('band_space_finance.metric_cards.committed_hint')"></i>
         </p>
-        <p class="text-lg md:text-xl font-semibold text-orange-600 dark:text-orange-400">
+        <p class="text-lg leading-snug md:text-xl font-semibold text-orange-600 dark:text-orange-400">
           <span v-if="summary?.has_estimates" class="text-sm font-normal">≈ </span>{{ formatAmount(summary?.total_committed) }}
         </p>
       </div>
 
-      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-3 md:p-4 border border-surface-200 dark:border-surface-700">
-        <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
+      <div class="bg-surface-0 dark:bg-surface-800 rounded-xl px-3 py-2.5 md:p-4 border max-md:dark:bg-surface-900 border-surface-200 dark:border-surface-700">
+        <p class="text-sm max-md:text-[0.8125rem] text-surface-500 dark:text-surface-400 md:mb-1">
           {{ t('band_space_finance.status.planned') }}
           <i class="pi pi-info-circle text-xs ml-1 cursor-help max-md:hidden!" v-tooltip.top="t('band_space_finance.metric_cards.planned_hint')"></i>
         </p>
-        <p class="text-lg md:text-xl font-semibold text-blue-600 dark:text-blue-400">
+        <p class="text-lg leading-snug md:text-xl font-semibold text-blue-600 dark:text-blue-400">
           <span v-if="summary?.has_estimates" class="text-sm font-normal">≈ </span>{{ formatAmount(summary?.total_planned) }}
         </p>
       </div>
 
-      <div v-if="summary?.total_personal > 0" class="max-md:col-span-2 bg-surface-0 dark:bg-surface-800 rounded-xl p-3 md:p-4 border border-surface-200 dark:border-surface-700">
-        <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
+      <div v-if="summary?.total_personal > 0" class="max-md:col-span-2 bg-surface-0 dark:bg-surface-800 rounded-xl px-3 py-2.5 md:p-4 border max-md:dark:bg-surface-900 border-surface-200 dark:border-surface-700">
+        <p class="text-sm max-md:text-[0.8125rem] text-surface-500 dark:text-surface-400 md:mb-1">
           {{ t('band_space_finance.metric_cards.personal') }}
           <i class="pi pi-info-circle text-xs ml-1 cursor-help max-md:hidden!" v-tooltip.top="t('band_space_finance.metric_cards.personal_hint')"></i>
         </p>
         <!-- Incomes and expenses apart, never added up (#1168) -->
-        <FinanceTypeTotals :totals="personalTotals" class="text-lg md:text-xl font-semibold flex-wrap" />
+        <FinanceTypeTotals :totals="personalTotals" class="text-lg leading-snug md:text-xl font-semibold flex-wrap" />
       </div>
     </div>
 
@@ -51,7 +51,7 @@
     <template v-if="isBelowMd">
       <button
         type="button"
-        class="mt-2 flex items-center gap-1.5 py-1.5 text-sm text-primary-700 dark:text-primary-300"
+        class="mt-2 flex items-center gap-1.5 py-1 text-[0.8125rem] font-semibold text-primary-700 dark:text-primary-300"
         aria-haspopup="dialog"
         @click="isHintsSheetOpen = true"
       >

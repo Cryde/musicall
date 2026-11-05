@@ -347,6 +347,7 @@
     "title": "Période",
     "from": "Du",
     "to": "Au",
-    "apply": "Appliquer"
+    "apply": "Appliquer",
+    "custom": "Dates personnalisées"
   }
 }
