@@ -213,6 +213,7 @@ const columns = computed(() => [
   {
     title: t('footer.community.title'),
     links: [
+      { label: t('footer.community.discover'), to: { name: 'app_discover' } },
       { label: t('footer.community.forum'), to: { name: 'app_forum_index' } },
       { label: t('footer.community.contact'), to: { name: 'app_contact' } }
     ]

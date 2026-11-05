@@ -97,6 +97,17 @@ const isVisitor = computed(
 
 const exploreLinks = computed(() => [
   { key: 'home', label: t('menu.home'), icon: 'pi pi-home', to: { name: 'app_home' } },
+  // Only a visitor needs the tour of the site; nothing else on a phone leads to it.
+  ...(isVisitor.value
+    ? [
+        {
+          key: 'discover',
+          label: t('menu.discover'),
+          icon: 'pi pi-sparkles',
+          to: { name: 'app_discover' }
+        }
+      ]
+    : []),
   {
     key: 'musicians',
     label: t('menu.search_musicians'),

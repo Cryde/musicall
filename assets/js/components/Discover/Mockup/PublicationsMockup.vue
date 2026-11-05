@@ -5,7 +5,7 @@
         v-for="filter in filters"
         :key="filter.label"
         :class="[
-          'px-3 py-1 rounded-full text-xs font-semibold',
+          'px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-xs font-semibold',
           filter.isActive ? 'bg-primary text-primary-contrast' : 'bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200'
         ]"
       >
@@ -13,10 +13,10 @@
       </span>
     </div>
     <MockupTile v-for="publication in PUBLICATIONS" :key="publication.title">
-      <img :src="publication.cover" alt="" width="96" height="54" loading="lazy" class="w-24 h-[54px] shrink-0 rounded-lg object-cover" />
+      <img :src="publication.cover" alt="" width="96" height="54" loading="lazy" class="w-20 h-[45px] md:w-24 md:h-[54px] shrink-0 rounded-lg object-cover" />
       <span class="flex flex-col min-w-0">
-        <span class="truncate font-semibold text-surface-900 dark:text-surface-0">{{ publication.title }}</span>
-        <span class="text-sm text-surface-600 dark:text-surface-300">
+        <span class="truncate text-sm md:text-base font-semibold text-surface-900 dark:text-surface-0">{{ publication.title }}</span>
+        <span class="max-md:truncate text-[13px] md:text-sm text-surface-600 dark:text-surface-300">
           {{ t('home.discover.publications.mock.discovery_by', { name: publication.author }) }}
         </span>
       </span>

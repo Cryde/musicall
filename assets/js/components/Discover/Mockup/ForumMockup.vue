@@ -1,17 +1,17 @@
 <template>
   <DiscoverMockup :label="t('home.discover.forum.image_alt')">
-    <span class="text-sm font-bold uppercase tracking-wider text-green-700 dark:text-green-400">
+    <span class="text-xs md:text-sm font-bold md:uppercase md:tracking-wider text-green-700 dark:text-green-400">
       {{ t('home.discover.forum.mock.category') }}
     </span>
     <MockupTile v-for="topic in topics" :key="topic.title">
       <i :class="[topic.isPinned ? 'pi pi-thumbtack text-green-700 dark:text-green-400' : 'pi pi-comments text-surface-500 dark:text-surface-400']" />
       <span class="flex flex-col grow min-w-0">
-        <span class="truncate font-semibold text-surface-900 dark:text-surface-0">{{ topic.title }}</span>
-        <span class="text-sm text-surface-600 dark:text-surface-300">
+        <span class="truncate text-sm md:text-base font-semibold text-surface-900 dark:text-surface-0">{{ topic.title }}</span>
+        <span class="max-md:truncate text-[13px] md:text-sm text-surface-600 dark:text-surface-300">
           {{ t('home.discover.forum.mock.last_post', { name: topic.lastAuthor }) }}
         </span>
       </span>
-      <span class="shrink-0 text-sm font-semibold text-surface-700 dark:text-surface-200">
+      <span class="shrink-0 text-[13px] md:text-sm font-semibold text-surface-700 dark:text-surface-200">
         {{ t('home.discover.forum.mock.replies', topic.replies) }}
       </span>
     </MockupTile>

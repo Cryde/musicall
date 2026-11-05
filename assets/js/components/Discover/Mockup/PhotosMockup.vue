@@ -1,12 +1,12 @@
 <template>
   <DiscoverMockup :label="t('home.discover.photos.image_alt')">
     <div class="flex items-baseline justify-between gap-3">
-      <span class="truncate font-bold text-surface-900 dark:text-surface-0">{{ GALLERY_TITLE }}</span>
-      <span class="shrink-0 text-sm text-surface-600 dark:text-surface-300">
+      <span class="truncate text-sm md:text-base font-bold text-surface-900 dark:text-surface-0">{{ GALLERY_TITLE }}</span>
+      <span class="shrink-0 text-xs md:text-sm text-surface-600 dark:text-surface-300">
         {{ t('home.discover.photos.mock.meta', { count: GALLERY_PHOTO_COUNT, name: GALLERY_AUTHOR }) }}
       </span>
     </div>
-    <div class="grid grid-cols-3 grid-rows-3 gap-2 h-72">
+    <div class="grid grid-cols-3 grid-rows-3 gap-1.5 h-[204px] md:gap-2 md:h-72">
       <img
         v-for="(photo, index) in PHOTOS"
         :key="photo"
