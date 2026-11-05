@@ -1,3 +1,7 @@
+import { format, parseISO } from 'date-fns'
+import { rangeArrow, separator } from '../i18n/formatLocale.js'
+import { i18n } from '../i18n/index.js'
+
 /**
  * The rule that decides whether an agenda item has a time worth showing.
  *
@@ -51,4 +55,60 @@ export function agendaItemLink(item, bandSpaceId) {
   }
 
   return null
+}
+
+/**
+ * The hours of a timed item, « 20:30 » or « 20:30 → 23:00 », or null for an item that covers a day.
+ * Read in the reader's own zone, as the time was typed.
+ *
+ * @returns {string | null}
+ */
+export function agendaItemTimeLabel(item) {
+  if (!item?.datetime || isAllDayItem(item)) return null
+  const start = format(parseISO(item.datetime), 'HH:mm')
+  if (!item.end_datetime) return start
+
+  return `${start} ${rangeArrow()} ${format(parseISO(item.end_datetime), 'HH:mm')}`
+}
+
+const TASK_PRIORITY_KEYS = {
+  high: 'band_space_agenda.item.priority_high',
+  urgent: 'band_space_agenda.item.priority_urgent'
+}
+
+/**
+ * The one line of detail under an item's title: the place of an event, the category and an unusual
+ * priority of a task, the category and the direction of a finance entry. Empty when there is none.
+ *
+ * @returns {string}
+ */
+export function agendaItemMetaLine(item) {
+  const t = i18n.global.t
+  const metadata = item?.metadata ?? {}
+  const parts = []
+  if (item?.source === 'manual' && metadata.location) {
+    parts.push(metadata.location)
+  }
+  if (item?.source === 'task') {
+    if (metadata.category_name) parts.push(metadata.category_name)
+    if (metadata.priority && metadata.priority !== 'normal') {
+      parts.push(
+        TASK_PRIORITY_KEYS[metadata.priority]
+          ? t(TASK_PRIORITY_KEYS[metadata.priority])
+          : metadata.priority
+      )
+    }
+  }
+  if (item?.source === 'finance') {
+    if (metadata.category_name) parts.push(metadata.category_name)
+    if (metadata.type) {
+      parts.push(
+        metadata.type === 'expense'
+          ? t('band_space_agenda.item.expense')
+          : t('band_space_agenda.item.income')
+      )
+    }
+  }
+
+  return parts.join(` ${separator()} `)
 }

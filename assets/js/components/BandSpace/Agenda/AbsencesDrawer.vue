@@ -4,14 +4,30 @@
     position="right"
     :header="t('band_space_agenda.common.absences')"
     class="w-full! md:w-[32rem]!"
+    :show-close-icon="!isBelowMd"
+    :close-on-escape="!isAnySheetOpen"
   >
+    <template v-if="isBelowMd" #header>
+      <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="t('band_space_agenda.phone.back')"
+          @click="isVisible = false"
+        />
+        <span class="font-semibold">{{ t('band_space_agenda.common.absences') }}</span>
+      </div>
+    </template>
+
     <div class="flex flex-col gap-4">
       <p class="text-sm text-surface-500 dark:text-surface-400">
         {{ t('band_space_agenda.absences.intro') }}
       </p>
 
       <Message
-        v-if="formError"
+        v-if="formError && !(isBelowMd && isFormOpen)"
         severity="error"
         :closable="true"
         class="text-sm"
@@ -20,7 +36,29 @@
         {{ formError }}
       </Message>
 
-      <div class="flex flex-wrap items-end gap-2">
+      <!-- On a phone the two filters are chips, each opening its choices as a sheet. -->
+      <div v-if="isBelowMd" class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          :class="[PHONE_CHIP, PHONE_CHIP_OFF]"
+          aria-haspopup="dialog"
+          @click="openFilterSheet = 'year'"
+        >
+          {{ t('band_space_agenda.phone.year_chip', { year: selectedYear }) }}
+          <i class="pi pi-chevron-down text-[10px]" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          :class="[PHONE_CHIP, selectedMemberId === ALL_MEMBERS ? PHONE_CHIP_OFF : PHONE_CHIP_ON]"
+          aria-haspopup="dialog"
+          @click="openFilterSheet = 'member'"
+        >
+          {{ t('band_space_agenda.phone.member_chip', { name: selectedMemberLabel }) }}
+          <i class="pi pi-chevron-down text-[10px]" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div v-else class="flex flex-wrap items-end gap-2">
         <div class="flex flex-col gap-1">
           <label for="absence-year" class="text-xs font-medium">{{ t('band_space_agenda.absences.year_label') }}</label>
           <Select
@@ -52,11 +90,23 @@
         />
       </div>
 
+      <!-- The same form, inline on a computer, in a sheet on a phone. -->
+      <component :is="isBelowMd ? BottomSheet : 'div'" v-if="isFormOpen || isBelowMd" v-bind="formWrapperProps">
       <form
-        v-if="isFormOpen"
-        class="flex flex-col gap-3 rounded-xl border border-surface-200 dark:border-surface-700 p-3"
+        class="flex flex-col gap-3"
+        :class="isBelowMd ? 'px-5 pb-4' : 'rounded-xl border border-surface-200 dark:border-surface-700 p-3'"
         @submit.prevent="handleSubmit"
       >
+        <Message
+          v-if="formError && isBelowMd"
+          severity="error"
+          :closable="true"
+          class="text-sm"
+          @close="formError = null"
+        >
+          {{ formError }}
+        </Message>
+
         <div v-if="canPickMember" class="flex flex-col gap-1">
           <label for="absence-member" class="text-sm font-medium">{{ t('band_space_agenda.absences.member_label') }}</label>
           <Select
@@ -134,6 +184,7 @@
           />
         </div>
       </form>
+      </component>
 
       <div v-if="absenceStore.isLoading" class="flex justify-center py-8">
         <ProgressSpinner style="width: 2.5rem; height: 2.5rem" />
@@ -205,6 +256,39 @@
         </div>
       </div>
     </div>
+
+    <template v-if="isBelowMd" #footer>
+      <div class="flex justify-end">
+        <Button
+          icon="pi pi-plus"
+          :label="t('band_space_agenda.absences.add')"
+          rounded
+          class="shadow-lg"
+          @click="openCreateForm"
+        />
+      </div>
+    </template>
+
+    <BottomSheet
+      v-if="isBelowMd"
+      :visible="openFilterSheet !== null"
+      :title="openFilterSheet === 'year' ? t('band_space_agenda.absences.year_label') : t('band_space_agenda.absences.member_label')"
+      @update:visible="(open) => !open && (openFilterSheet = null)"
+    >
+      <ul class="m-0 list-none p-0">
+        <li v-for="option in filterSheetOptions" :key="String(option.value)">
+          <button
+            type="button"
+            :class="SHEET_CHOICE"
+            :aria-pressed="option.current"
+            @click="chooseFilter(option.value)"
+          >
+            {{ option.label }}
+            <i v-if="option.current" class="pi pi-check ml-auto text-primary" aria-hidden="true" />
+          </button>
+        </li>
+      </ul>
+    </BottomSheet>
   </Drawer>
 </template>
 
@@ -222,10 +306,18 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
+import {
+  PHONE_CHIP,
+  PHONE_CHIP_OFF,
+  PHONE_CHIP_ON,
+  SHEET_CHOICE
+} from '../../../constants/phoneControls.js'
 import { useBandAbsenceStore } from '../../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { formatAbsenceRange, groupAbsencesByMonth } from '../../../utils/absenceRange.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
 import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
@@ -297,6 +389,55 @@ const visibleAbsences = computed(() =>
 )
 
 const groupedAbsences = computed(() => groupAbsencesByMonth(visibleAbsences.value))
+
+const isBelowMd = useIsBelowMd()
+// The phone's year or member sheet, or null.
+const openFilterSheet = ref(null)
+const isAnySheetOpen = computed(
+  () => openFilterSheet.value !== null || (isBelowMd.value && isFormOpen.value)
+)
+
+const selectedMemberLabel = computed(
+  () =>
+    memberFilterOptions.value.find((option) => option.value === selectedMemberId.value)?.label ?? ''
+)
+
+const filterSheetOptions = computed(() => {
+  if (openFilterSheet.value === 'year') {
+    return yearOptions.map((option) => ({
+      ...option,
+      current: option.value === selectedYear.value
+    }))
+  }
+  return memberFilterOptions.value.map((option) => ({
+    ...option,
+    current: option.value === selectedMemberId.value
+  }))
+})
+
+function chooseFilter(value) {
+  if (openFilterSheet.value === 'year') {
+    selectedYear.value = value
+  } else {
+    selectedMemberId.value = value
+  }
+  openFilterSheet.value = null
+}
+
+// The form's wrapper: a sheet on a phone, which closing cancels the form, and a plain block elsewhere.
+const formWrapperProps = computed(() =>
+  isBelowMd.value
+    ? {
+        visible: isFormOpen.value,
+        title: isEditing.value
+          ? t('band_space_agenda.phone.edit_absence')
+          : t('band_space_agenda.absences.add'),
+        'onUpdate:visible': (open) => {
+          if (!open) closeForm()
+        }
+      }
+    : {}
+)
 
 watch(isVisible, async (opened) => {
   if (!opened) {

@@ -4,51 +4,69 @@
     position="right"
     :header="isEditMode ? t('band_space_agenda.entry.edit_title') : t('band_space_agenda.common.new_event')"
     class="w-full! md:w-[28rem]!"
+    :show-close-icon="!isBelowMd"
+    :close-on-escape="closesOnEscape"
   >
-    <!--
-      On a saved entry the switch acts at once, right above the block it shows: the block reads the
-      stored answers, which the API only serves once the entry asks.
-    -->
-    <div v-if="isEditMode" class="flex flex-col gap-1 mb-3">
-      <div class="flex items-center gap-2">
-        <Checkbox
-          :modelValue="form.askAvailability"
-          inputId="agenda-ask-availability-saved"
-          binary
-          :disabled="isSavingAskAvailability"
-          @update:modelValue="handleAskAvailabilityToggle"
+    <!-- A phone reads a saved entry first, as a screen of its own; editing it is one tap away and
+         comes back to it. -->
+    <template v-if="isBelowMd" #header>
+      <div class="flex min-w-0 flex-1 items-center gap-1 -ml-2">
+        <Button
+          :icon="isReading || !isEditMode ? 'pi pi-arrow-left' : 'pi pi-times'"
+          text
+          rounded
+          severity="secondary"
+          :aria-label="isReading || !isEditMode ? t('band_space_agenda.phone.back') : t('band_space_agenda.common.cancel')"
+          @click="leaveCurrentScreen"
         />
-        <label for="agenda-ask-availability-saved" class="text-sm font-medium select-none">
-          {{ t('band_space_agenda.entry.ask_availability') }}
-        </label>
-        <i
-          v-if="isSavingAskAvailability"
-          class="pi pi-spin pi-spinner text-xs text-surface-500"
-          aria-hidden="true"
-        />
+        <span class="min-w-0 flex-1 truncate font-semibold">{{ phoneHeaderTitle }}</span>
+        <template v-if="isReading">
+          <Button
+            icon="pi pi-pencil"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_agenda.phone.edit')"
+            @click="isReading = false"
+          />
+          <Button
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_agenda.phone.more_actions')"
+            aria-haspopup="dialog"
+            @click="isActionsSheetOpen = true"
+          />
+        </template>
       </div>
-      <small v-if="askAvailabilityError" class="text-red-600 dark:text-red-400">
-        {{ askAvailabilityError }}
-      </small>
-      <small v-else-if="!form.askAvailability" class="text-surface-600 dark:text-surface-300">
-        {{ t('band_space_agenda.entry.ask_availability_kept') }}
-      </small>
-      <small v-if="isSeriesOccurrence" class="text-surface-600 dark:text-surface-300">
-        {{ t('band_space_agenda.entry.ask_availability_series') }}
-      </small>
-    </div>
+    </template>
 
+    <AgendaEntryReadView v-if="isReading" :item="agendaItem" class="mb-4" />
+
+    <AgendaAskAvailabilityToggle
+      v-if="isEditMode && !isBelowMd"
+      class="mb-3"
+      :modelValue="form.askAvailability"
+      :saving="isSavingAskAvailability"
+      :error="askAvailabilityError"
+      :isSeries="isSeriesOccurrence"
+      @toggle="handleAskAvailabilityToggle"
+    />
+
+    <!-- On a phone the answers belong to the read view, not to the form. -->
     <AgendaAvailabilityPanel
-      v-if="availabilityOccurrenceDate"
+      v-if="availabilityOccurrenceDate && (!isBelowMd || isReading)"
       :bandSpaceId="bandSpaceId"
       :entryId="agendaItem.source_id"
       :occurrenceDate="availabilityOccurrenceDate"
       :dateLabel="isSeriesOccurrence ? occurrenceDateLabel : null"
       class="mb-4"
+      :roomy="isBelowMd"
       @changed="emit('availability-changed')"
     />
 
-    <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+    <form v-if="!isReading" class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <Message
         v-if="formError"
         severity="error"
@@ -83,7 +101,7 @@
           id="agenda-title"
           v-model="form.title"
           :placeholder="t('band_space_agenda.entry.title_placeholder')"
-          autofocus
+          :autofocus="!isBelowMd"
           :class="{ 'p-invalid': fieldErrors.title }"
         />
         <small v-if="fieldErrors.title" class="text-red-500">{{ fieldErrors.title }}</small>
@@ -102,7 +120,8 @@
           <DatePicker
             id="agenda-datetime"
             v-model="form.eventDatetime"
-            dateFormat="dd/mm/yy"
+            :dateFormat="pickerDateFormat"
+            :manualInput="!isBelowMd"
             showIcon
             class="flex-1 min-w-0"
             :class="{ 'p-invalid': fieldErrors.eventDatetime }"
@@ -132,7 +151,8 @@
           <DatePicker
             id="agenda-end-datetime"
             v-model="form.endDatetime"
-            dateFormat="dd/mm/yy"
+            :dateFormat="pickerDateFormat"
+            :manualInput="!isBelowMd"
             showIcon
             showButtonBar
             :minDate="form.eventDatetime ?? undefined"
@@ -172,6 +192,15 @@
           :placeholder="t('band_space_agenda.entry.description_placeholder')"
         />
       </div>
+
+      <AgendaAskAvailabilityToggle
+        v-if="isEditMode && isBelowMd"
+        :modelValue="form.askAvailability"
+        :saving="isSavingAskAvailability"
+        :error="askAvailabilityError"
+        :isSeries="isSeriesOccurrence"
+        @toggle="handleAskAvailabilityToggle"
+      />
 
       <div v-if="!isEditMode" class="flex items-center gap-2">
         <Checkbox v-model="form.askAvailability" inputId="agenda-ask-availability" binary />
@@ -231,7 +260,8 @@
           <DatePicker
             id="agenda-recurrence-until"
             v-model="form.recurrenceUntilDate"
-            dateFormat="dd/mm/yy"
+            :dateFormat="pickerDateFormat"
+            :manualInput="!isBelowMd"
             showIcon
             :minDate="form.eventDatetime ?? undefined"
             :class="{ 'p-invalid': fieldErrors.recurrenceUntilDate }"
@@ -242,21 +272,27 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 mt-4">
+      <!-- Pinned to the bottom of a phone, where the thumb is, whatever the length of the form. -->
+      <div
+        class="flex flex-wrap items-center gap-2 mt-4 max-md:sticky max-md:-bottom-5 max-md:z-10 max-md:-mx-5 max-md:-mb-5 max-md:mt-0 max-md:flex-row-reverse max-md:flex-nowrap max-md:border-t max-md:border-surface-200 max-md:bg-surface-0 max-md:px-5 max-md:py-3 max-md:dark:border-surface-700 max-md:dark:bg-surface-900"
+      >
         <Button
           type="submit"
           :label="isEditMode ? t('band_space_agenda.common.save') : t('band_space_agenda.entry.create')"
           :loading="agendaStore.isSaving"
+          class="max-md:flex-1"
         />
         <Button
           type="button"
           :label="t('band_space_agenda.common.cancel')"
           severity="secondary"
-          text
-          @click="isVisible = false"
+          :text="!isBelowMd"
+          :outlined="isBelowMd"
+          class="max-md:flex-1"
+          @click="leaveCurrentScreen"
         />
         <Button
-          v-if="isEditMode"
+          v-if="isEditMode && !isBelowMd"
           type="button"
           :label="t('band_space_agenda.common.delete')"
           severity="danger"
@@ -267,6 +303,15 @@
         />
       </div>
     </form>
+
+    <BottomSheet v-if="isBelowMd" v-model:visible="isActionsSheetOpen" :title="agendaItem?.title ?? ''">
+      <SheetAction icon="pi-pencil" @click="runSheetAction(() => (isReading = false))">
+        {{ t('band_space_agenda.phone.edit') }}
+      </SheetAction>
+      <SheetAction icon="pi-trash" danger @click="runSheetAction(handleDelete)">
+        {{ t('band_space_agenda.common.delete') }}
+      </SheetAction>
+    </BottomSheet>
   </Drawer>
 
   <!--
@@ -278,7 +323,7 @@
     v-model:visible="showSeriesSaveDialog"
     modal
     :header="seriesSaveDialog.header"
-    :style="{ width: '28rem' }"
+    v-bind="sheetDialog"
     :closable="!agendaStore.isSaving"
   >
     <p class="text-sm text-surface-700 dark:text-surface-200">
@@ -308,7 +353,7 @@
     v-model:visible="showDeleteScopeDialog"
     modal
     :header="t('band_space_agenda.delete_scope.header')"
-    :style="{ width: '28rem' }"
+    v-bind="sheetDialog"
     :closable="!agendaStore.isDeleting"
   >
     <p class="text-sm text-surface-700 dark:text-surface-200 mb-4">
@@ -356,6 +401,7 @@
 </template>
 
 <script setup>
+import { useEventListener } from '@vueuse/core'
 import { differenceInCalendarDays, format } from 'date-fns'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -372,6 +418,8 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { dateFnsLocale, datePattern } from '../../../i18n/formatLocale.js'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 import { seriesCutDate, toAgendaDate } from '../../../utils/agendaDate.js'
@@ -381,7 +429,11 @@ import {
   SERIES_IMPACT_RECURRENCE_REMOVED
 } from '../../../utils/agendaSeriesEdit.js'
 import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
+import AgendaAskAvailabilityToggle from './AgendaAskAvailabilityToggle.vue'
 import AgendaAvailabilityPanel from './AgendaAvailabilityPanel.vue'
+import AgendaEntryReadView from './AgendaEntryReadView.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -395,6 +447,15 @@ const isVisible = defineModel('visible', { type: Boolean, default: false })
 const { t } = useI18n()
 const agendaStore = useBandAgendaStore()
 const confirm = useConfirm()
+const sheetDialog = useSheetDialog('28rem')
+
+const isBelowMd = useIsBelowMd()
+// A phone opens a saved entry to read it; the pencil turns this off.
+const isReading = ref(false)
+const isActionsSheetOpen = ref(false)
+
+// A picked day reads « jeu. 5 nov. 2026 » on a phone, where nobody types a date.
+const pickerDateFormat = computed(() => (isBelowMd.value ? 'D d M yy' : 'dd/mm/yy'))
 
 const formError = ref(null)
 const fieldErrors = reactive({
@@ -488,6 +549,54 @@ watch(
 )
 
 const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.source === 'manual')
+
+const phoneHeaderTitle = computed(() => {
+  if (isReading.value) return t('band_space_agenda.phone.event')
+  return isEditMode.value
+    ? t('band_space_agenda.entry.edit_title')
+    : t('band_space_agenda.common.new_event')
+})
+
+// Escape steps back the way the header does: out of the sheet, out of the form to the entry, then out.
+const closesOnEscape = computed(
+  () => !isActionsSheetOpen.value && !(isBelowMd.value && isEditMode.value && !isReading.value)
+)
+
+useEventListener(document, 'keydown', (event) => {
+  if (
+    event.key !== 'Escape' ||
+    !isVisible.value ||
+    closesOnEscape.value ||
+    isActionsSheetOpen.value
+  )
+    return
+  // An Escape meant for an open dialog, date picker or list closes that, not the form.
+  if (event.defaultPrevented) return
+  if (document.querySelector('.p-dialog, .p-datepicker-panel, .p-select-overlay')) return
+  // After the drawer's own Escape listener: a real key press flushes Vue between listeners, so
+  // flipping now would hand the drawer a closeOnEscape of true for this very key, and it would close.
+  setTimeout(backToReading)
+})
+
+/** The header's arrow or ×, and « Annuler »: a phone editing a saved entry goes back to reading it. */
+function leaveCurrentScreen() {
+  if (isBelowMd.value && isEditMode.value && !isReading.value) {
+    backToReading()
+    return
+  }
+  isVisible.value = false
+}
+
+/** Leaving the form drops what was typed, as closing it does on a computer: the next ✎ starts afresh. */
+function backToReading() {
+  seedForm()
+  isReading.value = true
+}
+
+function runSheetAction(action) {
+  isActionsSheetOpen.value = false
+  action()
+}
 
 // The member's « Ouverts par moi » history (#1047), under the series id, which is what the palette
 // opens. The id is watched too, for an entry opened while the drawer is still showing another.
@@ -619,8 +728,14 @@ function withTime(date, hours, minutes) {
 }
 
 watch(isVisible, (visible) => {
+  isActionsSheetOpen.value = false
   if (!visible) return
+  isReading.value = isBelowMd.value && isEditMode.value
+  seedForm()
+})
 
+/** Fills the form from the entry, or empties it for a new one, and clears what the last try left. */
+function seedForm() {
   formError.value = null
   fieldErrors.title = null
   fieldErrors.eventDatetime = null
@@ -663,7 +778,7 @@ watch(isVisible, (visible) => {
   nextTick(() => {
     skipShiftEnd = false
   })
-})
+}
 
 async function handleSubmit() {
   formError.value = null

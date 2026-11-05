@@ -199,5 +199,26 @@
   "chip": {
     "recurring": "Événement récurrent",
     "absence": "Indisponibilité"
+  },
+  "phone": {
+    "event": "Événement",
+    "back": "Retour",
+    "more_actions": "Plus d'actions",
+    "edit": "Modifier",
+    "period": "Période",
+    "apply": "Appliquer",
+    "from": "Du",
+    "to": "Au",
+    "time_label": "Heure",
+    "until": "jusqu'au {date}",
+    "change_period": "Changer la période, actuellement {period}",
+    "views": "Affichage",
+    "day_empty": "Rien de prévu ce jour-là.",
+    "year_chip": "Année : {year}",
+    "member_chip": "Membre : {name}",
+    "edit_absence": "Modifier l'absence",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "opens_in": "(s'ouvre dans {module})"
   }
 }

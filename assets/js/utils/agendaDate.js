@@ -115,3 +115,23 @@ export function agendaCalendarEventDates(item) {
     end: lastDay === null ? undefined : format(addDays(parseISO(lastDay), 1), 'yyyy-MM-dd')
   }
 }
+
+/**
+ * The day a phone's month lists under its grid once the grid has moved: the chosen day while it is
+ * still on screen, else today if it is, else the first day of the month shown. Days are local
+ * `yyyy-MM-dd` keys, as FullCalendar hands local cell dates.
+ *
+ * @param {string} selectedKey
+ * @param {{start: Date, end: Date, currentStart: Date}} view `end` exclusive, as FullCalendar gives it
+ * @param {Date} today
+ * @returns {string}
+ */
+export function dayKeyInView(selectedKey, view, today) {
+  const startKey = format(view.start, 'yyyy-MM-dd')
+  const endKey = format(view.end, 'yyyy-MM-dd')
+  const isVisible = (key) => key >= startKey && key < endKey
+  if (isVisible(selectedKey)) return selectedKey
+
+  const todayKey = format(today, 'yyyy-MM-dd')
+  return isVisible(todayKey) ? todayKey : format(view.currentStart, 'yyyy-MM-dd')
+}

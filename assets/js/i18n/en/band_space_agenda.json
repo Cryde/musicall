@@ -199,5 +199,26 @@
   "chip": {
     "recurring": "Recurring event",
     "absence": "Absence"
+  },
+  "phone": {
+    "event": "Event",
+    "back": "Back",
+    "more_actions": "More actions",
+    "edit": "Edit",
+    "period": "Period",
+    "apply": "Apply",
+    "from": "From",
+    "to": "To",
+    "time_label": "Time",
+    "until": "until {date}",
+    "change_period": "Change the period, now {period}",
+    "views": "View",
+    "day_empty": "Nothing planned that day.",
+    "year_chip": "Year: {year}",
+    "member_chip": "Member: {name}",
+    "edit_absence": "Edit the absence",
+    "previous": "Previous",
+    "next": "Next",
+    "opens_in": "(opens in {module})"
   }
 }

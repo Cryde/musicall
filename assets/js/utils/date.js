@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns'
-import { dateFnsLocale, intlLocale } from '../i18n/formatLocale.js'
+import { dateFnsLocale, intlLocale, rangeArrow } from '../i18n/formatLocale.js'
 
 export function formatDate(dateString) {
   return format(parseISO(dateString), 'dd/MM/yyyy HH:mm')
@@ -41,6 +41,17 @@ export function formatDateCompactInYear(value, now = new Date()) {
   const date = typeof value === 'string' ? parseISO(value) : value
   if (date.getFullYear() === now.getFullYear()) return formatDateCompact(date)
   return date.toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+// A period on one line, « 4 nov. → 4 déc. 2026 », the year once when both ends share it. Takes Dates.
+export function formatDateRangeCompact(from, to) {
+  if (!from || !to) return ''
+  const withYear = { day: 'numeric', month: 'short', year: 'numeric' }
+  const start =
+    from.getFullYear() === to.getFullYear()
+      ? from.toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short' })
+      : from.toLocaleDateString(intlLocale(), withYear)
+  return `${start} ${rangeArrow()} ${to.toLocaleDateString(intlLocale(), withYear)}`
 }
 
 // Spelled-out date, for copy that has to read as a sentence: « supprimé le 29 août 2026 ».

@@ -44,6 +44,7 @@
           :aria-pressed="availability.my_answer === choice.value"
           :loading="savingAnswer === choice.value"
           :disabled="savingAnswer !== null"
+          :class="{ 'h-10! flex-1': roomy }"
           @click="handleAnswer(choice.value)"
         />
       </div>
@@ -111,7 +112,9 @@ const props = defineProps({
   entryId: { type: String, required: true },
   // The item's `metadata.occurrence_date`, sent back untouched: it is the UTC day of the start.
   occurrenceDate: { type: String, required: true },
-  dateLabel: { type: String, default: null }
+  dateLabel: { type: String, default: null },
+  // The phone's read view: the two answers share the row, at a thumb's height.
+  roomy: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['changed'])
