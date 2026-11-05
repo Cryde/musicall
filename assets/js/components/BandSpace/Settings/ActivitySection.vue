@@ -16,7 +16,7 @@
         <span v-if="chip.isSet" class="sr-only">{{ t('band_space.settings.phone.filter_set') }}</span>
       </button>
     </div>
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:overflow-hidden max-md:p-0">
       <!-- On a phone the section strip above already names it. -->
       <h2 class="text-lg font-semibold text-surface-700 dark:text-surface-200 mb-4 max-md:sr-only">
         {{ t('band_space.settings.section.activity') }}
@@ -79,13 +79,15 @@
         {{ t('band_space.activity_log.empty') }}
       </div>
 
-      <div v-else class="flex flex-col gap-1">
+      <!-- On a phone one line per row across the card, a rule between them. -->
+      <div v-else class="flex flex-col gap-1 max-md:gap-0 max-md:divide-y max-md:divide-surface-200 dark:max-md:divide-surface-700">
         <div
           v-for="activity in store.items"
           :key="activity.id"
-          class="flex items-start gap-3 p-3 rounded-lg max-md:px-0 max-md:py-2.5"
+          class="flex items-start gap-3 p-3 rounded-lg max-md:rounded-none max-md:px-4 max-md:py-3"
         >
           <Avatar
+            class="max-md:shrink-0 max-md:!h-9 max-md:!w-9"
             :username="activity.actor?.username || t('band_space.common.system')"
             :display-name="activity.actor?.display_name"
             :picture-url="activity.actor?.profile_picture_url"
@@ -109,7 +111,11 @@
               <template v-else>{{ activitySentence(activity) }}</template>
             </p>
             <div class="mt-1 flex items-center gap-2 text-xs text-surface-500 dark:text-surface-400">
-              <Tag :value="moduleLabel(activity.module)" :severity="moduleSeverity(activity.module)" class="text-xs" />
+              <Tag
+                :value="moduleLabel(activity.module)"
+                :severity="moduleSeverity(activity.module)"
+                class="!rounded-md !px-[7px] !py-px !text-[0.6875rem]"
+              />
               <span>{{ formatRelative(activity.creation_datetime) }}</span>
             </div>
           </div>
@@ -140,7 +146,7 @@
           </div>
         </div>
 
-        <div v-if="store.items.length < store.totalItems" class="flex justify-center mt-4">
+        <div v-if="store.items.length < store.totalItems" class="flex justify-center mt-4 max-md:mt-0 max-md:py-3">
           <Button
             :label="t('band_space.activity_log.load_more')"
             :loading="store.isLoadingMore"

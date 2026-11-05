@@ -4,17 +4,17 @@
     :aria-label="t('band_space.settings.phone.sections_nav')"
   >
     <div class="relative min-w-0 flex-1">
-      <div ref="strip" class="flex overflow-x-auto pr-10 pl-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div ref="strip" class="flex overflow-x-auto pr-10 pl-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           v-for="section in sections"
           :key="section.key"
           :ref="(element) => registerTab(section.key, element)"
           type="button"
-          class="shrink-0 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors"
+          class="h-11.5 shrink-0 whitespace-nowrap border-b-2 px-3 text-sm transition-colors"
           :class="
             section.key === active
-              ? 'border-primary text-primary-700 dark:text-primary-300'
-              : 'border-transparent text-surface-600 dark:text-surface-300'
+              ? 'border-primary font-semibold text-surface-900 dark:text-surface-0'
+              : 'border-transparent font-medium text-surface-600 dark:text-surface-300'
           "
           :aria-current="section.key === active ? 'true' : undefined"
           @click="choose(section.key)"
@@ -30,7 +30,7 @@
     </div>
     <button
       type="button"
-      class="mr-2 flex w-11 shrink-0 items-center justify-center text-surface-600 dark:text-surface-300"
+      class="flex w-11.5 shrink-0 items-center justify-center border-l border-surface-300 text-surface-700 dark:border-surface-700 dark:text-surface-200"
       :aria-label="t('band_space.settings.phone.all_sections')"
       aria-haspopup="dialog"
       @click="isSheetOpen = true"

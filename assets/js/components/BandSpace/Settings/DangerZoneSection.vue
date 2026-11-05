@@ -30,13 +30,17 @@
     </div>
 
     <!-- Delete the space -->
-    <div v-if="isAdmin && !scheduledFor" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
+    <!-- On a phone the card says what it is by its red edge. -->
+    <div
+      v-if="isAdmin && !scheduledFor"
+      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:border max-md:border-red-200 dark:max-md:border-red-400/35"
+    >
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="min-w-0">
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
             {{ t('band_space.danger.delete_title') }}
           </h3>
-          <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
+          <p class="text-xs text-surface-500 dark:text-surface-400 mt-1 max-md:text-[0.8125rem] max-md:leading-normal max-md:text-surface-600 dark:max-md:text-surface-300">
             {{ t('band_space.danger.delete_text', { days: GRACE_PERIOD_DAYS }) }}
           </p>
         </div>
@@ -45,7 +49,7 @@
           icon="pi pi-trash"
           severity="danger"
           outlined
-          class="shrink-0 self-start sm:self-auto"
+          class="shrink-0 self-start sm:self-auto max-md:!px-3 max-md:!py-1.5 max-md:!text-[0.9375rem]"
           @click="isDeleteDialogOpen = true"
         />
       </div>

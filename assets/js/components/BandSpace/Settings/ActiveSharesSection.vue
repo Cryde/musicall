@@ -1,7 +1,7 @@
 <template>
   <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:px-0 max-md:pb-1">
     <div class="flex items-center justify-between mb-4 max-md:mb-1 max-md:pr-2 max-md:pl-4">
-      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100">{{ t('band_space.settings.section.shares') }}</h2>
+      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 max-md:text-base">{{ t('band_space.settings.section.shares') }}</h2>
       <Button
         icon="pi pi-refresh"
         size="small"
@@ -27,15 +27,15 @@
 
     <!-- A phone has no room for six columns: one row per link, its facts stacked. -->
     <ul v-else-if="isBelowMd" class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
-      <li v-for="share in filesStore.shares" :key="share.id" class="flex items-start gap-3 py-2.5 pr-1 pl-4">
+      <li v-for="share in filesStore.shares" :key="share.id" class="flex min-h-16 items-center gap-3 py-2.5 pr-1 pl-4">
         <span
-          class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-300"
           aria-hidden="true"
         >
           <i class="pi pi-link" />
         </span>
-        <div class="min-w-0 flex-1 text-xs text-surface-600 dark:text-surface-300">
-          <p class="m-0 flex items-center gap-1.5 text-sm font-medium text-surface-800 dark:text-surface-100">
+        <div class="min-w-0 flex-1 text-[0.8125rem] text-surface-600 dark:text-surface-300">
+          <p class="m-0 flex items-center gap-1.5 text-[0.9375rem] font-semibold text-surface-900 dark:text-surface-0">
             <span class="truncate">{{ share.file_original_name }}</span>
             <i
               v-if="share.has_password"

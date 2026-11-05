@@ -6,7 +6,8 @@
       </h1>
       <SettingsPhoneTabs v-model="activeSection" :sections="visibleSections" class="mb-4" />
     </template>
-    <div class="grid grid-cols-12 gap-4">
+    <!-- On a phone the cards run 16px from the edges. -->
+    <div class="grid grid-cols-12 gap-4 max-md:-mx-2">
       <div class="col-span-12 lg:col-span-10 xl:col-span-10 flex-auto">
         <div class="flex flex-col lg:flex-row gap-6">
           <!-- Sidebar menu (horizontal scrollable tabs from md, vertical on lg+) -->

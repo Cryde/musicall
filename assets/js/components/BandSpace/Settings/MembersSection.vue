@@ -10,14 +10,13 @@
           v-model="inviteIdentifier"
           :placeholder="t('band_space.members.invite_placeholder')"
           :aria-label="t('band_space.members.invite_placeholder')"
-          class="min-w-0 flex-1"
+          class="min-w-0 flex-1 max-md:!text-[0.9375rem]"
           :disabled="settingsStore.isInviting"
         />
-        <!-- No icon on a phone, so the field keeps room for its whole placeholder. -->
         <Button
           type="submit"
           :label="t('band_space.members.invite')"
-          :icon="isBelowMd ? undefined : 'pi pi-send'"
+          icon="pi pi-send"
           :loading="settingsStore.isInviting"
           :disabled="!inviteIdentifier.trim()"
         />
@@ -35,14 +34,21 @@
         <div
           v-for="invitation in settingsStore.invitations"
           :key="invitation.id"
-          class="flex items-center justify-between gap-2 p-3 rounded-lg bg-surface-50 dark:bg-surface-800 max-md:py-1.5 max-md:pr-1"
+          class="flex items-center justify-between gap-2 p-3 rounded-lg bg-surface-50 dark:bg-surface-800 max-md:gap-3 max-md:bg-transparent max-md:p-0 dark:max-md:bg-transparent"
         >
+          <span
+            v-if="isBelowMd"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300"
+            aria-hidden="true"
+          >
+            <i class="pi pi-envelope text-sm" />
+          </span>
           <!-- On a phone the address keeps its own line and the expiry goes under it. -->
-          <div class="min-w-0">
-            <span class="text-sm font-medium text-surface-800 dark:text-surface-100 max-md:block max-md:truncate">
+          <div class="min-w-0 max-md:flex-1">
+            <span class="text-sm font-medium text-surface-800 dark:text-surface-100 max-md:block max-md:truncate max-md:text-[0.9375rem] max-md:font-semibold">
               {{ invitationTarget(invitation) }}
             </span>
-            <span class="text-xs text-surface-500 dark:text-surface-400 ml-2 max-md:ml-0 max-md:block">
+            <span class="text-xs text-surface-500 dark:text-surface-400 ml-2 max-md:ml-0 max-md:block max-md:text-[0.8125rem] max-md:text-surface-600 dark:max-md:text-surface-300">
               {{ t('band_space.members.expires_on', { date: formatDate(invitation.expiration_datetime) }) }}
             </span>
           </div>
@@ -64,28 +70,31 @@
 
     <!-- Members list -->
     <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:px-0 max-md:pb-1">
-      <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4 max-md:mb-1 max-md:px-4">
+      <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4 max-md:mb-1 max-md:flex max-md:items-center max-md:justify-between max-md:px-4">
         {{ t('band_space.settings.section.members') }}
+        <span v-if="isBelowMd" class="text-[0.8125rem] font-normal text-surface-500 dark:text-surface-400" aria-hidden="true">
+          {{ settingsStore.members.length }}
+        </span>
       </h3>
 
       <ProgressSpinner v-if="settingsStore.isLoadingMembers" class="flex justify-center" />
 
       <!-- A phone lists the members flat, one line each, with one button that names what it does. -->
       <ul v-else-if="isBelowMd" class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
-        <li v-for="member in settingsStore.members" :key="member.id" class="flex items-center gap-3 py-2 pr-1 pl-4">
-          <MemberAvatar :member="member" />
+        <li v-for="member in settingsStore.members" :key="member.id" class="flex min-h-15 items-center gap-3 py-2 pr-1 pl-4">
+          <MemberAvatar :member="member" class="!h-9 !w-9" />
           <div class="min-w-0 flex-1">
-            <p class="m-0 truncate text-sm font-medium text-surface-800 dark:text-surface-100">
+            <p class="m-0 truncate text-[0.9375rem] font-semibold text-surface-900 dark:text-surface-0">
               {{ member.display_name }}
               <span
                 v-if="userHandle(member.username, member.display_name, member.is_deleted)"
-                class="text-xs font-normal text-surface-500 dark:text-surface-400"
+                class="font-normal text-surface-500 dark:text-surface-400"
               >({{ member.username }})</span>
-              <span v-if="isMe(member)" class="ml-1 text-xs font-normal text-surface-500 dark:text-surface-400">
+              <span v-if="isMe(member)" class="ml-1 font-normal text-surface-500 dark:text-surface-400">
                 {{ t('band_space.members.you') }}
               </span>
             </p>
-            <p class="m-0 truncate text-xs text-surface-600 dark:text-surface-300">{{ memberSummary(member) }}</p>
+            <p class="m-0 truncate text-[0.8125rem] text-surface-600 dark:text-surface-300">{{ memberSummary(member) }}</p>
           </div>
           <Button
             v-if="canManage(member)"
