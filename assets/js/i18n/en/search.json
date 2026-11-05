@@ -26,6 +26,7 @@
     "type_band_hint": "To join",
     "hide_filters": "Hide filters",
     "show_filters": "Show filters",
+    "show_filters_count": "Show filters ({count})",
     "instrument_placeholder": "Select an instrument",
     "styles_placeholder": "Music genres",
     "city_placeholder": "City (optional)",
@@ -58,10 +59,12 @@
     "languages_label": "Spoken languages:",
     "profile": "Profile",
     "contact": "Contact",
-    "report": "Report {name}'s ad"
+    "report": "Report {name}'s ad",
+    "all_styles_aria": "+{count}: {styles}"
   },
   "announce_note": {
-    "read": "Read {name}'s note"
+    "read": "Read {name}'s note",
+    "title": "{name}'s note"
   },
   "guided": {
     "intro": "3 questions, and we'll show you the profiles that match.",

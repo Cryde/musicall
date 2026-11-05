@@ -3,11 +3,8 @@
     v-model:visible="visible"
     modal
     :closable="!userAnnounceStore.isSaving"
-    :style="{ width: '95vw', maxWidth: '750px' }"
-    :pt="{
-      header: { class: 'pb-0 border-0' },
-      content: { class: 'pt-4' }
-    }"
+    :style="dialogStyle"
+    :pt="dialogPt"
     @hide="reset"
   >
     <template #header>
@@ -34,7 +31,20 @@
     </div>
 
     <Stepper v-else v-model:value="currentStep" :linear="!hasInitialValues">
-      <StepList>
+      <!-- Six labelled steps do not fit a phone: where the member is, in words, over a six-part bar. -->
+      <div v-if="isBelowMd" class="flex flex-col gap-2">
+        <p class="m-0 text-sm font-medium text-surface-700 dark:text-surface-200" aria-live="polite">
+          {{ t('profile.announce.add.step_progress', { current: Number(currentStep), total: STEP_LABELS.length, label: t(STEP_LABELS[Number(currentStep) - 1]) }) }}
+        </p>
+        <div class="grid grid-cols-6 gap-1" aria-hidden="true">
+          <span
+            v-for="(label, index) in STEP_LABELS"
+            :key="label"
+            :class="['h-1 rounded-full', index < Number(currentStep) ? 'bg-primary' : 'bg-surface-200 dark:bg-surface-700']"
+          />
+        </div>
+      </div>
+      <StepList v-else>
         <Step value="1">{{ t('profile.announce.add.step_type') }}</Step>
         <Step value="2">{{ t('profile.announce.add.step_instrument') }}</Step>
         <Step value="3">{{ t('profile.announce.add.step_styles') }}</Step>
@@ -332,6 +342,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import geocodingApi from '../../../api/geocoding.js'
 import MusicianProfileStepContent from '../../../components/User/Announce/MusicianProfileStepContent.vue'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'
@@ -363,6 +374,27 @@ const musicianProfileStore = useMusicianProfileStore()
 const userSecurityStore = useUserSecurityStore()
 
 const currentStep = ref('1')
+const STEP_LABELS = [
+  'profile.announce.add.step_type',
+  'profile.announce.add.step_instrument',
+  'profile.announce.add.step_styles',
+  'profile.announce.add.step_location',
+  'profile.announce.add.step_profile',
+  'profile.announce.add.step_note'
+]
+
+// A screen of its own on a phone, where a 95vw dialog cut the steps off at « St ».
+const isBelowMd = useIsBelowMd()
+const dialogStyle = computed(() =>
+  isBelowMd.value
+    ? { width: '100vw', height: '100dvh', maxHeight: '100dvh' }
+    : { width: '95vw', maxWidth: '750px' }
+)
+const dialogPt = computed(() => ({
+  root: { class: isBelowMd.value ? '!m-0 !max-w-full !rounded-none' : '' },
+  header: { class: 'pb-0 border-0' },
+  content: { class: 'pt-4' }
+}))
 const isSuccess = ref(false)
 
 const selectedType = ref(null)

@@ -7,6 +7,9 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
   const filters = ref(null)
   const currentPage = ref(1)
   const lastBatchSize = ref(0)
+  // The filters search as they change, so two answers can cross: only the latest one shows, and the
+  // caller learns whether its own did.
+  let latestRequest = 0
 
   async function searchAnnounces({
     type = null,
@@ -21,11 +24,7 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
     page = 1,
     append = false
   }) {
-    if (!append) {
-      announces.value = []
-      currentPage.value = 1
-    }
-
+    const request = ++latestRequest
     const data = await searchApi.searchAnnounces({
       instrument,
       styles,
@@ -38,6 +37,7 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
       landing,
       page
     })
+    if (request !== latestRequest) return false
 
     if (append) {
       announces.value = [...announces.value, ...data.member]
@@ -46,6 +46,15 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
     }
     lastBatchSize.value = data.member.length
     currentPage.value = page
+    return true
+  }
+
+  /**
+   * Records a search the page already shows (#1075): the API keeps a search through the search
+   * request itself, so the same request goes again, without `landing`, and its answer is not needed.
+   */
+  async function recordSearch(params) {
+    await searchApi.searchAnnounces({ ...params, landing: false, page: 1 })
   }
 
   async function getSearchAnnouncesFilters({ search }) {
@@ -61,6 +70,7 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
 
   return {
     searchAnnounces,
+    recordSearch,
     getSearchAnnouncesFilters,
     clear,
     announces: readonly(announces),

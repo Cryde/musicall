@@ -496,6 +496,7 @@
       "step_location": "Location",
       "step_profile": "Profile",
       "step_note": "Note",
+      "step_progress": "Step {current} of {total}: {label}",
       "type_question": "What are you looking for?",
       "type_band": "I'm looking for a band",
       "type_band_hint": "You're a musician looking for a band",
