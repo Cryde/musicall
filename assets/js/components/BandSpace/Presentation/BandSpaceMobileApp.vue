@@ -1,21 +1,22 @@
 <template>
   <section
     v-if="isOffered"
-    class="flex flex-col-reverse md:flex-row md:items-center gap-10 lg:gap-16 p-8 lg:p-14 rounded-3xl bg-surface-0 dark:bg-surface-900"
+    class="flex flex-col-reverse md:flex-row md:items-center gap-10 lg:gap-16 p-[18px] md:p-8 lg:p-14 rounded-[20px] md:rounded-3xl max-md:border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900"
     :aria-labelledby="titleId"
   >
-    <PushNotificationsMockup class="self-center" />
-    <div class="flex flex-col gap-6">
+    <!-- A phone drawn inside the phone is 500px of picture; the text says the same. -->
+    <PushNotificationsMockup class="self-center max-md:hidden" />
+    <div class="flex flex-col gap-3 md:gap-6">
       <div class="flex flex-col gap-3">
-        <span class="text-sm font-bold tracking-wider uppercase text-primary">{{ t('home.band_space_presentation.mobile_app.eyebrow') }}</span>
-        <h2 :id="titleId" class="m-0 text-3xl font-extrabold text-surface-900 dark:text-surface-0">
+        <span class="text-[13px] md:text-sm font-bold tracking-wider uppercase text-primary">{{ t('home.band_space_presentation.mobile_app.eyebrow') }}</span>
+        <h2 :id="titleId" class="m-0 text-[22px] md:text-3xl font-extrabold text-surface-900 dark:text-surface-0">
           {{ t('home.band_space_presentation.mobile_app.title') }}
         </h2>
-        <p class="m-0 text-lg leading-relaxed text-surface-600 dark:text-surface-300">
+        <p class="m-0 text-[15px] leading-[1.55] md:text-lg md:leading-relaxed text-surface-600 dark:text-surface-300">
           {{ t('home.band_space_presentation.mobile_app.body') }}
         </p>
       </div>
-      <ul class="m-0 p-0 list-none grid sm:grid-cols-2 gap-4">
+      <ul class="m-0 p-0 list-none grid sm:grid-cols-2 gap-2 md:gap-4">
         <li v-for="feature in features" :key="feature.key">
           <FeatureItem :icon="feature.icon">{{ feature.label }}</FeatureItem>
         </li>

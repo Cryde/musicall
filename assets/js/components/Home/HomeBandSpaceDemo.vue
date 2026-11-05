@@ -23,7 +23,7 @@
           :aria-controls="`home-demo-panel-${module.key}`"
           :tabindex="module.key === activeKey ? 0 : -1"
           :class="[
-            'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm text-left cursor-pointer transition-colors',
+            'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-2.5 py-2.5 sm:py-2 text-sm text-left cursor-pointer transition-colors',
             module.key === activeKey
               ? 'bg-primary-100 text-primary-800 font-medium dark:bg-surface-800 dark:text-surface-0'
               : 'text-surface-700 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-800'

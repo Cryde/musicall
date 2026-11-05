@@ -15,6 +15,7 @@
   "menu": {
     "aria_label": "Main navigation",
     "home": "Home",
+    "discover": "Discover",
     "publications": "Publications",
     "courses": "Lessons",
     "forum": "Forum",
@@ -97,6 +98,7 @@
     },
     "community": {
       "title": "Community",
+      "discover": "Discover MusicAll",
       "forum": "Forum",
       "contact": "Contact us"
     },
