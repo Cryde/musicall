@@ -226,10 +226,10 @@ const phoneScreen = computed(() => {
   return 'home'
 })
 
-// Back to the phone's home: the page before when the home led here, the home itself otherwise (a
-// link straight into a setlist).
+// Always the setlists home, never another module the member came from. Back in history when the home
+// led here, so the next system back does not land on this screen again.
 function goHome() {
-  if (window.history.state?.back) router.back()
+  if (window.history.state?.back === route.path) router.back()
   else router.replace({ query: {} })
 }
 
