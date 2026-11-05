@@ -43,7 +43,7 @@
           <i class="pi pi-list text-rose-600" aria-hidden="true"></i>
           <span class="flex-1 min-w-0 flex flex-col">
             <span class="truncate">{{ setlist.name }}</span>
-            <span class="text-xs text-surface-600 dark:text-surface-300 tabular-nums">{{ setlistLine(setlist) }}</span>
+            <span class="text-xs text-surface-600 dark:text-surface-300 tabular-nums">{{ setlistLine(setlist, t) }}</span>
           </span>
         </button>
       </li>
@@ -84,8 +84,7 @@ import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { formatDuration } from '../../../utils/setlistDuration.js'
-import { programmeSummary } from '../../../utils/setlistProgramme.js'
+import { setlistLine } from './setlistLine.js'
 
 const props = defineProps({
   songsCount: { type: Number, required: true },
@@ -122,18 +121,5 @@ function setlistButtonClasses(id) {
   return props.activeView === 'setlist' && props.activeSetlistId === id
     ? 'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-medium'
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
-}
-
-/** « 7 titres · 27:17 », or « Vide »: enough to pick the right set without opening it. */
-function setlistLine(setlist) {
-  const { songs, total } = programmeSummary(setlist.items ?? [])
-  if (songs === 0) return t('band_space_setlist.sidebar.setlist_empty')
-  return total > 0
-    ? t(
-        'band_space_setlist.sidebar.song_count_with_duration',
-        { duration: formatDuration(total) },
-        songs
-      )
-    : t('band_space_setlist.sidebar.song_count', songs)
 }
 </script>

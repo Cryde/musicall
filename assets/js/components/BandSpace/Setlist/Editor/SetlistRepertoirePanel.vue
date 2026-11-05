@@ -99,6 +99,7 @@ import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
+import { splitRepertoire } from '../../../../utils/setlistRepertoireSplit.js'
 import SetlistRepertoireEntry from './SetlistRepertoireEntry.vue'
 import { DRAG_GROUP, pendingSongItem } from './setlistDrag.js'
 
@@ -119,20 +120,9 @@ const { t } = useI18n()
 
 const query = ref('')
 
-const matching = computed(() => {
-  const term = query.value.trim().toLowerCase()
-  return term ? props.songs.filter((song) => song.title.toLowerCase().includes(term)) : props.songs
-})
-
-const songIdsInSet = computed(
-  () =>
-    new Set(
-      props.items.filter((item) => item.type === 'song' && item.song).map((item) => item.song.id)
-    )
-)
-
-const available = computed(() => matching.value.filter((song) => !songIdsInSet.value.has(song.id)))
-const inSetlist = computed(() => matching.value.filter((song) => songIdsInSet.value.has(song.id)))
+const split = computed(() => splitRepertoire(props.songs, props.items, query.value))
+const available = computed(() => split.value.available)
+const inSetlist = computed(() => split.value.inSetlist)
 
 // Song numbers, as the running order counts them: intermèdes are not numbered.
 const songNumbers = computed(() => {

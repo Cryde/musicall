@@ -2,7 +2,7 @@
   <Drawer
     v-model:visible="visible"
     position="right"
-    :style="{ width: '400px' }"
+    class="w-full! md:w-[400px]!"
     :header="t('band_space_setlist.file_drawer.header')"
   >
     <div class="flex flex-col gap-4">

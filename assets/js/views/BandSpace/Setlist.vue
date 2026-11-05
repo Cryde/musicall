@@ -25,7 +25,7 @@
         />
       </aside>
 
-      <div class="lg:hidden bg-surface-0 dark:bg-surface-900 rounded-2xl p-3 border border-surface-200 dark:border-surface-700">
+      <div v-if="!isBelowMd" class="lg:hidden bg-surface-0 dark:bg-surface-900 rounded-2xl p-3 border border-surface-200 dark:border-surface-700">
         <button
           type="button"
           class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-800"
@@ -63,11 +63,40 @@
         @created="handleSetlistCreated"
       />
 
-      <section class="flex-1 min-w-0">
+      <!-- A phone walks the module screen by screen, as the app does: home, then a setlist, the
+           repertoire, the lyrics or the trash, each with its way back. -->
+      <SetlistsHome
+        v-if="isBelowMd && phoneScreen === 'home'"
+        :band-space-id="bandSpaceId"
+        :songs-count="songsStore.songs.length"
+        :lyrics-count="lyricsStore.lyrics.length"
+        :setlists="setlistsStore.setlists"
+        :is-loading="setlistsStore.isLoading"
+        :trash-count="trashCount"
+        @select-repertoire="selectRepertoire"
+        @select-lyrics="selectLyrics"
+        @select-setlist="selectSetlist"
+        @select-trash="selectTrash"
+        @new-setlist="newSetlistDialogOpen = true"
+      />
+
+      <section v-else class="flex-1 min-w-0">
+        <div v-if="isBelowMd && (phoneScreen === 'lyrics' || phoneScreen === 'trash')" class="mb-3 -ml-2 flex items-center gap-1">
+          <Button
+            icon="pi pi-arrow-left"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_setlist.phone.back_to_setlists')"
+            @click="goHome"
+          />
+          <h1 class="text-2xl font-semibold">{{ currentSelectionLabel }}</h1>
+        </div>
         <RepertoireView
           v-if="activeView === 'repertoire'"
           :band-space-id="bandSpaceId"
           :focus-song-id="focusSongId"
+          @back="goHome"
         />
         <LyricsView
           v-else-if="activeView === 'lyrics'"
@@ -80,6 +109,7 @@
           :setlist-id="activeSetlistId"
           @archived="handleSetlistArchived"
           @duplicated="handleSetlistDuplicated"
+          @back="goHome"
         />
         <SetlistTrashList
           v-else-if="activeView === 'trash'"
@@ -103,11 +133,13 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import LyricsView from '../../components/BandSpace/Setlist/Lyrics/LyricsView.vue'
 import NewSetlistDialog from '../../components/BandSpace/Setlist/NewSetlistDialog.vue'
+import SetlistsHome from '../../components/BandSpace/Setlist/Phone/SetlistsHome.vue'
 import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vue'
 import SetlistEditor from '../../components/BandSpace/Setlist/SetlistEditor.vue'
 import SetlistTrashList from '../../components/BandSpace/Setlist/SetlistTrashList.vue'
 import SidebarContent from '../../components/BandSpace/Setlist/SidebarContent.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { useBandLyricsStore } from '../../store/bandSpace/bandSpaceLyrics.js'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../store/bandSpace/bandSpaceSongs.js'
@@ -127,6 +159,7 @@ lyricsStore.clear()
 const bandSpaceId = computed(() => route.params.id)
 
 const activeView = ref('repertoire') // 'repertoire' | 'lyrics' | 'setlist' | 'trash'
+const isBelowMd = useIsBelowMd()
 const activeSetlistId = ref(null)
 const mobileNavOpen = ref(false)
 const newSetlistDialogOpen = ref(false)
@@ -165,17 +198,42 @@ const currentSelectionLabel = computed(() => {
   return t('band_space_setlist.common.repertoire')
 })
 
+// A phone walks into a screen, so its back gesture returns to the one before; the desktop swaps
+// views in place, as it always has.
 function selectView(view, query, setlistId = null) {
   activeView.value = view
   activeSetlistId.value = setlistId
-  router.replace({ query })
+  if (isBelowMd.value) router.push({ query })
+  else router.replace({ query })
   mobileNavOpen.value = false
 }
 
-const selectRepertoire = () => selectView('repertoire', {})
+// A phone opens on its home, so the repertoire needs a name in the query there; the desktop keeps
+// it as the view an empty query shows.
+const selectRepertoire = () =>
+  selectView('repertoire', isBelowMd.value ? { view: 'repertoire' } : {})
 const selectLyrics = () => selectView('lyrics', { view: 'lyrics' })
 const selectSetlist = (id) => selectView('setlist', { setlist: id }, id)
 const selectTrash = () => selectView('trash', { view: 'trash' })
+
+/**
+ * The phone's screen: the same query as the desktop's views, read for the screen to show. An empty
+ * query is the home there, where the desktop shows the repertoire; a palette link to a song (?song=)
+ * still lands in the repertoire, which opens it.
+ */
+const phoneScreen = computed(() => {
+  if (activeView.value === 'setlist') return 'setlist'
+  if (activeView.value === 'lyrics' || activeView.value === 'trash') return activeView.value
+  if (route.query.view === 'repertoire' || focusSongId.value) return 'repertoire'
+  return 'home'
+})
+
+// Back to the phone's home: the page before when the home led here, the home itself otherwise (a
+// link straight into a setlist).
+function goHome() {
+  if (window.history.state?.back) router.back()
+  else router.replace({ query: {} })
+}
 
 function syncFromQuery() {
   const setlistParam = route.query.setlist
@@ -229,7 +287,8 @@ function handleSetlistCreated(created) {
 }
 
 function handleSetlistArchived() {
-  selectRepertoire()
+  if (isBelowMd.value) goHome()
+  else selectRepertoire()
 }
 
 function handleSetlistDuplicated(newId) {

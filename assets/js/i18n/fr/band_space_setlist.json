@@ -399,5 +399,25 @@
     "previous": "Précédent",
     "position": "Position",
     "next": "Suivant"
+  },
+  "phone": {
+    "lyrics_count": "{count} texte | {count} textes",
+    "live_aria": "Mode Live : {name}",
+    "back_to_setlists": "Retour aux setlists",
+    "select": "Sélectionner des titres",
+    "read_lyrics_of": "Lire les paroles de {title}",
+    "setlist_actions": "Actions de la setlist",
+    "programme": "Programme",
+    "add_songs_short": "Titres",
+    "add_songs": "Ajouter des titres",
+    "add_count": "Ajouter · {count}",
+    "rename": "Renommer",
+    "export_pdf": "Exporter en PDF",
+    "edit_item": "Modifier : durée, transition, note",
+    "song_actions": "Actions du titre",
+    "read_lyrics": "Lire les paroles",
+    "no_lyrics": "Pas de paroles pour ce titre.",
+    "next_up": "Ensuite : {title}",
+    "next_song": "Titre suivant"
   }
 }

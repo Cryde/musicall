@@ -15,14 +15,50 @@
     <div v-else class="flex gap-4 items-start">
       <section
         :aria-label="t('band_space_setlist.editor.section_aria', { name: setlist.name })"
-        class="flex-1 min-w-0 flex flex-col bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700"
+        class="flex-1 min-w-0 flex flex-col bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 max-md:-mx-6 max-md:-mt-8 max-md:min-h-[calc(100dvh-4rem)] max-md:rounded-none max-md:border-0 max-md:pb-24"
       >
-        <div class="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 border-b border-surface-200 dark:border-surface-700">
+        <!-- A phone shows the set as a screen of its own: back to the list, its name, and ⋮. -->
+        <div
+          v-if="isBelowMd"
+          class="sticky top-16 z-20 flex h-14 shrink-0 items-center gap-1 border-b border-surface-200 bg-surface-0 px-1 dark:border-surface-700 dark:bg-surface-900"
+        >
+          <Button
+            icon="pi pi-arrow-left"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_setlist.phone.back_to_setlists')"
+            @click="emit('back')"
+          />
+          <InputText
+            v-if="editingName"
+            v-model="nameDraft"
+            autofocus
+            :aria-label="t('band_space_setlist.editor.name_aria')"
+            class="min-w-0 flex-1 font-semibold"
+            @blur="commitRename"
+            @keyup.enter="commitRename"
+            @keyup.esc="cancelRename"
+          />
+          <h2 v-else class="m-0 min-w-0 flex-1 truncate text-[1.0625rem] font-semibold">{{ setlist.name }}</h2>
+          <Button
+            ref="phoneMoreButton"
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_setlist.phone.setlist_actions')"
+            aria-haspopup="dialog"
+            @click="isSetlistSheetOpen = true"
+          />
+        </div>
+
+        <div class="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 border-b border-surface-200 dark:border-surface-700 max-md:gap-2 max-md:border-b-0 max-md:pt-3 max-md:pb-0">
           <Message v-if="isArchived" severity="warn" :closable="false" icon="pi pi-archive">
             {{ t('band_space_setlist.editor.archived_notice') }}
           </Message>
 
-          <div class="flex flex-wrap items-center gap-2">
+          <div v-if="!isBelowMd" class="flex flex-wrap items-center gap-2">
             <div class="flex items-center gap-1 basis-full sm:basis-auto sm:flex-1 min-w-0">
               <InputText
                 v-if="editingName"
@@ -145,10 +181,23 @@
               @click="targetPrompt?.open($event)"
             />
           </div>
+
+          <template v-if="isBelowMd">
+            <Button
+              :label="t('band_space_setlist.editor.live_mode')"
+              icon="pi pi-play"
+              class="mt-1 h-11.5! w-full"
+              :disabled="setlist.items.length === 0"
+              @click="openLiveMode"
+            />
+            <p class="m-0 pt-2 text-[0.8125rem] font-semibold tracking-wide text-surface-600 uppercase dark:text-surface-300">
+              {{ t('band_space_setlist.phone.programme') }}
+            </p>
+          </template>
         </div>
 
         <div
-          v-if="rows.length > 0"
+          v-if="rows.length > 0 && !isBelowMd"
           class="flex items-center gap-2 sm:gap-3 pl-9 sm:pl-12 pr-2 sm:pr-4 pt-3 pb-1 text-[11px] font-semibold tracking-wide uppercase text-surface-600 dark:text-surface-300"
         >
           <span class="w-6">#</span>
@@ -168,7 +217,7 @@
           />
         </div>
 
-        <div class="relative px-2 sm:px-4 py-2">
+        <div class="relative px-2 sm:px-4 py-2 max-md:px-2.5 max-md:pt-1 max-md:pb-3">
           <!-- Over the list rather than in it: an empty list still has to be a place to drop a song. -->
           <SetlistEmptyState
             v-if="rows.length === 0"
@@ -181,7 +230,7 @@
             @add-all="addWholeRepertoire"
           />
           <SetlistInsertGap
-            v-if="rows.length > 0 && !isArchived"
+            v-if="rows.length > 0 && !isArchived && !isBelowMd"
             :position="0"
             :active="insertPosition === 0"
             @insert-song="startInsertingAt"
@@ -200,8 +249,19 @@
             @end="handleDragEnd"
             @add="handleDropFromRepertoire"
           >
-            <div v-for="(row, index) in rows" :key="row.item.id">
+            <div v-for="(row, index) in rows" :key="row.item.id" class="max-md:mb-1.5">
+              <SetlistPhoneRow
+                v-if="isBelowMd"
+                :row="row"
+                :readonly="isArchived"
+                @open-song="openSongScreen"
+                @read-lyrics="readLyricsFrom"
+                @edit="openItemEdit"
+                @menu="openItemSheet"
+                @set-duration="promptSongDuration"
+              />
               <SetlistProgrammeRow
+                v-else
                 :row="row"
                 :columns="columns"
                 :file-count="row.item.song ? (songFileCounts.get(row.item.song.id) ?? 0) : 0"
@@ -212,7 +272,7 @@
                 @set-duration="promptSongDuration"
               />
               <SetlistInsertGap
-                v-if="!isArchived"
+                v-if="!isArchived && !isBelowMd"
                 :position="index + 1"
                 :active="insertPosition === index + 1"
                 @insert-song="startInsertingAt"
@@ -223,8 +283,24 @@
           </VueDraggable>
         </div>
 
+        <!-- A phone keeps the adds at the bottom of the screen, where the thumb is. -->
         <div
-          v-if="!isArchived"
+          v-if="!isArchived && isBelowMd"
+          class="fixed inset-x-0 bottom-0 z-20 flex gap-1.5 border-t border-surface-200 bg-surface-0 px-3 pt-2.5 pb-[calc(1.125rem+env(safe-area-inset-bottom))] dark:border-surface-700 dark:bg-surface-900"
+        >
+          <Button :label="t('band_space_setlist.phone.add_songs_short')" icon="pi pi-plus" class="h-10! flex-1 !px-1 !text-sm" @click="openPanel" />
+          <Button
+            v-for="kind in INTERMISSION_KINDS"
+            :key="kind.type"
+            :label="kind.label"
+            severity="secondary"
+            outlined
+            class="h-10! flex-1 !px-1 !text-sm"
+            @click="addIntermission(kind.type, insertPosition)"
+          />
+        </div>
+        <div
+          v-else-if="!isArchived"
           class="flex flex-wrap items-center gap-2 px-4 sm:px-6 py-3 border-t border-surface-200 dark:border-surface-700"
         >
           <Button
@@ -262,7 +338,7 @@
       </aside>
     </div>
 
-    <Drawer v-if="!panelInline" v-model:visible="panelOpen" position="right" :style="{ width: 'min(22rem, 100vw)' }" :show-close-icon="false">
+    <Drawer v-if="!panelInline && !isBelowMd" v-model:visible="panelOpen" position="right" :style="{ width: 'min(22rem, 100vw)' }" :show-close-icon="false">
       <SetlistRepertoirePanel
         :songs="songsStore.songs"
         :items="localItems"
@@ -306,7 +382,67 @@
       :song="drawerSong"
       @updated="handleSongUpdated"
       @archived="songDrawerOpen = false"
+      @read-lyrics="readLyricsOfSong"
     />
+
+    <template v-if="isBelowMd">
+      <SetlistAddSongsSheet
+        v-model:visible="isAddSheetOpen"
+        :songs="songsStore.songs"
+        :items="localItems"
+        :hint="insertHint"
+        :add="addSongsAtInsertPoint"
+        @after-hide="stopInserting"
+      />
+
+      <BottomSheet v-model:visible="isSetlistSheetOpen" :title="setlist?.name ?? ''" @after-hide="setlistSheet.onAfterHide">
+        <SheetAction v-if="!isArchived" icon="pi-pencil" @click="setlistSheet.run(startRename)">
+          {{ t('band_space_setlist.phone.rename') }}
+        </SheetAction>
+        <SheetAction icon="pi-copy" @click="setlistSheet.run(handleDuplicate)">
+          {{ t('band_space_setlist.editor.duplicate') }}
+        </SheetAction>
+        <SheetAction icon="pi-file-pdf" @click="setlistSheet.run(openPdfFromBar)">
+          {{ t('band_space_setlist.phone.export_pdf') }}
+        </SheetAction>
+        <SheetAction icon="pi-folder" @click="setlistSheet.run(() => (filesDrawerOpen = true))">
+          {{ t('band_space_setlist.editor.files') }}
+        </SheetAction>
+        <SheetAction v-if="!isArchived" icon="pi-archive" danger @click="setlistSheet.run(confirmArchive)">
+          {{ t('band_space_setlist.common.archive') }}
+        </SheetAction>
+      </BottomSheet>
+
+      <BottomSheet v-model:visible="isItemSheetOpen" :title="itemSheetTitle" @after-hide="itemSheet.onAfterHide">
+        <template #header>
+          <span class="flex min-w-0 flex-col">
+            <span class="truncate text-lg font-semibold text-surface-900 dark:text-surface-0">{{ itemSheetTitle }}</span>
+            <span v-if="itemSheetFacts" class="text-[0.8125rem] text-surface-600 tabular-nums dark:text-surface-300">{{ itemSheetFacts }}</span>
+          </span>
+        </template>
+        <SheetAction icon="pi-pencil" @click="itemSheet.run(() => openItemEdit(menuTargetItem))">
+          {{ t('band_space_setlist.phone.edit_item') }}
+        </SheetAction>
+        <SheetAction icon="pi-arrow-up" :disabled="itemSheetIndex === 0" @click="itemSheet.run(() => moveItem(menuTargetItem, -1))">
+          {{ t('band_space_setlist.editor.move_up') }}
+        </SheetAction>
+        <SheetAction
+          icon="pi-arrow-down"
+          :disabled="itemSheetIndex === localItems.length - 1"
+          @click="itemSheet.run(() => moveItem(menuTargetItem, +1))"
+        >
+          {{ t('band_space_setlist.editor.move_down') }}
+        </SheetAction>
+        <SheetAction icon="pi-plus" @click="itemSheet.run(() => startInsertingAt(itemSheetIndex + 1))">
+          {{ t('band_space_setlist.editor.insert_after') }}
+        </SheetAction>
+        <SheetAction icon="pi-trash" danger @click="itemSheet.run(() => removeItem(menuTargetItem))">
+          {{ t('band_space_setlist.common.remove') }}
+        </SheetAction>
+      </BottomSheet>
+
+      <LyricsReader v-model:visible="isReaderOpen" :band-space-id="bandSpaceId" :songs="readerSongs" :start-index="readerStart" />
+    </template>
 
     <PdfExportPopover
       ref="pdfPopover"
@@ -340,6 +476,8 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
@@ -353,13 +491,18 @@ import {
   targetProgress,
   writeColumns
 } from '../../../utils/setlistProgramme.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 import DurationPrompt from './Editor/DurationPrompt.vue'
 import { INTERMISSION_KINDS, intermissionKind } from './Editor/intermissionKinds.js'
+import SetlistAddSongsSheet from './Editor/SetlistAddSongsSheet.vue'
 import SetlistEmptyState from './Editor/SetlistEmptyState.vue'
 import SetlistInsertGap from './Editor/SetlistInsertGap.vue'
+import SetlistPhoneRow from './Editor/SetlistPhoneRow.vue'
 import SetlistProgrammeRow from './Editor/SetlistProgrammeRow.vue'
 import SetlistRepertoirePanel from './Editor/SetlistRepertoirePanel.vue'
 import { DRAG_GROUP } from './Editor/setlistDrag.js'
+import LyricsReader from './Lyrics/LyricsReader.vue'
 import NewSongDialog from './NewSongDialog.vue'
 import PdfExportPopover from './PdfExportPopover.vue'
 import SetlistFileDrawer from './SetlistFileDrawer.vue'
@@ -375,7 +518,8 @@ const props = defineProps({
   setlistId: { type: String, required: true }
 })
 
-const emit = defineEmits(['archived', 'duplicated'])
+const emit = defineEmits(['archived', 'duplicated', 'back'])
+const isBelowMd = useIsBelowMd()
 
 const { t } = useI18n()
 const setlistsStore = useBandSetlistsStore()
@@ -459,8 +603,11 @@ watch(panelInline, (inline) => {
   panelOpen.value = inline
 })
 
+// A phone adds through « Ajouter des titres », several songs at once, where the desktop opens the
+// repertoire beside the set.
 function openPanel() {
-  panelOpen.value = true
+  if (isBelowMd.value) isAddSheetOpen.value = true
+  else panelOpen.value = true
 }
 
 // --- Inserting: where the next song goes -------------------------------------------------------
@@ -857,4 +1004,84 @@ function confirmArchive() {
     }
   })
 }
+
+// --- Phone ------------------------------------------------------------------------------------------
+
+const isAddSheetOpen = ref(false)
+const isSetlistSheetOpen = ref(false)
+const isItemSheetOpen = ref(false)
+// Each runs its action once its sheet has gone: a confirm, a drawer or the next sheet opened while it
+// leaves would lose the page's scroll lock.
+const setlistSheet = useActionAfterSheetHide(isSetlistSheetOpen)
+const itemSheet = useActionAfterSheetHide(isItemSheetOpen)
+const phoneMoreButton = ref(null)
+
+/** The ticked songs, in one request, where the set is being filled; the end of it otherwise. */
+async function addSongsAtInsertPoint(songIds) {
+  try {
+    await setlistsStore.addSongs(props.bandSpaceId, props.setlistId, songIds, insertPosition.value)
+    return true
+  } catch (e) {
+    showError(e)
+    return false
+  }
+}
+
+// The PDF options pop up from the bar's ⋮, the sheet that offered them being gone.
+function openPdfFromBar() {
+  const anchor = phoneMoreButton.value?.$el
+  if (anchor) pdfPopover.value?.toggle({ currentTarget: anchor, target: anchor })
+}
+
+function openItemSheet(item) {
+  menuTargetItem.value = item
+  isItemSheetOpen.value = true
+}
+
+const itemSheetIndex = computed(() =>
+  localItems.value.findIndex((candidate) => candidate.id === menuTargetItem.value?.id)
+)
+const itemSheetTitle = computed(() => {
+  const item = menuTargetItem.value
+  return item?.song?.title ?? item?.label ?? intermissionKind(item?.type).label ?? ''
+})
+// « 3 · E · 3:21 »: the song's number, key and duration, as the row says them.
+const itemSheetFacts = computed(() => {
+  const row = rows.value.find((candidate) => candidate.item.id === menuTargetItem.value?.id)
+  if (!row?.isSong) return null
+  return [row.number, row.item.song?.tonality, formatDuration(row.duration)]
+    .filter(Boolean)
+    .join(' · ')
+})
+
+/** A row's song, as the repertoire knows it: its drawer edits the song itself. */
+function openSongScreen(item) {
+  const song = songsStore.songs.find((candidate) => candidate.id === item.song?.id)
+  if (!song) return
+  drawerSong.value = song
+  songDrawerOpen.value = true
+}
+
+// The reader turns through the set's songs in their running order.
+const isReaderOpen = ref(false)
+const readerStart = ref(0)
+const readerSongs = computed(() =>
+  rows.value.filter((row) => row.isSong && row.item.song).map((row) => row.item.song)
+)
+
+function readLyricsOfSong(song) {
+  const at = readerSongs.value.findIndex((candidate) => candidate.id === song.id)
+  readerStart.value = Math.max(at, 0)
+  isReaderOpen.value = true
+}
+
+function readLyricsFrom(item) {
+  readLyricsOfSong(item.song)
+}
+
+watch(isBelowMd, () => {
+  isAddSheetOpen.value = false
+  isSetlistSheetOpen.value = false
+  isItemSheetOpen.value = false
+})
 </script>

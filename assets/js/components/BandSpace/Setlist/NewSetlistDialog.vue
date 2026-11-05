@@ -3,7 +3,7 @@
     v-model:visible="visible"
     :header="t('band_space_setlist.new_setlist_dialog.header')"
     modal
-    :style="{ width: '28rem' }"
+    v-bind="sheetDialog"
     @hide="resetForm"
   >
     <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
@@ -35,6 +35,7 @@ import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 
 const props = defineProps({
@@ -45,6 +46,8 @@ const emit = defineEmits(['created'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
+// A sheet on a phone, where 28rem is wider than the screen.
+const sheetDialog = useSheetDialog('28rem')
 const setlistsStore = useBandSetlistsStore()
 const toast = useToast()
 
