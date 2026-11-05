@@ -1,26 +1,64 @@
 <template>
-  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100">{{ t('band_space.settings.section.shares') }}</h2>
+  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:px-0 max-md:pb-1">
+    <div class="flex items-center justify-between mb-4 max-md:mb-1 max-md:pr-2 max-md:pl-4">
+      <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 max-md:text-base">{{ t('band_space.settings.section.shares') }}</h2>
       <Button
         icon="pi pi-refresh"
         size="small"
         text
+        rounded
+        severity="secondary"
+        :aria-label="t('band_space.settings.phone.refresh')"
         :loading="filesStore.isLoadingShares"
         @click="loadShares"
       />
     </div>
 
-    <div v-if="filesStore.isLoadingShares && filesStore.shares.length === 0" class="flex flex-col gap-2">
+    <div v-if="filesStore.isLoadingShares && filesStore.shares.length === 0" class="flex flex-col gap-2 max-md:px-4">
       <Skeleton v-for="i in 3" :key="i" width="100%" height="3rem" borderRadius="0.5rem" />
     </div>
 
     <p
       v-else-if="filesStore.shares.length === 0"
-      class="text-sm italic text-surface-400 text-center py-8"
+      class="text-sm italic text-surface-400 text-center py-8 max-md:px-4"
     >
       {{ t('band_space.shares.empty') }}
     </p>
+
+    <!-- A phone has no room for six columns: one row per link, its facts stacked. -->
+    <ul v-else-if="isBelowMd" class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
+      <li v-for="share in filesStore.shares" :key="share.id" class="flex min-h-16 items-center gap-3 py-2.5 pr-1 pl-4">
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-300"
+          aria-hidden="true"
+        >
+          <i class="pi pi-link" />
+        </span>
+        <div class="min-w-0 flex-1 text-[0.8125rem] text-surface-600 dark:text-surface-300">
+          <p class="m-0 flex items-center gap-1.5 text-[0.9375rem] font-semibold text-surface-900 dark:text-surface-0">
+            <span class="truncate">{{ share.file_original_name }}</span>
+            <i
+              v-if="share.has_password"
+              class="pi pi-lock shrink-0 text-xs text-amber-600"
+              role="img"
+              :aria-label="t('band_space.settings.phone.password_protected')"
+            />
+          </p>
+          <p class="m-0">{{ t('band_space.members.expires_on', { date: formatDate(share.expiry_datetime) }) }}</p>
+          <p class="m-0">{{ accessLine(share) }}</p>
+        </div>
+        <Button
+          v-if="isAdmin"
+          icon="pi pi-trash"
+          severity="danger"
+          text
+          rounded
+          class="h-11! w-11! shrink-0"
+          :aria-label="t('band_space.shares.revoke_aria')"
+          @click="confirmRevoke(share)"
+        />
+      </li>
+    </ul>
 
     <DataTable v-else :value="filesStore.shares" data-key="id" class="text-sm">
       <Column field="file_original_name" :header="t('band_space.shares.file')">
@@ -88,6 +126,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { dateFnsLocale, intlLocale, noValue } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
@@ -99,6 +138,7 @@ const { t } = useI18n()
 // Every member may read the list, only an admin may revoke a link, so the column is dropped rather
 // than offering a button the server would refuse.
 const { isAdmin } = useBandSpaceNavigation()
+const isBelowMd = useIsBelowMd()
 // Wipe previous space's files-store state synchronously before first render
 // so switching from A's Settings/Shares to B's doesn't flash A's shares.
 filesStore.clear()
@@ -143,6 +183,18 @@ function formatDate(iso) {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// « 4 accès · dernier il y a 2 jours », or « 0 accès · jamais ouvert ».
+function accessLine(share) {
+  const count = t('band_space.settings.phone.share_access_count', { count: share.access_count })
+  const last = share.last_access_datetime
+    ? t('band_space.settings.phone.share_last_access', {
+        when: formatRelative(share.last_access_datetime)
+      })
+    : t('band_space.settings.phone.share_never_opened')
+
+  return `${count} · ${last}`
 }
 
 function formatRelative(iso) {

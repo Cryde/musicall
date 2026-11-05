@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
+  <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
     <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 mb-2">
       {{ t('band_space.settings.section.calendar') }}
     </h2>

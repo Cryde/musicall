@@ -1,11 +1,11 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 md:gap-6">
     <!-- Pending deletion: only an admin can call it off -->
     <div
       v-if="scheduledFor"
-      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6 border border-amber-500/40"
+      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 border border-amber-500/40"
     >
-      <div class="flex items-start gap-3">
+      <div class="flex flex-wrap items-start gap-3 sm:flex-nowrap">
         <i class="pi pi-exclamation-triangle text-amber-600 dark:text-amber-400 mt-1" aria-hidden="true" />
         <div class="flex-1 min-w-0">
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
@@ -22,7 +22,7 @@
           :label="t('band_space.danger.restore')"
           icon="pi pi-undo"
           outlined
-          class="shrink-0"
+          class="shrink-0 max-sm:ml-7"
           :loading="settingsStore.isRestoring"
           @click="handleRestore"
         />
@@ -30,13 +30,17 @@
     </div>
 
     <!-- Delete the space -->
-    <div v-if="isAdmin && !scheduledFor" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
+    <!-- On a phone the card says what it is by its red edge. -->
+    <div
+      v-if="isAdmin && !scheduledFor"
+      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:border max-md:border-red-200 dark:max-md:border-red-400/35"
+    >
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="min-w-0">
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
             {{ t('band_space.danger.delete_title') }}
           </h3>
-          <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
+          <p class="text-xs text-surface-500 dark:text-surface-400 mt-1 max-md:text-[0.8125rem] max-md:leading-normal max-md:text-surface-600 dark:max-md:text-surface-300">
             {{ t('band_space.danger.delete_text', { days: GRACE_PERIOD_DAYS }) }}
           </p>
         </div>
@@ -45,7 +49,7 @@
           icon="pi pi-trash"
           severity="danger"
           outlined
-          class="shrink-0 self-start sm:self-auto"
+          class="shrink-0 self-start sm:self-auto max-md:!px-3 max-md:!py-1.5 max-md:!text-[0.9375rem]"
           @click="isDeleteDialogOpen = true"
         />
       </div>
@@ -53,7 +57,7 @@
 
     <div
       v-else-if="!isAdmin && !scheduledFor"
-      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6"
+      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6"
     >
       <p class="text-sm text-surface-500 dark:text-surface-400">
         {{ t('band_space.danger.admin_only') }}
@@ -64,7 +68,7 @@
       v-model:visible="isDeleteDialogOpen"
       modal
       :header="t('band_space.danger.dialog_header')"
-      :style="{ width: '32rem' }"
+      v-bind="sheetDialog"
       @hide="resetDialog"
     >
       <div class="flex flex-col gap-4">
@@ -74,7 +78,7 @@
           </template>
         </i18n-t>
 
-        <ul class="list-disc list-inside text-sm text-surface-600 dark:text-surface-300 space-y-1">
+        <ul class="list-disc pl-5 text-sm text-surface-600 dark:text-surface-300 space-y-1">
           <li>
             {{ t('band_space.danger.dialog_grace', { days: GRACE_PERIOD_DAYS }) }}
           </li>
@@ -131,6 +135,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { formatDateLong } from '../../../utils/date.js'
 
@@ -149,6 +154,7 @@ const { currentSpace } = useBandSpaceNavigation()
 const bandSpaceId = route.params.id
 
 const isDeleteDialogOpen = ref(false)
+const sheetDialog = useSheetDialog('32rem')
 const confirmation = ref('')
 const globalError = ref(null)
 

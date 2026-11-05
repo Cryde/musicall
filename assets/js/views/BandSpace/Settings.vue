@@ -1,10 +1,17 @@
 <template>
   <div>
-    <div class="grid grid-cols-12 gap-4">
+    <template v-if="isBelowMd">
+      <h1 class="m-0 mb-1 text-2xl font-semibold text-surface-900 dark:text-surface-0">
+        {{ t('band_space.settings.phone.title') }}
+      </h1>
+      <SettingsPhoneTabs v-model="activeSection" :sections="visibleSections" class="mb-4" />
+    </template>
+    <!-- On a phone the cards run 16px from the edges. -->
+    <div class="grid grid-cols-12 gap-4 max-md:-mx-2">
       <div class="col-span-12 lg:col-span-10 xl:col-span-10 flex-auto">
         <div class="flex flex-col lg:flex-row gap-6">
-          <!-- Sidebar menu (horizontal scrollable tabs on mobile, vertical on lg+) -->
-          <div class="lg:w-56 shrink-0">
+          <!-- Sidebar menu (horizontal scrollable tabs from md, vertical on lg+) -->
+          <div v-if="!isBelowMd" class="lg:w-56 shrink-0">
             <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-2 lg:p-4">
               <nav
                 class="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible"
@@ -46,6 +53,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import QuotaIndicator from '../../components/BandSpace/Files/QuotaIndicator.vue'
 import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveSharesSection.vue'
@@ -55,7 +63,9 @@ import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSec
 import DangerZoneSection from '../../components/BandSpace/Settings/DangerZoneSection.vue'
 import GeneralSection from '../../components/BandSpace/Settings/GeneralSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
+import SettingsPhoneTabs from '../../components/BandSpace/Settings/SettingsPhoneTabs.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import {
   BAND_SPACE_SETTINGS_SECTIONS,
   resolveSettingsSection,
@@ -64,6 +74,8 @@ import {
 
 const { isAdmin } = useBandSpaceNavigation()
 const route = useRoute()
+const { t } = useI18n()
+const isBelowMd = useIsBelowMd()
 
 const visibleSections = computed(() => visibleSettingsSections(isAdmin.value))
 

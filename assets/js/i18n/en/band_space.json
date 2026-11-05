@@ -31,7 +31,24 @@
       "general": "General",
       "danger": "Danger zone"
     },
-    "coming_soon": "Coming soon: this feature is still in development!"
+    "coming_soon": "Coming soon: this feature is still in development!",
+    "phone": {
+      "title": "Settings",
+      "sections_nav": "Settings sections",
+      "all_sections": "All sections",
+      "member_actions": "Actions for {name}",
+      "filters": "Filters",
+      "modules_chip": "Modules",
+      "authors_chip": "Authors",
+      "dates_chip": "Dates",
+      "show_activity": "Show activity",
+      "refresh": "Refresh",
+      "share_access_count": "{count} opens",
+      "share_last_access": "last {when}",
+      "share_never_opened": "never opened",
+      "password_protected": "Password protected",
+      "filter_set": "(filter on)"
+    }
   },
   "search": {
     "type": {

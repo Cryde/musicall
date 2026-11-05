@@ -1,15 +1,16 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 md:gap-6">
     <!-- Invite form, admin only: the server refuses an invitation sent by a plain member -->
-    <div v-if="isAdmin" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
+    <div v-if="isAdmin" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
       <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">
         {{ t('band_space.members.invite_title') }}
       </h3>
-      <form @submit.prevent="handleInvite" class="flex gap-3">
+      <form @submit.prevent="handleInvite" class="flex gap-2 md:gap-3">
         <InputText
           v-model="inviteIdentifier"
           :placeholder="t('band_space.members.invite_placeholder')"
-          class="flex-1"
+          :aria-label="t('band_space.members.invite_placeholder')"
+          class="min-w-0 flex-1 max-md:!text-[0.9375rem]"
           :disabled="settingsStore.isInviting"
         />
         <Button
@@ -25,7 +26,7 @@
     </div>
 
     <!-- Pending invitations -->
-    <div v-if="settingsStore.invitations.length > 0" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
+    <div v-if="settingsStore.invitations.length > 0" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
       <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">
         {{ t('band_space.dashboard.invitations.title') }}
       </h3>
@@ -33,13 +34,21 @@
         <div
           v-for="invitation in settingsStore.invitations"
           :key="invitation.id"
-          class="flex items-center justify-between p-3 rounded-lg bg-surface-50 dark:bg-surface-800"
+          class="flex items-center justify-between gap-2 p-3 rounded-lg bg-surface-50 dark:bg-surface-800 max-md:gap-3 max-md:bg-transparent max-md:p-0 dark:max-md:bg-transparent"
         >
-          <div>
-            <span class="text-sm font-medium text-surface-800 dark:text-surface-100">
+          <span
+            v-if="isBelowMd"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300"
+            aria-hidden="true"
+          >
+            <i class="pi pi-envelope text-sm" />
+          </span>
+          <!-- On a phone the address keeps its own line and the expiry goes under it. -->
+          <div class="min-w-0 max-md:flex-1">
+            <span class="text-sm font-medium text-surface-800 dark:text-surface-100 max-md:block max-md:truncate max-md:text-[0.9375rem] max-md:font-semibold">
               {{ invitationTarget(invitation) }}
             </span>
-            <span class="text-xs text-surface-500 dark:text-surface-400 ml-2">
+            <span class="text-xs text-surface-500 dark:text-surface-400 ml-2 max-md:ml-0 max-md:block max-md:text-[0.8125rem] max-md:text-surface-600 dark:max-md:text-surface-300">
               {{ t('band_space.members.expires_on', { date: formatDate(invitation.expiration_datetime) }) }}
             </span>
           </div>
@@ -49,6 +58,7 @@
             rounded
             severity="danger"
             size="small"
+            class="shrink-0 max-md:h-11! max-md:w-11!"
             v-tooltip.top="t('band_space.members.cancel_invitation')"
             :aria-label="t('band_space.members.cancel_invitation')"
             :loading="settingsStore.isCancellingInvitation"
@@ -59,31 +69,66 @@
     </div>
 
     <!-- Members list -->
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
-      <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">{{ t('band_space.settings.section.members') }}</h3>
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6 max-md:px-0 max-md:pb-1">
+      <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4 max-md:mb-1 max-md:flex max-md:items-center max-md:justify-between max-md:px-4">
+        {{ t('band_space.settings.section.members') }}
+        <span v-if="isBelowMd" class="text-[0.8125rem] font-normal text-surface-500 dark:text-surface-400" aria-hidden="true">
+          {{ settingsStore.members.length }}
+        </span>
+      </h3>
 
       <ProgressSpinner v-if="settingsStore.isLoadingMembers" class="flex justify-center" />
+
+      <!-- A phone lists the members flat, one line each, with one button that names what it does. -->
+      <ul v-else-if="isBelowMd" class="m-0 list-none divide-y divide-surface-200 p-0 dark:divide-surface-700">
+        <li v-for="member in settingsStore.members" :key="member.id" class="flex min-h-15 items-center gap-3 py-2 pr-1 pl-4">
+          <MemberAvatar :member="member" class="!h-9 !w-9" />
+          <div class="min-w-0 flex-1">
+            <p class="m-0 truncate text-[0.9375rem] font-semibold text-surface-900 dark:text-surface-0">
+              {{ member.display_name }}
+              <span
+                v-if="userHandle(member.username, member.display_name, member.is_deleted)"
+                class="font-normal text-surface-500 dark:text-surface-400"
+              >({{ member.username }})</span>
+              <span v-if="isMe(member)" class="ml-1 font-normal text-surface-500 dark:text-surface-400">
+                {{ t('band_space.members.you') }}
+              </span>
+            </p>
+            <p class="m-0 truncate text-[0.8125rem] text-surface-600 dark:text-surface-300">{{ memberSummary(member) }}</p>
+          </div>
+          <Button
+            v-if="canManage(member)"
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            severity="secondary"
+            class="h-11! w-11! shrink-0"
+            aria-haspopup="dialog"
+            :aria-label="t('band_space.settings.phone.member_actions', { name: member.display_name })"
+            @click="openMemberActions(member)"
+          />
+          <Button
+            v-else-if="canEditProfile(member)"
+            icon="pi pi-pencil"
+            text
+            rounded
+            severity="secondary"
+            class="h-11! w-11! shrink-0"
+            :aria-label="t('band_space.members.edit_profile_aria', { name: member.display_name })"
+            @click="openProfileDialog(member)"
+          />
+        </li>
+      </ul>
 
       <div v-else class="flex flex-col gap-3">
         <div
           v-for="member in settingsStore.members"
           :key="member.id"
-          class="flex items-center justify-between p-3 rounded-lg bg-surface-50 dark:bg-surface-800"
+          class="flex items-center justify-between gap-2 p-3 rounded-lg bg-surface-50 dark:bg-surface-800"
         >
-          <div class="flex items-center gap-3">
-            <img
-              v-if="member.profile_picture_url"
-              :src="member.profile_picture_url"
-              :alt="member.display_name"
-              class="w-8 h-8 rounded-full object-cover"
-            />
-            <div
-              v-else
-              class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-contrast text-sm font-semibold"
-            >
-              {{ member.display_name.charAt(0).toUpperCase() }}
-            </div>
-            <div class="min-w-0">
+          <div class="flex min-w-0 items-center gap-3">
+            <MemberAvatar :member="member" />
+            <div class="min-w-0 [overflow-wrap:anywhere]">
               <span class="text-sm font-medium text-surface-800 dark:text-surface-100">
                 {{ member.display_name }}
               </span>
@@ -110,7 +155,7 @@
             />
           </div>
 
-          <div class="flex gap-1">
+          <div class="flex shrink-0 gap-1">
             <!-- Your own profile, or anyone's if you are an admin. The same rule the server
                  enforces, so the button is not offered where the request would be refused. -->
             <Button
@@ -125,7 +170,7 @@
             />
             <!-- Promoting, demoting and excluding are admin only server side, so a member is not
                  offered a button that would come back as a red toast. -->
-            <template v-if="isAdmin && !isMe(member)">
+            <template v-if="canManage(member)">
             <Button
               v-if="member.role === 'user'"
               icon="pi pi-arrow-up"
@@ -165,6 +210,50 @@
       </div>
     </div>
 
+    <BottomSheet
+      v-model:visible="isMemberSheetOpen"
+      :title="memberSheetTarget?.display_name ?? ''"
+      @after-hide="runPendingMemberAction"
+    >
+      <template v-if="memberSheetTarget" #header>
+        <span class="flex min-w-0 items-center gap-3">
+          <MemberAvatar :member="memberSheetTarget" />
+          <span class="min-w-0">
+            <span class="block truncate font-semibold text-surface-900 dark:text-surface-0">
+              {{ memberSheetTarget.display_name }}
+            </span>
+            <span class="block truncate text-xs text-surface-600 dark:text-surface-300">
+              {{ memberSummary(memberSheetTarget) }}
+            </span>
+          </span>
+        </span>
+      </template>
+      <template v-if="memberSheetTarget">
+        <SheetAction icon="pi-pencil" @click="runMemberAction(openProfileDialog)">
+          {{ t('band_space.member_profile.header') }}
+        </SheetAction>
+        <SheetAction
+          v-if="memberSheetTarget.role === 'user'"
+          icon="pi-arrow-up"
+          :disabled="settingsStore.isUpdatingRole"
+          @click="runMemberAction(handlePromote)"
+        >
+          {{ t('band_space.members.promote') }}
+        </SheetAction>
+        <SheetAction
+          v-else
+          icon="pi-arrow-down"
+          :disabled="settingsStore.isUpdatingRole"
+          @click="runMemberAction(handleDemote)"
+        >
+          {{ t('band_space.members.demote') }}
+        </SheetAction>
+        <SheetAction icon="pi-user-minus" danger @click="runMemberAction(handleKick)">
+          {{ t('band_space.members.kick') }}
+        </SheetAction>
+      </template>
+    </BottomSheet>
+
     <MemberProfileDialog
       v-model:visible="profileDialogOpen"
       :band-space-id="bandSpaceId"
@@ -173,9 +262,9 @@
     />
 
     <!-- Leave -->
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
-      <div class="flex items-center justify-between">
-        <div>
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 md:p-6">
+      <div class="flex items-center justify-between gap-3">
+        <div class="min-w-0">
           <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100">
             {{ t('band_space.members.leave_title') }}
           </h3>
@@ -187,6 +276,7 @@
           :label="t('band_space.members.leave')"
           severity="danger"
           outlined
+          class="shrink-0"
           :disabled="isOnlyAdmin"
           :loading="settingsStore.isLeaving"
           @click="handleLeave"
@@ -209,12 +299,16 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { intlLocale } from '../../../i18n/formatLocale.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { userHandle } from '../../../utils/userHandle.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
+import MemberAvatar from './MemberAvatar.vue'
 import MemberProfileDialog from './MemberProfileDialog.vue'
 
 const route = useRoute()
@@ -245,6 +339,45 @@ const profileTarget = ref(null)
 
 function canEditProfile(member) {
   return isMe(member) || isAdmin.value
+}
+
+// Promoting, demoting and excluding someone else: admin only, server side too.
+function canManage(member) {
+  return isAdmin.value && !isMe(member)
+}
+
+function memberSummary(member) {
+  const role =
+    member.role === 'admin'
+      ? t('band_space.members.role_admin')
+      : t('band_space.members.role_member')
+  const instruments = member.instruments.map((instrument) => instrument.name).join(', ')
+
+  return instruments ? `${role} · ${instruments}` : role
+}
+
+const isBelowMd = useIsBelowMd()
+const isMemberSheetOpen = ref(false)
+const memberSheetTarget = ref(null)
+
+function openMemberActions(member) {
+  memberSheetTarget.value = member
+  isMemberSheetOpen.value = true
+}
+
+// The action waits for the sheet to be gone: the sheet unlocks the page scroll as it leaves, which would
+// undo the lock of a dialog or confirmation opened meanwhile.
+let pendingMemberAction = null
+
+function runMemberAction(action) {
+  pendingMemberAction = action
+  isMemberSheetOpen.value = false
+}
+
+function runPendingMemberAction() {
+  const action = pendingMemberAction
+  pendingMemberAction = null
+  action?.(memberSheetTarget.value)
 }
 
 function openProfileDialog(member) {
