@@ -22,7 +22,7 @@
       :aria-pressed="myAnswer === choice.value"
       :loading="savingAnswer === choice.value"
       :disabled="savingAnswer !== null"
-      class="py-0.5! px-2! text-xs!"
+      :class="roomy ? 'h-9! px-3.5! text-sm!' : 'py-0.5! px-2! text-xs!'"
       @click="handleAnswer(choice.value)"
     />
   </div>
@@ -38,7 +38,9 @@ import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   // An agenda feed item: a manual entry that asks, on a date still ahead (canAnswerFromAgenda).
-  item: { type: Object, required: true }
+  item: { type: Object, required: true },
+  // A thumb's size, 36px high, for a phone: the compact pair is about 26px.
+  roomy: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['answered'])

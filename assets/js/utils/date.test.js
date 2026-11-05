@@ -5,6 +5,7 @@ import {
   formatDateCompactInYear,
   formatDateCompactWithYear,
   formatDateLong,
+  formatDateRangeCompact,
   formatDateWithWeekday
 } from './date.js'
 
@@ -43,6 +44,18 @@ for (const timeZone of ['Europe/Paris', 'America/New_York']) {
       assert.equal(formatDateCompactInYear('2026-11-04T08:56:00+01:00', now), '4 nov.')
       assert.equal(formatDateCompactInYear('2025-12-31', now), '31 déc. 2025')
       assert.equal(formatDateCompactInYear(null, now), '')
+    })
+
+    it('writes a period with its year once, or twice across a new year', () => {
+      assert.equal(
+        formatDateRangeCompact(new Date(2026, 10, 4), new Date(2026, 11, 4)),
+        '4 nov. → 4 déc. 2026'
+      )
+      assert.equal(
+        formatDateRangeCompact(new Date(2026, 11, 28), new Date(2027, 0, 4)),
+        '28 déc. 2026 → 4 janv. 2027'
+      )
+      assert.equal(formatDateRangeCompact(null, new Date(2026, 0, 1)), '')
     })
 
     it('puts the weekday before the day', () => {

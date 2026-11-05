@@ -1,5 +1,5 @@
 <template>
-  <div class="p-3 sm:p-4">
+  <div class="p-3 sm:p-4 max-md:pb-24">
     <div class="flex items-center justify-between gap-2 mb-4">
       <div class="flex items-center gap-2 min-w-0">
         <h1 class="text-xl sm:text-2xl font-bold">{{ t('band_space_agenda.page.title') }}</h1>
@@ -34,11 +34,10 @@
           size="small"
           severity="secondary"
           outlined
-          :pt="{ label: { class: 'hidden sm:inline' } }"
-          :aria-label="t('band_space_agenda.common.absences')"
           @click="openAbsencesDrawer()"
         />
         <Button
+          v-if="!isBelowMd"
           icon="pi pi-plus"
           :label="t('band_space_agenda.common.new_event')"
           size="small"
@@ -49,7 +48,59 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-center">
+    <div v-if="isBelowMd" class="flex flex-col gap-3 mb-4">
+      <button
+        v-if="viewMode === 'list'"
+        type="button"
+        class="flex h-10 items-center gap-2 self-start rounded-xl border border-surface-300 bg-surface-0 px-3 text-sm font-medium text-surface-900 dark:border-surface-600 dark:bg-surface-900 dark:text-surface-0"
+        aria-haspopup="dialog"
+        :aria-label="t('band_space_agenda.phone.change_period', { period: periodLabel })"
+        @click="isPeriodSheetOpen = true"
+      >
+        <i class="pi pi-calendar text-surface-500 dark:text-surface-400" aria-hidden="true" />
+        {{ periodLabel }}
+        <i class="pi pi-chevron-down text-xs text-surface-500" aria-hidden="true" />
+      </button>
+      <!-- Sized so the four fit 390px whole: a cut « Absences » was the bug this row had. -->
+      <div class="flex gap-1">
+        <button
+          v-for="src in AGENDA_SOURCE_LIST"
+          :key="src.key"
+          type="button"
+          class="inline-flex h-8 flex-auto items-center justify-center gap-1 rounded-full px-1.5 text-[11px] font-medium tabular-nums whitespace-nowrap transition-colors"
+          :class="selectedSources.has(src.key) ? src.badgeClass : PHONE_INACTIVE_CHIP_CLASS"
+          :aria-pressed="selectedSources.has(src.key)"
+          @click="toggleSource(src.key)"
+        >
+          <span class="size-1.5 shrink-0 rounded-full" :style="{ backgroundColor: src.color }" aria-hidden="true" />
+          {{ src.chipLabel }}
+          {{ countsBySource[src.key] }}
+        </button>
+      </div>
+      <div
+        class="grid grid-cols-5 gap-0.5 rounded-xl bg-surface-100 p-1 dark:bg-surface-800"
+        role="group"
+        :aria-label="t('band_space_agenda.phone.views')"
+      >
+        <button
+          v-for="mode in viewModeOptions"
+          :key="mode.key"
+          type="button"
+          class="h-8 rounded-lg px-1 text-xs font-medium transition-colors"
+          :class="
+            viewMode === mode.key
+              ? 'bg-surface-0 text-surface-900 shadow-sm dark:bg-surface-700 dark:text-surface-0'
+              : 'text-surface-600 dark:text-surface-300'
+          "
+          :aria-pressed="viewMode === mode.key"
+          @click="selectViewMode(mode.key)"
+        >
+          {{ mode.label }}
+        </button>
+      </div>
+    </div>
+
+    <div v-else class="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-center">
       <DateRangePicker
         :from="dateFrom"
         :to="dateTo"
@@ -119,7 +170,7 @@
           <div v-for="group in groupedItems" :key="group.date" class="mb-6">
             <div class="flex items-center gap-2 mb-2 px-2">
               <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">
-                {{ formatDateLabel(group.date) }}
+                {{ isBelowMd ? formatDateWithWeekday(parseISO(group.date)) : formatDateLabel(group.date) }}
               </span>
               <span class="text-xs text-surface-400">
                 {{ t('band_space_agenda.page.event_count', group.items.length) }}
@@ -128,84 +179,96 @@
             <div
               class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden"
             >
-              <div
-                v-for="item in group.items"
-                :key="item.id"
-                class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700"
-                :class="sourceBorderClass(item.source)"
-                @click="handleItemClick(item)"
-              >
-                <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
-                  <template v-if="isAllDayItem(item)">
-                    <span class="italic text-xs">{{ t('band_space_agenda.common.all_day') }}</span>
-                  </template>
-                  <template v-else>
-                    {{ formatTime(item.datetime) }}<template v-if="item.end_datetime">{{ ` ${rangeArrow()} ${formatTime(item.end_datetime)}` }}</template>
-                  </template>
-                </span>
+              <template v-if="isBelowMd">
+                <AgendaPhoneItem
+                  v-for="item in group.items"
+                  :key="item.id"
+                  :bandSpaceId="route.params.id"
+                  :item="item"
+                  @open="handleItemClick"
+                  @answered="agendaStore.applyAvailabilityAnswer"
+                />
+              </template>
+              <template v-else>
+                <div
+                  v-for="item in group.items"
+                  :key="item.id"
+                  class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700"
+                  :class="sourceBorderClass(item.source)"
+                  @click="handleItemClick(item)"
+                >
+                  <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
+                    <template v-if="isAllDayItem(item)">
+                      <span class="italic text-xs">{{ t('band_space_agenda.common.all_day') }}</span>
+                    </template>
+                    <template v-else>
+                      {{ agendaItemTimeLabel(item) }}
+                    </template>
+                  </span>
 
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-medium truncate">{{ item.title }}</span>
-                    <span
-                      class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-                      :class="sourceBadgeClass(item.source)"
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-medium truncate">{{ item.title }}</span>
+                      <span
+                        class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+                        :class="sourceBadgeClass(item.source)"
+                      >
+                        {{ sourceLabel(item.source) }}
+                      </span>
+                    </div>
+
+                    <div
+                      v-if="item.description"
+                      class="text-sm text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-2"
                     >
-                      {{ sourceLabel(item.source) }}
-                    </span>
-                  </div>
+                      {{ item.description }}
+                    </div>
 
-                  <div
-                    v-if="item.description"
-                    class="text-sm text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-2"
-                  >
-                    {{ item.description }}
-                  </div>
+                    <div v-if="agendaItemMetaLine(item)" class="text-xs text-surface-400 mt-1">
+                      {{ agendaItemMetaLine(item) }}
+                    </div>
 
-                  <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
-                    {{ metadataLine(item) }}
-                  </div>
-
-                  <div
-                    v-if="item.source === 'manual' && item.metadata?.ask_availability"
-                    class="flex flex-wrap items-center justify-between gap-2 mt-1.5"
-                  >
-                    <span
-                      v-if="availabilitySummary(item.metadata.availability)"
-                      class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300"
+                    <div
+                      v-if="item.source === 'manual' && item.metadata?.ask_availability"
+                      class="flex flex-wrap items-center justify-between gap-2 mt-1.5"
                     >
-                      <i class="pi pi-users text-[0.7rem]" aria-hidden="true" />
-                      {{ availabilitySummary(item.metadata.availability) }}
-                    </span>
-                    <AgendaAvailabilityButtons
-                      v-if="canAnswerFromAgenda(item)"
-                      :bandSpaceId="route.params.id"
-                      :item="item"
-                      @answered="agendaStore.applyAvailabilityAnswer"
-                    />
-                  </div>
+                      <span
+                        v-if="availabilitySummary(item.metadata.availability)"
+                        class="flex items-center gap-1 text-xs text-surface-600 dark:text-surface-300"
+                      >
+                        <i class="pi pi-users text-[0.7rem]" aria-hidden="true" />
+                        {{ availabilitySummary(item.metadata.availability) }}
+                      </span>
+                      <AgendaAvailabilityButtons
+                        v-if="canAnswerFromAgenda(item)"
+                        :bandSpaceId="route.params.id"
+                        :item="item"
+                        @answered="agendaStore.applyAvailabilityAnswer"
+                      />
+                    </div>
 
-                  <div
-                    v-if="item.source === 'task' && item.metadata?.assignees?.length"
-                    class="flex items-center gap-1 mt-1.5"
-                  >
-                    <Avatar
-                      v-for="a in item.metadata.assignees.slice(0, 3)"
-                      :key="a.id"
-                      :username="a.username"
-                      :display-name="a.display_name"
-                      :picture-url="a.profile_picture_url"
-                      size="sm"
-                    />
-                    <span
-                      v-if="item.metadata.assignees.length > 3"
-                      class="text-xs font-medium text-surface-500 dark:text-surface-400"
+                    <div
+                      v-if="item.source === 'task' && item.metadata?.assignees?.length"
+                      class="flex items-center gap-1 mt-1.5"
                     >
-                      +{{ item.metadata.assignees.length - 3 }}
-                    </span>
+                      <Avatar
+                        v-for="a in item.metadata.assignees.slice(0, 3)"
+                        :key="a.id"
+                        :username="a.username"
+                        :display-name="a.display_name"
+                        :picture-url="a.profile_picture_url"
+                        size="sm"
+                      />
+                      <span
+                        v-if="item.metadata.assignees.length > 3"
+                        class="text-xs font-medium text-surface-500 dark:text-surface-400"
+                      >
+                        +{{ item.metadata.assignees.length - 3 }}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </template>
             </div>
           </div>
         </div>
@@ -214,11 +277,40 @@
       <div v-else class="overflow-x-auto">
         <div
           class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
-          :class="{ 'min-w-[680px]': viewMode === 'timeGridWeek' }"
+          :class="{ 'min-w-[680px]': viewMode === 'timeGridWeek', 'agenda-fc-phone-month': isPhoneMonth }"
         >
-          <FullCalendar :key="calendarKey" :options="calendarOptions">
+          <!-- FullCalendar's own toolbar takes two lines and big buttons on a phone, and its v7 classes are
+               hashed, so a phone gets its own line driven through the calendar's API. -->
+          <div v-if="isBelowMd" class="mb-2 flex items-center">
+            <Button
+              icon="pi pi-chevron-left"
+              text
+              rounded
+              severity="secondary"
+              :aria-label="t('band_space_agenda.phone.previous')"
+              @click="calendarRef?.getApi().prev()"
+            />
+            <h2 class="m-0 min-w-0 flex-1 truncate text-center text-sm font-semibold">{{ calendarTitle }}</h2>
+            <Button
+              icon="pi pi-chevron-right"
+              text
+              rounded
+              severity="secondary"
+              :aria-label="t('band_space_agenda.phone.next')"
+              @click="calendarRef?.getApi().next()"
+            />
+            <Button
+              :label="t('band_space_agenda.page.today')"
+              size="small"
+              text
+              class="shrink-0 px-2!"
+              @click="calendarRef?.getApi().today()"
+            />
+          </div>
+          <FullCalendar ref="calendarRef" :key="calendarKey" :options="calendarOptions">
             <template #eventContent="arg">
-              <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
+              <span v-if="isPhoneMonth" class="sr-only">{{ arg.event.title }}</span>
+              <AgendaEventChip v-else :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
             </template>
             <template #dayCellTopContent="arg">
               <template v-if="arg.view.type === 'multiMonthYear'">
@@ -241,8 +333,60 @@
             </template>
           </FullCalendar>
         </div>
+
+        <template v-if="isPhoneMonth">
+          <ul class="m-0 mt-3 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-xs text-surface-600 dark:text-surface-300">
+            <li v-for="src in AGENDA_SOURCE_LIST" :key="src.key" class="flex items-center gap-1.5">
+              <span class="h-1 w-3 rounded-full" :style="{ backgroundColor: src.color }" aria-hidden="true" />
+              {{ src.chipLabel }}
+            </li>
+          </ul>
+          <section class="mt-4" aria-live="polite">
+            <div class="flex items-center gap-2 mb-2 px-2">
+              <h2 class="m-0 text-sm font-semibold text-surface-600 dark:text-surface-300">
+                {{ formatDateWithWeekday(parseISO(selectedDay)) }}
+              </h2>
+              <span v-if="selectedDayItems.length" class="text-xs text-surface-400">
+                {{ t('band_space_agenda.page.event_count', selectedDayItems.length) }}
+              </span>
+            </div>
+            <div
+              v-if="selectedDayItems.length"
+              class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden"
+            >
+              <AgendaPhoneItem
+                v-for="item in selectedDayItems"
+                :key="item.id"
+                :bandSpaceId="route.params.id"
+                :item="item"
+                @open="handleItemClick"
+                @answered="agendaStore.applyAvailabilityAnswer"
+              />
+            </div>
+            <p v-else class="m-0 px-2 text-sm italic text-surface-400">{{ t('band_space_agenda.phone.day_empty') }}</p>
+          </section>
+        </template>
       </div>
     </div>
+
+    <!-- On a phone « Nouvel événement » floats where the thumb is, as on the other modules. -->
+    <Button
+      v-if="isBelowMd"
+      :label="t('band_space_agenda.common.new_event')"
+      icon="pi pi-plus"
+      rounded
+      class="fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
+      @click="openCreateDialog"
+    />
+
+    <AgendaPeriodSheet
+      v-if="isBelowMd"
+      v-model:visible="isPeriodSheetOpen"
+      :from="dateFrom"
+      :to="dateTo"
+      :presets="agendaPresets"
+      @apply="handleDateRangeApply"
+    />
 
     <AgendaEntryDrawer
       v-model:visible="dialogVisible"
@@ -297,8 +441,11 @@ import AbsencesDrawer from '../../components/BandSpace/Agenda/AbsencesDrawer.vue
 import AgendaAvailabilityButtons from '../../components/BandSpace/Agenda/AgendaAvailabilityButtons.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
+import AgendaPeriodSheet from '../../components/BandSpace/Agenda/AgendaPeriodSheet.vue'
+import AgendaPhoneItem from '../../components/BandSpace/Agenda/AgendaPhoneItem.vue'
 import Avatar from '../../components/User/Avatar.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import {
   AGENDA_SOURCE_KEYS,
   AGENDA_SOURCE_LIST,
@@ -306,18 +453,24 @@ import {
   agendaSourceLabel
 } from '../../constants/agendaSources.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
-import { dateFnsLocale, forActiveLocale, rangeArrow, separator } from '../../i18n/formatLocale.js'
+import { dateFnsLocale, forActiveLocale, separator } from '../../i18n/formatLocale.js'
 import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { availabilitySummary, canAnswerFromAgenda } from '../../utils/agendaAvailability.js'
 import {
   agendaCalendarEventDates,
   agendaItemDayKeys,
+  dayKeyInView,
   withoutAllDayPin
 } from '../../utils/agendaDate.js'
-import { isAllDayItem } from '../../utils/agendaItem.js'
+import { agendaItemMetaLine, agendaItemTimeLabel, isAllDayItem } from '../../utils/agendaItem.js'
 import { agendaViewForOccurrence, agendaViewForSavedEntry } from '../../utils/agendaRange.js'
-import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
+import {
+  formatDateCompactWithYear,
+  formatDateLong,
+  formatDateRangeCompact,
+  formatDateWithWeekday
+} from '../../utils/date.js'
 
 const FULL_CALENDAR_LOCALES = { fr: frLocale, en: enGbLocale }
 
@@ -346,6 +499,15 @@ const absencesDrawerMemberId = ref(null)
 const today = startOfDay(new Date())
 const dateFrom = ref(today)
 const dateTo = ref(addDays(today, 30))
+
+const isBelowMd = useIsBelowMd()
+const calendarRef = ref(null)
+// The visible span's title (« novembre 2026 »), for the phone's own calendar toolbar.
+const calendarTitle = ref('')
+const isPeriodSheetOpen = ref(false)
+const periodLabel = computed(() => formatDateRangeCompact(dateFrom.value, dateTo.value))
+// The day the phone's month lists under its grid, as a local `yyyy-MM-dd` like agendaItemDayKeys.
+const selectedDay = ref(format(today, 'yyyy-MM-dd'))
 
 const viewMode = ref('list')
 // When drilling from the year overview into a day, that day's view must open on the
@@ -405,6 +567,9 @@ const agendaPresets = computed(() => [
 // One shared descriptor per source; the chip's inactive styling is the same for all of them.
 const INACTIVE_CHIP_CLASS =
   'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
+// A phone's chips are narrow: a struck-through word that is also truncated reads as nothing.
+const PHONE_INACTIVE_CHIP_CLASS =
+  'bg-surface-100 text-surface-400 opacity-70 dark:bg-surface-800 dark:text-surface-500'
 
 // Max dots drawn per day in the year overview; any extra events are reflected in the
 // aria-label count only.
@@ -460,6 +625,13 @@ const groupedItems = computed(() => {
     })
   }))
 })
+
+const selectedDayItems = computed(
+  () => groupedItems.value.find((group) => group.date === selectedDay.value)?.items ?? []
+)
+
+// The month on a phone draws a bar per event, and a tap picks a day instead of creating an event.
+const isPhoneMonth = computed(() => isBelowMd.value && viewMode.value === 'dayGridMonth')
 
 // One entry per event on each day (the same source repeats when a day has several events of
 // that kind), for the year overview's dots. Built from filteredItems so the source chips
@@ -524,11 +696,19 @@ const calendarOptions = computed(() => ({
   eventClick: handleEventClick,
   dateClick: handleDateClick,
   datesSet: handleDatesSet,
-  headerToolbar: {
-    left: 'prev,next today',
-    center: 'title',
-    right: ''
-  },
+  headerToolbar: isBelowMd.value ? false : { left: 'prev,next today', center: 'title', right: '' },
+  ...(isPhoneMonth.value
+    ? {
+        eventDisplay: 'block',
+        dayMaxEvents: false,
+        // Read here rather than inside the callback, so a new day changes the options and the
+        // calendar redraws its cells.
+        dayCellClass: (
+          (selected) => (arg) =>
+            format(arg.date, 'yyyy-MM-dd') === selected ? 'agenda-day-selected' : null
+        )(selectedDay.value)
+      }
+    : {}),
   todayText: t('band_space_agenda.page.today'),
   height: 'auto',
   allDaySlot: true,
@@ -536,7 +716,7 @@ const calendarOptions = computed(() => ({
   slotMinTime: '06:00:00',
   slotMaxTime: '24:00:00',
   nowIndicator: true,
-  dayMaxEvents: 3
+  ...(isPhoneMonth.value ? {} : { dayMaxEvents: 3 })
 }))
 
 onMounted(() => {
@@ -764,10 +944,19 @@ function openAbsencesDrawer(memberId = null) {
 }
 
 function handleEventClick(info) {
+  if (isPhoneMonth.value) {
+    selectedDay.value = dayUnderPointer(info.jsEvent) ?? format(info.event.start, 'yyyy-MM-dd')
+    return
+  }
   handleItemClick(info.event.extendedProps.item)
 }
 
 function handleDateClick(info) {
+  if (isPhoneMonth.value) {
+    // Local midnight of the cell, formatted with local getters (see dayEventSources).
+    selectedDay.value = format(info.date, 'yyyy-MM-dd')
+    return
+  }
   if (viewMode.value === 'multiMonthYear') {
     // From the year overview, a day click drills into that day rather than creating an entry.
     focusDate.value = new Date(info.date.getTime())
@@ -783,7 +972,27 @@ function handleDateClick(info) {
   dialogVisible.value = true
 }
 
+/**
+ * The day cell under a tap, for a bar spanning several days: the event itself only knows where it
+ * starts. Read off the cells' `data-date`, the one stable hook FullCalendar v7 leaves.
+ */
+function dayUnderPointer(event) {
+  if (!event || typeof document.elementsFromPoint !== 'function') return null
+  const cell = document
+    .elementsFromPoint(event.clientX, event.clientY)
+    .find((element) => element.dataset?.date)
+
+  return cell?.dataset.date ?? null
+}
+
 function handleDatesSet(arg) {
+  calendarTitle.value = arg.view.title
+  // A month left behind takes its chosen day with it: keep one on the grid the member is reading.
+  selectedDay.value = dayKeyInView(
+    selectedDay.value,
+    { start: arg.start, end: arg.end, currentStart: arg.view.currentStart },
+    new Date()
+  )
   const visibleStart = startOfDay(arg.start)
   const visibleEndInclusive = startOfDay(new Date(arg.end.getTime() - 1))
   calendarSpan.value = { from: visibleStart, to: visibleEndInclusive }
@@ -819,10 +1028,6 @@ function formatDateLabel(dateString) {
   return formatDateCompactWithYear(dateString)
 }
 
-function formatTime(datetimeString) {
-  return format(parseISO(datetimeString), 'HH:mm')
-}
-
 function sourceLabel(source) {
   return agendaSourceLabel(source)
 }
@@ -833,41 +1038,6 @@ function sourceBorderClass(source) {
 
 function sourceBadgeClass(source) {
   return agendaSourceFor(source).badgeClass
-}
-
-function metadataLine(item) {
-  const parts = []
-  if (item.source === 'manual' && item.metadata?.location) {
-    parts.push(item.metadata.location)
-  }
-  if (item.source === 'task') {
-    if (item.metadata?.category_name) parts.push(item.metadata.category_name)
-    if (item.metadata?.priority && item.metadata.priority !== 'normal') {
-      parts.push(taskPriorityLabel(item.metadata.priority))
-    }
-  }
-  if (item.source === 'finance') {
-    if (item.metadata?.category_name) parts.push(item.metadata.category_name)
-    if (item.metadata?.type) {
-      parts.push(
-        item.metadata.type === 'expense'
-          ? t('band_space_agenda.item.expense')
-          : t('band_space_agenda.item.income')
-      )
-    }
-  }
-  return parts.join(` ${separator()} `)
-}
-
-function taskPriorityLabel(priority) {
-  switch (priority) {
-    case 'high':
-      return t('band_space_agenda.item.priority_high')
-    case 'urgent':
-      return t('band_space_agenda.item.priority_urgent')
-    default:
-      return priority
-  }
 }
 </script>
 
@@ -911,5 +1081,11 @@ function taskPriorityLabel(priority) {
   width: 5px;
   height: 5px;
   border-radius: 9999px;
+}
+
+/* The phone month's chosen day, listed under the grid. FullCalendar v7 hashes its own classes, so the
+   ring hangs on the one dayCellClass adds. */
+.agenda-fc-phone-month .agenda-day-selected {
+  box-shadow: inset 0 0 0 2px var(--p-primary-color);
 }
 </style>

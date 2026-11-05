@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import {
   agendaCalendarEventDates,
   agendaItemDayKeys,
+  dayKeyInView,
   seriesCutDate,
   toAgendaDate,
   withoutAllDayPin
@@ -299,3 +300,34 @@ describe('seriesCutDate', () => {
     })
   }
 })
+
+for (const timeZone of ['Europe/Paris', 'America/New_York']) {
+  describeInTimeZone(timeZone, () => {
+    describe('dayKeyInView', () => {
+      // The November 2026 month grid: Monday 26 October to Monday 7 December, end excluded. Built
+      // inside each test, once the zone is set, as FullCalendar builds it in the reader's zone.
+      const november = () => ({
+        start: new Date(2026, 9, 26),
+        end: new Date(2026, 11, 7),
+        currentStart: new Date(2026, 10, 1)
+      })
+
+      it('keeps the chosen day while it is on the grid', () => {
+        assert.equal(dayKeyInView('2026-11-12', november(), new Date(2026, 10, 4)), '2026-11-12')
+        assert.equal(dayKeyInView('2026-10-26', november(), new Date(2026, 10, 4)), '2026-10-26')
+      })
+
+      it('falls back to today when the chosen day left the grid', () => {
+        assert.equal(
+          dayKeyInView('2026-12-10', november(), new Date(2026, 10, 4, 21, 30)),
+          '2026-11-04'
+        )
+      })
+
+      it('falls back to the first of the month when today is not on the grid either', () => {
+        assert.equal(dayKeyInView('2026-12-10', november(), new Date(2027, 0, 15)), '2026-11-01')
+        assert.equal(dayKeyInView('2026-12-07', november(), new Date(2027, 0, 15)), '2026-11-01')
+      })
+    })
+  })
+}

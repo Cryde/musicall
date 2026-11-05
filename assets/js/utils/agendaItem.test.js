@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
-import { agendaItemLink, isAllDayItem } from './agendaItem.js'
+import { after, before, describe, it } from 'node:test'
+import {
+  agendaItemLink,
+  agendaItemMetaLine,
+  agendaItemTimeLabel,
+  isAllDayItem
+} from './agendaItem.js'
 
 /**
  * The shared all day rule for agenda items. Datetimes are written the way the API sends them,
@@ -87,5 +92,57 @@ describe('agendaItemLink', () => {
   it('leads nowhere for an absence or an item without a source', () => {
     assert.equal(agendaItemLink({ source: 'absence', source_id: 'a1' }, 'space-1'), null)
     assert.equal(agendaItemLink({ source: 'task' }, 'space-1'), null)
+  })
+})
+
+// The hours are read in the reader's zone, so the zone is pinned: CI runs UTC, the dev box Paris.
+describe('agendaItemTimeLabel', () => {
+  const original = process.env.TZ
+  before(() => {
+    process.env.TZ = 'Europe/Paris'
+  })
+  after(() => {
+    if (original === undefined) delete process.env.TZ
+    else process.env.TZ = original
+  })
+
+  it('gives the start, and the end after an arrow', () => {
+    assert.equal(agendaItemTimeLabel(item({})), '20:30')
+    assert.equal(
+      agendaItemTimeLabel(item({ end_datetime: '2026-08-12T23:00:00+02:00' })),
+      '20:30 → 23:00'
+    )
+  })
+
+  it('gives no hours to an item that covers a day', () => {
+    assert.equal(agendaItemTimeLabel(item({ is_all_day: true })), null)
+    assert.equal(agendaItemTimeLabel(item({ source: 'task' })), null)
+  })
+})
+
+describe('agendaItemMetaLine', () => {
+  it('names the place of an event', () => {
+    assert.equal(agendaItemMetaLine(item({ metadata: { location: 'Petit Bain' } })), 'Petit Bain')
+  })
+
+  it('names the category and an unusual priority of a task', () => {
+    assert.equal(
+      agendaItemMetaLine({
+        source: 'task',
+        metadata: { category_name: 'Concert', priority: 'high' }
+      }),
+      'Concert · Priorité haute'
+    )
+    assert.equal(agendaItemMetaLine({ source: 'task', metadata: { priority: 'normal' } }), '')
+  })
+
+  it('names the category and the direction of a finance entry', () => {
+    assert.equal(
+      agendaItemMetaLine({
+        source: 'finance',
+        metadata: { category_name: 'Concert', type: 'income' }
+      }),
+      'Concert · Revenu'
+    )
   })
 })
