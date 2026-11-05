@@ -1,3 +1,5 @@
+import { watch } from 'vue'
+
 /**
  * Runs a bottom sheet's action once the sheet has gone, not as it starts closing: a dialog or a confirm
  * opened while the sheet leaves loses the page's scroll lock, which the sheet releases on its way out.
@@ -8,6 +10,11 @@
  */
 export function useActionAfterSheetHide(isOpen) {
   let pending = null
+
+  // A sheet taken away before it finished hiding never ran its action: never run it on a later close.
+  watch(isOpen, (open) => {
+    if (open) pending = null
+  })
 
   function run(action) {
     pending = action

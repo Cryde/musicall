@@ -1,81 +1,114 @@
 <template>
-  <div class="flex bg-surface-0 dark:bg-surface-900 rounded-2xl overflow-hidden min-h-[400px] md:min-h-[600px]">
-    <!-- Sidebar: always visible on md+, toggle on mobile -->
-    <div
-      class="border-r border-surface-200 dark:border-surface-700 flex-shrink-0 overflow-hidden"
-      :class="mobileView === 'editor' ? 'hidden md:block md:w-56 lg:w-72' : 'w-full md:w-56 lg:w-72'"
-    >
-      <NoteTree
-        ref="noteTreeRef"
-        :nodes="notesStore.tree"
-        :selectedKey="notesStore.selectedNoteId"
-        @select="handleSelect"
-        @create-root="openCreateDialog(null)"
-        @create-child="openCreateDialog"
-        @delete="handleDelete"
-      />
-    </div>
+  <div :class="{ 'max-md:pb-24': mobileView === 'tree' }">
+    <h1 v-if="isBelowMd && mobileView === 'tree'" class="mb-3 text-xl font-bold">{{ t('band_space_notes.page.heading') }}</h1>
 
-    <!-- Main content: always visible on md+, toggle on mobile -->
+    <!-- On md and up the card clips its corners. Not on a phone, where a clipping ancestor would stop
+         the editor's toolbar from sticking while the note is typed in. -->
     <div
-      class="flex-1 flex flex-col"
-      :class="mobileView === 'tree' ? 'hidden md:flex' : ''"
+      class="flex bg-surface-0 dark:bg-surface-900 rounded-2xl md:overflow-hidden md:min-h-[600px]"
     >
-      <!-- Mobile back button -->
-      <div v-if="mobileView === 'editor'" class="md:hidden flex items-center gap-2 p-3 border-b border-surface-200 dark:border-surface-700">
-        <Button
-          icon="pi pi-arrow-left"
-          :aria-label="t('band_space_notes.page.back')"
-          text
-          rounded
-          size="small"
-          @click="handleBack"
+      <!-- Sidebar: always visible on md+, toggle on mobile -->
+      <div
+        class="md:border-r border-surface-200 dark:border-surface-700 flex-shrink-0 overflow-hidden"
+        :class="mobileView === 'editor' ? 'hidden md:block md:w-56 lg:w-72' : 'w-full md:w-56 lg:w-72'"
+      >
+        <NoteTree
+          ref="noteTreeRef"
+          :nodes="notesStore.tree"
+          :selectedKey="notesStore.selectedNoteId"
+          @select="handleSelect"
+          @create-root="openCreateDialog(null)"
+          @create-child="openCreateDialog"
+          @delete="handleDelete"
         />
-        <span class="text-sm text-surface-500">{{ t('band_space_notes.page.heading') }}</span>
       </div>
 
-      <div v-if="notesStore.isLoading" class="flex items-center justify-center flex-1">
-        <ProgressSpinner />
+      <!-- Main content: always visible on md+, toggle on mobile -->
+      <div
+        class="flex-1 flex flex-col min-w-0"
+        :class="mobileView === 'tree' ? 'hidden md:flex' : ''"
+      >
+        <!-- A phone's bar over the note: back to the list, where the save stands, and the note's ⋯.
+             Stuck under the site header; the editor's toolbar sticks under it. -->
+        <div
+          v-if="mobileView === 'editor'"
+          class="md:hidden sticky top-16 z-30 flex h-13 items-center gap-1 rounded-t-2xl border-b border-surface-200 bg-surface-0 px-1 dark:border-surface-700 dark:bg-surface-900"
+        >
+          <Button
+            icon="pi pi-arrow-left"
+            :aria-label="t('band_space_notes.page.back')"
+            text
+            rounded
+            severity="secondary"
+            @click="handleBack"
+          />
+          <span class="min-w-0 flex-1 truncate text-sm text-surface-600 dark:text-surface-300">{{ t('band_space_notes.page.heading') }}</span>
+          <NoteSaveStatus :status="notesStore.saveStatus" />
+          <Button
+            v-if="notesStore.selectedNoteId && noteTreeRef?.hasActions(notesStore.selectedNoteId)"
+            icon="pi pi-ellipsis-h"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('band_space_notes.tree.note_actions')"
+            aria-haspopup="dialog"
+            @click="noteTreeRef.openActions(notesStore.selectedNoteId, $event)"
+          />
+        </div>
+
+        <div v-if="notesStore.isLoading" class="flex items-center justify-center flex-1">
+          <ProgressSpinner />
+        </div>
+
+        <div v-else-if="notesStore.loadError" class="flex items-center justify-center flex-1 p-8">
+          <Message severity="error" :closable="false">{{ notesStore.loadError }}</Message>
+        </div>
+
+        <div v-else-if="notesStore.isLoadingNote" class="flex items-center justify-center flex-1">
+          <ProgressSpinner />
+        </div>
+
+        <!-- The reload count is in the key so an explicit reload rebuilds the editor around the note
+             that came back. Selecting or saving never changes it, so the caret survives both. -->
+        <NoteEditor
+          v-else-if="notesStore.selectedNote"
+          :key="`${notesStore.selectedNoteId}-${notesStore.selectedNoteReloadCount}`"
+          :note="notesStore.selectedNote"
+          :band-space-id="bandSpaceId"
+          :saveStatus="notesStore.saveStatus"
+          :isReloading="notesStore.isReloadingNote"
+          @update-title="handleUpdateTitle"
+          @update-emoji="handleUpdateEmoji"
+          @reload="handleReloadNote"
+          @pending-edits-change="editorHasPendingEdits = $event"
+        />
+
+        <div v-else class="hidden md:flex flex-col items-center justify-center flex-1 text-center p-8">
+          <i class="pi pi-file-edit text-5xl text-surface-300 dark:text-surface-600 mb-4"></i>
+          <p class="text-lg text-surface-500 dark:text-surface-400">
+            {{ t('band_space_notes.page.select_prompt') }}
+          </p>
+        </div>
       </div>
 
-      <div v-else-if="notesStore.loadError" class="flex items-center justify-center flex-1 p-8">
-        <Message severity="error" :closable="false">{{ notesStore.loadError }}</Message>
-      </div>
-
-      <div v-else-if="notesStore.isLoadingNote" class="flex items-center justify-center flex-1">
-        <ProgressSpinner />
-      </div>
-
-      <!-- The reload count is in the key so an explicit reload rebuilds the editor around the note
-           that came back. Selecting or saving never changes it, so the caret survives both. -->
-      <NoteEditor
-        v-else-if="notesStore.selectedNote"
-        :key="`${notesStore.selectedNoteId}-${notesStore.selectedNoteReloadCount}`"
-        :note="notesStore.selectedNote"
-        :band-space-id="bandSpaceId"
-        :saveStatus="notesStore.saveStatus"
-        :isReloading="notesStore.isReloadingNote"
-        @update-title="handleUpdateTitle"
-        @update-emoji="handleUpdateEmoji"
-        @reload="handleReloadNote"
-        @pending-edits-change="editorHasPendingEdits = $event"
+      <!-- On a phone « Nouvelle note » floats where the thumb is, as on the other modules. -->
+      <Button
+        v-if="isBelowMd && mobileView === 'tree'"
+        :label="t('band_space_notes.tree.new_note')"
+        icon="pi pi-plus"
+        rounded
+        class="fixed! right-5 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 shadow-lg"
+        @click="openCreateDialog(null)"
       />
 
-      <div v-else class="hidden md:flex flex-col items-center justify-center flex-1 text-center p-8">
-        <i class="pi pi-file-edit text-5xl text-surface-300 dark:text-surface-600 mb-4"></i>
-        <p class="text-lg text-surface-500 dark:text-surface-400">
-          {{ t('band_space_notes.page.select_prompt') }}
-        </p>
-      </div>
+      <!-- Create Note Dialog -->
+      <CreateNoteDialog
+        v-model:visible="showCreateDialog"
+        :parentId="createParentId"
+        @created="handleCreateNote"
+      />
+
     </div>
-
-    <!-- Create Note Dialog -->
-    <CreateNoteDialog
-      v-model:visible="showCreateDialog"
-      :parentId="createParentId"
-      @created="handleCreateNote"
-    />
-
   </div>
 </template>
 
@@ -90,8 +123,10 @@ import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import CreateNoteDialog from '../../components/BandSpace/Notes/CreateNoteDialog.vue'
 import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
+import NoteSaveStatus from '../../components/BandSpace/Notes/NoteSaveStatus.vue'
 import NoteTree from '../../components/BandSpace/Notes/NoteTree.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
+import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { useBandSpaceNotesStore } from '../../store/bandSpace/bandSpaceNotes.js'
 import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
 
@@ -109,6 +144,7 @@ notesStore.clear()
 const showCreateDialog = ref(false)
 const createParentId = ref(null)
 const mobileView = ref('tree') // 'tree' | 'editor'
+const isBelowMd = useIsBelowMd()
 const noteTreeRef = ref(null)
 // Only one editor is ever mounted, the open note's, so one flag is the whole answer.
 const editorHasPendingEdits = ref(false)
@@ -169,8 +205,14 @@ function openNote(noteId) {
   // Re-opening the note already on screen unmounts nothing, so there is nothing to ask about.
   if (noteId === notesStore.selectedNoteId) return true
 
-  if (!notesStore.confirmDiscardingEdits()) return false
+  // Kept rather than switched: a phone shows the note the member chose to keep.
+  if (!notesStore.confirmDiscardingEdits()) {
+    if (notesStore.selectedNoteId) mobileView.value = 'editor'
+    return false
+  }
 
+  // However it was asked for (the tree, a link, « Créer »), a phone shows the note it opens.
+  mobileView.value = 'editor'
   notesStore.selectNote(bandSpaceId, noteId).then(() => {
     // Once it has loaded, so a note deleted since is not recorded, and not if another took its place (#1047).
     if (notesStore.selectedNoteId === noteId && notesStore.selectedNote) {
@@ -182,9 +224,8 @@ function openNote(noteId) {
 }
 
 function handleSelect(noteId) {
-  if (!openNote(noteId)) return
-
-  mobileView.value = 'editor'
+  // Opening the note already open still has to bring a phone back to it.
+  if (openNote(noteId)) mobileView.value = 'editor'
 }
 
 function handleBack() {
@@ -211,6 +252,9 @@ watch(
 watch(
   () => notesStore.selectedNoteId,
   (noteId) => {
+    // The open note was deleted: a phone goes back to the list rather than an empty screen. Not when
+    // it failed to load, whose error is shown where the note would have been.
+    if (!noteId && !notesStore.loadError) mobileView.value = 'tree'
     if (noteId && noteId !== route.query.note) {
       router.replace({ query: { ...route.query, note: noteId } })
     }

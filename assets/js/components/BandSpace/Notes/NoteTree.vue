@@ -1,6 +1,7 @@
 <template>
   <div class="flex flex-col h-full">
-    <div class="flex items-center justify-between p-3 border-b border-surface-200 dark:border-surface-700">
+    <!-- On a phone the page's title and the floating « Nouvelle note » stand for this head. -->
+    <div class="flex items-center justify-between p-3 border-b border-surface-200 dark:border-surface-700 max-md:hidden">
       <span class="font-semibold text-surface-700 dark:text-surface-200">{{ t('band_space_notes.tree.heading') }}</span>
       <Button
         v-tooltip.bottom="t('band_space_notes.tree.new_note')"
@@ -37,7 +38,7 @@
               severity="secondary"
               text
               rounded
-              class="!w-8 !h-8 shrink-0 lg:opacity-0 transition-opacity note-tree-action"
+              class="!w-8 !h-8 max-md:!w-11 max-md:!h-11 shrink-0 lg:opacity-0 transition-opacity note-tree-action"
               @click.stop="openNodeMenu($event, node)"
             />
           </div>
@@ -56,7 +57,24 @@
         />
       </div>
     </div>
-    <Menu ref="nodeMenu" :model="nodeMenuItems" :popup="true" />
+    <Menu v-if="!isBelowMd" ref="nodeMenu" :model="nodeMenuItems" :popup="true" />
+
+    <BottomSheet
+      v-else
+      v-model:visible="isActionsSheetOpen"
+      :title="actionsSheetTitle"
+      @after-hide="actionsSheet.onAfterHide"
+    >
+      <SheetAction
+        v-for="item in nodeMenuItems"
+        :key="item.label"
+        :icon="item.sheetIcon"
+        :danger="item.danger"
+        @click="actionsSheet.run(item.command)"
+      >
+        {{ item.label }}
+      </SheetAction>
+    </BottomSheet>
   </div>
 </template>
 
@@ -66,9 +84,13 @@ import Menu from 'primevue/menu'
 import Tree from 'primevue/tree'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { canDeleteNote } from '../../../utils/noteActions.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 
 const MAX_DEPTH = 3
 
@@ -100,6 +122,7 @@ function nodeActions(node) {
     items.push({
       label: t('band_space_notes.tree.add_child'),
       icon: 'pi pi-plus',
+      sheetIcon: 'pi-plus',
       command: () => emit('create-child', node.key)
     })
   }
@@ -108,6 +131,8 @@ function nodeActions(node) {
     items.push({
       label: t('band_space_notes.tree.delete'),
       icon: 'pi pi-trash',
+      sheetIcon: 'pi-trash',
+      danger: true,
       class: 'text-red-500',
       command: () => emit('delete', node.key)
     })
@@ -118,7 +143,48 @@ function nodeActions(node) {
 
 function openNodeMenu(event, node) {
   nodeMenuItems.value = nodeActions(node)
+  if (isBelowMd.value) {
+    actionsSheetNode.value = node
+    isActionsSheetOpen.value = true
+    return
+  }
   nodeMenu.value.toggle(event)
+}
+
+// On a phone ⋯ opens a sheet, named after the note it acts on.
+const isBelowMd = useIsBelowMd()
+const isActionsSheetOpen = ref(false)
+const actionsSheetNode = ref(null)
+// The sub-note dialog and the delete confirm open once the sheet has gone.
+const actionsSheet = useActionAfterSheetHide(isActionsSheetOpen)
+const actionsSheetTitle = computed(() => {
+  const node = actionsSheetNode.value
+  return node ? `${node.data.emoji || '📄'} ${node.label}` : ''
+})
+
+watch(isBelowMd, () => {
+  isActionsSheetOpen.value = false
+})
+
+function findNode(nodes, key) {
+  for (const node of nodes) {
+    if (node.key === key) return node
+    const inChildren = node.children ? findNode(node.children, key) : null
+    if (inChildren) return inChildren
+  }
+  return null
+}
+
+/** Whether the note offers any action, so the open note's bar shows its ⋯ only when it does. */
+function hasActions(noteId) {
+  const node = findNode(props.nodes, noteId)
+  return node !== null && nodeActions(node).length > 0
+}
+
+/** The same sheet, from the open note's bar rather than its row. */
+function openActions(noteId, event) {
+  const node = findNode(props.nodes, noteId)
+  if (node) openNodeMenu(event, node)
 }
 
 const depthMap = computed(() => {
@@ -149,7 +215,7 @@ function expandNode(key) {
   expandedKeys.value = { ...expandedKeys.value, [key]: true }
 }
 
-defineExpose({ expandNode })
+defineExpose({ expandNode, hasActions, openActions })
 
 /**
  * Tree moves its own highlight before it tells us, and the parent may refuse the switch when the
@@ -211,5 +277,23 @@ async function handleSelect(node) {
 
 .note-tree .p-tree-node-content:hover .note-tree-action {
   opacity: 1;
+}
+
+/* A phone: rows a finger can hit, the arrow to the sub-notes at 40px. */
+@media (width < 48rem) {
+  .note-tree .p-tree-node-content {
+    min-height: 3rem;
+    padding: 0.125rem 0.25rem !important;
+  }
+
+  .note-tree .p-tree-node-label .text-sm {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .note-tree .p-tree-node-toggle-button {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
 }
 </style>

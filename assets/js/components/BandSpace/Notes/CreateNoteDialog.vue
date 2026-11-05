@@ -3,7 +3,7 @@
     v-model:visible="isVisible"
     modal
     :header="parentId ? t('band_space_notes.create_dialog.header_child') : t('band_space_notes.create_dialog.header_root')"
-    :style="{ width: '25rem' }"
+    v-bind="sheetDialog"
     :closable="true"
     :closeOnEscape="true"
   >
@@ -44,8 +44,11 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 
 const { t } = useI18n()
+// A sheet on a phone, where 25rem is wider than the screen.
+const sheetDialog = useSheetDialog('25rem')
 
 const props = defineProps({
   parentId: { type: String, default: null }
