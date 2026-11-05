@@ -117,5 +117,9 @@
       "import_error_summary": "Could not import"
     }
   },
-  "link_address_error": "The address must start with http://, https:// or mailto:"
+  "link_address_error": "The address must start with http://, https:// or mailto:",
+  "phone": {
+    "hint": "Open a note to write in it, ⋯ for its actions.",
+    "has_children": "Has sub-notes"
+  }
 }

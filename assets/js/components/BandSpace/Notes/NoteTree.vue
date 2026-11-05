@@ -1,6 +1,7 @@
 <template>
   <div class="flex flex-col h-full">
-    <div class="flex items-center justify-between p-3 border-b border-surface-200 dark:border-surface-700">
+    <!-- On a phone the page's title and the floating « Nouvelle note » stand for this head. -->
+    <div class="flex items-center justify-between p-3 border-b border-surface-200 dark:border-surface-700 max-md:hidden">
       <span class="font-semibold text-surface-700 dark:text-surface-200">{{ t('band_space_notes.tree.heading') }}</span>
       <Button
         v-tooltip.bottom="t('band_space_notes.tree.new_note')"
@@ -13,7 +14,7 @@
         @click="emit('create-root')"
       />
     </div>
-    <div class="flex-1 overflow-y-auto overflow-x-hidden p-2">
+    <div class="flex-1 overflow-y-auto overflow-x-hidden p-2 max-md:p-0">
       <Tree
         v-if="nodes.length > 0"
         :value="nodes"
@@ -25,9 +26,9 @@
       >
         <template #default="{ node }">
           <div class="flex items-center w-full min-w-0">
-            <span class="text-sm min-w-0 flex-1 truncate">
-              <span v-if="node.data.emoji" class="mr-1">{{ node.data.emoji }}</span>
-              <span v-else class="mr-1 text-surface-400">📄</span>
+            <span class="note-tree-title text-sm min-w-0 flex-1 truncate">
+              <span v-if="node.data.emoji" class="note-tree-emoji mr-1">{{ node.data.emoji }}</span>
+              <span v-else class="note-tree-emoji mr-1 text-surface-400">📄</span>
               {{ node.label }}
             </span>
             <Button
@@ -37,7 +38,7 @@
               severity="secondary"
               text
               rounded
-              class="!w-8 !h-8 shrink-0 lg:opacity-0 transition-opacity note-tree-action"
+              class="!w-8 !h-8 max-md:!w-11 max-md:!h-11 shrink-0 lg:opacity-0 transition-opacity note-tree-action"
               @click.stop="openNodeMenu($event, node)"
             />
           </div>
@@ -56,7 +57,33 @@
         />
       </div>
     </div>
-    <Menu ref="nodeMenu" :model="nodeMenuItems" :popup="true" />
+    <Menu v-if="!isBelowMd" ref="nodeMenu" :model="nodeMenuItems" :popup="true" />
+
+    <BottomSheet
+      v-else
+      v-model:visible="isActionsSheetOpen"
+      :title="actionsSheetTitle"
+      @after-hide="actionsSheet.onAfterHide"
+    >
+      <!-- Said up front, since « Supprimer » takes the sub-notes with it. -->
+      <template #header>
+        <span class="flex min-w-0 flex-col">
+          <span class="truncate text-lg font-semibold text-surface-900 dark:text-surface-0">{{ actionsSheetTitle }}</span>
+          <span v-if="actionsSheetNode?.children?.length" class="text-sm text-surface-600 dark:text-surface-400">
+            {{ t('band_space_notes.phone.has_children') }}
+          </span>
+        </span>
+      </template>
+      <SheetAction
+        v-for="item in nodeMenuItems"
+        :key="item.label"
+        :icon="item.sheetIcon"
+        :danger="item.danger"
+        @click="actionsSheet.run(item.command)"
+      >
+        {{ item.label }}
+      </SheetAction>
+    </BottomSheet>
   </div>
 </template>
 
@@ -66,9 +93,13 @@ import Menu from 'primevue/menu'
 import Tree from 'primevue/tree'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useActionAfterSheetHide } from '../../../composables/useActionAfterSheetHide.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { canDeleteNote } from '../../../utils/noteActions.js'
+import BottomSheet from '../../Global/BottomSheet.vue'
+import SheetAction from '../../Global/SheetAction.vue'
 
 const MAX_DEPTH = 3
 
@@ -100,6 +131,7 @@ function nodeActions(node) {
     items.push({
       label: t('band_space_notes.tree.add_child'),
       icon: 'pi pi-plus',
+      sheetIcon: 'pi-plus',
       command: () => emit('create-child', node.key)
     })
   }
@@ -108,6 +140,8 @@ function nodeActions(node) {
     items.push({
       label: t('band_space_notes.tree.delete'),
       icon: 'pi pi-trash',
+      sheetIcon: 'pi-trash',
+      danger: true,
       class: 'text-red-500',
       command: () => emit('delete', node.key)
     })
@@ -118,7 +152,48 @@ function nodeActions(node) {
 
 function openNodeMenu(event, node) {
   nodeMenuItems.value = nodeActions(node)
+  if (isBelowMd.value) {
+    actionsSheetNode.value = node
+    isActionsSheetOpen.value = true
+    return
+  }
   nodeMenu.value.toggle(event)
+}
+
+// On a phone ⋯ opens a sheet, named after the note it acts on.
+const isBelowMd = useIsBelowMd()
+const isActionsSheetOpen = ref(false)
+const actionsSheetNode = ref(null)
+// The sub-note dialog and the delete confirm open once the sheet has gone.
+const actionsSheet = useActionAfterSheetHide(isActionsSheetOpen)
+const actionsSheetTitle = computed(() => {
+  const node = actionsSheetNode.value
+  return node ? `${node.data.emoji || '📄'} ${node.label}` : ''
+})
+
+watch(isBelowMd, () => {
+  isActionsSheetOpen.value = false
+})
+
+function findNode(nodes, key) {
+  for (const node of nodes) {
+    if (node.key === key) return node
+    const inChildren = node.children ? findNode(node.children, key) : null
+    if (inChildren) return inChildren
+  }
+  return null
+}
+
+/** Whether the note offers any action, so the open note's bar shows its ⋯ only when it does. */
+function hasActions(noteId) {
+  const node = findNode(props.nodes, noteId)
+  return node !== null && nodeActions(node).length > 0
+}
+
+/** The same sheet, from the open note's bar rather than its row. */
+function openActions(noteId, event) {
+  const node = findNode(props.nodes, noteId)
+  if (node) openNodeMenu(event, node)
 }
 
 const depthMap = computed(() => {
@@ -149,7 +224,7 @@ function expandNode(key) {
   expandedKeys.value = { ...expandedKeys.value, [key]: true }
 }
 
-defineExpose({ expandNode })
+defineExpose({ expandNode, hasActions, openActions })
 
 /**
  * Tree moves its own highlight before it tells us, and the parent may refuse the switch when the
@@ -211,5 +286,61 @@ async function handleSelect(node) {
 
 .note-tree .p-tree-node-content:hover .note-tree-action {
   opacity: 1;
+}
+
+/* A phone: one row per note across the box, a line between rows, the arrow to the sub-notes at
+   40px, and a sub-note indented on a rail under its parent. */
+@media (width < 48rem) {
+  .note-tree .p-tree-root-children,
+  .note-tree .p-tree-node-children {
+    gap: 0 !important;
+  }
+
+  .note-tree .p-tree-node-children {
+    padding-left: 0 !important;
+  }
+
+  .note-tree .p-tree-node-content {
+    min-height: 3.5rem;
+    padding: 0.375rem 0.25rem 0.375rem 0.5rem !important;
+    border-top: 1px solid var(--p-content-border-color);
+    border-radius: 0;
+  }
+
+  .note-tree .p-tree-root-children > .p-tree-node:first-child > .p-tree-node-content {
+    border-top: 0;
+  }
+
+  .note-tree .p-tree-node-children .p-tree-node-content {
+    padding-left: 2rem !important;
+    background-image: linear-gradient(var(--p-content-border-color), var(--p-content-border-color));
+    background-position: 1.375rem 0;
+    background-size: 2px 100%;
+    background-repeat: no-repeat;
+  }
+
+  .note-tree .p-tree-node-children .p-tree-node-children .p-tree-node-content {
+    padding-left: 3.5rem !important;
+    background-position: 2.875rem 0;
+  }
+
+  .note-tree .note-tree-title {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5rem;
+  }
+
+  .note-tree .note-tree-emoji {
+    display: inline-block;
+    width: 1.75rem;
+    margin-right: 0.375rem;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .note-tree .p-tree-node-toggle-button {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
 }
 </style>

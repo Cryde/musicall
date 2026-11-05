@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full">
     <!-- Title -->
-    <div class="p-4 border-b border-surface-200 dark:border-surface-700">
+    <div class="p-4 border-b border-surface-200 dark:border-surface-700 max-md:px-5 max-md:pb-3 max-md:border-b-0">
       <div class="flex items-center justify-between">
         <div class="flex items-center flex-1 min-w-0">
           <div ref="emojiPickerRef" class="relative">
@@ -22,26 +22,14 @@
           </div>
           <InputText
             v-model="editableTitle"
-            class="w-full text-xl font-semibold border-0 shadow-none bg-transparent"
+            class="w-full text-xl font-semibold !border-0 !shadow-none !bg-transparent max-md:!px-2 max-md:!text-[1.375rem]"
             :placeholder="t('band_space_notes.editor.title_placeholder')"
             @blur="handleTitleBlur"
             @keydown.enter="$event.target.blur()"
           />
         </div>
-        <span v-if="saveStatus" class="text-xs text-surface-500 whitespace-nowrap ml-3">
-          <template v-if="saveStatus === 'saving'">
-            <i class="pi pi-spin pi-spinner mr-1"></i>{{ t('band_space_notes.editor.save_status.saving') }}
-          </template>
-          <template v-else-if="saveStatus === 'saved'">
-            <i class="pi pi-check mr-1 text-green-500"></i>{{ t('band_space_notes.editor.save_status.saved') }}
-          </template>
-          <template v-else-if="saveStatus === 'conflict'">
-            <i class="pi pi-exclamation-triangle mr-1 text-orange-500"></i>{{ t('band_space_notes.editor.save_status.conflict') }}
-          </template>
-          <template v-else-if="saveStatus === 'error'">
-            <i class="pi pi-times mr-1 text-red-500"></i>{{ t('band_space_notes.editor.save_status.error') }}
-          </template>
-        </span>
+        <!-- On a phone the status sits in the note's bar, above. -->
+        <NoteSaveStatus :status="saveStatus" class="ml-3 max-md:hidden" />
       </div>
       <i18n-t keypath="band_space_notes.editor.created_by" tag="p" class="mt-1 ml-10 pl-2 text-xs text-surface-500 dark:text-surface-400">
         <template #author>
@@ -75,13 +63,15 @@
       </div>
     </Message>
 
-    <!-- Toolbar -->
-    <div class="sticky top-0 z-30 bg-surface-50 dark:bg-surface-700 border-b border-surface-200 dark:border-surface-600 p-2">
-      <div class="flex flex-wrap items-center gap-1">
+    <!-- Toolbar. On a phone one row that scrolls sideways, stuck under the site header and the
+         note's bar so it stays above the text while typing. -->
+    <div class="note-toolbar sticky top-0 max-md:top-[calc(4rem+3.5rem)] z-30 bg-surface-50 dark:bg-surface-700 border-b border-surface-200 dark:border-surface-600 p-2 max-md:px-0 max-md:py-1 max-md:dark:bg-surface-950 max-md:dark:border-surface-700">
+      <div class="flex flex-wrap items-center gap-1 max-md:flex-nowrap max-md:overflow-x-auto max-md:pr-8 max-md:pl-2 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden">
         <!-- Text formatting -->
         <div class="flex items-center gap-1 pr-2 border-r border-surface-200 dark:border-surface-700">
           <Button
             v-tooltip.bottom="t('band_space_notes.editor.toolbar.bold')"
+            :aria-label="t('band_space_notes.editor.toolbar.bold')"
             :severity="editor?.isActive('bold') ? 'primary' : 'secondary'"
             text
             size="small"
@@ -92,6 +82,7 @@
           </Button>
           <Button
             v-tooltip.bottom="t('band_space_notes.editor.toolbar.italic')"
+            :aria-label="t('band_space_notes.editor.toolbar.italic')"
             :severity="editor?.isActive('italic') ? 'primary' : 'secondary'"
             text
             size="small"
@@ -279,6 +270,11 @@
           />
         </div>
       </div>
+      <!-- Says more tools follow past the edge. -->
+      <span
+        class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-surface-50 md:hidden dark:from-surface-950"
+        aria-hidden="true"
+      />
     </div>
 
     <!-- Table bubble menu -->
@@ -365,7 +361,7 @@
     </BubbleMenu>
 
     <!-- Editor content -->
-    <div class="flex-1 p-4 overflow-y-auto">
+    <div class="flex-1 p-4 overflow-y-auto max-md:px-5 max-md:pt-3 max-md:pb-8">
       <EditorContent :editor="editor" class="note-editor" />
     </div>
   </div>
@@ -383,6 +379,7 @@ import Popover from 'primevue/popover'
 import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
 import UserName from '../../User/UserName.vue'
+import NoteSaveStatus from './NoteSaveStatus.vue'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -698,6 +695,35 @@ async function uploadAndInsertImage(file) {
 .note-editor .tiptap {
   min-height: 300px;
   outline: none;
+}
+
+/* A phone: tools a finger can hit on the one row, and the note set for reading. */
+@media (width < 48rem) {
+  .note-toolbar .p-button {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.375rem;
+  }
+
+  /* The groups split by a short rule rather than a full height border. */
+  .note-toolbar > div > div {
+    padding: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  .note-toolbar > div > div + div::before {
+    content: '';
+    flex-shrink: 0;
+    width: 1px;
+    height: 1.5rem;
+    margin: 0 0.25rem;
+    background: var(--p-content-border-color);
+  }
+
+  .note-editor .tiptap {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
 }
 
 .note-editor .tiptap h1 {
