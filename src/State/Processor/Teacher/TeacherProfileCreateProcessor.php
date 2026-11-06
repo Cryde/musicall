@@ -22,6 +22,7 @@ use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Repository\Attribute\InstrumentRepository;
 use App\Repository\Attribute\StyleRepository;
+use App\Service\Teacher\TeacherLessonContentWriter;
 use App\State\Provider\Teacher\TeacherProfileEditProvider;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,6 +41,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         private InstrumentRepository $instrumentRepository,
         private StyleRepository $styleRepository,
         private TeacherProfileEditProvider $outputProvider,
+        private TeacherLessonContentWriter $lessonContentWriter,
     ) {
     }
 
@@ -84,6 +86,8 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         // Trial lesson
         $profile->offersTrial = $data->offersTrial;
         $profile->trialPrice = $data->trialPrice;
+
+        $this->lessonContentWriter->write($profile, $data);
 
         // Locations
         foreach ($profile->locations->toArray() as $location) {

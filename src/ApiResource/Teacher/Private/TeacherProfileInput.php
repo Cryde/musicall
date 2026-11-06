@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\ApiResource\Teacher\Private;
 
 use App\ApiResource\Teacher\Private\Input\Availability;
+use App\ApiResource\Teacher\Private\Input\LevelGoal;
 use App\ApiResource\Teacher\Private\Input\Location;
 use App\ApiResource\Teacher\Private\Input\Package;
 use App\ApiResource\Teacher\Private\Input\Pricing;
 use App\ApiResource\Teacher\Private\Input\SocialLink;
+use App\ApiResource\Teacher\Private\Input\Song;
+use App\Validator\Teacher\ValidLevelGoals;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[ValidLevelGoals]
 class TeacherProfileInput
 {
     #[Assert\NotBlank(message: 'profile.teacher.description_required', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
@@ -72,4 +76,22 @@ class TeacherProfileInput
     /** @var SocialLink[] */
     #[Assert\Valid]
     public $socialLinks = [];
+
+    /**
+     * « Ce que tu vas apprendre » (#1312). Null, left out of the request, keeps what is stored: the Android app saves
+     * the whole profile without it.
+     *
+     * @var LevelGoal[]|null
+     */
+    #[Assert\Valid]
+    public ?array $levelGoals = null;
+
+    /**
+     * « Morceaux travaillés » (#1312). Null keeps what is stored, as for the goals.
+     *
+     * @var Song[]|null
+     */
+    #[Assert\Count(max: 8, maxMessage: 'profile.teacher.song.too_many')]
+    #[Assert\Valid]
+    public ?array $songs = null;
 }

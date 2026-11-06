@@ -130,6 +130,8 @@ class TeacherProfileEditTest extends ApiTestCase
                 ['id' => $responseData['packages'][0]['id'], 'title' => 'Pack débutant', 'description' => '5 cours pour bien commencer', 'sessions_count' => 5, 'price' => 200, '@type' => 'TeacherProfilePackage'],
             ],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
         ]);
     }
 
@@ -495,6 +497,8 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
                 ['id' => $responseData['packages'][1]['id'], 'title' => 'Pack découverte', 'sessions_count' => 2, 'price' => 80, '@type' => 'TeacherProfilePackage'],
             ],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
         ]);
     }
 

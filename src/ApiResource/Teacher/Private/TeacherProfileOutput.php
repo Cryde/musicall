@@ -97,4 +97,18 @@ class TeacherProfileOutput
     /** @var TeacherProfileSocialLink[] */
     #[ApiProperty(genId: false)]
     public array $socialLinks = [];
+
+    /**
+     * « Ce que tu vas apprendre » (#1312), for the levels still accepted, in teaching order.
+     *
+     * @var list<array{level: string, title: string|null, points: list<string>}>
+     */
+    public array $levelGoals = [];
+
+    /**
+     * « Morceaux travaillés » (#1312), in the teacher's order.
+     *
+     * @var list<array{artist: string|null, title: string}>
+     */
+    public array $songs = [];
 }
