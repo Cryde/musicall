@@ -186,6 +186,14 @@
         </div>
       </section>
 
+      <!-- The wall (#1316) -->
+      <ProfileWall
+        :username="profile.username"
+        :display-name="profile.display_name || profile.username"
+        :picture-url="profile.profile_picture_url"
+        :is-owner="isOwnProfile"
+      />
+
       <!-- Social links -->
       <div v-if="hasSocialLinks || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
@@ -360,6 +368,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
+import ProfileWall from '../../../components/Profile/Wall/ProfileWall.vue'
 import ReportButton from '../../../components/Report/ReportButton.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import BlockUserButton from '../../../components/User/Block/BlockUserButton.vue'

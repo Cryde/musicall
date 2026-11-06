@@ -102,7 +102,8 @@
       "profile_media": "Média",
       "forum_post": "Message du forum",
       "comment": "Commentaire",
-      "publication": "Publication"
+      "publication": "Publication",
+      "profile_post": "Post"
     },
     "live_state": {
       "unchanged": "Inchangé",
@@ -129,7 +130,9 @@
       "band_chat_message": "un message de la discussion du groupe {label}",
       "any_band_chat_message": "un message de groupe",
       "message": "un message privé",
-      "other": "un contenu"
+      "other": "un contenu",
+      "profile_post": "un post de {label}",
+      "any_profile_post": "un post"
     },
     "link": {
       "private_conversation": "Conversation privée",
