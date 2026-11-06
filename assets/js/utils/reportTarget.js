@@ -34,7 +34,8 @@ const TARGET_TYPE_LABEL_KEYS = {
   profile_media: 'shared.report.target_type.profile_media',
   forum_post: 'shared.report.target_type.forum_post',
   comment: 'shared.report.target_type.comment',
-  publication: 'shared.report.target_type.publication'
+  publication: 'shared.report.target_type.publication',
+  profile_post: 'shared.report.target_type.profile_post'
 }
 
 const LIVE_STATES = {
@@ -101,6 +102,10 @@ export function reportSubject(type, label) {
       return label
         ? t('shared.report.subject.publication', { label })
         : t('shared.report.subject.any_publication')
+    case 'profile_post':
+      return label
+        ? t('shared.report.subject.profile_post', { label })
+        : t('shared.report.subject.any_profile_post')
     case 'band_chat_message':
       return label
         ? t('shared.report.subject.band_chat_message', { label })
@@ -153,6 +158,7 @@ export function reportContentLink(report) {
   switch (report.target_type) {
     case 'user':
     case 'announce':
+    case 'profile_post':
       return context.username
         ? linkTo({ name: 'app_user_public_profile', params: { username: context.username } })
         : noLink()

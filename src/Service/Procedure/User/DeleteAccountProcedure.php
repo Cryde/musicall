@@ -7,6 +7,7 @@ namespace App\Service\Procedure\User;
 use App\Entity\User;
 use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Repository\Message\MessageFileRepository;
+use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Service\OAuth\Apple\AppleTokenRevoker;
@@ -26,6 +27,7 @@ readonly class DeleteAccountProcedure
         private UserBlockRepository $userBlockRepository,
         private MessageFileRepository $messageFileRepository,
         private AppleTokenRevoker $appleTokenRevoker,
+        private ProfilePostRepository $profilePostRepository,
     ) {
     }
 
@@ -103,6 +105,11 @@ readonly class DeleteAccountProcedure
         // ORM so VichUploader deletes each stored object.
         foreach ($this->messageFileRepository->findByUploader($user) as $messageFile) {
             $this->entityManager->remove($messageFile);
+        }
+
+        // The wall goes with the account (#1316), through the ORM so VichUploader deletes each photo.
+        foreach ($this->profilePostRepository->findByAuthor($user) as $post) {
+            $this->entityManager->remove($post);
         }
 
         // Take the account out of its band spaces. Runs after the anonymization so the memberships it

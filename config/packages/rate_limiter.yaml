@@ -177,6 +177,12 @@ framework:
             limit: 5
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # Posting on your own profile wall (#1316): enough for a busy evening of gig photos, not a flood.
+        profile_post:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
         # Reporting content (#1116): a handful an hour is plenty for real use, and every attempt counts
         # since a 404 also says whether something exists.
         report_create:

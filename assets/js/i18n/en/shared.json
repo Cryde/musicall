@@ -102,7 +102,8 @@
       "profile_media": "Media",
       "forum_post": "Forum post",
       "comment": "Comment",
-      "publication": "Publication"
+      "publication": "Publication",
+      "profile_post": "Post"
     },
     "live_state": {
       "unchanged": "Unchanged",
@@ -129,7 +130,9 @@
       "band_chat_message": "a message in the {label} band chat",
       "any_band_chat_message": "a band chat message",
       "message": "a private message",
-      "other": "some content"
+      "other": "some content",
+      "profile_post": "a post by {label}",
+      "any_profile_post": "a post"
     },
     "link": {
       "private_conversation": "Private conversation",

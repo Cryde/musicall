@@ -27,10 +27,12 @@ use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
+use App\Tests\Factory\Profile\ProfilePostFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Report\ReportFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
+use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
@@ -185,6 +187,37 @@ class ReportPostTest extends ApiTestCase
         $this->assertSame(['profile' => 'musician', 'username' => 'guitariste', 'platform' => 'youtube'], $report->snapshotContext);
     }
 
+    public function test_reports_a_wall_post(): void
+    {
+        $reporter = $this->reporter();
+        $owner = UserFactory::new()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $post = ProfilePostFactory::new()->create([
+            'author' => $owner,
+            'content' => 'Propos haineux',
+            'mediaUrl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        ]);
+
+        $this->report($reporter, 'profile_post', (string) $post->id, 'inappropriate');
+
+        $this->assertNoContent();
+        $report = $this->onlyReport();
+        $this->assertSame('Propos haineux https://www.youtube.com/watch?v=dQw4w9WgXcQ', $report->snapshotText);
+        $this->assertSame(['username' => 'guitariste', 'photo_count' => 0], $report->snapshotContext);
+    }
+
+    public function test_a_wall_post_hidden_by_a_block_is_not_found(): void
+    {
+        $reporter = $this->reporter();
+        $owner = UserFactory::new()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+        UserBlockFactory::new()->create(['blocker' => $owner, 'blocked' => $reporter]);
+
+        $this->report($reporter, 'profile_post', (string) $post->id, 'inappropriate');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals(self::NOT_FOUND);
+    }
+
     public function test_reports_a_forum_post_with_its_page(): void
     {
         $reporter = $this->reporter();
@@ -264,7 +297,7 @@ class ReportPostTest extends ApiTestCase
      */
     public static function uuidTargetTypes(): iterable
     {
-        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post'] as $type) {
+        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post', 'profile_post'] as $type) {
             yield $type => [$type];
         }
     }
