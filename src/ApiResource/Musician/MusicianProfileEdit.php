@@ -15,6 +15,7 @@ use App\State\Processor\Musician\MusicianProfileCreateProcessor;
 use App\State\Processor\Musician\MusicianProfileDeleteProcessor;
 use App\State\Processor\Musician\MusicianProfileEditProcessor;
 use App\State\Provider\Musician\MusicianProfileEditProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[Get(
     uriTemplate: '/user/musician-profile',
@@ -65,4 +66,14 @@ class MusicianProfileEdit
     /** @var MusicianProfileEditStyle[] Used for output/display */
     #[ApiProperty(genId: false)]
     public array $styles = [];
+
+    /**
+     * Null when the request leaves it out: the stored bands stay, as the Android app does not send them.
+     *
+     * @var MusicianProfileBand[]|null
+     */
+    #[ApiProperty(genId: false)]
+    #[Assert\Count(max: 5, maxMessage: 'profile.musician.band.too_many')]
+    #[Assert\Valid]
+    public ?array $bands = null;
 }

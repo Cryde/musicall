@@ -402,6 +402,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'display_name' => $user->username,
             'member_since' => '1990-01-02T02:03:04+00:00',
             'musician_instruments' => [],
+            'musician_bands' => [],
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
             'student_levels' => ['beginner', 'advanced'],

@@ -7,6 +7,7 @@ namespace App\ApiResource\Teacher\Public;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\ApiResource\Musician\MusicianProfileBand;
 use App\ApiResource\Musician\PublicMusicianProfileInstrument;
 use App\ApiResource\Teacher\TeacherProfileMedia;
 use App\State\Provider\Teacher\TeacherProfileProvider;
@@ -36,6 +37,14 @@ class TeacherProfile
      */
     #[ApiProperty(genId: false)]
     public array $musicianInstruments = [];
+
+    /**
+     * The bands the member plays in now (#1313), for « Le musicien derrière le prof ». Empty without a musician profile.
+     *
+     * @var MusicianProfileBand[]
+     */
+    #[ApiProperty(genId: false)]
+    public array $musicianBands = [];
 
     public ?string $profilePictureUrl = null;
 

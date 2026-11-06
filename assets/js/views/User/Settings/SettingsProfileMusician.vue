@@ -97,6 +97,28 @@
         </div>
       </div>
 
+      <!-- Bands (#1313) -->
+      <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
+        <div class="md:w-1/3">
+          <div class="text-surface-600 dark:text-surface-400 font-medium">
+            {{ t('profile.settings.musician.bands') }}
+          </div>
+        </div>
+        <div class="md:w-2/3">
+          <ul v-if="profile.bands?.length" class="flex flex-col gap-1 text-surface-900 dark:text-surface-0">
+            <li v-for="(band, index) in profile.bands" :key="index">
+              {{ band.name }}
+              <span class="text-sm text-surface-500 dark:text-surface-400">
+                ({{ band.current ? t('profile.settings.musician.band_current') : t('profile.settings.musician.band_past') }})
+              </span>
+            </li>
+          </ul>
+          <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
+            {{ t('profile.settings.musician.bands_empty') }}
+          </span>
+        </div>
+      </div>
+
       <!-- Action buttons -->
       <div class="flex justify-between items-center">
         <Button

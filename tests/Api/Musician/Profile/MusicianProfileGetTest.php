@@ -76,6 +76,7 @@ class MusicianProfileGetTest extends ApiTestCase
                     'name' => 'Rock',
                 ],
             ],
+            'bands' => [],
         ]);
     }
 
@@ -108,6 +109,7 @@ class MusicianProfileGetTest extends ApiTestCase
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 

@@ -26,6 +26,7 @@ readonly class MusicianProfileBuilder
         private TranslatorInterface $translator,
         private ReferenceNameTranslator $referenceNames,
         private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
+        private MusicianBandResourceBuilder $musicianBandResourceBuilder,
     ) {
     }
 
@@ -54,6 +55,7 @@ readonly class MusicianProfileBuilder
 
         $dto->instruments = $this->musicianInstrumentResourceBuilder->buildList($profile->instruments);
         $dto->styles = $this->buildStyles($profile->styles->toArray());
+        $dto->bands = $this->musicianBandResourceBuilder->buildList($profile->bands);
         $dto->media = $this->musicianProfileMediaResourceBuilder->buildList($profile->media->toArray());
 
         // Musician announces

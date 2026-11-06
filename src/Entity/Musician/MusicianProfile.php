@@ -56,6 +56,14 @@ class MusicianProfile implements ViewableInterface
     #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $media;
 
+    /**
+     * The bands the member plays or played in (#1313), in their order.
+     *
+     * @var list<array{name: string, style_id: string|null, role: string|null, current: bool, url: string|null}>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    public array $bands = [];
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $creationDatetime;
 

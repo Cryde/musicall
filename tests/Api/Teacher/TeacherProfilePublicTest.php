@@ -51,6 +51,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'display_name' => 'teacher_user',
             'member_since' => '1990-01-02T02:03:04+00:00',
             'musician_instruments' => [],
+            'musician_bands' => [],
             'description' => 'Professeur de guitare expérimenté',
             'years_of_experience' => 10,
             'student_levels' => ['beginner', 'intermediate'],
@@ -108,6 +109,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'display_name' => 'music_teacher',
             'member_since' => '1990-01-02T02:03:04+00:00',
             'musician_instruments' => [],
+            'musician_bands' => [],
             'description' => 'Cours de guitare rock et pop',
             'student_levels' => ['beginner'],
             'age_groups' => [],
@@ -166,6 +168,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'display_name' => 'minimal_teacher',
             'member_since' => '1990-01-02T02:03:04+00:00',
             'musician_instruments' => [],
+            'musician_bands' => [],
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => false,
@@ -214,6 +217,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'display_name' => 'social_teacher',
             'member_since' => '1990-01-02T02:03:04+00:00',
             'musician_instruments' => [],
+            'musician_bands' => [],
             'description' => 'Professeur avec réseaux sociaux',
             'student_levels' => [],
             'age_groups' => [],
@@ -252,7 +256,15 @@ class TeacherProfilePublicTest extends ApiTestCase
         $user->profile->displayName = 'Julien Roche';
         \Zenstruck\Foundry\Persistence\save($user);
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $musicianProfile = MusicianProfileFactory::new()->create(['user' => $user, 'styles' => []]);
+        $rock = StyleFactory::new()->asRock()->create();
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'styles' => [],
+            'bands' => [
+                ['name' => 'Les Anciens', 'style_id' => null, 'role' => null, 'current' => false, 'url' => null],
+                ['name' => 'Ardent', 'style_id' => $rock->id, 'role' => 'Guitare', 'current' => true, 'url' => 'https://ardent.bandcamp.com'],
+            ],
+        ]);
         MusicianProfileInstrumentFactory::new()->create([
             'musicianProfile' => $musicianProfile,
             'instrument' => $guitar,
@@ -285,6 +297,17 @@ class TeacherProfilePublicTest extends ApiTestCase
                     'instrument_name' => 'Guitariste',
                     'skill_level' => 'professional',
                     'skill_level_label' => 'Professionnel',
+                ],
+            ],
+            'musician_bands' => [
+                [
+                    '@type' => 'MusicianProfileBand',
+                    'name' => 'Ardent',
+                    'style_id' => $rock->id,
+                    'style_name' => 'Rock',
+                    'role' => 'Guitare',
+                    'current' => true,
+                    'url' => 'https://ardent.bandcamp.com',
                 ],
             ],
             'description' => 'Cours de guitare',

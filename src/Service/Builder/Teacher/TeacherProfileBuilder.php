@@ -21,6 +21,7 @@ use App\Entity\Teacher\TeacherProfileLocation;
 use App\Entity\Teacher\TeacherProfilePackage;
 use App\Entity\Teacher\TeacherProfilePricing;
 use App\Entity\Teacher\TeacherSocialLink;
+use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -34,6 +35,7 @@ readonly class TeacherProfileBuilder
         private TeacherProfileMediaResourceBuilder $teacherProfileMediaResourceBuilder,
         private ReferenceNameTranslator $referenceNames,
         private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
+        private MusicianBandResourceBuilder $musicianBandResourceBuilder,
     ) {
     }
 
@@ -48,6 +50,9 @@ readonly class TeacherProfileBuilder
         $dto->memberSince = $user->creationDatetime;
         $dto->musicianInstruments = $user->musicianProfile instanceof MusicianProfile
             ? $this->musicianInstrumentResourceBuilder->buildList($user->musicianProfile->instruments)
+            : [];
+        $dto->musicianBands = $user->musicianProfile instanceof MusicianProfile
+            ? $this->musicianBandResourceBuilder->buildList(array_filter($user->musicianProfile->bands, static fn (array $band): bool => $band['current']))
             : [];
         $dto->creationDatetime = $profile->creationDatetime;
         $dto->updateDatetime = $profile->updateDatetime;

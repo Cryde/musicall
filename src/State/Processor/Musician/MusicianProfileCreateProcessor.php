@@ -14,6 +14,8 @@ use App\Enum\Musician\AvailabilityStatus;
 use App\Enum\Musician\SkillLevel;
 use App\Repository\Attribute\InstrumentRepository;
 use App\Repository\Attribute\StyleRepository;
+use App\Service\Builder\Musician\MusicianBandResourceBuilder;
+use App\Service\Musician\MusicianBandWriter;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -30,6 +32,8 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private InstrumentRepository $instrumentRepository,
         private StyleRepository $styleRepository,
+        private MusicianBandWriter $bandWriter,
+        private MusicianBandResourceBuilder $bandResourceBuilder,
     ) {
     }
 
@@ -50,12 +54,14 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
         $profile = new MusicianProfile();
         $profile->user = $user;
 
+        $this->bandWriter->write($profile, $data->bands);
         $this->updateProfile($profile, $data);
 
         $this->entityManager->persist($profile);
         $this->entityManager->flush();
 
         $data->id = $profile->id;
+        $data->bands = $this->bandResourceBuilder->buildList($profile->bands);
 
         return $data;
     }
