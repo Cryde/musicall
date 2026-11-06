@@ -165,7 +165,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             ],
             'search'     => [
                 '@type'                  => 'IriTemplate',
-                'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,page}',
+                'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,author.username,page}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping'                => [
                     [
@@ -190,6 +190,12 @@ class PublicationGetCollectionTest extends ApiTestCase
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'tag.slug',
                         'property' => 'tag.slug',
+                        'required' => false,
+                    ],
+                    [
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'author.username',
+                        'property' => 'author.username',
                         'required' => false,
                     ],
                     [
@@ -490,6 +496,73 @@ class PublicationGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_member_course_listing_keeps_only_their_courses(): void
+    {
+        // A slug no catalogue names, so the title reads the same in every locale.
+        $lessons = PublicationSubCategoryFactory::new([
+            'title' => 'Lessons', 'slug' => 'test-lessons', 'position' => 1, 'type' => PublicationSubCategory::TYPE_COURSE,
+        ])->create();
+        $teacher = UserFactory::new()->asAdminUser()->create();
+        $someoneElse = UserFactory::new()->asBaseUser()->create();
+        $course = PublicationFactory::new([
+            'author' => $teacher, 'subCategory' => $lessons, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'His lesson', 'slug' => 'v-his-lesson',
+            'publicationDatetime' => new \DateTime('2022-01-03 10:00:00'),
+        ])->create();
+        PublicationFactory::new([
+            'author' => $someoneElse, 'subCategory' => $lessons, 'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_VIDEO, 'title' => 'Another lesson', 'slug' => 'v-another-lesson',
+            'publicationDatetime' => new \DateTime('2022-01-04 10:00:00'),
+        ])->create();
+
+        $this->client->request('GET', '/api/publications', [
+            'sub_category.type' => '2',
+            'author.username' => 'user_admin',
+        ], [], ['HTTP_X_LOCALE' => 'en']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Publication',
+            '@id' => '/api/publications',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/publications/v-his-lesson',
+                    '@type' => 'Publication',
+                    'id' => $course->id,
+                    'title' => 'His lesson',
+                    'sub_category' => [
+                        '@type' => 'SubCategory',
+                        'id' => $lessons->id,
+                        'title' => 'Lessons',
+                        'slug' => 'test-lessons',
+                        'is_course' => true,
+                    ],
+                    'author' => [
+                        '@type' => 'Author',
+                        'username' => 'user_admin',
+                        'display_name' => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug' => 'v-his-lesson',
+                    'publication_datetime' => '2022-01-03T10:00:00+00:00',
+                    'cover' => null,
+                    'description' => null,
+                    'language' => null,
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 1,
+            'view' => [
+                '@id' => '/api/publications?author.username=user_admin&sub_category.type=2',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => $this->expectedSearch(),
+        ]);
+    }
+
     /**
      * One author per naming case. The profile is joined into the list query, so naming them costs no
      * query per author (#1118).
@@ -594,7 +667,7 @@ class PublicationGetCollectionTest extends ApiTestCase
     {
         return [
             '@type'                  => 'IriTemplate',
-            'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,page}',
+            'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,author.username,page}',
             'variableRepresentation' => 'BasicRepresentation',
             'mapping'                => [
                 [
@@ -619,6 +692,12 @@ class PublicationGetCollectionTest extends ApiTestCase
                     '@type'    => 'IriTemplateMapping',
                     'variable' => 'tag.slug',
                     'property' => 'tag.slug',
+                    'required' => false,
+                ],
+                [
+                    '@type'    => 'IriTemplateMapping',
+                    'variable' => 'author.username',
+                    'property' => 'author.username',
                     'required' => false,
                 ],
                 [

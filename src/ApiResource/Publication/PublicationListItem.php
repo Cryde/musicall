@@ -53,6 +53,13 @@ use DateTimeInterface;
                     description: 'Filter publications carrying this tag slug',
                     required: false,
                 ),
+                'author.username' => new QueryParameter(
+                    key: 'author.username',
+                    schema: ['type' => 'string'],
+                    property: 'author.username',
+                    description: 'Filter the publications of one member, for their teacher page',
+                    required: false,
+                ),
                 'page' => new QueryParameter(
                     key: 'page',
                     schema: ['type' => 'integer', 'minimum' => 1, 'default' => 1],

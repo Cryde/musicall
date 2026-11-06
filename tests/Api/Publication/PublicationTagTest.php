@@ -365,7 +365,7 @@ class PublicationTagTest extends ApiTestCase
             ],
             'search' => [
                 '@type' => 'IriTemplate',
-                'template' => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,page}',
+                'template' => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,author.username,page}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping' => [
                     [
@@ -390,6 +390,12 @@ class PublicationTagTest extends ApiTestCase
                         '@type' => 'IriTemplateMapping',
                         'variable' => 'tag.slug',
                         'property' => 'tag.slug',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'author.username',
+                        'property' => 'author.username',
                         'required' => false,
                     ],
                     [

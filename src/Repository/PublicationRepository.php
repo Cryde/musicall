@@ -21,7 +21,7 @@ class PublicationRepository extends ServiceEntityRepository
         parent::__construct($registry, Publication::class);
     }
 
-    public function createCollectionQueryBuilder(string $locale, ?string $subCategorySlug, ?int $subCategoryType, string $orderDirection, ?string $tagSlug = null): QueryBuilder
+    public function createCollectionQueryBuilder(string $locale, ?string $subCategorySlug, ?int $subCategoryType, string $orderDirection, ?string $tagSlug = null, ?string $authorUsername = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('publication')
             ->select('publication, sub_category, author, author_profile, cover, vote_cache')
@@ -48,6 +48,11 @@ class PublicationRepository extends ServiceEntityRepository
         if ($tagSlug !== null) {
             $qb->innerJoin('publication.tags', 'tag', 'WITH', 'tag.slug = :tag_slug')
                ->setParameter('tag_slug', $tagSlug);
+        }
+
+        if ($authorUsername !== null) {
+            $qb->andWhere('author.username = :author_username')
+               ->setParameter('author_username', $authorUsername);
         }
 
         $qb->orderBy('publication.publicationDatetime', strtoupper($orderDirection) === 'ASC' ? 'ASC' : 'DESC');

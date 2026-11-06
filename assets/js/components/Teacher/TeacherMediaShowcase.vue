@@ -104,46 +104,7 @@
       />
     </div>
 
-    <!-- Media Player Modal -->
-    <Dialog
-      v-model:visible="showPlayerModal"
-      modal
-      :header="selectedMedia?.title || t('profile.media.player')"
-      :style="{ width: '90vw', maxWidth: '900px' }"
-    >
-      <div v-if="selectedMedia" class="aspect-video bg-black rounded-lg overflow-hidden">
-        <!-- YouTube embed -->
-        <iframe
-          v-if="selectedMedia.platform === 'youtube'"
-          :src="`https://www.youtube.com/embed/${selectedMedia.embed_id}?autoplay=1`"
-          :title="selectedMedia.title || t('profile.media.youtube_video')"
-          class="w-full h-full"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-        />
-        <!-- Spotify embed -->
-        <iframe
-          v-else-if="selectedMedia.platform === 'spotify'"
-          :src="`https://open.spotify.com/embed/${selectedMedia.embed_id}`"
-          :title="selectedMedia.title || t('profile.media.spotify_player')"
-          class="w-full h-full"
-          frameborder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-        />
-        <!-- SoundCloud embed -->
-        <iframe
-          v-else-if="selectedMedia.platform === 'soundcloud'"
-          :src="`https://w.soundcloud.com/player/?url=https://soundcloud.com/${selectedMedia.embed_id}&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`"
-          :title="selectedMedia.title || t('profile.media.soundcloud_player')"
-          class="w-full h-full"
-          frameborder="0"
-          allow="autoplay"
-          scrolling="no"
-        />
-      </div>
-    </Dialog>
+    <MediaPlayerDialog v-model:visible="showPlayerModal" :media="selectedMedia" />
 
     <!-- Add Media Modal -->
     <Dialog
@@ -222,6 +183,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getMediaPlatformLabel } from '../../constants/teacherProfile.js'
 import { useTeacherProfileMediaStore } from '../../store/user/teacherProfileMedia.js'
+import MediaPlayerDialog from '../Media/MediaPlayerDialog.vue'
 import ReportButton from '../Report/ReportButton.vue'
 
 const MAX_MEDIA = 6

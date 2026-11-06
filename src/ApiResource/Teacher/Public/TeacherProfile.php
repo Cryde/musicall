@@ -7,6 +7,7 @@ namespace App\ApiResource\Teacher\Public;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\ApiResource\Musician\PublicMusicianProfileInstrument;
 use App\ApiResource\Teacher\TeacherProfileMedia;
 use App\State\Provider\Teacher\TeacherProfileProvider;
 
@@ -22,6 +23,19 @@ class TeacherProfile
     public string $username;
 
     public string $userId;
+
+    public string $displayName;
+
+    public \DateTimeInterface $memberSince;
+
+    /**
+     * The member's instruments as a musician, with their level, for « Le musicien derrière le prof ». Empty without a
+     * musician profile.
+     *
+     * @var PublicMusicianProfileInstrument[]
+     */
+    #[ApiProperty(genId: false)]
+    public array $musicianInstruments = [];
 
     public ?string $profilePictureUrl = null;
 

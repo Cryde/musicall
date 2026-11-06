@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Service\Builder\Musician;
 
 use App\ApiResource\Musician\PublicMusicianProfile;
-use App\ApiResource\Musician\PublicMusicianProfileInstrument;
 use App\ApiResource\Musician\PublicMusicianProfileStyle;
 use App\ApiResource\User\Profile\PublicProfileAnnounce;
 use App\Entity\Attribute\Style;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Musician\MusicianProfile;
-use App\Entity\Musician\MusicianProfileInstrument;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -27,6 +25,7 @@ readonly class MusicianProfileBuilder
         private MusicianProfileMediaResourceBuilder $musicianProfileMediaResourceBuilder,
         private TranslatorInterface $translator,
         private ReferenceNameTranslator $referenceNames,
+        private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
     ) {
     }
 
@@ -53,7 +52,7 @@ readonly class MusicianProfileBuilder
             $dto->availabilityStatusLabel = $profile->availabilityStatus->trans($this->translator);
         }
 
-        $dto->instruments = $this->buildInstruments($profile->instruments->toArray());
+        $dto->instruments = $this->musicianInstrumentResourceBuilder->buildList($profile->instruments);
         $dto->styles = $this->buildStyles($profile->styles->toArray());
         $dto->media = $this->musicianProfileMediaResourceBuilder->buildList($profile->media->toArray());
 
@@ -62,24 +61,6 @@ readonly class MusicianProfileBuilder
         $dto->musicianAnnounces = $this->buildAnnounces($announces);
 
         return $dto;
-    }
-
-    /**
-     * @param MusicianProfileInstrument[] $instruments
-     * @return PublicMusicianProfileInstrument[]
-     */
-    private function buildInstruments(array $instruments): array
-    {
-        return array_values(array_map(function (MusicianProfileInstrument $instrument): PublicMusicianProfileInstrument {
-            $instrumentEntity = $instrument->instrument;
-            $dto = new PublicMusicianProfileInstrument();
-            $dto->instrumentId = (string) $instrumentEntity->id;
-            $dto->instrumentName = $this->referenceNames->instrumentMusicianName($instrumentEntity);
-            $dto->skillLevel = $instrument->skillLevel->value;
-            $dto->skillLevelLabel = $instrument->skillLevel->trans($this->translator);
-
-            return $dto;
-        }, $instruments));
     }
 
     /**
