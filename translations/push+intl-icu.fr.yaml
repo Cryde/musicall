@@ -24,6 +24,8 @@ notification:
     forum_topic_reply: "{actor} a répondu à ton sujet sur le forum"
     publication_comment: "{actor} a commenté ta publication"
     comment_reply: "{actor} a répondu à ton commentaire"
+    profile_post_comment: "{actor} a commenté ton post"
+    profile_post_comment_reply: "{actor} a répondu à ton commentaire"
     publication_approved: "{actor} a publié ton article"
     publication_rejected: "{actor} a refusé ton article"
     gallery_approved: "{actor} a publié ta galerie"

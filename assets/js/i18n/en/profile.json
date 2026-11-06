@@ -219,7 +219,7 @@
         },
         "publication_comment": {
           "label": "Comments",
-          "description": "A comment on your publications, a reply to your comments"
+          "description": "A comment on your publications or your posts, a reply to your comments"
         },
         "forum_reply": {
           "label": "Forum",
@@ -912,6 +912,27 @@
     "save": "Save",
     "error": "Error",
     "photo_alt": "Photo {number} of the post by {name}",
-    "play": "Play {title}"
+    "play": "Play {title}",
+    "like": "Like",
+    "likers_aria": "{count} person likes this post, see who | {count} people like this post, see who",
+    "likers_title": "People who like this post",
+    "likers_error": "Could not load the list. Try again.",
+    "login_to_like": "Sign in to like this post.",
+    "comment": "Comment",
+    "comment_count": "{count} comment | {count} comments",
+    "comments_title": "Comments",
+    "comments_error": "Could not load the comments.",
+    "comment_aria": "Your comment",
+    "comment_placeholder": "Write a comment...",
+    "comment_actions": "Comment actions",
+    "reply": "Reply",
+    "reply_aria": "Your reply",
+    "reply_placeholder": "Write a reply...",
+    "delete_comment_title": "Delete this comment",
+    "delete_comment_confirm": "This comment and its replies will be deleted for good.",
+    "delete_reply_confirm": "This reply will be deleted for good.",
+    "too_many_comments": "You wrote a lot of comments in a short time. Try again in a few minutes.",
+    "login": "Sign in",
+    "login_to_comment": "to comment."
   }
 }

@@ -6,7 +6,6 @@ namespace App\State\Provider\Profile;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\ApiResource\Profile\ProfilePostResource;
 use App\ApiResource\Profile\ProfileWall;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\User;
@@ -44,6 +43,7 @@ readonly class ProfileWallProvider implements ProviderInterface
         // Already a uuid when present: the operation's Assert\Uuid refused anything else with a 422.
         $beforeId = $context['filters']['before'] ?? null;
         $before = null;
+        $pinned = null;
         if (is_string($beforeId) && $beforeId !== '') {
             $before = $this->profilePostRepository->findOneOfAuthor($beforeId, $owner);
             if (!$before instanceof ProfilePost) {
@@ -51,15 +51,15 @@ readonly class ProfileWallProvider implements ProviderInterface
             }
         } else {
             $pinned = $this->profilePostRepository->findPinned($owner);
-            $wall->pinnedPost = $pinned instanceof ProfilePost ? $this->postBuilder->build($pinned, $viewer) : null;
         }
 
         $posts = $this->profilePostRepository->findWallPage($owner, $before, ProfileWall::PAGE_SIZE + 1);
         $wall->hasMore = count($posts) > ProfileWall::PAGE_SIZE;
-        $wall->posts = array_map(
-            fn (ProfilePost $post): ProfilePostResource => $this->postBuilder->build($post, $viewer),
-            array_slice($posts, 0, ProfileWall::PAGE_SIZE),
-        );
+        $posts = array_slice($posts, 0, ProfileWall::PAGE_SIZE);
+        // Built together, so the likes and comments of the whole page come in one go.
+        $built = $this->postBuilder->buildAll($pinned instanceof ProfilePost ? [$pinned, ...$posts] : $posts, $viewer);
+        $wall->pinnedPost = $pinned instanceof ProfilePost ? array_shift($built) : null;
+        $wall->posts = $built;
 
         return $wall;
     }

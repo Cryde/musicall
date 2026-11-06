@@ -56,6 +56,8 @@ readonly class PushContentBuilder
             NotificationType::ForumTopicReply => 'notification.forum_topic_reply',
             NotificationType::PublicationComment => 'notification.publication_comment',
             NotificationType::CommentReply => 'notification.comment_reply',
+            NotificationType::ProfilePostComment => 'notification.profile_post_comment',
+            NotificationType::ProfilePostCommentReply => 'notification.profile_post_comment_reply',
             NotificationType::PublicationApproved => 'notification.publication_approved',
             NotificationType::PublicationRejected => 'notification.publication_rejected',
             NotificationType::GalleryApproved => 'notification.gallery_approved',

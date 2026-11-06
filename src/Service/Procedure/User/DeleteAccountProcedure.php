@@ -7,6 +7,7 @@ namespace App\Service\Procedure\User;
 use App\Entity\User;
 use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Repository\Message\MessageFileRepository;
+use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
@@ -28,6 +29,7 @@ readonly class DeleteAccountProcedure
         private MessageFileRepository $messageFileRepository,
         private AppleTokenRevoker $appleTokenRevoker,
         private ProfilePostRepository $profilePostRepository,
+        private ProfilePostLikeRepository $profilePostLikeRepository,
     ) {
     }
 
@@ -108,9 +110,12 @@ readonly class DeleteAccountProcedure
         }
 
         // The wall goes with the account (#1316), through the ORM so VichUploader deletes each photo.
+        // Their posts' comments and likes follow in the database. Their likes elsewhere go too; their
+        // comments stay, signed « Utilisateur supprimé », as on publications.
         foreach ($this->profilePostRepository->findByAuthor($user) as $post) {
             $this->entityManager->remove($post);
         }
+        $this->profilePostLikeRepository->deleteByUser($user);
 
         // Take the account out of its band spaces. Runs after the anonymization so the memberships it
         // closes and the notification it triggers carry the anonymized handle, not the old username.

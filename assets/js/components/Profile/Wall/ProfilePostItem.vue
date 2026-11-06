@@ -124,6 +124,42 @@
       </span>
     </button>
     <MediaPlayerDialog v-model:visible="isPlaying" :media="post.media" />
+
+    <div class="flex items-center gap-1 text-sm text-surface-600 dark:text-surface-300 -ml-2">
+      <button
+        type="button"
+        class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
+        :class="post.has_liked ? 'text-rose-600 dark:text-rose-400' : ''"
+        :aria-pressed="post.has_liked"
+        :aria-label="t('profile.wall.like')"
+        :disabled="isLiking"
+        @click="toggleLike"
+      >
+        <i :class="post.has_liked ? 'pi pi-heart-fill' : 'pi pi-heart'" aria-hidden="true" />
+        <span v-if="!post.like_count" aria-hidden="true">{{ t('profile.wall.like') }}</span>
+      </button>
+      <button
+        v-if="post.like_count"
+        type="button"
+        class="-ml-2 px-1 py-1.5 rounded-lg hover:underline cursor-pointer"
+        :aria-label="t('profile.wall.likers_aria', post.like_count)"
+        @click="showLikers = true"
+      >
+        {{ post.like_count }}
+      </button>
+      <button
+        type="button"
+        class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
+        :aria-expanded="showComments"
+        @click="showComments = !showComments"
+      >
+        <i class="pi pi-comment" aria-hidden="true" />
+        {{ post.comment_count ? t('profile.wall.comment_count', post.comment_count) : t('profile.wall.comment') }}
+      </button>
+    </div>
+    <ProfilePostComments v-if="showComments" :post-id="post.id" @count-changed="changeCommentCount" />
+    <ProfilePostLikersDialog v-model:visible="showLikers" :post-id="post.id" />
+    <AuthRequiredModal v-model:visible="showAuthModal" :message="t('profile.wall.login_to_like')" />
   </article>
 </template>
 
@@ -136,17 +172,29 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import profileWallApi from '../../../api/user/profileWall.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
-import { MAX_POST_LENGTH, photoGridClass, youtubeThumbnailUrl } from '../../../utils/profileWall.js'
+import {
+  MAX_POST_LENGTH,
+  photoGridClass,
+  postAfterCommentCount,
+  postAfterLike,
+  youtubeThumbnailUrl
+} from '../../../utils/profileWall.js'
+import AuthRequiredModal from '../../Auth/AuthRequiredModal.vue'
 import MediaPlayerDialog from '../../Media/MediaPlayerDialog.vue'
 import ReportButton from '../../Report/ReportButton.vue'
+import ProfilePostComments from './ProfilePostComments.vue'
+import ProfilePostLikersDialog from './ProfilePostLikersDialog.vue'
 
 const props = defineProps({
-  post: { type: Object, required: true }
+  post: { type: Object, required: true },
+  /** Opened from a notification: the comments show straight away. */
+  commentsOpen: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['updated', 'deleted'])
@@ -161,6 +209,18 @@ const isSaving = ref(false)
 const isPlaying = ref(false)
 const editedContent = ref('')
 const error = ref('')
+const userSecurityStore = useUserSecurityStore()
+const showComments = ref(props.commentsOpen)
+const showLikers = ref(false)
+const showAuthModal = ref(false)
+const isLiking = ref(false)
+
+watch(
+  () => props.commentsOpen,
+  (open) => {
+    if (open) showComments.value = true
+  }
+)
 
 const menuItems = computed(() => [
   { label: t('profile.wall.edit'), icon: 'pi pi-pencil', command: startEdit },
@@ -171,6 +231,44 @@ const menuItems = computed(() => [
   },
   { label: t('profile.wall.delete'), icon: 'pi pi-trash', command: askDelete }
 ])
+
+async function toggleLike() {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  // Shown at once, put back if the server refuses.
+  const before = props.post
+  const liked = !before.has_liked
+  emit('updated', postAfterLike(before, liked))
+  isLiking.value = true
+  try {
+    if (liked) {
+      const state = await profileWallApi.like(before.id)
+      emit('updated', { ...postAfterLike(before, true), like_count: state.like_count })
+    } else {
+      await profileWallApi.unlike(before.id)
+    }
+  } catch (e) {
+    // A like already gone elsewhere is what was asked for.
+    if (liked || e.status !== 404) {
+      // Only the like is put back: a comment counted meanwhile stays.
+      emit('updated', postAfterLike(props.post, before.has_liked))
+      toast.add({
+        severity: 'error',
+        summary: t('profile.wall.error'),
+        detail: e.message,
+        life: 5000
+      })
+    }
+  } finally {
+    isLiking.value = false
+  }
+}
+
+function changeCommentCount(delta) {
+  emit('updated', postAfterCommentCount(props.post, delta))
+}
 
 function startEdit() {
   editedContent.value = props.post.content ?? ''

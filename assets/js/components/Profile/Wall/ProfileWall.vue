@@ -27,11 +27,21 @@
       </p>
       <!-- Shown beside a load error too: a post written meanwhile must not vanish. -->
       <ol v-if="!isLoading && hasPosts" class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
-        <li v-if="pinnedPost">
-          <ProfilePostItem :post="pinnedPost" @updated="handleUpdated" @deleted="handleDeleted" />
+        <li v-if="pinnedPost" :id="`post-${pinnedPost.id}`" class="scroll-mt-20">
+          <ProfilePostItem
+            :post="pinnedPost"
+            :comments-open="pinnedPost.id === focusedPostId"
+            @updated="handleUpdated"
+            @deleted="handleDeleted"
+          />
         </li>
-        <li v-for="post in posts" :key="post.id">
-          <ProfilePostItem :post="post" @updated="handleUpdated" @deleted="handleDeleted" />
+        <li v-for="post in posts" :id="`post-${post.id}`" :key="post.id" class="scroll-mt-20">
+          <ProfilePostItem
+            :post="post"
+            :comments-open="post.id === focusedPostId"
+            @updated="handleUpdated"
+            @deleted="handleDeleted"
+          />
         </li>
       </ol>
 
@@ -48,8 +58,9 @@
 <script setup>
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import profileWallApi from '../../../api/user/profileWall.js'
 import { appendWallPage, wallAfterPinChange } from '../../../utils/profileWall.js'
 import ProfilePostComposer from './ProfilePostComposer.vue'
@@ -63,6 +74,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
+const route = useRoute()
 
 const pinnedPost = ref(null)
 const posts = ref([])
@@ -75,6 +87,10 @@ const hasMoreError = ref(false)
 let loadToken = 0
 
 const hasPosts = computed(() => pinnedPost.value !== null || posts.value.length > 0)
+// A notification links to `?post={id}`: that post opens its comments, when it is among those loaded.
+const focusedPostId = computed(() =>
+  typeof route.query.post === 'string' ? route.query.post : null
+)
 
 async function load() {
   const token = ++loadToken
@@ -146,5 +162,12 @@ function handleDeleted(id) {
   posts.value = posts.value.filter((post) => post.id !== id)
 }
 
+async function scrollToFocusedPost() {
+  if (!focusedPostId.value || isLoading.value) return
+  await nextTick()
+  document.getElementById(`post-${focusedPostId.value}`)?.scrollIntoView({ block: 'start' })
+}
+
 watch(() => props.username, load, { immediate: true })
+watch([focusedPostId, isLoading], scrollToFocusedPost)
 </script>

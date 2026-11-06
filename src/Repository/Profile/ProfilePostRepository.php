@@ -91,4 +91,27 @@ class ProfilePostRepository extends ServiceEntityRepository
 
         return $posts;
     }
+
+    /**
+     * @param list<string> $ids
+     *
+     * @return list<ProfilePost> with their authors, in no particular order
+     */
+    public function findWithAuthorsByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<ProfilePost> $posts */
+        $posts = $this->createQueryBuilder('p')
+            ->addSelect('a')
+            ->innerJoin('p.author', 'a')
+            ->where('p.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        return $posts;
+    }
 }

@@ -13,6 +13,8 @@ use App\Entity\Profile\ProfilePostImage;
 use App\Entity\User;
 use App\Enum\Musician\MediaPlatform;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Service\Profile\ProfilePostEngagement;
+use App\Service\Profile\ProfilePostEngagementLoader;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class ProfilePostResourceBuilder
@@ -20,10 +22,31 @@ readonly class ProfilePostResourceBuilder
     public function __construct(
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private UrlGeneratorInterface $urlGenerator,
+        private ProfilePostEngagementLoader $engagementLoader,
     ) {
     }
 
     public function build(ProfilePost $post, ?User $viewer): ProfilePostResource
+    {
+        return $this->buildAll([$post], $viewer)[0];
+    }
+
+    /**
+     * @param list<ProfilePost> $posts
+     *
+     * @return list<ProfilePostResource>
+     */
+    public function buildAll(array $posts, ?User $viewer): array
+    {
+        $engagements = $this->engagementLoader->forPosts($posts, $viewer);
+
+        return array_map(
+            fn (ProfilePost $post): ProfilePostResource => $this->resource($post, $viewer, $engagements[(string) $post->id]),
+            $posts,
+        );
+    }
+
+    private function resource(ProfilePost $post, ?User $viewer, ProfilePostEngagement $engagement): ProfilePostResource
     {
         $author = $post->author;
 
@@ -43,6 +66,9 @@ readonly class ProfilePostResourceBuilder
         $resource->creationDatetime = $post->creationDatetime;
         $resource->updateDatetime = $post->updateDatetime;
         $resource->canEdit = $viewer instanceof User && $viewer->id === $author->id;
+        $resource->likeCount = $engagement->likeCount;
+        $resource->hasLiked = $engagement->hasLiked;
+        $resource->commentCount = $engagement->commentCount;
 
         return $resource;
     }

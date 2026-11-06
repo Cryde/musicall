@@ -219,7 +219,7 @@
         },
         "publication_comment": {
           "label": "Commentaires",
-          "description": "Un commentaire sur tes publications, une réponse à tes commentaires"
+          "description": "Un commentaire sur tes publications ou tes posts, une réponse à tes commentaires"
         },
         "forum_reply": {
           "label": "Forum",
@@ -912,6 +912,27 @@
     "save": "Enregistrer",
     "error": "Erreur",
     "photo_alt": "Photo {number} du post de {name}",
-    "play": "Écouter {title}"
+    "play": "Écouter {title}",
+    "like": "J'aime",
+    "likers_aria": "{count} personne aime ce post, voir qui | {count} personnes aiment ce post, voir qui",
+    "likers_title": "Personnes qui aiment ce post",
+    "likers_error": "Impossible de charger la liste. Réessaie.",
+    "login_to_like": "Connecte-toi pour aimer ce post.",
+    "comment": "Commenter",
+    "comment_count": "{count} commentaire | {count} commentaires",
+    "comments_title": "Commentaires",
+    "comments_error": "Impossible de charger les commentaires.",
+    "comment_aria": "Ton commentaire",
+    "comment_placeholder": "Écris un commentaire...",
+    "comment_actions": "Actions du commentaire",
+    "reply": "Répondre",
+    "reply_aria": "Ta réponse",
+    "reply_placeholder": "Écris une réponse...",
+    "delete_comment_title": "Supprimer ce commentaire",
+    "delete_comment_confirm": "Ce commentaire et ses réponses seront supprimés définitivement.",
+    "delete_reply_confirm": "Cette réponse sera supprimée définitivement.",
+    "too_many_comments": "Tu as écrit beaucoup de commentaires en peu de temps. Réessaie dans quelques minutes.",
+    "login": "Connecte-toi",
+    "login_to_comment": "pour commenter."
   }
 }

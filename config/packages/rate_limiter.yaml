@@ -183,6 +183,12 @@ framework:
             limit: 10
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # Comments on wall posts (#1316): the same budget as publication comments.
+        profile_post_comment:
+            policy: fixed_window
+            limit: 5
+            interval: '2 minutes'
+            cache_pool: "rate_limiter.cache"
         # Reporting content (#1116): a handful an hour is plenty for real use, and every attempt counts
         # since a 404 also says whether something exists.
         report_create:

@@ -81,4 +81,13 @@ class ProfilePostResource
 
     #[ApiProperty(writable: false)]
     public bool $canEdit = false;
+
+    #[ApiProperty(writable: false)]
+    public int $likeCount = 0;
+
+    #[ApiProperty(writable: false)]
+    public bool $hasLiked = false;
+
+    #[ApiProperty(writable: false)]
+    public int $commentCount = 0;
 }
