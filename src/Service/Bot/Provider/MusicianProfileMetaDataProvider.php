@@ -13,6 +13,7 @@ readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInt
         private MusicianProfileRepository $musicianProfileRepository,
         private UploaderHelper            $uploaderHelper,
         private CacheManager              $cacheManager,
+        private ProfileMetaGate           $profileMetaGate,
     ) {
     }
 
@@ -34,6 +35,9 @@ readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInt
         }
 
         $user = $musicianProfile->user;
+        if (($withheld = $this->profileMetaGate->withheld($user)) !== null) {
+            return $withheld;
+        }
         $username = $user->username;
 
         $instrumentNames = [];

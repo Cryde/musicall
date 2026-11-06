@@ -2,6 +2,7 @@
 
 namespace App\Service\Bot\Provider;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Bot\BotMetaDataProviderInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -13,6 +14,7 @@ readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterfa
         private UserRepository $userRepository,
         private UploaderHelper $uploaderHelper,
         private CacheManager   $cacheManager,
+        private ProfileMetaGate $profileMetaGate,
     ) {
     }
 
@@ -29,20 +31,14 @@ readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterfa
         }
 
         $user = $this->userRepository->findOneBy(['username' => $matches[1]]);
-
-        if (!$user instanceof \App\Entity\User) {
+        if (!$user instanceof User) {
             return [];
+        }
+        if (($withheld = $this->profileMetaGate->withheld($user)) !== null) {
+            return $withheld;
         }
 
         $userProfile = $user->profile;
-
-        // Check if profile is public
-        if (!$userProfile->isPublic) {
-            return [
-                'title' => 'Profil privé - MusicAll',
-                'description' => 'Ce profil est privé.',
-            ];
-        }
 
         $username = $user->username;
         $displayName = $userProfile->displayName ?: $username;

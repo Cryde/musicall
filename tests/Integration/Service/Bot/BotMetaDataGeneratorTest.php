@@ -20,6 +20,7 @@ use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\Publication\PublicationCoverFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
+use App\Tests\Factory\Teacher\TeacherProfileFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserProfilePictureFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -434,6 +435,45 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Profil privé - MusicAll',
             'description' => 'Ce profil est privé.',
         ], $result);
+    }
+
+    public function test_get_metadata_for_a_private_musician_profile(): void
+    {
+        $user = UserFactory::new(['username' => 'musicien_prive'])->create();
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        MusicianProfileFactory::createOne(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'Profil privé - MusicAll',
+            'description' => 'Ce profil est privé.',
+        ], $this->botMetaDataGenerator->getMetaData('/u/musicien_prive/musician'));
+    }
+
+    public function test_get_metadata_for_a_private_teacher_profile(): void
+    {
+        $user = UserFactory::new(['username' => 'prof_prive'])->create();
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::createOne(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'Profil privé - MusicAll',
+            'description' => 'Ce profil est privé.',
+        ], $this->botMetaDataGenerator->getMetaData('/u/prof_prive/teacher'));
+    }
+
+    public function test_get_metadata_for_a_deleted_member_is_empty(): void
+    {
+        $user = UserFactory::new(['username' => 'membre_parti'])->create();
+        $user->deletionDatetime = new \DateTimeImmutable('2026-10-01T10:00:00+00:00');
+        \Zenstruck\Foundry\Persistence\save($user);
+        MusicianProfileFactory::createOne(['user' => $user]);
+        TeacherProfileFactory::createOne(['user' => $user]);
+
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/membre_parti'));
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/musician'));
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/teacher'));
     }
 
     public function test_get_metadata_for_user_profile_with_picture(): void

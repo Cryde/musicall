@@ -10,6 +10,7 @@ use App\ApiResource\User\Profile\PublicProfile;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Repository\UserRepository;
+use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\User\PublicProfileBuilder;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -27,6 +28,7 @@ readonly class PublicProfileProvider implements ProviderInterface
         private ViewProcedure $viewProcedure,
         private RequestStack $requestStack,
         private Security $security,
+        private PublicProfileGuard $publicProfileGuard,
     ) {
     }
 
@@ -41,12 +43,9 @@ readonly class PublicProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('profile.not_found');
         }
 
-        $profile = $user->profile;
-        if (!$profile->isPublic) {
-            throw new NotFoundHttpException('profile.private');
-        }
+        $this->publicProfileGuard->assertPublic($user);
 
-        $this->trackView($user, $profile);
+        $this->trackView($user, $user->profile);
 
         return $this->publicProfileBuilder->build($user);
     }

@@ -175,7 +175,31 @@ class PublicProfileTest extends ApiTestCase
             '@type' => 'Error',
             'title' => 'An error occurred',
             'status' => 404,
-            'type' => '/errors/404',
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
+
+    public function test_get_public_profile_private_is_not_found_for_its_owner_too(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'privateowner',
+            'email' => 'privateowner@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/profile/privateowner');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
             'detail' => 'Ce profil est privé',
             'description' => 'Ce profil est privé',
         ]);

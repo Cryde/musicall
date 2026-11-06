@@ -5,6 +5,9 @@
       <ProgressSpinner />
     </div>
 
+    <!-- Private profile state -->
+    <PrivateProfileNotice v-else-if="isPrivate" :username="route.params.username" />
+
     <!-- Not found state -->
     <div v-else-if="notFound" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
       <i class="pi pi-user-minus text-4xl text-surface-400 mb-4" />
@@ -253,9 +256,11 @@ import ShareButton from '../../../components/ShareButton.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import MediaShowcase from '../../../components/User/Profile/MediaShowcase.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
+import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
+import { isPrivateProfileError } from '../../../utils/profileError.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -293,6 +298,7 @@ function handleBack() {
 
 const isLoading = ref(true)
 const notFound = ref(false)
+const isPrivate = ref(false)
 const showEditModal = ref(false)
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
@@ -359,15 +365,13 @@ function getSkillLevelSeverity(level) {
 async function loadProfile() {
   isLoading.value = true
   notFound.value = false
+  isPrivate.value = false
 
   try {
     await musicianProfileStore.loadPublicProfile(route.params.username)
   } catch (error) {
-    if (error.response?.status === 404) {
-      notFound.value = true
-    } else {
-      notFound.value = true
-    }
+    isPrivate.value = isPrivateProfileError(error)
+    notFound.value = !isPrivate.value
   } finally {
     isLoading.value = false
   }
