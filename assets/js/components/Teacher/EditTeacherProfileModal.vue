@@ -676,8 +676,9 @@ function initForm() {
       address: loc.address || '',
       city: loc.city || '',
       country: loc.country || '',
-      latitude: loc.latitude || null,
-      longitude: loc.longitude || null,
+      // The API reads the coordinates back as decimal strings but only accepts numbers.
+      latitude: loc.latitude != null ? Number(loc.latitude) : null,
+      longitude: loc.longitude != null ? Number(loc.longitude) : null,
       radius: loc.radius || null,
       locationSearch: loc.city ? (loc.country ? `${loc.city}, ${loc.country}` : loc.city) : '',
       suggestions: []
