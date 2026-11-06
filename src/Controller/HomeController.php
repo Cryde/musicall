@@ -7,12 +7,14 @@ use App\Locale\PageVersionsResolver;
 use App\Locale\RequestLocaleResolver;
 use App\Repository\PublicationRepository;
 use App\Service\Bot\BotDetector;
+use App\Service\Bot\BotMetaDataGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 class HomeController extends AbstractController
 {
@@ -40,6 +42,8 @@ class HomeController extends AbstractController
         BotDetector $botDetector,
         PageVersionsResolver $pageVersionsResolver,
         BrowserLocaleRedirect $browserLocaleRedirect,
+        BotMetaDataGenerator $botMetaDataGenerator,
+        LocaleSwitcher $localeSwitcher,
     ): Response {
         if ($botDetector->isBot($request->headers->get('User-Agent', ''))) {
             return $this->forward('\\App\\Controller\\BotController::index');
@@ -47,9 +51,14 @@ class HomeController extends AbstractController
 
         // Search engines get this page, not the bot one: BotDetector only knows the crawlers of share cards.
         $versions = $pageVersionsResolver->resolve($request);
+        // The page's own title, description and schema.org data, in the page's locale (the member pages for now).
+        $pageMeta = static fn (string $locale): array => $localeSwitcher->runWithLocale(
+            $locale,
+            static fn (): array => $botMetaDataGenerator->getPageMetaData($request->getPathInfo()),
+        );
         // The others (a member's own, the sign-in flow) keep the locale the request resolved.
         if ($versions === null) {
-            return $this->render('base.html.twig', ['versions' => null]);
+            return $this->render('base.html.twig', [...$pageMeta($request->getLocale()), 'versions' => null]);
         }
 
         // A page with a version per locale is in its URL's locale, or its content's, as the router will show it.
@@ -59,7 +68,7 @@ class HomeController extends AbstractController
         $request->attributes->set(RequestLocaleResolver::VARY_BY_LANGUAGE, true);
         $response = $target !== null
             ? $this->redirect($target)
-            : $this->render('base.html.twig', ['versions' => $versions]);
+            : $this->render('base.html.twig', [...$pageMeta($versions->locale), 'versions' => $versions]);
         $response->setVary('Cookie', false);
 
         return $response;

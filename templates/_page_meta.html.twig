@@ -1,0 +1,5 @@
+{#- Robots and schema.org data for a page whose provider gives them (#1309). The JSON is user text (a bio, a course title): JSON_HEX_TAG keeps a « </script> » in it from closing the tag. -#}
+    <meta name='robots' content='{{ robots ?? 'index, follow' }}'/>
+{% if json_ld ?? null %}
+    <script type="application/ld+json">{{ json_ld|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES'))|raw }}</script>
+{% endif %}

@@ -2,68 +2,58 @@
 
 namespace App\Service\Bot\Provider;
 
+use App\Entity\Musician\MusicianProfile;
 use App\Repository\Musician\MusicianProfileRepository;
-use App\Service\Bot\BotMetaDataProviderInterface;
-use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
+use App\Service\Bot\PageMetaDataProviderInterface;
+use App\Translation\ReferenceNameTranslator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInterface
+readonly class MusicianProfileMetaDataProvider implements PageMetaDataProviderInterface
 {
+    private const string PATTERN = '#^/u/([^/]+)/musician$#';
+
     public function __construct(
         private MusicianProfileRepository $musicianProfileRepository,
-        private UploaderHelper            $uploaderHelper,
-        private CacheManager              $cacheManager,
-        private ProfileMetaGate           $profileMetaGate,
+        private ProfileMeta $profileMeta,
+        private TranslatorInterface $translator,
+        private ReferenceNameTranslator $referenceNameTranslator,
     ) {
     }
 
     public function supports(string $uri): bool
     {
-        return (bool) preg_match('#^/u/[^/]+/musician$#', $uri);
+        return (bool) preg_match(self::PATTERN, $uri);
     }
 
     public function getMetaData(string $uri): array
     {
-        if (!preg_match('#^/u/([^/]+)/musician$#', $uri, $matches)) {
+        if (!preg_match(self::PATTERN, $uri, $matches)) {
             return [];
         }
 
         $musicianProfile = $this->musicianProfileRepository->findByUsername($matches[1]);
-
-        if (!$musicianProfile instanceof \App\Entity\Musician\MusicianProfile) {
-            return [];
+        if (!$musicianProfile instanceof MusicianProfile) {
+            return $this->profileMeta->missing();
         }
 
         $user = $musicianProfile->user;
-        if (($withheld = $this->profileMetaGate->withheld($user)) !== null) {
+        if (($withheld = $this->profileMeta->withheld($user)) !== null) {
             return $withheld;
         }
-        $username = $user->username;
 
-        $instrumentNames = [];
+        $name = $this->profileMeta->name($user);
+        $instruments = [];
         foreach ($musicianProfile->instruments as $instrument) {
-            $instrumentNames[] = $instrument->instrument->name;
-        }
-
-        $description = sprintf('Découvrez le profil musicien de %s sur MusicAll.', $username);
-        if (count($instrumentNames) > 0) {
-            $description = sprintf(
-                'Découvrez le profil musicien de %s sur MusicAll. Instruments : %s.',
-                $username,
-                implode(', ', $instrumentNames)
-            );
-        }
-
-        $cover = null;
-        $profilePicture = $user->profilePicture;
-        if ($profilePicture && $path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {
-            $cover = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
+            $instruments[] = $this->referenceNameTranslator->instrument($instrument->instrument);
         }
 
         return [
-            'title' => sprintf('Profil musicien de %s - MusicAll', $username),
-            'description' => $description,
-            'cover' => $cover,
+            'title' => $this->translator->trans('meta.musician.title', ['name' => $name]),
+            'description' => $instruments === []
+                ? $this->translator->trans('meta.musician.description', ['name' => $name])
+                : $this->translator->trans('meta.musician.description_instruments', ['name' => $name, 'instruments' => implode(', ', $instruments)]),
+            'cover' => $this->profileMeta->picture($user),
+            'json_ld' => ['@context' => 'https://schema.org', ...$this->profileMeta->person($user, $instruments)],
         ];
     }
 }

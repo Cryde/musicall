@@ -4,61 +4,50 @@ namespace App\Service\Bot\Provider;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Service\Bot\BotMetaDataProviderInterface;
-use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
+use App\Service\Bot\PageMetaDataProviderInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterface
+readonly class UserProfileMetaDataProvider implements PageMetaDataProviderInterface
 {
+    private const string PATTERN = '#^/u/([^/]+)$#';
+
     public function __construct(
         private UserRepository $userRepository,
-        private UploaderHelper $uploaderHelper,
-        private CacheManager   $cacheManager,
-        private ProfileMetaGate $profileMetaGate,
+        private ProfileMeta $profileMeta,
+        private TranslatorInterface $translator,
     ) {
     }
 
     public function supports(string $uri): bool
     {
-        // Match /u/{username} but not /u/{username}/musician (handled by MusicianProfileMetaDataProvider)
-        return (bool) preg_match('#^/u/[^/]+$#', $uri);
+        // /u/{username}/musician and /teacher have their own providers.
+        return (bool) preg_match(self::PATTERN, $uri);
     }
 
     public function getMetaData(string $uri): array
     {
-        if (!preg_match('#^/u/([^/]+)$#', $uri, $matches)) {
+        if (!preg_match(self::PATTERN, $uri, $matches)) {
             return [];
         }
 
         $user = $this->userRepository->findOneBy(['username' => $matches[1]]);
         if (!$user instanceof User) {
-            return [];
+            return $this->profileMeta->missing();
         }
-        if (($withheld = $this->profileMetaGate->withheld($user)) !== null) {
+        if (($withheld = $this->profileMeta->withheld($user)) !== null) {
             return $withheld;
         }
 
-        $userProfile = $user->profile;
-
-        $username = $user->username;
-        $displayName = $userProfile->displayName ?: $username;
-
-        $description = sprintf('Découvrez le profil de %s sur MusicAll.', $displayName);
-        if ($userProfile->bio) {
-            $bio = $userProfile->bio;
-            $description = mb_strlen($bio) > 150 ? mb_substr($bio, 0, 147) . '...' : $bio;
-        }
-
-        $cover = null;
-        $profilePicture = $user->profilePicture;
-        if ($profilePicture && $path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {
-            $cover = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
-        }
+        $name = $this->profileMeta->name($user);
+        $bio = $user->profile->bio;
 
         return [
-            'title' => sprintf('%s - MusicAll', $displayName),
-            'description' => $description,
-            'cover' => $cover,
+            'title' => $this->translator->trans('meta.profile.title', ['name' => $name]),
+            'description' => $bio
+                ? $this->profileMeta->shorten($bio)
+                : $this->translator->trans('meta.profile.description', ['name' => $name]),
+            'cover' => $this->profileMeta->picture($user),
+            'json_ld' => ['@context' => 'https://schema.org', ...$this->profileMeta->person($user)],
         ];
     }
 }
