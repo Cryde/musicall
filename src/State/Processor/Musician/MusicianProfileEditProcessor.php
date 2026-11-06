@@ -7,6 +7,7 @@ namespace App\State\Processor\Musician;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Musician\MusicianProfileEdit;
+use App\ApiResource\Musician\MusicianProfileEditInstrument;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\Musician\MusicianProfileInstrument;
 use App\Entity\User;
@@ -61,6 +62,22 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
             $profile->availabilityStatus = $status;
         }
 
+        if ($data->instruments !== null) {
+            $this->replaceInstruments($profile, $data->instruments);
+        }
+        if ($data->styleIds !== null) {
+            $this->replaceStyles($profile, $data->styleIds);
+        }
+
+        $profile->updateDatetime = new DateTimeImmutable();
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @param MusicianProfileEditInstrument[] $instruments
+     */
+    private function replaceInstruments(MusicianProfile $profile, array $instruments): void
+    {
         // Remove existing instruments and flush first to avoid unique constraint violation
         // (Doctrine processes INSERTs before DELETEs in the same flush)
         foreach ($profile->instruments->toArray() as $instrument) {
@@ -68,7 +85,7 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
         }
         $this->entityManager->flush();
 
-        foreach ($data->instruments as $instrumentInput) {
+        foreach ($instruments as $instrumentInput) {
             $instrument = $this->instrumentRepository->find($instrumentInput->instrumentId);
             if (!$instrument instanceof \App\Entity\Attribute\Instrument) {
                 continue;
@@ -84,19 +101,22 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
             $profileInstrument->skillLevel = $skillLevel;
             $profile->addInstrument($profileInstrument);
         }
+    }
 
+    /**
+     * @param string[] $styleIds
+     */
+    private function replaceStyles(MusicianProfile $profile, array $styleIds): void
+    {
         foreach ($profile->styles->toArray() as $style) {
             $profile->removeStyle($style);
         }
 
-        foreach ($data->styleIds as $styleId) {
+        foreach ($styleIds as $styleId) {
             $style = $this->styleRepository->find($styleId);
             if ($style instanceof \App\Entity\Attribute\Style) {
                 $profile->addStyle($style);
             }
         }
-
-        $profile->updateDatetime = new DateTimeImmutable();
-        $this->entityManager->flush();
     }
 }

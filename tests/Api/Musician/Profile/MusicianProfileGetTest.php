@@ -68,7 +68,6 @@ class MusicianProfileGetTest extends ApiTestCase
                     'skill_level_label' => 'Avancé',
                 ],
             ],
-            'style_ids' => [],
             'styles' => [
                 [
                     '@type' => 'MusicianProfileEditStyle',
@@ -107,7 +106,6 @@ class MusicianProfileGetTest extends ApiTestCase
             '@type' => 'MusicianProfileEdit',
             'id' => $profileId,
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);

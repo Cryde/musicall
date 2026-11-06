@@ -56,12 +56,16 @@ class MusicianProfileEdit
 
     public ?string $availabilityStatusLabel = null;
 
-    /** @var MusicianProfileEditInstrument[] */
+    /**
+     * Null when left out: the PATCH has no URI variable, so nothing is merged from stored state (#1325).
+     *
+     * @var MusicianProfileEditInstrument[]|null
+     */
     #[ApiProperty(genId: false)]
-    public array $instruments = [];
+    public ?array $instruments = null;
 
-    /** @var string[] Used for input only */
-    public array $styleIds = [];
+    /** @var string[]|null Input only, null when left out, as instruments */
+    public ?array $styleIds = null;
 
     /** @var MusicianProfileEditStyle[] Used for output/display */
     #[ApiProperty(genId: false)]

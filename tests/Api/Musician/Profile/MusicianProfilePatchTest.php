@@ -53,7 +53,6 @@ class MusicianProfilePatchTest extends ApiTestCase
             'availability_status' => 'not_available',
             'availability_status_label' => 'Non disponible',
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);
@@ -112,7 +111,6 @@ class MusicianProfilePatchTest extends ApiTestCase
                     'skill_level_label' => 'Professionnel',
                 ],
             ],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);
@@ -151,7 +149,6 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@type' => 'MusicianProfileEdit',
             'id' => $musicianProfile->id,
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [
                 [
                     '@type' => 'MusicianProfileEditStyle',
@@ -207,7 +204,6 @@ class MusicianProfilePatchTest extends ApiTestCase
             'availability_status' => 'open_to_collaborations',
             'availability_status_label' => 'Ouvert aux collaborations',
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);
@@ -249,7 +245,6 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@type' => 'MusicianProfileEdit',
             'id' => $musicianProfile->id,
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);
@@ -286,7 +281,6 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@type' => 'MusicianProfileEdit',
             'id' => $musicianProfile->id,
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);
@@ -324,5 +318,94 @@ class MusicianProfilePatchTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function test_patch_musician_profile_without_instruments_and_styles_keeps_them(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'keepuser',
+            'email' => 'keepuser@test.com',
+        ]);
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $rock = StyleFactory::new()->asRock()->create();
+
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'availabilityStatus' => AvailabilityStatus::LOOKING_FOR_BAND,
+            'styles' => [$rock],
+        ]);
+        MusicianProfileInstrumentFactory::new()->create([
+            'musicianProfile' => $musicianProfile,
+            'instrument' => $guitar,
+            'skillLevel' => SkillLevel::ADVANCED,
+        ]);
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
+            'availability_status' => 'not_available',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianProfileEdit',
+            '@id' => '/api/user/musician-profile',
+            '@type' => 'MusicianProfileEdit',
+            'id' => $musicianProfile->id,
+            'availability_status' => 'not_available',
+            'availability_status_label' => 'Non disponible',
+            'instruments' => [
+                [
+                    '@type' => 'MusicianProfileEditInstrument',
+                    'instrument_id' => $guitar->id,
+                    'instrument_name' => 'Guitariste',
+                    'skill_level' => 'advanced',
+                    'skill_level_label' => 'Avancé',
+                ],
+            ],
+            'styles' => [
+                [
+                    '@type' => 'MusicianProfileEditStyle',
+                    'id' => $rock->id,
+                    'name' => 'Rock',
+                ],
+            ],
+            'bands' => [],
+        ]);
+    }
+
+    public function test_patch_musician_profile_with_empty_style_ids_clears_styles(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'clearstyleuser',
+            'email' => 'clearstyleuser@test.com',
+        ]);
+        $rock = StyleFactory::new()->asRock()->create();
+
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'availabilityStatus' => null,
+            'styles' => [$rock],
+        ]);
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
+            'style_ids' => [],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianProfileEdit',
+            '@id' => '/api/user/musician-profile',
+            '@type' => 'MusicianProfileEdit',
+            'id' => $musicianProfile->id,
+            'instruments' => [],
+            'styles' => [],
+            'bands' => [],
+        ]);
     }
 }

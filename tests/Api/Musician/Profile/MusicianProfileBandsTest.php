@@ -87,7 +87,6 @@ class MusicianProfileBandsTest extends ApiTestCase
             'availability_status' => 'looking_for_band',
             'availability_status_label' => 'Cherche un groupe',
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [
                 [
@@ -128,7 +127,6 @@ class MusicianProfileBandsTest extends ApiTestCase
             '@type' => 'MusicianProfileEdit',
             'id' => $this->profileOf($user)->id,
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [
                 [
@@ -158,7 +156,6 @@ class MusicianProfileBandsTest extends ApiTestCase
             '@type' => 'MusicianProfileEdit',
             'id' => $this->profileOf($user)->id,
             'instruments' => [],
-            'style_ids' => [],
             'styles' => [],
             'bands' => [],
         ]);
