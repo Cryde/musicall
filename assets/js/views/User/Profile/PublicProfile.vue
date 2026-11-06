@@ -171,7 +171,7 @@
             severity="secondary"
             rounded
             icon="pi pi-graduation-cap"
-            @click="$router.push({ name: 'app_user_teacher_profile', params: { username: profile.username } })"
+            @click="$router.push({ name: 'app_user_teacher_profile', params: { username: profile.username }, query: { from: 'profile' } })"
           />
           <!-- Create teacher profile CTA (own profile only) -->
           <Button

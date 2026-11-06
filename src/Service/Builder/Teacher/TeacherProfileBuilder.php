@@ -13,6 +13,7 @@ use App\ApiResource\Teacher\Public\TeacherProfilePricing as PublicTeacherProfile
 use App\ApiResource\Teacher\Public\TeacherProfileSocialLink as PublicTeacherProfileSocialLink;
 use App\ApiResource\Teacher\Public\TeacherProfileStyle as PublicTeacherProfileStyle;
 use App\Entity\Attribute\Style;
+use App\Entity\Musician\MusicianProfile;
 use App\Entity\Teacher\TeacherAvailability;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\Teacher\TeacherProfileInstrument;
@@ -20,6 +21,7 @@ use App\Entity\Teacher\TeacherProfileLocation;
 use App\Entity\Teacher\TeacherProfilePackage;
 use App\Entity\Teacher\TeacherProfilePricing;
 use App\Entity\Teacher\TeacherSocialLink;
+use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -31,6 +33,7 @@ readonly class TeacherProfileBuilder
         private CacheManager $cacheManager,
         private TeacherProfileMediaResourceBuilder $teacherProfileMediaResourceBuilder,
         private ReferenceNameTranslator $referenceNames,
+        private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
     ) {
     }
 
@@ -41,6 +44,11 @@ readonly class TeacherProfileBuilder
 
         $dto->username = $user->username;
         $dto->userId = $user->id;
+        $dto->displayName = $user->profile->displayName ?: $user->username;
+        $dto->memberSince = $user->creationDatetime;
+        $dto->musicianInstruments = $user->musicianProfile instanceof MusicianProfile
+            ? $this->musicianInstrumentResourceBuilder->buildList($user->musicianProfile->instruments)
+            : [];
         $dto->creationDatetime = $profile->creationDatetime;
         $dto->updateDatetime = $profile->updateDatetime;
 

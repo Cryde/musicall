@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Teacher;
 
+use App\Enum\Musician\SkillLevel;
 use App\Enum\Teacher\StudentLevel;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
+use App\Tests\Factory\Musician\MusicianProfileFactory;
+use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Teacher\TeacherProfileFactory;
 use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
 use App\Tests\Factory\Teacher\TeacherSocialLinkFactory;
@@ -45,6 +48,9 @@ class TeacherProfilePublicTest extends ApiTestCase
             '@type' => 'TeacherProfile',
             'username' => 'teacher_user',
             'user_id' => $user->id,
+            'display_name' => 'teacher_user',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'musician_instruments' => [],
             'description' => 'Professeur de guitare expérimenté',
             'years_of_experience' => 10,
             'student_levels' => ['beginner', 'intermediate'],
@@ -97,6 +103,9 @@ class TeacherProfilePublicTest extends ApiTestCase
             '@type' => 'TeacherProfile',
             'username' => 'music_teacher',
             'user_id' => $user->id,
+            'display_name' => 'music_teacher',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'musician_instruments' => [],
             'description' => 'Cours de guitare rock et pop',
             'student_levels' => ['beginner'],
             'age_groups' => [],
@@ -150,6 +159,9 @@ class TeacherProfilePublicTest extends ApiTestCase
             '@type' => 'TeacherProfile',
             'username' => 'minimal_teacher',
             'user_id' => $user->id,
+            'display_name' => 'minimal_teacher',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'musician_instruments' => [],
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => false,
@@ -193,6 +205,9 @@ class TeacherProfilePublicTest extends ApiTestCase
             '@type' => 'TeacherProfile',
             'username' => 'social_teacher',
             'user_id' => $user->id,
+            'display_name' => 'social_teacher',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'musician_instruments' => [],
             'description' => 'Professeur avec réseaux sociaux',
             'student_levels' => [],
             'age_groups' => [],
@@ -217,6 +232,67 @@ class TeacherProfilePublicTest extends ApiTestCase
                 ],
             ],
             'creation_datetime' => '2024-04-01T10:00:00+00:00',
+        ]);
+    }
+
+    public function test_get_teacher_profile_names_the_musician_behind_the_teacher(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'teacher_musician',
+            'email' => 'teacher_musician@test.com',
+        ]);
+        $user->profile->displayName = 'Julien Roche';
+        \Zenstruck\Foundry\Persistence\save($user);
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $musicianProfile = MusicianProfileFactory::new()->create(['user' => $user, 'styles' => []]);
+        MusicianProfileInstrumentFactory::new()->create([
+            'musicianProfile' => $musicianProfile,
+            'instrument' => $guitar,
+            'skillLevel' => SkillLevel::PROFESSIONAL,
+        ]);
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 12,
+            'studentLevels' => [StudentLevel::BEGINNER->value],
+            'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
+        ]);
+
+        $this->client->request('GET', '/api/user/profile/teacher_musician/teacher');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfile',
+            '@id' => '/api/user/profile/teacher_musician/teacher',
+            '@type' => 'TeacherProfile',
+            'username' => 'teacher_musician',
+            'user_id' => $user->id,
+            'display_name' => 'Julien Roche',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'musician_instruments' => [
+                [
+                    '@type' => 'PublicMusicianProfileInstrument',
+                    'instrument_id' => $guitar->id,
+                    'instrument_name' => 'Guitariste',
+                    'skill_level' => 'professional',
+                    'skill_level_label' => 'Professionnel',
+                ],
+            ],
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 12,
+            'student_levels' => ['beginner'],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [],
+            'styles' => [],
+            'media' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'creation_datetime' => '2024-01-15T10:00:00+00:00',
         ]);
     }
 

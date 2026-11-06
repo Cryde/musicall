@@ -41,6 +41,7 @@ readonly class PublicationCollectionProvider implements ProviderInterface
         $subCategoryType = isset($filters['sub_category.type']) ? (int) $filters['sub_category.type'] : null;
         $orderDirection = $filters['order']['publication_datetime'] ?? 'desc';
         $tagSlug = $filters['tag.slug'] ?? null;
+        $authorUsername = $filters['author.username'] ?? null;
 
         $qb = $this->publicationRepository->createCollectionQueryBuilder(
             $this->localeSwitcher->getLocale(),
@@ -48,6 +49,7 @@ readonly class PublicationCollectionProvider implements ProviderInterface
             $subCategoryType,
             $orderDirection,
             $tagSlug,
+            is_string($authorUsername) ? $authorUsername : null,
         );
         $qb->setFirstResult($offset)
            ->setMaxResults($itemsPerPage);
