@@ -1,6 +1,6 @@
 <template>
   <section
-    v-if="isOwner || (!isLoading && hasPosts)"
+    v-if="isOwner || (!isLoading && hasItems)"
     class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm overflow-hidden"
     aria-labelledby="profile-wall-title"
   >
@@ -22,11 +22,11 @@
       <p v-else-if="hasLoadError" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
         {{ t('profile.wall.load_error') }}
       </p>
-      <p v-else-if="!hasPosts" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
+      <p v-else-if="!hasItems" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
         {{ t('profile.wall.empty_owner') }}
       </p>
       <!-- Shown beside a load error too: a post written meanwhile must not vanish. -->
-      <ol v-if="!isLoading && hasPosts" class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
+      <ol v-if="!isLoading && hasItems" class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
         <li v-if="pinnedPost" :id="`post-${pinnedPost.id}`" class="scroll-mt-20">
           <ProfilePostItem
             :post="pinnedPost"
@@ -35,17 +35,24 @@
             @deleted="handleDeleted"
           />
         </li>
-        <li v-for="post in posts" :id="`post-${post.id}`" :key="post.id" class="scroll-mt-20">
+        <li
+          v-for="item in items"
+          :id="item.type === 'post' ? `post-${item.post.id}` : null"
+          :key="wallItemKey(item)"
+          class="scroll-mt-20"
+        >
           <ProfilePostItem
-            :post="post"
-            :comments-open="post.id === focusedPostId"
+            v-if="item.type === 'post'"
+            :post="item.post"
+            :comments-open="item.post.id === focusedPostId"
             @updated="handleUpdated"
             @deleted="handleDeleted"
           />
+          <ProfileWallActivity v-else :item="item" :display-name="displayName" />
         </li>
       </ol>
 
-      <div v-if="hasMore && !isLoading" class="flex flex-col items-center gap-2 p-4 border-t border-surface-200 dark:border-surface-700">
+      <div v-if="nextCursor && !isLoading" class="flex flex-col items-center gap-2 p-4 border-t border-surface-200 dark:border-surface-700">
         <p v-if="hasMoreError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
           {{ t('profile.wall.more_error') }}
         </p>
@@ -62,9 +69,16 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import profileWallApi from '../../../api/user/profileWall.js'
-import { appendWallPage, wallAfterPinChange } from '../../../utils/profileWall.js'
+import {
+  appendWallPage,
+  nextWallCursor,
+  postItem,
+  wallAfterPinChange,
+  wallItemKey
+} from '../../../utils/profileWall.js'
 import ProfilePostComposer from './ProfilePostComposer.vue'
 import ProfilePostItem from './ProfilePostItem.vue'
+import ProfileWallActivity from './ProfileWallActivity.vue'
 
 const props = defineProps({
   username: { type: String, required: true },
@@ -77,8 +91,9 @@ const { t } = useI18n()
 const route = useRoute()
 
 const pinnedPost = ref(null)
-const posts = ref([])
-const hasMore = ref(false)
+// The posts and the activity lines, newest first, as the server merged them.
+const items = ref([])
+const nextCursor = ref(null)
 const isLoading = ref(true)
 const isLoadingMore = ref(false)
 const hasLoadError = ref(false)
@@ -86,7 +101,7 @@ const hasMoreError = ref(false)
 // Only the latest load may write: a quick change of profile must not show the previous wall.
 let loadToken = 0
 
-const hasPosts = computed(() => pinnedPost.value !== null || posts.value.length > 0)
+const hasItems = computed(() => pinnedPost.value !== null || items.value.length > 0)
 // A notification links to `?post={id}`: that post opens its comments, when it is among those loaded.
 const focusedPostId = computed(() =>
   typeof route.query.post === 'string' ? route.query.post : null
@@ -98,11 +113,15 @@ async function load() {
   hasLoadError.value = false
   hasMoreError.value = false
   try {
-    const wall = await profileWallApi.getWall(props.username)
+    const [pinned, page] = await Promise.all([
+      // Without its pinned post, the wall still reads.
+      profileWallApi.getPinnedPosts(props.username).catch(() => []),
+      profileWallApi.getWall(props.username)
+    ])
     if (token !== loadToken) return
-    pinnedPost.value = wall.pinned_post ?? null
-    posts.value = wall.posts
-    hasMore.value = wall.has_more
+    pinnedPost.value = pinned[0] ?? null
+    items.value = page
+    nextCursor.value = nextWallCursor(page)
   } catch {
     if (token === loadToken) hasLoadError.value = true
   } finally {
@@ -111,47 +130,43 @@ async function load() {
 }
 
 async function loadMore() {
-  const last = posts.value.at(-1)
-  if (!last) return
+  if (!nextCursor.value) return
   const token = loadToken
   isLoadingMore.value = true
   hasMoreError.value = false
   try {
-    const wall = await profileWallApi.getWall(props.username, last.id)
+    const page = await profileWallApi.getWall(props.username, nextCursor.value)
     if (token !== loadToken) return
-    posts.value = appendWallPage(posts.value, wall.posts)
-    hasMore.value = wall.has_more
-  } catch (e) {
-    // The post the next page starts after is gone (deleted elsewhere): start the wall again.
-    if (e.response?.status === 404) {
-      load()
-    } else {
-      hasMoreError.value = true
-    }
+    items.value = appendWallPage(items.value, page)
+    nextCursor.value = nextWallCursor(page)
+  } catch {
+    hasMoreError.value = true
   } finally {
     isLoadingMore.value = false
   }
 }
 
 function handleCreated(post) {
-  posts.value = [post, ...posts.value]
+  items.value = [postItem(post), ...items.value]
 }
 
 function handleUpdated(post) {
   const wasPinned = pinnedPost.value?.id === post.id
   if (post.is_pinned !== wasPinned) {
     const next = wallAfterPinChange(
-      { pinnedPost: pinnedPost.value, posts: posts.value, hasMore: hasMore.value },
+      { pinnedPost: pinnedPost.value, items: items.value, hasMore: nextCursor.value !== null },
       post
     )
     pinnedPost.value = next.pinnedPost
-    posts.value = next.posts
+    items.value = next.items
     return
   }
   if (wasPinned) {
     pinnedPost.value = post
   } else {
-    posts.value = posts.value.map((held) => (held.id === post.id ? post : held))
+    items.value = items.value.map((held) =>
+      held.type === 'post' && held.post.id === post.id ? { ...held, post } : held
+    )
   }
 }
 
@@ -159,7 +174,7 @@ function handleDeleted(id) {
   if (pinnedPost.value?.id === id) {
     pinnedPost.value = null
   }
-  posts.value = posts.value.filter((post) => post.id !== id)
+  items.value = items.value.filter((item) => !(item.type === 'post' && item.post.id === id))
 }
 
 async function scrollToFocusedPost() {

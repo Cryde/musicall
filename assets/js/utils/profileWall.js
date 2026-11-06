@@ -36,10 +36,49 @@ export function postPayload(draft) {
   return form
 }
 
-/** The posts held so far, followed by a new page, a post never twice. */
-export function appendWallPage(posts, page) {
-  const held = new Set(posts.map((post) => post.id))
-  return [...posts, ...page.filter((post) => !held.has(post.id))]
+/** The payload a wall line carries: its post, announce, publication or media. */
+function payloadOf(item) {
+  return item.post ?? item.announce ?? item.publication ?? item.media
+}
+
+/** A key unique across the wall: ids only stay unique within one kind of line. */
+export function wallItemKey(item) {
+  return `${item.type}-${payloadOf(item).id}`
+}
+
+/** A post as a wall line, the way the server sends it. */
+export function postItem(post) {
+  return { type: 'post', date: post.creation_datetime, post }
+}
+
+// Mirrors ProfileWallItem::PAGE_SIZE: a page shorter than this is the last one.
+export const WALL_PAGE_SIZE = 10
+
+/**
+ * Where the page after this one starts: its last line's cursor, or null after a shorter page. When the lines
+ * end exactly on a full page, one more fetch comes back empty. Kept apart from the lines, which change at their
+ * tail when a post is deleted or unpinned here.
+ */
+export function nextWallCursor(page) {
+  return page.length >= WALL_PAGE_SIZE ? page[page.length - 1].cursor : null
+}
+
+/** The lines held so far, followed by a new page, a line never twice. */
+export function appendWallPage(items, page) {
+  const held = new Set(items.map(wallItemKey))
+  return [...items, ...page.filter((item) => !held.has(wallItemKey(item)))]
+}
+
+const ACTIVITY_SENTENCE_KEYS = {
+  announce: 'profile.wall.activity.announce',
+  publication: 'profile.wall.activity.publication',
+  course: 'profile.wall.activity.course',
+  media: 'profile.wall.activity.media'
+}
+
+/** The sentence an activity line opens with, as a full i18n key. */
+export function activitySentenceKey(item) {
+  return ACTIVITY_SENTENCE_KEYS[item.type] ?? null
 }
 
 const PHOTO_GRIDS = {
@@ -63,39 +102,40 @@ export function youtubeThumbnailUrl(embedId) {
 }
 
 /**
- * The wall after a post's pin changed, without fetching it again: the post pinned leaves the list, the one it
+ * The wall after a post's pin changed, without fetching it again: the post pinned leaves the lines, the one it
  * replaces goes back in date order when it falls within the pages already loaded.
  */
 export function wallAfterPinChange(wall, post) {
-  const others = wall.posts.filter((held) => held.id !== post.id)
+  const others = wall.items.filter((item) => !(item.type === 'post' && item.post.id === post.id))
   if (!post.is_pinned) {
-    return { pinnedPost: null, posts: insertByDate(others, post, wall.hasMore) }
+    return { pinnedPost: null, items: insertByDate(others, postItem(post), wall.hasMore) }
   }
   const released =
     wall.pinnedPost && wall.pinnedPost.id !== post.id
-      ? { ...wall.pinnedPost, is_pinned: false }
+      ? postItem({ ...wall.pinnedPost, is_pinned: false })
       : null
   return {
     pinnedPost: post,
-    posts: released ? insertByDate(others, released, wall.hasMore) : others
+    items: released ? insertByDate(others, released, wall.hasMore) : others
   }
 }
 
-// Older than every post loaded while more remain: a later page brings it, at its place.
-function insertByDate(posts, post, hasMore) {
-  const index = posts.findIndex((held) => isNewer(post, held))
+// Older than every line loaded while more remain: a later page brings it, at its place.
+function insertByDate(items, item, hasMore) {
+  const index = items.findIndex((held) => isNewer(item, held))
   if (index === -1) {
-    return hasMore ? posts : [...posts, post]
+    return hasMore ? items : [...items, item]
   }
-  return [...posts.slice(0, index), post, ...posts.slice(index)]
+  return [...items.slice(0, index), item, ...items.slice(index)]
 }
 
-// The server's order: creation date, then id, newest first. Its dates share one offset, so they compare as text.
-function isNewer(a, b) {
-  return (
-    a.creation_datetime > b.creation_datetime ||
-    (a.creation_datetime === b.creation_datetime && a.id > b.id)
-  )
+// The server's order: the date, then a post before any other line, then the id, newest first. Its dates share
+// one offset, so they compare as text.
+function isNewer(postLine, held) {
+  if (postLine.date !== held.date) {
+    return postLine.date > held.date
+  }
+  return held.type !== 'post' || postLine.post.id > held.post.id
 }
 
 /** A post as it reads once the viewer liked it or took the like back: the count moves only when the state does. */

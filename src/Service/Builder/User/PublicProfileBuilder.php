@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Service\Builder\User;
 
 use App\ApiResource\User\Profile\PublicProfile;
-use App\ApiResource\User\Profile\PublicProfileAnnounce;
 use App\ApiResource\User\Profile\PublicProfileSocialLink;
-use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Repository\Musician\MusicianAnnounceRepository;
-use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -24,7 +21,7 @@ readonly class PublicProfileBuilder
         private CacheManager $cacheManager,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private TranslatorInterface $translator,
-        private ReferenceNameTranslator $referenceNames,
+        private PublicProfileAnnounceBuilder $announceBuilder,
     ) {
     }
 
@@ -64,7 +61,7 @@ readonly class PublicProfileBuilder
 
         // Musician announces
         $announces = $this->musicianAnnounceRepository->findBy(['author' => $user], ['creationDatetime' => 'DESC']);
-        $dto->musicianAnnounces = $this->buildAnnounces($announces);
+        $dto->musicianAnnounces = array_map($this->announceBuilder->build(...), $announces);
 
         // Musician profile flag
         $dto->hasMusicianProfile = $user->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
@@ -89,27 +86,5 @@ readonly class PublicProfileBuilder
 
             return $dto;
         }, $links);
-    }
-
-    /**
-     * @param MusicianAnnounce[] $announces
-     * @return PublicProfileAnnounce[]
-     */
-    private function buildAnnounces(array $announces): array
-    {
-        return array_map(function (MusicianAnnounce $announce): PublicProfileAnnounce {
-            $dto = new PublicProfileAnnounce();
-            $dto->id = (string) $announce->id;
-            $dto->creationDatetime = $announce->creationDatetime;
-            $dto->type = $announce->type;
-            $dto->instrumentName = $this->referenceNames->instrumentMusicianName($announce->instrument);
-            $dto->locationName = $announce->locationName;
-            $dto->styles = array_map(
-                $this->referenceNames->style(...),
-                $announce->styles->toArray()
-            );
-
-            return $dto;
-        }, $announces);
     }
 }

@@ -209,10 +209,8 @@ class ProfilePostLikeTest extends ApiTestCase
         $blocked = $this->member('marc');
         UserBlockFactory::new()->create(['blocker' => $viewer, 'blocked' => $blocked]);
         $post = ProfilePostFactory::new()->create(['author' => $owner, 'content' => 'Nouveau clip']);
-        $pinned = ProfilePostFactory::new()->create(['author' => $owner, 'content' => 'Épinglé', 'isPinned' => true]);
         ProfilePostLikeFactory::new()->create(['post' => $post, 'user' => $viewer]);
         ProfilePostLikeFactory::new()->create(['post' => $post, 'user' => $blocked]);
-        ProfilePostLikeFactory::new()->create(['post' => $pinned, 'user' => $owner]);
         ProfilePostCommentFactory::new()->create(['post' => $post, 'author' => $owner]);
         $hidden = ProfilePostCommentFactory::new()->create(['post' => $post, 'author' => $blocked]);
         ProfilePostCommentFactory::new()->create(['post' => $post, 'author' => $owner, 'parent' => $hidden]);
@@ -223,39 +221,32 @@ class ProfilePostLikeTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         // Likes and comments are counted as the viewer reads them: without anyone blocked either way.
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ProfileWall',
+            '@context' => '/api/contexts/ProfileWallItem',
             '@id' => '/api/user/profile/julien/wall',
-            '@type' => 'ProfileWall',
-            'username' => 'julien',
-            'pinned_post' => [
-                '@type' => 'ProfilePost',
-                'id' => $pinned->id,
-                'author' => ['@type' => 'ProfilePostAuthor', 'username' => 'julien', 'display_name' => 'julien'],
-                'content' => 'Épinglé',
-                'photos' => [],
-                'is_pinned' => true,
-                'creation_datetime' => '2026-11-01T10:00:00+00:00',
-                'can_edit' => false,
-                'like_count' => 1,
-                'has_liked' => false,
-                'comment_count' => 0,
-            ],
-            'posts' => [
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
                 [
-                    '@type' => 'ProfilePost',
-                    'id' => $post->id,
-                    'author' => ['@type' => 'ProfilePostAuthor', 'username' => 'julien', 'display_name' => 'julien'],
-                    'content' => 'Nouveau clip',
-                    'photos' => [],
-                    'is_pinned' => false,
-                    'creation_datetime' => '2026-11-01T10:00:00+00:00',
-                    'can_edit' => false,
-                    'like_count' => 1,
-                    'has_liked' => true,
-                    'comment_count' => 1,
+                    '@id' => '/api/profile_wall_items/post_' . $post->creationDatetime->getTimestamp() . '_' . $post->id,
+                    '@type' => 'ProfileWallItem',
+                    'cursor' => 'post_' . $post->creationDatetime->getTimestamp() . '_' . $post->id,
+                    'type' => 'post',
+                    'date' => '2026-11-01T10:00:00+00:00',
+                    'post' => [
+                        '@type' => 'ProfilePost',
+                        'id' => $post->id,
+                        'author' => ['@type' => 'ProfilePostAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                        'content' => 'Nouveau clip',
+                        'photos' => [],
+                        'is_pinned' => false,
+                        'creation_datetime' => '2026-11-01T10:00:00+00:00',
+                        'can_edit' => false,
+                        'like_count' => 1,
+                        'has_liked' => true,
+                        'comment_count' => 1,
+                    ],
                 ],
             ],
-            'has_more' => false,
         ]);
     }
 

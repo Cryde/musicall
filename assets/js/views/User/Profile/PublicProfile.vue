@@ -229,7 +229,11 @@
       </div>
 
       <!-- Musician announces -->
-      <div v-if="hasMusicianAnnounces || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
+      <div
+        v-if="hasMusicianAnnounces || isOwnProfile"
+        id="annonces"
+        class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6 scroll-mt-20"
+      >
         <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
           {{ t('profile.public.announces') }}
         </h2>

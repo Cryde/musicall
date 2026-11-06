@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Repository\Musician;
 
 use App\Entity\Musician\MusicianProfileMedia;
+use App\Entity\User;
+use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallItemKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -38,5 +41,27 @@ class MusicianProfileMediaRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
 
         return $result !== null ? (int) $result + 1 : 0;
+    }
+
+    /**
+     * The media a member added to their musician profile, for their wall (#1316): newest first, past `$before`.
+     *
+     * @return list<MusicianProfileMedia>
+     */
+    public function findForWall(User $owner, ?WallCursor $before, int $limit): array
+    {
+        $query = $this->createQueryBuilder('media')
+            ->innerJoin('media.musicianProfile', 'profile')
+            ->where('profile.user = :owner')
+            ->setParameter('owner', $owner)
+            ->orderBy('media.creationDatetime', 'DESC')
+            ->addOrderBy('media.id', 'DESC')
+            ->setMaxResults($limit);
+        $before?->applyTo($query, WallItemKind::MusicianMedia, 'media.creationDatetime', 'media.id');
+
+        /** @var list<MusicianProfileMedia> $media */
+        $media = $query->getQuery()->getResult();
+
+        return $media;
     }
 }

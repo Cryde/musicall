@@ -933,6 +933,15 @@
     "delete_reply_confirm": "Cette réponse sera supprimée définitivement.",
     "too_many_comments": "Tu as écrit beaucoup de commentaires en peu de temps. Réessaie dans quelques minutes.",
     "login": "Connecte-toi",
-    "login_to_comment": "pour commenter."
+    "login_to_comment": "pour commenter.",
+    "activity": {
+      "announce": "a publié une annonce",
+      "publication": "a publié une publication",
+      "course": "a publié un cours",
+      "media": "a ajouté un média",
+      "see_announce": "Voir l'annonce",
+      "publication_label": "Publication",
+      "course_label": "Cours"
+    }
   }
 }

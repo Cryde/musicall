@@ -8,10 +8,14 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Entity\User;
 use App\State\Processor\Profile\ProfilePostDeleteProcessor;
 use App\State\Processor\Profile\ProfilePostEditProcessor;
+use App\State\Provider\Profile\ProfilePinnedPostsProvider;
 use App\State\Provider\Profile\ProfilePostEditProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -29,6 +33,18 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: 'is_granted("ROLE_USER")',
             name: 'api_profile_posts_get',
             provider: ProfilePostEditProvider::class,
+        ),
+        // The post a member keeps above their wall, read like the wall: zero or one.
+        new GetCollection(
+            uriTemplate: '/user/profile/{username}/pinned-posts',
+            uriVariables: [
+                'username' => new Link(fromClass: User::class, identifiers: ['username']),
+            ],
+            requirements: ['username' => '[^/]+'],
+            openapi: new Operation(tags: ['Profile Wall']),
+            paginationEnabled: false,
+            name: 'api_profile_pinned_posts_list',
+            provider: ProfilePinnedPostsProvider::class,
         ),
         new Patch(
             uriTemplate: '/user/profile-posts/{id}',
