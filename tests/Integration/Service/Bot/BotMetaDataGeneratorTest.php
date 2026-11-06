@@ -5,6 +5,11 @@ namespace App\Tests\Integration\Service\Bot;
 use App\Entity\Gallery;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Teacher\TeacherProfileLocation;
+use App\Entity\Teacher\TeacherProfilePricing;
+use App\Enum\Teacher\LocationType;
+use App\Enum\Teacher\SessionDuration;
 use App\Locale\LocalizedPath;
 use App\Service\Bot\BotMetaDataGenerator;
 use App\Service\Bot\Provider\CourseMetaDataProvider;
@@ -20,9 +25,12 @@ use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\Publication\PublicationCoverFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
+use App\Tests\Factory\Teacher\TeacherProfileFactory;
+use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserProfilePictureFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -47,7 +55,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/publications/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/photos/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/cours/dont-exists'));
-        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/dont-exists/musician'));
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/dont-exists/musician'));
     }
 
     public function test_get_metadata_for_publication(): void
@@ -282,7 +290,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
 
     public function test_get_metadata_for_musician_profile_not_found(): void
     {
-        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/unknown-user/musician'));
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/unknown-user/musician'));
     }
 
     public function test_get_metadata_for_musician_profile_without_instruments(): void
@@ -295,6 +303,13 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Profil musicien de musicien_test - MusicAll',
             'description' => 'Découvrez le profil musicien de musicien_test sur MusicAll.',
             'cover'       => null,
+            'json_ld'     => [
+                '@context'      => 'https://schema.org',
+                '@type'         => 'Person',
+                'name'          => 'musicien_test',
+                'alternateName' => '@musicien_test',
+                'url'           => 'http://localhost/u/musicien_test',
+            ],
         ], $result);
     }
 
@@ -320,6 +335,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Profil musicien de guitariste_batteur - MusicAll',
             'description' => 'Découvrez le profil musicien de guitariste_batteur sur MusicAll. Instruments : Guitare, Batterie.',
             'cover'       => null,
+            'json_ld'     => [
+                '@context'      => 'https://schema.org',
+                '@type'         => 'Person',
+                'name'          => 'guitariste_batteur',
+                'alternateName' => '@guitariste_batteur',
+                'url'           => 'http://localhost/u/guitariste_batteur',
+                'knowsAbout'    => ['Guitare', 'Batterie'],
+            ],
         ], $result);
     }
 
@@ -337,6 +360,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Profil musicien de musicien_photo - MusicAll',
             'description' => 'Découvrez le profil musicien de musicien_photo sur MusicAll.',
             'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-musicien.jpg',
+            'json_ld'     => [
+                '@context'      => 'https://schema.org',
+                '@type'         => 'Person',
+                'name'          => 'musicien_photo',
+                'alternateName' => '@musicien_photo',
+                'url'           => 'http://localhost/u/musicien_photo',
+                'image'         => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-musicien.jpg',
+            ],
         ], $result);
     }
 
@@ -404,7 +435,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
 
     public function test_get_metadata_for_user_profile_not_found(): void
     {
-        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/utilisateur-inexistant'));
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/utilisateur-inexistant'));
     }
 
     public function test_get_metadata_for_user_profile_public(): void
@@ -420,6 +451,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Jean Dupont - MusicAll',
             'description' => 'Guitariste passionné depuis 10 ans.',
             'cover'       => null,
+            'json_ld'     => [
+                '@context'      => 'https://schema.org',
+                '@type'         => 'Person',
+                'name'          => 'Jean Dupont',
+                'alternateName' => '@jean_dupont',
+                'url'           => 'http://localhost/u/jean_dupont',
+                'description'   => 'Guitariste passionné depuis 10 ans.',
+            ],
         ], $result);
     }
 
@@ -433,7 +472,162 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([
             'title'       => 'Profil privé - MusicAll',
             'description' => 'Ce profil est privé.',
+            'robots'      => 'noindex, follow',
         ], $result);
+    }
+
+    public function test_get_metadata_for_a_private_musician_profile(): void
+    {
+        $user = UserFactory::new(['username' => 'musicien_prive'])->create();
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        MusicianProfileFactory::createOne(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'Profil privé - MusicAll',
+            'description' => 'Ce profil est privé.',
+            'robots'      => 'noindex, follow',
+        ], $this->botMetaDataGenerator->getMetaData('/u/musicien_prive/musician'));
+    }
+
+    public function test_get_metadata_for_a_private_teacher_profile(): void
+    {
+        $user = UserFactory::new(['username' => 'prof_prive'])->create();
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::createOne(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'Profil privé - MusicAll',
+            'description' => 'Ce profil est privé.',
+            'robots'      => 'noindex, follow',
+        ], $this->botMetaDataGenerator->getMetaData('/u/prof_prive/teacher'));
+    }
+
+    public function test_get_metadata_for_a_deleted_member_is_noindex_and_nothing_else(): void
+    {
+        $user = UserFactory::new(['username' => 'membre_parti'])->create();
+        $user->deletionDatetime = new \DateTimeImmutable('2026-10-01T10:00:00+00:00');
+        \Zenstruck\Foundry\Persistence\save($user);
+        MusicianProfileFactory::createOne(['user' => $user]);
+        TeacherProfileFactory::createOne(['user' => $user]);
+
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti'));
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/musician'));
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/teacher'));
+    }
+
+    public function test_get_metadata_for_a_teacher(): void
+    {
+        $teacherProfile = $this->teacherWithPlacesAndPrices('julien_roche');
+
+        $this->assertSame([
+            'title'       => 'Cours de musique avec Julien Roche : guitare, basse, à Ixelles - MusicAll',
+            'description' => "Julien Roche donne des cours sur MusicAll : guitare, basse. À partir de 25\u{a0}€ les 30 min. Premier cours offert.",
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Cours de musique : Guitare, Basse',
+                'url'         => 'http://localhost/u/julien_roche/teacher',
+                'description' => 'Joue les morceaux que tu aimes',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'Julien Roche',
+                    'alternateName' => '@julien_roche',
+                    'url'           => 'http://localhost/u/julien_roche',
+                    'homeLocation'  => ['@type' => 'Place', 'name' => 'Bruxelles'],
+                ],
+                'areaServed'  => ['Ixelles', 'En ligne'],
+                'offers'      => [
+                    ['@type' => 'Offer', 'name' => '60 min', 'price' => '40.00', 'priceCurrency' => 'EUR'],
+                    ['@type' => 'Offer', 'name' => '30 min', 'price' => '25.00', 'priceCurrency' => 'EUR'],
+                    ['@type' => 'Offer', 'name' => "Cours d'essai", 'price' => '0.00', 'priceCurrency' => 'EUR'],
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/julien_roche/teacher'));
+        $this->assertSame('julien_roche', $teacherProfile->user->username);
+    }
+
+    public function test_get_metadata_for_a_teacher_with_no_place_no_price_no_instrument(): void
+    {
+        $user = UserFactory::new(['username' => 'prof_simple'])->create();
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::createOne(['user' => $user, 'courseTitle' => null, 'offersTrial' => false]);
+
+        $this->assertSame([
+            'title'       => 'Cours de musique avec prof_simple : musique - MusicAll',
+            'description' => 'prof_simple donne des cours sur MusicAll : musique.',
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Cours de musique : Musique',
+                'url'         => 'http://localhost/u/prof_simple/teacher',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'prof_simple',
+                    'alternateName' => '@prof_simple',
+                    'url'           => 'http://localhost/u/prof_simple',
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/prof_simple/teacher'));
+    }
+
+    public function test_page_metadata_follows_the_locale_it_runs_in(): void
+    {
+        $this->teacherWithPlacesAndPrices('julien_en');
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/u/julien_en/teacher'),
+        );
+
+        $this->assertSame('Music lessons with Julien Roche: guitar, bass, in Ixelles - MusicAll', $result['title']);
+        $this->assertSame('Julien Roche teaches on MusicAll: guitar, bass. From €25 for 30 min. First lesson free.', $result['description']);
+        $this->assertSame('http://localhost/en/u/julien_en/teacher', $result['json_ld']['url']);
+        $this->assertSame(['Ixelles', 'Online'], $result['json_ld']['areaServed']);
+    }
+
+    public function test_page_metadata_only_asks_the_providers_ready_for_the_page(): void
+    {
+        $this->assertNotSame([], $this->botMetaDataGenerator->getMetaData('/cours'));
+        $this->assertSame([], $this->botMetaDataGenerator->getPageMetaData('/cours'));
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getPageMetaData('/u/nobody-here'));
+    }
+
+    private function teacherWithPlacesAndPrices(string $username): TeacherProfile
+    {
+        $user = UserFactory::new(['username' => $username])->create();
+        $user->profile->displayName = 'Julien Roche';
+        $user->profile->location = 'Bruxelles';
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $teacherProfile = TeacherProfileFactory::createOne([
+            'user'        => $user,
+            'courseTitle' => 'Joue les morceaux que tu aimes',
+            'offersTrial' => true,
+            'trialPrice'  => null,
+        ]);
+        TeacherProfileInstrumentFactory::createOne(['teacherProfile' => $teacherProfile, 'instrument' => InstrumentFactory::new()->asGuitar()->create()]);
+        TeacherProfileInstrumentFactory::createOne(['teacherProfile' => $teacherProfile, 'instrument' => InstrumentFactory::new()->asBass()->create()]);
+
+        foreach ([[LocationType::TEACHER_PLACE, 'Ixelles'], [LocationType::ONLINE, null]] as [$type, $city]) {
+            $place = new TeacherProfileLocation();
+            $place->type = $type;
+            $place->city = $city;
+            $teacherProfile->addLocation($place);
+        }
+        foreach ([[SessionDuration::ONE_HOUR, 4000], [SessionDuration::THIRTY_MINUTES, 2500]] as [$duration, $price]) {
+            $pricing = new TeacherProfilePricing();
+            $pricing->duration = $duration;
+            $pricing->price = $price;
+            $teacherProfile->addPricing($pricing);
+        }
+        \Zenstruck\Foundry\Persistence\save($teacherProfile);
+
+        return $teacherProfile;
     }
 
     public function test_get_metadata_for_user_profile_with_picture(): void
@@ -450,6 +644,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Marie Martin - MusicAll',
             'description' => 'Découvrez le profil de Marie Martin sur MusicAll.',
             'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-marie.jpg',
+            'json_ld'     => [
+                '@context'      => 'https://schema.org',
+                '@type'         => 'Person',
+                'name'          => 'Marie Martin',
+                'alternateName' => '@marie_photo',
+                'url'           => 'http://localhost/u/marie_photo',
+                'image'         => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-marie.jpg',
+            ],
         ], $result);
     }
 

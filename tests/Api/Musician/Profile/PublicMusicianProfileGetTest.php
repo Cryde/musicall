@@ -249,4 +249,52 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'creation_datetime' => '2024-03-10T08:00:00+00:00',
         ]);
     }
+
+    public function test_get_public_musician_profile_private(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'privatemusician',
+            'email' => 'privatemusician@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        $user->musicianProfile = MusicianProfileFactory::new()->create(['user' => $user, 'styles' => []]);
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->request('GET', '/api/user/profile/privatemusician/musician');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
+
+    /** A private member's pages say « privé » whether or not they exist, so nothing about them leaks. */
+    public function test_get_musician_profile_private_without_a_musician_profile(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'private_no_musician',
+            'email' => 'private_no_musician@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->request('GET', '/api/user/profile/private_no_musician/musician');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
 }

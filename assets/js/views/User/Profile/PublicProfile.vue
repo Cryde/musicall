@@ -23,21 +23,7 @@
     </div>
 
     <!-- Private profile state -->
-    <div v-else-if="isPrivate" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
-      <i class="pi pi-lock text-4xl text-surface-400 mb-4" />
-      <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-        {{ t('profile.public.private_title') }}
-      </h2>
-      <p class="text-surface-500 dark:text-surface-400 mb-4">
-        {{ t('profile.public.private_help') }}
-      </p>
-      <Button
-        :label="t('profile.public.back_home')"
-        icon="pi pi-home"
-        severity="info"
-        @click="$router.push({ name: 'app_home' })"
-      />
-    </div>
+    <PrivateProfileNotice v-else-if="isPrivate" :username="route.params.username" />
 
     <!-- Profile content -->
     <div v-else-if="profile" class="flex flex-col gap-6">
@@ -381,12 +367,14 @@ import EditMusicianProfileModal from '../../../components/User/Profile/EditMusic
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
+import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import { useUserBlockStore } from '../../../store/user/block.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
+import { isPrivateProfileError } from '../../../utils/profileError.js'
 import CoverPictureModal from '../Settings/CoverPictureModal.vue'
 import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 
@@ -526,13 +514,8 @@ async function loadProfile() {
     await userProfileStore.loadProfile(route.params.username)
     trackUmamiEvent('profile-view')
   } catch (error) {
-    if (error.response?.status === 404) {
-      notFound.value = true
-    } else if (error.response?.status === 403) {
-      isPrivate.value = true
-    } else {
-      notFound.value = true
-    }
+    isPrivate.value = isPrivateProfileError(error)
+    notFound.value = !isPrivate.value
   } finally {
     isLoading.value = false
   }

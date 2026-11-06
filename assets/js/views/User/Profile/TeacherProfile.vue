@@ -5,6 +5,9 @@
       <ProgressSpinner />
     </div>
 
+    <!-- Private profile state -->
+    <PrivateProfileNotice v-else-if="isPrivate" :username="route.params.username" />
+
     <!-- Not found state -->
     <div v-else-if="notFound" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
       <i class="pi pi-user-minus text-4xl text-surface-400 mb-4" />
@@ -378,6 +381,7 @@ import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ShareButton from '../../../components/ShareButton.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
+import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import {
   getAgeGroupLabel,
   getDayOfWeekLabel,
@@ -391,6 +395,7 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 import { formatEurosFromCentsTrimmed } from '../../../utils/currency.js'
+import { isPrivateProfileError } from '../../../utils/profileError.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -428,6 +433,7 @@ function handleBack() {
 
 const isLoading = ref(true)
 const notFound = ref(false)
+const isPrivate = ref(false)
 const showEditModal = ref(false)
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
@@ -547,15 +553,13 @@ function getSocialColor(platform) {
 async function loadProfile() {
   isLoading.value = true
   notFound.value = false
+  isPrivate.value = false
 
   try {
     await teacherProfileStore.loadPublicProfile(route.params.username)
   } catch (error) {
-    if (error.response?.status === 404) {
-      notFound.value = true
-    } else {
-      notFound.value = true
-    }
+    isPrivate.value = isPrivateProfileError(error)
+    notFound.value = !isPrivate.value
   } finally {
     isLoading.value = false
   }

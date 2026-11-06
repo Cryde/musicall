@@ -256,4 +256,52 @@ class TeacherProfilePublicTest extends ApiTestCase
             'description' => 'Profil professeur non trouvé',
         ]);
     }
+
+    public function test_get_teacher_profile_private(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'private_teacher',
+            'email' => 'private_teacher@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::new()->create(['user' => $user]);
+
+        $this->client->request('GET', '/api/user/profile/private_teacher/teacher');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
+
+    /** A private member's pages say « privé » whether or not they exist, so nothing about them leaks. */
+    public function test_get_teacher_profile_private_without_a_teacher_profile(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'private_no_teacher',
+            'email' => 'private_no_teacher@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->request('GET', '/api/user/profile/private_no_teacher/teacher');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
 }

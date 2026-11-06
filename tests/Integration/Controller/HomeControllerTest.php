@@ -10,6 +10,8 @@ use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
+use App\Tests\Factory\Teacher\TeacherProfileFactory;
+use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -191,6 +193,89 @@ class HomeControllerTest extends WebTestCase
         $this->assertStringStartsWith("<!DOCTYPE html>\n<html lang=\"en\" data-enabled-locales=\"fr,en\">\n", $html);
         $this->assertStringNotContainsString('rel="canonical"', $html);
         $this->assertStringNotContainsString('hreflang', $html);
+    }
+
+    public function test_a_teacher_page_shell_carries_its_title_description_canonical_and_schema(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::new(['username' => 'prof_shell'])->create();
+        $user->profile->displayName = 'Julien Roche';
+        $user->profile->location = 'Bruxelles';
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::createOne(['user' => $user, 'courseTitle' => null, 'offersTrial' => false]);
+
+        $client->request('GET', '/u/prof_shell/teacher?from=search', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('<title>Cours de musique avec Julien Roche : musique, à Bruxelles - MusicAll</title>', $html);
+        $this->assertStringContainsString('<meta name="description" content="Julien Roche donne des cours sur MusicAll : musique."/>', $html);
+        $this->assertStringContainsString("<meta name='robots' content='index, follow'/>", $html);
+        // The query is how the visitor arrived, not another page.
+        $this->assertStringContainsString('<link rel="canonical" href="http://localhost/u/prof_shell/teacher"/>', $html);
+        $this->assertStringContainsString('<script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","serviceType":"Cours de musique : Musique","url":"http://localhost/u/prof_shell/teacher","provider":{"@type":"Person","name":"Julien Roche","alternateName":"@prof_shell","url":"http://localhost/u/prof_shell","homeLocation":{"@type":"Place","name":"Bruxelles"}}}</script>', $html);
+    }
+
+    public function test_an_english_teacher_page_shell_is_described_in_english(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::new(['username' => 'prof_en'])->create();
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::createOne(['user' => $user, 'courseTitle' => null, 'offersTrial' => false]);
+
+        $client->request('GET', '/en/u/prof_en/teacher', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('<title>Music lessons with prof_en: music - MusicAll</title>', $html);
+        $this->assertStringContainsString('"url":"http://localhost/en/u/prof_en/teacher"', $html);
+    }
+
+    public function test_a_private_profile_shell_is_noindex_and_says_nothing_about_the_member(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::new(['username' => 'prive_shell'])->create();
+        $user->profile->isPublic = false;
+        $user->profile->bio = 'Rien à voir ici';
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $client->request('GET', '/u/prive_shell', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('<title>Profil privé - MusicAll</title>', $html);
+        $this->assertStringContainsString("<meta name='robots' content='noindex, follow'/>", $html);
+        $this->assertStringNotContainsString('application/ld+json', $html);
+        $this->assertStringNotContainsString('Rien à voir ici', $html);
+    }
+
+    public function test_a_bio_cannot_close_the_schema_script(): void
+    {
+        $client = static::createClient();
+        $user = UserFactory::new(['username' => 'bio_piege'])->create();
+        $user->profile->bio = '</script><script>alert(1)</script> & co';
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $client->request('GET', '/u/bio_piege', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringNotContainsString('<script>alert(1)', $html);
+        $this->assertStringContainsString('"description":"\u003C/script\u003E\u003Cscript\u003Ealert(1)\u003C/script\u003E \u0026 co"', $html);
+        $this->assertStringContainsString('<meta name="description" content="&lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt; &amp; co"/>', $html);
+    }
+
+    public function test_a_page_without_a_page_provider_keeps_its_plain_shell(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/cours', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringNotContainsString('<title>', $html);
+        $this->assertStringContainsString("<meta name='robots' content='index, follow'/>", $html);
+        $this->assertStringNotContainsString('application/ld+json', $html);
     }
 
     public function test_the_links_name_the_site_origin_not_the_host_header(): void

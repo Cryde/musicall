@@ -10,6 +10,7 @@ use App\ApiResource\Teacher\Public\TeacherProfile as PublicTeacherProfile;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\Teacher\TeacherProfileBuilder;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -27,6 +28,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
         private ViewProcedure $viewProcedure,
         private RequestStack $requestStack,
         private Security $security,
+        private PublicProfileGuard $publicProfileGuard,
     ) {
     }
 
@@ -39,6 +41,8 @@ readonly class TeacherProfileProvider implements ProviderInterface
         if (!$user->isPubliclyVisible()) {
             throw new NotFoundHttpException('profile.user_not_found');
         }
+
+        $this->publicProfileGuard->assertPublic($user);
 
         if (!($teacherProfile = $user->teacherProfile) instanceof \App\Entity\Teacher\TeacherProfile) {
             throw new NotFoundHttpException('profile.teacher.not_found');
