@@ -97,7 +97,8 @@
               <Button :label="t('profile.teacher_page.edit')" icon="pi pi-pencil" @click="showEditModal = true" />
             </template>
             <template v-else>
-              <Button :label="mainActionLabel" icon="pi pi-send" severity="info" size="large" class="max-md:hidden!" @click="handleContact" />
+              <Button :label="mainActionLabel" icon="pi pi-send" severity="info" size="large" class="max-md:hidden!" @click="openRequest" />
+              <Button :label="t('profile.teacher_page.ask_question')" icon="pi pi-envelope" severity="secondary" outlined size="large" @click="handleContact" />
               <ShareButton :url="shareUrl" :title="shareTitle" />
             </template>
           </div>
@@ -322,7 +323,7 @@
             icon="pi pi-send"
             severity="info"
             class="w-full max-lg:hidden!"
-            @click="handleContact"
+            @click="openRequest"
           />
           <dl class="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-3 gap-y-3 text-sm border-t border-surface-200 dark:border-surface-700 pt-4">
             <template v-if="profile.student_levels?.length">
@@ -362,7 +363,7 @@
           <span class="block font-extrabold text-surface-900 dark:text-surface-0">{{ formatPrice(cheapest.price) }}</span>
           <span class="block text-xs text-surface-500 dark:text-surface-400">{{ getSessionDurationLabel(cheapest.duration) }}</span>
         </div>
-        <Button :label="mainActionLabel" icon="pi pi-send" severity="info" class="flex-1" @click="handleContact" />
+        <Button :label="mainActionLabel" icon="pi pi-send" severity="info" class="flex-1" @click="openRequest" />
       </div>
     </div>
 
@@ -374,6 +375,8 @@
       :teacher-profile="profile"
       @saved="handleProfileSaved"
     />
+
+    <TrialRequestDialog v-if="profile && !isOwnProfile" v-model:visible="showRequestDialog" :profile="profile" />
 
     <!-- Contact modals -->
     <SendMessageModal
@@ -404,6 +407,7 @@ import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ShareButton from '../../../components/ShareButton.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
+import TrialRequestDialog from '../../../components/Teacher/TrialRequestDialog.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import {
   getAgeGroupLabel,
@@ -427,6 +431,7 @@ import {
   placesSummary,
   pricingByDuration
 } from '../../../utils/teacherPage.js'
+import { hasRequestDraft, openRequestDraftStorage } from '../../../utils/trialRequest.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -473,6 +478,7 @@ const showMessageModal = ref(false)
 const showAuthModal = ref(false)
 const contactRecipient = ref(null)
 const showPlayer = ref(false)
+const showRequestDialog = ref(false)
 const playingMedia = ref(null)
 const courses = ref([])
 const coursesTotal = ref(0)
@@ -575,7 +581,7 @@ const keyNumbers = computed(() => {
 const mainActionLabel = computed(() =>
   profile.value?.offers_trial
     ? t('profile.teacher_page.ask_trial')
-    : t('profile.teacher_page.contact_name', { name: profile.value?.display_name ?? '' })
+    : t('profile.teacher_page.ask_first')
 )
 
 const musicianFacts = computed(() => {
@@ -722,6 +728,30 @@ async function loadProfile() {
 
 function handleProfileSaved() {
   loadProfile()
+}
+
+function openRequest() {
+  showRequestDialog.value = true
+}
+
+/**
+ * A request written before signing in comes back once the visitor is signed in (#1311). Watched rather than called
+ * after loading: on a full page load (an OAuth return) the profile and the sign-in state arrive in either order.
+ */
+watch(
+  () => [profile.value, userSecurityStore.isAuthenticated, userSecurityStore.userProfile],
+  () => reopenPendingRequest()
+)
+
+function reopenPendingRequest() {
+  if (!profile.value || !userSecurityStore.userProfile || showRequestDialog.value) return
+  if (
+    !isOwnProfile.value &&
+    userSecurityStore.isAuthenticated &&
+    hasRequestDraft(openRequestDraftStorage(), route.params.username)
+  ) {
+    showRequestDialog.value = true
+  }
 }
 
 function handleContact() {

@@ -130,7 +130,6 @@
 </template>
 
 <script setup>
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useDebounceFn } from '@vueuse/core'
 import AutoComplete from 'primevue/autocomplete'
 import Avatar from 'primevue/avatar'
@@ -140,10 +139,9 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import userSearchApi from '../../api/search/user.js'
+import { useSendMessage } from '../../composables/useSendMessage.js'
 import { displayName } from '../../helper/user/displayName.js'
-import { useMessageStore } from '../../store/message/message.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 
 const props = defineProps({
@@ -162,14 +160,11 @@ const props = defineProps({
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
-const router = useRouter()
-const messageStore = useMessageStore()
 
 const recipient = ref(null)
 const content = ref('')
 const recipientsOptions = ref([])
-const isSending = ref(false)
-const errorMessage = ref('')
+const { isSending, errorMessage, send, resetError } = useSendMessage()
 
 const isRecipientDeleted = computed(() => {
   const target = props.selectedRecipient || recipient.value
@@ -211,37 +206,20 @@ async function sendMessage() {
   const targetRecipient = props.selectedRecipient || recipient.value
   if (!targetRecipient || !content.value.trim()) return
 
-  errorMessage.value = ''
-  isSending.value = true
-  try {
-    const threadId = await messageStore.postMessage({
-      recipientId: targetRecipient.id,
-      content: content.value,
-      contactOrigin: props.selectedRecipient ? props.contactOrigin : null
-    })
-    trackUmamiEvent('message-send')
-
-    // Close modal and navigate to the thread
+  const sent = await send({
+    recipientId: targetRecipient.id,
+    content: content.value,
+    contactOrigin: props.selectedRecipient ? props.contactOrigin : null
+  })
+  if (sent) {
     visible.value = false
-    if (threadId) {
-      router.push({ name: 'app_messages', params: { threadId } })
-    }
-  } catch (e) {
-    if (e.status === 429 || e.originalError?.response?.status === 429) {
-      errorMessage.value = t('message.error.too_many_messages')
-    } else {
-      errorMessage.value = e.message || t('message.send_modal.error')
-    }
-  } finally {
-    isSending.value = false
   }
 }
 
 function reset() {
-  isSending.value = false
   content.value = ''
   recipient.value = null
   recipientsOptions.value = []
-  errorMessage.value = ''
+  resetError()
 }
 </script>

@@ -12,6 +12,7 @@ import {
   refreshSession,
   secondsUntilExpiry
 } from '../../utils/sessionRefresh.js'
+import { clearRequestDrafts, openRequestDraftStorage } from '../../utils/trialRequest.js'
 
 /**
  * How often the proactive timer looks at the token.
@@ -257,6 +258,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     user.value = null
     userProfile.value = null
     localStorage.removeItem('was_logged_in')
+    clearRequestDrafts(openRequestDraftStorage())
     stopProactiveRefresh()
 
     isAuthenticated.value = false

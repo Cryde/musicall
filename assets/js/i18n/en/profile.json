@@ -702,7 +702,8 @@
     "years": "{count} year | {count} years",
     "of_teaching": "of teaching",
     "ask_trial": "Ask for a trial lesson",
-    "contact_name": "Contact {name}",
+    "ask_first": "Ask for a first lesson",
+    "ask_question": "Ask a question",
     "listen": "Hear {name} play",
     "musician_title": "The musician behind the teacher",
     "musician_instruments": "Instruments and level",
@@ -726,6 +727,75 @@
     "page_title_default": "Music lessons - MusicAll",
     "share_title": "{username}'s lessons on MusicAll",
     "share_title_default": "Music lessons on MusicAll"
+  },
+  "teacher_request": {
+    "title_trial": "Ask {name} for a trial lesson",
+    "title_first": "Ask {name} for a first lesson",
+    "intro": "A few questions, and {name} knows where to start.",
+    "question": {
+      "instrument": "Instrument",
+      "level": "Where are you at?",
+      "who": "Who is it for?",
+      "place": "Where?",
+      "when": "When suits you?"
+    },
+    "level": {
+      "beginner": "Never played",
+      "intermediate": "I know the basics",
+      "advanced": "I play in a band"
+    },
+    "who": {
+      "child": "My child",
+      "teen": "My teenager",
+      "me": "Me"
+    },
+    "place": {
+      "teacher_place_city": "At the teacher's, {city}",
+      "teacher_place": "At the teacher's",
+      "student_place": "At my place",
+      "online": "Online"
+    },
+    "part": {
+      "morning": "morning",
+      "afternoon": "afternoon",
+      "evening": "evening"
+    },
+    "when_option": "{day} {part}",
+    "message_label": "The message sent",
+    "message_hint": "You can add to it before sending.",
+    "rewrite": "Rewrite from my answers",
+    "from_search": "from your search",
+    "step": "Step {current} of {total}",
+    "next": "Next",
+    "back": "Back",
+    "send": "Send the request",
+    "cancel": "Cancel",
+    "auth_required": "Sign in to send your request to {name}. Your answers are kept.",
+    "message": {
+      "greeting_trial": "Hi {name}, I'd like a trial lesson.",
+      "greeting_first": "Hi {name}, I'd like a first lesson.",
+      "instrument": "Instrument: {value}",
+      "level": "Level: {value}",
+      "who": "For: {value}",
+      "place": "Where: {value}",
+      "when": "When: {value}",
+      "level_value": {
+        "beginner": "I'm a beginner",
+        "intermediate": "I know the basics",
+        "advanced": "I already play in a band"
+      },
+      "who_value": {
+        "child": "my child",
+        "teen": "my teenager",
+        "me": "me"
+      },
+      "place_value": {
+        "teacher_place_city": "at your place, {city}",
+        "teacher_place": "at your place",
+        "student_place": "at my place",
+        "online": "online"
+      }
+    }
   },
   "public": {
     "not_found_title": "Profile not found",

@@ -702,7 +702,8 @@
     "years": "{count} an | {count} ans",
     "of_teaching": "d'enseignement",
     "ask_trial": "Demander un cours d'essai",
-    "contact_name": "Contacter {name}",
+    "ask_first": "Demander un premier cours",
+    "ask_question": "Poser une question",
     "listen": "Écoute {name} jouer",
     "musician_title": "Le musicien derrière le prof",
     "musician_instruments": "Ses instruments et son niveau",
@@ -726,6 +727,75 @@
     "page_title_default": "Cours de musique - MusicAll",
     "share_title": "Les cours de {username} sur MusicAll",
     "share_title_default": "Des cours de musique sur MusicAll"
+  },
+  "teacher_request": {
+    "title_trial": "Demander un cours d'essai à {name}",
+    "title_first": "Demander un premier cours à {name}",
+    "intro": "Quelques questions, et {name} sait par où commencer.",
+    "question": {
+      "instrument": "Instrument",
+      "level": "Tu en es où ?",
+      "who": "C'est pour qui ?",
+      "place": "Où ?",
+      "when": "Quand ça t'arrange ?"
+    },
+    "level": {
+      "beginner": "Jamais joué",
+      "intermediate": "Quelques bases",
+      "advanced": "Je joue en groupe"
+    },
+    "who": {
+      "child": "Mon enfant",
+      "teen": "Mon ado",
+      "me": "Moi"
+    },
+    "place": {
+      "teacher_place_city": "Chez le prof, {city}",
+      "teacher_place": "Chez le prof",
+      "student_place": "Chez moi",
+      "online": "En ligne"
+    },
+    "part": {
+      "morning": "matin",
+      "afternoon": "après-midi",
+      "evening": "soir"
+    },
+    "when_option": "{day} {part}",
+    "message_label": "Le message envoyé",
+    "message_hint": "Tu peux le compléter avant de l'envoyer.",
+    "rewrite": "Réécrire depuis mes réponses",
+    "from_search": "repris de ta recherche",
+    "step": "Étape {current} sur {total}",
+    "next": "Suivant",
+    "back": "Retour",
+    "send": "Envoyer la demande",
+    "cancel": "Annuler",
+    "auth_required": "Connecte-toi pour envoyer ta demande à {name}. Tes réponses sont gardées.",
+    "message": {
+      "greeting_trial": "Bonjour {name}, je voudrais un cours d'essai.",
+      "greeting_first": "Bonjour {name}, je voudrais un premier cours.",
+      "instrument": "Instrument : {value}",
+      "level": "Niveau : {value}",
+      "who": "Pour : {value}",
+      "place": "Où : {value}",
+      "when": "Quand : {value}",
+      "level_value": {
+        "beginner": "je débute",
+        "intermediate": "j'ai quelques bases",
+        "advanced": "je joue déjà en groupe"
+      },
+      "who_value": {
+        "child": "mon enfant",
+        "teen": "mon ado",
+        "me": "moi"
+      },
+      "place_value": {
+        "teacher_place_city": "chez toi, {city}",
+        "teacher_place": "chez toi",
+        "student_place": "chez moi",
+        "online": "en ligne"
+      }
+    }
   },
   "public": {
     "not_found_title": "Profil non trouvé",
