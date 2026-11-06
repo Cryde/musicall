@@ -165,6 +165,41 @@
               />
             </div>
           </div>
+
+          <!-- Bands (#1313) -->
+          <div v-if="profile.bands?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
+            <h2 class="text-base font-semibold text-surface-900 dark:text-surface-0 mb-3">
+              {{ t('profile.musician_page.bands') }}
+            </h2>
+            <ul class="flex flex-col gap-2">
+              <li
+                v-for="(band, index) in profile.bands"
+                :key="index"
+                class="flex items-start justify-between gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800"
+              >
+                <div class="min-w-0">
+                  <a
+                    v-if="band.url"
+                    :href="band.url"
+                    target="_blank"
+                    rel="nofollow noopener ugc"
+                    class="font-medium text-sm text-primary hover:underline break-words"
+                  >
+                    {{ band.name }}<i class="pi pi-external-link text-xs ml-1" aria-hidden="true" /><span class="sr-only">{{ t('profile.musician_page.band_link') }}</span>
+                  </a>
+                  <span v-else class="font-medium text-sm text-surface-900 dark:text-surface-0 break-words">{{ band.name }}</span>
+                  <p v-if="band.style_name" class="text-xs text-surface-500 dark:text-surface-400 m-0">{{ band.style_name }}</p>
+                  <p v-if="band.role" class="text-xs text-surface-600 dark:text-surface-300 m-0">{{ band.role }}</p>
+                </div>
+                <Tag
+                  :value="band.current ? t('profile.musician_page.band_current') : t('profile.musician_page.band_past')"
+                  :severity="band.current ? 'success' : 'secondary'"
+                  size="small"
+                  class="shrink-0"
+                />
+              </li>
+            </ul>
+          </div>
         </div>
 
         <!-- Main Content -->

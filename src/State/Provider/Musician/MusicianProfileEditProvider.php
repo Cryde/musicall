@@ -11,6 +11,7 @@ use App\ApiResource\Musician\MusicianProfileEditInstrument;
 use App\ApiResource\Musician\MusicianProfileEditStyle;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
+use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Translation\ReferenceNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -25,6 +26,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
         private Security $security,
         private TranslatorInterface $translator,
         private ReferenceNameTranslator $referenceNames,
+        private MusicianBandResourceBuilder $bandResourceBuilder,
     ) {
     }
 
@@ -66,6 +68,8 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
             return $item;
         }, $profile->styles->toArray()));
+
+        $dto->bands = $this->bandResourceBuilder->buildList($profile->bands);
 
         return $dto;
     }

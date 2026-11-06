@@ -14,6 +14,7 @@ use App\Enum\Musician\AvailabilityStatus;
 use App\Enum\Musician\SkillLevel;
 use App\Repository\Attribute\InstrumentRepository;
 use App\Repository\Attribute\StyleRepository;
+use App\Service\Musician\MusicianBandWriter;
 use App\State\Provider\Musician\MusicianProfileEditProvider;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,7 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
         private InstrumentRepository $instrumentRepository,
         private StyleRepository $styleRepository,
         private MusicianProfileEditProvider $provider,
+        private MusicianBandWriter $bandWriter,
     ) {
     }
 
@@ -45,6 +47,7 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
             throw new NotFoundHttpException('profile.musician.not_found');
         }
 
+        $this->bandWriter->write($profile, $data->bands);
         $this->updateProfile($profile, $data);
 
         return $this->provider->provide($operation, $uriVariables, $context);

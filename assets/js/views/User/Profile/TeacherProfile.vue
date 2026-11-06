@@ -151,7 +151,18 @@
             />
             <div class="flex-1 min-w-[12rem]">
               <h2 class="font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher_page.musician_title') }}</h2>
-              <p class="text-sm text-surface-600 dark:text-surface-400">{{ musicianFacts }}</p>
+              <p class="text-sm text-surface-600 dark:text-surface-400">
+                <template v-if="bandSummary">
+                  <i18n-t keypath="profile.teacher_page.plays_in" scope="global">
+                    <template #band>
+                      <strong class="text-surface-900 dark:text-surface-0">{{ bandSummary.first.name }}</strong>
+                      <template v-if="bandSummary.first.style_name"> ({{ bandSummary.first.style_name.toLocaleLowerCase(locale) }})</template>
+                      <template v-if="bandSummary.othersCount"> {{ t('profile.teacher_page.other_bands', bandSummary.othersCount) }}</template>
+                    </template>
+                  </i18n-t>,
+                </template>
+                {{ musicianFacts }}
+              </p>
             </div>
             <ul v-if="profile.musician_instruments?.length" class="flex flex-wrap gap-2" :aria-label="t('profile.teacher_page.musician_instruments')">
               <li
@@ -461,6 +472,7 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 import { formatEurosFromCentsTrimmed } from '../../../utils/currency.js'
+import { currentBandsSummary } from '../../../utils/musicianBands.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
 import {
   availabilityByDay,
@@ -628,6 +640,9 @@ const mainActionLabel = computed(() =>
     : t('profile.teacher_page.ask_first')
 )
 
+// The bands they play in now lead « Le musicien derrière le prof » (#1313).
+const bandSummary = computed(() => currentBandsSummary(profile.value?.musician_bands))
+
 const musicianFacts = computed(() => {
   const facts = [
     t('profile.teacher_page.member_since', {
@@ -635,7 +650,9 @@ const musicianFacts = computed(() => {
     })
   ]
   if (coursesTotal.value) facts.push(t('profile.teacher_page.courses_count', coursesTotal.value))
-  return facts.join(', ')
+  const text = facts.join(', ')
+  // After « Joue dans … », the facts carry on the same sentence.
+  return bandSummary.value ? text.charAt(0).toLocaleLowerCase(locale.value) + text.slice(1) : text
 })
 
 // The tab says what the search engines read (#1309).

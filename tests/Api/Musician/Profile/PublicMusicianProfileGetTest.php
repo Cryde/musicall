@@ -103,6 +103,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
                     'name' => 'Rock',
                 ],
             ],
+            'bands' => [],
             'musician_announces' => [
                 [
                     '@type' => 'PublicProfileAnnounce',
@@ -168,6 +169,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'user_id' => $user->id,
             'instruments' => [],
             'styles' => [],
+            'bands' => [],
             'musician_announces' => [],
             'media' => [],
             'creation_datetime' => '2024-02-20T14:30:00+00:00',
@@ -244,6 +246,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'availability_status_label' => 'Cherche un groupe',
             'instruments' => [],
             'styles' => [],
+            'bands' => [],
             'musician_announces' => [],
             'media' => [],
             'creation_datetime' => '2024-03-10T08:00:00+00:00',

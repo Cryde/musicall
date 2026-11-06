@@ -105,6 +105,94 @@
           filter
         />
       </div>
+
+      <!-- Bands (#1313) -->
+      <div class="flex flex-col gap-2" role="group" aria-labelledby="musician-bands-label">
+        <div class="flex items-center justify-between">
+          <span id="musician-bands-label" class="font-medium text-surface-900 dark:text-surface-0">
+            {{ t('profile.musician.edit.bands') }}
+          </span>
+          <Button
+            v-if="bands.length < MAX_BANDS"
+            icon="pi pi-plus"
+            :label="t('profile.musician.edit.add_band')"
+            severity="secondary"
+            size="small"
+            :disabled="isSaving"
+            @click="bands.push(emptyBand())"
+          />
+        </div>
+        <p class="text-sm text-surface-500 dark:text-surface-400 m-0">
+          {{ t('profile.musician.edit.bands_help', { max: MAX_BANDS }) }}
+        </p>
+
+        <div
+          v-for="(band, index) in bands"
+          :key="index"
+          class="flex flex-col gap-2 p-3 rounded-lg bg-surface-50 dark:bg-surface-800"
+        >
+          <div class="flex items-center gap-2">
+            <InputText
+              v-model="band.name"
+              :aria-label="t('profile.musician.edit.band_name_aria', { number: index + 1 })"
+              :placeholder="t('profile.musician.edit.band_name_placeholder')"
+              :disabled="isSaving"
+              maxlength="80"
+              class="flex-1 min-w-0"
+            />
+            <Button
+              icon="pi pi-trash"
+              severity="danger"
+              text
+              rounded
+              size="small"
+              :aria-label="t('profile.musician.edit.remove_band')"
+              :disabled="isSaving"
+              @click="bands.splice(index, 1)"
+            />
+          </div>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <Select
+              v-model="band.styleId"
+              :options="styleOptions"
+              optionLabel="name"
+              optionValue="id"
+              :aria-label="t('profile.musician.edit.band_style_aria', { number: index + 1 })"
+              :placeholder="t('profile.musician.edit.band_style_placeholder')"
+              :disabled="isSaving"
+              filter
+              showClear
+            />
+            <InputText
+              v-model="band.role"
+              :aria-label="t('profile.musician.edit.band_role_aria', { number: index + 1 })"
+              :placeholder="t('profile.musician.edit.band_role_placeholder')"
+              :disabled="isSaving"
+              maxlength="80"
+            />
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <SelectButton
+              v-model="band.current"
+              :options="bandPeriodOptions"
+              optionLabel="label"
+              optionValue="value"
+              :allowEmpty="false"
+              :aria-label="t('profile.musician.edit.band_period_aria', { number: index + 1 })"
+              :disabled="isSaving"
+            />
+            <InputText
+              v-model="band.url"
+              type="url"
+              :aria-label="t('profile.musician.edit.band_url_aria', { number: index + 1 })"
+              :placeholder="t('profile.musician.edit.band_url_placeholder')"
+              :disabled="isSaving"
+              maxlength="500"
+              class="flex-1 min-w-0"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
     <template #footer>
@@ -129,14 +217,23 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
+import SelectButton from 'primevue/selectbutton'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
+import {
+  bandRowOf,
+  bandsForm,
+  bandsPayload,
+  emptyBand,
+  MAX_BANDS
+} from '../../../utils/musicianBands.js'
 
 const props = defineProps({
   visible: {
@@ -159,6 +256,7 @@ const styleStore = useStyleStore()
 const availabilityStatus = ref(null)
 const instruments = ref([])
 const selectedStyleIds = ref([])
+const bands = ref([])
 const error = ref('')
 const isSaving = ref(false)
 
@@ -183,6 +281,11 @@ const skillLevelOptions = computed(() => [
   { value: 'intermediate', label: t('profile.musician.skill_level.intermediate') },
   { value: 'advanced', label: t('profile.musician.skill_level.advanced') },
   { value: 'professional', label: t('profile.musician.skill_level.professional') }
+])
+
+const bandPeriodOptions = computed(() => [
+  { value: true, label: t('profile.musician.edit.band_current') },
+  { value: false, label: t('profile.musician.edit.band_past') }
 ])
 
 const isVisible = computed({
@@ -212,10 +315,12 @@ function initForm() {
     }))
 
     selectedStyleIds.value = (props.musicianProfile.styles || []).map((s) => s.id)
+    bands.value = bandsForm(props.musicianProfile)
   } else {
     availabilityStatus.value = null
     instruments.value = []
     selectedStyleIds.value = []
+    bands.value = []
   }
 }
 
@@ -268,7 +373,8 @@ async function handleSave() {
       instrument_id: i.instrumentId,
       skill_level: i.skillLevel
     })),
-    style_ids: selectedStyleIds.value
+    style_ids: selectedStyleIds.value,
+    bands: bandsPayload(bands.value)
   }
 
   try {
@@ -281,13 +387,21 @@ async function handleSave() {
     emit('saved')
   } catch (e) {
     if (e.violations?.length) {
-      error.value = e.violations.map((v) => v.message).join('. ')
+      error.value = e.violations.map(describeViolation).join('. ')
     } else {
       error.value = e.message || t('profile.musician.edit.error')
     }
   } finally {
     isSaving.value = false
   }
+}
+
+// Several bands can carry the same message, so a band's violation names its row.
+function describeViolation(violation) {
+  const row = bandRowOf(violation.propertyPath)
+  return row
+    ? t('profile.musician.edit.band_violation', { number: row, message: violation.message })
+    : violation.message
 }
 
 onMounted(() => {

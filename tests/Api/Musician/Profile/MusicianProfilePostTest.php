@@ -64,6 +64,7 @@ class MusicianProfilePostTest extends ApiTestCase
             ],
             'style_ids' => [$rock->id, $jazz->id],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 
@@ -94,6 +95,7 @@ class MusicianProfilePostTest extends ApiTestCase
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 

@@ -55,6 +55,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 
@@ -113,6 +114,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             ],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 
@@ -162,6 +164,7 @@ class MusicianProfilePatchTest extends ApiTestCase
                     'name' => 'Metal',
                 ],
             ],
+            'bands' => [],
         ]);
     }
 
@@ -206,6 +209,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 
@@ -247,6 +251,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 
@@ -283,6 +288,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
+            'bands' => [],
         ]);
     }
 

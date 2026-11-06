@@ -38,6 +38,10 @@ class PublicMusicianProfile
     #[ApiProperty(genId: false)]
     public array $styles = [];
 
+    /** @var MusicianProfileBand[] */
+    #[ApiProperty(genId: false)]
+    public array $bands = [];
+
     /** @var PublicProfileAnnounce[] */
     #[ApiProperty(genId: false)]
     public array $musicianAnnounces = [];
