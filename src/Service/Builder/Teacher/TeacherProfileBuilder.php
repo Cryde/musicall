@@ -79,6 +79,8 @@ readonly class TeacherProfileBuilder
         $dto->availability = $this->buildAvailability($profile->availability->toArray());
         $dto->packages = $this->buildPackages($profile->packages->toArray());
         $dto->socialLinks = $this->buildSocialLinks($profile->socialLinks->toArray());
+        $dto->levelGoals = $profile->levelGoalList();
+        $dto->songs = $profile->songs;
 
         return $dto;
     }

@@ -3,10 +3,13 @@ import { describe, it } from 'node:test'
 import {
   availabilityByDay,
   cheapestPricing,
+  lessonContentForm,
+  lessonContentPayload,
   levelRange,
   orderedLevels,
   placesSummary,
-  pricingByDuration
+  pricingByDuration,
+  teacherProfileCompleteness
 } from './teacherPage.js'
 
 describe('cheapestPricing', () => {
@@ -132,5 +135,71 @@ describe('availabilityByDay', () => {
       { start: '14:00', end: '16:00' },
       { start: '18:00', end: '20:00' }
     ])
+  })
+})
+
+describe('lessonContentForm', () => {
+  it('readies every level with three point fields, keeping what is stored', () => {
+    const form = lessonContentForm({
+      level_goals: [{ level: 'advanced', title: 'Trouver ton son', points: ['Effets'] }],
+      songs: [{ artist: null, title: 'Une berceuse' }]
+    })
+    assert.deepEqual(form.goals.advanced, { title: 'Trouver ton son', points: ['Effets', '', ''] })
+    assert.deepEqual(form.goals.beginner, { title: '', points: ['', '', ''] })
+    assert.deepEqual(form.songs, [{ artist: '', title: 'Une berceuse' }])
+  })
+
+  it('starts empty without a profile', () => {
+    assert.deepEqual(lessonContentForm(undefined).songs, [])
+    assert.deepEqual(Object.keys(lessonContentForm(undefined).goals), [
+      'beginner',
+      'intermediate',
+      'advanced'
+    ])
+  })
+})
+
+describe('lessonContentPayload', () => {
+  it('sends the ticked levels in teaching order, trimmed, without empty goals or untitled songs', () => {
+    const form = lessonContentForm(undefined)
+    form.goals.advanced = { title: ' Trouver ton son ', points: ['Effets', ' ', ''] }
+    form.goals.beginner = { title: '', points: ['', '', ''] }
+    form.goals.intermediate = { title: 'Pas coché', points: ['', '', ''] }
+    form.songs = [
+      { artist: ' Radiohead ', title: ' Weird Fishes ' },
+      { artist: 'Personne', title: '  ' }
+    ]
+    assert.deepEqual(lessonContentPayload(form, ['advanced', 'beginner']), {
+      level_goals: [{ level: 'advanced', title: 'Trouver ton son', points: ['Effets'] }],
+      songs: [{ artist: 'Radiohead', title: 'Weird Fishes' }]
+    })
+  })
+})
+
+describe('teacherProfileCompleteness', () => {
+  it('counts the filled parts and lists the missing ones in reading order', () => {
+    const result = teacherProfileCompleteness({
+      course_title: 'Cours',
+      description: 'Texte',
+      instruments: [{}],
+      student_levels: ['beginner'],
+      age_groups: [],
+      level_goals: [{}],
+      songs: [],
+      locations: [{}],
+      availability: [],
+      pricing: [{}]
+    })
+    assert.deepEqual(result, {
+      done: 7,
+      total: 10,
+      percent: 70,
+      missing: ['age_groups', 'songs', 'availability']
+    })
+  })
+
+  it('has everything missing for an empty profile', () => {
+    assert.equal(teacherProfileCompleteness({}).done, 0)
+    assert.equal(teacherProfileCompleteness(null).missing.length, 10)
   })
 })

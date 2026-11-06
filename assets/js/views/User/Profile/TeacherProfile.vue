@@ -181,6 +181,25 @@
             />
           </section>
 
+          <!-- What you will learn, per accepted level (#1312) -->
+          <section v-if="levelGoals.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5 md:p-6">
+            <h2 class="font-semibold text-surface-900 dark:text-surface-0 mb-3 flex items-center gap-2">
+              <i class="pi pi-compass text-surface-400" aria-hidden="true" />{{ t('profile.teacher_page.what_you_learn') }}
+            </h2>
+            <ol
+              class="grid rounded-lg border border-surface-200 dark:border-surface-700 divide-y md:divide-y-0 md:divide-x divide-surface-200 dark:divide-surface-700"
+              :class="GOAL_COLUMNS[levelGoals.length]"
+            >
+              <li v-for="goal in levelGoals" :key="goal.level" class="p-4 flex flex-col gap-2">
+                <Tag :value="getStudentLevelLabel(goal.level)" :severity="LEVEL_SEVERITY[goal.level]" class="self-start" />
+                <h3 v-if="goal.title" class="font-semibold text-surface-900 dark:text-surface-0">{{ goal.title }}</h3>
+                <ul v-if="goal.points.length" class="list-disc pl-5 text-sm text-surface-600 dark:text-surface-400 flex flex-col gap-1">
+                  <li v-for="(point, index) in goal.points" :key="index">{{ point }}</li>
+                </ul>
+              </li>
+            </ol>
+          </section>
+
           <!-- Where and when -->
           <div v-if="profile.locations?.length || profile.availability?.length" class="grid gap-5 md:gap-6 md:grid-cols-2">
             <section v-if="profile.locations?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5">
@@ -227,6 +246,26 @@
               <p class="mt-2 text-xs text-surface-500 dark:text-surface-400">{{ t('profile.teacher_page.when_hint', { name: profile.display_name }) }}</p>
             </section>
           </div>
+
+          <!-- Songs worked on with students (#1312) -->
+          <section v-if="profile.songs?.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5 md:p-6">
+            <h2 class="font-semibold text-surface-900 dark:text-surface-0 mb-3 flex items-center gap-2">
+              <i class="pi pi-list text-surface-400" aria-hidden="true" />{{ t('profile.teacher_page.songs') }}
+            </h2>
+            <ul class="grid gap-2 sm:grid-cols-2">
+              <li
+                v-for="(song, index) in profile.songs"
+                :key="index"
+                class="flex items-center gap-3 rounded-lg border border-surface-200 dark:border-surface-700 px-3 py-2"
+              >
+                <i class="pi pi-play-circle text-primary" aria-hidden="true" />
+                <span class="min-w-0">
+                  <span class="block font-semibold text-sm text-surface-900 dark:text-surface-0 truncate">{{ song.title }}</span>
+                  <span v-if="song.artist" class="block text-xs text-surface-500 dark:text-surface-400 truncate">{{ song.artist }}</span>
+                </span>
+              </li>
+            </ul>
+          </section>
 
           <!-- How the lessons go -->
           <section v-if="profile.description" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5 md:p-6">
@@ -440,6 +479,10 @@ const userSecurityStore = useUserSecurityStore()
 const { t, locale } = useI18n()
 
 const SKILL_STEPS = { beginner: 1, intermediate: 2, advanced: 3, professional: 4 }
+// The same colours as the mock-up: green to start, blue in the middle, amber at the top.
+// One column per level filled in, so two goals do not leave an empty third column.
+const GOAL_COLUMNS = { 2: 'md:grid-cols-2', 3: 'md:grid-cols-3' }
+const LEVEL_SEVERITY = { beginner: 'success', intermediate: 'info', advanced: 'warn' }
 const COURSES_SHOWN = 3
 
 // Contextual back navigation based on where user came from
@@ -499,6 +542,7 @@ const places = computed(() => placesSummary(profile.value?.locations))
 const cheapest = computed(() => cheapestPricing(profile.value?.pricing))
 const sortedPricing = computed(() => pricingByDuration(profile.value?.pricing))
 const levels = computed(() => orderedLevels(profile.value?.student_levels))
+const levelGoals = computed(() => profile.value?.level_goals ?? [])
 const week = computed(() => availabilityByDay(profile.value?.availability))
 const heroMedia = computed(() => profile.value?.media?.[0] ?? null)
 const otherMedia = computed(() => profile.value?.media?.slice(1) ?? [])

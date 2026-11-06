@@ -125,6 +125,9 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->socialLinks->toArray()));
 
+        $dto->levelGoals = $profile->levelGoalList();
+        $dto->songs = $profile->songs;
+
         return $dto;
     }
 }

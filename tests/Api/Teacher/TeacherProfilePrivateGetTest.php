@@ -168,6 +168,8 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
                 ],
             ],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
         ]);
     }
 

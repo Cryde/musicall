@@ -157,6 +157,99 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════════
+           SECTION 2b: What the lessons cover (#1312)
+           ═══════════════════════════════════════════════════════════════════ -->
+      <div class="flex flex-col gap-5">
+        <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
+          <i class="pi pi-compass text-primary-500" />
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">{{ t('profile.teacher.edit.section_content') }}</h3>
+        </div>
+
+        <!-- What you will learn, per level ticked above -->
+        <fieldset class="flex flex-col gap-3 border-0 p-0 m-0 min-w-0">
+          <legend class="font-medium text-surface-900 dark:text-surface-0 p-0 mb-1">
+            {{ t('profile.teacher.edit.level_goals') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
+          </legend>
+          <p class="text-sm text-surface-500 dark:text-surface-400 m-0">
+            {{ levelsForGoals.length ? t('profile.teacher.edit.level_goals_help') : t('profile.teacher.edit.level_goals_empty') }}
+          </p>
+          <div
+            v-for="level in levelsForGoals"
+            :key="level"
+            class="flex flex-col gap-2 p-3 bg-surface-50 dark:bg-surface-800 rounded-lg"
+          >
+            <span class="text-sm font-semibold text-surface-700 dark:text-surface-200">{{ getStudentLevelLabel(level) }}</span>
+            <InputText
+              v-model="lessonContent.goals[level].title"
+              :aria-label="t('profile.teacher.edit.level_goal_title_aria', { level: getStudentLevelLabel(level) })"
+              :placeholder="t('profile.teacher.edit.level_goal_title_placeholder')"
+              maxlength="80"
+              :disabled="isSaving"
+              class="w-full"
+            />
+            <InputText
+              v-for="(point, pointIndex) in lessonContent.goals[level].points"
+              :key="pointIndex"
+              v-model="lessonContent.goals[level].points[pointIndex]"
+              :aria-label="t('profile.teacher.edit.level_goal_point_aria', { level: getStudentLevelLabel(level), number: pointIndex + 1 })"
+              :placeholder="pointIndex === 0 ? t('profile.teacher.edit.level_goal_point_placeholder') : undefined"
+              maxlength="80"
+              :disabled="isSaving"
+              class="w-full"
+            />
+          </div>
+        </fieldset>
+
+        <!-- Songs worked on with students -->
+        <fieldset class="flex flex-col gap-3 border-0 p-0 m-0 min-w-0">
+          <legend class="font-medium text-surface-900 dark:text-surface-0 p-0 mb-1">
+            {{ t('profile.teacher.edit.songs') }}
+            <span class="font-normal text-surface-500 dark:text-surface-400">{{ t('profile.teacher.edit.optional') }}</span>
+          </legend>
+          <p class="text-sm text-surface-500 dark:text-surface-400 m-0">{{ t('profile.teacher.edit.songs_help', { max: MAX_SONGS }) }}</p>
+          <div v-for="(song, index) in lessonContent.songs" :key="index" class="flex items-center gap-2">
+            <InputText
+              v-model="song.artist"
+              :aria-label="t('profile.teacher.edit.song_artist_aria', { number: index + 1 })"
+              :placeholder="t('profile.teacher.edit.song_artist_placeholder')"
+              maxlength="100"
+              :disabled="isSaving"
+              class="flex-1 min-w-0"
+            />
+            <InputText
+              v-model="song.title"
+              :aria-label="t('profile.teacher.edit.song_title_aria', { number: index + 1 })"
+              :placeholder="t('profile.teacher.edit.song_title_placeholder')"
+              maxlength="100"
+              :disabled="isSaving"
+              class="flex-1 min-w-0"
+            />
+            <Button
+              icon="pi pi-times"
+              :aria-label="t('profile.teacher.edit.remove_song')"
+              severity="danger"
+              text
+              rounded
+              size="small"
+              :disabled="isSaving"
+              @click="lessonContent.songs.splice(index, 1)"
+            />
+          </div>
+          <Button
+            v-if="lessonContent.songs.length < MAX_SONGS"
+            :label="t('profile.teacher.edit.add_song')"
+            icon="pi pi-plus"
+            severity="secondary"
+            size="small"
+            :disabled="isSaving"
+            class="w-fit"
+            @click="lessonContent.songs.push({ artist: '', title: '' })"
+          />
+        </fieldset>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════
            SECTION 3: Organization (How)
            ═══════════════════════════════════════════════════════════════════ -->
       <div class="flex flex-col gap-5">
@@ -548,9 +641,16 @@ import Textarea from 'primevue/textarea'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import geocodingApi from '../../api/geocoding.js'
+import { getStudentLevelLabel } from '../../constants/teacherProfile.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useTeacherProfileStore } from '../../store/user/teacherProfile.js'
+import {
+  lessonContentForm,
+  lessonContentPayload,
+  MAX_SONGS,
+  orderedLevels
+} from '../../utils/teacherPage.js'
 
 const props = defineProps({
   visible: {
@@ -583,6 +683,7 @@ const pricingByDuration = ref({})
 const availabilitySlots = ref([])
 const packages = ref([])
 const socialLinks = ref([])
+const lessonContent = ref(lessonContentForm(null))
 const selectedInstrumentIds = ref([])
 const selectedStyleIds = ref([])
 const error = ref('')
@@ -593,6 +694,8 @@ const styleOptions = computed(() => styleStore.styles || [])
 const selectedDurationOptions = computed(() =>
   durationOptions.value.filter((d) => selectedDurations.value.includes(d.value))
 )
+
+const levelsForGoals = computed(() => orderedLevels(studentLevels.value))
 
 const studentLevelOptions = computed(() => [
   { value: 'beginner', label: t('profile.teacher.student_level.beginner') },
@@ -676,8 +779,9 @@ function initForm() {
       address: loc.address || '',
       city: loc.city || '',
       country: loc.country || '',
-      latitude: loc.latitude || null,
-      longitude: loc.longitude || null,
+      // The API reads the coordinates back as decimal strings but only accepts numbers.
+      latitude: loc.latitude != null ? Number(loc.latitude) : null,
+      longitude: loc.longitude != null ? Number(loc.longitude) : null,
       radius: loc.radius || null,
       locationSearch: loc.city ? (loc.country ? `${loc.city}, ${loc.country}` : loc.city) : '',
       suggestions: []
@@ -709,6 +813,7 @@ function initForm() {
     }))
 
     // Initialize social links
+    lessonContent.value = lessonContentForm(props.teacherProfile)
     socialLinks.value = (props.teacherProfile.social_links || []).map((link) => ({
       platform: link.platform,
       url: link.url
@@ -732,6 +837,7 @@ function initForm() {
     availabilitySlots.value = []
     packages.value = []
     socialLinks.value = []
+    lessonContent.value = lessonContentForm(null)
     selectedInstrumentIds.value = []
     selectedStyleIds.value = []
   }
@@ -900,6 +1006,7 @@ async function handleSave() {
     availability: availabilityInput,
     packages: packagesInput,
     social_links: socialLinksInput,
+    ...lessonContentPayload(lessonContent.value, studentLevels.value),
     instrument_ids: selectedInstrumentIds.value,
     style_ids: selectedStyleIds.value
   }

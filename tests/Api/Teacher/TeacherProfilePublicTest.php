@@ -64,6 +64,8 @@ class TeacherProfilePublicTest extends ApiTestCase
             'availability' => [],
             'packages' => [],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
             'creation_datetime' => '2024-01-15T10:00:00+00:00',
         ]);
     }
@@ -135,6 +137,8 @@ class TeacherProfilePublicTest extends ApiTestCase
             'availability' => [],
             'packages' => [],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
             'creation_datetime' => '2024-02-01T14:00:00+00:00',
         ]);
     }
@@ -173,6 +177,8 @@ class TeacherProfilePublicTest extends ApiTestCase
             'availability' => [],
             'packages' => [],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
             'creation_datetime' => '2024-03-01T09:00:00+00:00',
         ]);
     }
@@ -231,6 +237,8 @@ class TeacherProfilePublicTest extends ApiTestCase
                     'url' => 'https://www.instagram.com/teacher',
                 ],
             ],
+            'level_goals' => [],
+            'songs' => [],
             'creation_datetime' => '2024-04-01T10:00:00+00:00',
         ]);
     }
@@ -292,6 +300,8 @@ class TeacherProfilePublicTest extends ApiTestCase
             'availability' => [],
             'packages' => [],
             'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
             'creation_datetime' => '2024-01-15T10:00:00+00:00',
         ]);
     }
