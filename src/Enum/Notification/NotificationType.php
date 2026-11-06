@@ -30,6 +30,8 @@ enum NotificationType: string
     case BandSpaceDeletionCancelled = 'band_space_deletion_cancelled';
     case ReportReceived = 'report_received';
     case ReportResolved = 'report_resolved';
+    case ProfilePostComment = 'profile_post_comment';
+    case ProfilePostCommentReply = 'profile_post_comment_reply';
 
     /**
      * Where a push of this type sits (#1110), or null when it stays in the bell. A match on purpose: a
@@ -39,7 +41,8 @@ enum NotificationType: string
     {
         return match ($this) {
             self::ForumTopicReply => PushCategory::ForumReply,
-            self::PublicationComment, self::CommentReply => PushCategory::PublicationComment,
+            self::PublicationComment, self::CommentReply,
+            self::ProfilePostComment, self::ProfilePostCommentReply => PushCategory::PublicationComment,
             self::PublicationApproved, self::PublicationRejected,
             self::GalleryApproved, self::GalleryRejected => PushCategory::Moderation,
             self::BandSpaceChatMention, self::TaskMention => PushCategory::BandMention,

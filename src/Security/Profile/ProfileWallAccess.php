@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Security\Profile;
 
+use App\Entity\Profile\ProfilePost;
 use App\Entity\User;
+use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,6 +18,7 @@ readonly class ProfileWallAccess
         private UserRepository $userRepository,
         private PublicProfileGuard $publicProfileGuard,
         private UserBlockRepository $userBlockRepository,
+        private ProfilePostRepository $profilePostRepository,
     ) {
     }
 
@@ -37,5 +40,30 @@ readonly class ProfileWallAccess
         return $viewer instanceof User
             && $viewer->id !== $owner->id
             && $this->userBlockRepository->isBlockedEitherWay($owner, $viewer);
+    }
+
+    /** A post the viewer may read, or a 404 that does not say whether it exists: its wall's rules, read on its author. */
+    public function visiblePost(string $postId, ?User $viewer): ProfilePost
+    {
+        $post = $this->profilePostRepository->find($postId);
+        if (!$post instanceof ProfilePost || !$post->author->isPubliclyVisible()) {
+            throw new NotFoundHttpException('profile.wall.post_not_found');
+        }
+        $this->publicProfileGuard->assertPublic($post->author);
+        if ($this->isHiddenFrom($post->author, $viewer)) {
+            throw new NotFoundHttpException('profile.wall.post_not_found');
+        }
+
+        return $post;
+    }
+
+    /**
+     * The people whose comments and likes a viewer does not see: anyone blocked either way with them.
+     *
+     * @return list<string>
+     */
+    public function hiddenUserIdsFor(?User $viewer): array
+    {
+        return $viewer instanceof User ? array_map('strval', array_keys($this->userBlockRepository->findIdsBlockedEitherWay($viewer))) : [];
     }
 }

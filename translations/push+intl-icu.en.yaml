@@ -24,6 +24,8 @@ notification:
     forum_topic_reply: "{actor} replied to your forum topic"
     publication_comment: "{actor} commented on your publication"
     comment_reply: "{actor} replied to your comment"
+    profile_post_comment: "{actor} commented on your post"
+    profile_post_comment_reply: "{actor} replied to your comment"
     publication_approved: "{actor} published your article"
     publication_rejected: "{actor} rejected your article"
     gallery_approved: "{actor} published your gallery"

@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Tests\Api\Profile;
 
 use App\Entity\Profile\ProfilePost;
+use App\Entity\Profile\ProfilePostComment;
 use App\Entity\Profile\ProfilePostImage;
 use App\Entity\User;
+use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Service\Procedure\User\DeleteAccountProcedure;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\Profile\ProfilePostCommentFactory;
 use App\Tests\Factory\Profile\ProfilePostFactory;
+use App\Tests\Factory\Profile\ProfilePostLikeFactory;
 use App\Tests\Factory\User\UserFactory;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,6 +52,9 @@ class ProfilePostEditTest extends ApiTestCase
             'creation_datetime' => '2026-11-01T10:00:00+00:00',
             'update_datetime' => $stored->updateDatetime->format(\DateTimeInterface::ATOM),
             'can_edit' => true,
+            'like_count' => 0,
+            'has_liked' => false,
+            'comment_count' => 0,
         ]);
     }
 
@@ -74,6 +81,9 @@ class ProfilePostEditTest extends ApiTestCase
             'is_pinned' => true,
             'creation_datetime' => '2026-11-01T10:00:00+00:00',
             'can_edit' => true,
+            'like_count' => 0,
+            'has_liked' => false,
+            'comment_count' => 0,
         ]);
         $this->assertFalse($this->reload($previous)->isPinned);
         // Leaving the text out is not an edit: no « modifié ».
@@ -189,6 +199,29 @@ class ProfilePostEditTest extends ApiTestCase
 
         $this->assertNull(self::getContainer()->get(ProfilePostRepository::class)->find($postId));
         $this->assertFalse($filesystem->fileExists('/profile_post_images/' . $author->id . '/photo.webp'));
+    }
+
+    public function test_deleting_the_account_removes_its_likes_and_keeps_its_comments_on_other_walls(): void
+    {
+        $leaving = $this->member('chloe');
+        $othersPost = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+        $ownPost = ProfilePostFactory::new()->create(['author' => $leaving]);
+        ProfilePostLikeFactory::new()->create(['post' => $othersPost, 'user' => $leaving]);
+        $comment = ProfilePostCommentFactory::new()->create(['post' => $othersPost, 'author' => $leaving]);
+        $onOwnPost = ProfilePostCommentFactory::new()->create(['post' => $ownPost]);
+        $ids = ['othersPost' => (string) $othersPost->id, 'comment' => $comment->id, 'onOwnPost' => $onOwnPost->id];
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->clear();
+
+        $user = $entityManager->find(User::class, $leaving->id);
+        $this->assertInstanceOf(User::class, $user);
+        self::getContainer()->get(DeleteAccountProcedure::class)->process($user);
+        $entityManager->clear();
+
+        $this->assertSame([], self::getContainer()->get(ProfilePostLikeRepository::class)->countByPostIds([$ids['othersPost']]));
+        $this->assertNotNull($entityManager->find(ProfilePostComment::class, $ids['comment']));
+        // Their own post took its comments with it.
+        $this->assertNull($entityManager->find(ProfilePostComment::class, $ids['onOwnPost']));
     }
 
     private function member(string $username): User

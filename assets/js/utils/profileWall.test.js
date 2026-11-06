@@ -3,10 +3,15 @@ import { describe, it } from 'node:test'
 import {
   appendWallPage,
   canPublish,
+  commentTree,
   emptyPostDraft,
   MAX_POST_LENGTH,
   photoGridClass,
+  postAfterCommentCount,
+  postAfterLike,
   postPayload,
+  treeWithComment,
+  treeWithoutComment,
   wallAfterPinChange,
   youtubeThumbnailUrl
 } from './profileWall.js'
@@ -138,5 +143,96 @@ describe('wallAfterPinChange', () => {
       next.posts.map((held) => held.id),
       ['c', 'b', 'a']
     )
+  })
+})
+
+describe('postAfterLike', () => {
+  const post = { id: 'p1', like_count: 3, has_liked: false }
+
+  it('counts a like and takes it back', () => {
+    const liked = postAfterLike(post, true)
+    assert.deepEqual(liked, { id: 'p1', like_count: 4, has_liked: true })
+    assert.deepEqual(postAfterLike(liked, false), post)
+  })
+
+  it('leaves the count alone when the state does not change', () => {
+    assert.equal(postAfterLike(post, false), post)
+  })
+})
+
+describe('postAfterCommentCount', () => {
+  it('moves the count and never below zero', () => {
+    assert.equal(postAfterCommentCount({ comment_count: 2 }, 1).comment_count, 3)
+    assert.equal(postAfterCommentCount({ comment_count: 1 }, -3).comment_count, 0)
+  })
+})
+
+describe('commentTree', () => {
+  it('puts each reply under its comment, in order, and drops a reply whose comment is missing', () => {
+    const tree = commentTree([
+      { id: 'a' },
+      { id: 'a1', parent_id: 'a' },
+      { id: 'b' },
+      { id: 'x1', parent_id: 'hidden' },
+      { id: 'a2', parent_id: 'a' }
+    ])
+    assert.deepEqual(tree, [
+      {
+        id: 'a',
+        replies: [
+          { id: 'a1', parent_id: 'a' },
+          { id: 'a2', parent_id: 'a' }
+        ]
+      },
+      { id: 'b', replies: [] }
+    ])
+  })
+})
+
+describe('treeWithComment', () => {
+  const tree = [{ id: 'a', replies: [] }]
+
+  it('adds a comment last and a reply under its comment', () => {
+    assert.deepEqual(treeWithComment(tree, { id: 'b' }), [
+      { id: 'a', replies: [] },
+      { id: 'b', replies: [] }
+    ])
+    assert.deepEqual(treeWithComment(tree, { id: 'a1', parent_id: 'a' }), [
+      { id: 'a', replies: [{ id: 'a1', parent_id: 'a' }] }
+    ])
+  })
+})
+
+describe('treeWithoutComment', () => {
+  const tree = [
+    {
+      id: 'a',
+      replies: [
+        { id: 'a1', parent_id: 'a' },
+        { id: 'a2', parent_id: 'a' }
+      ]
+    },
+    { id: 'b', replies: [] }
+  ]
+
+  it('removes a comment with its replies', () => {
+    assert.deepEqual(treeWithoutComment(tree, 'a'), {
+      tree: [{ id: 'b', replies: [] }],
+      removedCount: 3
+    })
+  })
+
+  it('removes a single reply', () => {
+    assert.deepEqual(treeWithoutComment(tree, 'a1'), {
+      tree: [
+        { id: 'a', replies: [{ id: 'a2', parent_id: 'a' }] },
+        { id: 'b', replies: [] }
+      ],
+      removedCount: 1
+    })
+  })
+
+  it('removes nothing for an unknown id', () => {
+    assert.equal(treeWithoutComment(tree, 'z').removedCount, 0)
   })
 })

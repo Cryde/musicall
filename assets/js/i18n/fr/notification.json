@@ -34,6 +34,8 @@
     "forum_topic_reply": "a répondu à « {topic} »",
     "publication_comment": "a commenté « {publication} »",
     "comment_reply": "a répondu à un commentaire sur « {publication} »",
+    "profile_post_comment": "a commenté ton post",
+    "profile_post_comment_reply": "a répondu à ton commentaire sur un post",
     "course_approved": "Ton cours a été publié",
     "publication_approved": "Ta publication a été publiée",
     "course_rejected": "Ton cours n'a pas été accepté",

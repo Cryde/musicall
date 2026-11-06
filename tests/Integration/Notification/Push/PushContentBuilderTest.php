@@ -185,6 +185,8 @@ class PushContentBuilderTest extends KernelTestCase
         yield 'forum reply' => [NotificationType::ForumTopicReply, [], 'alice a répondu à ton sujet sur le forum'];
         yield 'publication comment' => [NotificationType::PublicationComment, [], 'alice a commenté ta publication'];
         yield 'comment reply' => [NotificationType::CommentReply, [], 'alice a répondu à ton commentaire'];
+        yield 'wall post comment' => [NotificationType::ProfilePostComment, [], 'alice a commenté ton post'];
+        yield 'wall post comment reply' => [NotificationType::ProfilePostCommentReply, [], 'alice a répondu à ton commentaire'];
         yield 'publication approved' => [NotificationType::PublicationApproved, [], 'alice a publié ton article'];
         yield 'publication rejected' => [NotificationType::PublicationRejected, [], 'alice a refusé ton article'];
         yield 'gallery approved' => [NotificationType::GalleryApproved, [], 'alice a publié ta galerie'];

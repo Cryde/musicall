@@ -38,5 +38,55 @@ export default {
 
   deletePost(id) {
     return axios.delete(Routing.generate('api_profile_posts_delete', { id })).catch(handleApiError)
+  },
+
+  getComments(postId) {
+    return axios
+      .get(Routing.generate('api_profile_post_comments_list', { postId }), {
+        headers: { Accept: 'application/ld+json' }
+      })
+      .then((resp) => resp.data.comments)
+  },
+
+  createComment(postId, content, parentId = null) {
+    return axios
+      .post(
+        Routing.generate('api_profile_post_comments_post', { postId }),
+        { content, parent_id: parentId },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  deleteComment(id) {
+    return axios
+      .delete(Routing.generate('api_profile_post_comments_delete', { id }))
+      .catch(handleApiError)
+  },
+
+  like(postId) {
+    return axios
+      .post(
+        Routing.generate('api_profile_post_like_post', { postId }),
+        {},
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  unlike(postId) {
+    return axios
+      .delete(Routing.generate('api_profile_post_like_delete', { postId }))
+      .catch(handleApiError)
+  },
+
+  getLikers(postId) {
+    return axios
+      .get(Routing.generate('api_profile_post_likes_list', { postId }), {
+        headers: { Accept: 'application/ld+json' }
+      })
+      .then((resp) => resp.data.likers)
   }
 }

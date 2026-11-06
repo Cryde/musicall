@@ -34,6 +34,8 @@
     "forum_topic_reply": "replied to \"{topic}\"",
     "publication_comment": "commented on \"{publication}\"",
     "comment_reply": "replied to a comment on \"{publication}\"",
+    "profile_post_comment": "commented on your post",
+    "profile_post_comment_reply": "replied to your comment on a post",
     "course_approved": "Your lesson has been published",
     "publication_approved": "Your publication has been published",
     "course_rejected": "Your lesson was not accepted",

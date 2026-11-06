@@ -98,6 +98,15 @@ function publicationTarget(payload) {
   return { name, params: { slug: payload.publication_slug } }
 }
 
+// A wall post has no page of its own: the profile opens it, comments shown, when it is on the first page.
+function wallPostTarget(payload) {
+  return {
+    name: 'app_user_public_profile',
+    params: { username: payload.wall_username },
+    query: { post: payload.post_id }
+  }
+}
+
 // An all day event covers a written day rather than an instant, and reading it as one shows the
 // previous day to anyone west of UTC. The payload says which it is; a notification stored before
 // that flag existed carries no key and reads as timed, which is what it was stored as, and the
@@ -171,6 +180,22 @@ const TYPE_CONFIG = {
     preview: t('notification.preview.comment_reply', { publication: payload.publication_title }),
     actions: null,
     target: publicationTarget(payload)
+  }),
+  profile_post_comment: (payload) => ({
+    icon: 'pi pi-comment',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.actor_username,
+    preview: t('notification.preview.profile_post_comment'),
+    actions: null,
+    target: wallPostTarget(payload)
+  }),
+  profile_post_comment_reply: (payload) => ({
+    icon: 'pi pi-reply',
+    avatarClass: 'bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-300',
+    title: payload.actor_username,
+    preview: t('notification.preview.profile_post_comment_reply'),
+    actions: null,
+    target: wallPostTarget(payload)
   }),
   publication_approved: (payload) => ({
     icon: 'pi pi-check-circle',

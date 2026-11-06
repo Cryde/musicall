@@ -17,6 +17,7 @@ describe('labels', () => {
     assert.equal(reportReasonLabel('harassment'), 'Harcèlement')
     assert.equal(reportTargetTypeLabel('band_chat_message'), 'Discussion de groupe')
     assert.equal(reportTargetTypeLabel('forum_post'), 'Message du forum')
+    assert.equal(reportTargetTypeLabel('profile_post_comment'), 'Commentaire de post')
   })
 
   it('falls back to the raw value for something it does not know', () => {
@@ -44,10 +45,12 @@ describe('reportSubject', () => {
       reportSubject('band_chat_message', 'Les Cactus'),
       'un message de la discussion du groupe Les Cactus'
     )
+    assert.equal(reportSubject('profile_post_comment', 'bob'), 'un commentaire sur un post de bob')
   })
 
   it('stays general without a label, and never names a private conversation', () => {
     assert.equal(reportSubject('comment', null), 'un commentaire')
+    assert.equal(reportSubject('profile_post_comment', null), 'un commentaire sur un post')
     assert.equal(reportSubject('message', 'ignored'), 'un message privé')
     assert.equal(reportSubject('new_type', 'x'), 'un contenu')
   })
@@ -93,6 +96,10 @@ describe('reportContentLink', () => {
     assert.deepEqual(reportContentLink(report('user', { username: 'bob' })).to, expected)
     assert.deepEqual(
       reportContentLink(report('announce', { instrument: 'Batterie', username: 'bob' })).to,
+      expected
+    )
+    assert.deepEqual(
+      reportContentLink(report('profile_post_comment', { username: 'bob' })).to,
       expected
     )
   })

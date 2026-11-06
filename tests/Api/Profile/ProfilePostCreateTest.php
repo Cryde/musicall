@@ -62,6 +62,9 @@ class ProfilePostCreateTest extends ApiTestCase
             'is_pinned' => false,
             'creation_datetime' => $post->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_edit' => true,
+            'like_count' => 0,
+            'has_liked' => false,
+            'comment_count' => 0,
         ]);
     }
 
@@ -96,6 +99,9 @@ class ProfilePostCreateTest extends ApiTestCase
             'is_pinned' => false,
             'creation_datetime' => $post->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_edit' => true,
+            'like_count' => 0,
+            'has_liked' => false,
+            'comment_count' => 0,
         ]);
 
         // Stored converted, in the sender's order: WebP, 1600 px at most, the location data gone with the EXIF.
@@ -139,6 +145,9 @@ class ProfilePostCreateTest extends ApiTestCase
             'is_pinned' => false,
             'creation_datetime' => $post->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_edit' => true,
+            'like_count' => 0,
+            'has_liked' => false,
+            'comment_count' => 0,
         ]);
     }
 

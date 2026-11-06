@@ -27,6 +27,7 @@ use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
+use App\Tests\Factory\Profile\ProfilePostCommentFactory;
 use App\Tests\Factory\Profile\ProfilePostFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
@@ -218,6 +219,40 @@ class ReportPostTest extends ApiTestCase
         $this->assertJsonEquals(self::NOT_FOUND);
     }
 
+    public function test_reports_a_comment_on_a_wall_post(): void
+    {
+        $reporter = $this->reporter();
+        $owner = UserFactory::new()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $commenter = UserFactory::new()->create(['username' => 'troll', 'email' => 'troll@test.com']);
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+        $comment = ProfilePostCommentFactory::new()->create(['post' => $post, 'author' => $commenter, 'content' => 'Insulte']);
+
+        $this->report($reporter, 'profile_post_comment', (string) $comment->id, 'inappropriate');
+
+        $this->assertNoContent();
+        $report = $this->onlyReport();
+        $this->assertSame('Insulte', $report->snapshotText);
+        $this->assertSame(['username' => 'guitariste'], $report->snapshotContext);
+        $this->assertSame($commenter->id, $report->targetAuthor?->id);
+    }
+
+    public function test_a_comment_by_someone_blocked_either_way_is_not_found(): void
+    {
+        $reporter = $this->reporter();
+        $owner = UserFactory::new()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $commenter = UserFactory::new()->create(['username' => 'troll', 'email' => 'troll@test.com']);
+        $comment = ProfilePostCommentFactory::new()->create([
+            'post' => ProfilePostFactory::new()->create(['author' => $owner]),
+            'author' => $commenter,
+        ]);
+        UserBlockFactory::new()->create(['blocker' => $reporter, 'blocked' => $commenter]);
+
+        $this->report($reporter, 'profile_post_comment', (string) $comment->id, 'inappropriate');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals(self::NOT_FOUND);
+    }
+
     public function test_reports_a_forum_post_with_its_page(): void
     {
         $reporter = $this->reporter();
@@ -297,7 +332,7 @@ class ReportPostTest extends ApiTestCase
      */
     public static function uuidTargetTypes(): iterable
     {
-        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post', 'profile_post'] as $type) {
+        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post', 'profile_post', 'profile_post_comment'] as $type) {
             yield $type => [$type];
         }
     }

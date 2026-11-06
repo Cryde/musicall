@@ -1,6 +1,8 @@
 /** Mirrors ProfilePostCreate on the server (#1316). */
 export const MAX_POST_PHOTOS = 4
 export const MAX_POST_LENGTH = 2000
+/** Mirrors ProfilePostComment::MAX_LENGTH. */
+export const MAX_COMMENT_LENGTH = 1000
 
 /** A post the composer starts from. */
 export function emptyPostDraft() {
@@ -94,4 +96,59 @@ function isNewer(a, b) {
     a.creation_datetime > b.creation_datetime ||
     (a.creation_datetime === b.creation_datetime && a.id > b.id)
   )
+}
+
+/** A post as it reads once the viewer liked it or took the like back: the count moves only when the state does. */
+export function postAfterLike(post, liked) {
+  if (post.has_liked === liked) {
+    return post
+  }
+  return { ...post, has_liked: liked, like_count: Math.max(0, post.like_count + (liked ? 1 : -1)) }
+}
+
+/** A post whose comment count moved by `delta`. */
+export function postAfterCommentCount(post, delta) {
+  return { ...post, comment_count: Math.max(0, post.comment_count + delta) }
+}
+
+/**
+ * The server's flat list, oldest first, as roots each holding its replies. A reply whose comment is not in the
+ * list has nothing to answer on screen, so it is left out.
+ */
+export function commentTree(comments) {
+  const roots = comments
+    .filter((comment) => !comment.parent_id)
+    .map((comment) => ({ ...comment, replies: [] }))
+  const byId = new Map(roots.map((root) => [root.id, root]))
+  for (const comment of comments) {
+    if (comment.parent_id) {
+      byId.get(comment.parent_id)?.replies.push(comment)
+    }
+  }
+  return roots
+}
+
+/** The tree with a new comment: a root goes last, a reply goes last under its comment. */
+export function treeWithComment(tree, comment) {
+  if (!comment.parent_id) {
+    return [...tree, { ...comment, replies: [] }]
+  }
+  return tree.map((root) =>
+    root.id === comment.parent_id ? { ...root, replies: [...root.replies, comment] } : root
+  )
+}
+
+/** The tree without a comment, and how many went with it: a root takes its replies along. */
+export function treeWithoutComment(tree, id) {
+  const root = tree.find((held) => held.id === id)
+  if (root) {
+    return { tree: tree.filter((held) => held.id !== id), removedCount: 1 + root.replies.length }
+  }
+  let removedCount = 0
+  const next = tree.map((held) => {
+    const replies = held.replies.filter((reply) => reply.id !== id)
+    removedCount += held.replies.length - replies.length
+    return replies.length === held.replies.length ? held : { ...held, replies }
+  })
+  return { tree: next, removedCount }
 }
