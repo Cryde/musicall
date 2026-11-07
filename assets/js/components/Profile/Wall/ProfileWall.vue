@@ -99,6 +99,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import profileApi from '../../../api/user/profile.js'
 import profileWallApi from '../../../api/user/profileWall.js'
 import {
   appendWallPage,
@@ -124,7 +125,9 @@ const props = defineProps({
   /** The profile's musician and teacher media, for the « Médias » grid. */
   media: { type: Array, default: () => [] },
   /** Where the owner manages them. */
-  manageMediaRoute: { type: Object, default: null }
+  manageMediaRoute: { type: Object, default: null },
+  /** A visitor on a member with a musician profile: opening « Médias » counts as a musician page visit. */
+  countsMusicianView: { type: Boolean, default: false }
 })
 
 const { t } = useI18n()
@@ -169,6 +172,7 @@ async function load() {
   nextCursor.value = null
   if (isMediaGrid.value) {
     isLoading.value = false
+    if (props.countsMusicianView) profileApi.recordMusicianView(props.username)
     return
   }
   try {

@@ -12,9 +12,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\Teacher\TeacherProfileBuilder;
-use App\Service\Procedure\Metric\ViewProcedure;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
+use App\Service\Profile\ProfileViewTracker;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -25,9 +23,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
     public function __construct(
         private UserRepository $userRepository,
         private TeacherProfileBuilder $teacherProfileBuilder,
-        private ViewProcedure $viewProcedure,
-        private RequestStack $requestStack,
-        private Security $security,
+        private ProfileViewTracker $viewTracker,
         private PublicProfileGuard $publicProfileGuard,
     ) {
     }
@@ -48,25 +44,8 @@ readonly class TeacherProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 
-        $this->trackView($teacherProfile, $user);
+        $this->viewTracker->track($teacherProfile, $user);
 
         return $this->teacherProfileBuilder->build($teacherProfile);
-    }
-
-    private function trackView(TeacherProfile $profile, User $profileOwner): void
-    {
-        if (!($request = $this->requestStack->getCurrentRequest()) instanceof \Symfony\Component\HttpFoundation\Request) {
-            return;
-        }
-
-        /** @var User|null $currentUser */
-        $currentUser = $this->security->getUser();
-
-        // Don't count own views
-        if ($currentUser && $currentUser->id === $profileOwner->id) {
-            return;
-        }
-
-        $this->viewProcedure->process($profile, $request, $currentUser);
     }
 }

@@ -10,6 +10,16 @@ export default {
       .then((resp) => resp.data)
   },
 
+  /**
+   * A visit to the member's « Médias », counted as the musician page's were (#1317). A count never bothers the
+   * visitor: a failure is dropped.
+   */
+  recordMusicianView(username) {
+    return axios
+      .post(Routing.generate('api_profile_musician_view_post', { username }))
+      .catch(() => {})
+  },
+
   getMyProfile() {
     return axios.get(Routing.generate('api_user_profile_get')).then((resp) => resp.data)
   },

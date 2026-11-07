@@ -301,6 +301,7 @@ const wallProps = computed(() => ({
   isOwner: isOwnProfile.value,
   media: listenPlaylist(profile.value),
   // The media are managed in the settings until part 4 of #1317 edits them in place.
+  countsMusicianView: !isOwnProfile.value && Boolean(profile.value.musician),
   manageMediaRoute: {
     name:
       profile.value.musician || !profile.value.teacher
