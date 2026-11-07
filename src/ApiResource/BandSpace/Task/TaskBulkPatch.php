@@ -29,6 +29,10 @@ class TaskBulkPatch
 
     public ?bool $archived = null;
 
+    /** Left unset rather than nullable: a status cannot be cleared, so a null one is refused. */
+    #[Assert\Choice(choices: ['todo', 'in_progress', 'done'], message: 'band_space.task.status_invalid')]
+    public string $status;
+
     public ?string $categoryId = null;
 
     /** @var string[]|null */

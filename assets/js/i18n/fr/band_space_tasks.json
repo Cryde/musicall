@@ -79,6 +79,7 @@
   },
   "bulk_bar": {
     "selected_count": "{count} tâche sélectionnée | {count} tâches sélectionnées",
+    "choose_status": "Choisir un statut",
     "choose_category": "Choisir une catégorie",
     "apply": "Appliquer",
     "no_assignee": "Aucun",
@@ -89,6 +90,7 @@
     "failed": "Action en lot impossible",
     "generic_error": "Une erreur est survenue",
     "archived": "Tâches archivées",
+    "status_updated": "Statut mis à jour",
     "category_updated": "Catégorie mise à jour",
     "assignees_updated": "Assignés mis à jour",
     "deleted": "Tâches supprimées",

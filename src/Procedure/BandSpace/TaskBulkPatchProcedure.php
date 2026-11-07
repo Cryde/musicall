@@ -10,6 +10,7 @@ use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -48,16 +49,71 @@ readonly class TaskBulkPatchProcedure
             $this->assertEveryTaskIsDone($tasks);
         }
 
-        $this->entityManager->wrapInTransaction(function () use ($tasks, $patchPayload, $bandSpace, $user): void {
+        $targetStatus = array_key_exists('status', $patchPayload) ? TaskStatus::from($patchPayload['status']) : null;
+
+        $this->entityManager->wrapInTransaction(function () use ($tasks, $patchPayload, $targetStatus, $bandSpace, $user): void {
+            if ($targetStatus instanceof TaskStatus) {
+                $this->appendToColumn($tasks, $targetStatus, $bandSpace);
+            }
+
             foreach ($tasks as $task) {
                 $resource = $this->taskBuilder->buildItem($task);
                 if (array_key_exists('category_id', $patchPayload)) {
                     $resource->categoryId = $patchPayload['category_id'];
                 }
+                if ($targetStatus instanceof TaskStatus) {
+                    $resource->status = $targetStatus->value;
+                }
 
                 $this->taskUpdateProcedure->update($task, $patchPayload, $resource, $bandSpace, $user);
             }
         });
+    }
+
+    /**
+     * A status change alone keeps the task's old index, which a card of the new column may already
+     * hold. The moved tasks go after that column's last card instead, in board order. The end is read
+     * once and counted up from: every position is handed out before anything is flushed.
+     *
+     * @param Task[] $tasks
+     */
+    private function appendToColumn(array $tasks, TaskStatus $targetStatus, BandSpace $bandSpace): void
+    {
+        $moving = array_filter($tasks, static fn(Task $task): bool => $task->status !== $targetStatus);
+        usort($moving, self::compareBoardOrder(...));
+
+        $nextPosition = $this->taskRepository->findNextPositionInColumn($bandSpace, $targetStatus);
+        foreach ($moving as $task) {
+            $task->position = $nextPosition++;
+        }
+    }
+
+    /**
+     * Column by column, left to right as the enum lists them, then top to bottom as each column shows
+     * its cards: Terminé by completion, newest first (TaskColumn.vue), the others by position.
+     */
+    private static function compareBoardOrder(Task $a, Task $b): int
+    {
+        $columns = TaskStatus::cases();
+        $byColumn = array_search($a->status, $columns, true) <=> array_search($b->status, $columns, true);
+        if ($byColumn !== 0) {
+            return $byColumn;
+        }
+
+        if ($a->status === TaskStatus::Done) {
+            $byCompletion = self::shownCompletion($b) <=> self::shownCompletion($a);
+            if ($byCompletion !== 0) {
+                return $byCompletion;
+            }
+        }
+
+        return $a->position <=> $b->position;
+    }
+
+    /** The date the Terminé column sorts on, with the same fallbacks. */
+    private static function shownCompletion(Task $task): DateTimeInterface
+    {
+        return $task->completedDatetime ?? $task->updateDatetime ?? $task->creationDatetime;
     }
 
     /**
