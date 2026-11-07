@@ -705,30 +705,16 @@
     "photo_of": "Photo of {name}",
     "avatar_of": "Avatar of {name}",
     "view_profile": "View profile",
-    "edit": "Edit",
     "contact": "Contact",
     "contact_auth_required": "You need to log in to send a message to this user."
   },
   "musician_page": {
-    "not_found_title": "Musician profile not found",
-    "not_found_help": "This user hasn't created a musician profile yet.",
-    "title": "Musician profile",
-    "edit": "Edit musician profile",
-    "availability": "Availability",
     "instruments": "Instruments",
     "styles": "Genres",
     "bands": "Bands",
     "band_current": "Now",
     "band_past": "Before",
-    "band_link": "(opens in a new tab)",
-    "announces": "Ads",
-    "add_announce": "Add",
-    "announces_empty": "You don't have any ads yet",
-    "create_announce": "Create an ad",
-    "page_title": "Musician profile - {username} - MusicAll",
-    "page_title_default": "Musician profile - MusicAll",
-    "share_title": "Check out {username}'s musician profile on MusicAll",
-    "share_title_default": "Musician profile on MusicAll"
+    "band_link": "(opens in a new tab)"
   },
   "teacher_page": {
     "not_found_title": "Teacher profile not found",
@@ -974,6 +960,7 @@
       "announces": "No ads yet.",
       "courses": "No lessons yet.",
       "visitor": "{name} hasn't posted anything yet."
-    }
+    },
+    "media_manage": "Manage my media"
   }
 }

@@ -21,6 +21,7 @@ import {
   wallAfterPinChange,
   wallFilterFromQuery,
   wallItemKey,
+  wallNeedsScrolling,
   youtubeThumbnailUrl
 } from './profileWall.js'
 
@@ -312,5 +313,13 @@ describe('showsPosts', () => {
       WALL_FILTERS.filter(showsPosts).map((filter) => filter.query),
       [null, 'posts']
     )
+  })
+})
+
+describe('wallNeedsScrolling', () => {
+  it('brings the wall into view only while its top is below the middle of the screen', () => {
+    assert.equal(wallNeedsScrolling(700, 844), true)
+    assert.equal(wallNeedsScrolling(300, 844), false)
+    assert.equal(wallNeedsScrolling(-200, 844), false)
   })
 })

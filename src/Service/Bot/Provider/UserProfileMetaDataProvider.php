@@ -20,7 +20,7 @@ readonly class UserProfileMetaDataProvider implements PageMetaDataProviderInterf
 
     public function supports(string $uri): bool
     {
-        // /u/{username}/musician and /teacher have their own providers.
+        // /u/{username}/teacher has its own provider; /musician answers a 301 to this page (#1317).
         return (bool) preg_match(self::PATTERN, $uri);
     }
 

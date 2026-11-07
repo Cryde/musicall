@@ -3,6 +3,18 @@
  * `embed_id` is what the server parsed: a YouTube id, `kind/id` for Spotify, `user/track` for SoundCloud.
  */
 
+// PrimeIcons has no Spotify icon.
+const PLATFORM_ICONS = {
+  youtube: 'pi pi-youtube',
+  spotify: 'pi pi-headphones',
+  soundcloud: 'pi pi-cloud'
+}
+
+/** The icon standing in for a media without a stored thumbnail. */
+export function mediaPlatformIcon(platform) {
+  return PLATFORM_ICONS[platform] ?? 'pi pi-play'
+}
+
 const EMBED_ALLOW = {
   youtube:
     'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',

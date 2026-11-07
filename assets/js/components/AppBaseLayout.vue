@@ -40,8 +40,7 @@ const musicianSearchContext = [
   'app_search_bassist',
   'app_search_singer',
   'app_search_pianist',
-  'app_user_public_profile',
-  'app_user_musician_profile'
+  'app_user_public_profile'
 ]
 
 // Dynamic include list based on current route context

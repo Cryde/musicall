@@ -10,7 +10,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 /**
- * What the three member pages (/u/{username}, /musician, /teacher) share in their meta: whether the page may be
+ * What the member pages (/u/{username}, /teacher) share in their meta: whether the page may be
  * described at all, the member as a schema.org Person, and the page's address in the current locale.
  */
 readonly class ProfileMeta

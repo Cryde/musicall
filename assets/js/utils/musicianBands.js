@@ -45,3 +45,9 @@ export function currentBandsSummary(bands) {
   if (!current.length) return null
   return { first: current[0], othersCount: current.length - 1 }
 }
+
+/** The bands as the profile lists them (#1317): the current ones first, each group in the order the member set. */
+export function bandsCurrentFirst(bands) {
+  const list = Array.isArray(bands) ? bands : []
+  return [...list.filter((band) => band.current), ...list.filter((band) => !band.current)]
+}

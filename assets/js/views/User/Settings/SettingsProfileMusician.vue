@@ -130,7 +130,7 @@
           @click="showDeleteConfirm = true"
         />
         <div class="flex items-center gap-2">
-          <RouterLink :to="{ name: 'app_user_musician_profile', params: { username: userSecurityStore.user.username } }">
+          <RouterLink :to="{ name: 'app_user_public_profile', params: { username: userSecurityStore.user.username }, query: { voir: 'medias' } }">
             <Button
               :label="t('profile.settings.musician.view_profile')"
               icon="pi pi-external-link"

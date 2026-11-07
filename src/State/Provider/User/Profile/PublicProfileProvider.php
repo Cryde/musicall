@@ -8,13 +8,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\User\Profile\PublicProfile;
 use App\Entity\User;
-use App\Entity\User\UserProfile;
 use App\Repository\UserRepository;
 use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\User\PublicProfileBuilder;
-use App\Service\Procedure\Metric\ViewProcedure;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
+use App\Service\Profile\ProfileViewTracker;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -25,9 +22,7 @@ readonly class PublicProfileProvider implements ProviderInterface
     public function __construct(
         private UserRepository $userRepository,
         private PublicProfileBuilder $publicProfileBuilder,
-        private ViewProcedure $viewProcedure,
-        private RequestStack $requestStack,
-        private Security $security,
+        private ProfileViewTracker $viewTracker,
         private PublicProfileGuard $publicProfileGuard,
     ) {
     }
@@ -45,26 +40,8 @@ readonly class PublicProfileProvider implements ProviderInterface
 
         $this->publicProfileGuard->assertPublic($user);
 
-        $this->trackView($user, $user->profile);
+        $this->viewTracker->track($user->profile, $user);
 
         return $this->publicProfileBuilder->build($user);
-    }
-
-    private function trackView(User $profileOwner, UserProfile $profile): void
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
-            return;
-        }
-
-        /** @var User|null $currentUser */
-        $currentUser = $this->security->getUser();
-
-        // Don't count own views
-        if ($currentUser && $currentUser->id === $profileOwner->id) {
-            return;
-        }
-
-        $this->viewProcedure->process($profile, $request, $currentUser);
     }
 }

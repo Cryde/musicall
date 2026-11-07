@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Locale\BrowserLocaleRedirect;
+use App\Locale\LocalizedPath;
 use App\Locale\PageVersionsResolver;
 use App\Locale\RequestLocaleResolver;
 use App\Repository\PublicationRepository;
@@ -31,6 +32,19 @@ class HomeController extends AbstractController
     {
         $course = $publicationRepository->findOldCourseByOldId($id);
         $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'cours/' . $course->slug;
+
+        return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    /** The musician page folded into the profile (#1317): old links and crawlers land on its « Médias » view. */
+    #[Route('/u/{username}/musician', name: 'redirect_musician_profile', requirements: ['username' => '[^/]+'])]
+    #[Route('/en/u/{username}/musician', name: 'redirect_musician_profile_en', requirements: ['username' => '[^/]+'])]
+    public function musicianProfileRedirect(string $username, Request $request, LocalizedPath $localizedPath): RedirectResponse
+    {
+        $profilePath = $localizedPath->inLocale('/u/' . rawurlencode($username), $localizedPath->localeOf($request->getPathInfo()));
+        // The old link's own query (`from`, campaign tags) goes along, as the router's redirect keeps it.
+        $query = http_build_query(['voir' => 'medias'] + $request->query->all(), '', '&', PHP_QUERY_RFC3986);
+        $url = rtrim($this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL), '/') . $profilePath . '?' . $query;
 
         return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
     }

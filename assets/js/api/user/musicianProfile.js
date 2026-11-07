@@ -4,12 +4,6 @@ import axios from 'axios'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
-  getPublicMusicianProfile(username) {
-    return axios
-      .get(Routing.generate('api_musician_profile_get', { username }))
-      .then((resp) => resp.data)
-  },
-
   getMyMusicianProfile() {
     return axios.get(Routing.generate('api_musician_profile_edit_get')).then((resp) => resp.data)
   },

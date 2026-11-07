@@ -80,12 +80,10 @@ export function announceStyleTags(announce, limit = 3) {
   return { tags: names.slice(0, limit), hidden: names.slice(limit) }
 }
 
-/** Where an announce's author leads: their musician profile when they have one, with a way back home. */
+/** Where an announce's author leads: their profile, which holds the musician page since #1317, with a way back home. */
 export function announceAuthorRoute(announce) {
   return {
-    name: announce.author.has_musician_profile
-      ? 'app_user_musician_profile'
-      : 'app_user_public_profile',
+    name: 'app_user_public_profile',
     params: { username: announce.author.username },
     // For the profile's contextual « back » link.
     query: { from: 'home' }

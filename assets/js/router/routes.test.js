@@ -191,6 +191,18 @@ describe('the route table', () => {
     assert.equal(resolve({ name: 'app_login' }, '/en/forums').path, '/login')
   })
 
+  // Folded into the profile (#1317): the old page opens the profile's « Médias », in the same locale.
+  it('takes the musician page to the profile media, in its locale', () => {
+    for (const [from, to] of [
+      ['/u/jeanne/musician', '/u/jeanne?voir=medias'],
+      ['/en/u/jeanne/musician?from=search', '/en/u/jeanne?from=search&voir=medias']
+    ]) {
+      const route = resolve(from)
+      const redirect = route.matched.at(-1).redirect(route)
+      assert.equal(router.resolve(redirect).fullPath, to)
+    }
+  })
+
   it('takes `/` to the home page, never to the bare layout', () => {
     // resolve() does not follow redirects. The layout's names the locale, so `/` reached by Back from an
     // English page stays French.

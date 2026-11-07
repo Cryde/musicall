@@ -705,30 +705,16 @@
     "photo_of": "Photo de {name}",
     "avatar_of": "Avatar de {name}",
     "view_profile": "Voir le profil",
-    "edit": "Modifier",
     "contact": "Contacter",
     "contact_auth_required": "Tu dois te connecter pour envoyer un message à cet utilisateur."
   },
   "musician_page": {
-    "not_found_title": "Profil musicien non trouvé",
-    "not_found_help": "Cet utilisateur n'a pas encore créé son profil musicien.",
-    "title": "Profil musicien",
-    "edit": "Modifier le profil musicien",
-    "availability": "Disponibilité",
     "instruments": "Instruments",
     "styles": "Styles musicaux",
     "bands": "Groupes",
     "band_current": "En ce moment",
     "band_past": "Avant",
-    "band_link": "(s'ouvre dans un nouvel onglet)",
-    "announces": "Annonces",
-    "add_announce": "Ajouter",
-    "announces_empty": "Tu n'as pas encore d'annonce",
-    "create_announce": "Créer une annonce",
-    "page_title": "Profil musicien - {username} - MusicAll",
-    "page_title_default": "Profil musicien - MusicAll",
-    "share_title": "Découvre le profil musicien de {username} sur MusicAll",
-    "share_title_default": "Profil musicien sur MusicAll"
+    "band_link": "(s'ouvre dans un nouvel onglet)"
   },
   "teacher_page": {
     "not_found_title": "Profil professeur non trouvé",
@@ -974,6 +960,7 @@
       "announces": "Aucune annonce pour l'instant.",
       "courses": "Aucun cours pour l'instant.",
       "visitor": "{name} n'a encore rien publié."
-    }
+    },
+    "media_manage": "Gérer mes médias"
   }
 }

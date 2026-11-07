@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { mediaEmbedAllow, mediaEmbedHeight, mediaEmbedUrl } from './mediaEmbed.js'
+import {
+  mediaEmbedAllow,
+  mediaEmbedHeight,
+  mediaEmbedUrl,
+  mediaPlatformIcon
+} from './mediaEmbed.js'
 
 const youtube = { platform: 'youtube', embed_id: 'dQw4w9WgXcQ' }
 const spotifyTrack = { platform: 'spotify', embed_id: 'track/4uLU6hMCjMI75M1A2tKUQC' }
@@ -56,5 +61,13 @@ describe('mediaEmbedAllow', () => {
     assert.equal(mediaEmbedAllow(soundcloud), 'autoplay')
     assert.ok(mediaEmbedAllow(youtube).includes('encrypted-media'))
     assert.equal(mediaEmbedAllow({ platform: 'bandcamp' }), '')
+  })
+})
+
+describe('mediaPlatformIcon', () => {
+  it('stands in for each platform, Spotify with headphones since PrimeIcons has no Spotify icon', () => {
+    assert.equal(mediaPlatformIcon('youtube'), 'pi pi-youtube')
+    assert.equal(mediaPlatformIcon('spotify'), 'pi pi-headphones')
+    assert.equal(mediaPlatformIcon('bandcamp'), 'pi pi-play')
   })
 })

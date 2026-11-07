@@ -12,9 +12,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\Musician\MusicianProfileBuilder;
-use App\Service\Procedure\Metric\ViewProcedure;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
+use App\Service\Profile\ProfileViewTracker;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -25,9 +23,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
     public function __construct(
         private UserRepository $userRepository,
         private MusicianProfileBuilder $musicianProfileBuilder,
-        private ViewProcedure $viewProcedure,
-        private RequestStack $requestStack,
-        private Security $security,
+        private ProfileViewTracker $viewTracker,
         private PublicProfileGuard $publicProfileGuard,
     ) {
     }
@@ -48,26 +44,8 @@ readonly class MusicianProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('profile.musician.not_found');
         }
 
-        $this->trackView($musicianProfile, $user);
+        $this->viewTracker->track($musicianProfile, $user);
 
         return $this->musicianProfileBuilder->build($musicianProfile);
-    }
-
-    private function trackView(MusicianProfile $profile, User $profileOwner): void
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
-            return;
-        }
-
-        /** @var User|null $currentUser */
-        $currentUser = $this->security->getUser();
-
-        // Don't count own views
-        if ($currentUser && $currentUser->id === $profileOwner->id) {
-            return;
-        }
-
-        $this->viewProcedure->process($profile, $request, $currentUser);
     }
 }

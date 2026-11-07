@@ -169,15 +169,17 @@ export function reportContentLink(report) {
         ? linkTo({ name: 'app_user_public_profile', params: { username: context.username } })
         : noLink()
     case 'profile_media':
-      return context.username
-        ? linkTo({
-            name:
-              context.profile === 'teacher'
-                ? 'app_user_teacher_profile'
-                : 'app_user_musician_profile',
-            params: { username: context.username }
-          })
-        : noLink()
+      if (!context.username) return noLink()
+      // A musician media is on the profile's « Médias » since the musician page folded into it (#1317).
+      return linkTo(
+        context.profile === 'teacher'
+          ? { name: 'app_user_teacher_profile', params: { username: context.username } }
+          : {
+              name: 'app_user_public_profile',
+              params: { username: context.username },
+              query: { voir: 'medias' }
+            }
+      )
     case 'forum_post':
       return context.topic_slug
         ? linkTo({

@@ -74,7 +74,6 @@ const ROUTE_TO_MODULE = Object.freeze({
   app_search_teacher: FEEDBACK_MODULES.DIRECTORY,
   app_user_announces: FEEDBACK_MODULES.DIRECTORY,
   app_user_public_profile: FEEDBACK_MODULES.DIRECTORY,
-  app_user_musician_profile: FEEDBACK_MODULES.DIRECTORY,
   app_user_teacher_profile: FEEDBACK_MODULES.DIRECTORY,
 
   app_course: FEEDBACK_MODULES.COURSE,

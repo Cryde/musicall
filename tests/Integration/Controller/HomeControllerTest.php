@@ -305,4 +305,55 @@ class HomeControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
         $this->assertResponseRedirects('http://localhost/cours/old-slug-we-care');
     }
+
+    /** The musician page folded into the profile (#1317): old links and crawlers land on its « Médias » view. */
+    public function test_the_musician_page_redirects_to_the_profile_media(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/u/julien/musician');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
+        $this->assertResponseRedirects('http://localhost/u/julien?voir=medias');
+    }
+
+    public function test_the_english_musician_page_redirects_to_the_english_profile(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/en/u/julien.dupont/musician');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
+        $this->assertResponseRedirects('http://localhost/en/u/julien.dupont?voir=medias');
+    }
+
+    public function test_the_musician_page_redirect_keeps_the_old_link_query(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/u/julien/musician?from=home&utm_source=newsletter');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
+        $this->assertResponseRedirects('http://localhost/u/julien?voir=medias&from=home&utm_source=newsletter');
+    }
+
+    public function test_the_musician_page_redirect_encodes_the_username(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/u/' . rawurlencode('jean marié') . '/musician');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
+        $this->assertResponseRedirects('http://localhost/u/jean%20mari%C3%A9?voir=medias');
+    }
+
+    public function test_the_musician_page_redirect_answers_a_head_request(): void
+    {
+        $client = static::createClient();
+
+        $client->request('HEAD', '/u/julien/musician');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
+        $this->assertResponseRedirects('http://localhost/u/julien?voir=medias');
+    }
 }
