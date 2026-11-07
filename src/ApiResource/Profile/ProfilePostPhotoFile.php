@@ -10,19 +10,22 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\Profile\ProfilePostPhotoProvider;
+use Symfony\Component\Routing\Requirement\Requirement;
 
-/** A wall photo, streamed only to who may see the wall (#1316): the storage itself is private. */
+/**
+ * A wall photo, streamed only to who may see the post (#1316): the storage itself is private. Addressed by the
+ * post, not the username, so a rename keeps every photo's URL and its cache.
+ */
 #[ApiResource(
     shortName: 'ProfilePostPhotoFile',
     operations: [
         new Get(
-            uriTemplate: '/user/profile/{username}/posts/{postId}/photos/{id}',
+            uriTemplate: '/user/profile-posts/{postId}/photos/{id}',
             uriVariables: [
-                'username' => new Link(fromClass: self::class, identifiers: ['username']),
                 'postId' => new Link(fromClass: self::class, identifiers: ['postId']),
                 'id' => new Link(fromClass: self::class, identifiers: ['id']),
             ],
-            requirements: ['username' => '[^/]+'],
+            requirements: ['postId' => Requirement::UUID, 'id' => Requirement::UUID],
             openapi: new Operation(tags: ['Profile Wall']),
             output: false,
             name: 'api_profile_post_photos_get',
@@ -32,9 +35,6 @@ use App\State\Provider\Profile\ProfilePostPhotoProvider;
 )]
 class ProfilePostPhotoFile
 {
-    #[ApiProperty(identifier: true)]
-    public string $username;
-
     #[ApiProperty(identifier: true)]
     public string $postId;
 

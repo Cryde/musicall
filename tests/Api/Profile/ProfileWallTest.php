@@ -214,8 +214,8 @@ class ProfileWallTest extends ApiTestCase
                         'author' => ['@type' => 'ProfilePostAuthor', 'username' => 'julien', 'display_name' => 'julien'],
                         'content' => 'Forest National',
                         'photos' => [
-                            ['@type' => 'ProfilePostPhoto', 'id' => $first->id, 'url' => '/api/user/profile/julien/posts/' . $post->id . '/photos/' . $first->id],
-                            ['@type' => 'ProfilePostPhoto', 'id' => $second->id, 'url' => '/api/user/profile/julien/posts/' . $post->id . '/photos/' . $second->id],
+                            ['@type' => 'ProfilePostPhoto', 'id' => $first->id, 'url' => '/api/user/profile-posts/' . $post->id . '/photos/' . $first->id],
+                            ['@type' => 'ProfilePostPhoto', 'id' => $second->id, 'url' => '/api/user/profile-posts/' . $post->id . '/photos/' . $second->id],
                         ],
                         'is_pinned' => false,
                         'creation_datetime' => '2026-11-01T10:00:00+00:00',
@@ -447,7 +447,7 @@ class ProfileWallTest extends ApiTestCase
     {
         [$owner, $post, $image] = $this->postWithStoredPhoto('julien');
 
-        $this->client->request('GET', '/api/user/profile/julien/posts/' . $post->id . '/photos/' . $image->id);
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/photos/' . $image->id);
 
         $this->assertResponseIsSuccessful();
         $response = $this->client->getResponse();
@@ -462,7 +462,7 @@ class ProfileWallTest extends ApiTestCase
         [$owner, , $image] = $this->postWithStoredPhoto('julien');
         $otherPost = ProfilePostFactory::new()->create(['author' => $owner]);
 
-        $this->client->request('GET', '/api/user/profile/julien/posts/' . $otherPost->id . '/photos/' . $image->id);
+        $this->client->request('GET', '/api/user/profile-posts/' . $otherPost->id . '/photos/' . $image->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
@@ -484,7 +484,7 @@ class ProfileWallTest extends ApiTestCase
         UserBlockFactory::new()->create(['blocker' => $owner, 'blocked' => $viewer]);
 
         $this->client->loginUser($viewer);
-        $this->client->request('GET', '/api/user/profile/julien/posts/' . $post->id . '/photos/' . $image->id);
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/photos/' . $image->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
@@ -494,8 +494,29 @@ class ProfileWallTest extends ApiTestCase
             'title' => 'An error occurred',
             'status' => 404,
             'type' => '/errors/404',
-            'detail' => 'Photo introuvable',
-            'description' => 'Photo introuvable',
+            'detail' => 'Post introuvable',
+            'description' => 'Post introuvable',
+        ]);
+    }
+
+    public function test_a_photo_of_a_private_profile_is_not_served(): void
+    {
+        [$owner, $post, $image] = $this->postWithStoredPhoto('julien');
+        $owner->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($owner);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/photos/' . $image->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
         ]);
     }
 

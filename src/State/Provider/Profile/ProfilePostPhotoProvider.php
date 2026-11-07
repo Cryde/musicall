@@ -33,15 +33,10 @@ readonly class ProfilePostPhotoProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): StreamedResponse
     {
-        $owner = $this->wallAccess->owner((string) $uriVariables['username']);
         $viewer = $this->security->getUser();
+        $post = $this->wallAccess->visiblePost((string) $uriVariables['postId'], $viewer instanceof User ? $viewer : null);
         $image = $this->entityManager->find(ProfilePostImage::class, (string) $uriVariables['id']);
-        if (
-            !$image instanceof ProfilePostImage
-            || $image->post->id !== (string) $uriVariables['postId']
-            || $image->post->author->id !== $owner->id
-            || $this->wallAccess->isHiddenFrom($owner, $viewer instanceof User ? $viewer : null)
-        ) {
+        if (!$image instanceof ProfilePostImage || $image->post->id !== $post->id) {
             throw new NotFoundHttpException('profile.wall.photo_not_found');
         }
 
