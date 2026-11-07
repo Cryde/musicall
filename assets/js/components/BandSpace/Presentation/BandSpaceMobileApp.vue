@@ -22,8 +22,8 @@
         </li>
       </ul>
       <div class="flex items-center gap-6">
-        <GooglePlayBadge placement="band-space-presentation" class="h-12" />
-        <GooglePlayQrCode class="hidden lg:flex" />
+        <MobileAppBadges placement="band-space-presentation" size="lg" />
+        <MobileAppQrCode class="hidden lg:flex" />
       </div>
     </div>
   </section>
@@ -35,17 +35,15 @@ import { useI18n } from 'vue-i18n'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { offersMobileApp } from '../../../utils/mobileApp.js'
 import FeatureItem from '../../Discover/FeatureItem.vue'
-import GooglePlayBadge from '../../MobileApp/GooglePlayBadge.vue'
-import GooglePlayQrCode from '../../MobileApp/GooglePlayQrCode.vue'
+import MobileAppBadges from '../../MobileApp/MobileAppBadges.vue'
+import MobileAppQrCode from '../../MobileApp/MobileAppQrCode.vue'
 import PushNotificationsMockup from '../../MobileApp/PushNotificationsMockup.vue'
 
 const { t } = useI18n()
 const titleId = useId()
 const userSecurityStore = useUserSecurityStore()
 
-const isOffered = computed(() =>
-  offersMobileApp(userSecurityStore.userProfile, globalThis.navigator)
-)
+const isOffered = computed(() => offersMobileApp(userSecurityStore.userProfile))
 
 const features = computed(() => [
   {

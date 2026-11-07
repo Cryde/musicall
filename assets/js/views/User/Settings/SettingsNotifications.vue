@@ -109,7 +109,7 @@
           <span class="text-sm font-medium text-surface-700 dark:text-surface-200">
             {{ t('profile.settings.notifications.push_get_app') }}
           </span>
-          <GooglePlayBadge placement="notification-settings" class="h-10" />
+          <MobileAppBadges placement="notification-settings" />
         </div>
 
         <NotificationToggle
@@ -158,7 +158,7 @@ import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import GooglePlayBadge from '../../../components/MobileApp/GooglePlayBadge.vue'
+import MobileAppBadges from '../../../components/MobileApp/MobileAppBadges.vue'
 import NotificationToggle from '../../../components/settings/NotificationToggle.vue'
 import { useNotificationPreferencesStore } from '../../../store/user/notificationPreferences.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -245,9 +245,7 @@ const notificationPreferencesStore = useNotificationPreferencesStore()
 const toast = useToast()
 const { t } = useI18n()
 const userSecurityStore = useUserSecurityStore()
-const offersApp = computed(() =>
-  offersMobileApp(userSecurityStore.userProfile, globalThis.navigator)
-)
+const offersApp = computed(() => offersMobileApp(userSecurityStore.userProfile))
 
 const isLoading = ref(true)
 const isUpdating = ref(false)

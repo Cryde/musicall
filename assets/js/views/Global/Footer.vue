@@ -35,7 +35,7 @@
         <p class="m-0 text-sm leading-relaxed text-surface-600 dark:text-surface-400 max-w-sm">
           {{ t('footer.tagline') }}
         </p>
-        <GooglePlayBadge v-if="offersApp" placement="footer" class="self-start h-10 sm:order-2" />
+        <MobileAppBadges v-if="offersApp" placement="footer" class="self-start sm:order-2" />
       </div>
 
       <nav
@@ -106,7 +106,7 @@
 <script setup>
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import GooglePlayBadge from '../../components/MobileApp/GooglePlayBadge.vue'
+import MobileAppBadges from '../../components/MobileApp/MobileAppBadges.vue'
 import { useIsPhone } from '../../composables/useIsPhone.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { offersMobileApp } from '../../utils/mobileApp.js'
@@ -228,9 +228,7 @@ const legalLinks = computed(() => [
 ])
 
 const userSecurityStore = useUserSecurityStore()
-const offersApp = computed(() =>
-  offersMobileApp(userSecurityStore.userProfile, globalThis.navigator)
-)
+const offersApp = computed(() => offersMobileApp(userSecurityStore.userProfile))
 const showAnnounceModal = ref(false)
 const showAuthModal = ref(false)
 

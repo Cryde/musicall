@@ -553,7 +553,7 @@
       }
     },
     "mobile_app": {
-      "eyebrow": "Application Android",
+      "eyebrow": "Application mobile",
       "title": "Ton groupe dans ta poche",
       "body": "Tout le Band Space sur ton téléphone, et une notification quand le groupe écrit, qu'une date tombe ou qu'on te confie une tâche.",
       "features": {

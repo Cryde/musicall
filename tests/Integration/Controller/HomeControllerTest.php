@@ -356,4 +356,55 @@ class HomeControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_MOVED_PERMANENTLY);
         $this->assertResponseRedirects('http://localhost/u/julien?voir=medias');
     }
+
+    /** The QR code's target (#1339): each phone to its own store. */
+    public function test_the_app_link_sends_an_iphone_to_the_app_store(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/app', server: ['HTTP_USER_AGENT' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertResponseRedirects('https://apps.apple.com/fr/app/musicall-musiciens-groupes/id6828999540');
+    }
+
+    public function test_the_app_link_sends_an_android_phone_to_the_play_store(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/app', server: ['HTTP_USER_AGENT' => 'Mozilla/5.0 (Linux; Android 15; Pixel 8) Chrome/130.0 Mobile Safari/537.36']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertResponseRedirects('https://play.google.com/store/apps/details?id=com.musicall.app');
+    }
+
+    public function test_the_app_link_sends_a_computer_to_the_homepage(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/app', server: ['HTTP_USER_AGENT' => 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0 Safari/537.36']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertResponseRedirects('http://localhost/');
+    }
+
+    public function test_the_app_link_sends_a_request_without_user_agent_to_the_homepage(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/app', server: ['HTTP_USER_AGENT' => '']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertResponseRedirects('http://localhost/');
+    }
+
+    public function test_the_app_link_answers_a_head_request(): void
+    {
+        $client = static::createClient();
+
+        $client->request('HEAD', '/app', server: ['HTTP_USER_AGENT' => 'Mozilla/5.0 (Linux; Android 15; Pixel 8) Chrome/130.0 Mobile Safari/537.36']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertResponseRedirects('https://play.google.com/store/apps/details?id=com.musicall.app');
+    }
 }

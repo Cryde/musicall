@@ -553,7 +553,7 @@
       }
     },
     "mobile_app": {
-      "eyebrow": "Android app",
+      "eyebrow": "Mobile app",
       "title": "Your band in your pocket",
       "body": "The whole Band Space on your phone, with a notification when the band writes, a date is set or you're given a task.",
       "features": {
