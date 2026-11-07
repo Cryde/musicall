@@ -277,6 +277,41 @@ class PublicMusicianProfileGetTest extends ApiTestCase
         ]);
     }
 
+    /** Its owner still sees their private musician page (#1317). */
+    public function test_get_public_musician_profile_private_is_shown_to_its_owner(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'privatemusician',
+            'email' => 'privatemusician@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        $user->musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'availabilityStatus' => null,
+            'creationDatetime' => new \DateTimeImmutable('2024-02-20T14:30:00+00:00'),
+            'styles' => [],
+        ]);
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/profile/privatemusician/musician');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/PublicMusicianProfile',
+            '@id' => '/api/user/profile/privatemusician/musician',
+            '@type' => 'PublicMusicianProfile',
+            'username' => 'privatemusician',
+            'user_id' => $user->id,
+            'instruments' => [],
+            'styles' => [],
+            'bands' => [],
+            'musician_announces' => [],
+            'media' => [],
+            'creation_datetime' => '2024-02-20T14:30:00+00:00',
+        ]);
+    }
+
     /** A private member's pages say « privé » whether or not they exist, so nothing about them leaks. */
     public function test_get_musician_profile_private_without_a_musician_profile(): void
     {

@@ -13,7 +13,7 @@
     </div>
     <router-link
       v-if="hasTeacherProfile !== null"
-      :to="hasTeacherProfile ? { name: 'app_user_teacher_profile', params: { username } } : { name: 'app_user_settings_profile_teacher' }"
+      :to="hasTeacherProfile ? { name: 'app_user_teacher_profile', params: { username } } : { name: 'app_user_settings_profile' }"
       class="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-primary hover:underline"
     >
       {{ hasTeacherProfile ? t('home.member.teacher.view_profile') : t('home.member.teacher.create_profile') }}

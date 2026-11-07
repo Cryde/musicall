@@ -12,6 +12,7 @@
       :username="username"
       :picture-url="pictureUrl"
       class="p-4 border-b border-surface-200 dark:border-surface-700"
+      ref="composerRef"
       @created="handleCreated"
     />
 
@@ -132,7 +133,7 @@ const props = defineProps({
   countsMusicianView: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['media-changed'])
+const emit = defineEmits(['media-changed', 'posts-changed'])
 
 const { t } = useI18n()
 const route = useRoute()
@@ -154,6 +155,7 @@ const hasItems = computed(() => pinnedPost.value !== null || items.value.length 
 const filter = computed(() => wallFilterFromQuery(route.query.voir))
 const isMediaGrid = computed(() => filter.value.type === 'media')
 const sectionRef = ref(null)
+const composerRef = ref(null)
 const emptyText = computed(() => {
   if (filter.value.emptyKey) return t(filter.value.emptyKey)
   return props.isOwner
@@ -221,6 +223,7 @@ function selectFilter(option) {
 }
 
 function handleCreated(post) {
+  emit('posts-changed')
   if (!showsPosts(filter.value)) return
   items.value = [postItem(post), ...items.value]
 }
@@ -250,6 +253,7 @@ function handleDeleted(id) {
     pinnedPost.value = null
   }
   items.value = items.value.filter((item) => !(item.type === 'post' && item.post.id === id))
+  emit('posts-changed')
 }
 
 async function scrollToFocusedPost() {
@@ -271,6 +275,16 @@ async function scrollIntoViewWhen(needsScrolling) {
 watch(filter, () => scrollIntoViewWhen(wallNeedsScrolling))
 watch([focusedPostId, isLoading], scrollToFocusedPost)
 
+// The owner's checklist: back to a filter with the composer, then into it.
+async function writePost() {
+  if (!showsPosts(filter.value)) {
+    const { voir: _filter, ...query } = route.query
+    await router.replace({ query })
+  }
+  await scrollIntoViewWhen(wallOutOfView)
+  composerRef.value?.focus()
+}
+
 // The owner's « Écouter » pencil, which can sit below the wall.
-defineExpose({ show: () => scrollIntoViewWhen(wallOutOfView) })
+defineExpose({ show: () => scrollIntoViewWhen(wallOutOfView), writePost })
 </script>

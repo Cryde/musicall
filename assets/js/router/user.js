@@ -180,30 +180,14 @@ export default [
         component: () => import('../views/User/Settings/SettingsPrivacy.vue')
       },
       {
+        name: 'app_user_settings_profile',
         path: 'profile',
-        component: () => import('../views/User/Settings/SettingsProfile.vue'),
-        children: [
-          {
-            name: 'app_user_settings_profile',
-            path: '',
-            component: () => import('../views/User/Settings/SettingsProfileGeneral.vue')
-          },
-          {
-            name: 'app_user_settings_profile_privacy',
-            path: 'privacy',
-            component: () => import('../views/User/Settings/SettingsProfilePrivacy.vue')
-          },
-          {
-            name: 'app_user_settings_profile_musician',
-            path: 'musician',
-            component: () => import('../views/User/Settings/SettingsProfileMusician.vue')
-          },
-          {
-            name: 'app_user_settings_profile_teacher',
-            path: 'teacher',
-            component: () => import('../views/User/Settings/SettingsProfileTeacher.vue')
-          }
-        ]
+        component: () => import('../views/User/Settings/SettingsProfile.vue')
+      },
+      // The former profile sub-tabs (#1317): their content is edited on the profile now.
+      {
+        path: 'profile/:tab(privacy|musician|teacher)',
+        redirect: { name: 'app_user_settings_profile' }
       }
     ]
   }

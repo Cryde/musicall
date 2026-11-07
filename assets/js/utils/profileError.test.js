@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
-  isPrivateProfileError,
-  isSameUsername,
-  PRIVATE_PROFILE_ERROR_TYPE
-} from './profileError.js'
+import { isPrivateProfileError, PRIVATE_PROFILE_ERROR_TYPE } from './profileError.js'
 
 const failure = (status, data) => ({ response: { status, data } })
 
@@ -25,17 +21,5 @@ describe('isPrivateProfileError', () => {
     assert.equal(isPrivateProfileError(new Error('Network Error')), false)
     assert.equal(isPrivateProfileError(failure(404, undefined)), false)
     assert.equal(isPrivateProfileError(undefined), false)
-  })
-})
-
-describe('isSameUsername', () => {
-  it('ignores case', () => {
-    assert.equal(isSameUsername('Cryde', 'cryde'), true)
-  })
-
-  it('is false for different names or a missing one', () => {
-    assert.equal(isSameUsername('cryde', 'cryd'), false)
-    assert.equal(isSameUsername('cryde', undefined), false)
-    assert.equal(isSameUsername(null, null), false)
   })
 })

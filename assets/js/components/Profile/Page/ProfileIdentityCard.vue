@@ -16,16 +16,27 @@
       >
         <i class="pi pi-arrow-left" aria-hidden="true" />
       </button>
-      <button
-        v-if="isOwner"
-        type="button"
-        class="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors cursor-pointer"
-        :title="t('profile.public.edit_cover')"
-        :aria-label="t('profile.public.edit_cover')"
-        @click="emit('edit-cover')"
-      >
-        <i class="pi pi-camera" aria-hidden="true" />
-      </button>
+      <div v-if="isOwner" class="absolute top-3 right-3 flex gap-2">
+        <button
+          v-if="profile.cover_picture_url"
+          type="button"
+          :class="COVER_BUTTON_CLASS"
+          :title="t('profile.owner.cover.delete')"
+          :aria-label="t('profile.owner.cover.delete')"
+          @click="emit('delete-cover')"
+        >
+          <i class="pi pi-trash" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          :class="COVER_BUTTON_CLASS"
+          :title="t('profile.public.edit_cover')"
+          :aria-label="t('profile.public.edit_cover')"
+          @click="emit('edit-cover')"
+        >
+          <i class="pi pi-camera" aria-hidden="true" />
+        </button>
+      </div>
     </div>
 
     <div class="relative px-5 pb-5 flex flex-col items-center text-center gap-3">
@@ -137,10 +148,13 @@ const emit = defineEmits([
   'edit-profile',
   'view-as-visitor',
   'edit-cover',
+  'delete-cover',
   'edit-picture',
   'view-picture'
 ])
 const { t } = useI18n()
+const COVER_BUTTON_CLASS =
+  'bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors cursor-pointer'
 
 const memberSinceYear = computed(() =>
   props.profile.member_since ? new Date(props.profile.member_since).getFullYear() : null

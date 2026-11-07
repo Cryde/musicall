@@ -390,6 +390,75 @@ class TeacherProfilePublicTest extends ApiTestCase
         ]);
     }
 
+    public function test_get_teacher_profile_private_is_not_found_for_another_member(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'private_teacher', 'email' => 'private_teacher@test.com']);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::new()->create(['user' => $user]);
+        $viewer = UserFactory::new()->asBaseUser()->create(['username' => 'viewer', 'email' => 'viewer@test.com']);
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/user/profile/private_teacher/teacher');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
+
+    /** Its owner still sees a private lessons page, to edit it there (#1317). */
+    public function test_get_teacher_profile_private_is_shown_to_its_owner(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'private_teacher',
+            'email' => 'private_teacher@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+        TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/profile/private_teacher/teacher');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfile',
+            '@id' => '/api/user/profile/private_teacher/teacher',
+            '@type' => 'TeacherProfile',
+            'username' => 'private_teacher',
+            'user_id' => $user->id,
+            'display_name' => 'private_teacher',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'musician_instruments' => [],
+            'musician_bands' => [],
+            'description' => 'Cours de guitare',
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [],
+            'styles' => [],
+            'media' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+            'creation_datetime' => '2024-01-15T10:00:00+00:00',
+        ]);
+    }
+
     /** A private member's pages say « privé » whether or not they exist, so nothing about them leaks. */
     public function test_get_teacher_profile_private_without_a_teacher_profile(): void
     {

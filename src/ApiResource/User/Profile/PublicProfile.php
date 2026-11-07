@@ -37,6 +37,12 @@ class PublicProfile
 
     public \DateTimeInterface $memberSince;
 
+    /** Always true for a visitor; false only for its owner, who still sees their private profile (#1317). */
+    public bool $isPublic = true;
+
+    /** Only for its owner, whose checklist asks for a first post (#1317); left out for anyone else. */
+    public ?bool $hasPosts = null;
+
     /** @var PublicProfileSocialLink[] */
     #[ApiProperty(genId: false)]
     public array $socialLinks = [];

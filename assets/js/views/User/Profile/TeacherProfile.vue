@@ -6,7 +6,7 @@
     </div>
 
     <!-- Private profile state -->
-    <PrivateProfileNotice v-else-if="isPrivate" :username="route.params.username" />
+    <PrivateProfileNotice v-else-if="isPrivate" />
 
     <!-- Not found state -->
     <div v-else-if="notFound" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">

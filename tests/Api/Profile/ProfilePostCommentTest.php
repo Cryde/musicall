@@ -252,6 +252,25 @@ class ProfilePostCommentTest extends ApiTestCase
         ]);
     }
 
+    /** Its owner still reads the comments on a private wall (#1317). */
+    public function test_the_owner_reads_the_comments_on_their_private_wall(): void
+    {
+        $owner = $this->member('julien', isPublic: false);
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+
+        $this->client->loginUser($owner);
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostComment',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
+        ]);
+    }
+
     public function test_a_wall_hidden_by_a_block_has_no_comments_to_read(): void
     {
         $owner = $this->member('julien');

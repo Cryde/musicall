@@ -45,14 +45,11 @@ describe('resolveFeedbackModule', () => {
     assert.equal(resolveFeedbackModule('app_messages'), FEEDBACK_MODULES.MESSAGE)
   })
 
-  // Matched by prefix: there are eight of them today and the list keeps growing.
+  // Matched by prefix: there are five of them today and the list keeps growing.
   it('folds every settings route into the account module', () => {
     assert.equal(resolveFeedbackModule('app_user_settings'), FEEDBACK_MODULES.ACCOUNT)
     assert.equal(resolveFeedbackModule('app_user_settings_notifications'), FEEDBACK_MODULES.ACCOUNT)
-    assert.equal(
-      resolveFeedbackModule('app_user_settings_profile_teacher'),
-      FEEDBACK_MODULES.ACCOUNT
-    )
+    assert.equal(resolveFeedbackModule('app_user_settings_profile'), FEEDBACK_MODULES.ACCOUNT)
   })
 
   it('falls back to other for an unmapped route', () => {

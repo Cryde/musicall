@@ -94,7 +94,7 @@ const ROUTE_TO_MODULE = Object.freeze({
 /**
  * The module to preselect for the page the user is on.
  *
- * Settings routes are matched by prefix rather than listed: there are eight of them, they all share
+ * Settings routes are matched by prefix rather than listed: there are five of them, they all share
  * one module, and new ones keep appearing.
  */
 export function resolveFeedbackModule(routeName) {

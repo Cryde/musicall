@@ -17,6 +17,7 @@ use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Repository\Musician\MusicianAnnounceRepository;
+use App\Repository\Profile\ProfilePostRepository;
 use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Service\Builder\Musician\MusicianProfileBuilder;
@@ -39,10 +40,11 @@ readonly class PublicProfileBuilder
         private TeacherProfileBuilder $teacherProfileBuilder,
         private ProfileWallMediaBuilder $mediaBuilder,
         private MusicianBandResourceBuilder $bandBuilder,
+        private ProfilePostRepository $profilePostRepository,
     ) {
     }
 
-    public function build(User $user): PublicProfile
+    public function build(User $user, bool $forOwner = false): PublicProfile
     {
         $profile = $user->profile;
         $memberSince = $user->creationDatetime;
@@ -55,6 +57,8 @@ readonly class PublicProfileBuilder
         $dto->bio = $profile->bio;
         $dto->location = $profile->location;
         $dto->memberSince = $memberSince;
+        $dto->isPublic = $profile->isPublic;
+        $dto->hasPosts = $forOwner ? $this->profilePostRepository->hasPostsBy($user) : null;
 
         // Profile picture
         if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
@@ -118,6 +122,7 @@ readonly class PublicProfileBuilder
         usort($pricing, static fn (TeacherProfilePricing $a, TeacherProfilePricing $b): int => $a->duration->getMinutes() <=> $b->duration->getMinutes());
         $teacher->pricing = $this->teacherProfileBuilder->buildPricing($pricing);
         $teacher->media = $this->mediaBuilder->buildList($profile->media);
+        $teacher->availability = $this->teacherProfileBuilder->buildAvailability($profile->availability->toArray());
 
         return $teacher;
     }

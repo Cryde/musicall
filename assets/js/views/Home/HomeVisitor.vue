@@ -159,7 +159,7 @@ function handleCreateTeacherProfile() {
     showAuthModal.value = true
     return
   }
-  router.push({ name: 'app_user_settings_profile_teacher' })
+  router.push({ name: 'app_user_settings_profile' })
 }
 
 function handleOpenDiscoverModal() {

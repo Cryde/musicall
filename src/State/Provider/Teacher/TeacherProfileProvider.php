@@ -38,7 +38,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('profile.user_not_found');
         }
 
-        $this->publicProfileGuard->assertPublic($user);
+        $this->publicProfileGuard->assertVisible($user);
 
         if (!($teacherProfile = $user->teacherProfile) instanceof \App\Entity\Teacher\TeacherProfile) {
             throw new NotFoundHttpException('profile.teacher.not_found');

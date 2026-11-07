@@ -23,7 +23,7 @@
     </div>
 
     <!-- Private profile state -->
-    <PrivateProfileNotice v-else-if="isPrivate" :username="route.params.username" />
+    <PrivateProfileNotice v-else-if="isPrivate" />
 
     <template v-else-if="profile">
       <div
@@ -42,9 +42,28 @@
           {{ t('profile.owner.back_to_owner') }}
         </button>
       </div>
+      <!-- Only its owner sees a private profile (#1317). -->
+      <div
+        v-if="showOwnerTools && !profile.is_public"
+        class="mb-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl px-4 py-2.5 text-sm bg-amber-50 text-amber-900 dark:bg-amber-500/15 dark:text-amber-200"
+      >
+        <span class="inline-flex items-center gap-2 font-semibold">
+          <i class="pi pi-lock" aria-hidden="true" />{{ t('profile.owner.private.notice') }}
+        </span>
+        <Button
+          :label="t('profile.owner.private.make_public')"
+          icon="pi pi-eye"
+          size="small"
+          severity="secondary"
+          :loading="isMakingPublic"
+          @click="makePublic"
+        />
+      </div>
 
       <!-- Profile content (#1317): who they are, the wall, what else they publish -->
+      <PrivateProfileNotice v-if="previewingPrivate" />
       <div
+        v-else
         class="flex flex-col gap-5 lg:grid lg:items-start lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[290px_minmax(0,1fr)_300px]"
       >
         <template v-if="isDesktop">
@@ -64,11 +83,13 @@
             </template>
           </div>
           <div class="flex flex-col gap-4 min-w-0">
+            <ProfileChecklistCard v-if="showOwnerTools && !isWide" :profile="profile" @act="handleChecklistItem" />
             <ProfileOwnerBanner v-if="showOwnerTools" />
-            <ProfileWall ref="wallRef" v-bind="wallProps" @media-changed="refreshProfile" />
+            <ProfileWall ref="wallRef" v-bind="wallProps" v-on="wallEvents" />
           </div>
           <div v-if="isWide" class="flex flex-col gap-4 *:shrink-0 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
             <ProfileListenCard v-bind="listenProps" @edit="showMedia" />
+            <ProfileChecklistCard v-if="showOwnerTools" :profile="profile" @act="handleChecklistItem" />
             <ProfileAnnouncesCard v-bind="announcesProps" compact @contact="handleContactAbout" />
             <ProfileCoursesCard :username="profile.username" />
           </div>
@@ -78,8 +99,9 @@
         <template v-else>
           <ProfileIdentityCard ref="identityCardRef" v-bind="identityProps" v-on="identityEvents" />
           <ProfileActivitiesCard v-bind="activitiesProps" v-on="activitiesEvents" />
+          <ProfileChecklistCard v-if="showOwnerTools" :profile="profile" @act="handleChecklistItem" />
           <ProfileOwnerBanner v-if="showOwnerTools" />
-          <ProfileWall ref="wallRef" v-bind="wallProps" @media-changed="refreshProfile" />
+          <ProfileWall ref="wallRef" v-bind="wallProps" v-on="wallEvents" />
           <ProfileListenCard v-bind="listenProps" @edit="showMedia" />
           <ProfileInstrumentsCard v-bind="instrumentsProps" @edit="openMusicianBlock('instruments')" />
           <ProfileBandsCard v-bind="bandsProps" @edit="openMusicianBlock('bands')" />
@@ -197,15 +219,18 @@ import { useMediaQuery, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
+import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import profileApi from '../../../api/user/profile.js'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ProfileActivitiesCard from '../../../components/Profile/Page/ProfileActivitiesCard.vue'
 import ProfileAnnouncesCard from '../../../components/Profile/Page/ProfileAnnouncesCard.vue'
 import ProfileBandsCard from '../../../components/Profile/Page/ProfileBandsCard.vue'
+import ProfileChecklistCard from '../../../components/Profile/Page/ProfileChecklistCard.vue'
 import ProfileCoursesCard from '../../../components/Profile/Page/ProfileCoursesCard.vue'
 import ProfileIdentityCard from '../../../components/Profile/Page/ProfileIdentityCard.vue'
 import ProfileInstrumentsCard from '../../../components/Profile/Page/ProfileInstrumentsCard.vue'
@@ -233,6 +258,7 @@ import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const confirm = useConfirm()
 const { t } = useI18n()
 const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
@@ -257,6 +283,7 @@ const musicianBlock = ref(null)
 // The owner looking at their own profile as a visitor would (#1317): no pencils, no composer.
 const viewAsVisitor = ref(false)
 const backToOwnerButton = ref(null)
+const isMakingPublic = ref(false)
 const identityCardRef = ref(null)
 const wallRef = ref(null)
 
@@ -275,6 +302,10 @@ const isOwnProfile = computed(() => {
 
 const showOwnerTools = computed(() => isOwnProfile.value && !viewAsVisitor.value)
 const musicianEditable = computed(() => showOwnerTools.value && Boolean(profile.value?.musician))
+// Visitors get the private notice, so the owner's preview shows it too.
+const previewingPrivate = computed(
+  () => isOwnProfile.value && viewAsVisitor.value && !profile.value.is_public
+)
 
 // Three columns from xl, two from lg (the right column's cards then close the left one), one below (#1317).
 const isDesktop = useMediaQuery('(min-width: 1024px)')
@@ -316,6 +347,7 @@ const identityEvents = {
     backToOwnerButton.value?.focus()
   },
   'edit-cover': () => coverPictureInputRef.value?.click(),
+  'delete-cover': confirmDeleteCover,
   'edit-picture': () => profilePictureInputRef.value?.click(),
   'view-picture': () => {
     showProfilePictureViewModal.value = true
@@ -366,6 +398,7 @@ const wallProps = computed(() => ({
   mediaAddTargets: showOwnerTools.value ? mediaAddTargets(profile.value) : [],
   countsMusicianView: !isOwnProfile.value && Boolean(profile.value.musician)
 }))
+const wallEvents = { 'media-changed': refreshProfile, 'posts-changed': refreshProfile }
 
 const pageTitle = computed(() => {
   if (profile.value) {
@@ -433,13 +466,75 @@ async function loadProfile() {
   }
 }
 
-// After the owner's own edit: the page updates in place, the wall keeps its scroll and filter. Going private from
-// the identity dialog shows the private notice; any other failure keeps what is shown, the change being saved.
+// After the owner's own edit: the page updates in place, the wall keeps its scroll and filter. A failure keeps
+// what is shown, the change itself having been saved.
 async function refreshProfile() {
   try {
     await userProfileStore.loadProfile(route.params.username)
-  } catch (error) {
-    isPrivate.value = isPrivateProfileError(error)
+  } catch {
+    // Shown as it was until the next visit.
+  }
+}
+
+function confirmDeleteCover() {
+  confirm.require({
+    header: t('profile.owner.cover.delete'),
+    message: t('profile.owner.cover.delete_confirm'),
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: { label: t('profile.media.cancel'), severity: 'secondary', outlined: true },
+    acceptProps: { label: t('profile.media.delete'), severity: 'danger' },
+    accept: deleteCover
+  })
+}
+
+async function deleteCover() {
+  try {
+    await userProfileStore.deleteCoverPicture()
+    await refreshProfile()
+  } catch {
+    toast.add({ severity: 'error', summary: t('profile.owner.cover.delete_error'), life: 5000 })
+  }
+}
+
+// Straight through the API: the store's own save would put the settings' shape of the profile in its place.
+async function makePublic() {
+  isMakingPublic.value = true
+  try {
+    await profileApi.updateMyProfile({ is_public: true })
+    await refreshProfile()
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: t('profile.owner.private.make_public_error'),
+      life: 5000
+    })
+  } finally {
+    isMakingPublic.value = false
+  }
+}
+
+// « Ton profil est complet »: each item opens where it is filled, as its block's pencil does.
+function handleChecklistItem(key) {
+  switch (key) {
+    case 'photos':
+      if (profile.value.profile_picture_url) {
+        coverPictureInputRef.value?.click()
+      } else {
+        profilePictureInputRef.value?.click()
+      }
+      break
+    case 'bio':
+      showEditProfileModal.value = true
+      break
+    case 'instruments':
+      openMusicianBlock('instruments')
+      break
+    case 'media':
+      showMedia()
+      break
+    case 'post':
+      wallRef.value?.writePost()
+      break
   }
 }
 

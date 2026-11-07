@@ -13,7 +13,7 @@
         >
           <router-link
             v-if="criteria"
-            :to="{ name: 'app_user_settings_profile_musician' }"
+            :to="ownProfileRoute"
             :class="CHIP"
             :aria-label="t('home.member.announces.criteria_aria_label', { instrument: criteria.instrumentName })"
           >
@@ -52,7 +52,7 @@
       class="m-0 text-surface-700 dark:text-surface-300"
     >
       <template #link>
-        <router-link :to="{ name: 'app_user_settings_profile_musician' }" class="font-semibold text-primary hover:underline">{{ t('home.member.announces.profile_link') }}</router-link>
+        <router-link :to="ownProfileRoute" class="font-semibold text-primary hover:underline">{{ t('home.member.announces.profile_link') }}</router-link>
       </template>
     </i18n-t>
 
@@ -96,6 +96,7 @@ import searchApi from '../../../api/search/musician.js'
 import musicianProfileApi from '../../../api/user/musicianProfile.js'
 import profileApi from '../../../api/user/profile.js'
 import { useIsPhone } from '../../../composables/useIsPhone.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { LOOKING_FOR_BAND, musicianSearchRoute } from '../../../utils/homeSearch.js'
 import { announceCriteriaFor, searchResultAsAnnounce } from '../../../utils/memberHome.js'
 import { profileCity } from '../../../utils/profileLocation.js'
@@ -126,6 +127,7 @@ const props = defineProps({
 defineEmits(['contact-announce'])
 
 const { t } = useI18n()
+const userSecurityStore = useUserSecurityStore()
 const isPhone = useIsPhone()
 
 const isLoading = ref(true)
@@ -144,6 +146,11 @@ const title = computed(() => {
 const phoneCount = computed(() => Math.min(props.limit, PHONE_ANNOUNCES))
 const phoneAnnounces = computed(() => announces.value.slice(0, phoneCount.value))
 
+// Instruments are edited on the member's profile, which also creates the musician profile (#1317).
+const ownProfileRoute = computed(() => ({
+  name: 'app_user_public_profile',
+  params: { username: userSecurityStore.user?.username }
+}))
 const allAnnouncesRoute = computed(() => {
   if (criteria.value) {
     return musicianSearchRoute({
