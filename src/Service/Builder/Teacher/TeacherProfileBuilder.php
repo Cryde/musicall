@@ -94,7 +94,7 @@ readonly class TeacherProfileBuilder
      * @param TeacherProfileInstrument[] $instruments
      * @return PublicTeacherProfileInstrument[]
      */
-    private function buildInstruments(array $instruments): array
+    public function buildInstruments(array $instruments): array
     {
         return array_values(array_map(function (TeacherProfileInstrument $instrument): PublicTeacherProfileInstrument {
             $dto = new PublicTeacherProfileInstrument();
@@ -144,7 +144,7 @@ readonly class TeacherProfileBuilder
      * @param TeacherProfilePricing[] $pricing
      * @return PublicTeacherProfilePricing[]
      */
-    private function buildPricing(array $pricing): array
+    public function buildPricing(array $pricing): array
     {
         return array_values(array_map(function (TeacherProfilePricing $p): PublicTeacherProfilePricing {
             $dto = new PublicTeacherProfilePricing();

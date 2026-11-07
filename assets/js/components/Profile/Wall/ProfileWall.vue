@@ -1,63 +1,83 @@
 <template>
   <section
-    v-if="isOwner || (!isLoading && hasItems)"
-    class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm overflow-hidden"
+    class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm"
     aria-labelledby="profile-wall-title"
+    :aria-busy="isLoading"
   >
     <h2 id="profile-wall-title" class="sr-only">{{ t('profile.wall.title') }}</h2>
-    <!-- A reading column while the profile is one wide column; #1317 gives the wall its own column. -->
-    <div class="max-w-2xl mx-auto">
-      <ProfilePostComposer
-        v-if="isOwner"
-        :display-name="displayName"
-        :username="username"
-        :picture-url="pictureUrl"
-        class="p-4 border-b border-surface-200 dark:border-surface-700"
-        @created="handleCreated"
-      />
+    <ProfilePostComposer
+      v-if="isOwner && showsPosts(filter)"
+      :display-name="displayName"
+      :username="username"
+      :picture-url="pictureUrl"
+      class="p-4 border-b border-surface-200 dark:border-surface-700"
+      @created="handleCreated"
+    />
 
-      <div v-if="isLoading" class="flex justify-center p-6">
-        <ProgressSpinner style="width: 2rem; height: 2rem" />
-      </div>
-      <p v-else-if="hasLoadError" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
-        {{ t('profile.wall.load_error') }}
-      </p>
-      <p v-else-if="!hasItems" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
-        {{ t('profile.wall.empty_owner') }}
-      </p>
-      <!-- Shown beside a load error too: a post written meanwhile must not vanish. -->
-      <ol v-if="!isLoading && hasItems" class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
-        <li v-if="pinnedPost" :id="`post-${pinnedPost.id}`" class="scroll-mt-20">
-          <ProfilePostItem
-            :post="pinnedPost"
-            :comments-open="pinnedPost.id === focusedPostId"
-            @updated="handleUpdated"
-            @deleted="handleDeleted"
-          />
-        </li>
-        <li
-          v-for="item in items"
-          :id="item.type === 'post' ? `post-${item.post.id}` : null"
-          :key="wallItemKey(item)"
-          class="scroll-mt-20"
-        >
-          <ProfilePostItem
-            v-if="item.type === 'post'"
-            :post="item.post"
-            :comments-open="item.post.id === focusedPostId"
-            @updated="handleUpdated"
-            @deleted="handleDeleted"
-          />
-          <ProfileWallActivity v-else :item="item" :display-name="displayName" />
-        </li>
-      </ol>
+    <!-- Sticks under the phone header, which stays on screen below lg. -->
+    <div
+      role="group"
+      :aria-label="t('profile.wall.filter.label')"
+      class="flex gap-1.5 overflow-x-auto px-4 py-3 border-b border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 max-lg:sticky max-lg:top-16 max-lg:z-10"
+      :class="{ 'rounded-t-xl': !(isOwner && showsPosts(filter)) }"
+    >
+      <button
+        v-for="option in WALL_FILTERS"
+        :key="option.labelKey"
+        type="button"
+        :aria-pressed="option === filter"
+        class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors cursor-pointer"
+        :class="option === filter
+          ? 'bg-surface-900 text-surface-0 dark:bg-surface-0 dark:text-surface-900'
+          : 'text-surface-600 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-800'"
+        @click="selectFilter(option)"
+      >
+        {{ t(option.labelKey) }}
+      </button>
+    </div>
 
-      <div v-if="nextCursor && !isLoading" class="flex flex-col items-center gap-2 p-4 border-t border-surface-200 dark:border-surface-700">
-        <p v-if="hasMoreError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
-          {{ t('profile.wall.more_error') }}
-        </p>
-        <Button :label="t('profile.wall.more')" text :loading="isLoadingMore" @click="loadMore" />
-      </div>
+    <!-- Some height while a filter loads, so the page does not jump under the sticky pills. -->
+    <div v-if="isLoading" class="flex justify-center items-start p-6 min-h-48">
+      <ProgressSpinner style="width: 2rem; height: 2rem" />
+    </div>
+    <p v-else-if="hasLoadError" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
+      {{ t('profile.wall.load_error') }}
+    </p>
+    <p v-else-if="!hasItems" class="p-6 text-sm text-center text-surface-500 dark:text-surface-400 m-0">
+      {{ emptyText }}
+    </p>
+    <!-- Shown beside a load error too: a post written meanwhile must not vanish. -->
+    <ol v-if="!isLoading && hasItems" class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
+      <li v-if="pinnedPost" :id="`post-${pinnedPost.id}`" class="scroll-mt-32 lg:scroll-mt-6">
+        <ProfilePostItem
+          :post="pinnedPost"
+          :comments-open="pinnedPost.id === focusedPostId"
+          @updated="handleUpdated"
+          @deleted="handleDeleted"
+        />
+      </li>
+      <li
+        v-for="item in items"
+        :id="item.type === 'post' ? `post-${item.post.id}` : null"
+        :key="wallItemKey(item)"
+        class="scroll-mt-32 lg:scroll-mt-6"
+      >
+        <ProfilePostItem
+          v-if="item.type === 'post'"
+          :post="item.post"
+          :comments-open="item.post.id === focusedPostId"
+          @updated="handleUpdated"
+          @deleted="handleDeleted"
+        />
+        <ProfileWallActivity v-else :item="item" :display-name="displayName" />
+      </li>
+    </ol>
+
+    <div v-if="nextCursor && !isLoading" class="flex flex-col items-center gap-2 p-4 border-t border-surface-200 dark:border-surface-700">
+      <p v-if="hasMoreError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
+        {{ t('profile.wall.more_error') }}
+      </p>
+      <Button :label="t('profile.wall.more')" text :loading="isLoadingMore" @click="loadMore" />
     </div>
   </section>
 </template>
@@ -67,13 +87,16 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import profileWallApi from '../../../api/user/profileWall.js'
 import {
   appendWallPage,
   nextWallCursor,
   postItem,
+  showsPosts,
+  WALL_FILTERS,
   wallAfterPinChange,
+  wallFilterFromQuery,
   wallItemKey
 } from '../../../utils/profileWall.js'
 import ProfilePostComposer from './ProfilePostComposer.vue'
@@ -89,6 +112,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 
 const pinnedPost = ref(null)
 // The posts and the activity lines, newest first, as the server merged them.
@@ -102,6 +126,14 @@ const hasMoreError = ref(false)
 let loadToken = 0
 
 const hasItems = computed(() => pinnedPost.value !== null || items.value.length > 0)
+// The filter lives in `?voir=` (#1317), so a filter can be linked to.
+const filter = computed(() => wallFilterFromQuery(route.query.voir))
+const emptyText = computed(() => {
+  if (filter.value.emptyKey) return t(filter.value.emptyKey)
+  return props.isOwner
+    ? t('profile.wall.empty_owner')
+    : t('profile.wall.empty.visitor', { name: props.displayName })
+})
 // A notification links to `?post={id}`: that post opens its comments, when it is among those loaded.
 const focusedPostId = computed(() =>
   typeof route.query.post === 'string' ? route.query.post : null
@@ -112,11 +144,15 @@ async function load() {
   isLoading.value = true
   hasLoadError.value = false
   hasMoreError.value = false
+  // Another filter or member: what was shown must not linger under an error.
+  pinnedPost.value = null
+  items.value = []
+  nextCursor.value = null
   try {
     const [pinned, page] = await Promise.all([
       // Without its pinned post, the wall still reads.
-      profileWallApi.getPinnedPosts(props.username).catch(() => []),
-      profileWallApi.getWall(props.username)
+      showsPosts(filter.value) ? profileWallApi.getPinnedPosts(props.username).catch(() => []) : [],
+      profileWallApi.getWall(props.username, null, filter.value.type)
     ])
     if (token !== loadToken) return
     pinnedPost.value = pinned[0] ?? null
@@ -135,7 +171,7 @@ async function loadMore() {
   isLoadingMore.value = true
   hasMoreError.value = false
   try {
-    const page = await profileWallApi.getWall(props.username, nextCursor.value)
+    const page = await profileWallApi.getWall(props.username, nextCursor.value, filter.value.type)
     if (token !== loadToken) return
     items.value = appendWallPage(items.value, page)
     nextCursor.value = nextWallCursor(page)
@@ -146,7 +182,15 @@ async function loadMore() {
   }
 }
 
+function selectFilter(option) {
+  if (option === filter.value) return
+  // The notified post (`?post=`) is not scrolled back to after every switch.
+  const { post: _notifiedPost, ...query } = route.query
+  router.replace({ query: { ...query, voir: option.query ?? undefined } })
+}
+
 function handleCreated(post) {
+  if (!showsPosts(filter.value)) return
   items.value = [postItem(post), ...items.value]
 }
 
@@ -183,6 +227,6 @@ async function scrollToFocusedPost() {
   document.getElementById(`post-${focusedPostId.value}`)?.scrollIntoView({ block: 'start' })
 }
 
-watch(() => props.username, load, { immediate: true })
+watch([() => props.username, filter], load, { immediate: true })
 watch([focusedPostId, isLoading], scrollToFocusedPost)
 </script>

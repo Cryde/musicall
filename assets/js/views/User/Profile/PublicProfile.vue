@@ -25,245 +25,42 @@
     <!-- Private profile state -->
     <PrivateProfileNotice v-else-if="isPrivate" :username="route.params.username" />
 
-    <!-- Profile content -->
-    <div v-else-if="profile" class="flex flex-col gap-6">
-      <!-- Profile header -->
-      <section class="bg-surface-0 dark:bg-surface-900 rounded-xl pb-10">
-        <!-- Banner with avatar -->
-        <div class="p-4 md:p-6 relative">
-          <!-- Cover picture -->
-          <div
-            class="h-[200px] md:h-[270px] bg-cover bg-center rounded-2xl relative"
-            :class="profile.cover_picture_url ? '' : 'bg-gradient-to-r from-primary-500 to-primary-700'"
-            :style="profile.cover_picture_url ? { backgroundImage: `url(${profile.cover_picture_url})` } : {}"
-          >
-            <!-- Back button: mobile only -->
-            <button
-              class="md:hidden absolute top-4 left-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors cursor-pointer"
-              :aria-label="t('profile.common.back')"
-              @click="handleBack"
-            >
-              <i class="pi pi-arrow-left" aria-hidden="true" />
-            </button>
-            <!-- Cover picture edit button -->
-            <button
-              v-if="isOwnProfile"
-              class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors"
-              :title="t('profile.public.edit_cover')"
-              :aria-label="t('profile.public.edit_cover')"
-              @click="coverPictureInputRef?.click()"
-            >
-              <i class="pi pi-camera" aria-hidden="true" />
-            </button>
-          </div>
-          <!-- Avatar centered at bottom -->
-          <div class="absolute left-1/2 transform -translate-x-1/2 bottom-[-50px]">
-            <div class="relative">
-              <img
-                v-if="profile.profile_picture_url"
-                :src="profile.profile_picture_url"
-                :alt="profile.username"
-                class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full border-[6px] border-surface-0 dark:border-surface-900 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                @click="showProfilePictureViewModal = true"
-              />
-              <div
-                v-else
-                class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full border-[6px] border-surface-0 dark:border-surface-900 flex items-center justify-center text-4xl md:text-5xl font-bold"
-                :style="getAvatarStyle(profile.username)"
-              >
-                {{ profile.username.charAt(0).toUpperCase() }}
-              </div>
-              <!-- Profile picture edit button -->
-              <button
-                v-if="isOwnProfile"
-                class="absolute bottom-1 right-1 bg-primary-500 hover:bg-primary-600 text-white rounded-full p-2 transition-colors"
-                :title="t('profile.public.edit_picture')"
-                :aria-label="t('profile.public.edit_picture')"
-                @click="profilePictureInputRef?.click()"
-              >
-                <i class="pi pi-camera text-sm" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
+    <!-- Profile content (#1317): who they are, the wall, what else they publish -->
+    <div
+      v-else-if="profile"
+      class="flex flex-col gap-5 lg:grid lg:items-start lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[290px_minmax(0,1fr)_300px]"
+    >
+      <template v-if="isDesktop">
+        <!-- Sticky beside the wall only when it does not also carry the right column's cards. -->
+        <div class="flex flex-col gap-4 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
+          <ProfileIdentityCard v-bind="identityProps" v-on="identityEvents" />
+          <ProfileActivitiesCard v-bind="activitiesProps" v-on="activitiesEvents" />
+          <ProfileInstrumentsCard :instruments="profile.musician?.instruments ?? []" />
+          <ProfileStylesCard :styles="profile.musician?.styles ?? []" />
+          <ProfileLinksCard v-bind="linksProps" @edit="showEditSocialLinksModal = true" />
+          <template v-if="!isWide">
+            <ProfileAnnouncesCard v-bind="announcesProps" compact @contact="handleContactAbout" />
+            <ProfileCoursesCard :username="profile.username" />
+          </template>
         </div>
-
-        <!-- Profile info centered -->
-        <div class="px-6 md:px-12 flex flex-col items-center gap-5 mt-[60px]">
-          <!-- Name and username -->
-          <div class="flex flex-col items-center gap-1.5 w-full">
-            <h1 class="m-0 font-bold text-surface-900 dark:text-surface-0 text-2xl md:text-3xl text-center">
-              {{ profile.display_name || profile.username }}
-            </h1>
-            <span class="text-surface-500 dark:text-surface-400 text-base">
-              @{{ profile.username }}
-            </span>
-            <!-- Location -->
-            <div v-if="profile.location" class="flex items-center justify-center gap-1 text-surface-500 dark:text-surface-400 text-sm">
-              <i class="pi pi-map-marker text-xs" />
-              {{ profile.location }}
-            </div>
-          </div>
-
-          <!-- Bio -->
-          <p
-            v-if="profile.bio"
-            class="text-surface-700 dark:text-surface-300 text-center whitespace-pre-line max-w-2xl"
-          >
-            {{ profile.bio }}
-          </p>
-
-          <!-- Action buttons -->
-          <div class="flex items-center justify-center gap-2.5">
-            <Button
-              v-if="isOwnProfile"
-              :label="t('profile.public.edit_profile')"
-              icon="pi pi-pencil"
-              rounded
-              @click="showEditProfileModal = true"
-            />
-            <Button
-              v-else-if="canContact"
-              :label="t('profile.common.contact')"
-              icon="pi pi-envelope"
-              rounded
-              severity="info"
-              @click="handleContact"
-            />
-            <ReportButton
-              target-type="user"
-              :target-id="profile.user_id"
-              :author-id="profile.user_id"
-              :aria-label="t('profile.public.report', { username: profile.username })"
-            />
-            <BlockUserButton :user-id="profile.user_id" :username="profile.username" />
-          </div>
-
-          <!-- Musician profile button -->
-          <Button
-            v-if="profile.has_musician_profile"
-            :label="t('profile.public.view_musician_profile')"
-            severity="secondary"
-            rounded
-            @click="$router.push({ name: 'app_user_musician_profile', params: { username: profile.username }, query: { from: 'profile' } })"
-          >
-            <template #icon>
-              <MusicNotesIcon class="mr-2" />
-            </template>
-          </Button>
-          <!-- Create musician profile CTA (own profile only) -->
-          <Button
-            v-else-if="isOwnProfile"
-            :label="t('profile.public.create_musician_profile')"
-            severity="secondary"
-            rounded
-            outlined
-            @click="showCreateMusicianProfileModal = true"
-          >
-            <template #icon>
-              <MusicNotesIcon class="mr-2" />
-            </template>
-          </Button>
-
-          <!-- Teacher profile button -->
-          <Button
-            v-if="profile.has_teacher_profile"
-            :label="t('profile.public.view_teacher_profile')"
-            severity="secondary"
-            rounded
-            icon="pi pi-graduation-cap"
-            @click="$router.push({ name: 'app_user_teacher_profile', params: { username: profile.username }, query: { from: 'profile' } })"
-          />
-          <!-- Create teacher profile CTA (own profile only) -->
-          <Button
-            v-else-if="isOwnProfile"
-            :label="t('profile.public.create_teacher_profile')"
-            severity="secondary"
-            rounded
-            outlined
-            icon="pi pi-graduation-cap"
-            @click="showCreateTeacherProfileModal = true"
-          />
+        <ProfileWall v-bind="wallProps" />
+        <div v-if="isWide" class="flex flex-col gap-4 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
+          <ProfileAnnouncesCard v-bind="announcesProps" compact @contact="handleContactAbout" />
+          <ProfileCoursesCard :username="profile.username" />
         </div>
-      </section>
+      </template>
 
-      <!-- The wall (#1316) -->
-      <ProfileWall
-        :username="profile.username"
-        :display-name="profile.display_name || profile.username"
-        :picture-url="profile.profile_picture_url"
-        :is-owner="isOwnProfile"
-      />
-
-      <!-- Social links -->
-      <div v-if="hasSocialLinks || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
-            {{ t('profile.public.social_links') }}
-          </h2>
-          <Button
-            v-if="isOwnProfile"
-            icon="pi pi-pencil"
-            text
-            rounded
-            :aria-label="t('profile.public.edit_social_links')"
-            @click="showEditSocialLinksModal = true"
-          />
-        </div>
-        <div v-if="hasSocialLinks" class="flex flex-wrap gap-3">
-          <a
-            v-for="link in profile.social_links"
-            :key="link.url"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-700 dark:text-surface-300"
-            :aria-label="t('profile.public.visit', { platform: link.platform_label })"
-          >
-            <i :class="['pi', getPlatformIcon(link.platform)]" aria-hidden="true" />
-            <span>{{ link.platform_label }}</span>
-          </a>
-        </div>
-        <p v-else class="text-surface-500 dark:text-surface-400 text-sm">
-          {{ t('profile.public.social_links_empty') }}
-        </p>
-      </div>
-
-      <!-- Musician announces -->
-      <div
-        v-if="hasMusicianAnnounces || isOwnProfile"
-        id="annonces"
-        class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6 scroll-mt-20"
-      >
-        <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
-          {{ t('profile.public.announces') }}
-        </h2>
-
-        <!-- CTA when own profile with no announces -->
-        <div v-if="!hasMusicianAnnounces && isOwnProfile" class="flex flex-col items-center justify-center py-8 text-center">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 mb-4">
-            <i class="pi pi-megaphone text-2xl text-primary-600 dark:text-primary-400" />
-          </div>
-          <p class="text-surface-500 dark:text-surface-400 mb-4">
-            {{ t('profile.public.announces_empty') }}
-          </p>
-          <Button
-            :label="t('profile.public.add_announce')"
-            icon="pi pi-plus"
-            @click="$router.push({ name: 'app_user_announces' })"
-          />
-        </div>
-
-        <!-- Announces list -->
-        <div v-else class="flex flex-col gap-4">
-          <MusicianAnnounceItem
-            v-for="announce in profile.musician_announces"
-            :key="announce.id"
-            :announce="announce"
-            :contactable="!isOwnProfile"
-            @contact="handleContactAbout"
-          />
-        </div>
-      </div>
+      <!-- Phone and tablet: the header, then the wall, then the rest. -->
+      <template v-else>
+        <ProfileIdentityCard v-bind="identityProps" v-on="identityEvents" />
+        <ProfileActivitiesCard v-bind="activitiesProps" v-on="activitiesEvents" />
+        <ProfileWall v-bind="wallProps" />
+        <ProfileInstrumentsCard :instruments="profile.musician?.instruments ?? []" />
+        <ProfileStylesCard :styles="profile.musician?.styles ?? []" />
+        <ProfileLinksCard v-bind="linksProps" @edit="showEditSocialLinksModal = true" />
+        <ProfileAnnouncesCard v-bind="announcesProps" @contact="handleContactAbout" />
+        <ProfileCoursesCard :username="profile.username" />
+      </template>
     </div>
 
     <SendMessageModal
@@ -360,33 +157,34 @@
 
 <script setup>
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { useTitle } from '@vueuse/core'
+import { useMediaQuery, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
-import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
-import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
+import ProfileActivitiesCard from '../../../components/Profile/Page/ProfileActivitiesCard.vue'
+import ProfileAnnouncesCard from '../../../components/Profile/Page/ProfileAnnouncesCard.vue'
+import ProfileCoursesCard from '../../../components/Profile/Page/ProfileCoursesCard.vue'
+import ProfileIdentityCard from '../../../components/Profile/Page/ProfileIdentityCard.vue'
+import ProfileInstrumentsCard from '../../../components/Profile/Page/ProfileInstrumentsCard.vue'
+import ProfileLinksCard from '../../../components/Profile/Page/ProfileLinksCard.vue'
+import ProfileStylesCard from '../../../components/Profile/Page/ProfileStylesCard.vue'
 import ProfileWall from '../../../components/Profile/Wall/ProfileWall.vue'
-import ReportButton from '../../../components/Report/ReportButton.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
-import BlockUserButton from '../../../components/User/Block/BlockUserButton.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
-import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import { useUserBlockStore } from '../../../store/user/block.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
-import { getAvatarStyle } from '../../../utils/avatar.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
 import CoverPictureModal from '../Settings/CoverPictureModal.vue'
 import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
@@ -427,13 +225,9 @@ const isOwnProfile = computed(() => {
   return userSecurityStore.userProfile.id === profile.value.user_id
 })
 
-const hasSocialLinks = computed(() => {
-  return profile.value?.social_links && profile.value.social_links.length > 0
-})
-
-const hasMusicianAnnounces = computed(() => {
-  return profile.value?.musician_announces && profile.value.musician_announces.length > 0
-})
+// Three columns from xl, two from lg (the right column's cards then close the left one), one below (#1317).
+const isDesktop = useMediaQuery('(min-width: 1024px)')
+const isWide = useMediaQuery('(min-width: 1280px)')
 
 const contactOrigin = ref(null)
 const messageRecipient = computed(() => {
@@ -452,6 +246,47 @@ const canContact = computed(() => {
     !userBlockStore.isBlocked(profile.value.user_id)
   )
 })
+
+const identityProps = computed(() => ({
+  profile: profile.value,
+  isOwner: isOwnProfile.value,
+  canContact: canContact.value
+}))
+const identityEvents = {
+  back: handleBack,
+  contact: handleContact,
+  'edit-profile': () => {
+    showEditProfileModal.value = true
+  },
+  'edit-cover': () => coverPictureInputRef.value?.click(),
+  'edit-picture': () => profilePictureInputRef.value?.click(),
+  'view-picture': () => {
+    showProfilePictureViewModal.value = true
+  }
+}
+const activitiesProps = computed(() => ({ profile: profile.value, isOwner: isOwnProfile.value }))
+const activitiesEvents = {
+  'create-musician': () => {
+    showCreateMusicianProfileModal.value = true
+  },
+  'create-teacher': () => {
+    showCreateTeacherProfileModal.value = true
+  }
+}
+const linksProps = computed(() => ({
+  links: profile.value?.social_links ?? [],
+  isOwner: isOwnProfile.value
+}))
+const announcesProps = computed(() => ({
+  announces: profile.value?.musician_announces ?? [],
+  isOwner: isOwnProfile.value
+}))
+const wallProps = computed(() => ({
+  username: profile.value.username,
+  displayName: profile.value.display_name || profile.value.username,
+  pictureUrl: profile.value.profile_picture_url,
+  isOwner: isOwnProfile.value
+}))
 
 const pageTitle = computed(() => {
   if (profile.value) {
@@ -482,22 +317,6 @@ function handleBack() {
         router.push({ name: 'app_home' })
       }
   }
-}
-
-const platformIcons = {
-  youtube: 'pi-youtube',
-  soundcloud: 'pi-cloud',
-  instagram: 'pi-instagram',
-  facebook: 'pi-facebook',
-  twitter: 'pi-twitter',
-  tiktok: 'pi-video',
-  spotify: 'pi-spotify',
-  bandcamp: 'pi-headphones',
-  website: 'pi-globe'
-}
-
-function getPlatformIcon(platform) {
-  return platformIcons[platform] || 'pi-link'
 }
 
 function handleContact() {

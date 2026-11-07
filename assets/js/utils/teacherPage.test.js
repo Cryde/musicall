@@ -3,6 +3,7 @@ import { describe, it } from 'node:test'
 import {
   availabilityByDay,
   cheapestPricing,
+  formatLessonPrice,
   lessonContentForm,
   lessonContentPayload,
   levelRange,
@@ -201,5 +202,11 @@ describe('teacherProfileCompleteness', () => {
   it('has everything missing for an empty profile', () => {
     assert.equal(teacherProfileCompleteness({}).done, 0)
     assert.equal(teacherProfileCompleteness(null).missing.length, 10)
+  })
+})
+
+describe('formatLessonPrice', () => {
+  it('writes whole euros with the sign glued on, as the profile always has in French', () => {
+    assert.equal(formatLessonPrice(2500), '25€')
   })
 })

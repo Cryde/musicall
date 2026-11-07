@@ -291,22 +291,7 @@
             <h2 class="font-semibold text-surface-900 dark:text-surface-0 mb-3 flex items-center gap-2">
               <i class="pi pi-book text-surface-400" aria-hidden="true" />{{ t('profile.teacher_page.courses_title') }}
             </h2>
-            <ul class="flex flex-col gap-3">
-              <li v-for="course in courses" :key="course.id">
-                <router-link :to="{ name: 'app_course_show', params: { slug: course.slug } }" class="flex items-center gap-3 group">
-                  <img v-if="course.cover" :src="course.cover" alt="" class="w-24 h-16 rounded-lg object-cover shrink-0" />
-                  <span v-else class="w-24 h-16 rounded-lg shrink-0 bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-                    <i class="pi pi-book text-surface-400" aria-hidden="true" />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="block font-semibold text-surface-900 dark:text-surface-0 group-hover:text-primary line-clamp-2">{{ course.title }}</span>
-                    <span class="block text-sm text-surface-500 dark:text-surface-400">
-                      {{ [course.sub_category?.title, formatDate(course.publication_datetime)].filter(Boolean).join(', ') }}
-                    </span>
-                  </span>
-                </router-link>
-              </li>
-            </ul>
+            <MemberCourseList :courses="courses" />
           </section>
 
           <!-- The other media; the owner manages them all here -->
@@ -341,7 +326,7 @@
         <!-- Prices and facts, in view while the visitor reads -->
         <aside class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5 flex flex-col gap-4 lg:sticky lg:top-24">
           <div v-if="cheapest" class="flex items-baseline gap-2">
-            <span class="text-3xl font-extrabold text-surface-900 dark:text-surface-0">{{ formatPrice(cheapest.price) }}</span>
+            <span class="text-3xl font-extrabold text-surface-900 dark:text-surface-0">{{ formatLessonPrice(cheapest.price) }}</span>
             <span class="text-sm text-surface-500 dark:text-surface-400">{{ t('profile.teacher_page.per_duration', { duration: getSessionDurationLabel(cheapest.duration) }) }}</span>
           </div>
           <p
@@ -353,14 +338,14 @@
           <ul v-if="profile.pricing?.length > 1" class="divide-y divide-dashed divide-surface-200 dark:divide-surface-700">
             <li v-for="pricing in sortedPricing" :key="pricing.duration" class="flex justify-between py-2">
               <span class="text-surface-600 dark:text-surface-400">{{ getSessionDurationLabel(pricing.duration) }}</span>
-              <span class="font-bold text-surface-900 dark:text-surface-0">{{ formatPrice(pricing.price) }}</span>
+              <span class="font-bold text-surface-900 dark:text-surface-0">{{ formatLessonPrice(pricing.price) }}</span>
             </li>
           </ul>
           <ul v-if="profile.packages?.length" class="flex flex-col gap-2">
             <li v-for="pkg in profile.packages" :key="pkg.id" class="rounded-lg border border-surface-200 dark:border-surface-700 p-3">
               <div class="flex justify-between gap-3">
                 <span class="font-semibold text-surface-900 dark:text-surface-0">{{ pkg.title }}</span>
-                <span class="font-bold text-surface-900 dark:text-surface-0">{{ formatPrice(pkg.price) }}</span>
+                <span class="font-bold text-surface-900 dark:text-surface-0">{{ formatLessonPrice(pkg.price) }}</span>
               </div>
               <p class="text-sm text-surface-500 dark:text-surface-400">
                 {{ [pkg.sessions_count ? t('profile.teacher_page.sessions', pkg.sessions_count) : null, pkg.description].filter(Boolean).join(', ') }}
@@ -410,7 +395,7 @@
         class="md:hidden fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-surface-0/95 dark:bg-surface-900/95 backdrop-blur border-t border-surface-200 dark:border-surface-700"
       >
         <div v-if="cheapest" class="leading-tight">
-          <span class="block font-extrabold text-surface-900 dark:text-surface-0">{{ formatPrice(cheapest.price) }}</span>
+          <span class="block font-extrabold text-surface-900 dark:text-surface-0">{{ formatLessonPrice(cheapest.price) }}</span>
           <span class="block text-xs text-surface-500 dark:text-surface-400">{{ getSessionDurationLabel(cheapest.duration) }}</span>
         </div>
         <Button :label="mainActionLabel" icon="pi pi-send" severity="info" class="flex-1" @click="openRequest" />
@@ -452,6 +437,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import courseApi from '../../../api/course/course.js'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
+import MemberCourseList from '../../../components/Course/MemberCourseList.vue'
 import MediaPlayerDialog from '../../../components/Media/MediaPlayerDialog.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ShareButton from '../../../components/ShareButton.vue'
@@ -467,16 +453,16 @@ import {
   getSocialPlatformLabel,
   getStudentLevelLabel
 } from '../../../constants/teacherProfile.js'
-import { forActiveLocale } from '../../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
-import { formatEurosFromCentsTrimmed } from '../../../utils/currency.js'
 import { currentBandsSummary } from '../../../utils/musicianBands.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
+import { skillSteps } from '../../../utils/skillLevel.js'
 import {
   availabilityByDay,
   cheapestPricing,
+  formatLessonPrice,
   levelRange,
   orderedLevels,
   placesSummary,
@@ -490,7 +476,6 @@ const teacherProfileStore = useTeacherProfileStore()
 const userSecurityStore = useUserSecurityStore()
 const { t, locale } = useI18n()
 
-const SKILL_STEPS = { beginner: 1, intermediate: 2, advanced: 3, professional: 4 }
 // The same colours as the mock-up: green to start, blue in the middle, amber at the top.
 // One column per level filled in, so two goals do not leave an empty third column.
 const GOAL_COLUMNS = { 2: 'md:grid-cols-2', 3: 'md:grid-cols-3' }
@@ -586,7 +571,9 @@ const ageGroupsLine = computed(() => {
 
 const trialText = computed(() =>
   profile.value?.trial_price
-    ? t('profile.teacher_page.trial_priced', { price: formatPrice(profile.value.trial_price) })
+    ? t('profile.teacher_page.trial_priced', {
+        price: formatLessonPrice(profile.value.trial_price)
+      })
     : t('profile.teacher_page.trial_free_banner')
 )
 
@@ -595,7 +582,7 @@ const keyNumbers = computed(() => {
   if (cheapest.value) {
     items.push({
       key: 'price',
-      value: formatPrice(cheapest.value.price),
+      value: formatLessonPrice(cheapest.value.price),
       label: t('profile.teacher_page.per_duration', {
         duration: getSessionDurationLabel(cheapest.value.duration)
       })
@@ -605,7 +592,7 @@ const keyNumbers = computed(() => {
     items.push({
       key: 'trial',
       value: profile.value.trial_price
-        ? formatPrice(profile.value.trial_price)
+        ? formatLessonPrice(profile.value.trial_price)
         : t('profile.teacher_page.trial_offered'),
       label: t('profile.teacher_page.trial_lesson')
     })
@@ -676,30 +663,6 @@ const shareTitle = computed(() => {
 })
 
 useTitle(pageTitle, { restoreOnUnmount: false })
-
-// French as the profile always wrote it, whole euros and the sign glued on; English the Intl way,
-// the cents shown only when there are some.
-const PRICE_WRITERS = {
-  fr: (cents) => `${(cents / 100).toFixed(0)}€`,
-  en: formatEurosFromCentsTrimmed
-}
-
-function formatPrice(cents) {
-  return forActiveLocale(PRICE_WRITERS)(cents)
-}
-
-function formatDate(value) {
-  if (!value) return ''
-  return new Date(value).toLocaleDateString(locale.value, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  })
-}
-
-function skillSteps(level) {
-  return SKILL_STEPS[level] ?? 0
-}
 
 function openMedia(item) {
   playingMedia.value = item

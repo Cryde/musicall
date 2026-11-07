@@ -14,6 +14,7 @@ use App\ApiResource\Publication\PublicationListItem;
 use App\ApiResource\User\Profile\PublicProfileAnnounce;
 use App\Entity\User;
 use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallFilter;
 use App\State\Provider\Profile\ProfileWallProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -39,6 +40,12 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'before' => new QueryParameter(key: 'before', constraints: [new Assert\Sequentially([
                     new Assert\Type(type: 'string', message: 'profile.wall.cursor_invalid'),
                     new Assert\Regex(pattern: WallCursor::PATTERN, message: 'profile.wall.cursor_invalid'),
+                ])]),
+                // « Posts », « Médias », « Annonces » or « Cours » (#1317); without it, everything. Out of the Hydra
+                // search template, which would read it as a filter on the lines' own `type`.
+                'type' => new QueryParameter(key: 'type', hydra: false, constraints: [new Assert\Sequentially([
+                    new Assert\Type(type: 'string', message: 'profile.wall.filter_invalid'),
+                    new Assert\Choice(callback: [WallFilter::class, 'values'], message: 'profile.wall.filter_invalid'),
                 ])]),
             ],
         ),

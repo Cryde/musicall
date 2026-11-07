@@ -69,7 +69,7 @@ readonly class MusicianProfileBuilder
      * @param Style[] $styles
      * @return PublicMusicianProfileStyle[]
      */
-    private function buildStyles(array $styles): array
+    public function buildStyles(array $styles): array
     {
         return array_values(array_map(function (Style $style): PublicMusicianProfileStyle {
             $dto = new PublicMusicianProfileStyle();

@@ -5,12 +5,20 @@ import { handleApiError } from '../utils/handleApiError.js'
 
 /** The profile wall (#1316). */
 export default {
-  /** A page of lines, newest first: `before` is the last line's `cursor` of the page held. */
-  getWall(username, before = null) {
+  /**
+   * A page of lines, newest first: `before` is the last line's `cursor` of the page held, `type` one of the
+   * filters (#1317), all lines without it.
+   */
+  getWall(username, before = null, type = null) {
     return axios
-      .get(Routing.generate('api_profile_wall_list', { username, ...(before ? { before } : {}) }), {
-        headers: { Accept: 'application/ld+json' }
-      })
+      .get(
+        Routing.generate('api_profile_wall_list', {
+          username,
+          ...(before ? { before } : {}),
+          ...(type ? { type } : {})
+        }),
+        { headers: { Accept: 'application/ld+json' } }
+      )
       .then((resp) => resp.data.member)
   },
 

@@ -22,6 +22,8 @@ use App\Tests\Factory\Teacher\TeacherProfileMediaFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /** What a member did elsewhere on MusicAll, between their posts on the wall (#1316). */
@@ -216,6 +218,287 @@ class ProfileWallActivityTest extends ApiTestCase
                     ],
                 ],
             ],
+        ]);
+    }
+
+    /** Each filter reads only its own lines (#1317): « Cours » leaves the articles out, « Médias » mixes both profiles' media. */
+    public function test_each_filter_shows_only_its_lines(): void
+    {
+        $owner = $this->member('julien');
+        $post = ProfilePostFactory::new()->create([
+            'author' => $owner,
+            'content' => 'Le clip est en ligne',
+            'creationDatetime' => new \DateTimeImmutable('2026-10-06T10:00:00+00:00'),
+        ]);
+        $announce = MusicianAnnounceFactory::new()->create([
+            'author' => $owner,
+            'type' => MusicianAnnounce::TYPE_MUSICIAN,
+            'instrument' => InstrumentFactory::new()->asDrum(),
+            'styles' => [StyleFactory::new()->asRock()],
+            'locationName' => 'Bruxelles',
+            'creationDatetime' => new \DateTime('2026-10-05T10:00:00+00:00'),
+        ]);
+        $articles = PublicationSubCategoryFactory::new()->asArticle()->create();
+        $article = PublicationFactory::new()->create([
+            'author' => $owner,
+            'subCategory' => $articles,
+            'title' => 'Ma chronique',
+            'shortDescription' => 'Trois albums de la rentrée',
+            'slug' => 'ma-chronique',
+            'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'fr',
+            'publicationDatetime' => new \DateTime('2026-10-04T10:00:00+00:00'),
+        ]);
+        $course = PublicationFactory::new()->create([
+            'author' => $owner,
+            'subCategory' => PublicationSubCategoryFactory::new()->asCourse(),
+            'title' => 'Caler sa main droite',
+            'shortDescription' => 'Les arpèges sans fatigue',
+            'slug' => 'caler-sa-main-droite',
+            'status' => Publication::STATUS_ONLINE,
+            'type' => Publication::TYPE_TEXT,
+            'language' => 'fr',
+            'publicationDatetime' => new \DateTime('2026-10-03T10:00:00+00:00'),
+        ]);
+        $musicianMedia = MusicianProfileMediaFactory::new()->create([
+            'musicianProfile' => MusicianProfileFactory::new(['user' => $owner]),
+            'title' => 'Live au Botanique',
+            'creationDatetime' => new \DateTimeImmutable('2026-10-02T10:00:00+00:00'),
+        ]);
+        $teacherMedia = TeacherProfileMediaFactory::new()->create([
+            'teacherProfile' => TeacherProfileFactory::new(['user' => $owner]),
+            'platform' => MediaPlatform::SOUNDCLOUD,
+            'url' => 'https://soundcloud.com/julien/arpeges',
+            'embedId' => 'julien/arpeges',
+            'title' => 'Arpèges',
+            'creationDatetime' => new \DateTimeImmutable('2026-10-01T10:00:00+00:00'),
+        ]);
+        // Not on the wall whatever the filter: a draft, one waiting for review, one in another language, someone else's announce.
+        foreach ([[Publication::STATUS_DRAFT, 'fr'], [Publication::STATUS_PENDING, 'fr'], [Publication::STATUS_ONLINE, 'en']] as $index => [$status, $language]) {
+            PublicationFactory::new()->create([
+                'author' => $owner,
+                'subCategory' => $articles,
+                'slug' => 'hidden-' . $index,
+                'status' => $status,
+                'type' => Publication::TYPE_TEXT,
+                'language' => $language,
+                'publicationDatetime' => new \DateTime('2026-10-07T10:00:00+00:00'),
+            ]);
+        }
+        MusicianAnnounceFactory::new()->create(['author' => $this->member('chloe')]);
+
+        $postLine = [
+            '@id' => '/api/profile_wall_items/' . self::cursor('post', '2026-10-06T10:00:00+00:00', $post->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('post', '2026-10-06T10:00:00+00:00', $post->id),
+            'type' => 'post',
+            'date' => '2026-10-06T10:00:00+00:00',
+            'post' => [
+                '@type' => 'ProfilePost',
+                'id' => $post->id,
+                'author' => ['@type' => 'ProfilePostAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                'content' => 'Le clip est en ligne',
+                'photos' => [],
+                'is_pinned' => false,
+                'creation_datetime' => '2026-10-06T10:00:00+00:00',
+                'can_edit' => false,
+                'like_count' => 0,
+                'has_liked' => false,
+                'comment_count' => 0,
+            ],
+        ];
+        $announceLine = [
+            '@id' => '/api/profile_wall_items/' . self::cursor('announce', '2026-10-05T10:00:00+00:00', $announce->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('announce', '2026-10-05T10:00:00+00:00', $announce->id),
+            'type' => 'announce',
+            'date' => '2026-10-05T10:00:00+00:00',
+            'announce' => [
+                '@type' => 'PublicProfileAnnounce',
+                'id' => $announce->id,
+                'creation_datetime' => '2026-10-05T10:00:00+00:00',
+                'type' => MusicianAnnounce::TYPE_MUSICIAN,
+                'instrument_name' => 'Batteur',
+                'location_name' => 'Bruxelles',
+                'styles' => ['Rock'],
+            ],
+        ];
+        $articleLine = [
+            '@id' => '/api/profile_wall_items/' . self::cursor('publication', '2026-10-04T10:00:00+00:00', $article->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('publication', '2026-10-04T10:00:00+00:00', $article->id),
+            'type' => 'publication',
+            'date' => '2026-10-04T10:00:00+00:00',
+            'publication' => [
+                '@type' => 'Publication',
+                'id' => $article->id,
+                'title' => 'Ma chronique',
+                'sub_category' => ['@type' => 'SubCategory', 'id' => $articles->id, 'title' => 'Articles', 'slug' => 'articles', 'is_course' => false],
+                'author' => ['@type' => 'Author', 'username' => 'julien', 'display_name' => 'julien'],
+                'slug' => 'ma-chronique',
+                'publication_datetime' => '2026-10-04T10:00:00+00:00',
+                'description' => 'Trois albums de la rentrée',
+                'language' => 'fr',
+                'upvotes' => 0,
+                'downvotes' => 0,
+            ],
+        ];
+        $courseLine = [
+            '@id' => '/api/profile_wall_items/' . self::cursor('publication', '2026-10-03T10:00:00+00:00', $course->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('publication', '2026-10-03T10:00:00+00:00', $course->id),
+            'type' => 'course',
+            'date' => '2026-10-03T10:00:00+00:00',
+            'publication' => [
+                '@type' => 'Publication',
+                'id' => $course->id,
+                'title' => 'Caler sa main droite',
+                'sub_category' => ['@type' => 'SubCategory', 'id' => $course->subCategory->id, 'title' => 'Cours', 'slug' => 'cours', 'is_course' => true],
+                'author' => ['@type' => 'Author', 'username' => 'julien', 'display_name' => 'julien'],
+                'slug' => 'caler-sa-main-droite',
+                'publication_datetime' => '2026-10-03T10:00:00+00:00',
+                'description' => 'Les arpèges sans fatigue',
+                'language' => 'fr',
+                'upvotes' => 0,
+                'downvotes' => 0,
+            ],
+        ];
+        $musicianMediaLine = [
+            '@id' => '/api/profile_wall_items/' . self::cursor('musician_media', '2026-10-02T10:00:00+00:00', $musicianMedia->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('musician_media', '2026-10-02T10:00:00+00:00', $musicianMedia->id),
+            'type' => 'media',
+            'date' => '2026-10-02T10:00:00+00:00',
+            'media' => [
+                '@type' => 'ProfileWallMedia',
+                'id' => $musicianMedia->id,
+                'profile' => 'musician',
+                'platform' => 'youtube',
+                'platform_label' => 'YouTube',
+                'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                'embed_id' => 'dQw4w9WgXcQ',
+                'title' => 'Live au Botanique',
+            ],
+        ];
+        $teacherMediaLine = [
+            '@id' => '/api/profile_wall_items/' . self::cursor('teacher_media', '2026-10-01T10:00:00+00:00', $teacherMedia->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('teacher_media', '2026-10-01T10:00:00+00:00', $teacherMedia->id),
+            'type' => 'media',
+            'date' => '2026-10-01T10:00:00+00:00',
+            'media' => [
+                '@type' => 'ProfileWallMedia',
+                'id' => $teacherMedia->id,
+                'profile' => 'teacher',
+                'platform' => 'soundcloud',
+                'platform_label' => 'SoundCloud',
+                'url' => 'https://soundcloud.com/julien/arpeges',
+                'embed_id' => 'julien/arpeges',
+                'title' => 'Arpèges',
+            ],
+        ];
+
+        foreach ([
+            'post' => [$postLine],
+            'media' => [$musicianMediaLine, $teacherMediaLine],
+            'announce' => [$announceLine],
+            'course' => [$courseLine],
+        ] as $type => $lines) {
+            $this->client->request('GET', '/api/user/profile/julien/wall?type=' . $type);
+
+            $this->assertResponseIsSuccessful();
+            $this->assertJsonEquals([
+                '@context' => '/api/contexts/ProfileWallItem',
+                '@id' => '/api/user/profile/julien/wall',
+                '@type' => 'Collection',
+                'totalItems' => count($lines),
+                'member' => $lines,
+                'view' => [
+                    '@id' => '/api/user/profile/julien/wall?type=' . $type,
+                    '@type' => 'PartialCollectionView',
+                ],
+            ]);
+        }
+    }
+
+    /** A filtered wall pages on its own lines: the next page goes on with announces, not with the posts between them. */
+    public function test_a_filtered_wall_goes_on_with_its_own_lines(): void
+    {
+        $owner = $this->member('julien');
+        $announces = [];
+        foreach (range(1, 11) as $day) {
+            $announces[$day] = MusicianAnnounceFactory::new()->create([
+                'author' => $owner,
+                'creationDatetime' => new \DateTime(sprintf('2026-10-%02dT10:00:00+00:00', $day * 2)),
+            ]);
+            ProfilePostFactory::new()->create(['author' => $owner, 'creationDatetime' => new \DateTimeImmutable(sprintf('2026-10-%02dT10:00:00+00:00', $day * 2 - 1))]);
+        }
+        $announceLine = static fn (MusicianAnnounce $announce): array => [
+            '@id' => '/api/profile_wall_items/' . self::cursor('announce', $announce->creationDatetime->format('c'), $announce->id),
+            '@type' => 'ProfileWallItem',
+            'cursor' => self::cursor('announce', $announce->creationDatetime->format('c'), $announce->id),
+            'type' => 'announce',
+            'date' => $announce->creationDatetime->format('c'),
+            'announce' => [
+                '@type' => 'PublicProfileAnnounce',
+                'id' => $announce->id,
+                'creation_datetime' => $announce->creationDatetime->format('c'),
+                'type' => $announce->type,
+                'instrument_name' => $announce->instrument->musicianName,
+                'location_name' => $announce->locationName,
+                'styles' => [],
+            ],
+        ];
+        // The first page holds the ten newest announces, down to the one of day 2.
+        $cursor = self::cursor('announce', $announces[2]->creationDatetime->format('c'), $announces[2]->id);
+
+        $this->client->request('GET', '/api/user/profile/julien/wall?type=announce&before=' . $cursor);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfileWallItem',
+            '@id' => '/api/user/profile/julien/wall',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$announceLine($announces[1])],
+            'view' => [
+                // Hydra writes the parameters back sorted by name.
+                '@id' => '/api/user/profile/julien/wall?before=' . $cursor . '&type=announce',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function invalidFilterProvider(): iterable
+    {
+        yield 'an unknown filter' => ['type=publication', '8e179f1b-97aa-4560-a02f-2a8b42e49df7'];
+        yield 'a list' => ['type[]=post', 'ba785a8c-82cb-4283-967c-3cf342181b40'];
+    }
+
+    #[DataProvider('invalidFilterProvider')]
+    public function test_an_unknown_filter_is_refused(string $query, string $code): void
+    {
+        $this->member('julien');
+
+        $this->client->request('GET', '/api/user/profile/julien/wall?' . $query);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . $code,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'type', 'message' => "Ce filtre du mur n'existe pas", 'code' => $code],
+            ],
+            'detail' => "type: Ce filtre du mur n'existe pas",
+            'type' => '/validation_errors/' . $code,
+            'title' => 'An error occurred',
+            'description' => "type: Ce filtre du mur n'existe pas",
         ]);
     }
 
