@@ -54,12 +54,13 @@ class ProfilePostCommentTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ProfilePostComments',
+            '@context' => '/api/contexts/ProfilePostComment',
             '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
-            '@type' => 'ProfilePostComments',
-            'post_id' => $post->id,
-            'comments' => [
+            '@type' => 'Collection',
+            'totalItems' => 3,
+            'member' => [
                 [
+                    '@id' => '/api/user/profile-post-comments/' . $first->id,
                     '@type' => 'ProfilePostComment',
                     'id' => $first->id,
                     'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'chloe', 'display_name' => 'chloe'],
@@ -68,6 +69,7 @@ class ProfilePostCommentTest extends ApiTestCase
                     'can_delete' => true,
                 ],
                 [
+                    '@id' => '/api/user/profile-post-comments/' . $reply->id,
                     '@type' => 'ProfilePostComment',
                     'id' => $reply->id,
                     'parent_id' => $first->id,
@@ -77,6 +79,7 @@ class ProfilePostCommentTest extends ApiTestCase
                     'can_delete' => false,
                 ],
                 [
+                    '@id' => '/api/user/profile-post-comments/' . $second->id,
                     '@type' => 'ProfilePostComment',
                     'id' => $second->id,
                     'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'marc', 'display_name' => 'marc'],
@@ -181,12 +184,13 @@ class ProfilePostCommentTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ProfilePostComments',
+            '@context' => '/api/contexts/ProfilePostComment',
             '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
-            '@type' => 'ProfilePostComments',
-            'post_id' => $post->id,
-            'comments' => [
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
                 [
+                    '@id' => '/api/user/profile-post-comments/' . $comment->id,
                     '@type' => 'ProfilePostComment',
                     'id' => $comment->id,
                     'author' => [
@@ -221,11 +225,11 @@ class ProfilePostCommentTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ProfilePostComments',
+            '@context' => '/api/contexts/ProfilePostComment',
             '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
-            '@type' => 'ProfilePostComments',
-            'post_id' => $post->id,
-            'comments' => [],
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
         ]);
     }
 

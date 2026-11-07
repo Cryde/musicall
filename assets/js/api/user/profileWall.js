@@ -55,7 +55,7 @@ export default {
       .get(Routing.generate('api_profile_post_comments_list', { postId }), {
         headers: { Accept: 'application/ld+json' }
       })
-      .then((resp) => resp.data.comments)
+      .then((resp) => resp.data.member)
   },
 
   createComment(postId, content, parentId = null) {
