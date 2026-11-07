@@ -6,10 +6,14 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Message\MessageResource;
 use App\ApiResource\Message\MessageUser;
+use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
+use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
 use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Message\ContactOriginResolver;
+use App\Service\Message\TeacherProfileContact;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use App\Service\User\Relation\UserContactPolicy;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -53,17 +57,30 @@ class MessagePostToUserProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException(UserContactPolicy::BLOCKED_MESSAGE);
         }
 
-        // ValidContactOrigin has already checked both ids against the recipient.
-        $contactOrigin = $data->musicianAnnounceId !== null
-            ? $this->contactOriginResolver->musicianAnnounceOf($data->musicianAnnounceId, $data->recipient)
-            : ($data->fromTeacherProfile ? $this->contactOriginResolver->teacherProfileOf($data->recipient) : null);
-
-        $message = $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content, $contactOrigin);
+        $message = $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content, $this->contactOrigin($data));
 
         return $this->messageBuilder->buildItem(
             $message,
             contactOrigin: $this->messageContactOriginRepository->findByMessageIds([(string) $message->id])[(string) $message->id] ?? null,
             viewer: $currentUser,
+        );
+    }
+
+    /** ValidContactOrigin has already checked every id and value against the recipient. */
+    private function contactOrigin(MessageUser $data): MusicianAnnounce|TeacherProfileContact|null
+    {
+        if ($data->musicianAnnounceId !== null) {
+            return $this->contactOriginResolver->musicianAnnounceOf($data->musicianAnnounceId, $data->recipient);
+        }
+        $profile = $data->fromTeacherProfile ? $this->contactOriginResolver->teacherProfileOf($data->recipient) : null;
+        if (!$profile instanceof TeacherProfile) {
+            return null;
+        }
+
+        return new TeacherProfileContact(
+            $profile,
+            $data->teacherInstrumentId !== null ? $this->contactOriginResolver->taughtInstrumentOf($profile, $data->teacherInstrumentId) : null,
+            $data->lessonRequest !== null ? LessonRequest::tryFrom($data->lessonRequest) : null,
         );
     }
 }

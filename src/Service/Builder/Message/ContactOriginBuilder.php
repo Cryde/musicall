@@ -21,7 +21,7 @@ readonly class ContactOriginBuilder
     }
 
     /**
-     * @return array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null}
+     * @return array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null}
      */
     public function build(MessageContactOrigin $origin): array
     {
@@ -38,6 +38,7 @@ readonly class ContactOriginBuilder
             'instruments' => array_map($instrumentName, $origin->instruments),
             'styles' => array_map($this->referenceSnapshotNames->styleName(...), $origin->styles),
             'location_name' => $origin->locationName,
+            'lesson_request' => $origin->lessonRequest?->value,
         ];
     }
 }

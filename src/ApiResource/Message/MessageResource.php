@@ -102,7 +102,7 @@ class MessageResource
     /**
      * The announce or teacher profile this message was sent from, shown as a card above it (#998).
      *
-     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null}|null
+     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null}|null
      */
     #[Groups([MessageResource::LIST, MessageResource::ITEM])]
     public ?array $contactOrigin = null;

@@ -76,6 +76,22 @@ export function partOfDay(time) {
 }
 
 /**
+ * What the request is about, sent with the message so the teacher's card reads « Demande de cours d'essai : basse »
+ * (#1322): the instrument chosen, or the only one taught, and a trial when the teacher offers one.
+ */
+export function requestContactOrigin(profile, answers) {
+  const instruments = profile?.instruments ?? []
+  const instrumentId =
+    answers?.instrument ?? (instruments.length === 1 ? instruments[0].instrument_id : null)
+
+  return {
+    fromTeacherProfile: true,
+    ...(instrumentId ? { teacherInstrumentId: instrumentId } : {}),
+    lessonRequest: profile?.offers_trial ? 'trial' : 'first'
+  }
+}
+
+/**
  * The questions this teacher's profile can answer, each with only the options they offer, in asking order. A
  * question without an option is left out; one instrument needs no question.
  *

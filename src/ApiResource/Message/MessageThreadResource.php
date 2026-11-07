@@ -65,7 +65,7 @@ class MessageThreadResource
     /**
      * The most recent announce or teacher profile a message of this thread was sent from (#998).
      *
-     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null}|null
+     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null}|null
      */
     #[Groups([MessageThreadMetaResource::LIST])]
     public ?array $latestContactOrigin = null;

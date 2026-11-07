@@ -143,6 +143,7 @@ import {
   buildRequestMessage,
   openRequestDraftStorage,
   PART_OF_DAY_LABELS,
+  requestContactOrigin,
   requestQuestions,
   saveRequestDraft,
   takeRequestDraft,
@@ -307,7 +308,7 @@ async function handleSend() {
   const sent = await send({
     recipientId: props.profile.user_id,
     content: message.value,
-    contactOrigin: { fromTeacherProfile: true }
+    contactOrigin: requestContactOrigin(props.profile, answers)
   })
   if (sent) {
     visible.value = false

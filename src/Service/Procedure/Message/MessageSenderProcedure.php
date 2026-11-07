@@ -7,7 +7,6 @@ use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
 use App\Event\MessagePostedEvent;
 use App\Event\MessageSentEvent;
@@ -19,6 +18,7 @@ use App\Service\Builder\Message\MessageDirector;
 use App\Service\Builder\Message\MessageParticipantDirector;
 use App\Service\Builder\Message\MessageThreadDirector;
 use App\Service\Builder\Message\MessageThreadMetaDirector;
+use App\Service\Message\TeacherProfileContact;
 use App\Service\Message\ThreadMemberResolver;
 use App\Service\User\UserNotificationPreferenceChecker;
 use Doctrine\DBAL\LockMode;
@@ -46,12 +46,12 @@ class MessageSenderProcedure
     }
 
     /**
-     * @param MusicianAnnounce|TeacherProfile|null $contactOrigin what the sender wrote from (#998)
+     * @param MusicianAnnounce|TeacherProfileContact|null $contactOrigin what the sender wrote from (#998)
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function process(User $sender, User $recipient, string $content, MusicianAnnounce|TeacherProfile|null $contactOrigin = null) : Message
+    public function process(User $sender, User $recipient, string $content, MusicianAnnounce|TeacherProfileContact|null $contactOrigin = null) : Message
     {
         /** @var MessageSentEvent[] $eventsToDispatch */
         $eventsToDispatch = [];
@@ -173,10 +173,11 @@ class MessageSenderProcedure
     }
 
     /**
-     * Writing again from the announce the conversation is already about adds nothing: the card is
-     * only worth showing when the reason for talking changes.
+     * Writing again from the announce or teacher profile the conversation is already about adds nothing: the
+     * card is only worth showing when the reason for talking changes. A lesson request is such a reason, unless
+     * the latest card already asks the same thing for the same instruments (#1322).
      */
-    private function isLatestOrigin(MessageThread $thread, MusicianAnnounce|TeacherProfile $source): bool
+    private function isLatestOrigin(MessageThread $thread, MusicianAnnounce|TeacherProfileContact $source): bool
     {
         if ($thread->id === null) {
             return false;
@@ -185,9 +186,22 @@ class MessageSenderProcedure
         if (!$latest instanceof MessageContactOrigin) {
             return false;
         }
-        $latestSource = $source instanceof MusicianAnnounce ? $latest->musicianAnnounce : $latest->teacherProfile;
+        if ($source instanceof MusicianAnnounce) {
+            return $latest->musicianAnnounce !== null && (string) $latest->musicianAnnounce->id === (string) $source->id;
+        }
+        if ($latest->teacherProfile === null || (string) $latest->teacherProfile->id !== (string) $source->profile->id) {
+            return false;
+        }
 
-        return $latestSource !== null && (string) $latestSource->id === (string) $source->id;
+        if ($source->lessonRequest === null) {
+            return true;
+        }
+        $latestInstruments = $latest->instruments;
+        $instruments = $source->instrumentSlugs();
+        sort($latestInstruments);
+        sort($instruments);
+
+        return $latest->lessonRequest === $source->lessonRequest && $latestInstruments === $instruments;
     }
 
     /**

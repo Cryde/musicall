@@ -61,6 +61,48 @@ describe('contactOriginLabel', () => {
   it('says nothing without an origin', () => {
     assert.equal(contactOriginLabel(null), null)
   })
+
+  describe('a lesson request (#1322)', () => {
+    const request = (fields) => ({ type: 'teacher_profile', styles: [], ...fields })
+
+    it('names the instrument asked for', () => {
+      assert.equal(
+        contactOriginLabel(request({ lesson_request: 'trial', instruments: ['Basse'] })),
+        "Demande de cours d'essai : basse"
+      )
+      assert.equal(
+        contactOriginLabel(request({ lesson_request: 'first', instruments: ['Basse'] })),
+        'Demande de premier cours : basse'
+      )
+    })
+
+    it('lists what the teacher teaches when no instrument was chosen', () => {
+      assert.equal(
+        contactOriginLabel(
+          request({ lesson_request: 'trial', instruments: ['Basse', 'Didjeridoo'] })
+        ),
+        "Demande de cours d'essai : basse, didjeridoo"
+      )
+    })
+
+    it('still says what is asked without an instrument', () => {
+      assert.equal(
+        contactOriginLabel(request({ lesson_request: 'trial', instruments: [] })),
+        "Demande de cours d'essai"
+      )
+      assert.equal(
+        contactOriginLabel(request({ lesson_request: 'first', instruments: [] })),
+        'Demande de premier cours'
+      )
+    })
+
+    it('leaves a question from the teacher profile as it was', () => {
+      assert.equal(
+        contactOriginLabel(request({ lesson_request: null, instruments: ['Piano'] })),
+        'Cours : Piano'
+      )
+    })
+  })
 })
 
 describe('contactOriginDetails', () => {
