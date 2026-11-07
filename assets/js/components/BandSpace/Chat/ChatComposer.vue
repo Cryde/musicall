@@ -70,6 +70,46 @@
       />
     </div>
 
+    <!-- A voice note that could not be sent waits here to be resent (#1057). It goes alone, so the text
+         box and the microphone stay away until it is sent or discarded. -->
+    <div v-else-if="voiceNoteDraft" class="flex gap-2 items-center" role="status">
+      <Button
+        icon="pi pi-trash"
+        severity="secondary"
+        outlined
+        :aria-label="t('band_space_chat.composer.discard_voice_note')"
+        :disabled="isSending"
+        @click="discardVoiceNote"
+      />
+      <div class="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-surface-200 dark:border-surface-700 py-1.5 pl-1.5 pr-3 text-sm">
+        <button
+          type="button"
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-current/15 transition-colors hover:bg-current/25"
+          :aria-label="isDraftPlaying ? t('band_space_chat.voice_note.pause') : t('band_space_chat.voice_note.play')"
+          @click="toggleDraftPlayback"
+        >
+          <i class="pi text-xs" :class="isDraftPlaying ? 'pi-pause' : 'pi-play'" aria-hidden="true" />
+        </button>
+        <span class="min-w-0 leading-tight">{{ t('band_space_chat.composer.voice_note_not_sent') }}</span>
+        <span class="shrink-0 tabular-nums text-surface-600 dark:text-surface-300">
+          {{ formatVoiceNoteDuration(voiceNoteDraft.durationSeconds) }}
+        </span>
+        <audio
+          ref="draftAudio"
+          :src="voiceNoteDraft.playbackUrl"
+          @play="isDraftPlaying = true"
+          @pause="isDraftPlaying = false"
+        />
+      </div>
+      <!-- A spinner rather than `loading`, which disables the button and so drops the focus a failed
+           resend should leave on it. A second click is refused by the sender instead. -->
+      <Button
+        :icon="isSending ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+        :aria-label="t('band_space_chat.composer.resend_voice_note')"
+        @click="resendVoiceNote"
+      />
+    </div>
+
     <div v-else class="flex gap-2 items-end">
       <Button
         v-if="canAttach"
@@ -160,11 +200,8 @@ import {
   imageRefusalFor
 } from '../../../utils/chatImageDraft.js'
 import { attachmentIdentifierForUrl } from '../../../utils/chatPastedUrl.js'
-import {
-  formatVoiceNoteDuration,
-  MAX_VOICE_NOTE_SECONDS,
-  recordingExtension
-} from '../../../utils/chatVoiceNote.js'
+import { formatVoiceNoteDuration, MAX_VOICE_NOTE_SECONDS } from '../../../utils/chatVoiceNote.js'
+import { createVoiceNoteSender } from '../../../utils/chatVoiceNoteDraft.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import ChatAttachmentPicker from './ChatAttachmentPicker.vue'
 import ChatComposerAttachments from './ChatComposerAttachments.vue'
@@ -231,6 +268,17 @@ const isPickerVisible = ref(false)
 const canAttach = computed(() => !!props.bandSpaceId)
 
 const recorder = useVoiceRecorder({ onLimitReached: sendVoiceNote })
+/** The voice note that failed to send, see chatVoiceNoteDraft. */
+const voiceNoteDraft = ref(null)
+const draftAudio = ref(null)
+const isDraftPlaying = ref(false)
+const voiceNotes = createVoiceNoteSender({
+  deliver: (voiceNote) => deliver('', [], { voiceNote }),
+  onDraftChange: (draft) => {
+    voiceNoteDraft.value = draft
+    isDraftPlaying.value = false
+  }
+})
 const canRecord = computed(() => props.media && recorder.isSupported.value)
 const pickedIds = computed(() => draftIdentifiers(attachments.value))
 
@@ -275,6 +323,11 @@ function removeImage() {
  * of this Band Space (#972), which becomes an attachment instead of a raw URL in the text.
  */
 function handlePaste(event) {
+  // Nothing joins a voice note waiting to be resent: it goes alone.
+  if (voiceNoteDraft.value) {
+    return
+  }
+
   const file = props.media ? firstImageAmong(event.clipboardData?.files ?? []) : null
   if (file) {
     event.preventDefault()
@@ -317,6 +370,10 @@ async function attachPastedLink(identifier, url) {
 }
 
 function handleDrop(event) {
+  if (voiceNoteDraft.value) {
+    return
+  }
+
   const file = props.media ? firstImageAmong(event.dataTransfer?.files ?? []) : null
   if (file) {
     setImage(file)
@@ -332,7 +389,10 @@ function handleImagePicked(event) {
   event.target.value = ''
 }
 
-onBeforeUnmount(removeImage)
+onBeforeUnmount(() => {
+  removeImage()
+  voiceNotes.dispose()
+})
 
 async function send() {
   if (!canSend.value || props.isSending || isResolvingLink.value) {
@@ -365,15 +425,40 @@ async function stopAndSendVoiceNote() {
   }
 }
 
-/** A failure loses the recording, which a retry could not resend anyway once the recorder is gone. */
+/** The five minute limit sends through here too, so its failure is kept for a resend as well. */
 async function sendVoiceNote(recording) {
-  const voiceNote = new File([recording], `note-vocale.${recordingExtension(recording.type)}`, {
-    type: recording.type
-  })
-
-  if (await deliver('', [], { voiceNote })) {
+  if (await voiceNotes.send(recording, recorder.elapsedSeconds.value)) {
     emit('sent')
   }
+}
+
+async function resendVoiceNote() {
+  if (await voiceNotes.resend()) {
+    emit('sent')
+    await focusTextBox()
+  }
+}
+
+async function discardVoiceNote() {
+  voiceNotes.discard()
+  sendError.value = ''
+  await focusTextBox()
+}
+
+/** The text box comes back once the draft is gone, in place of the button that had the focus. */
+async function focusTextBox() {
+  await nextTick()
+  composer.value?.focus()
+}
+
+function toggleDraftPlayback() {
+  const audio = draftAudio.value
+  if (!audio.paused) {
+    audio.pause()
+    return
+  }
+
+  audio.play().catch((e) => console.error('Failed to play the voice note:', e))
 }
 
 /** @returns {Promise<boolean>} whether the message went out */
