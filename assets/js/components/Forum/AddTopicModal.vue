@@ -8,6 +8,31 @@
   >
     <template v-if="!isSent">
       <div class="flex flex-col gap-4">
+        <div v-if="!forumSlug" class="flex flex-col gap-2">
+          <label id="add-topic-forum-label" class="font-medium">{{ t('forum.common.forum') }}</label>
+          <Select
+            v-model="pickedForumSlug"
+            aria-labelledby="add-topic-forum-label"
+            :options="forumGroups"
+            option-label="title"
+            option-value="slug"
+            option-group-label="title"
+            option-group-children="forums"
+            :placeholder="t('forum.add_topic.forum_placeholder')"
+            :loading="forumStore.isLoading"
+            :invalid="forumStore.hasCategoriesError"
+            fluid
+          >
+            <!-- A slot, as an empty empty-message falls back on PrimeVue's own untranslated text. -->
+            <template #empty>
+              <template v-if="!forumStore.isLoading">{{ t('forum.index.empty') }}</template>
+            </template>
+          </Select>
+          <small v-if="forumStore.hasCategoriesError" class="text-red-500">
+            {{ t('forum.index.load_error') }}
+          </small>
+        </div>
+
         <div class="flex flex-col gap-2">
           <label for="title" class="font-medium">{{ t('forum.add_topic.title_label') }}</label>
           <InputText
@@ -76,10 +101,12 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForumStore } from '../../store/forum/forum.js'
+import { forumPickerGroups } from '../../utils/forumPicker.js'
 import MessageEditor from './MessageEditor.vue'
 
 const MIN_TITLE_LENGTH = 5
@@ -90,9 +117,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  /** Without one, the member picks the forum in the dialog (#1080). */
   forumSlug: {
     type: String,
-    required: true
+    default: null
   }
 })
 
@@ -109,14 +137,19 @@ const isSending = ref(false)
 const isSent = ref(false)
 const createdTopic = ref(null)
 const editorRef = ref(null)
+const pickedForumSlug = ref(null)
 
 const visibleModel = computed({
   get: () => props.visible,
   set: (value) => emit('update:visible', value)
 })
 
+const targetForumSlug = computed(() => props.forumSlug ?? pickedForumSlug.value)
+const forumGroups = computed(() => forumPickerGroups(forumStore.categories))
+
 const canSubmit = computed(() => {
   return (
+    targetForumSlug.value !== null &&
     title.value.trim().length >= MIN_TITLE_LENGTH &&
     contentText.value.trim().length >= MIN_MESSAGE_LENGTH
   )
@@ -133,11 +166,11 @@ async function handleSubmit() {
   isSending.value = true
   try {
     const topic = await forumStore.createTopic({
-      forumSlug: props.forumSlug,
+      forumSlug: targetForumSlug.value,
       title: title.value,
       message: contentHtml.value
     })
-    trackUmamiEvent('forum-topic-create', { forum: props.forumSlug })
+    trackUmamiEvent('forum-topic-create', { forum: targetForumSlug.value })
     createdTopic.value = topic
     isSent.value = true
     emit('created', topic)
@@ -161,9 +194,19 @@ function handleGoToTopic() {
   visibleModel.value = false
 }
 
+// Immediate, since a parent may mount the dialog already open.
+watch(
+  () => visibleModel.value && !props.forumSlug,
+  (needsForumPicker) => {
+    if (needsForumPicker) forumStore.loadCategories()
+  },
+  { immediate: true }
+)
+
 // Reset form when modal is closed
 watch(visibleModel, (newValue) => {
   if (!newValue) {
+    pickedForumSlug.value = null
     title.value = ''
     contentHtml.value = ''
     contentText.value = ''

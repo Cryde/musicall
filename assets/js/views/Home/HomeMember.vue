@@ -4,6 +4,7 @@
       :has-band="layout === MEMBER_LAYOUT_BAND"
       @post-announce="showAnnounceModal = true"
       @post-discovery="videoStore.openModal()"
+      @new-topic="showTopicModal = true"
     />
 
     <!-- Nothing until the spaces are known, as the layout depends on them. -->
@@ -56,12 +57,14 @@
     <AddDiscoverModal @published="discoveriesKey++" />
     <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" :contact-origin="selectedContactOrigin" />
     <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="announcesKey++" />
+    <AddTopicModal v-if="showTopicModal" v-model:visible="showTopicModal" @created="openTopic" />
   </div>
 </template>
 
 <script setup>
 import { useElementVisibility } from '@vueuse/core'
 import { defineAsyncComponent, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import HomeMemberActivity from '../../components/Home/Member/HomeMemberActivity.vue'
 import HomeMemberAnnounces from '../../components/Home/Member/HomeMemberAnnounces.vue'
 import HomeMemberBandSpace from '../../components/Home/Member/HomeMemberBandSpace.vue'
@@ -93,7 +96,9 @@ const SendMessageModal = defineAsyncComponent(
   () => import('../../components/Message/SendMessageModal.vue')
 )
 const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
+const AddTopicModal = defineAsyncComponent(() => import('../../components/Forum/AddTopicModal.vue'))
 
+const router = useRouter()
 const videoStore = useVideoStore()
 const bandSpaceStore = useBandSpaceStore()
 
@@ -109,6 +114,7 @@ onMounted(async () => {
 })
 
 const showAnnounceModal = ref(false)
+const showTopicModal = ref(false)
 const showMessageModal = ref(false)
 const selectedRecipient = ref(null)
 const selectedContactOrigin = ref(null)
@@ -123,6 +129,11 @@ const showLowerBlocks = ref(false)
 watch(lowerBlocksVisible, (visible) => {
   if (visible) showLowerBlocks.value = true
 })
+
+// As from inside a forum: the new topic opens once created.
+function openTopic(topic) {
+  router.push({ name: 'forum_topic_item', params: { slug: topic.slug } })
+}
 
 function openMessageTo(announce) {
   selectedRecipient.value = announce.author

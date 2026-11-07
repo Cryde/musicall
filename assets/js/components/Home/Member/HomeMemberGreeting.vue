@@ -26,15 +26,7 @@
     <div v-else class="flex flex-wrap gap-2.5">
       <Button :label="t('home.member.post_announce')" icon="pi pi-plus" severity="info" @click="$emit('post-announce')" />
       <Button :label="t('home.member.post_discovery')" icon="pi pi-plus" severity="secondary" outlined @click="$emit('post-discovery')" />
-      <!-- A topic belongs to a forum, so this opens the forum list for now (#1080). -->
-      <Button
-        as="router-link"
-        :to="{ name: 'app_forum_index' }"
-        :label="t('home.member.new_topic')"
-        icon="pi pi-plus"
-        severity="secondary"
-        outlined
-      />
+      <Button :label="t('home.member.new_topic')" icon="pi pi-plus" severity="secondary" outlined @click="$emit('new-topic')" />
     </div>
   </section>
 </template>
@@ -44,7 +36,6 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import { useIsPhone } from '../../../composables/useIsPhone.js'
 
 defineProps({
@@ -52,10 +43,9 @@ defineProps({
   hasBand: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['post-announce', 'post-discovery'])
+const emit = defineEmits(['post-announce', 'post-discovery', 'new-topic'])
 
 const { t } = useI18n()
-const router = useRouter()
 const isPhone = useIsPhone()
 
 const publishMenu = useTemplateRef('publishMenu')
@@ -74,7 +64,7 @@ const publishItems = computed(() => [
   {
     label: t('home.member.publish_menu.topic'),
     icon: 'pi pi-comments',
-    command: () => router.push({ name: 'app_forum_index' })
+    command: () => emit('new-topic')
   }
 ])
 </script>
