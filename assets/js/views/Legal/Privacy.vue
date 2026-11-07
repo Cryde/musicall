@@ -38,7 +38,7 @@
             <li><strong>Band Space</strong> : notes, tâches et leurs commentaires, entrées d'agenda, setlists, fichiers déposés, messages de la discussion du groupe (y compris les photos et notes vocales qui y sont envoyées), entrées financières (libellés, montants, catégories, échéances, répartitions), invitations, appartenances et journal d'activité de l'espace</li>
             <li><strong>Notifications</strong> et préférences d'envoi d'emails et de notifications push</li>
             <li><strong>Application mobile, notifications push</strong> (si vous les autorisez sur votre téléphone) : un identifiant d'appareil fourni par Firebase Cloud Messaging, le système de votre téléphone (Android), la date à laquelle il a été enregistré et la dernière fois qu'il a été vu. Il sert uniquement à acheminer les notifications vers votre téléphone</li>
-            <li><strong>Application mobile, microphone et photos</strong> : le microphone n'est utilisé que pendant l'enregistrement d'une note vocale ou une dictée, à votre demande. Une dictée passe par le service de reconnaissance vocale de votre téléphone (sur Android, en général celui de Google), selon ses propres conditions : MusicAll n'en reçoit que le texte. Les photos ne sont lues que lorsque vous en choisissez une à envoyer</li>
+            <li><strong>Application mobile, microphone et photos</strong> : le microphone n'est utilisé que pendant l'enregistrement d'une note vocale ou une dictée, à votre demande. Une dictée passe par le service de reconnaissance vocale de votre téléphone (sur Android, en général celui de Google ; sur iPhone, celui d'Apple), selon ses propres conditions : MusicAll n'en reçoit que le texte. Les photos ne sont lues que lorsque vous en choisissez une à envoyer</li>
             <li><strong>Recherche de musiciens et de groupes</strong> : les critères de vos recherches (type, instrument, styles, ville), le nombre de résultats obtenus et, pour la recherche assistée, le texte libre que vous saisissez. Ces recherches sont enregistrées sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer le service</li>
             <li><strong>Données techniques</strong> : adresse IP, journaux du serveur, rapports d'erreur applicative</li>
             <li><strong>Mesure d'audience</strong> : statistiques de visite agrégées, sans cookie</li>
@@ -240,5 +240,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '7 octobre 2026'
+const lastUpdate = '7 novembre 2026'
 </script>

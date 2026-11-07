@@ -38,7 +38,7 @@
             <li><strong>Band Space</strong>: notes, tasks and their comments, calendar entries, setlists, uploaded files, band chat messages (including the photos and voice notes sent there), finance entries (labels, amounts, categories, due dates, splits), invitations, memberships and the space's activity log</li>
             <li><strong>Notifications</strong> and your preferences for emails and push notifications</li>
             <li><strong>Mobile app, push notifications</strong> (if you allow them on your phone): a device identifier provided by Firebase Cloud Messaging, your phone's operating system (Android), the date it was registered and the last time it was seen. It is used only to deliver notifications to your phone</li>
-            <li><strong>Mobile app, microphone and photos</strong>: the microphone is used only while you record a voice note or dictate text, at your request. Dictation goes through your phone's speech recognition service (on Android, usually Google's), under that service's own terms: MusicAll only receives the resulting text. Photos are read only when you choose one to send</li>
+            <li><strong>Mobile app, microphone and photos</strong>: the microphone is used only while you record a voice note or dictate text, at your request. Dictation goes through your phone's speech recognition service (on Android, usually Google's; on iPhone, Apple's), under that service's own terms: MusicAll only receives the resulting text. Photos are read only when you choose one to send</li>
             <li><strong>Musician and band search</strong>: your search criteria (type, instrument, genres, city), the number of results returned and, for assisted search, the free text you enter. These searches are recorded with no link to your account, to show frequent searches and improve the service</li>
             <li><strong>Technical data</strong>: IP address, server logs, application error reports</li>
             <li><strong>Audience measurement</strong>: aggregated visit statistics, without cookies</li>
@@ -242,5 +242,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Privacy policy - MusicAll')
 
-const lastUpdate = '7 October 2026'
+const lastUpdate = '7 November 2026'
 </script>
