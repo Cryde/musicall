@@ -205,8 +205,11 @@
     "many": "{count} personnes écrivent…"
   },
   "mobile_app": {
-    "badge_alt": "Disponible sur Google Play",
-    "qr_alt": "QR code vers l'application MusicAll sur Google Play",
+    "badge_alt": {
+      "android": "Disponible sur Google Play",
+      "ios": "Télécharger dans l'App Store"
+    },
+    "qr_alt": "QR code vers l'application MusicAll",
     "qr_caption": "Scanne avec ton téléphone"
   },
   "sheet": {

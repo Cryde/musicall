@@ -161,7 +161,7 @@
       "load_error": "Impossible de charger les tâches."
     },
     "mobile_app": {
-      "title": "L'application Android",
+      "title": "L'application mobile",
       "body": "Le chat, l'agenda et les tâches du groupe sur ton téléphone, avec une notification dès qu'il se passe quelque chose.",
       "dismiss": "Ne plus afficher"
     }

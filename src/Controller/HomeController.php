@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Http\MobileAppStore;
 use App\Locale\BrowserLocaleRedirect;
 use App\Locale\LocalizedPath;
 use App\Locale\PageVersionsResolver;
@@ -47,6 +48,19 @@ class HomeController extends AbstractController
         $url = rtrim($this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL), '/') . $profilePath . '?' . $query;
 
         return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    /**
+     * The QR code's target (#1339): each phone to its own store, anything else to the homepage, whose footer shows
+     * both. A 302, since the answer depends on who asks.
+     */
+    #[Route('/app', name: 'mobile_app_redirect')]
+    public function mobileAppRedirect(Request $request): RedirectResponse
+    {
+        $url = MobileAppStore::urlFor((string) $request->headers->get('User-Agent'))
+            ?? $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return $this->redirect($url);
     }
 
     #[Route('/', name: 'app_homepage')]

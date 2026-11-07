@@ -7,7 +7,8 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n'
-import qrCode from '../../../image/mobile-app/google-play-qr.svg'
+import qrCode from '../../../image/mobile-app/mobile-app-qr.svg'
 
+// It encodes https://www.musicall.com/app, which sends each phone to its own store (#1339).
 const { t } = useI18n()
 </script>

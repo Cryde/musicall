@@ -22,8 +22,8 @@
       {{ t('band_space.dashboard.mobile_app.body') }}
     </p>
     <div class="flex items-center justify-between gap-4">
-      <GooglePlayBadge placement="band-space-dashboard" class="h-10" />
-      <GooglePlayQrCode class="hidden lg:flex" />
+      <MobileAppBadges placement="band-space-dashboard" />
+      <MobileAppQrCode class="hidden lg:flex" />
     </div>
   </section>
 </template>
@@ -35,8 +35,8 @@ import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { offersMobileApp } from '../../../utils/mobileApp.js'
-import GooglePlayBadge from '../../MobileApp/GooglePlayBadge.vue'
-import GooglePlayQrCode from '../../MobileApp/GooglePlayQrCode.vue'
+import MobileAppBadges from '../../MobileApp/MobileAppBadges.vue'
+import MobileAppQrCode from '../../MobileApp/MobileAppQrCode.vue'
 
 const { t } = useI18n()
 const titleId = useId()
@@ -44,6 +44,6 @@ const userSecurityStore = useUserSecurityStore()
 const isDismissed = useLocalStorage('band-space-mobile-app-dismissed', false)
 
 const isOffered = computed(
-  () => !isDismissed.value && offersMobileApp(userSecurityStore.userProfile, globalThis.navigator)
+  () => !isDismissed.value && offersMobileApp(userSecurityStore.userProfile)
 )
 </script>

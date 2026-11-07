@@ -45,7 +45,7 @@
       <HomeBandSpaceDemo />
     </DiscoverSection>
 
-    <!-- Application Android -->
+    <!-- Application mobile -->
     <BandSpaceMobileApp />
 
     <DiscoverSection
