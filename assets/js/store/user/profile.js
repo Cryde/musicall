@@ -71,9 +71,9 @@ export const useUserProfileStore = defineStore('userProfile', () => {
   async function uploadCoverPicture(file) {
     isUploadingCoverPicture.value = true
     try {
+      // No reload here: on the public profile page `profile` holds the public profile, which the edit shape would
+      // replace. Each page reloads what it shows.
       await profileApi.uploadCoverPicture(file)
-      // Reload profile to get the new cover picture URL
-      await loadProfile()
     } finally {
       isUploadingCoverPicture.value = false
     }

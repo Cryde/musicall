@@ -1,5 +1,8 @@
 <template>
-  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm overflow-hidden">
+  <section
+    class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm overflow-hidden"
+    :class="{ [OWNER_CARD_CLASS]: isOwner }"
+  >
     <div
       class="relative h-24 bg-cover bg-center"
       :class="profile.cover_picture_url ? '' : 'bg-gradient-to-r from-primary-500 to-primary-700'"
@@ -25,7 +28,8 @@
       </button>
     </div>
 
-    <div class="px-5 pb-5 flex flex-col items-center text-center gap-3">
+    <div class="relative px-5 pb-5 flex flex-col items-center text-center gap-3">
+      <ProfileOwnerPencil v-if="isOwner" :label="t('profile.public.edit_profile')" @edit="emit('edit-profile')" />
       <div class="relative -mt-12">
         <img
           v-if="profile.profile_picture_url"
@@ -76,17 +80,22 @@
       <div class="flex w-full items-center gap-2">
         <Button
           v-if="isOwner"
-          :label="t('profile.public.edit_profile')"
-          icon="pi pi-pencil"
+          ref="viewAsVisitorButton"
+          :label="t('profile.owner.view_as_visitor')"
+          icon="pi pi-eye"
+          severity="secondary"
+          outlined
           class="flex-1"
-          @click="emit('edit-profile')"
+          @click="emit('view-as-visitor')"
         />
+        <!-- Shown to the owner looking as a visitor, who cannot write to themselves. -->
         <Button
-          v-else-if="canContact"
+          v-else-if="canContact || previewing"
           :label="t('profile.common.contact')"
           icon="pi pi-envelope"
           severity="info"
           class="flex-1"
+          :disabled="previewing"
           @click="emit('contact')"
         />
         <ReportButton
@@ -104,23 +113,29 @@
 
 <script setup>
 import Button from 'primevue/button'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getAvatarStyle } from '../../../utils/avatar.js'
+import { OWNER_CARD_CLASS } from '../../../utils/profileOwner.js'
 import ReportButton from '../../Report/ReportButton.vue'
 import BlockUserButton from '../../User/Block/BlockUserButton.vue'
+import ProfileOwnerPencil from './ProfileOwnerPencil.vue'
 
 /** Who the member is (#1317): the top of the profile's left column, and the page header on a phone. */
 const props = defineProps({
   profile: { type: Object, required: true },
+  /** The owner's tools: camera buttons, the pencil, « Voir comme un visiteur ». */
   isOwner: { type: Boolean, default: false },
-  canContact: { type: Boolean, default: false }
+  canContact: { type: Boolean, default: false },
+  /** The owner looking at their profile as a visitor would. */
+  previewing: { type: Boolean, default: false }
 })
 
 const emit = defineEmits([
   'back',
   'contact',
   'edit-profile',
+  'view-as-visitor',
   'edit-cover',
   'edit-picture',
   'view-picture'
@@ -130,4 +145,9 @@ const { t } = useI18n()
 const memberSinceYear = computed(() =>
   props.profile.member_since ? new Date(props.profile.member_since).getFullYear() : null
 )
+
+const viewAsVisitorButton = ref(null)
+
+// Back from the visitor view, focus returns to the button that opened it.
+defineExpose({ focusViewAsVisitor: () => viewAsVisitorButton.value?.$el?.focus() })
 </script>

@@ -15,6 +15,26 @@ export function mediaPlatformIcon(platform) {
   return PLATFORM_ICONS[platform] ?? 'pi pi-play'
 }
 
+const PLATFORM_SEVERITIES = {
+  youtube: 'danger',
+  soundcloud: 'warn',
+  spotify: 'success'
+}
+
+/** The colour of a platform's tag. */
+export function mediaPlatformSeverity(platform) {
+  return PLATFORM_SEVERITIES[platform] ?? 'info'
+}
+
+/** The platform a pasted link looks like it comes from, before the server parses it. */
+export function detectMediaPlatform(url) {
+  const lowered = url?.toLowerCase() ?? ''
+  if (lowered.includes('youtube') || lowered.includes('youtu.be')) return 'youtube'
+  if (lowered.includes('soundcloud')) return 'soundcloud'
+  if (lowered.includes('spotify')) return 'spotify'
+  return null
+}
+
 const EMBED_ALLOW = {
   youtube:
     'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',

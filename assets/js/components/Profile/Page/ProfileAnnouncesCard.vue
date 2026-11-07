@@ -27,7 +27,7 @@
         v-for="announce in announces"
         :key="announce.id"
         :announce="announce"
-        :contactable="!isOwner"
+        :contactable="contactable"
         :compact="compact"
         @contact="emit('contact', $event)"
       />
@@ -44,6 +44,8 @@ import MusicianAnnounceItem from '../../User/Profile/MusicianAnnounceItem.vue'
 defineProps({
   announces: { type: Array, default: () => [] },
   isOwner: { type: Boolean, default: false },
+  /** False on the member's own profile, viewed as a visitor too: nobody writes to themselves. */
+  contactable: { type: Boolean, default: true },
   compact: { type: Boolean, default: false }
 })
 

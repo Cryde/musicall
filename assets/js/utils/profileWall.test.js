@@ -22,6 +22,7 @@ import {
   wallFilterFromQuery,
   wallItemKey,
   wallNeedsScrolling,
+  wallOutOfView,
   youtubeThumbnailUrl
 } from './profileWall.js'
 
@@ -321,5 +322,17 @@ describe('wallNeedsScrolling', () => {
     assert.equal(wallNeedsScrolling(700, 844), true)
     assert.equal(wallNeedsScrolling(300, 844), false)
     assert.equal(wallNeedsScrolling(-200, 844), false)
+  })
+})
+
+describe('wallOutOfView', () => {
+  it('scrolls to the wall from below it too, as from « Écouter » under the wall on a phone', () => {
+    assert.equal(wallOutOfView(-727, 844), true)
+    assert.equal(wallOutOfView(700, 844), true)
+  })
+
+  it('leaves a wall already starting in the upper half of the screen', () => {
+    assert.equal(wallOutOfView(0, 844), false)
+    assert.equal(wallOutOfView(300, 844), false)
   })
 })

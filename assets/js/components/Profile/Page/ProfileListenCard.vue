@@ -1,15 +1,24 @@
 <template>
   <section
-    v-if="tracks.length"
+    v-if="content"
     ref="cardRef"
-    class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm overflow-hidden"
+    class="relative bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm overflow-hidden"
+    :class="{ [OWNER_CARD_CLASS]: editable }"
     aria-labelledby="profile-listen-title"
   >
-    <h2 id="profile-listen-title" class="m-0 px-5 pt-4 pb-3 text-[15px] font-bold text-surface-900 dark:text-surface-0">
+    <ProfileOwnerPencil v-if="editable" :label="t('profile.owner.edit.media')" @edit="emit('edit')" />
+    <h2
+      id="profile-listen-title"
+      class="m-0 px-5 pt-4 pb-3 text-[15px] font-bold text-surface-900 dark:text-surface-0"
+      :class="{ 'pr-12': editable }"
+    >
       {{ t('profile.public.listen.title', { name: displayName }) }}
     </h2>
 
-    <div class="px-4">
+    <p v-if="content === 'hint'" class="m-0 px-5 pb-5 text-sm text-surface-500 dark:text-surface-400">
+      {{ t('profile.owner.hint.media') }}
+    </p>
+    <div v-else class="px-4">
       <!-- Nothing from the platforms loads before a click, as the privacy page says. -->
       <template v-if="isPlaying">
         <div class="rounded-lg overflow-hidden bg-black" :style="{ height: `${playerHeight}px` }">
@@ -64,7 +73,7 @@
       </div>
     </div>
 
-    <ol class="list-none m-0 mt-3 p-0 border-t border-surface-200 dark:border-surface-700">
+    <ol v-if="content === 'items'" class="list-none m-0 mt-3 p-0 border-t border-surface-200 dark:border-surface-700">
       <li v-for="(track, index) in tracks" :key="track.id" class="border-b last:border-b-0 border-surface-200 dark:border-surface-700">
         <button
           type="button"
@@ -117,8 +126,10 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { mediaEmbedHeight } from '../../../utils/mediaEmbed.js'
 import { listenPlaylist, stepIndex, trackIndex, trackLabel } from '../../../utils/profileListen.js'
+import { OWNER_CARD_CLASS, ownerCardContent } from '../../../utils/profileOwner.js'
 import MediaEmbedFrame from '../../Media/MediaEmbedFrame.vue'
 import ProfileListenThumbnail from './ProfileListenThumbnail.vue'
+import ProfileOwnerPencil from './ProfileOwnerPencil.vue'
 
 /**
  * « Écouter {name} » (#1317): the member's media as a playlist the visitor picks from. The platform's own
@@ -126,11 +137,15 @@ import ProfileListenThumbnail from './ProfileListenThumbnail.vue'
  */
 const props = defineProps({
   profile: { type: Object, required: true },
-  displayName: { type: String, required: true }
+  displayName: { type: String, required: true },
+  /** The owner, with a musician or teacher profile: a pencil to « Médias », and a hint when there is nothing yet. */
+  editable: { type: Boolean, default: false }
 })
 
+const emit = defineEmits(['edit'])
 const { t } = useI18n()
 const tracks = computed(() => listenPlaylist(props.profile))
+const content = computed(() => ownerCardContent(tracks.value, props.editable))
 // The track by id, not by place: a list that changes must not start another track on its own.
 const currentId = ref(null)
 const isPlaying = ref(false)

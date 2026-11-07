@@ -45,7 +45,7 @@
             v-else
             class="w-full h-full flex items-center justify-center bg-surface-200 dark:bg-surface-700"
           >
-            <i :class="getPlatformIcon(item.platform)" class="text-4xl text-surface-400" />
+            <i :class="mediaPlatformIcon(item.platform)" class="text-4xl text-surface-400" />
           </div>
           <!-- Play overlay -->
           <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -53,7 +53,7 @@
           </div>
           <!-- Platform badge -->
           <div class="absolute top-2 right-2">
-            <Tag :value="item.platform_label" :severity="getPlatformSeverity(item.platform)" size="small" />
+            <Tag :value="item.platform_label" :severity="mediaPlatformSeverity(item.platform)" size="small" />
           </div>
         </div>
         <!-- Info -->
@@ -145,65 +145,7 @@
       </div>
     </Dialog>
 
-    <!-- Add Media Modal -->
-    <Dialog
-      v-model:visible="showAddModal"
-      modal
-      :header="t('profile.media.add_creation')"
-      :style="{ width: '500px' }"
-    >
-      <div class="flex flex-col gap-4">
-        <div>
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
-            {{ t('profile.media.url_label') }}
-          </label>
-          <InputText
-            v-model="newMediaUrl"
-            :placeholder="t('profile.media.url_placeholder')"
-            class="w-full"
-            :invalid="!!urlError"
-          />
-          <p v-if="urlError" class="text-xs text-red-500 mt-1">
-            {{ urlError }}
-          </p>
-          <p v-else class="text-xs text-surface-500 dark:text-surface-400 mt-1">
-            {{ t('profile.media.supported_platforms') }}
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
-            {{ t('profile.media.title_label') }}
-          </label>
-          <InputText
-            v-model="newMediaTitle"
-            :placeholder="t('profile.media.title_placeholder')"
-            class="w-full"
-          />
-        </div>
-
-        <!-- Platform detection preview -->
-        <div v-if="detectedPlatform" class="p-4 bg-surface-100 dark:bg-surface-800 rounded-lg">
-          <div class="flex items-center gap-3">
-            <Tag :value="detectedPlatform" :severity="getPlatformSeverity(detectedPlatform.toLowerCase())" />
-            <span class="text-sm text-surface-600 dark:text-surface-300">
-              {{ t('profile.media.detected_platform') }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <Button :label="t('profile.media.cancel')" severity="secondary" text @click="closeAddModal" />
-        <Button
-          :label="t('profile.media.add')"
-          icon="pi pi-plus"
-          :disabled="!newMediaUrl"
-          :loading="isAdding"
-          @click="handleAdd"
-        />
-      </template>
-    </Dialog>
+    <AddMediaDialog v-model:visible="showAddModal" :targets="['musician']" />
 
     <!-- Delete Confirmation -->
     <ConfirmDialog group="media-delete" />
@@ -214,16 +156,16 @@
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
-import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMusicianProfileMediaStore } from '../../../store/user/musicianProfileMedia.js'
+import { mediaPlatformIcon, mediaPlatformSeverity } from '../../../utils/mediaEmbed.js'
+import { MAX_PROFILE_MEDIA } from '../../../utils/profileOwner.js'
+import AddMediaDialog from '../../Media/AddMediaDialog.vue'
 import ReportButton from '../../Report/ReportButton.vue'
-
-const MAX_MEDIA = 6
 
 const props = defineProps({
   isOwnProfile: {
@@ -248,13 +190,9 @@ const mediaStore = useMusicianProfileMediaStore()
 const showPlayerModal = ref(false)
 const showAddModal = ref(false)
 const selectedMedia = ref(null)
-const newMediaUrl = ref('')
-const newMediaTitle = ref('')
-const urlError = ref('')
 const deletingId = ref(null)
 
 const isLoading = computed(() => (props.isOwnProfile ? mediaStore.isLoading : false))
-const isAdding = computed(() => mediaStore.isAdding)
 
 const media = computed(() => {
   if (props.mediaItems !== null) {
@@ -263,72 +201,11 @@ const media = computed(() => {
   return mediaStore.media
 })
 
-const canAddMore = computed(() => media.value.length < MAX_MEDIA)
-
-const detectedPlatform = computed(() => {
-  if (!newMediaUrl.value) return null
-  const url = newMediaUrl.value.toLowerCase()
-  if (url.includes('youtube') || url.includes('youtu.be')) return 'YouTube'
-  if (url.includes('soundcloud')) return 'SoundCloud'
-  if (url.includes('spotify')) return 'Spotify'
-  return null
-})
-
-watch(newMediaUrl, () => {
-  urlError.value = ''
-})
-
-function getPlatformSeverity(platform) {
-  switch (platform) {
-    case 'youtube':
-      return 'danger'
-    case 'soundcloud':
-      return 'warn'
-    case 'spotify':
-      return 'success'
-    default:
-      return 'info'
-  }
-}
-
-function getPlatformIcon(platform) {
-  switch (platform) {
-    case 'youtube':
-      return 'pi pi-youtube'
-    case 'soundcloud':
-      return 'pi pi-cloud'
-    case 'spotify':
-      return 'pi pi-spotify'
-    default:
-      return 'pi pi-video'
-  }
-}
+const canAddMore = computed(() => media.value.length < MAX_PROFILE_MEDIA)
 
 function openMedia(item) {
   selectedMedia.value = item
   showPlayerModal.value = true
-}
-
-async function handleAdd() {
-  if (!newMediaUrl.value) return
-
-  try {
-    await mediaStore.addMedia(newMediaUrl.value, newMediaTitle.value || null)
-    closeAddModal()
-  } catch (error) {
-    if (error.isValidationError) {
-      urlError.value = error.message || t('profile.media.invalid_url')
-    } else {
-      urlError.value = error.message || t('profile.media.error')
-    }
-  }
-}
-
-function closeAddModal() {
-  showAddModal.value = false
-  newMediaUrl.value = ''
-  newMediaTitle.value = ''
-  urlError.value = ''
 }
 
 function handleDelete(item) {

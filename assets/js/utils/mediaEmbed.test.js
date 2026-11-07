@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  detectMediaPlatform,
   mediaEmbedAllow,
   mediaEmbedHeight,
   mediaEmbedUrl,
-  mediaPlatformIcon
+  mediaPlatformIcon,
+  mediaPlatformSeverity
 } from './mediaEmbed.js'
 
 const youtube = { platform: 'youtube', embed_id: 'dQw4w9WgXcQ' }
@@ -69,5 +71,29 @@ describe('mediaPlatformIcon', () => {
     assert.equal(mediaPlatformIcon('youtube'), 'pi pi-youtube')
     assert.equal(mediaPlatformIcon('spotify'), 'pi pi-headphones')
     assert.equal(mediaPlatformIcon('bandcamp'), 'pi pi-play')
+  })
+})
+
+describe('mediaPlatformSeverity', () => {
+  it('colours each platform, and anything else neutrally', () => {
+    assert.equal(mediaPlatformSeverity('youtube'), 'danger')
+    assert.equal(mediaPlatformSeverity('soundcloud'), 'warn')
+    assert.equal(mediaPlatformSeverity('spotify'), 'success')
+    assert.equal(mediaPlatformSeverity('deezer'), 'info')
+  })
+})
+
+describe('detectMediaPlatform', () => {
+  it('reads the platform from a pasted link, short YouTube links included', () => {
+    assert.equal(detectMediaPlatform('https://www.YouTube.com/watch?v=dQw4w9WgXcQ'), 'youtube')
+    assert.equal(detectMediaPlatform('https://youtu.be/dQw4w9WgXcQ'), 'youtube')
+    assert.equal(detectMediaPlatform('https://soundcloud.com/artist/track'), 'soundcloud')
+    assert.equal(detectMediaPlatform('https://open.spotify.com/track/abc'), 'spotify')
+  })
+
+  it('names none for another link or an empty field', () => {
+    assert.equal(detectMediaPlatform('https://example.com'), null)
+    assert.equal(detectMediaPlatform(''), null)
+    assert.equal(detectMediaPlatform(null), null)
   })
 })

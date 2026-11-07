@@ -2,16 +2,17 @@
   <section
     v-if="musician || teacher || isOwner"
     class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5"
+    :class="{ [OWNER_CARD_CLASS]: isOwner }"
     aria-labelledby="profile-activities-title"
   >
     <h2 id="profile-activities-title" class="m-0 mb-3 text-[15px] font-bold text-surface-900 dark:text-surface-0">
       {{ t('profile.public.activities.title') }}
     </h2>
     <ul class="flex flex-col gap-2 list-none m-0 p-0">
-      <li v-if="musician">
+      <li v-if="musician" class="flex items-center gap-2">
         <router-link
           :to="{ name: 'app_user_public_profile', params: { username }, query: { voir: 'medias' } }"
-          class="flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+          class="flex-1 min-w-0 flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
         >
           <span class="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-sky-500/15 text-sky-600 dark:text-sky-400" aria-hidden="true">
             <i class="pi pi-headphones" />
@@ -30,6 +31,15 @@
           </span>
           <i class="pi pi-chevron-right text-xs text-surface-400" aria-hidden="true" />
         </router-link>
+        <Button
+          v-if="isOwner"
+          icon="pi pi-pencil"
+          rounded
+          size="small"
+          :aria-label="t('profile.owner.edit.availability')"
+          :title="t('profile.owner.edit.availability')"
+          @click="emit('edit-musician')"
+        />
       </li>
       <li v-else-if="isOwner">
         <Button
@@ -43,10 +53,10 @@
         />
       </li>
 
-      <li v-if="teacher">
+      <li v-if="teacher" class="flex items-center gap-2">
         <router-link
           :to="{ name: 'app_user_teacher_profile', params: { username }, query: { from: 'profile' } }"
-          class="flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+          class="flex-1 min-w-0 flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
         >
           <span class="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-amber-500/15 text-amber-600 dark:text-amber-400" aria-hidden="true">
             <i class="pi pi-graduation-cap" />
@@ -57,6 +67,17 @@
           </span>
           <i class="pi pi-chevron-right text-xs text-surface-400" aria-hidden="true" />
         </router-link>
+        <!-- The lessons page is where its owner edits it. -->
+        <Button
+          v-if="isOwner"
+          as="router-link"
+          :to="{ name: 'app_user_teacher_profile', params: { username } }"
+          icon="pi pi-pencil"
+          rounded
+          size="small"
+          :aria-label="t('profile.owner.edit.teacher')"
+          :title="t('profile.owner.edit.teacher')"
+        />
       </li>
       <li v-else-if="isOwner">
         <Button
@@ -78,6 +99,7 @@ import Button from 'primevue/button'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { musicianActivity, teacherActivity } from '../../../utils/profileActivities.js'
+import { OWNER_CARD_CLASS } from '../../../utils/profileOwner.js'
 import { formatLessonPrice } from '../../../utils/teacherPage.js'
 
 /** « Ce que je fais » (#1317): one line per activity, each opening its page. */
@@ -86,7 +108,7 @@ const props = defineProps({
   isOwner: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['create-musician', 'create-teacher'])
+const emit = defineEmits(['create-musician', 'create-teacher', 'edit-musician'])
 const { t, locale } = useI18n()
 
 const username = computed(() => props.profile.username)
