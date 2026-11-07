@@ -4,7 +4,10 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\BandSpace\BandSpaceMembership;
+use App\Entity\User;
 use App\Enum\BandSpace\InvitationStatus;
+use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -95,6 +98,33 @@ class BandSpaceInvitationRepository extends ServiceEntityRepository
             ->setParameter('email', $email)
             ->setParameter('status', InvitationStatus::Pending)
             ->setParameter('now', new \DateTime())
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Same recipient rule as accept; the email column's collation is case insensitive, like accept's comparison.
+     *
+     * @return list<BandSpaceInvitation>
+     */
+    public function findAcceptableBy(User $user): array
+    {
+        return $this->createQueryBuilder('i')
+            ->addSelect('bandSpace', 'inviter')
+            ->innerJoin('i.bandSpace', 'bandSpace')
+            ->innerJoin('i.invitedBy', 'inviter')
+            ->where('i.existingUser = :user OR (i.existingUser IS NULL AND i.email = :email)')
+            ->andWhere('i.status = :status')
+            ->andWhere('i.expirationDatetime > :now')
+            ->andWhere('bandSpace.deletionScheduledDatetime IS NULL')
+            ->andWhere('NOT EXISTS (SELECT 1 FROM ' . BandSpaceMembership::class . ' membership'
+                . ' WHERE membership.bandSpace = bandSpace AND membership.user = :user AND membership.status = :active)')
+            ->setParameter('user', $user)
+            ->setParameter('email', $user->email)
+            ->setParameter('status', InvitationStatus::Pending)
+            ->setParameter('now', new \DateTime())
+            ->setParameter('active', MembershipStatus::Active)
+            ->orderBy('i.creationDatetime', 'DESC')
             ->getQuery()
             ->getResult();
     }
