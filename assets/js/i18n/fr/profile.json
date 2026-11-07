@@ -864,9 +864,7 @@
     "edit_picture": "Modifier la photo de profil",
     "edit_profile": "Modifier le profil",
     "report": "Signaler le profil de {username}",
-    "view_musician_profile": "Voir le profil musicien",
     "create_musician_profile": "Créer mon profil musicien",
-    "view_teacher_profile": "Voir le profil professeur",
     "create_teacher_profile": "Créer mon profil professeur",
     "social_links": "Liens sociaux",
     "edit_social_links": "Modifier les liens sociaux",
@@ -879,7 +877,17 @@
     "page_title_default": "Profil - MusicAll",
     "profile_created": "Profil créé",
     "musician_profile_created": "Ton profil musicien a été créé avec succès",
-    "teacher_profile_created": "Ton profil professeur a été créé avec succès"
+    "teacher_profile_created": "Ton profil professeur a été créé avec succès",
+    "member_since": "Depuis {year}",
+    "activities": {
+      "title": "Ce que je fais",
+      "musician_fallback": "Musicien·ne",
+      "teacher": "Prof de {instruments}",
+      "teacher_fallback": "Prof de musique",
+      "from_price": "dès {price}",
+      "trial_free": "essai offert",
+      "trial_paid": "essai à {price}"
+    }
   },
   "wall": {
     "title": "Posts",
@@ -942,6 +950,21 @@
       "see_announce": "Voir l'annonce",
       "publication_label": "Publication",
       "course_label": "Cours"
+    },
+    "filter": {
+      "label": "Filtrer le mur",
+      "all": "Tout",
+      "posts": "Posts",
+      "media": "Médias",
+      "announces": "Annonces",
+      "courses": "Cours"
+    },
+    "empty": {
+      "posts": "Aucun post pour l'instant.",
+      "media": "Aucun média pour l'instant.",
+      "announces": "Aucune annonce pour l'instant.",
+      "courses": "Aucun cours pour l'instant.",
+      "visitor": "{name} n'a encore rien publié."
     }
   }
 }

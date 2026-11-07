@@ -5,11 +5,21 @@ declare(strict_types=1);
 namespace App\Service\Builder\User;
 
 use App\ApiResource\User\Profile\PublicProfile;
+use App\ApiResource\User\Profile\PublicProfileMusician;
 use App\ApiResource\User\Profile\PublicProfileSocialLink;
+use App\ApiResource\User\Profile\PublicProfileTeacher;
+use App\Entity\Musician\MusicianProfile;
+use App\Entity\Musician\MusicianProfileInstrument;
+use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Teacher\TeacherProfilePricing;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
+use App\Enum\Musician\AvailabilityStatus;
 use App\Repository\Musician\MusicianAnnounceRepository;
+use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
+use App\Service\Builder\Musician\MusicianProfileBuilder;
+use App\Service\Builder\Teacher\TeacherProfileBuilder;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -22,6 +32,9 @@ readonly class PublicProfileBuilder
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private TranslatorInterface $translator,
         private PublicProfileAnnounceBuilder $announceBuilder,
+        private MusicianInstrumentResourceBuilder $musicianInstrumentBuilder,
+        private MusicianProfileBuilder $musicianProfileBuilder,
+        private TeacherProfileBuilder $teacherProfileBuilder,
     ) {
     }
 
@@ -63,13 +76,43 @@ readonly class PublicProfileBuilder
         $announces = $this->musicianAnnounceRepository->findBy(['author' => $user], ['creationDatetime' => 'DESC']);
         $dto->musicianAnnounces = array_map($this->announceBuilder->build(...), $announces);
 
-        // Musician profile flag
-        $dto->hasMusicianProfile = $user->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
-
-        // Teacher profile flag
-        $dto->hasTeacherProfile = $user->teacherProfile instanceof \App\Entity\Teacher\TeacherProfile;
+        $dto->hasMusicianProfile = $user->musicianProfile instanceof MusicianProfile;
+        $dto->hasTeacherProfile = $user->teacherProfile instanceof TeacherProfile;
+        $dto->musician = $user->musicianProfile instanceof MusicianProfile ? $this->musician($user->musicianProfile) : null;
+        $dto->teacher = $user->teacherProfile instanceof TeacherProfile ? $this->teacher($user->teacherProfile) : null;
 
         return $dto;
+    }
+
+    private function musician(MusicianProfile $profile): PublicProfileMusician
+    {
+        $musician = new PublicProfileMusician();
+        if ($profile->availabilityStatus instanceof AvailabilityStatus) {
+            $musician->availabilityStatus = $profile->availabilityStatus->value;
+            $musician->availabilityStatusLabel = $profile->availabilityStatus->trans($this->translator);
+        }
+        // Their strongest instrument first: « Ce que je fais » names it. The relation itself has no order.
+        $instruments = $profile->instruments->toArray();
+        usort($instruments, static fn (MusicianProfileInstrument $a, MusicianProfileInstrument $b): int => $b->skillLevel->getSortOrder() <=> $a->skillLevel->getSortOrder()
+            ?: strcmp((string) $a->instrument->slug, (string) $b->instrument->slug));
+        $musician->instruments = $this->musicianInstrumentBuilder->buildList($instruments);
+        $musician->styles = $this->musicianProfileBuilder->buildStyles($profile->styles->toArray());
+
+        return $musician;
+    }
+
+    private function teacher(TeacherProfile $profile): PublicProfileTeacher
+    {
+        $teacher = new PublicProfileTeacher();
+        $teacher->instruments = $this->teacherProfileBuilder->buildInstruments($profile->instruments->toArray());
+        $teacher->offersTrial = $profile->offersTrial;
+        $teacher->trialPrice = $profile->trialPrice;
+        // Shortest lesson first: the relation itself has no order.
+        $pricing = $profile->pricing->toArray();
+        usort($pricing, static fn (TeacherProfilePricing $a, TeacherProfilePricing $b): int => $a->duration->getMinutes() <=> $b->duration->getMinutes());
+        $teacher->pricing = $this->teacherProfileBuilder->buildPricing($pricing);
+
+        return $teacher;
     }
 
     /**

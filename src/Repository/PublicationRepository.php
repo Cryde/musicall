@@ -562,11 +562,11 @@ class PublicationRepository extends ServiceEntityRepository
 
     /**
      * A member's online publications and courses for their wall (#1316), newest first, past `$before`, in
-     * the languages a listing in `$locale` shows.
+     * the languages a listing in `$locale` shows. `$coursesOnly` is the wall's « Cours » filter (#1317).
      *
      * @return list<Publication>
      */
-    public function findForWall(User $author, string $locale, ?WallCursor $before, int $limit): array
+    public function findForWall(User $author, string $locale, ?WallCursor $before, int $limit, bool $coursesOnly = false): array
     {
         $query = $this->createQueryBuilder('publication')
             ->addSelect('subCategory', 'cover', 'voteCache')
@@ -582,6 +582,9 @@ class PublicationRepository extends ServiceEntityRepository
             ->addOrderBy('publication.id', 'DESC')
             ->setMaxResults($limit);
         $this->shownIn($query, $locale);
+        if ($coursesOnly) {
+            $query->andWhere('subCategory.type = :courseType')->setParameter('courseType', PublicationSubCategory::TYPE_COURSE);
+        }
         $before?->applyTo($query, WallItemKind::Publication, 'publication.publicationDatetime', 'publication.id');
 
         /** @var list<Publication> $publications */

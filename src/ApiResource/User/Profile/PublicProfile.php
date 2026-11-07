@@ -48,4 +48,10 @@ class PublicProfile
     public bool $hasMusicianProfile = false;
 
     public bool $hasTeacherProfile = false;
+
+    #[ApiProperty(genId: false)]
+    public ?PublicProfileMusician $musician = null;
+
+    #[ApiProperty(genId: false)]
+    public ?PublicProfileTeacher $teacher = null;
 }

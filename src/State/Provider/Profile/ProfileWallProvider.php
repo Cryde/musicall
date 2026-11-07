@@ -12,6 +12,7 @@ use App\Security\Profile\ProfileWallAccess;
 use App\Service\Builder\Profile\ProfileWallItemBuilder;
 use App\Service\Profile\Wall\ProfileWallFeed;
 use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallFilter;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Translation\LocaleSwitcher;
 
@@ -41,10 +42,12 @@ readonly class ProfileWallProvider implements ProviderInterface
             return [];
         }
 
-        // The operation's Assert\Regex has already refused a malformed cursor with a 422.
+        // The operation's constraints have already refused a malformed cursor or filter with a 422.
         $beforeValue = $context['filters']['before'] ?? null;
         $before = is_string($beforeValue) && $beforeValue !== '' ? WallCursor::parse($beforeValue) : null;
-        $entries = $this->feed->page($owner, $this->localeSwitcher->getLocale(), $before, ProfileWallItem::PAGE_SIZE);
+        $typeValue = $context['filters']['type'] ?? null;
+        $filter = is_string($typeValue) ? WallFilter::tryFrom($typeValue) : null;
+        $entries = $this->feed->page($owner, $this->localeSwitcher->getLocale(), $before, ProfileWallItem::PAGE_SIZE, $filter);
 
         return $this->itemBuilder->buildAll($entries, $viewer);
     }

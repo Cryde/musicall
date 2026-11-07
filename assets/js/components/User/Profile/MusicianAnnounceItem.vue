@@ -1,6 +1,9 @@
 <template>
-  <div class="flex flex-col md:flex-row md:items-center gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-800">
-    <div class="flex items-center gap-3 md:w-56 shrink-0">
+  <div
+    class="flex flex-col gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-800"
+    :class="{ 'md:flex-row md:items-center': !compact }"
+  >
+    <div class="flex items-center gap-3 shrink-0" :class="{ 'md:w-56': !compact }">
       <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30">
         <i :class="['pi text-lg text-primary-600 dark:text-primary-400', announce.type === TYPES_ANNOUNCE_BAND ? 'pi-users' : 'pi-user']" />
       </div>
@@ -38,7 +41,8 @@
       icon="pi pi-envelope"
       size="small"
       outlined
-      class="self-start md:self-center shrink-0"
+      class="self-start shrink-0"
+      :class="{ 'md:self-center': !compact }"
       @click="emit('contact', announce)"
     />
   </div>
@@ -58,6 +62,11 @@ const props = defineProps({
   },
   // Someone else's profile: offer to write about this announce.
   contactable: {
+    type: Boolean,
+    default: false
+  },
+  // Stacked whatever the width, for a narrow column (#1317).
+  compact: {
     type: Boolean,
     default: false
   }

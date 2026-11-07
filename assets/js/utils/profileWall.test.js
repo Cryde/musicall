@@ -13,10 +13,13 @@ import {
   postAfterLike,
   postItem,
   postPayload,
+  showsPosts,
   treeWithComment,
   treeWithoutComment,
+  WALL_FILTERS,
   WALL_PAGE_SIZE,
   wallAfterPinChange,
+  wallFilterFromQuery,
   wallItemKey,
   youtubeThumbnailUrl
 } from './profileWall.js'
@@ -287,5 +290,27 @@ describe('treeWithoutComment', () => {
 
   it('removes nothing for an unknown id', () => {
     assert.equal(treeWithoutComment(tree, 'z').removedCount, 0)
+  })
+})
+
+describe('wallFilterFromQuery', () => {
+  it('reads the filter a link asks for', () => {
+    assert.equal(wallFilterFromQuery('medias').type, 'media')
+    assert.equal(wallFilterFromQuery('cours').type, 'course')
+  })
+
+  it('falls back to « Tout » for nothing or anything it does not know', () => {
+    assert.equal(wallFilterFromQuery(undefined), WALL_FILTERS[0])
+    assert.equal(wallFilterFromQuery('photos'), WALL_FILTERS[0])
+    assert.equal(wallFilterFromQuery(['medias']), WALL_FILTERS[0])
+  })
+})
+
+describe('showsPosts', () => {
+  it('is true for « Tout » and « Posts » only', () => {
+    assert.deepEqual(
+      WALL_FILTERS.filter(showsPosts).map((filter) => filter.query),
+      [null, 'posts']
+    )
   })
 })

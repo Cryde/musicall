@@ -34,30 +34,32 @@ readonly class ProfileWallFeed
     /**
      * @return list<WallEntry>
      */
-    public function page(User $owner, string $locale, ?WallCursor $before, int $size): array
+    public function page(User $owner, string $locale, ?WallCursor $before, int $size, ?WallFilter $filter = null): array
     {
+        // A filter only skips sources: a cursor still places every row, whichever source it comes from.
+        $reads = static fn (WallItemKind $kind): bool => !$filter instanceof WallFilter || $filter->reads($kind);
         $entries = [
-            ...array_map(
+            ...!$reads(WallItemKind::Post) ? [] : array_map(
                 static fn (ProfilePost $post): WallEntry => new WallEntry(WallItemKind::Post, $post->creationDatetime, $post),
                 $this->postRepository->findForWall($owner, $before, $size),
             ),
-            ...array_map(
+            ...!$reads(WallItemKind::Announce) ? [] : array_map(
                 static fn (MusicianAnnounce $announce): WallEntry => new WallEntry(WallItemKind::Announce, $announce->creationDatetime, $announce),
                 $this->announceRepository->findForWall($owner, $before, $size),
             ),
-            ...array_map(
+            ...!$reads(WallItemKind::Publication) ? [] : array_map(
                 static fn (Publication $publication): WallEntry => new WallEntry(
                     WallItemKind::Publication,
                     $publication->publicationDatetime ?? $publication->creationDatetime,
                     $publication,
                 ),
-                $this->publicationRepository->findForWall($owner, $locale, $before, $size),
+                $this->publicationRepository->findForWall($owner, $locale, $before, $size, coursesOnly: $filter === WallFilter::Course),
             ),
-            ...array_map(
+            ...!$reads(WallItemKind::MusicianMedia) ? [] : array_map(
                 static fn (MusicianProfileMedia $media): WallEntry => new WallEntry(WallItemKind::MusicianMedia, $media->creationDatetime, $media),
                 $this->musicianMediaRepository->findForWall($owner, $before, $size),
             ),
-            ...array_map(
+            ...!$reads(WallItemKind::TeacherMedia) ? [] : array_map(
                 static fn (TeacherProfileMedia $media): WallEntry => new WallEntry(WallItemKind::TeacherMedia, $media->creationDatetime, $media),
                 $this->teacherMediaRepository->findForWall($owner, $before, $size),
             ),

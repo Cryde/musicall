@@ -864,9 +864,7 @@
     "edit_picture": "Edit the profile photo",
     "edit_profile": "Edit profile",
     "report": "Report {username}'s profile",
-    "view_musician_profile": "View musician profile",
     "create_musician_profile": "Create my musician profile",
-    "view_teacher_profile": "View teacher profile",
     "create_teacher_profile": "Create my teacher profile",
     "social_links": "Social links",
     "edit_social_links": "Edit social links",
@@ -879,7 +877,17 @@
     "page_title_default": "Profile - MusicAll",
     "profile_created": "Profile created",
     "musician_profile_created": "Your musician profile has been created",
-    "teacher_profile_created": "Your teacher profile has been created"
+    "teacher_profile_created": "Your teacher profile has been created",
+    "member_since": "Since {year}",
+    "activities": {
+      "title": "What I do",
+      "musician_fallback": "Musician",
+      "teacher": "{instruments} teacher",
+      "teacher_fallback": "Music teacher",
+      "from_price": "from {price}",
+      "trial_free": "free trial",
+      "trial_paid": "trial at {price}"
+    }
   },
   "wall": {
     "title": "Posts",
@@ -942,6 +950,21 @@
       "see_announce": "See the ad",
       "publication_label": "Publication",
       "course_label": "Lesson"
+    },
+    "filter": {
+      "label": "Filter the wall",
+      "all": "All",
+      "posts": "Posts",
+      "media": "Media",
+      "announces": "Ads",
+      "courses": "Lessons"
+    },
+    "empty": {
+      "posts": "No posts yet.",
+      "media": "No media yet.",
+      "announces": "No ads yet.",
+      "courses": "No lessons yet.",
+      "visitor": "{name} hasn't posted anything yet."
     }
   }
 }

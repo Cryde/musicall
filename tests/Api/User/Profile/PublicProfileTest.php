@@ -5,14 +5,23 @@ declare(strict_types=1);
 namespace App\Tests\Api\User\Profile;
 
 use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\Teacher\TeacherProfilePricing;
+use App\Enum\Musician\AvailabilityStatus;
+use App\Enum\Musician\SkillLevel;
+use App\Enum\Teacher\SessionDuration;
 use App\Enum\SocialPlatform;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
+use App\Tests\Factory\Musician\MusicianProfileFactory;
+use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
+use App\Tests\Factory\Teacher\TeacherProfileFactory;
+use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserSocialLinkFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -138,6 +147,91 @@ class PublicProfileTest extends ApiTestCase
             ],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+        ]);
+    }
+
+    /** The left column says what the member does (#1317), from the profile alone: no musician or teacher page view. */
+    public function test_get_public_profile_says_what_the_member_does(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'julien', 'email' => 'julien@test.com']);
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $drum = InstrumentFactory::new()->asDrum()->create();
+        $rock = StyleFactory::new()->asRock()->create();
+
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'availabilityStatus' => AvailabilityStatus::OPEN_TO_COLLABORATIONS,
+            'styles' => [$rock],
+        ]);
+        // Added weakest first: the profile reads them strongest first.
+        MusicianProfileInstrumentFactory::new()->create(['musicianProfile' => $musicianProfile, 'instrument' => $drum, 'skillLevel' => SkillLevel::BEGINNER]);
+        MusicianProfileInstrumentFactory::new()->create(['musicianProfile' => $musicianProfile, 'instrument' => $guitar, 'skillLevel' => SkillLevel::PROFESSIONAL]);
+
+        $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user, 'offersTrial' => true, 'trialPrice' => 0]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        // Added longest first: the page reads them shortest first.
+        foreach ([[SessionDuration::ONE_HOUR, 4500], [SessionDuration::THIRTY_MINUTES, 2500]] as [$duration, $price]) {
+            $pricing = new TeacherProfilePricing();
+            $pricing->duration = $duration;
+            $pricing->price = $price;
+            $teacherProfile->addPricing($pricing);
+        }
+        \Zenstruck\Foundry\Persistence\save($teacherProfile);
+        $user->musicianProfile = $musicianProfile;
+        $user->teacherProfile = $teacherProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+
+        $this->client->request('GET', '/api/user/profile/julien');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/PublicProfile',
+            '@id' => '/api/user/profile/julien',
+            '@type' => 'PublicProfile',
+            'username' => 'julien',
+            'user_id' => $user->id,
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'social_links' => [],
+            'musician_announces' => [],
+            'has_musician_profile' => true,
+            'has_teacher_profile' => true,
+            'musician' => [
+                '@type' => 'PublicProfileMusician',
+                'availability_status' => 'open_to_collaborations',
+                'availability_status_label' => 'Ouvert aux collaborations',
+                'instruments' => [
+                    [
+                        '@type' => 'PublicMusicianProfileInstrument',
+                        'instrument_id' => $guitar->id,
+                        'instrument_name' => 'Guitariste',
+                        'skill_level' => 'professional',
+                        'skill_level_label' => 'Professionnel',
+                    ],
+                    [
+                        '@type' => 'PublicMusicianProfileInstrument',
+                        'instrument_id' => $drum->id,
+                        'instrument_name' => 'Batteur',
+                        'skill_level' => 'beginner',
+                        'skill_level_label' => 'Débutant',
+                    ],
+                ],
+                'styles' => [
+                    ['@type' => 'PublicMusicianProfileStyle', 'id' => $rock->id, 'name' => 'Rock'],
+                ],
+            ],
+            'teacher' => [
+                '@type' => 'PublicProfileTeacher',
+                'instruments' => [
+                    ['@type' => 'TeacherProfileInstrument', 'instrument_id' => $guitar->id, 'instrument_name' => 'Guitare'],
+                ],
+                'offers_trial' => true,
+                'trial_price' => 0,
+                'pricing' => [
+                    ['@type' => 'TeacherProfilePricing', 'duration' => '30min', 'price' => 2500],
+                    ['@type' => 'TeacherProfilePricing', 'duration' => '1h', 'price' => 4500],
+                ],
+            ],
         ]);
     }
 

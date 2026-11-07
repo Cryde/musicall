@@ -1,5 +1,8 @@
 /** The teacher page's summaries of the profile data (#1310), kept out of the component so they are tested. */
 
+import { forActiveLocale } from '../i18n/formatLocale.js'
+import { formatEurosFromCentsTrimmed } from './currency.js'
+
 const LEVEL_ORDER = ['beginner', 'intermediate', 'advanced']
 const DURATION_ORDER = ['30min', '1h', '1h30', '2h']
 
@@ -17,6 +20,18 @@ export const DAYS_OF_WEEK = [
 export function cheapestPricing(pricing) {
   if (!Array.isArray(pricing) || pricing.length === 0) return null
   return pricing.reduce((cheapest, item) => (item.price < cheapest.price ? item : cheapest))
+}
+
+// French as the profile always wrote it, whole euros and the sign glued on; English the Intl way,
+// the cents shown only when there are some.
+const PRICE_WRITERS = {
+  fr: (cents) => `${(cents / 100).toFixed(0)}€`,
+  en: formatEurosFromCentsTrimmed
+}
+
+/** A lesson price, stored in cents, as the teacher page and the profile write it. */
+export function formatLessonPrice(cents) {
+  return forActiveLocale(PRICE_WRITERS)(cents)
 }
 
 /** The prices from the shortest lesson to the longest, whatever order they were entered in. */

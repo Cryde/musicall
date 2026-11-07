@@ -51,6 +51,51 @@ export function postItem(post) {
   return { type: 'post', date: post.creation_datetime, post }
 }
 
+/**
+ * The wall's filters (#1317): `query` is the page's `?voir=`, `type` the API's `type`. « Tout » has neither, and
+ * every filter but « Tout » has its own empty state.
+ */
+export const WALL_FILTERS = [
+  { query: null, type: null, labelKey: 'profile.wall.filter.all', emptyKey: null },
+  {
+    query: 'posts',
+    type: 'post',
+    labelKey: 'profile.wall.filter.posts',
+    emptyKey: 'profile.wall.empty.posts'
+  },
+  {
+    query: 'medias',
+    type: 'media',
+    labelKey: 'profile.wall.filter.media',
+    emptyKey: 'profile.wall.empty.media'
+  },
+  {
+    query: 'annonces',
+    type: 'announce',
+    labelKey: 'profile.wall.filter.announces',
+    emptyKey: 'profile.wall.empty.announces'
+  },
+  {
+    query: 'cours',
+    type: 'course',
+    labelKey: 'profile.wall.filter.courses',
+    emptyKey: 'profile.wall.empty.courses'
+  }
+]
+
+/** The filter a `?voir=` asks for; anything else is « Tout ». */
+export function wallFilterFromQuery(value) {
+  return (
+    WALL_FILTERS.find((filter) => filter.query !== null && filter.query === value) ??
+    WALL_FILTERS[0]
+  )
+}
+
+/** Whether a filter shows posts, so the pinned one, the composer and a post just written. */
+export function showsPosts(filter) {
+  return filter.type === null || filter.type === 'post'
+}
+
 // Mirrors ProfileWallItem::PAGE_SIZE: a page shorter than this is the last one.
 export const WALL_PAGE_SIZE = 10
 
