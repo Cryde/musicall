@@ -5,6 +5,7 @@ namespace App\Repository\User;
 use App\Entity\User;
 use App\Entity\User\DeviceToken;
 use App\Enum\User\DevicePlatform;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -74,6 +75,15 @@ class DeviceTokenRepository extends ServiceEntityRepository
         $this->getEntityManager()
             ->createQuery('DELETE FROM App\Entity\User\DeviceToken d WHERE d.user = :user')
             ->setParameter('user', $user)
+            ->execute();
+    }
+
+    /** Bulk like the others: the prune command loads no token first, so none is left stale in the identity map. */
+    public function deleteLastSeenBefore(DateTimeImmutable $cutoff): int
+    {
+        return (int) $this->getEntityManager()
+            ->createQuery('DELETE FROM App\Entity\User\DeviceToken d WHERE d.lastSeenDatetime < :cutoff')
+            ->setParameter('cutoff', $cutoff)
             ->execute();
     }
 
