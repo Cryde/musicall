@@ -4,6 +4,9 @@ namespace App\Repository;
 
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Entity\User;
+use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallItemKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -555,5 +558,35 @@ class PublicationRepository extends ServiceEntityRepository
     {
         return $qb->andWhere('(publication.language = :locale OR publication.language IS NULL)')
             ->setParameter('locale', $locale);
+    }
+
+    /**
+     * A member's online publications and courses for their wall (#1316), newest first, past `$before`, in
+     * the languages a listing in `$locale` shows.
+     *
+     * @return list<Publication>
+     */
+    public function findForWall(User $author, string $locale, ?WallCursor $before, int $limit): array
+    {
+        $query = $this->createQueryBuilder('publication')
+            ->addSelect('subCategory', 'cover', 'voteCache')
+            ->innerJoin('publication.subCategory', 'subCategory')
+            ->leftJoin('publication.cover', 'cover')
+            ->leftJoin('publication.voteCache', 'voteCache')
+            ->where('publication.author = :author')
+            ->andWhere('publication.status = :online')
+            ->andWhere('publication.publicationDatetime IS NOT NULL')
+            ->setParameter('author', $author)
+            ->setParameter('online', Publication::STATUS_ONLINE)
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->addOrderBy('publication.id', 'DESC')
+            ->setMaxResults($limit);
+        $this->shownIn($query, $locale);
+        $before?->applyTo($query, WallItemKind::Publication, 'publication.publicationDatetime', 'publication.id');
+
+        /** @var list<Publication> $publications */
+        $publications = $query->getQuery()->getResult();
+
+        return $publications;
     }
 }

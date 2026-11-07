@@ -1,18 +1,23 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  activitySentenceKey,
   appendWallPage,
   canPublish,
   commentTree,
   emptyPostDraft,
   MAX_POST_LENGTH,
+  nextWallCursor,
   photoGridClass,
   postAfterCommentCount,
   postAfterLike,
+  postItem,
   postPayload,
   treeWithComment,
   treeWithoutComment,
+  WALL_PAGE_SIZE,
   wallAfterPinChange,
+  wallItemKey,
   youtubeThumbnailUrl
 } from './profileWall.js'
 
@@ -71,12 +76,47 @@ describe('postPayload', () => {
 })
 
 describe('appendWallPage', () => {
-  it('adds the new page after what is held, without repeating a post', () => {
-    assert.deepEqual(appendWallPage([{ id: 'a' }, { id: 'b' }], [{ id: 'b' }, { id: 'c' }]), [
-      { id: 'a' },
-      { id: 'b' },
-      { id: 'c' }
-    ])
+  const line = (type, id) =>
+    type === 'post'
+      ? { type, post: { id } }
+      : { type, [type === 'course' ? 'publication' : type]: { id } }
+
+  it('adds the new page after what is held, without repeating a line', () => {
+    assert.deepEqual(
+      appendWallPage(
+        [line('post', 'a'), line('announce', 'b')],
+        [line('announce', 'b'), line('media', 'b'), line('course', 'c')]
+      ),
+      [line('post', 'a'), line('announce', 'b'), line('media', 'b'), line('course', 'c')]
+    )
+  })
+})
+
+describe('nextWallCursor', () => {
+  it('pages like the server', () => {
+    // ProfileWallItem::PAGE_SIZE, which ProfileWallTest pins to ten as well.
+    assert.equal(WALL_PAGE_SIZE, 10)
+  })
+
+  const page = (count) =>
+    Array.from({ length: count }, (_, index) => ({ type: 'post', cursor: `post_1_${index}` }))
+
+  it('goes on after the last line of a full page', () => {
+    assert.equal(nextWallCursor(page(WALL_PAGE_SIZE)), `post_1_${WALL_PAGE_SIZE - 1}`)
+  })
+
+  it('stops after a shorter page, or an empty one', () => {
+    assert.equal(nextWallCursor(page(WALL_PAGE_SIZE - 1)), null)
+    assert.equal(nextWallCursor([]), null)
+  })
+})
+
+describe('wallItemKey and activitySentenceKey', () => {
+  it('keys a line by its kind and id, and names the sentence of an activity', () => {
+    assert.equal(wallItemKey({ type: 'publication', publication: { id: 42 } }), 'publication-42')
+    assert.equal(wallItemKey({ type: 'post', post: { id: 'p1' } }), 'post-p1')
+    assert.equal(activitySentenceKey({ type: 'course' }), 'profile.wall.activity.course')
+    assert.equal(activitySentenceKey({ type: 'post' }), null)
   })
 })
 
@@ -104,45 +144,58 @@ describe('wallAfterPinChange', () => {
     creation_datetime: `2026-10-${day}T10:00:00+00:00`,
     is_pinned: isPinned
   })
+  const announce = (id, day) => ({
+    type: 'announce',
+    date: `2026-10-${day}T10:00:00+00:00`,
+    announce: { id }
+  })
+  const lineIds = (items) => items.map((item) => [item.type, (item.post ?? item.announce).id])
 
-  it('moves the post pinned out of the list and puts the previous one back at its date', () => {
+  it('moves the post pinned out of the lines and puts the previous one back at its date', () => {
     const wall = {
       pinnedPost: post('old', '05', true),
-      posts: [post('c', '09'), post('b', '07'), post('a', '03')],
+      items: [
+        postItem(post('c', '09')),
+        postItem(post('b', '07')),
+        announce('x', '05'),
+        postItem(post('a', '03'))
+      ],
       hasMore: false
     }
     const next = wallAfterPinChange(wall, post('b', '07', true))
     assert.equal(next.pinnedPost.id, 'b')
-    assert.deepEqual(
-      next.posts.map((held) => [held.id, held.is_pinned]),
-      [
-        ['c', false],
-        ['old', false],
-        ['a', false]
-      ]
-    )
+    // Same second as the announce: a post comes first, as the server orders them.
+    assert.deepEqual(lineIds(next.items), [
+      ['post', 'c'],
+      ['post', 'old'],
+      ['announce', 'x'],
+      ['post', 'a']
+    ])
+    assert.equal(next.items[1].post.is_pinned, false)
   })
 
   it('leaves a released post to a later page when it is older than everything loaded', () => {
-    const wall = { pinnedPost: post('old', '01', true), posts: [post('b', '07')], hasMore: true }
-    assert.deepEqual(
-      wallAfterPinChange(wall, post('b', '07', true)).posts.map((held) => held.id),
-      []
-    )
+    const wall = {
+      pinnedPost: post('old', '01', true),
+      items: [postItem(post('b', '07'))],
+      hasMore: true
+    }
+    assert.deepEqual(wallAfterPinChange(wall, post('b', '07', true)).items, [])
   })
 
-  it('puts an unpinned post back in the list', () => {
+  it('puts an unpinned post back among the lines', () => {
     const wall = {
       pinnedPost: post('b', '07', true),
-      posts: [post('c', '09'), post('a', '03')],
+      items: [postItem(post('c', '09')), announce('x', '03')],
       hasMore: false
     }
     const next = wallAfterPinChange(wall, post('b', '07'))
     assert.equal(next.pinnedPost, null)
-    assert.deepEqual(
-      next.posts.map((held) => held.id),
-      ['c', 'b', 'a']
-    )
+    assert.deepEqual(lineIds(next.items), [
+      ['post', 'c'],
+      ['post', 'b'],
+      ['announce', 'x']
+    ])
   })
 })
 

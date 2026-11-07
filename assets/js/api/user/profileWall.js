@@ -5,12 +5,22 @@ import { handleApiError } from '../utils/handleApiError.js'
 
 /** The profile wall (#1316). */
 export default {
+  /** A page of lines, newest first: `before` is the last line's `cursor` of the page held. */
   getWall(username, before = null) {
     return axios
-      .get(Routing.generate('api_profile_wall_get', { username, ...(before ? { before } : {}) }), {
+      .get(Routing.generate('api_profile_wall_list', { username, ...(before ? { before } : {}) }), {
         headers: { Accept: 'application/ld+json' }
       })
-      .then((resp) => resp.data)
+      .then((resp) => resp.data.member)
+  },
+
+  /** The post kept above the wall: an empty list, or one post. */
+  getPinnedPosts(username) {
+    return axios
+      .get(Routing.generate('api_profile_pinned_posts_list', { username }), {
+        headers: { Accept: 'application/ld+json' }
+      })
+      .then((resp) => resp.data.member)
   },
 
   /** A FormData when photos travel with it, a plain object otherwise. */
@@ -45,7 +55,7 @@ export default {
       .get(Routing.generate('api_profile_post_comments_list', { postId }), {
         headers: { Accept: 'application/ld+json' }
       })
-      .then((resp) => resp.data.comments)
+      .then((resp) => resp.data.member)
   },
 
   createComment(postId, content, parentId = null) {
@@ -87,6 +97,6 @@ export default {
       .get(Routing.generate('api_profile_post_likes_list', { postId }), {
         headers: { Accept: 'application/ld+json' }
       })
-      .then((resp) => resp.data.likers)
+      .then((resp) => resp.data.member)
   }
 }

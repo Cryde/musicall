@@ -93,8 +93,8 @@ class ProfilePostCreateTest extends ApiTestCase
             ],
             'content' => 'Forest National hier soir',
             'photos' => [
-                ['@type' => 'ProfilePostPhoto', 'id' => $first->id, 'url' => '/api/user/profile/julien/posts/' . $post->id . '/photos/' . $first->id],
-                ['@type' => 'ProfilePostPhoto', 'id' => $second->id, 'url' => '/api/user/profile/julien/posts/' . $post->id . '/photos/' . $second->id],
+                ['@type' => 'ProfilePostPhoto', 'id' => $first->id, 'url' => '/api/user/profile-posts/' . $post->id . '/photos/' . $first->id],
+                ['@type' => 'ProfilePostPhoto', 'id' => $second->id, 'url' => '/api/user/profile-posts/' . $post->id . '/photos/' . $second->id],
             ],
             'is_pinned' => false,
             'creation_datetime' => $post->creationDatetime->format(\DateTimeInterface::ATOM),

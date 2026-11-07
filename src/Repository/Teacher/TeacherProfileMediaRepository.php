@@ -6,6 +6,9 @@ namespace App\Repository\Teacher;
 
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\Teacher\TeacherProfileMedia;
+use App\Entity\User;
+use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallItemKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -39,5 +42,27 @@ class TeacherProfileMediaRepository extends ServiceEntityRepository
             ->setParameter('profileId', $teacherProfileId)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * The media a member added to their teacher profile, for their wall (#1316): newest first, past `$before`.
+     *
+     * @return list<TeacherProfileMedia>
+     */
+    public function findForWall(User $owner, ?WallCursor $before, int $limit): array
+    {
+        $query = $this->createQueryBuilder('media')
+            ->innerJoin('media.teacherProfile', 'profile')
+            ->where('profile.user = :owner')
+            ->setParameter('owner', $owner)
+            ->orderBy('media.creationDatetime', 'DESC')
+            ->addOrderBy('media.id', 'DESC')
+            ->setMaxResults($limit);
+        $before?->applyTo($query, WallItemKind::TeacherMedia, 'media.creationDatetime', 'media.id');
+
+        /** @var list<TeacherProfileMedia> $media */
+        $media = $query->getQuery()->getResult();
+
+        return $media;
     }
 }

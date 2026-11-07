@@ -78,7 +78,6 @@ readonly class ProfilePostResourceBuilder
         $photo = new ProfilePostPhoto();
         $photo->id = (string) $image->id;
         $photo->url = $this->urlGenerator->generate('api_profile_post_photos_get', [
-            'username' => $post->author->username,
             'postId' => $post->id,
             'id' => $image->id,
         ]);

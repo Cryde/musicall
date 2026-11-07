@@ -933,6 +933,15 @@
     "delete_reply_confirm": "This reply will be deleted for good.",
     "too_many_comments": "You wrote a lot of comments in a short time. Try again in a few minutes.",
     "login": "Sign in",
-    "login_to_comment": "to comment."
+    "login_to_comment": "to comment.",
+    "activity": {
+      "announce": "posted an ad",
+      "publication": "published a publication",
+      "course": "published a lesson",
+      "media": "added a video or a track",
+      "see_announce": "See the ad",
+      "publication_label": "Publication",
+      "course_label": "Lesson"
+    }
   }
 }

@@ -7,6 +7,8 @@ use App\Entity\User;
 use App\Model\Search\MusicianSearch;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
+use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallItemKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -327,5 +329,39 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
                 ->setParameter('point', $this->pointOf($musician))
                 ->setParameter('radius', $musician->radius * 1000);
         }
+    }
+
+    /**
+     * A member's announces for their wall (#1316), newest first, past `$before`.
+     *
+     * @return list<MusicianAnnounce>
+     */
+    public function findForWall(User $author, ?WallCursor $before, int $limit): array
+    {
+        // Paged on the ids alone: a fetch join with a limit would cut an announce's styles.
+        $page = $this->createQueryBuilder('announce')
+            ->select('announce.id')
+            ->where('announce.author = :author')
+            ->setParameter('author', $author)
+            ->orderBy('announce.creationDatetime', 'DESC')
+            ->addOrderBy('announce.id', 'DESC')
+            ->setMaxResults($limit);
+        $before?->applyTo($page, WallItemKind::Announce, 'announce.creationDatetime', 'announce.id');
+        $ids = array_column($page->getQuery()->getArrayResult(), 'id');
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<MusicianAnnounce> $announces */
+        $announces = $this->createQueryBuilder('announce')
+            ->addSelect('instrument', 'style')
+            ->innerJoin('announce.instrument', 'instrument')
+            ->leftJoin('announce.styles', 'style')
+            ->where('announce.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        return $announces;
     }
 }

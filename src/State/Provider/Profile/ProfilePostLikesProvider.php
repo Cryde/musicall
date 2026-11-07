@@ -6,8 +6,7 @@ namespace App\State\Provider\Profile;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\ApiResource\Profile\ProfilePostAuthor;
-use App\ApiResource\Profile\ProfilePostLikes;
+use App\ApiResource\Profile\ProfilePostLiker;
 use App\Entity\User;
 use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Security\Profile\ProfileWallAccess;
@@ -16,7 +15,7 @@ use App\Translation\DisplayNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
- * @implements ProviderInterface<ProfilePostLikes>
+ * @implements ProviderInterface<ProfilePostLiker>
  */
 readonly class ProfilePostLikesProvider implements ProviderInterface
 {
@@ -29,26 +28,25 @@ readonly class ProfilePostLikesProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ProfilePostLikes
+    /**
+     * @return list<ProfilePostLiker>
+     */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $viewer = $this->security->getUser();
         $viewer = $viewer instanceof User ? $viewer : null;
         $post = $this->wallAccess->visiblePost((string) $uriVariables['postId'], $viewer);
 
-        $likes = new ProfilePostLikes();
-        $likes->postId = (string) $post->id;
-        $likes->likers = array_map(
+        return array_map(
             $this->liker(...),
             $this->likeRepository->findLikers($post, $this->wallAccess->hiddenUserIdsFor($viewer)),
         );
-
-        return $likes;
     }
 
     /** Named as anyone else reads them: a private profile shows its username. */
-    private function liker(User $user): ProfilePostAuthor
+    private function liker(User $user): ProfilePostLiker
     {
-        $liker = new ProfilePostAuthor();
+        $liker = new ProfilePostLiker();
         $liker->username = $user->username;
         $liker->displayName = $this->displayNames->publicName($user);
         $liker->profilePictureUrl = $this->profilePictureUrlBuilder->build($user);
