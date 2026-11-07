@@ -165,6 +165,10 @@ class PublicProfileTest extends ApiTestCase
             'user' => $user,
             'availabilityStatus' => AvailabilityStatus::OPEN_TO_COLLABORATIONS,
             'styles' => [$rock],
+            'bands' => [
+                ['name' => 'Les Anciens', 'style_id' => null, 'role' => null, 'current' => false, 'url' => null],
+                ['name' => 'Ardent', 'style_id' => $rock->id, 'role' => 'Guitare', 'current' => true, 'url' => 'https://ardent.bandcamp.com'],
+            ],
         ]);
         // Added weakest first: the profile reads them strongest first.
         MusicianProfileInstrumentFactory::new()->create(['musicianProfile' => $musicianProfile, 'instrument' => $drum, 'skillLevel' => SkillLevel::BEGINNER]);
@@ -253,6 +257,19 @@ class PublicProfileTest extends ApiTestCase
                         'url' => 'https://soundcloud.com/artist/track',
                         'embed_id' => 'artist/track',
                         'title' => 'Les heures creuses',
+                    ],
+                ],
+                // As the member saved them; the page puts the current ones first.
+                'bands' => [
+                    ['@type' => 'MusicianProfileBand', 'name' => 'Les Anciens', 'current' => false],
+                    [
+                        '@type' => 'MusicianProfileBand',
+                        'name' => 'Ardent',
+                        'style_id' => $rock->id,
+                        'style_name' => 'Rock',
+                        'role' => 'Guitare',
+                        'current' => true,
+                        'url' => 'https://ardent.bandcamp.com',
                     ],
                 ],
             ],

@@ -28,7 +28,7 @@ readonly class PageVersionsResolver
         '#^/publications/tag/[^/]+$#',
         '#^/photos/[^/]+$#',
         '#^/rechercher-un-(musicien|professeur|guitariste|batteur|bassiste|chanteur|pianiste)$#',
-        '#^/u/[^/]+(/musician|/teacher)?$#',
+        '#^/u/[^/]+(/teacher)?$#',
     ];
     private const string PUBLICATION = '#^/(publications|cours)/([^/]+)$#';
     private const string FORUM_TOPIC = '#^/forums/topic/([^/]+)(/\d+)?$#';

@@ -17,6 +17,7 @@ use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Repository\Musician\MusicianAnnounceRepository;
+use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Service\Builder\Musician\MusicianProfileBuilder;
 use App\Service\Builder\Profile\ProfileWallMediaBuilder;
@@ -37,6 +38,7 @@ readonly class PublicProfileBuilder
         private MusicianProfileBuilder $musicianProfileBuilder,
         private TeacherProfileBuilder $teacherProfileBuilder,
         private ProfileWallMediaBuilder $mediaBuilder,
+        private MusicianBandResourceBuilder $bandBuilder,
     ) {
     }
 
@@ -100,6 +102,7 @@ readonly class PublicProfileBuilder
         $musician->instruments = $this->musicianInstrumentBuilder->buildList($instruments);
         $musician->styles = $this->musicianProfileBuilder->buildStyles($profile->styles->toArray());
         $musician->media = $this->mediaBuilder->buildList($profile->media);
+        $musician->bands = $this->bandBuilder->buildList($profile->bands);
 
         return $musician;
     }

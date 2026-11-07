@@ -1,6 +1,7 @@
 <template>
   <section
-    class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm"
+    ref="sectionRef"
+    class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm scroll-mt-20 lg:scroll-mt-6"
     aria-labelledby="profile-wall-title"
     :aria-busy="isLoading"
   >
@@ -36,6 +37,15 @@
       </button>
     </div>
 
+    <!-- « Médias » is a grid of the profile's media (#1317), which the page already holds: no wall page to fetch. -->
+    <ProfileMediaGrid
+      v-if="isMediaGrid"
+      :media="media"
+      :is-owner="isOwner"
+      :owner-username="username"
+      :manage-route="manageMediaRoute"
+    />
+    <template v-else>
     <!-- Some height while a filter loads, so the page does not jump under the sticky pills. -->
     <div v-if="isLoading" class="flex justify-center items-start p-6 min-h-48">
       <ProgressSpinner style="width: 2rem; height: 2rem" />
@@ -79,6 +89,7 @@
       </p>
       <Button :label="t('profile.wall.more')" text :loading="isLoadingMore" @click="loadMore" />
     </div>
+    </template>
   </section>
 </template>
 
@@ -97,8 +108,10 @@ import {
   WALL_FILTERS,
   wallAfterPinChange,
   wallFilterFromQuery,
-  wallItemKey
+  wallItemKey,
+  wallNeedsScrolling
 } from '../../../utils/profileWall.js'
+import ProfileMediaGrid from './ProfileMediaGrid.vue'
 import ProfilePostComposer from './ProfilePostComposer.vue'
 import ProfilePostItem from './ProfilePostItem.vue'
 import ProfileWallActivity from './ProfileWallActivity.vue'
@@ -107,7 +120,11 @@ const props = defineProps({
   username: { type: String, required: true },
   displayName: { type: String, required: true },
   pictureUrl: { type: String, default: null },
-  isOwner: { type: Boolean, default: false }
+  isOwner: { type: Boolean, default: false },
+  /** The profile's musician and teacher media, for the « Médias » grid. */
+  media: { type: Array, default: () => [] },
+  /** Where the owner manages them. */
+  manageMediaRoute: { type: Object, default: null }
 })
 
 const { t } = useI18n()
@@ -128,6 +145,8 @@ let loadToken = 0
 const hasItems = computed(() => pinnedPost.value !== null || items.value.length > 0)
 // The filter lives in `?voir=` (#1317), so a filter can be linked to.
 const filter = computed(() => wallFilterFromQuery(route.query.voir))
+const isMediaGrid = computed(() => filter.value.type === 'media')
+const sectionRef = ref(null)
 const emptyText = computed(() => {
   if (filter.value.emptyKey) return t(filter.value.emptyKey)
   return props.isOwner
@@ -148,6 +167,10 @@ async function load() {
   pinnedPost.value = null
   items.value = []
   nextCursor.value = null
+  if (isMediaGrid.value) {
+    isLoading.value = false
+    return
+  }
   try {
     const [pinned, page] = await Promise.all([
       // Without its pinned post, the wall still reads.
@@ -228,5 +251,14 @@ async function scrollToFocusedPost() {
 }
 
 watch([() => props.username, filter], load, { immediate: true })
+// A link elsewhere on the page (« Ce que je fais ») can change the filter: the wall comes into view when it is
+// still below the middle of the screen, as on a phone.
+watch(filter, async () => {
+  await nextTick()
+  const top = sectionRef.value?.getBoundingClientRect().top
+  if (top !== undefined && wallNeedsScrolling(top, window.innerHeight)) {
+    sectionRef.value.scrollIntoView({ block: 'start' })
+  }
+})
 watch([focusedPostId, isLoading], scrollToFocusedPost)
 </script>

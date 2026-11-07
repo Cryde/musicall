@@ -19,7 +19,6 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
-use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
 use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\Publication\PublicationCoverFactory;
@@ -55,7 +54,6 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/publications/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/photos/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/cours/dont-exists'));
-        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/dont-exists/musician'));
     }
 
     public function test_get_metadata_for_publication(): void
@@ -288,89 +286,6 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         ], $result);
     }
 
-    public function test_get_metadata_for_musician_profile_not_found(): void
-    {
-        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/unknown-user/musician'));
-    }
-
-    public function test_get_metadata_for_musician_profile_without_instruments(): void
-    {
-        $user = UserFactory::new(['username' => 'musicien_test'])->create();
-        MusicianProfileFactory::createOne(['user' => $user]);
-
-        $result = $this->botMetaDataGenerator->getMetaData('/u/musicien_test/musician');
-        $this->assertSame([
-            'title'       => 'Profil musicien de musicien_test - MusicAll',
-            'description' => 'Découvrez le profil musicien de musicien_test sur MusicAll.',
-            'cover'       => null,
-            'json_ld'     => [
-                '@context'      => 'https://schema.org',
-                '@type'         => 'Person',
-                'name'          => 'musicien_test',
-                'alternateName' => '@musicien_test',
-                'url'           => 'http://localhost/u/musicien_test',
-            ],
-        ], $result);
-    }
-
-    public function test_get_metadata_for_musician_profile_with_instruments(): void
-    {
-        $user = UserFactory::new(['username' => 'guitariste_batteur'])->create();
-        $musicianProfile = MusicianProfileFactory::createOne(['user' => $user]);
-
-        $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $drum = InstrumentFactory::new()->asDrum()->create();
-
-        MusicianProfileInstrumentFactory::createOne([
-            'musicianProfile' => $musicianProfile,
-            'instrument'      => $guitar,
-        ]);
-        MusicianProfileInstrumentFactory::createOne([
-            'musicianProfile' => $musicianProfile,
-            'instrument'      => $drum,
-        ]);
-
-        $result = $this->botMetaDataGenerator->getMetaData('/u/guitariste_batteur/musician');
-        $this->assertSame([
-            'title'       => 'Profil musicien de guitariste_batteur - MusicAll',
-            'description' => 'Découvrez le profil musicien de guitariste_batteur sur MusicAll. Instruments : Guitare, Batterie.',
-            'cover'       => null,
-            'json_ld'     => [
-                '@context'      => 'https://schema.org',
-                '@type'         => 'Person',
-                'name'          => 'guitariste_batteur',
-                'alternateName' => '@guitariste_batteur',
-                'url'           => 'http://localhost/u/guitariste_batteur',
-                'knowsAbout'    => ['Guitare', 'Batterie'],
-            ],
-        ], $result);
-    }
-
-    public function test_get_metadata_for_musician_profile_with_profile_picture(): void
-    {
-        $user = UserFactory::new(['username' => 'musicien_photo'])->create();
-        $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-musicien.jpg', 'imageSize' => 10]);
-        $user->profilePicture = $profilePicture;
-        \Zenstruck\Foundry\Persistence\save($user);
-
-        MusicianProfileFactory::createOne(['user' => $user]);
-
-        $result = $this->botMetaDataGenerator->getMetaData('/u/musicien_photo/musician');
-        $this->assertSame([
-            'title'       => 'Profil musicien de musicien_photo - MusicAll',
-            'description' => 'Découvrez le profil musicien de musicien_photo sur MusicAll.',
-            'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-musicien.jpg',
-            'json_ld'     => [
-                '@context'      => 'https://schema.org',
-                '@type'         => 'Person',
-                'name'          => 'musicien_photo',
-                'alternateName' => '@musicien_photo',
-                'url'           => 'http://localhost/u/musicien_photo',
-                'image'         => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-musicien.jpg',
-            ],
-        ], $result);
-    }
-
     public function test_get_metadata_for_forum_base(): void
     {
         $result = $this->botMetaDataGenerator->getMetaData('/forums');
@@ -476,20 +391,6 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         ], $result);
     }
 
-    public function test_get_metadata_for_a_private_musician_profile(): void
-    {
-        $user = UserFactory::new(['username' => 'musicien_prive'])->create();
-        $user->profile->isPublic = false;
-        \Zenstruck\Foundry\Persistence\save($user);
-        MusicianProfileFactory::createOne(['user' => $user]);
-
-        $this->assertSame([
-            'title'       => 'Profil privé - MusicAll',
-            'description' => 'Ce profil est privé.',
-            'robots'      => 'noindex, follow',
-        ], $this->botMetaDataGenerator->getMetaData('/u/musicien_prive/musician'));
-    }
-
     public function test_get_metadata_for_a_private_teacher_profile(): void
     {
         $user = UserFactory::new(['username' => 'prof_prive'])->create();
@@ -513,7 +414,6 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         TeacherProfileFactory::createOne(['user' => $user]);
 
         $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti'));
-        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/musician'));
         $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/teacher'));
     }
 

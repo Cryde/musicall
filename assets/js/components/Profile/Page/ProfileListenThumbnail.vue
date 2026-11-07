@@ -12,25 +12,19 @@
     :class="box"
     aria-hidden="true"
   >
-    <i :class="PLATFORM_ICONS[track.platform] ?? 'pi pi-play'" />
+    <i :class="mediaPlatformIcon(track.platform)" />
   </span>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { mediaPlatformIcon } from '../../../utils/mediaEmbed.js'
 
 /** A track's stored thumbnail only: a YouTube still would be a request to YouTube before any click (#1317). */
 const props = defineProps({
   track: { type: Object, required: true },
   large: { type: Boolean, default: false }
 })
-
-// PrimeIcons has no Spotify icon.
-const PLATFORM_ICONS = {
-  youtube: 'pi pi-youtube',
-  spotify: 'pi pi-headphones',
-  soundcloud: 'pi pi-cloud'
-}
 
 const box = computed(() => (props.large ? 'w-14 h-14' : 'w-10 h-10'))
 </script>

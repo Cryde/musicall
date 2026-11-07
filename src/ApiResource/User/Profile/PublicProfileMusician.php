@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ApiResource\User\Profile;
 
 use ApiPlatform\Metadata\ApiProperty;
+use App\ApiResource\Musician\MusicianProfileBand;
 use App\ApiResource\Musician\PublicMusicianProfileInstrument;
 use App\ApiResource\Musician\PublicMusicianProfileStyle;
 use App\ApiResource\Profile\ProfileWallMedia;
@@ -27,4 +28,8 @@ class PublicProfileMusician
     /** @var ProfileWallMedia[] in the order the member set, for « Écouter » */
     #[ApiProperty(genId: false)]
     public array $media = [];
+
+    /** @var MusicianProfileBand[] the bands they play or played in (#1313) */
+    #[ApiProperty(genId: false)]
+    public array $bands = [];
 }

@@ -237,3 +237,11 @@ export function treeWithoutComment(tree, id) {
   })
   return { tree: next, removedCount }
 }
+
+/**
+ * Whether a filter chosen from elsewhere on the page (« Ce que je fais ») should bring the wall into view: when its
+ * top is still below the middle of the screen, as on a phone where the wall comes after the header cards.
+ */
+export function wallNeedsScrolling(wallTop, viewportHeight) {
+  return wallTop > viewportHeight / 2
+}

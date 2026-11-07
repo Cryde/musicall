@@ -111,7 +111,7 @@ describe('reportContentLink', () => {
     )
     assert.deepEqual(
       reportContentLink(report('profile_media', { profile: 'musician', username: 'bob' })).to,
-      { name: 'app_user_musician_profile', params: { username: 'bob' } }
+      { name: 'app_user_public_profile', params: { username: 'bob' }, query: { voir: 'medias' } }
     )
   })
 

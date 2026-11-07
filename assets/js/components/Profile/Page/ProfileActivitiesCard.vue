@@ -10,7 +10,7 @@
     <ul class="flex flex-col gap-2 list-none m-0 p-0">
       <li v-if="musician">
         <router-link
-          :to="{ name: 'app_user_musician_profile', params: { username }, query: { from: 'profile' } }"
+          :to="{ name: 'app_user_public_profile', params: { username }, query: { voir: 'medias' } }"
           class="flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
         >
           <span class="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-sky-500/15 text-sky-600 dark:text-sky-400" aria-hidden="true">

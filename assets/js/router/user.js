@@ -7,11 +7,17 @@ export default [
     component: () => import('../views/User/Profile/PublicProfile.vue'),
     meta: { isAuthRequired: false }
   },
+  // Folded into the profile (#1317): its « Médias » view, in the same locale. The server answers old links with
+  // a 301; this covers a link already in the app.
   {
     name: 'app_user_musician_profile',
     path: '/u/:username/musician',
-    component: () => import('../views/User/Profile/MusicianProfile.vue'),
-    meta: { isAuthRequired: false }
+    redirect: (to) => ({
+      name: 'app_user_public_profile',
+      params: to.params,
+      query: { ...to.query, voir: 'medias' },
+      hash: to.hash
+    })
   },
   {
     name: 'app_user_teacher_profile',

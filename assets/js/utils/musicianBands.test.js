@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   bandRowOf,
+  bandsCurrentFirst,
   bandsForm,
   bandsPayload,
   currentBandsSummary,
@@ -110,5 +111,24 @@ describe('bandRowOf', () => {
     assert.equal(bandRowOf('bands'), null)
     assert.equal(bandRowOf('instruments[0].instrument_id'), null)
     assert.equal(bandRowOf(undefined), null)
+  })
+})
+
+describe('bandsCurrentFirst', () => {
+  it('lists the current bands first, keeping the member order within each group', () => {
+    const bands = [
+      { name: 'Les Anciens', current: false },
+      { name: 'Ardent', current: true },
+      { name: 'Before', current: false },
+      { name: 'Lueur', current: true }
+    ]
+    assert.deepEqual(
+      bandsCurrentFirst(bands).map((band) => band.name),
+      ['Ardent', 'Lueur', 'Les Anciens', 'Before']
+    )
+  })
+
+  it('has nothing to list without bands', () => {
+    assert.deepEqual(bandsCurrentFirst(undefined), [])
   })
 })

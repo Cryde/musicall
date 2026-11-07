@@ -208,7 +208,7 @@ const isOwnAnnounce = computed(() => userSecurityStore.userProfile?.id === props
 
 const profileRoute = computed(() => {
   const route = {
-    name: props.user.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
+    name: 'app_user_public_profile',
     params: { username: props.user.username }
   }
   // Add from query param for contextual back navigation

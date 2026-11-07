@@ -37,6 +37,7 @@
           <ProfileIdentityCard v-bind="identityProps" v-on="identityEvents" />
           <ProfileActivitiesCard v-bind="activitiesProps" v-on="activitiesEvents" />
           <ProfileInstrumentsCard :instruments="profile.musician?.instruments ?? []" />
+          <ProfileBandsCard :bands="profile.musician?.bands ?? []" />
           <ProfileStylesCard :styles="profile.musician?.styles ?? []" />
           <ProfileLinksCard v-bind="linksProps" @edit="showEditSocialLinksModal = true" />
           <template v-if="!isWide">
@@ -60,6 +61,7 @@
         <ProfileWall v-bind="wallProps" />
         <ProfileListenCard v-bind="listenProps" />
         <ProfileInstrumentsCard :instruments="profile.musician?.instruments ?? []" />
+        <ProfileBandsCard :bands="profile.musician?.bands ?? []" />
         <ProfileStylesCard :styles="profile.musician?.styles ?? []" />
         <ProfileLinksCard v-bind="linksProps" @edit="showEditSocialLinksModal = true" />
         <ProfileAnnouncesCard v-bind="announcesProps" @contact="handleContactAbout" />
@@ -173,6 +175,7 @@ import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ProfileActivitiesCard from '../../../components/Profile/Page/ProfileActivitiesCard.vue'
 import ProfileAnnouncesCard from '../../../components/Profile/Page/ProfileAnnouncesCard.vue'
+import ProfileBandsCard from '../../../components/Profile/Page/ProfileBandsCard.vue'
 import ProfileCoursesCard from '../../../components/Profile/Page/ProfileCoursesCard.vue'
 import ProfileIdentityCard from '../../../components/Profile/Page/ProfileIdentityCard.vue'
 import ProfileInstrumentsCard from '../../../components/Profile/Page/ProfileInstrumentsCard.vue'
@@ -191,6 +194,7 @@ import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
+import { listenPlaylist } from '../../../utils/profileListen.js'
 import CoverPictureModal from '../Settings/CoverPictureModal.vue'
 import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 
@@ -294,7 +298,15 @@ const wallProps = computed(() => ({
   username: profile.value.username,
   displayName: profile.value.display_name || profile.value.username,
   pictureUrl: profile.value.profile_picture_url,
-  isOwner: isOwnProfile.value
+  isOwner: isOwnProfile.value,
+  media: listenPlaylist(profile.value),
+  // The media are managed in the settings until part 4 of #1317 edits them in place.
+  manageMediaRoute: {
+    name:
+      profile.value.musician || !profile.value.teacher
+        ? 'app_user_settings_profile_musician'
+        : 'app_user_settings_profile_teacher'
+  }
 }))
 
 const pageTitle = computed(() => {

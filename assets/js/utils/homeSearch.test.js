@@ -99,17 +99,17 @@ describe('announce author', () => {
     deletion_datetime: null
   }
 
-  it('leads to the musician profile, with the way back to the home', () => {
-    assert.deepEqual(announceAuthorRoute({ author }), {
-      name: 'app_user_musician_profile',
-      params: { username: 'aoife' },
-      query: { from: 'home' }
-    })
-  })
-
-  it('leads to the public profile of an author without a musician profile', () => {
-    const route = announceAuthorRoute({ author: { ...author, has_musician_profile: false } })
-    assert.equal(route.name, 'app_user_public_profile')
+  it('leads to the profile, with the way back to the home, musician profile or not', () => {
+    for (const hasMusicianProfile of [true, false]) {
+      assert.deepEqual(
+        announceAuthorRoute({ author: { ...author, has_musician_profile: hasMusicianProfile } }),
+        {
+          name: 'app_user_public_profile',
+          params: { username: 'aoife' },
+          query: { from: 'home' }
+        }
+      )
+    }
   })
 
   it('can be contacted by a visitor or another member, never by the author', () => {
