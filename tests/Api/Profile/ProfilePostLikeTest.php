@@ -152,7 +152,7 @@ class ProfilePostLikeTest extends ApiTestCase
         UserBlockFactory::new()->create(['blocker' => $blocked, 'blocked' => $viewer]);
         ProfilePostLikeFactory::new()->create([
             'post' => $post,
-            'user' => $this->member('lea'),
+            'user' => $this->member('lea.dupont'),
             'creationDatetime' => new \DateTimeImmutable('2026-11-02T10:00:00+00:00'),
         ]);
         ProfilePostLikeFactory::new()->create([
@@ -170,15 +170,16 @@ class ProfilePostLikeTest extends ApiTestCase
         $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/likes');
 
         $this->assertResponseIsSuccessful();
-        // A private profile keeps its display name to itself: its username stands in.
+        // A private profile keeps its display name to itself: its username stands in. A dot in a username
+        // still makes an address.
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ProfilePostLikes',
+            '@context' => '/api/contexts/ProfilePostLiker',
             '@id' => '/api/user/profile-posts/' . $post->id . '/likes',
-            '@type' => 'ProfilePostLikes',
-            'post_id' => $post->id,
-            'likers' => [
-                ['@type' => 'ProfilePostAuthor', 'username' => 'paul', 'display_name' => 'paul'],
-                ['@type' => 'ProfilePostAuthor', 'username' => 'lea', 'display_name' => 'lea'],
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                ['@id' => '/api/profile_post_likers/paul', '@type' => 'ProfilePostLiker', 'username' => 'paul', 'display_name' => 'paul'],
+                ['@id' => '/api/profile_post_likers/lea.dupont', '@type' => 'ProfilePostLiker', 'username' => 'lea.dupont', 'display_name' => 'lea.dupont'],
             ],
         ]);
     }

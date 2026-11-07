@@ -97,6 +97,6 @@ export default {
       .get(Routing.generate('api_profile_post_likes_list', { postId }), {
         headers: { Accept: 'application/ld+json' }
       })
-      .then((resp) => resp.data.likers)
+      .then((resp) => resp.data.member)
   }
 }
