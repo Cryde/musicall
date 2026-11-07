@@ -42,7 +42,8 @@
         />
       </div>
 
-      <main class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
+      <!-- Scrolls on its own when long song notes overflow a landscape phone, so the footer stays on screen. -->
+      <main class="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center-safe px-6 py-8 text-center">
         <div class="text-xs uppercase tracking-widest text-surface-400 mb-3">
           {{ setlistName }}
         </div>
@@ -56,6 +57,9 @@
         <div v-if="currentMeta.length > 0" class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-2xl text-surface-300">
           <span v-for="meta in currentMeta" :key="meta.key">{{ meta.label }}</span>
         </div>
+
+        <!-- A full sentence over several lines at times, so its own block rather than one more meta. -->
+        <p v-if="currentSongNotes" class="mt-4 text-xl text-surface-200 max-w-3xl whitespace-pre-line break-words">{{ currentSongNotes }}</p>
 
         <div v-if="current?.transition" class="mt-4 text-lg text-rose-300">
           <i class="pi pi-arrow-right text-base" aria-hidden="true" /> {{ current.transition }}
@@ -215,6 +219,12 @@ const currentMeta = computed(() => {
     meta.push({ key: 'duration', label: duration })
   }
   return meta
+})
+
+const currentSongNotes = computed(() => {
+  const item = current.value
+  if (item?.type !== 'song') return ''
+  return item.song?.notes?.trim() ?? ''
 })
 
 function goPrev() {

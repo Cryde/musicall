@@ -935,7 +935,8 @@ function handleSongUpdated(song) {
     title: song.title,
     tonality: song.tonality,
     tempo: song.tempo,
-    reference_duration: song.reference_duration
+    reference_duration: song.reference_duration,
+    notes: song.notes
   })
 }
 const setlistMenu = ref(null)
