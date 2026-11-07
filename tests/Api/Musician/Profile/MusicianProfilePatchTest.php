@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Musician\Profile;
 
+use App\Entity\Attribute\Instrument;
+use App\Entity\Attribute\Style;
+use App\Entity\Musician\MusicianProfile;
+use App\Entity\User;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Enum\Musician\SkillLevel;
 use App\Tests\ApiTestAssertionsTrait;
@@ -407,5 +411,180 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
             'bands' => [],
         ]);
+    }
+
+    // The profile's pencils (#1317) each send one block: whatever it leaves out keeps its value.
+
+    public function test_sending_only_the_availability_keeps_the_other_blocks(): void
+    {
+        [$user, $profile, $guitar, $rock] = $this->musicianWithEveryBlock();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
+            'availability_status' => 'not_available',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianProfileEdit',
+            '@id' => '/api/user/musician-profile',
+            '@type' => 'MusicianProfileEdit',
+            'id' => $profile->id,
+            'availability_status' => 'not_available',
+            'availability_status_label' => 'Non disponible',
+            'instruments' => [
+                [
+                    '@type' => 'MusicianProfileEditInstrument',
+                    'instrument_id' => $guitar->id,
+                    'instrument_name' => 'Guitariste',
+                    'skill_level' => 'advanced',
+                    'skill_level_label' => 'Avancé',
+                ],
+            ],
+            'styles' => [
+                ['@type' => 'MusicianProfileEditStyle', 'id' => $rock->id, 'name' => 'Rock'],
+            ],
+            'bands' => [
+                ['@type' => 'MusicianProfileBand', 'name' => 'Ardent', 'current' => true],
+            ],
+        ]);
+    }
+
+    public function test_sending_only_the_instruments_keeps_the_other_blocks(): void
+    {
+        [$user, $profile, , $rock] = $this->musicianWithEveryBlock();
+        $drum = InstrumentFactory::new()->asDrum()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
+            'instruments' => [
+                ['instrument_id' => $drum->id, 'skill_level' => 'intermediate'],
+            ],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianProfileEdit',
+            '@id' => '/api/user/musician-profile',
+            '@type' => 'MusicianProfileEdit',
+            'id' => $profile->id,
+            'availability_status' => 'looking_for_band',
+            'availability_status_label' => 'Cherche un groupe',
+            'instruments' => [
+                [
+                    '@type' => 'MusicianProfileEditInstrument',
+                    'instrument_id' => $drum->id,
+                    'instrument_name' => 'Batteur',
+                    'skill_level' => 'intermediate',
+                    'skill_level_label' => 'Intermédiaire',
+                ],
+            ],
+            'styles' => [
+                ['@type' => 'MusicianProfileEditStyle', 'id' => $rock->id, 'name' => 'Rock'],
+            ],
+            'bands' => [
+                ['@type' => 'MusicianProfileBand', 'name' => 'Ardent', 'current' => true],
+            ],
+        ]);
+    }
+
+    public function test_sending_only_the_styles_keeps_the_other_blocks(): void
+    {
+        [$user, $profile, $guitar] = $this->musicianWithEveryBlock();
+        $jazz = StyleFactory::new()->asJazz()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
+            'style_ids' => [$jazz->id],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianProfileEdit',
+            '@id' => '/api/user/musician-profile',
+            '@type' => 'MusicianProfileEdit',
+            'id' => $profile->id,
+            'availability_status' => 'looking_for_band',
+            'availability_status_label' => 'Cherche un groupe',
+            'instruments' => [
+                [
+                    '@type' => 'MusicianProfileEditInstrument',
+                    'instrument_id' => $guitar->id,
+                    'instrument_name' => 'Guitariste',
+                    'skill_level' => 'advanced',
+                    'skill_level_label' => 'Avancé',
+                ],
+            ],
+            'styles' => [
+                ['@type' => 'MusicianProfileEditStyle', 'id' => $jazz->id, 'name' => 'Jazz'],
+            ],
+            'bands' => [
+                ['@type' => 'MusicianProfileBand', 'name' => 'Ardent', 'current' => true],
+            ],
+        ]);
+    }
+
+    public function test_sending_only_the_bands_keeps_the_other_blocks(): void
+    {
+        [$user, $profile, $guitar, $rock] = $this->musicianWithEveryBlock();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
+            'bands' => [
+                ['name' => 'Lueur', 'current' => false],
+            ],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianProfileEdit',
+            '@id' => '/api/user/musician-profile',
+            '@type' => 'MusicianProfileEdit',
+            'id' => $profile->id,
+            'availability_status' => 'looking_for_band',
+            'availability_status_label' => 'Cherche un groupe',
+            'instruments' => [
+                [
+                    '@type' => 'MusicianProfileEditInstrument',
+                    'instrument_id' => $guitar->id,
+                    'instrument_name' => 'Guitariste',
+                    'skill_level' => 'advanced',
+                    'skill_level_label' => 'Avancé',
+                ],
+            ],
+            'styles' => [
+                ['@type' => 'MusicianProfileEditStyle', 'id' => $rock->id, 'name' => 'Rock'],
+            ],
+            'bands' => [
+                ['@type' => 'MusicianProfileBand', 'name' => 'Lueur', 'current' => false],
+            ],
+        ]);
+    }
+
+    /**
+     * @return array{0: User, 1: MusicianProfile, 2: Instrument, 3: Style}
+     */
+    private function musicianWithEveryBlock(): array
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'blockuser', 'email' => 'blockuser@test.com']);
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $rock = StyleFactory::new()->asRock()->create();
+
+        $profile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'availabilityStatus' => AvailabilityStatus::LOOKING_FOR_BAND,
+            'styles' => [$rock],
+            'bands' => [['name' => 'Ardent', 'style_id' => null, 'role' => null, 'current' => true, 'url' => null]],
+        ]);
+        MusicianProfileInstrumentFactory::new()->create([
+            'musicianProfile' => $profile,
+            'instrument' => $guitar,
+            'skillLevel' => SkillLevel::ADVANCED,
+        ]);
+        \Zenstruck\Foundry\Persistence\refresh($profile);
+        $user->musicianProfile = $profile;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        return [$user, $profile, $guitar, $rock];
     }
 }

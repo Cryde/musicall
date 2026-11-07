@@ -245,3 +245,8 @@ export function treeWithoutComment(tree, id) {
 export function wallNeedsScrolling(wallTop, viewportHeight) {
   return wallTop > viewportHeight / 2
 }
+
+/** Whether the owner's « Écouter » pencil must scroll to the wall: its top is above the screen, or below its middle. */
+export function wallOutOfView(wallTop, viewportHeight) {
+  return wallTop < 0 || wallNeedsScrolling(wallTop, viewportHeight)
+}

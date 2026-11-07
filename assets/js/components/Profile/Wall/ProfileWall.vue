@@ -43,7 +43,8 @@
       :media="media"
       :is-owner="isOwner"
       :owner-username="username"
-      :manage-route="manageMediaRoute"
+      :add-targets="mediaAddTargets"
+      @changed="emit('media-changed')"
     />
     <template v-else>
     <!-- Some height while a filter loads, so the page does not jump under the sticky pills. -->
@@ -110,7 +111,8 @@ import {
   wallAfterPinChange,
   wallFilterFromQuery,
   wallItemKey,
-  wallNeedsScrolling
+  wallNeedsScrolling,
+  wallOutOfView
 } from '../../../utils/profileWall.js'
 import ProfileMediaGrid from './ProfileMediaGrid.vue'
 import ProfilePostComposer from './ProfilePostComposer.vue'
@@ -124,11 +126,13 @@ const props = defineProps({
   isOwner: { type: Boolean, default: false },
   /** The profile's musician and teacher media, for the « Médias » grid. */
   media: { type: Array, default: () => [] },
-  /** Where the owner manages them. */
-  manageMediaRoute: { type: Object, default: null },
+  /** The owner's profiles a new media can go to. */
+  mediaAddTargets: { type: Array, default: () => [] },
   /** A visitor on a member with a musician profile: opening « Médias » counts as a musician page visit. */
   countsMusicianView: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['media-changed'])
 
 const { t } = useI18n()
 const route = useRoute()
@@ -255,14 +259,18 @@ async function scrollToFocusedPost() {
 }
 
 watch([() => props.username, filter], load, { immediate: true })
-// A link elsewhere on the page (« Ce que je fais ») can change the filter: the wall comes into view when it is
-// still below the middle of the screen, as on a phone.
-watch(filter, async () => {
+async function scrollIntoViewWhen(needsScrolling) {
   await nextTick()
   const top = sectionRef.value?.getBoundingClientRect().top
-  if (top !== undefined && wallNeedsScrolling(top, window.innerHeight)) {
+  if (top !== undefined && needsScrolling(top, window.innerHeight)) {
     sectionRef.value.scrollIntoView({ block: 'start' })
   }
-})
+}
+// A link elsewhere on the page (« Ce que je fais ») can change the filter: the wall comes into view when it is
+// still below the middle of the screen, as on a phone.
+watch(filter, () => scrollIntoViewWhen(wallNeedsScrolling))
 watch([focusedPostId, isLoading], scrollToFocusedPost)
+
+// The owner's « Écouter » pencil, which can sit below the wall.
+defineExpose({ show: () => scrollIntoViewWhen(wallOutOfView) })
 </script>

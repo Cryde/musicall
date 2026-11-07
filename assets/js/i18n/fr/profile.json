@@ -636,7 +636,16 @@
       "band_violation": "Groupe {number} : {message}",
       "cancel": "Annuler",
       "save": "Enregistrer",
-      "error": "Une erreur est survenue"
+      "error": "Une erreur est survenue",
+      "block_title": {
+        "availability": "Ta disponibilité",
+        "instruments": "Tes instruments et ton niveau",
+        "styles": "Tes styles",
+        "bands": "Tes groupes"
+      },
+      "instrument_aria": "Instrument {number}",
+      "level_aria": "Niveau à l'instrument {number}",
+      "remove_instrument": "Retirer l'instrument {number}"
     }
   },
   "edit": {
@@ -698,7 +707,13 @@
     "error": "Une erreur est survenue",
     "delete_confirm_message": "Es-tu sûr de vouloir supprimer cette création ?",
     "delete_confirm_header": "Confirmation",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "target_label": "Sur ton profil",
+    "target": {
+      "musician": "Musicien",
+      "teacher": "Professeur"
+    },
+    "delete_named": "Supprimer {title}"
   },
   "common": {
     "back": "Retour",
@@ -960,7 +975,27 @@
       "announces": "Aucune annonce pour l'instant.",
       "courses": "Aucun cours pour l'instant.",
       "visitor": "{name} n'a encore rien publié."
+    }
+  },
+  "owner": {
+    "banner": "C'est ton profil, tel que les autres le voient. Clique sur un crayon pour modifier un bloc.",
+    "view_as_visitor": "Voir comme un visiteur",
+    "previewing": "Tu vois ton profil comme un visiteur",
+    "back_to_owner": "Revenir à mon profil",
+    "edit": {
+      "availability": "Modifier ta disponibilité",
+      "teacher": "Modifier ta page de cours",
+      "instruments": "Modifier tes instruments",
+      "styles": "Modifier tes styles",
+      "bands": "Modifier tes groupes",
+      "media": "Gérer tes médias"
     },
-    "media_manage": "Gérer mes médias"
+    "hint": {
+      "instruments": "Ajoute tes instruments et ton niveau.",
+      "styles": "Ajoute les styles que tu joues.",
+      "bands": "Ajoute les groupes où tu joues ou as joué.",
+      "media": "Ajoute tes vidéos et tes sons : YouTube, SoundCloud, Spotify.",
+      "media_no_profile": "Crée ton profil musicien ou professeur dans « Ce que je fais » pour ajouter tes vidéos et tes sons."
+    }
   }
 }

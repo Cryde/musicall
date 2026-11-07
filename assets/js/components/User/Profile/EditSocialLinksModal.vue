@@ -19,7 +19,7 @@
           :key="link.id"
           class="flex items-center gap-3 p-3 rounded-lg bg-surface-50 dark:bg-surface-800"
         >
-          <i :class="['pi', getPlatformIcon(link.platform), 'text-lg text-surface-600 dark:text-surface-400']" />
+          <i :class="['pi', socialPlatformIcon(link.platform), 'text-lg text-surface-600 dark:text-surface-400']" />
           <div class="flex-1 min-w-0">
             <span class="font-medium text-surface-900 dark:text-surface-0">
               {{ link.platform_label }}
@@ -108,6 +108,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserProfileStore } from '../../../store/user/profile.js'
+import { socialPlatformIcon } from '../../../utils/socialLinks.js'
 
 const props = defineProps({
   visible: {
@@ -153,18 +154,6 @@ const platformOptions = [
   { value: 'website', labelKey: 'profile.platform.website' }
 ]
 
-const platformIcons = {
-  youtube: 'pi-youtube',
-  soundcloud: 'pi-cloud',
-  instagram: 'pi-instagram',
-  facebook: 'pi-facebook',
-  twitter: 'pi-twitter',
-  tiktok: 'pi-video',
-  spotify: 'pi-spotify',
-  bandcamp: 'pi-headphones',
-  website: 'pi-globe'
-}
-
 // Filter out platforms that are already used
 const availablePlatforms = computed(() => {
   const usedPlatforms = socialLinks.value.map((link) => link.platform)
@@ -176,10 +165,6 @@ const availablePlatforms = computed(() => {
 const canAddLink = computed(() => {
   return newLinkPlatform.value && newLinkUrl.value?.trim()
 })
-
-function getPlatformIcon(platform) {
-  return platformIcons[platform] || 'pi-link'
-}
 
 watch(
   () => props.visible,
