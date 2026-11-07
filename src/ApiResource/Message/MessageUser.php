@@ -47,4 +47,12 @@ class MessageUser
     /** Sent from the recipient's teacher profile (#998). A user has at most one, so no id is needed. */
     #[Groups([MessageUser::POST])]
     public bool $fromTeacherProfile = false;
+
+    /** A lesson request from the teacher profile (#1322): the instrument it is about, one the recipient teaches. */
+    #[Groups([MessageUser::POST])]
+    public ?string $teacherInstrumentId = null;
+
+    /** A lesson request from the teacher profile (#1322): `trial` or `first`, as LessonRequest. */
+    #[Groups([MessageUser::POST])]
+    public ?string $lessonRequest = null;
 }

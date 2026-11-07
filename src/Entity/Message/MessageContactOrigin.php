@@ -5,6 +5,7 @@ namespace App\Entity\Message;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Teacher\TeacherProfile;
 use App\Enum\Message\ContactOriginType;
+use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -57,4 +58,8 @@ class MessageContactOrigin
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     public ?string $locationName = null;
+
+    /** A lesson request from a teacher profile (#1322); null for a plain question and for an announce. */
+    #[ORM\Column(type: Types::STRING, length: 10, nullable: true, enumType: LessonRequest::class)]
+    public ?LessonRequest $lessonRequest = null;
 }

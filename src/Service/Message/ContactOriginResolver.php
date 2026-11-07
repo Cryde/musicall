@@ -2,6 +2,7 @@
 
 namespace App\Service\Message;
 
+use App\Entity\Attribute\Instrument;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
@@ -30,5 +31,17 @@ readonly class ContactOriginResolver
     public function teacherProfileOf(User $recipient): ?TeacherProfile
     {
         return $this->teacherProfileRepository->findOneBy(['user' => $recipient]);
+    }
+
+    /** The instrument a lesson request is about (#1322), only one the teacher teaches. */
+    public function taughtInstrumentOf(TeacherProfile $profile, string $instrumentId): ?Instrument
+    {
+        foreach ($profile->instruments as $taught) {
+            if ((string) $taught->instrument->id === $instrumentId) {
+                return $taught->instrument;
+            }
+        }
+
+        return null;
     }
 }

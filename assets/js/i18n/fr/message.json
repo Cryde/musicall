@@ -50,7 +50,11 @@
     "private_lessons": "Cours particuliers",
     "announce": "Annonce",
     "announce_looking_for_musician": "Annonce : recherche un {instrument}",
-    "announce_looking_for_band": "Annonce : {instrument} cherche un groupe"
+    "announce_looking_for_band": "Annonce : {instrument} cherche un groupe",
+    "trial_request": "Demande de cours d'essai",
+    "trial_request_instrument": "Demande de cours d'essai : {instrument}",
+    "first_lesson_request": "Demande de premier cours",
+    "first_lesson_request_instrument": "Demande de premier cours : {instrument}"
   },
   "music_link": {
     "title": {

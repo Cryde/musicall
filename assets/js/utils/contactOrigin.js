@@ -11,11 +11,33 @@ import { i18n } from '../i18n/index.js'
 
 const ANNOUNCE_LOOKING_FOR_MUSICIAN = 1
 
-/** « Annonce : recherche un batteur », « Annonce : Bassiste cherche un groupe », « Cours : Piano ». */
+// « Demander un cours d'essai » (#1322): what is asked, without and with the instruments.
+const LESSON_REQUEST_KEYS = {
+  trial: [
+    'message.contact_origin.trial_request',
+    'message.contact_origin.trial_request_instrument'
+  ],
+  first: [
+    'message.contact_origin.first_lesson_request',
+    'message.contact_origin.first_lesson_request_instrument'
+  ]
+}
+
+/**
+ * « Annonce : recherche un batteur », « Annonce : Bassiste cherche un groupe », « Cours : Piano »,
+ * « Demande de cours d'essai : basse ».
+ */
 export function contactOriginLabel(origin) {
   if (!origin) return null
 
   const instruments = origin.instruments ?? []
+  const lessonRequestKeys = LESSON_REQUEST_KEYS[origin.lesson_request]
+  if (origin.type === 'teacher_profile' && lessonRequestKeys) {
+    const [withoutInstrument, withInstrument] = lessonRequestKeys
+    return instruments.length > 0
+      ? i18n.global.t(withInstrument, { instrument: instruments.join(', ').toLowerCase() })
+      : i18n.global.t(withoutInstrument)
+  }
   if (origin.type === 'teacher_profile') {
     return instruments.length > 0
       ? i18n.global.t('message.contact_origin.course', { instruments: instruments.join(', ') })

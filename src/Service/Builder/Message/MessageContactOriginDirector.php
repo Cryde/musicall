@@ -6,14 +6,13 @@ use App\Entity\Attribute\Style;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileInstrument;
 use App\Enum\Message\ContactOriginType;
+use App\Service\Message\TeacherProfileContact;
 
 /** Instruments and styles are kept by slug (#1212), so each reader names them in their own language. */
 class MessageContactOriginDirector
 {
-    public function create(Message $message, MusicianAnnounce|TeacherProfile $source): MessageContactOrigin
+    public function create(Message $message, MusicianAnnounce|TeacherProfileContact $source): MessageContactOrigin
     {
         $origin = new MessageContactOrigin();
         $origin->message = $message;
@@ -30,12 +29,10 @@ class MessageContactOriginDirector
         }
 
         $origin->type = ContactOriginType::TeacherProfile;
-        $origin->teacherProfile = $source;
-        $origin->instruments = array_values(array_map(
-            static fn (TeacherProfileInstrument $taught): string => $taught->instrument->slug,
-            $source->instruments->toArray(),
-        ));
-        $origin->styles = self::styleSlugs($source->styles->toArray());
+        $origin->teacherProfile = $source->profile;
+        $origin->instruments = $source->instrumentSlugs();
+        $origin->styles = self::styleSlugs($source->profile->styles->toArray());
+        $origin->lessonRequest = $source->lessonRequest;
 
         return $origin;
     }

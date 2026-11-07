@@ -50,7 +50,11 @@
     "private_lessons": "Private lessons",
     "announce": "Ad",
     "announce_looking_for_musician": "Ad: {instrument} wanted",
-    "announce_looking_for_band": "Ad: {instrument} looking for a band"
+    "announce_looking_for_band": "Ad: {instrument} looking for a band",
+    "trial_request": "Trial lesson request",
+    "trial_request_instrument": "Trial lesson request: {instrument}",
+    "first_lesson_request": "First lesson request",
+    "first_lesson_request_instrument": "First lesson request: {instrument}"
   },
   "music_link": {
     "title": {

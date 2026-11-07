@@ -6,6 +6,7 @@ import {
   DRAFT_LIFETIME_MS,
   hasRequestDraft,
   partOfDay,
+  requestContactOrigin,
   requestQuestions,
   saveRequestDraft,
   takeRequestDraft
@@ -227,5 +228,36 @@ describe('request draft', () => {
     clearRequestDrafts(storage)
     assert.deepEqual([...storage.items.keys()], ['something-else'])
     clearRequestDrafts(null)
+  })
+})
+
+describe('requestContactOrigin', () => {
+  it('names the instrument chosen and asks for a trial when one is offered', () => {
+    assert.deepEqual(
+      requestContactOrigin({ ...FULL_PROFILE, offers_trial: true }, { instrument: 'b' }),
+      {
+        fromTeacherProfile: true,
+        teacherInstrumentId: 'b',
+        lessonRequest: 'trial'
+      }
+    )
+  })
+
+  it('names the only instrument taught without asking for it', () => {
+    const profile = {
+      instruments: [{ instrument_id: 'p', instrument_name: 'Piano' }],
+      offers_trial: false
+    }
+    assert.deepEqual(requestContactOrigin(profile, {}), {
+      fromTeacherProfile: true,
+      teacherInstrumentId: 'p',
+      lessonRequest: 'first'
+    })
+  })
+
+  it('names no instrument when none was chosen among several, or none is taught', () => {
+    const expected = { fromTeacherProfile: true, lessonRequest: 'first' }
+    assert.deepEqual(requestContactOrigin(FULL_PROFILE, {}), expected)
+    assert.deepEqual(requestContactOrigin({ instruments: [] }, {}), expected)
   })
 })

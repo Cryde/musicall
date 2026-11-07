@@ -10,7 +10,9 @@ use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
+use App\Entity\Teacher\TeacherProfile;
 use App\Enum\Message\ContactOriginType;
+use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -86,6 +88,7 @@ class MessageContactOriginTest extends ApiTestCase
                 'instruments' => ['Batteur'],
                 'styles' => ['Rock', 'Blues'],
                 'location_name' => 'Lyon',
+                'lesson_request' => null,
             ],
         ]);
         // Kept by slug (#1212), named only when read.
@@ -141,8 +144,517 @@ class MessageContactOriginTest extends ApiTestCase
                 'instruments' => ['Piano'],
                 'styles' => [],
                 'location_name' => null,
+                'lesson_request' => null,
             ],
         ]);
+    }
+
+    /** « Demander un cours d'essai » names the one instrument asked for, and says it is a request (#1322). */
+    public function test_a_trial_request_names_the_instrument_chosen(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $profile = $this->teacher($recipient, [InstrumentFactory::new()->asBass(), InstrumentFactory::new(['name' => 'Didjeridoo', 'slug' => 'didjeridoo'])]);
+        $bass = $profile->instruments->first()->instrument;
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour, un essai de basse ?',
+            'fromTeacherProfile' => true,
+            'teacherInstrumentId' => $bass->id,
+            'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = $this->onlyMessage();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $message->id,
+            '@type' => 'Message',
+            'id' => $message->id,
+            'creation_datetime' => $message->creationDatetime->format('c'),
+            'author' => [
+                '@id' => '/api/users/' . $sender->id,
+                '@type' => 'User',
+                'id' => $sender->id,
+                'username' => 'sender',
+                'display_name' => 'sender',
+            ],
+            'thread' => [
+                '@id' => '/api/message_threads/' . $message->thread->id,
+                '@type' => 'MessageThread',
+                'id' => $message->thread->id,
+            ],
+            'content' => 'Bonjour, un essai de basse ?',
+            'content_preview' => 'Bonjour, un essai de basse ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Bonjour, un essai de basse ?',
+            'contact_origin' => [
+                'type' => 'teacher_profile',
+                'musician_announce_id' => null,
+                'teacher_profile_id' => (string) $profile->id,
+                'announce_type' => null,
+                'instruments' => ['Basse'],
+                'styles' => [],
+                'location_name' => null,
+                'lesson_request' => 'trial',
+            ],
+        ]);
+    }
+
+    public function test_a_first_lesson_request_to_a_teacher_without_instrument(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $profile = $this->teacher($recipient, []);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour, un premier cours ?',
+            'fromTeacherProfile' => true,
+            'lessonRequest' => 'first',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = $this->onlyMessage();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $message->id,
+            '@type' => 'Message',
+            'id' => $message->id,
+            'creation_datetime' => $message->creationDatetime->format('c'),
+            'author' => [
+                '@id' => '/api/users/' . $sender->id,
+                '@type' => 'User',
+                'id' => $sender->id,
+                'username' => 'sender',
+                'display_name' => 'sender',
+            ],
+            'thread' => [
+                '@id' => '/api/message_threads/' . $message->thread->id,
+                '@type' => 'MessageThread',
+                'id' => $message->thread->id,
+            ],
+            'content' => 'Bonjour, un premier cours ?',
+            'content_preview' => 'Bonjour, un premier cours ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Bonjour, un premier cours ?',
+            'contact_origin' => [
+                'type' => 'teacher_profile',
+                'musician_announce_id' => null,
+                'teacher_profile_id' => (string) $profile->id,
+                'announce_type' => null,
+                'instruments' => [],
+                'styles' => [],
+                'location_name' => null,
+                'lesson_request' => 'first',
+            ],
+        ]);
+    }
+
+    /** A question first, then a request: the request is a new reason to talk, so it gets its own card. */
+    public function test_a_lesson_request_after_a_question_records_it(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $profile = $this->teacher($recipient, [InstrumentFactory::new()->asBass(), InstrumentFactory::new()->asPiano()]);
+        $thread = $this->thread($sender, $recipient);
+        $this->teacherOrigin($thread, $sender, $profile, null, ['basse', 'piano']);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Alors, un essai ?',
+            'fromTeacherProfile' => true,
+            'teacherInstrumentId' => $profile->instruments->first()->instrument->id,
+            'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $sent = $this->latestMessage();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $sent->id,
+            '@type' => 'Message',
+            'id' => $sent->id,
+            'creation_datetime' => $sent->creationDatetime->format('c'),
+            'author' => [
+                '@id' => '/api/users/' . $sender->id,
+                '@type' => 'User',
+                'id' => $sender->id,
+                'username' => 'sender',
+                'display_name' => 'sender',
+            ],
+            'thread' => [
+                '@id' => '/api/message_threads/' . $thread->id,
+                '@type' => 'MessageThread',
+                'id' => $thread->id,
+            ],
+            'content' => 'Alors, un essai ?',
+            'content_preview' => 'Alors, un essai ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Alors, un essai ?',
+            'contact_origin' => [
+                'type' => 'teacher_profile',
+                'musician_announce_id' => null,
+                'teacher_profile_id' => (string) $profile->id,
+                'announce_type' => null,
+                'instruments' => ['Basse'],
+                'styles' => [],
+                'location_name' => null,
+                'lesson_request' => 'trial',
+            ],
+        ]);
+        $this->assertSame(2, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
+    }
+
+    public function test_the_same_lesson_request_twice_records_one_card(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $profile = $this->teacher($recipient, [InstrumentFactory::new()->asBass(), InstrumentFactory::new()->asPiano()]);
+        $thread = $this->thread($sender, $recipient);
+        $this->teacherOrigin($thread, $sender, $profile, LessonRequest::Trial, ['basse']);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Je relance',
+            'fromTeacherProfile' => true,
+            'teacherInstrumentId' => $profile->instruments->first()->instrument->id,
+            'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $sent = $this->latestMessage();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $sent->id,
+            '@type' => 'Message',
+            'id' => $sent->id,
+            'creation_datetime' => $sent->creationDatetime->format('c'),
+            'author' => [
+                '@id' => '/api/users/' . $sender->id,
+                '@type' => 'User',
+                'id' => $sender->id,
+                'username' => 'sender',
+                'display_name' => 'sender',
+            ],
+            'thread' => [
+                '@id' => '/api/message_threads/' . $thread->id,
+                '@type' => 'MessageThread',
+                'id' => $thread->id,
+            ],
+            'content' => 'Je relance',
+            'content_preview' => 'Je relance',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Je relance',
+        ]);
+        $this->assertSame(1, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
+    }
+
+    /** The teacher's inbox row says a lesson is asked for (#1322). */
+    public function test_the_inbox_shows_a_lesson_request(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $profile = $this->teacher($recipient, [InstrumentFactory::new()->asBass(), InstrumentFactory::new()->asPiano()]);
+        $thread = $this->thread($sender, $recipient);
+        $origin = $this->teacherOrigin($thread, $sender, $profile, LessonRequest::Trial, ['basse']);
+        $meta = MessageThreadMetaFactory::new(['thread' => $thread, 'user' => $recipient])->create();
+        $participants = $thread->messageParticipants->toArray();
+        $lastMessage = $origin->message;
+
+        $this->client->loginUser($recipient);
+        $this->client->request('GET', '/api/message_thread_metas', [], [], self::JSON);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MessageThreadMeta',
+            '@id' => '/api/message_thread_metas',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/message_thread_metas/' . $meta->id,
+                    '@type' => 'MessageThreadMeta',
+                    'id' => (string) $meta->id,
+                    'unread_count' => 1,
+                    'thread' => [
+                        '@id' => '/api/message_threads/' . $thread->id,
+                        '@type' => 'MessageThread',
+                        'id' => (string) $thread->id,
+                        'message_participants' => [
+                            [
+                                '@id' => '/api/message_participants/' . $participants[0]->id,
+                                '@type' => 'MessageParticipant',
+                                'participant' => [
+                                    '@id' => '/api/users/' . $sender->id,
+                                    '@type' => 'User',
+                                    'id' => $sender->id,
+                                    'username' => 'sender',
+                                    'display_name' => 'sender',
+                                ],
+                            ],
+                            [
+                                '@id' => '/api/message_participants/' . $participants[1]->id,
+                                '@type' => 'MessageParticipant',
+                                'participant' => [
+                                    '@id' => '/api/users/' . $recipient->id,
+                                    '@type' => 'User',
+                                    'id' => $recipient->id,
+                                    'username' => 'recipient',
+                                    'display_name' => 'recipient',
+                                ],
+                            ],
+                        ],
+                        'last_message' => [
+                            '@id' => '/api/messages/' . $lastMessage->id,
+                            '@type' => 'Message',
+                            'creation_datetime' => $lastMessage->creationDatetime->format('c'),
+                            'author' => [
+                                '@id' => '/api/users/' . $sender->id,
+                                '@type' => 'User',
+                                'id' => $sender->id,
+                                'username' => 'sender',
+                                'display_name' => 'sender',
+                            ],
+                            'content' => 'Bonjour',
+                            'content_preview' => 'Bonjour',
+                        ],
+                        'latest_contact_origin' => [
+                            'type' => 'teacher_profile',
+                            'musician_announce_id' => null,
+                            'teacher_profile_id' => (string) $profile->id,
+                            'announce_type' => null,
+                            'instruments' => ['Basse'],
+                            'styles' => [],
+                            'location_name' => null,
+                            'lesson_request' => 'trial',
+                        ],
+                        'can_send_media' => true,
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    /** A question after a request is still about the same lessons: no second card. */
+    public function test_a_question_after_a_lesson_request_records_nothing_new(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $profile = $this->teacher($recipient, [InstrumentFactory::new()->asBass(), InstrumentFactory::new()->asPiano()]);
+        $thread = $this->thread($sender, $recipient);
+        $this->teacherOrigin($thread, $sender, $profile, LessonRequest::Trial, ['basse']);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Et le tarif ?',
+            'fromTeacherProfile' => true,
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $sent = $this->latestMessage();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $sent->id,
+            '@type' => 'Message',
+            'id' => $sent->id,
+            'creation_datetime' => $sent->creationDatetime->format('c'),
+            'author' => [
+                '@id' => '/api/users/' . $sender->id,
+                '@type' => 'User',
+                'id' => $sender->id,
+                'username' => 'sender',
+                'display_name' => 'sender',
+            ],
+            'thread' => [
+                '@id' => '/api/message_threads/' . $thread->id,
+                '@type' => 'MessageThread',
+                'id' => $thread->id,
+            ],
+            'content' => 'Et le tarif ?',
+            'content_preview' => 'Et le tarif ?',
+            'is_deleted' => false,
+            'reactions' => [],
+            'editable_content' => 'Et le tarif ?',
+        ]);
+        $this->assertSame(1, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
+    }
+
+    /** @return iterable<string, array{array<string, string>, string, string, string}> */
+    public static function emptyLessonFieldProvider(): iterable
+    {
+        yield 'an empty instrument' => [['teacherInstrumentId' => ''], 'teacherInstrumentId', 'Le professeur n\'enseigne pas cet instrument', ValidContactOriginValidator::ERROR_CODE_TEACHER_INSTRUMENT];
+        yield 'an empty lesson request' => [['lessonRequest' => ''], 'lessonRequest', 'Cette demande de cours n\'est pas valide', ValidContactOriginValidator::ERROR_CODE_LESSON_REQUEST];
+    }
+
+    /** @param array<string, string> $fields */
+    #[DataProvider('emptyLessonFieldProvider')]
+    public function test_an_empty_lesson_field_is_refused(array $fields, string $path, string $message, string $code): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $this->teacher($recipient, [InstrumentFactory::new()->asPiano()]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
+            ...$fields,
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation($path, $message, $code));
+    }
+
+    public function test_a_lesson_request_that_is_not_a_string_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $this->teacher($recipient, [InstrumentFactory::new()->asPiano()]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
+            'lessonRequest' => 1,
+        ], self::JSON);
+
+        // Refused by the serializer before the constraint runs, never read as « 1 ».
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'lesson_request', 'message' => 'Cette valeur doit être de type null|string.', 'code' => 'ba785a8c-82cb-4283-967c-3cf342181b40'],
+            ],
+            'detail' => 'lesson_request: Cette valeur doit être de type null|string.',
+            'description' => 'lesson_request: Cette valeur doit être de type null|string.',
+            'type' => '/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            'title' => 'An error occurred',
+        ]);
+    }
+
+    /** Without a teacher profile there is nothing to ask lessons of: that alone is said. */
+    public function test_a_lesson_request_to_someone_without_a_teacher_profile_is_refused_once(): void
+    {
+        [$sender, $recipient] = $this->pair();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
+            'teacherInstrumentId' => '0195f3a0-0000-7000-8000-000000000000',
+            'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('fromTeacherProfile', 'Le destinataire n\'a pas de profil de professeur', ValidContactOriginValidator::ERROR_CODE_TEACHER_PROFILE));
+    }
+
+    public function test_a_lesson_request_from_an_announce_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $announce = $this->announce($recipient);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'musicianAnnounceId' => $announce->id,
+            'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('lessonRequest', 'Une demande de cours part d\'un profil de professeur', ValidContactOriginValidator::ERROR_CODE_LESSON_WITHOUT_TEACHER_PROFILE));
+        $this->assertSame(0, self::getContainer()->get(EntityManagerInterface::class)->getRepository(Message::class)->count([]));
+    }
+
+    /** @return iterable<string, array{array<string, string>, string}> */
+    public static function lessonFieldsProvider(): iterable
+    {
+        yield 'an instrument' => [['teacherInstrumentId' => '0195f3a0-0000-7000-8000-000000000000'], 'teacherInstrumentId'];
+        yield 'a lesson request' => [['lessonRequest' => 'trial'], 'lessonRequest'];
+    }
+
+    /** @param array<string, string> $fields */
+    #[DataProvider('lessonFieldsProvider')]
+    public function test_a_lesson_request_only_comes_from_a_teacher_profile(array $fields, string $path): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $this->teacher($recipient, [InstrumentFactory::new()->asBass()]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            ...$fields,
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation($path, 'Une demande de cours part d\'un profil de professeur', ValidContactOriginValidator::ERROR_CODE_LESSON_WITHOUT_TEACHER_PROFILE));
+        $this->assertSame(0, self::getContainer()->get(EntityManagerInterface::class)->getRepository(Message::class)->count([]));
+    }
+
+    public function test_an_instrument_the_teacher_does_not_teach_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $this->teacher($recipient, [InstrumentFactory::new()->asPiano()]);
+        $bass = InstrumentFactory::new()->asBass()->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
+            'teacherInstrumentId' => $bass->id,
+            'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('teacherInstrumentId', 'Le professeur n\'enseigne pas cet instrument', ValidContactOriginValidator::ERROR_CODE_TEACHER_INSTRUMENT));
+        $this->assertSame(0, self::getContainer()->get(EntityManagerInterface::class)->getRepository(Message::class)->count([]));
+    }
+
+    public function test_an_instrument_id_that_is_not_a_uuid_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $this->teacher($recipient, [InstrumentFactory::new()->asPiano()]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
+            'teacherInstrumentId' => 'not-a-uuid',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('teacherInstrumentId', 'Le professeur n\'enseigne pas cet instrument', ValidContactOriginValidator::ERROR_CODE_TEACHER_INSTRUMENT));
+    }
+
+    public function test_an_unknown_lesson_request_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $this->teacher($recipient, [InstrumentFactory::new()->asPiano()]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
+            'lessonRequest' => 'free',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('lessonRequest', 'Cette demande de cours n\'est pas valide', ValidContactOriginValidator::ERROR_CODE_LESSON_REQUEST));
+        $this->assertSame(0, self::getContainer()->get(EntityManagerInterface::class)->getRepository(Message::class)->count([]));
     }
 
     public function test_an_announce_of_somebody_else_is_refused(): void
@@ -304,6 +816,7 @@ class MessageContactOriginTest extends ApiTestCase
                 'instruments' => ['Bassiste'],
                 'styles' => ['Rock', 'Blues'],
                 'location_name' => 'Lyon',
+                'lesson_request' => null,
             ],
         ]);
         $this->assertSame(2, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
@@ -396,6 +909,7 @@ class MessageContactOriginTest extends ApiTestCase
                             'instruments' => $instruments,
                             'styles' => $styles,
                             'location_name' => 'Lyon',
+                            'lesson_request' => null,
                         ],
                         'can_send_media' => true,
                     ],
@@ -455,6 +969,7 @@ class MessageContactOriginTest extends ApiTestCase
                         'instruments' => ['Batteur'],
                         'styles' => ['Rock', 'Blues'],
                         'location_name' => 'Lyon',
+                        'lesson_request' => null,
                     ],
                     'is_seen' => false,
                     'is_deleted' => false,
@@ -535,6 +1050,7 @@ class MessageContactOriginTest extends ApiTestCase
                     'instruments' => $announceInstruments,
                     'styles' => $announceStyles,
                     'location_name' => 'Lyon',
+                    'lesson_request' => null,
                 ]),
                 $this->storedOriginMessage($fromTeacher, $sender, [
                     'type' => 'teacher_profile',
@@ -544,6 +1060,7 @@ class MessageContactOriginTest extends ApiTestCase
                     'instruments' => $teacherInstruments,
                     'styles' => [],
                     'location_name' => null,
+                    'lesson_request' => null,
                 ]),
             ],
             'totalItems' => 2,
@@ -650,6 +1167,41 @@ class MessageContactOriginTest extends ApiTestCase
             'musicianAnnounce' => $announce,
             'instruments' => [$announce->instrument->slug],
             'styles' => array_values(array_map(static fn (Style $style): string => $style->slug, $announce->styles->toArray())),
+        ])->create();
+    }
+
+    /**
+     * @param list<InstrumentFactory> $instruments taught in this order
+     */
+    private function teacher(User $user, array $instruments): TeacherProfile
+    {
+        $profile = TeacherProfileFactory::new(['user' => $user])->create();
+        foreach ($instruments as $instrument) {
+            TeacherProfileInstrumentFactory::new(['teacherProfile' => $profile, 'instrument' => $instrument])->create();
+        }
+        self::getContainer()->get(EntityManagerInterface::class)->refresh($profile);
+
+        return $profile;
+    }
+
+    /**
+     * @param list<string> $instruments slugs, as the card snapshots them
+     */
+    private function teacherOrigin(MessageThread $thread, User $author, TeacherProfile $profile, ?LessonRequest $lessonRequest, array $instruments): MessageContactOrigin
+    {
+        $message = MessageFactory::new(['thread' => $thread, 'author' => $author, 'content' => 'Bonjour', 'creationDatetime' => new \DateTime('2026-09-01 10:00:00')])->create();
+        $thread->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($thread);
+
+        return MessageContactOriginFactory::new([
+            'message' => $message,
+            'type' => ContactOriginType::TeacherProfile,
+            'teacherProfile' => $profile,
+            'announceType' => null,
+            'instruments' => $instruments,
+            'styles' => [],
+            'locationName' => null,
+            'lessonRequest' => $lessonRequest,
         ])->create();
     }
 
