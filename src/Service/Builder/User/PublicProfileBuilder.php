@@ -19,6 +19,7 @@ use App\Enum\Musician\AvailabilityStatus;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Service\Builder\Musician\MusicianProfileBuilder;
+use App\Service\Builder\Profile\ProfileWallMediaBuilder;
 use App\Service\Builder\Teacher\TeacherProfileBuilder;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -35,6 +36,7 @@ readonly class PublicProfileBuilder
         private MusicianInstrumentResourceBuilder $musicianInstrumentBuilder,
         private MusicianProfileBuilder $musicianProfileBuilder,
         private TeacherProfileBuilder $teacherProfileBuilder,
+        private ProfileWallMediaBuilder $mediaBuilder,
     ) {
     }
 
@@ -97,6 +99,7 @@ readonly class PublicProfileBuilder
             ?: strcmp((string) $a->instrument->slug, (string) $b->instrument->slug));
         $musician->instruments = $this->musicianInstrumentBuilder->buildList($instruments);
         $musician->styles = $this->musicianProfileBuilder->buildStyles($profile->styles->toArray());
+        $musician->media = $this->mediaBuilder->buildList($profile->media);
 
         return $musician;
     }
@@ -111,6 +114,7 @@ readonly class PublicProfileBuilder
         $pricing = $profile->pricing->toArray();
         usort($pricing, static fn (TeacherProfilePricing $a, TeacherProfilePricing $b): int => $a->duration->getMinutes() <=> $b->duration->getMinutes());
         $teacher->pricing = $this->teacherProfileBuilder->buildPricing($pricing);
+        $teacher->media = $this->mediaBuilder->buildList($profile->media);
 
         return $teacher;
     }

@@ -32,19 +32,22 @@
     >
       <template v-if="isDesktop">
         <!-- Sticky beside the wall only when it does not also carry the right column's cards. -->
-        <div class="flex flex-col gap-4 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
+        <!-- The cards keep their height: the column scrolls instead of squeezing them. -->
+        <div class="flex flex-col gap-4 *:shrink-0 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
           <ProfileIdentityCard v-bind="identityProps" v-on="identityEvents" />
           <ProfileActivitiesCard v-bind="activitiesProps" v-on="activitiesEvents" />
           <ProfileInstrumentsCard :instruments="profile.musician?.instruments ?? []" />
           <ProfileStylesCard :styles="profile.musician?.styles ?? []" />
           <ProfileLinksCard v-bind="linksProps" @edit="showEditSocialLinksModal = true" />
           <template v-if="!isWide">
+            <ProfileListenCard v-bind="listenProps" />
             <ProfileAnnouncesCard v-bind="announcesProps" compact @contact="handleContactAbout" />
             <ProfileCoursesCard :username="profile.username" />
           </template>
         </div>
         <ProfileWall v-bind="wallProps" />
-        <div v-if="isWide" class="flex flex-col gap-4 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
+        <div v-if="isWide" class="flex flex-col gap-4 *:shrink-0 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
+          <ProfileListenCard v-bind="listenProps" />
           <ProfileAnnouncesCard v-bind="announcesProps" compact @contact="handleContactAbout" />
           <ProfileCoursesCard :username="profile.username" />
         </div>
@@ -55,6 +58,7 @@
         <ProfileIdentityCard v-bind="identityProps" v-on="identityEvents" />
         <ProfileActivitiesCard v-bind="activitiesProps" v-on="activitiesEvents" />
         <ProfileWall v-bind="wallProps" />
+        <ProfileListenCard v-bind="listenProps" />
         <ProfileInstrumentsCard :instruments="profile.musician?.instruments ?? []" />
         <ProfileStylesCard :styles="profile.musician?.styles ?? []" />
         <ProfileLinksCard v-bind="linksProps" @edit="showEditSocialLinksModal = true" />
@@ -173,6 +177,7 @@ import ProfileCoursesCard from '../../../components/Profile/Page/ProfileCoursesC
 import ProfileIdentityCard from '../../../components/Profile/Page/ProfileIdentityCard.vue'
 import ProfileInstrumentsCard from '../../../components/Profile/Page/ProfileInstrumentsCard.vue'
 import ProfileLinksCard from '../../../components/Profile/Page/ProfileLinksCard.vue'
+import ProfileListenCard from '../../../components/Profile/Page/ProfileListenCard.vue'
 import ProfileStylesCard from '../../../components/Profile/Page/ProfileStylesCard.vue'
 import ProfileWall from '../../../components/Profile/Wall/ProfileWall.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
@@ -280,6 +285,10 @@ const linksProps = computed(() => ({
 const announcesProps = computed(() => ({
   announces: profile.value?.musician_announces ?? [],
   isOwner: isOwnProfile.value
+}))
+const listenProps = computed(() => ({
+  profile: profile.value,
+  displayName: profile.value.display_name || profile.value.username
 }))
 const wallProps = computed(() => ({
   username: profile.value.username,

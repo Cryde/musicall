@@ -887,6 +887,15 @@
       "from_price": "dès {price}",
       "trial_free": "essai offert",
       "trial_paid": "essai à {price}"
+    },
+    "listen": {
+      "title": "Écouter {name}",
+      "play_track": "Écouter {title}",
+      "previous": "Morceau précédent",
+      "next": "Morceau suivant",
+      "stop": "Arrêter la lecture",
+      "mini_player": "Lecture en cours",
+      "stop_short": "Arrêter"
     }
   },
   "wall": {

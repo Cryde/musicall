@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ApiResource\User\Profile;
 
 use ApiPlatform\Metadata\ApiProperty;
+use App\ApiResource\Profile\ProfileWallMedia;
 use App\ApiResource\Teacher\Public\TeacherProfileInstrument;
 use App\ApiResource\Teacher\Public\TeacherProfilePricing;
 
@@ -23,4 +24,8 @@ class PublicProfileTeacher
     /** @var TeacherProfilePricing[] prices in cents */
     #[ApiProperty(genId: false)]
     public array $pricing = [];
+
+    /** @var ProfileWallMedia[] in the order the member set, for « Écouter » */
+    #[ApiProperty(genId: false)]
+    public array $media = [];
 }

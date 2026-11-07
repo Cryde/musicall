@@ -7,6 +7,7 @@ namespace App\Tests\Api\User\Profile;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Teacher\TeacherProfilePricing;
 use App\Enum\Musician\AvailabilityStatus;
+use App\Enum\Musician\MediaPlatform;
 use App\Enum\Musician\SkillLevel;
 use App\Enum\Teacher\SessionDuration;
 use App\Enum\SocialPlatform;
@@ -16,8 +17,10 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
+use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
 use App\Tests\Factory\Teacher\TeacherProfileFactory;
 use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Teacher\TeacherProfileMediaFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserSocialLinkFactory;
@@ -167,7 +170,18 @@ class PublicProfileTest extends ApiTestCase
         MusicianProfileInstrumentFactory::new()->create(['musicianProfile' => $musicianProfile, 'instrument' => $drum, 'skillLevel' => SkillLevel::BEGINNER]);
         MusicianProfileInstrumentFactory::new()->create(['musicianProfile' => $musicianProfile, 'instrument' => $guitar, 'skillLevel' => SkillLevel::PROFESSIONAL]);
 
+        // Added second but placed first: « Écouter » plays them in the order the member set.
+        $demo = MusicianProfileMediaFactory::new()->asSoundCloud()->create(['musicianProfile' => $musicianProfile, 'title' => 'Les heures creuses', 'position' => 1]);
+        $live = MusicianProfileMediaFactory::new()->asYouTube()->create(['musicianProfile' => $musicianProfile, 'title' => 'Live au Botanique', 'position' => 0]);
+
         $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user, 'offersTrial' => true, 'trialPrice' => 0]);
+        $lesson = TeacherProfileMediaFactory::new()->create([
+            'teacherProfile' => $teacherProfile,
+            'platform' => MediaPlatform::SPOTIFY,
+            'url' => 'https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC',
+            'embedId' => 'track/4uLU6hMCjMI75M1A2tKUQC',
+            'title' => 'Les arpèges',
+        ]);
         TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
         // Added longest first: the page reads them shortest first.
         foreach ([[SessionDuration::ONE_HOUR, 4500], [SessionDuration::THIRTY_MINUTES, 2500]] as [$duration, $price]) {
@@ -219,6 +233,28 @@ class PublicProfileTest extends ApiTestCase
                 'styles' => [
                     ['@type' => 'PublicMusicianProfileStyle', 'id' => $rock->id, 'name' => 'Rock'],
                 ],
+                'media' => [
+                    [
+                        '@type' => 'ProfileWallMedia',
+                        'id' => $live->id,
+                        'profile' => 'musician',
+                        'platform' => 'youtube',
+                        'platform_label' => 'YouTube',
+                        'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                        'embed_id' => 'dQw4w9WgXcQ',
+                        'title' => 'Live au Botanique',
+                    ],
+                    [
+                        '@type' => 'ProfileWallMedia',
+                        'id' => $demo->id,
+                        'profile' => 'musician',
+                        'platform' => 'soundcloud',
+                        'platform_label' => 'SoundCloud',
+                        'url' => 'https://soundcloud.com/artist/track',
+                        'embed_id' => 'artist/track',
+                        'title' => 'Les heures creuses',
+                    ],
+                ],
             ],
             'teacher' => [
                 '@type' => 'PublicProfileTeacher',
@@ -230,6 +266,18 @@ class PublicProfileTest extends ApiTestCase
                 'pricing' => [
                     ['@type' => 'TeacherProfilePricing', 'duration' => '30min', 'price' => 2500],
                     ['@type' => 'TeacherProfilePricing', 'duration' => '1h', 'price' => 4500],
+                ],
+                'media' => [
+                    [
+                        '@type' => 'ProfileWallMedia',
+                        'id' => $lesson->id,
+                        'profile' => 'teacher',
+                        'platform' => 'spotify',
+                        'platform_label' => 'Spotify',
+                        'url' => 'https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC',
+                        'embed_id' => 'track/4uLU6hMCjMI75M1A2tKUQC',
+                        'title' => 'Les arpèges',
+                    ],
                 ],
             ],
         ]);
