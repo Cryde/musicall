@@ -43,22 +43,7 @@
         </button>
       </div>
       <!-- Only its owner sees a private profile (#1317). -->
-      <div
-        v-if="showOwnerTools && !profile.is_public"
-        class="mb-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl px-4 py-2.5 text-sm bg-amber-50 text-amber-900 dark:bg-amber-500/15 dark:text-amber-200"
-      >
-        <span class="inline-flex items-center gap-2 font-semibold">
-          <i class="pi pi-lock" aria-hidden="true" />{{ t('profile.owner.private.notice') }}
-        </span>
-        <Button
-          :label="t('profile.owner.private.make_public')"
-          icon="pi pi-eye"
-          size="small"
-          severity="secondary"
-          :loading="isMakingPublic"
-          @click="makePublic"
-        />
-      </div>
+      <ProfilePrivateBar v-if="showOwnerTools && !profile.is_public" class="mb-5" @made-public="refreshProfile" />
 
       <!-- Profile content (#1317): who they are, the wall, what else they publish -->
       <PrivateProfileNotice v-if="previewingPrivate" />
@@ -224,7 +209,6 @@ import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import profileApi from '../../../api/user/profile.js'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ProfileActivitiesCard from '../../../components/Profile/Page/ProfileActivitiesCard.vue'
@@ -244,6 +228,7 @@ import EditMusicianProfileModal from '../../../components/User/Profile/EditMusic
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
+import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
 import { useUserBlockStore } from '../../../store/user/block.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
@@ -283,7 +268,6 @@ const musicianBlock = ref(null)
 // The owner looking at their own profile as a visitor would (#1317): no pencils, no composer.
 const viewAsVisitor = ref(false)
 const backToOwnerButton = ref(null)
-const isMakingPublic = ref(false)
 const identityCardRef = ref(null)
 const wallRef = ref(null)
 
@@ -493,23 +477,6 @@ async function deleteCover() {
     await refreshProfile()
   } catch {
     toast.add({ severity: 'error', summary: t('profile.owner.cover.delete_error'), life: 5000 })
-  }
-}
-
-// Straight through the API: the store's own save would put the settings' shape of the profile in its place.
-async function makePublic() {
-  isMakingPublic.value = true
-  try {
-    await profileApi.updateMyProfile({ is_public: true })
-    await refreshProfile()
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: t('profile.owner.private.make_public_error'),
-      life: 5000
-    })
-  } finally {
-    isMakingPublic.value = false
   }
 }
 

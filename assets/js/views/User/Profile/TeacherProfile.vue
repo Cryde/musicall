@@ -26,6 +26,8 @@
     </div>
 
     <div v-else-if="profile" class="flex flex-col gap-5 md:gap-6">
+      <!-- Only its owner sees a private lessons page (#1317). -->
+      <ProfilePrivateBar v-if="isOwnProfile && !profile.is_public" @made-public="refreshProfile" />
       <!-- The way back: to the profile when the visitor came from it, otherwise into the teacher search. -->
       <div class="flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400 min-h-10">
         <Button
@@ -445,6 +447,7 @@ import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProf
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
 import TrialRequestDialog from '../../../components/Teacher/TrialRequestDialog.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
+import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
 import {
   getAgeGroupLabel,
   getDayOfWeekLabel,
@@ -752,6 +755,11 @@ async function loadProfile() {
 
 function handleProfileSaved() {
   loadProfile()
+}
+
+// The page stays as it is: only the visibility changed.
+function refreshProfile() {
+  teacherProfileStore.loadPublicProfile(route.params.username).catch(() => {})
 }
 
 function openRequest() {
