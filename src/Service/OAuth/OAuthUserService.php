@@ -13,6 +13,8 @@ use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Locale\RequestLocaleResolver;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
+use App\Service\BandSpace\BandSpaceChangeSignal;
+use App\Service\Procedure\BandSpace\AcceptPendingInvitationsProcedure;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -21,13 +23,15 @@ use function Symfony\Component\String\u;
 readonly class OAuthUserService
 {
     public function __construct(
-        private EntityManagerInterface   $entityManager,
-        private UserRepository           $userRepository,
-        private SocialAccountRepository  $socialAccountRepository,
-        private ProfilePictureImporter   $profilePictureImporter,
-        private EventDispatcherInterface $eventDispatcher,
-        private RequestStack             $requestStack,
-        private RequestLocaleResolver    $requestLocaleResolver,
+        private EntityManagerInterface            $entityManager,
+        private UserRepository                    $userRepository,
+        private SocialAccountRepository           $socialAccountRepository,
+        private ProfilePictureImporter            $profilePictureImporter,
+        private EventDispatcherInterface          $eventDispatcher,
+        private RequestStack                      $requestStack,
+        private RequestLocaleResolver             $requestLocaleResolver,
+        private AcceptPendingInvitationsProcedure $acceptPendingInvitationsProcedure,
+        private BandSpaceChangeSignal             $bandSpaceChangeSignal,
     ) {
     }
 
@@ -82,6 +86,11 @@ readonly class OAuthUserService
             $this->entityManager->flush();
         }
 
+        // Not on an event: UserRegisteredEvent would mail a code to an already verified email, and
+        // EmailVerificationCheckProcessor dispatches UserConfirmedEvent for password users too.
+        $this->acceptPendingInvitationsProcedure->process($user);
+        // Now, not at terminate: the web callbacks answer a redirect, which the signal treats as a failure.
+        $this->bandSpaceChangeSignal->publish();
         $this->eventDispatcher->dispatch(new UserConfirmedEvent($user));
 
         return new OAuthResult($user, true);

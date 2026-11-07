@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Native;
 
+use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\SocialAccount;
 use App\Entity\User;
+use App\Enum\BandSpace\Role;
+use App\Mercure\MercureTopic;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use App\Security\Native\NativeOAuthAttemptLimiter;
@@ -13,6 +17,10 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakeAppleIdentityTokenVerifier;
 use App\Tests\Double\FakeAppleTokenClient;
+use App\Tests\Double\RecordingHub;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\JwtPayload;
@@ -21,6 +29,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bridge\PhpUnit\Attribute\TimeSensitive;
 use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\RateLimiter\Policy\SlidingWindowLimiter;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -59,6 +68,31 @@ class NativeAppleSignInTest extends ApiTestCase
         ], $this->appleAccount());
         $this->assertSame([['code' => 'a-code', 'client_id' => 'com.musicall.app']], $this->appleTokens()->exchanges);
         $this->assertSessionBodyFor('elodiedupre');
+    }
+
+    /** Invited before the account existed: signing up with Apple joins the band, as a password sign-up does. */
+    public function test_a_first_sign_in_joins_the_band_its_email_was_invited_to(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'band_admin', 'email' => 'admin@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new()->create(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin]);
+        $invitation = BandSpaceInvitationFactory::new()->create(['bandSpace' => $bandSpace, 'invitedBy' => $admin, 'email' => 'nouveau@example.com']);
+        $this->apple()->accept('a-token', $this->claims('nouveau@example.com'));
+
+        $this->signIn(['identity_token' => 'a-token']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('nouveau');
+        $newMember = self::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'nouveau']);
+        $this->assertInstanceOf(User::class, $newMember);
+        $this->assertSame([
+            'members' => [['band_admin', 'admin', 'active'], ['nouveau', 'user', 'active']],
+            'invitation' => ['accepted', 'nouveau'],
+        ], $this->bandOf((string) $invitation->id));
+        $this->assertEqualsCanonicalizing([
+            MercureTopic::userNotifications((string) $admin->id),
+            MercureTopic::userNotifications((string) $newMember->id),
+        ], $this->changeSignalTopics(), 'The band hears that its members changed, once');
     }
 
     /** Apple sends no name after the first sign-in, and one sent anyway changes nothing. */
@@ -288,6 +322,37 @@ class NativeAppleSignInTest extends ApiTestCase
         $this->assertResponseStatusCodeSame($status);
         $this->assertJsonEquals(['code' => $status, 'message' => $message]);
         $this->assertSame([], $this->client->getResponse()->headers->getCookies());
+    }
+
+    /**
+     * The invitation's band read back from the database: its members, and what became of the invitation.
+     *
+     * @return array{members: list<array{string, string, string}>, invitation: array{string, ?string}}
+     */
+    private function bandOf(string $invitationId): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $invitation = $entityManager->find(BandSpaceInvitation::class, $invitationId);
+        $this->assertInstanceOf(BandSpaceInvitation::class, $invitation);
+        $members = array_map(
+            static fn (BandSpaceMembership $membership): array => [$membership->user->username, $membership->role->value, $membership->status->value],
+            $entityManager->getRepository(BandSpaceMembership::class)->findBy(['bandSpace' => $invitation->bandSpace]),
+        );
+        sort($members);
+
+        return ['members' => $members, 'invitation' => [$invitation->status->value, $invitation->existingUser?->username]];
+    }
+
+    /** @return list<string> */
+    private function changeSignalTopics(): array
+    {
+        $updates = array_filter(
+            self::getContainer()->get(RecordingHub::class)->updates,
+            static fn (Update $update): bool => str_contains($update->getData(), '"band_space_changed"'),
+        );
+
+        return array_merge(...array_map(static fn (Update $update): array => $update->getTopics(), array_values($updates)));
     }
 
     private function apple(): FakeAppleIdentityTokenVerifier
