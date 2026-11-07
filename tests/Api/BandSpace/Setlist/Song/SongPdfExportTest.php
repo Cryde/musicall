@@ -57,6 +57,52 @@ class SongPdfExportTest extends ApiTestCase
         ]);
     }
 
+    /** The access check comes first (#1097): an outsider learns nothing from the limiter. */
+    public function test_a_non_member_past_the_limit_is_still_refused_as_a_non_member(): void
+    {
+        $outsider = UserFactory::new()->asBaseUser()->create(['username' => 'intrus', 'email' => 'intrus@test.com']);
+        $song = SongFactory::new()->withLyrics('Secret')->create();
+        self::getContainer()->get('limiter.song_pdf')->create($outsider->id)->consume(20);
+
+        $this->client->loginUser($outsider);
+        $this->client->request('GET', '/api/band_spaces/' . $song->bandSpace->id . '/songs/' . $song->id . '/pdf', server: ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Tu n\'es pas membre de ce Band Space',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Tu n\'es pas membre de ce Band Space',
+        ]);
+    }
+
+    /** #1097: past the limit Gotenberg is not even asked. */
+    public function test_a_member_past_the_limit_is_refused_before_any_render(): void
+    {
+        [$space, $singer, $song] = $this->songSungBy('chanteuse');
+        self::getContainer()->get('limiter.song_pdf')->create($singer->id)->consume(20);
+
+        $this->client->loginUser($singer);
+        $this->client->request('GET', $this->url($space, $song), server: ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
+        $this->assertSame([], self::getContainer()->get(RecordingGotenbergClient::class)->calls());
+    }
+
     public function test_the_sheet_carries_the_chords_and_the_singers_by_default(): void
     {
         [$space, $singer, $song] = $this->songSungBy('chanteuse');

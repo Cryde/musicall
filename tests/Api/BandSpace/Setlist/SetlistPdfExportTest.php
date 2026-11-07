@@ -740,6 +740,59 @@ class SetlistPdfExportTest extends ApiTestCase
             'description' => "Tu n'es pas membre de ce Band Space",
         ]);
     }
+
+    /** #1097: past the limit Gotenberg is not even asked. */
+    public function test_pdf_export_past_the_limit_returns_429_before_any_render(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        self::getContainer()->get('limiter.setlist_pdf')->create($user->id)->consume(20);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
+        $this->assertSame([], self::getContainer()->get(RecordingGotenbergClient::class)->calls());
+    }
+
+    /** The access check comes first: an outsider learns nothing from the limiter. */
+    public function test_pdf_export_not_member_past_the_limit_still_returns_403(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $other = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        self::getContainer()->get('limiter.setlist_pdf')->create($other->id)->consume(20);
+
+        $this->client->loginUser($other);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Tu n'es pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Tu n'es pas membre de ce Band Space",
+        ]);
+    }
+
     /** « Inclure les paroles » (#1055): each song with lyrics once, after the list, and no fit. */
     public function test_the_lyrics_follow_the_list_once_per_song(): void
     {

@@ -219,7 +219,8 @@
     "generating": "Generating...",
     "download": "Download PDF",
     "failed_summary": "Export failed",
-    "failed_detail": "The PDF could not be generated. Please try again in a moment."
+    "failed_detail": "The PDF could not be generated. Please try again in a moment.",
+    "rate_limited_detail": "Too many PDFs generated in a short time. Please try again in a minute."
   },
   "file_drawer": {
     "header": "Setlist files",

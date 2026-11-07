@@ -224,6 +224,7 @@ import { COPY_SUFFIX, MAX_NAME_LENGTH } from '../../constants/techRider.js'
 import { intlLocale, noValue } from '../../i18n/formatLocale.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
 import { downloadBlob } from '../../utils/downloadBlob.js'
+import { PDF_EXPORT_RATE_LIMITED, pdfExportFailure } from '../../utils/pdfExportFailure.js'
 import { selectableItemId } from '../../utils/riderWorkspace.js'
 
 const { t } = useI18n()
@@ -436,12 +437,15 @@ async function handleExport() {
   } catch (error) {
     // A 401 already redirects to the login page through the global interceptor, so a toast on top of
     // that is only noise. Everything else says so here, because API Platform blanks the message on a
-    // 5xx and the response carries no usable detail.
+    // 5xx and the response carries no usable detail. The preview spends the same budget as this button.
     if (error?.response?.status !== 401) {
       toast.add({
         severity: 'error',
         summary: t('band_space_tech_rider.page.export_failed_summary'),
-        detail: t('band_space_tech_rider.page.export_failed_detail'),
+        detail:
+          pdfExportFailure(error) === PDF_EXPORT_RATE_LIMITED
+            ? t('band_space_tech_rider.page.export_rate_limited_detail')
+            : t('band_space_tech_rider.page.export_failed_detail'),
         life: 6000
       })
     }

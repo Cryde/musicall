@@ -44,6 +44,7 @@
     "close_preview": "Fermer l’aperçu",
     "export_failed_summary": "Export impossible",
     "export_failed_detail": "Le PDF n’a pas pu être généré. Réessaie dans un instant.",
+    "export_rate_limited_detail": "Trop de PDF générés en peu de temps, aperçu compris. Réessaie dans une minute.",
     "archive_confirm_message": "« {name} » sera déplacé dans les archives. Tu pourras le restaurer plus tard.",
     "archive_confirm_header": "Archiver le tech rider",
     "archived": "Tech rider archivé",
@@ -68,6 +69,7 @@
   },
   "pdf_preview": {
     "unavailable": "Aperçu indisponible",
+    "paused": "Aperçu en pause, trop de mises à jour",
     "open_in_tab": "Ouvrir dans un onglet",
     "frame_title": "Aperçu du PDF du tech rider",
     "updating": "Mise à jour de l’aperçu…"

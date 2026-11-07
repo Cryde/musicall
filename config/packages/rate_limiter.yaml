@@ -164,6 +164,32 @@ framework:
             limit: 20
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        # The PDF exports (#1097). Each is a Gotenberg render of a second or more, and Gotenberg serves
+        # the whole site, so a flood on one export slows every other. One limiter per export, so a
+        # rider edited in a few tabs cannot block a setlist download.
+        # The rider preview renders about 3 seconds after each change (#1092): one tab editing steadily
+        # is about 20 a minute, so 40 leaves room for a second tab and the download button.
+        tech_rider_pdf:
+            policy: sliding_window
+            limit: 40
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
+        # Only a download button calls the other three.
+        setlist_pdf:
+            policy: sliding_window
+            limit: 20
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
+        song_pdf:
+            policy: sliding_window
+            limit: 20
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
+        lyrics_pdf:
+            policy: sliding_window
+            limit: 20
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
         band_space_creation:
             policy: fixed_window
             limit: 2

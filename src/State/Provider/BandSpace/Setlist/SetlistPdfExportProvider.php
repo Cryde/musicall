@@ -12,10 +12,12 @@ use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Setlist\SetlistPdfOptionsBuilder;
 use App\Service\Setlist\SetlistPdfRenderer;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * @implements ProviderInterface<Response>
@@ -29,6 +31,8 @@ readonly class SetlistPdfExportProvider implements ProviderInterface
         private SetlistPdfOptionsBuilder $optionsBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        #[Target('setlist_pdf')]
+        private RateLimiterFactoryInterface $pdfLimiter,
     ) {
     }
 
@@ -48,6 +52,9 @@ readonly class SetlistPdfExportProvider implements ProviderInterface
         if (!$setlist instanceof Setlist) {
             throw new NotFoundHttpException('band_space.setlist.not_found');
         }
+
+        // Charged once the export is known to be real: an outsider or a wrong id spends nothing.
+        $this->pdfLimiter->create($user->id)->consume()->ensureAccepted();
 
         $options = $this->optionsBuilder->fromRequest($this->requestStack->getCurrentRequest());
         $stats = $this->setlistRepository->durationStats($setlist);

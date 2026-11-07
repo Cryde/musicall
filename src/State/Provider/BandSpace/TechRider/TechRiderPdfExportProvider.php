@@ -11,9 +11,11 @@ use App\Repository\BandSpace\TechRiderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\TechRider\TechRiderPdfRenderer;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * @implements ProviderInterface<Response>
@@ -25,6 +27,8 @@ readonly class TechRiderPdfExportProvider implements ProviderInterface
         private TechRiderRepository $techRiderRepository,
         private TechRiderPdfRenderer $pdfRenderer,
         private Security $security,
+        #[Target('tech_rider_pdf')]
+        private RateLimiterFactoryInterface $pdfLimiter,
     ) {
     }
 
@@ -45,6 +49,9 @@ readonly class TechRiderPdfExportProvider implements ProviderInterface
         if (!$techRider instanceof TechRider) {
             throw new NotFoundHttpException('band_space.tech_rider.not_found');
         }
+
+        // Charged once the export is known to be real: an outsider or a wrong id spends nothing.
+        $this->pdfLimiter->create($user->id)->consume()->ensureAccepted();
 
         $response = new Response($this->pdfRenderer->render($techRider));
         $response->headers->set('Content-Type', 'application/pdf');

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceLyricsApi from '../api/bandSpace/band-space-lyrics.js'
 import { downloadBlob } from '../utils/downloadBlob.js'
+import { PDF_EXPORT_RATE_LIMITED, pdfExportFailure } from '../utils/pdfExportFailure.js'
 
 /** A set of lyrics as a PDF download, with the chords, singers and transposition asked for. */
 export function useLyricsPdf() {
@@ -28,7 +29,10 @@ export function useLyricsPdf() {
         toast.add({
           severity: 'error',
           summary: t('band_space_setlist.pdf_export.failed_summary'),
-          detail: t('band_space_setlist.pdf_export.failed_detail'),
+          detail:
+            pdfExportFailure(error) === PDF_EXPORT_RATE_LIMITED
+              ? t('band_space_setlist.pdf_export.rate_limited_detail')
+              : t('band_space_setlist.pdf_export.failed_detail'),
           life: 6000
         })
       }
