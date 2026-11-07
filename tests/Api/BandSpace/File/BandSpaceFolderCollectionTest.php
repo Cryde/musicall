@@ -54,6 +54,40 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_list_names_the_virtual_folders_in_english(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $bandSpaceId = $bandSpace->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpaceId . '/folders',
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => 'en'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFolder',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders',
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
+            'virtualFolders' => [
+                ['id' => 'virtual:task', 'name' => 'Tasks', 'source' => 'task', 'file_count' => 0],
+                ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
+                ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
+                ['id' => 'virtual:song', 'name' => 'Songs', 'source' => 'song', 'file_count' => 0],
+                ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
+                ['id' => 'virtual:message', 'name' => 'Chat', 'source' => 'message', 'file_count' => 0],
+            ],
+        ]);
+    }
+
     public function test_list_returns_nested_tree(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

@@ -11,6 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Injects a `virtualFolders` array (synthetic Tasks/Finance grouping nodes
@@ -21,14 +22,14 @@ final readonly class BandSpaceFolderVirtualFoldersListener
 {
     private const string ROUTE_NAME = 'api_band_space_folders_get_collection';
 
-    /** @var array<string, string> source key => label */
-    private const array SOURCE_LABELS = [
-        'task' => 'Tâches',
-        'finance' => 'Finances',
-        'note' => 'Notes',
-        'song' => 'Chansons',
-        'setlist' => 'Setlists',
-        BandSpaceFileSourceTypes::CHAT_MESSAGE => 'Chat',
+    /** @var array<string, string> source key => translation key of its label */
+    private const array SOURCE_LABEL_KEYS = [
+        'task' => 'band_space.file.virtual_folder.task',
+        'finance' => 'band_space.file.virtual_folder.finance',
+        'note' => 'band_space.file.virtual_folder.note',
+        'song' => 'band_space.file.virtual_folder.song',
+        'setlist' => 'band_space.file.virtual_folder.setlist',
+        BandSpaceFileSourceTypes::CHAT_MESSAGE => 'band_space.file.virtual_folder.message',
     ];
 
     public function __construct(
@@ -36,6 +37,7 @@ final readonly class BandSpaceFolderVirtualFoldersListener
         private BandSpaceMembershipRepository $membershipRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private Security $security,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -83,10 +85,10 @@ final readonly class BandSpaceFolderVirtualFoldersListener
         $counts = $this->attachmentRepository->countActiveByBandSpaceGroupedBySource($bandSpace);
 
         $virtualFolders = [];
-        foreach (self::SOURCE_LABELS as $source => $label) {
+        foreach (self::SOURCE_LABEL_KEYS as $source => $labelKey) {
             $virtualFolders[] = [
                 'id' => 'virtual:' . $source,
-                'name' => $label,
+                'name' => $this->translator->trans($labelKey),
                 'source' => $source,
                 'file_count' => $counts[$source] ?? 0,
             ];
