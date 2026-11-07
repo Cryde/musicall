@@ -505,7 +505,7 @@
       "expense_split": "Paid by {payer}, split between {size}",
       "who_owes_what": "Who owes what",
       "demo_limit": "That's all for the demo. In your own space, there's no limit.",
-      "footer": "Preview: click around the menu. The examples will be replaced by your real dates, tasks and songs.",
+      "footer": "Preview: pick a tab. The examples will be replaced by your real dates, tasks and songs.",
       "panels": {
         "agenda_title": "Calendar",
         "agenda_subtitle": "October 2026",

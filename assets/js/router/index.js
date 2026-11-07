@@ -5,7 +5,11 @@ import { localeRedirect } from '../i18n/localizedLocation.js'
 import { isLocalizedRoute, localeOfPath } from '../i18n/localizedPath.js'
 import { withLocalizedHrefs } from './localizedRoutes.js'
 import routes from './routes.js'
-import { keepsScrollPosition, rememberScrollRestore } from './scrollPosition.js'
+import {
+  elementScrollTarget,
+  keepsScrollPosition,
+  rememberScrollRestore
+} from './scrollPosition.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -16,9 +20,9 @@ const router = createRouter({
     if (savedPosition) {
       return savedPosition
     }
-    // A footer link to one Band Space module lands on the demo, already on that tab
+    // A footer link to one Band Space module lands on the demo, already on that tab, below the sticky header
     if (to.name === 'app_band_space_presentation' && to.query.module) {
-      return { el: '#band-space-demo', top: 24 }
+      return elementScrollTarget('#band-space-demo')
     }
     // A report decision in the bell leads to how to contest it (#1125)
     if (to.name === 'app_terms' && to.hash) {

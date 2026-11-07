@@ -505,7 +505,7 @@
       "expense_split": "Avancé par {payer}, partagé entre {size}",
       "who_owes_what": "Qui doit quoi",
       "demo_limit": "C'est tout pour la démo. Dans ton espace, il n'y a pas de limite.",
-      "footer": "Aperçu : clique dans le menu. Les exemples seront remplacés par tes vraies dates, tâches et morceaux.",
+      "footer": "Aperçu : choisis un onglet. Les exemples seront remplacés par tes vraies dates, tâches et morceaux.",
       "panels": {
         "agenda_title": "Agenda",
         "agenda_subtitle": "Octobre 2026",

@@ -21,3 +21,16 @@ export function rememberScrollRestore(savedPosition) {
 export function lastNavigationRestoredScroll() {
   return restoredSavedPosition
 }
+
+/**
+ * The router's scroll target for an element. Vue Router ignores `scroll-margin-top`, so the margin
+ * becomes the offset: the element says with `scroll-mt-*` how much sticky header covers it.
+ */
+export function elementScrollTarget(
+  selector,
+  { find = (s) => document.querySelector(s), styleOf = (el) => window.getComputedStyle(el) } = {}
+) {
+  const element = find(selector)
+  const margin = element ? Number.parseFloat(styleOf(element).scrollMarginTop) : 0
+  return { el: selector, top: Number.isFinite(margin) ? margin : 0 }
+}

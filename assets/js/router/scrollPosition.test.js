@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  elementScrollTarget,
   keepsScrollPosition,
   lastNavigationRestoredScroll,
   rememberScrollRestore
@@ -60,5 +61,37 @@ describe('lastNavigationRestoredScroll', () => {
     rememberScrollRestore({ left: 0, top: 0 })
 
     assert.equal(lastNavigationRestoredScroll(), true)
+  })
+})
+
+describe('elementScrollTarget', () => {
+  const element = {}
+  const withMargin = (scrollMarginTop) => ({
+    find: () => element,
+    styleOf: () => ({ scrollMarginTop })
+  })
+
+  // Below lg the header is sticky: `scroll-mt-20` keeps the target out from under it.
+  it('offsets by the element scroll margin', () => {
+    assert.deepEqual(elementScrollTarget('#band-space-demo', withMargin('80px')), {
+      el: '#band-space-demo',
+      top: 80
+    })
+  })
+
+  it('does not offset an element without a margin', () => {
+    assert.deepEqual(elementScrollTarget('#x', withMargin('0px')), { el: '#x', top: 0 })
+  })
+
+  // The router warns about a missing element itself; the offset just stays at 0.
+  it('does not offset when the element is not there', () => {
+    assert.deepEqual(elementScrollTarget('#x', { find: () => null, styleOf: () => ({}) }), {
+      el: '#x',
+      top: 0
+    })
+  })
+
+  it('does not offset when the margin is not a length', () => {
+    assert.deepEqual(elementScrollTarget('#x', withMargin('')), { el: '#x', top: 0 })
   })
 })

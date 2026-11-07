@@ -2,7 +2,7 @@
   <section
     id="band-space-demo"
     :aria-label="t('home.band_space_presentation.preview.aria_label')"
-    class="flex flex-col overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-2xl"
+    class="scroll-mt-20 lg:scroll-mt-6 flex flex-col overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-2xl"
   >
     <div class="flex items-center justify-between gap-4 h-14 px-4 lg:px-5 border-b border-surface-200 dark:border-surface-700">
       <div class="flex items-center gap-4 min-w-0">
@@ -14,337 +14,353 @@
         </span>
       </div>
       <div class="flex shrink-0 pl-2" :aria-label="t('home.band_space_presentation.preview.members', { count: size })" role="img">
+        <!-- The visitor's own circle says « Toi » in full: Tom's initial is a T too. -->
         <span
           v-for="(member, index) in roster"
           :key="member"
-          :class="['-ml-2 size-8 rounded-full inline-flex items-center justify-center text-xs font-bold text-white border-2 border-surface-0 dark:border-surface-900', AVATAR_COLORS[index]]"
+          :class="[
+            '-ml-2 h-8 rounded-full inline-flex items-center justify-center font-bold text-white border-2 border-surface-0 dark:border-surface-900',
+            index === 0 ? 'px-2 text-[11px]' : 'w-8 text-xs',
+            AVATAR_COLORS[index]
+          ]"
           aria-hidden="true"
         >
-          {{ member[0] }}
+          {{ index === 0 ? member : member[0] }}
         </span>
       </div>
     </div>
 
     <div class="grid lg:grid-cols-[12rem_minmax(0,1fr)] grow lg:min-h-[36rem]">
+      <!-- Below lg the tabs are a row that scrolls sideways; the fade on its edge says there are more, and the
+           strip ends with a spacer as wide as the fade, so the last tab clears it once scrolled to the end. -->
       <div
-        class="flex lg:flex-col gap-1 p-3 overflow-x-auto border-b lg:border-b-0 lg:border-r border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950"
-        role="tablist"
-        :aria-label="t('home.band_space_presentation.preview.tabs_aria_label')"
+        class="relative min-w-0 border-b lg:border-b-0 lg:border-r border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-9 after:bg-linear-to-r after:from-transparent after:to-surface-50 dark:after:to-surface-950 lg:after:hidden"
       >
-        <button
-          v-for="tab in TABS"
-          :id="`demo-tab-${tab.key}`"
-          :key="tab.key"
-          type="button"
-          role="tab"
-          :aria-selected="tab.key === activeTab"
-          :aria-controls="`demo-panel-${tab.key}`"
-          :tabindex="tab.key === activeTab ? 0 : -1"
-          :class="[
-            'shrink-0 flex items-center justify-between gap-3 h-10 px-3 rounded-lg text-sm text-left cursor-pointer transition-colors',
-            tab.key === activeTab
-              ? 'bg-primary-100 text-primary-800 font-semibold dark:bg-surface-800 dark:text-surface-0'
-              : 'text-surface-700 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-800'
-          ]"
-          @click="activeTab = tab.key"
-          @keydown.up.prevent="moveTab(-1)"
-          @keydown.left.prevent="moveTab(-1)"
-          @keydown.down.prevent="moveTab(1)"
-          @keydown.right.prevent="moveTab(1)"
-          @keydown.home.prevent="selectTab(TABS[0].key)"
-          @keydown.end.prevent="selectTab(TABS.at(-1).key)"
+        <div
+          ref="tabStrip"
+          class="flex lg:flex-col gap-1 px-2.5 py-2 lg:p-3 overflow-x-auto [scrollbar-width:none] after:w-7 after:shrink-0 lg:after:hidden"
+          role="tablist"
+          :aria-label="t('home.band_space_presentation.preview.tabs_aria_label')"
         >
-          <span class="flex items-center gap-2.5">
-            <i :class="tab.icon" aria-hidden="true" />
-            {{ tab.label }}
-          </span>
-          <span
-            v-if="pickedPains.includes(tab.key)"
-            class="text-[10px] font-bold tracking-wide text-teal-700 dark:text-teal-300"
+          <button
+            v-for="tab in TABS"
+            :id="`demo-tab-${tab.key}`"
+            :key="tab.key"
+            type="button"
+            role="tab"
+            :aria-selected="tab.key === activeTab"
+            :aria-controls="`demo-panel-${tab.key}`"
+            :tabindex="tab.key === activeTab ? 0 : -1"
+            :class="[
+              'relative shrink-0 flex items-center justify-between gap-2 lg:gap-3 h-10 px-3 rounded-lg text-sm text-left cursor-pointer transition-colors',
+              tab.key === activeTab
+                ? 'bg-primary-100 text-primary-800 font-semibold dark:bg-surface-800 dark:text-surface-0'
+                : 'text-surface-700 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-800'
+            ]"
+            @click="activeTab = tab.key"
+            @keydown.up.prevent="moveTab(-1)"
+            @keydown.left.prevent="moveTab(-1)"
+            @keydown.down.prevent="moveTab(1)"
+            @keydown.right.prevent="moveTab(1)"
+            @keydown.home.prevent="selectTab(TABS[0].key)"
+            @keydown.end.prevent="selectTab(TABS.at(-1).key)"
           >
-            {{ t('home.band_space_presentation.preview.priority') }}
-          </span>
-        </button>
+            <span class="flex items-center gap-2.5">
+              <i :class="tab.icon" aria-hidden="true" />
+              {{ tab.label }}
+            </span>
+            <!-- A dot on the phone's row, where the word would make the tab twice as wide; the word stays for screen readers. -->
+            <template v-if="pickedPains.includes(tab.key)">
+              <span class="size-[7px] shrink-0 rounded-full bg-teal-700 dark:bg-teal-300 lg:hidden" aria-hidden="true" />
+              <span class="max-lg:sr-only text-[10px] font-bold tracking-wide text-teal-700 dark:text-teal-300">
+                {{ t('home.band_space_presentation.preview.priority') }}
+              </span>
+            </template>
+          </button>
+        </div>
       </div>
 
-      <div class="flex flex-col gap-5 p-5 lg:p-7 min-w-0">
-        <!-- Every panel stays mounted so each tab's aria-controls points at a real element. -->
-        <div
-          v-for="tab in TABS"
-          v-show="tab.key === activeTab"
-          :id="`demo-panel-${tab.key}`"
-          :key="tab.key"
-          role="tabpanel"
-          :aria-labelledby="`demo-tab-${tab.key}`"
-          class="flex flex-col gap-5"
-        >
-          <template v-if="tab.key === 'dashboard'">
-            <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space_presentation.preview.welcome', { name: shownName }) }}</h3>
-              <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.members_invited_by_mail', { members: membersLabel }) }}</span>
-            </div>
-            <div class="grid sm:grid-cols-2 gap-3">
-              <button
-                v-for="widget in widgets"
-                :key="widget.key"
-                type="button"
-                :class="[
-                  'flex flex-col gap-1.5 p-4 rounded-xl border text-left cursor-pointer transition-colors hover:border-primary',
-                  widget.isPicked
-                    ? 'border-primary-300 bg-primary-50 dark:border-primary-700 dark:bg-primary-950/40'
-                    : 'border-surface-200 bg-surface-50 dark:border-surface-700 dark:bg-surface-950'
-                ]"
-                @click="activeTab = widget.key"
-              >
-                <span :class="['text-[11px] font-bold tracking-wider uppercase', MODULE_ACCENTS[widget.key].text]">{{ widget.tag }}</span>
-                <span class="line-clamp-2 break-words font-bold text-surface-900 dark:text-surface-0">{{ widget.title }}</span>
-                <span class="text-sm text-surface-600 dark:text-surface-400">{{ widget.meta }}</span>
-              </button>
-            </div>
-          </template>
-
-          <template v-else>
-            <div class="flex flex-wrap items-end justify-between gap-3">
-              <div class="flex flex-col gap-0.5">
-                <h3 class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">{{ panels[tab.key].title }}</h3>
-                <span class="text-sm text-surface-600 dark:text-surface-400">{{ panels[tab.key].subtitle }}</span>
+      <div class="flex flex-col gap-5 p-4 md:p-5 lg:p-7 min-w-0">
+        <!-- Every panel stays mounted so each tab's aria-controls points at a real element. Below lg they
+             share one cell and the others are only invisible, so the demo keeps the height of its tallest
+             panel and a tab never moves the page under it. -->
+        <div class="grid grid-cols-[minmax(0,1fr)]">
+          <div
+            v-for="tab in TABS"
+            :id="`demo-panel-${tab.key}`"
+            :key="tab.key"
+            role="tabpanel"
+            :aria-labelledby="`demo-tab-${tab.key}`"
+            :class="['flex flex-col gap-5 [grid-area:1/1]', tab.key !== activeTab && 'invisible lg:hidden']"
+          >
+            <template v-if="tab.key === 'dashboard'">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space_presentation.preview.welcome', { name: shownName }) }}</h3>
+                <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.members_invited_by_mail', { members: membersLabel }) }}</span>
               </div>
-              <span :class="['text-sm font-bold', MODULE_ACCENTS[tab.key].text]">{{ panels[tab.key].summary }}</span>
-            </div>
-
-            <ul v-if="tab.key === 'agenda'" class="m-0 p-0 list-none flex flex-col gap-2">
-              <li v-for="event in agenda" :key="event.id" :class="[ROW, 'gap-4']">
-                <span class="flex flex-col items-center w-10 shrink-0">
-                  <span class="text-[10px] font-bold text-surface-600 dark:text-surface-400">{{ event.day }}</span>
-                  <span :class="['text-lg font-extrabold leading-none', event.isGig ? MODULE_ACCENTS.setlists.text : MODULE_ACCENTS.agenda.text]">{{ event.date }}</span>
-                </span>
-                <span class="flex flex-col grow min-w-0">
-                  <span class="font-semibold text-surface-900 dark:text-surface-0">{{ event.name }}</span>
-                  <span class="text-sm text-surface-600 dark:text-surface-400">{{ event.detail }}</span>
-                </span>
-                <span class="text-sm font-bold text-surface-700 dark:text-surface-300" :aria-label="t('home.band_space_presentation.preview.available', { available: event.available, size })">
-                  {{ event.available }}/{{ size }}
-                </span>
-              </li>
-            </ul>
-
-            <template v-else-if="tab.key === 'chat'">
-              <ul class="m-0 p-0 list-none flex flex-col gap-3">
-                <li
-                  v-for="message in chat"
-                  :key="message.id"
-                  :class="['flex flex-col gap-1 max-w-[85%]', message.isMine ? 'self-end items-end' : 'self-start items-start']"
+              <div class="grid sm:grid-cols-2 gap-3">
+                <button
+                  v-for="widget in widgets"
+                  :key="widget.key"
+                  type="button"
+                  :class="[
+                    'flex flex-col gap-1.5 p-4 rounded-xl border text-left cursor-pointer transition-colors hover:border-primary',
+                    widget.isPicked
+                      ? 'border-primary-300 bg-primary-50 dark:border-primary-700 dark:bg-primary-950/40'
+                      : 'border-surface-200 bg-surface-50 dark:border-surface-700 dark:bg-surface-950'
+                  ]"
+                  @click="activeTab = widget.key"
                 >
-                  <span class="text-xs font-bold text-surface-700 dark:text-surface-300">{{ message.who }}</span>
-                  <span
-                    :class="[
-                      'px-4 py-2.5 rounded-2xl leading-relaxed break-words',
-                      message.isMine
-                        ? 'rounded-br-md bg-primary-700 text-white'
-                        : 'rounded-bl-md bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-0'
-                    ]"
-                  >
-                    {{ message.body }}
-                  </span>
-                  <button
-                    v-if="message.attachment"
-                    type="button"
-                    :class="[ADD_BUTTON, 'h-9']"
-                    :aria-label="t('home.band_space_presentation.preview.chat_open_attachment', { label: message.attachment.label, module: tabFor(message.attachment.module).label })"
-                    @click="selectTab(message.attachment.module)"
-                  >
-                    <i :class="[tabFor(message.attachment.module).icon, MODULE_ACCENTS[message.attachment.module].text]" aria-hidden="true" />
-                    {{ message.attachment.label }}
-                  </button>
-                </li>
-              </ul>
-              <form class="flex gap-2" @submit.prevent="sendMessage">
-                <label for="demo-chat-message" class="sr-only">{{ t('home.band_space_presentation.preview.chat_message_label') }}</label>
-                <input
-                  id="demo-chat-message"
-                  v-model="draftMessage"
-                  type="text"
-                  maxlength="200"
-                  :placeholder="t('home.band_space_presentation.preview.chat_message_placeholder')"
-                  class="grow min-w-0 h-10 px-4 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-surface-900 dark:text-surface-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                />
-                <button type="submit" :class="ADD_BUTTON" :aria-disabled="!canAddMore(sentMessages.length)">
-                  <i class="pi pi-send" aria-hidden="true" />
-                  {{ t('home.band_space_presentation.preview.chat_send') }}
+                  <span :class="['text-[11px] font-bold tracking-wider uppercase', MODULE_ACCENTS[widget.key].text]">{{ widget.tag }}</span>
+                  <span class="line-clamp-2 break-words font-bold text-surface-900 dark:text-surface-0">{{ widget.title }}</span>
+                  <span class="text-sm text-surface-600 dark:text-surface-400">{{ widget.meta }}</span>
                 </button>
-              </form>
-              <span v-if="!canAddMore(sentMessages.length)" class="text-sm text-surface-600 dark:text-surface-400">
-                {{ t('home.band_space_presentation.preview.demo_limit') }}
-              </span>
+              </div>
             </template>
 
-            <ul v-else-if="tab.key === 'taches'" class="m-0 p-0 list-none flex flex-col gap-2">
-              <li v-for="task in tasks" :key="task.id">
-                <label :class="[ROW, 'gap-3 cursor-pointer']">
-                  <input
-                    type="checkbox"
-                    :checked="task.done"
-                    class="size-5 shrink-0 accent-teal-600 cursor-pointer"
-                    @change="toggleTask(task.id)"
-                  />
-                  <span class="flex flex-col grow min-w-0">
-                    <span :class="['font-semibold', task.done ? 'line-through text-surface-600 dark:text-surface-400' : 'text-surface-900 dark:text-surface-0']">{{ task.label }}</span>
-                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ task.detail }}</span>
-                  </span>
-                  <span class="text-sm font-bold text-surface-700 dark:text-surface-300">{{ task.who }}</span>
-                </label>
-              </li>
-            </ul>
-
-            <template v-else-if="tab.key === 'notes'">
-              <div v-if="openNote" class="flex flex-col gap-3">
-                <button type="button" :class="[ADD_BUTTON, 'self-start']" @click="openNoteId = null">
-                  <i class="pi pi-arrow-left" aria-hidden="true" />
-                  {{ t('home.band_space_presentation.preview.back_to_notes') }}
-                </button>
-                <div class="flex flex-col rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
-                  <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950">
-                    <span class="font-semibold text-surface-900 dark:text-surface-0">{{ openNote.title }}</span>
-                    <!-- Decorative: a real formatting toolbar is the product, not the demo. -->
-                    <span class="flex gap-3 text-surface-500 dark:text-surface-400" aria-hidden="true">
-                      <span class="font-bold">{{ t('home.band_space_presentation.preview.toolbar_bold') }}</span>
-                      <span class="italic">{{ t('home.band_space_presentation.preview.toolbar_italic') }}</span>
-                      <i class="pi pi-list" />
-                    </span>
-                  </div>
-                  <label :for="`demo-note-${openNote.id}`" class="sr-only">{{ t('home.band_space_presentation.preview.note_content', { title: openNote.title }) }}</label>
-                  <textarea
-                    :id="`demo-note-${openNote.id}`"
-                    v-model="openNoteBody"
-                    rows="7"
-                    class="w-full p-4 bg-surface-0 dark:bg-surface-900 text-surface-900 dark:text-surface-0 leading-relaxed resize-y outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-                  />
+            <template v-else>
+              <div class="flex flex-wrap items-end justify-between gap-3">
+                <div class="flex flex-col gap-0.5">
+                  <h3 class="m-0 text-xl font-bold text-surface-900 dark:text-surface-0">{{ panels[tab.key].title }}</h3>
+                  <span class="text-sm text-surface-600 dark:text-surface-400">{{ panels[tab.key].subtitle }}</span>
                 </div>
-                <span class="text-sm text-surface-600 dark:text-surface-400">
-                  {{ openNote.isEdited ? t('home.band_space_presentation.preview.note_edited_by_you') : t('home.band_space_presentation.preview.note_written_by', { name: openNote.who }) }}
-                </span>
+                <span :class="['text-sm font-bold', MODULE_ACCENTS[tab.key].text]">{{ panels[tab.key].summary }}</span>
               </div>
-              <ul v-else class="m-0 p-0 list-none flex flex-col gap-2">
-                <li v-for="note in notes" :key="note.id">
-                  <button type="button" :class="[ROW, 'w-full gap-3 text-left cursor-pointer hover:border-primary']" @click="openNoteId = note.id">
-                    <i :class="['pi pi-file-edit', MODULE_ACCENTS.notes.text]" aria-hidden="true" />
+
+              <ul v-if="tab.key === 'agenda'" class="m-0 p-0 list-none flex flex-col gap-2">
+                <li v-for="event in agenda" :key="event.id" :class="[ROW, 'gap-4']">
+                  <span class="flex flex-col items-center w-10 shrink-0">
+                    <span class="text-[10px] font-bold text-surface-600 dark:text-surface-400">{{ event.day }}</span>
+                    <span :class="['text-lg font-extrabold leading-none', event.isGig ? MODULE_ACCENTS.setlists.text : MODULE_ACCENTS.agenda.text]">{{ event.date }}</span>
+                  </span>
+                  <span class="flex flex-col grow min-w-0">
+                    <span class="font-semibold text-surface-900 dark:text-surface-0">{{ event.name }}</span>
+                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ event.detail }}</span>
+                  </span>
+                  <span class="text-sm font-bold text-surface-700 dark:text-surface-300" :aria-label="t('home.band_space_presentation.preview.available', { available: event.available, size })">
+                    {{ event.available }}/{{ size }}
+                  </span>
+                </li>
+              </ul>
+
+              <template v-else-if="tab.key === 'chat'">
+                <ul class="m-0 p-0 list-none flex flex-col gap-3">
+                  <li
+                    v-for="message in chat"
+                    :key="message.id"
+                    :class="['flex flex-col gap-1 max-w-[85%]', message.isMine ? 'self-end items-end' : 'self-start items-start']"
+                  >
+                    <span class="text-xs font-bold text-surface-700 dark:text-surface-300">{{ message.who }}</span>
+                    <span
+                      :class="[
+                        'px-4 py-2.5 rounded-2xl leading-relaxed break-words',
+                        message.isMine
+                          ? 'rounded-br-md bg-primary-700 text-white'
+                          : 'rounded-bl-md bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-0'
+                      ]"
+                    >
+                      {{ message.body }}
+                    </span>
+                    <button
+                      v-if="message.attachment"
+                      type="button"
+                      :class="[ADD_BUTTON, 'h-9']"
+                      :aria-label="t('home.band_space_presentation.preview.chat_open_attachment', { label: message.attachment.label, module: tabFor(message.attachment.module).label })"
+                      @click="selectTab(message.attachment.module)"
+                    >
+                      <i :class="[tabFor(message.attachment.module).icon, MODULE_ACCENTS[message.attachment.module].text]" aria-hidden="true" />
+                      {{ message.attachment.label }}
+                    </button>
+                  </li>
+                </ul>
+                <form class="flex gap-2" @submit.prevent="sendMessage">
+                  <label for="demo-chat-message" class="sr-only">{{ t('home.band_space_presentation.preview.chat_message_label') }}</label>
+                  <input
+                    id="demo-chat-message"
+                    v-model="draftMessage"
+                    type="text"
+                    maxlength="200"
+                    :placeholder="t('home.band_space_presentation.preview.chat_message_placeholder')"
+                    class="grow min-w-0 h-10 px-4 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-900 text-surface-900 dark:text-surface-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                  <button type="submit" :class="ADD_BUTTON" :aria-disabled="!canAddMore(sentMessages.length)">
+                    <i class="pi pi-send" aria-hidden="true" />
+                    {{ t('home.band_space_presentation.preview.chat_send') }}
+                  </button>
+                </form>
+                <span v-if="!canAddMore(sentMessages.length)" class="text-sm text-surface-600 dark:text-surface-400">
+                  {{ t('home.band_space_presentation.preview.demo_limit') }}
+                </span>
+              </template>
+
+              <ul v-else-if="tab.key === 'taches'" class="m-0 p-0 list-none flex flex-col gap-2">
+                <li v-for="task in tasks" :key="task.id">
+                  <label :class="[ROW, 'gap-3 cursor-pointer']">
+                    <input
+                      type="checkbox"
+                      :checked="task.done"
+                      class="size-5 shrink-0 accent-teal-600 cursor-pointer"
+                      @change="toggleTask(task.id)"
+                    />
                     <span class="flex flex-col grow min-w-0">
-                      <span class="font-semibold text-surface-900 dark:text-surface-0">{{ note.title }}</span>
-                      <span class="truncate text-sm text-surface-600 dark:text-surface-400">{{ note.body || t('home.band_space_presentation.preview.note_empty') }}</span>
+                      <span :class="['font-semibold', task.done ? 'line-through text-surface-600 dark:text-surface-400' : 'text-surface-900 dark:text-surface-0']">{{ task.label }}</span>
+                      <span class="text-sm text-surface-600 dark:text-surface-400">{{ task.detail }}</span>
                     </span>
-                    <span class="text-sm font-bold text-surface-700 dark:text-surface-300">
-                      {{ note.isEdited ? t('home.band_space_presentation.preview.just_now') : note.who }}
-                    </span>
-                  </button>
+                    <span class="text-sm font-bold text-surface-700 dark:text-surface-300">{{ task.who }}</span>
+                  </label>
                 </li>
               </ul>
-            </template>
 
-            <ol v-else-if="tab.key === 'setlists'" class="m-0 p-0 list-none flex flex-col gap-2">
-              <li v-for="(song, index) in setlist" :key="song.id" :class="[ROW, 'gap-3']">
-                <span class="w-5 text-sm font-bold text-surface-600 dark:text-surface-400">{{ index + 1 }}</span>
-                <span class="flex flex-wrap items-center gap-x-2 grow min-w-0 font-semibold text-surface-900 dark:text-surface-0">
-                  <span>{{ song.title }}</span>
-                  <span v-if="song.isNew" :class="['text-[10px] font-bold uppercase', MODULE_ACCENTS.setlists.text]">{{ t('home.band_space_presentation.preview.new_song') }}</span>
-                </span>
-                <span class="text-sm font-bold text-surface-700 dark:text-surface-300">{{ formatSongDuration(song.seconds) }}</span>
-                <span class="flex">
-                  <button
-                    type="button"
-                    :class="ICON_BUTTON"
-                    :disabled="index === 0"
-                    :aria-label="t('home.band_space_presentation.preview.move_up', { title: song.title })"
-                    @click="moveSongAt(index, -1)"
-                  >
-                    <i class="pi pi-arrow-up" aria-hidden="true" />
+              <template v-else-if="tab.key === 'notes'">
+                <div v-if="openNote" class="flex flex-col gap-3">
+                  <button type="button" :class="[ADD_BUTTON, 'self-start']" @click="openNoteId = null">
+                    <i class="pi pi-arrow-left" aria-hidden="true" />
+                    {{ t('home.band_space_presentation.preview.back_to_notes') }}
                   </button>
-                  <button
-                    type="button"
-                    :class="ICON_BUTTON"
-                    :disabled="index === setlist.length - 1"
-                    :aria-label="t('home.band_space_presentation.preview.move_down', { title: song.title })"
-                    @click="moveSongAt(index, 1)"
-                  >
-                    <i class="pi pi-arrow-down" aria-hidden="true" />
-                  </button>
-                </span>
-              </li>
-            </ol>
-
-            <template v-else-if="tab.key === 'files'">
-              <ul v-if="files.length" class="m-0 p-0 list-none flex flex-col gap-2">
-                <li v-for="file in files" :key="file.id" :class="[ROW, 'gap-3']">
-                  <span :class="['w-10 text-xs font-bold', MODULE_ACCENTS.files.text]">{{ file.type }}</span>
-                  <span class="flex flex-col grow min-w-0">
-                    <span class="truncate font-semibold text-surface-900 dark:text-surface-0">{{ file.name }}</span>
-                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.file_added_by', { folder: file.folder, name: file.who }) }}</span>
+                  <div class="flex flex-col rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+                    <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-950">
+                      <span class="font-semibold text-surface-900 dark:text-surface-0">{{ openNote.title }}</span>
+                      <!-- Decorative: a real formatting toolbar is the product, not the demo. -->
+                      <span class="flex gap-3 text-surface-500 dark:text-surface-400" aria-hidden="true">
+                        <span class="font-bold">{{ t('home.band_space_presentation.preview.toolbar_bold') }}</span>
+                        <span class="italic">{{ t('home.band_space_presentation.preview.toolbar_italic') }}</span>
+                        <i class="pi pi-list" />
+                      </span>
+                    </div>
+                    <label :for="`demo-note-${openNote.id}`" class="sr-only">{{ t('home.band_space_presentation.preview.note_content', { title: openNote.title }) }}</label>
+                    <textarea
+                      :id="`demo-note-${openNote.id}`"
+                      v-model="openNoteBody"
+                      rows="7"
+                      class="w-full p-4 bg-surface-0 dark:bg-surface-900 text-surface-900 dark:text-surface-0 leading-relaxed resize-y outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                    />
+                  </div>
+                  <span class="text-sm text-surface-600 dark:text-surface-400">
+                    {{ openNote.isEdited ? t('home.band_space_presentation.preview.note_edited_by_you') : t('home.band_space_presentation.preview.note_written_by', { name: openNote.who }) }}
                   </span>
-                  <button
-                    type="button"
-                    :class="[ICON_BUTTON, 'hover:text-red-600 dark:hover:text-red-400']"
-                    :aria-label="t('home.band_space_presentation.preview.delete_file', { name: file.name })"
-                    data-file-delete
-                    @click="deleteFile(file.id)"
-                  >
-                    <i class="pi pi-trash" aria-hidden="true" />
-                  </button>
+                </div>
+                <ul v-else class="m-0 p-0 list-none flex flex-col gap-2">
+                  <li v-for="note in notes" :key="note.id">
+                    <button type="button" :class="[ROW, 'w-full gap-3 text-left cursor-pointer hover:border-primary']" @click="openNoteId = note.id">
+                      <i :class="['pi pi-file-edit', MODULE_ACCENTS.notes.text]" aria-hidden="true" />
+                      <span class="flex flex-col grow min-w-0">
+                        <span class="font-semibold text-surface-900 dark:text-surface-0">{{ note.title }}</span>
+                        <span class="truncate text-sm text-surface-600 dark:text-surface-400">{{ note.body || t('home.band_space_presentation.preview.note_empty') }}</span>
+                      </span>
+                      <span class="text-sm font-bold text-surface-700 dark:text-surface-300">
+                        {{ note.isEdited ? t('home.band_space_presentation.preview.just_now') : note.who }}
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </template>
+
+              <ol v-else-if="tab.key === 'setlists'" class="m-0 p-0 list-none flex flex-col gap-2">
+                <li v-for="(song, index) in setlist" :key="song.id" :class="[ROW, 'gap-3']">
+                  <span class="w-5 text-sm font-bold text-surface-600 dark:text-surface-400">{{ index + 1 }}</span>
+                  <span class="flex flex-wrap items-center gap-x-2 grow min-w-0 font-semibold text-surface-900 dark:text-surface-0">
+                    <span>{{ song.title }}</span>
+                    <span v-if="song.isNew" :class="['text-[10px] font-bold uppercase', MODULE_ACCENTS.setlists.text]">{{ t('home.band_space_presentation.preview.new_song') }}</span>
+                  </span>
+                  <span class="text-sm font-bold text-surface-700 dark:text-surface-300">{{ formatSongDuration(song.seconds) }}</span>
+                  <span class="flex">
+                    <button
+                      type="button"
+                      :class="ICON_BUTTON"
+                      :disabled="index === 0"
+                      :aria-label="t('home.band_space_presentation.preview.move_up', { title: song.title })"
+                      @click="moveSongAt(index, -1)"
+                    >
+                      <i class="pi pi-arrow-up" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      :class="ICON_BUTTON"
+                      :disabled="index === setlist.length - 1"
+                      :aria-label="t('home.band_space_presentation.preview.move_down', { title: song.title })"
+                      @click="moveSongAt(index, 1)"
+                    >
+                      <i class="pi pi-arrow-down" aria-hidden="true" />
+                    </button>
+                  </span>
                 </li>
-              </ul>
-              <div v-else class="flex flex-col items-center gap-3 py-8 text-center">
-                <p class="m-0 text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.files_empty') }}</p>
-                <button type="button" data-files-restore :class="ADD_BUTTON" @click="deletedFileIds = []">
-                  <i class="pi pi-replay" aria-hidden="true" />
-                  {{ t('home.band_space_presentation.preview.restore_files') }}
+              </ol>
+
+              <template v-else-if="tab.key === 'files'">
+                <ul v-if="files.length" class="m-0 p-0 list-none flex flex-col gap-2">
+                  <li v-for="file in files" :key="file.id" :class="[ROW, 'gap-3']">
+                    <span :class="['w-10 text-xs font-bold', MODULE_ACCENTS.files.text]">{{ file.type }}</span>
+                    <span class="flex flex-col grow min-w-0">
+                      <span class="truncate font-semibold text-surface-900 dark:text-surface-0">{{ file.name }}</span>
+                      <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.file_added_by', { folder: file.folder, name: file.who }) }}</span>
+                    </span>
+                    <button
+                      type="button"
+                      :class="[ICON_BUTTON, 'hover:text-red-600 dark:hover:text-red-400']"
+                      :aria-label="t('home.band_space_presentation.preview.delete_file', { name: file.name })"
+                      data-file-delete
+                      @click="deleteFile(file.id)"
+                    >
+                      <i class="pi pi-trash" aria-hidden="true" />
+                    </button>
+                  </li>
+                </ul>
+                <div v-else class="flex flex-col items-center gap-3 py-8 text-center">
+                  <p class="m-0 text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.files_empty') }}</p>
+                  <button type="button" data-files-restore :class="ADD_BUTTON" @click="deletedFileIds = []">
+                    <i class="pi pi-replay" aria-hidden="true" />
+                    {{ t('home.band_space_presentation.preview.restore_files') }}
+                  </button>
+                </div>
+              </template>
+
+              <template v-else-if="tab.key === 'finances'">
+                <ul class="m-0 p-0 list-none flex flex-col gap-2">
+                  <li v-for="expense in expenses" :key="expense.id" :class="[ROW, 'gap-3']">
+                    <span :class="['size-2 rounded-full shrink-0', MODULE_ACCENTS.finances.dot]" aria-hidden="true" />
+                    <span class="flex flex-col grow min-w-0">
+                      <span class="font-semibold text-surface-900 dark:text-surface-0">{{ expense.label }}</span>
+                      <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.expense_split', { payer: expense.payer, size }) }}</span>
+                    </span>
+                    <span class="text-sm font-bold text-surface-900 dark:text-surface-0">{{ formatEuros(expense.amount) }}</span>
+                  </li>
+                </ul>
+                <h4 class="m-0 text-sm font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space_presentation.preview.who_owes_what') }}</h4>
+                <ul class="m-0 p-0 list-none grid sm:grid-cols-2 gap-2">
+                  <li
+                    v-for="balance in balances"
+                    :key="balance.name"
+                    class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-950 text-sm"
+                  >
+                    <span class="font-semibold text-surface-900 dark:text-surface-0">{{ balance.name }}</span>
+                    <span
+                      :class="[
+                        'font-bold',
+                        balance.cents > 0 ? 'text-teal-700 dark:text-teal-300' : 'text-surface-700 dark:text-surface-300'
+                      ]"
+                    >
+                      {{ describeBalance(balance.cents) }}
+                    </span>
+                  </li>
+                </ul>
+              </template>
+
+              <div v-if="panels[tab.key].addLabel" class="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  :class="ADD_BUTTON"
+                  :aria-disabled="!canAddMore(panels[tab.key].addedCount)"
+                  @click="canAddMore(panels[tab.key].addedCount) && panels[tab.key].add()"
+                >
+                  <i class="pi pi-plus" aria-hidden="true" />
+                  {{ panels[tab.key].addLabel }}
                 </button>
+                <span v-if="!canAddMore(panels[tab.key].addedCount)" class="text-sm text-surface-600 dark:text-surface-400">
+                  {{ t('home.band_space_presentation.preview.demo_limit') }}
+                </span>
               </div>
             </template>
-
-            <template v-else-if="tab.key === 'finances'">
-              <ul class="m-0 p-0 list-none flex flex-col gap-2">
-                <li v-for="expense in expenses" :key="expense.id" :class="[ROW, 'gap-3']">
-                  <span :class="['size-2 rounded-full shrink-0', MODULE_ACCENTS.finances.dot]" aria-hidden="true" />
-                  <span class="flex flex-col grow min-w-0">
-                    <span class="font-semibold text-surface-900 dark:text-surface-0">{{ expense.label }}</span>
-                    <span class="text-sm text-surface-600 dark:text-surface-400">{{ t('home.band_space_presentation.preview.expense_split', { payer: expense.payer, size }) }}</span>
-                  </span>
-                  <span class="text-sm font-bold text-surface-900 dark:text-surface-0">{{ formatEuros(expense.amount) }}</span>
-                </li>
-              </ul>
-              <h4 class="m-0 text-sm font-bold text-surface-900 dark:text-surface-0">{{ t('home.band_space_presentation.preview.who_owes_what') }}</h4>
-              <ul class="m-0 p-0 list-none grid sm:grid-cols-2 gap-2">
-                <li
-                  v-for="balance in balances"
-                  :key="balance.name"
-                  class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-950 text-sm"
-                >
-                  <span class="font-semibold text-surface-900 dark:text-surface-0">{{ balance.name }}</span>
-                  <span
-                    :class="[
-                      'font-bold',
-                      balance.cents > 0 ? 'text-teal-700 dark:text-teal-300' : 'text-surface-700 dark:text-surface-300'
-                    ]"
-                  >
-                    {{ describeBalance(balance.cents) }}
-                  </span>
-                </li>
-              </ul>
-            </template>
-
-            <div v-if="panels[tab.key].addLabel" class="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                :class="ADD_BUTTON"
-                :aria-disabled="!canAddMore(panels[tab.key].addedCount)"
-                @click="canAddMore(panels[tab.key].addedCount) && panels[tab.key].add()"
-              >
-                <i class="pi pi-plus" aria-hidden="true" />
-                {{ panels[tab.key].addLabel }}
-              </button>
-              <span v-if="!canAddMore(panels[tab.key].addedCount)" class="text-sm text-surface-600 dark:text-surface-400">
-                {{ t('home.band_space_presentation.preview.demo_limit') }}
-              </span>
-            </div>
-          </template>
+          </div>
         </div>
 
         <p class="m-0 mt-auto text-sm text-surface-600 dark:text-surface-400">
@@ -356,7 +372,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BAND_SPACE_MODULES } from '../../../constants/bandSpace.js'
 import {
@@ -381,7 +397,7 @@ import {
   requestedDemoTab,
   setlistMinutes
 } from '../../../utils/bandSpaceDemo.js'
-import { adjacentTabKey } from '../../../utils/tabNavigation.js'
+import { adjacentTabKey, centeredScrollLeft } from '../../../utils/tabNavigation.js'
 
 const props = defineProps({
   name: { type: String, default: '' },
@@ -422,6 +438,26 @@ const ADD_BUTTON =
   'inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-surface-300 dark:border-surface-600 text-sm font-semibold text-surface-900 dark:text-surface-0 hover:border-primary cursor-pointer aria-disabled:opacity-50 aria-disabled:cursor-default aria-disabled:hover:border-surface-300 dark:aria-disabled:hover:border-surface-600'
 
 const activeTab = ref('dashboard')
+const tabStrip = useTemplateRef('tabStrip')
+
+// Whatever selects a tab (a footer link, a dashboard card, an attachment), the phone's row scrolls it
+// into sight. Wide screens stack the tabs, so there is nothing to scroll there.
+function revealActiveTab() {
+  const strip = tabStrip.value
+  const tab = strip?.querySelector('[aria-selected="true"]')
+  if (!tab) return
+  const stripBox = strip.getBoundingClientRect()
+  const tabBox = tab.getBoundingClientRect()
+  strip.scrollLeft = centeredScrollLeft({
+    scrollLeft: strip.scrollLeft,
+    itemOffset: tabBox.left - stripBox.left,
+    itemWidth: tabBox.width,
+    viewportWidth: strip.clientWidth
+  })
+}
+
+watch(activeTab, revealActiveTab, { flush: 'post' })
+onMounted(revealActiveTab)
 
 watch(
   () => props.requestedTab,

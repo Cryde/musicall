@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { adjacentTabKey } from './tabNavigation.js'
+import { adjacentTabKey, centeredScrollLeft } from './tabNavigation.js'
 
 const TABS = [{ key: 'a' }, { key: 'b' }, { key: 'c' }]
 
@@ -35,5 +35,43 @@ describe('adjacentTabKey', () => {
   it('is a no-op on a single tab, in both directions', () => {
     assert.equal(adjacentTabKey([{ key: 'only' }], 'only', 1), 'only')
     assert.equal(adjacentTabKey([{ key: 'only' }], 'only', -1), 'only')
+  })
+})
+
+describe('centeredScrollLeft', () => {
+  it('scrolls an item out of sight on the right to the middle of the row', () => {
+    // A 100px tab 455px from the left edge of a 340px row: its middle has to move to 170.
+    assert.equal(
+      centeredScrollLeft({ scrollLeft: 0, itemOffset: 455, itemWidth: 100, viewportWidth: 340 }),
+      335
+    )
+  })
+
+  it('counts from where the row is already scrolled', () => {
+    assert.equal(
+      centeredScrollLeft({ scrollLeft: 200, itemOffset: 255, itemWidth: 100, viewportWidth: 340 }),
+      335
+    )
+  })
+
+  it('scrolls back for an item hidden on the left', () => {
+    assert.equal(
+      centeredScrollLeft({ scrollLeft: 335, itemOffset: -120, itemWidth: 100, viewportWidth: 340 }),
+      95
+    )
+  })
+
+  it('leaves a centred item where it is', () => {
+    assert.equal(
+      centeredScrollLeft({ scrollLeft: 50, itemOffset: 120, itemWidth: 100, viewportWidth: 340 }),
+      50
+    )
+  })
+
+  // The browser clamps a negative scrollLeft to 0; the first tab is that case.
+  it('returns a negative value for the first item, left to the browser to clamp', () => {
+    assert.ok(
+      centeredScrollLeft({ scrollLeft: 0, itemOffset: 10, itemWidth: 100, viewportWidth: 340 }) < 0
+    )
   })
 })

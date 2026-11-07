@@ -24,3 +24,15 @@ export function adjacentTabKey(items, currentKey, step) {
 
   return items[(index + step + items.length) % items.length].key
 }
+
+/**
+ * The scrollLeft that centres an item in a row scrolling sideways, from where the item shows now.
+ * The browser clamps the result, so an item near either end simply scrolls as far as the row goes.
+ *
+ * @param {{scrollLeft: number, itemOffset: number, itemWidth: number, viewportWidth: number}} row
+ *   itemOffset is the item's left edge relative to the row's visible left edge, as measured now.
+ * @returns {number}
+ */
+export function centeredScrollLeft({ scrollLeft, itemOffset, itemWidth, viewportWidth }) {
+  return scrollLeft + itemOffset - (viewportWidth - itemWidth) / 2
+}
