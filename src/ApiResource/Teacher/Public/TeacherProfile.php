@@ -29,6 +29,9 @@ class TeacherProfile
 
     public \DateTimeInterface $memberSince;
 
+    /** Always true for a visitor; false only for its owner, who still sees their private lessons page (#1317). */
+    public bool $isPublic = true;
+
     /**
      * The member's instruments as a musician, with their level, for « Le musicien derrière le prof ». Empty without a
      * musician profile.

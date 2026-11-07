@@ -48,6 +48,7 @@ readonly class TeacherProfileBuilder
         $dto->userId = $user->id;
         $dto->displayName = $user->profile->displayName ?: $user->username;
         $dto->memberSince = $user->creationDatetime;
+        $dto->isPublic = $user->profile->isPublic;
         $dto->musicianInstruments = $user->musicianProfile instanceof MusicianProfile
             ? $this->musicianInstrumentResourceBuilder->buildList($user->musicianProfile->instruments)
             : [];
