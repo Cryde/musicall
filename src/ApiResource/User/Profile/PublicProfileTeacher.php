@@ -6,6 +6,7 @@ namespace App\ApiResource\User\Profile;
 
 use ApiPlatform\Metadata\ApiProperty;
 use App\ApiResource\Profile\ProfileWallMedia;
+use App\ApiResource\Teacher\Public\TeacherProfileAvailability;
 use App\ApiResource\Teacher\Public\TeacherProfileInstrument;
 use App\ApiResource\Teacher\Public\TeacherProfilePricing;
 
@@ -28,4 +29,8 @@ class PublicProfileTeacher
     /** @var ProfileWallMedia[] in the order the member set, for « Écouter » */
     #[ApiProperty(genId: false)]
     public array $media = [];
+
+    /** @var TeacherProfileAvailability[] weekly slots, as on the lessons page */
+    #[ApiProperty(genId: false)]
+    public array $availability = [];
 }

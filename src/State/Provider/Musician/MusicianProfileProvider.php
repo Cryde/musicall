@@ -38,7 +38,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('profile.user_not_found');
         }
 
-        $this->publicProfileGuard->assertPublic($user);
+        $this->publicProfileGuard->assertVisible($user);
 
         if (!($musicianProfile = $user->musicianProfile) instanceof \App\Entity\Musician\MusicianProfile) {
             throw new NotFoundHttpException('profile.musician.not_found');

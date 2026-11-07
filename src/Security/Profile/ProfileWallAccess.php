@@ -22,14 +22,14 @@ readonly class ProfileWallAccess
     ) {
     }
 
-    /** The wall's owner, or the 404 their profile would give: gone, suspended or private (#1308). */
+    /** The wall's owner, or the 404 their profile would give: gone, suspended, or private to anyone but them (#1308). */
     public function owner(string $username): User
     {
         $owner = $this->userRepository->findOneBy(['username' => $username]);
         if (!$owner instanceof User || !$owner->isPubliclyVisible()) {
             throw new NotFoundHttpException('profile.not_found');
         }
-        $this->publicProfileGuard->assertPublic($owner);
+        $this->publicProfileGuard->assertVisible($owner);
 
         return $owner;
     }
@@ -49,7 +49,7 @@ readonly class ProfileWallAccess
         if (!$post instanceof ProfilePost || !$post->author->isPubliclyVisible()) {
             throw new NotFoundHttpException('profile.wall.post_not_found');
         }
-        $this->publicProfileGuard->assertPublic($post->author);
+        $this->publicProfileGuard->assertVisible($post->author);
         if ($this->isHiddenFrom($post->author, $viewer)) {
             throw new NotFoundHttpException('profile.wall.post_not_found');
         }

@@ -12,6 +12,7 @@ use App\Repository\UserRepository;
 use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\User\PublicProfileBuilder;
 use App\Service\Profile\ProfileViewTracker;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -24,13 +25,14 @@ readonly class PublicProfileProvider implements ProviderInterface
         private PublicProfileBuilder $publicProfileBuilder,
         private ProfileViewTracker $viewTracker,
         private PublicProfileGuard $publicProfileGuard,
+        private Security $security,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PublicProfile
     {
         $username = $uriVariables['username'];
-        if (!($user = $this->userRepository->findOneBy(['username' => $username])) instanceof \App\Entity\User) {
+        if (!($user = $this->userRepository->findOneBy(['username' => $username])) instanceof User) {
             throw new NotFoundHttpException('profile.not_found');
         }
 
@@ -38,10 +40,12 @@ readonly class PublicProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('profile.not_found');
         }
 
-        $this->publicProfileGuard->assertPublic($user);
+        $this->publicProfileGuard->assertVisible($user);
 
         $this->viewTracker->track($user->profile, $user);
 
-        return $this->publicProfileBuilder->build($user);
+        $viewer = $this->security->getUser();
+
+        return $this->publicProfileBuilder->build($user, $viewer instanceof User && $viewer->id === $user->id);
     }
 }

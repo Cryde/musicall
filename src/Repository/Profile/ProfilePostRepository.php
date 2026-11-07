@@ -57,6 +57,17 @@ class ProfilePostRepository extends ServiceEntityRepository
         return $posts;
     }
 
+    public function hasPostsBy(User $author): bool
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.id')
+            ->where('p.author = :author')
+            ->setParameter('author', $author)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
+    }
+
     public function findPinned(User $author): ?ProfilePost
     {
         return $this->findOneBy(['author' => $author, 'isPinned' => true]);

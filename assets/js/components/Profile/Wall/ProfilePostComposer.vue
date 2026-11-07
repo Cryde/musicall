@@ -16,6 +16,7 @@
     />
     <div class="flex-1 min-w-0 flex flex-col gap-2">
       <Textarea
+        ref="textarea"
         v-model="draft.content"
         :aria-label="t('profile.wall.composer_aria')"
         :placeholder="t('profile.wall.composer_placeholder', { name: displayName })"
@@ -127,6 +128,7 @@ const isLinkOpen = ref(false)
 const isPublishing = ref(false)
 const error = ref('')
 const fileInput = ref(null)
+const textarea = ref(null)
 
 function handleFiles(event) {
   error.value = ''
@@ -185,4 +187,7 @@ async function publish() {
 }
 
 onUnmounted(reset)
+
+// The owner's checklist (« Ton premier post ») brings the wall into view first.
+defineExpose({ focus: () => textarea.value?.$el?.focus({ preventScroll: true }) })
 </script>

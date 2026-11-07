@@ -6,34 +6,20 @@ export const useUserProfileStore = defineStore('userProfile', () => {
   const profile = ref(null)
   const socialLinks = ref([])
   const isLoading = ref(false)
-  const isUpdating = ref(false)
   const isLoadingSocialLinks = ref(false)
   const isAddingSocialLink = ref(false)
   const isDeletingSocialLink = ref(false)
   const isUploadingCoverPicture = ref(false)
   const isDeletingCoverPicture = ref(false)
 
-  async function loadProfile(username = null) {
+  /** The public profile page's member (#1317); the settings read the owner's own through the API. */
+  async function loadProfile(username) {
     isLoading.value = true
     try {
-      if (username) {
-        profile.value = await profileApi.getPublicProfile(username)
-      } else {
-        profile.value = await profileApi.getMyProfile()
-      }
+      profile.value = await profileApi.getPublicProfile(username)
       return profile.value
     } finally {
       isLoading.value = false
-    }
-  }
-
-  async function updateProfile(data) {
-    isUpdating.value = true
-    try {
-      profile.value = await profileApi.updateMyProfile(data)
-      return profile.value
-    } finally {
-      isUpdating.value = false
     }
   }
 
@@ -82,9 +68,8 @@ export const useUserProfileStore = defineStore('userProfile', () => {
   async function deleteCoverPicture() {
     isDeletingCoverPicture.value = true
     try {
+      // No reload, as for the upload: the page reloads what it shows.
       await profileApi.deleteCoverPicture()
-      // Reload profile to reflect the deletion
-      await loadProfile()
     } finally {
       isDeletingCoverPicture.value = false
     }
@@ -99,14 +84,12 @@ export const useUserProfileStore = defineStore('userProfile', () => {
     profile: readonly(profile),
     socialLinks: readonly(socialLinks),
     isLoading: readonly(isLoading),
-    isUpdating: readonly(isUpdating),
     isLoadingSocialLinks: readonly(isLoadingSocialLinks),
     isAddingSocialLink: readonly(isAddingSocialLink),
     isDeletingSocialLink: readonly(isDeletingSocialLink),
     isUploadingCoverPicture: readonly(isUploadingCoverPicture),
     isDeletingCoverPicture: readonly(isDeletingCoverPicture),
     loadProfile,
-    updateProfile,
     loadSocialLinks,
     addSocialLink,
     deleteSocialLink,

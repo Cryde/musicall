@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Api\User\Profile;
 
 use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\Teacher\TeacherAvailability;
 use App\Entity\Teacher\TeacherProfilePricing;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Enum\Musician\MediaPlatform;
 use App\Enum\Musician\SkillLevel;
+use App\Enum\Teacher\DayOfWeek;
 use App\Enum\Teacher\SessionDuration;
 use App\Enum\SocialPlatform;
 use App\Tests\ApiTestAssertionsTrait;
@@ -18,6 +20,7 @@ use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
+use App\Tests\Factory\Profile\ProfilePostFactory;
 use App\Tests\Factory\Teacher\TeacherProfileFactory;
 use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
 use App\Tests\Factory\Teacher\TeacherProfileMediaFactory;
@@ -57,6 +60,7 @@ class PublicProfileTest extends ApiTestCase
             'bio' => 'Test bio content',
             'location' => 'Paris, France',
             'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
             'social_links' => [],
             'musician_announces' => [],
             'has_musician_profile' => false,
@@ -91,6 +95,7 @@ class PublicProfileTest extends ApiTestCase
             'user_id' => $user->id,
             'bio' => 'Musician bio',
             'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
             'social_links' => [
                 [
                     '@type' => 'PublicProfileSocialLink',
@@ -136,6 +141,7 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'musician',
             'user_id' => $user->id,
             'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
             'social_links' => [],
             'musician_announces' => [
                 [
@@ -194,6 +200,11 @@ class PublicProfileTest extends ApiTestCase
             $pricing->price = $price;
             $teacherProfile->addPricing($pricing);
         }
+        $slot = new TeacherAvailability();
+        $slot->dayOfWeek = DayOfWeek::WEDNESDAY;
+        $slot->startTime = new \DateTimeImmutable('14:00');
+        $slot->endTime = new \DateTimeImmutable('18:00');
+        $teacherProfile->addAvailability($slot);
         \Zenstruck\Foundry\Persistence\save($teacherProfile);
         $user->musicianProfile = $musicianProfile;
         $user->teacherProfile = $teacherProfile;
@@ -210,6 +221,7 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'julien',
             'user_id' => $user->id,
             'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
             'social_links' => [],
             'musician_announces' => [],
             'has_musician_profile' => true,
@@ -296,6 +308,9 @@ class PublicProfileTest extends ApiTestCase
                         'title' => 'Les arpèges',
                     ],
                 ],
+                'availability' => [
+                    ['@type' => 'TeacherProfileAvailability', 'day_of_week' => 'wednesday', 'day_of_week_order' => 3, 'start_time' => '14:00', 'end_time' => '18:00'],
+                ],
             ],
         ]);
     }
@@ -340,17 +355,15 @@ class PublicProfileTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_public_profile_private_is_not_found_for_its_owner_too(): void
+    public function test_get_public_profile_private_is_not_found_for_another_member(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create([
-            'username' => 'privateowner',
-            'email' => 'privateowner@test.com',
-        ]);
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'privateuser', 'email' => 'privateuser@test.com']);
         $user->profile->isPublic = false;
         \Zenstruck\Foundry\Persistence\save($user);
+        $viewer = UserFactory::new()->asBaseUser()->create(['username' => 'viewer', 'email' => 'viewer@test.com']);
 
-        $this->client->loginUser($user);
-        $this->client->request('GET', '/api/user/profile/privateowner');
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/user/profile/privateuser');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
@@ -361,6 +374,60 @@ class PublicProfileTest extends ApiTestCase
             'type' => '/errors/profile-private',
             'detail' => 'Ce profil est privé',
             'description' => 'Ce profil est privé',
+        ]);
+    }
+
+    /** Its owner still sees a private profile, to edit it in place (#1317); visitors get the 404 above. */
+    public function test_get_public_profile_private_is_shown_to_its_owner(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'privateowner',
+            'email' => 'privateowner@test.com',
+        ]);
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/profile/privateowner');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/PublicProfile',
+            '@id' => '/api/user/profile/privateowner',
+            '@type' => 'PublicProfile',
+            'username' => 'privateowner',
+            'user_id' => $user->id,
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => false,
+            'has_posts' => false,
+            'social_links' => [],
+            'musician_announces' => [],
+            'has_musician_profile' => false,
+            'has_teacher_profile' => false,
+        ]);
+    }
+
+    /** For the owner's checklist (#1317): « Ton premier post ». Visitors are not told (the bodies above). */
+    public function test_get_public_profile_tells_its_owner_whether_they_have_posted(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'poster', 'email' => 'poster@test.com']);
+        ProfilePostFactory::new()->create(['author' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/profile/poster');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/PublicProfile',
+            '@id' => '/api/user/profile/poster',
+            '@type' => 'PublicProfile',
+            'username' => 'poster',
+            'user_id' => $user->id,
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
+            'has_posts' => true,
+            'social_links' => [],
+            'musician_announces' => [],
+            'has_musician_profile' => false,
+            'has_teacher_profile' => false,
         ]);
     }
 
@@ -385,6 +452,7 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'emptyprofile',
             'user_id' => $user->id,
             'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
             'social_links' => [],
             'musician_announces' => [],
             'has_musician_profile' => false,

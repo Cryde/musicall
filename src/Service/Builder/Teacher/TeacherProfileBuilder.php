@@ -159,7 +159,7 @@ readonly class TeacherProfileBuilder
      * @param TeacherAvailability[] $availability
      * @return PublicTeacherAvailability[]
      */
-    private function buildAvailability(array $availability): array
+    public function buildAvailability(array $availability): array
     {
         $result = array_values(array_map(function (TeacherAvailability $a): PublicTeacherAvailability {
             $dto = new PublicTeacherAvailability();

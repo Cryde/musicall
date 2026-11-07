@@ -334,6 +334,45 @@ class ProfileWallTest extends ApiTestCase
         ]);
     }
 
+    /** Its owner still reads a private wall, to write on it (#1317). */
+    public function test_the_owner_still_reads_their_private_wall(): void
+    {
+        $owner = $this->member('julien', isPublic: false);
+
+        $this->client->loginUser($owner);
+        $this->client->request('GET', '/api/user/profile/julien/wall');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfileWallItem',
+            '@id' => '/api/user/profile/julien/wall',
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
+        ]);
+    }
+
+    public function test_another_member_does_not_read_a_private_wall(): void
+    {
+        $this->member('julien', isPublic: false);
+        $viewer = $this->member('chloe');
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/user/profile/julien/wall');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/profile-private',
+            'detail' => 'Ce profil est privé',
+            'description' => 'Ce profil est privé',
+        ]);
+    }
+
     public function test_an_unknown_member_has_no_wall(): void
     {
         $this->client->request('GET', '/api/user/profile/nobody/wall');
