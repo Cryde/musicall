@@ -23,6 +23,7 @@ import { useUserSecurityStore } from './store/user/security.js'
 import MusicAllPreset from './theme/musicAllPreset.js'
 import { hasLiveToken, isAuthEndpoint, refreshSession } from './utils/sessionRefresh.js'
 import { isChunkLoadError, reloadOnceForStaleBuild } from './utils/staleBuild.js'
+import { loginRouteReturningTo } from './utils/unauthenticatedRedirect.js'
 
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()
@@ -100,10 +101,9 @@ async function endSession() {
     return
   }
 
-  await router.push({
-    name: 'app_login',
-    query: { redirect: router.currentRoute.value?.fullPath }
-  })
+  // Always the login form, not resolveUnauthenticatedRedirect(): a member whose session ran out on a
+  // Band Space module wants to sign back in, not the presentation page that route sends visitors to.
+  await router.push(loginRouteReturningTo(router.currentRoute.value?.fullPath))
 }
 
 const pinia = createPinia()
