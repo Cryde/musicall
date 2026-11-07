@@ -6,19 +6,13 @@ namespace App\Service\Builder\Profile;
 
 use App\ApiResource\Profile\ProfilePostResource;
 use App\ApiResource\Profile\ProfileWallItem;
-use App\ApiResource\Profile\ProfileWallMedia;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Musician\MusicianProfileMedia;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Publication;
-use App\Entity\Teacher\TeacherProfileMedia;
 use App\Entity\User;
-use App\Service\Builder\Musician\MusicianProfileMediaResourceBuilder;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
-use App\Service\Builder\Teacher\TeacherProfileMediaResourceBuilder;
 use App\Service\Builder\User\PublicProfileAnnounceBuilder;
 use App\Service\Profile\Wall\WallEntry;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 /** The lines of a wall page, each built the way the page that owns its content builds it. */
 readonly class ProfileWallItemBuilder
@@ -27,9 +21,7 @@ readonly class ProfileWallItemBuilder
         private ProfilePostResourceBuilder $postBuilder,
         private PublicProfileAnnounceBuilder $announceBuilder,
         private PublicationListItemBuilder $publicationBuilder,
-        private MusicianProfileMediaResourceBuilder $musicianMediaBuilder,
-        private TeacherProfileMediaResourceBuilder $teacherMediaBuilder,
-        private TranslatorInterface $translator,
+        private ProfileWallMediaBuilder $mediaBuilder,
     ) {
     }
 
@@ -72,29 +64,9 @@ readonly class ProfileWallItemBuilder
             $item->publication = $this->publicationBuilder->buildItem($row);
         } else {
             $item->type = ProfileWallItem::TYPE_MEDIA;
-            $item->media = $this->media($row);
+            $item->media = $this->mediaBuilder->build($row);
         }
 
         return $item;
-    }
-
-    private function media(MusicianProfileMedia|TeacherProfileMedia $entity): ProfileWallMedia
-    {
-        // The profile's own builders, for the thumbnail they already know how to find.
-        $thumbnailUrl = $entity instanceof MusicianProfileMedia
-            ? $this->musicianMediaBuilder->buildFromEntity($entity)->thumbnailUrl
-            : $this->teacherMediaBuilder->buildFromEntity($entity)->thumbnailUrl;
-
-        $media = new ProfileWallMedia();
-        $media->id = (string) $entity->id;
-        $media->profile = $entity instanceof MusicianProfileMedia ? ProfileWallMedia::PROFILE_MUSICIAN : ProfileWallMedia::PROFILE_TEACHER;
-        $media->platform = $entity->platform->value;
-        $media->platformLabel = $entity->platform->trans($this->translator);
-        $media->url = $entity->url;
-        $media->embedId = $entity->embedId;
-        $media->title = $entity->title;
-        $media->thumbnailUrl = $thumbnailUrl;
-
-        return $media;
     }
 }
