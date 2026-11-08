@@ -223,6 +223,45 @@ class BandSpaceFileBulkDeleteTest extends ApiTestCase
         ]);
     }
 
+    /** English puts a comma before the final "and", as the front end's Intl.ListFormat does. */
+    public function test_bulk_delete_names_the_attached_sources_in_english(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $attachedToTask = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'quote.pdf'])
+            ->withAttachment(['type' => 'task', 'id' => Uuid::v7()->toRfc4122()])
+            ->create();
+        $attachedToNote = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'lyrics.pdf'])
+            ->withAttachment(['type' => 'note', 'id' => Uuid::v7()->toRfc4122()])
+            ->create();
+        $attachedToEntry = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'invoice.pdf'])
+            ->withAttachment(['type' => 'finance', 'id' => Uuid::v7()->toRfc4122()])
+            ->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files/bulk_delete',
+            ['file_ids' => [(string) $attachedToTask->id, (string) $attachedToNote->id, (string) $attachedToEntry->id]],
+            [...self::HEADERS, 'HTTP_X_LOCALE' => 'en'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $detail = '3 selected files are attached to a finance entry, a note, and a task. Detach them from those resources first.';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => $detail,
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => $detail,
+        ]);
+    }
+
     public function test_bulk_delete_rejects_an_id_from_another_band_space(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

@@ -204,6 +204,48 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         );
     }
 
+    public function test_detach_with_archive_while_attached_to_a_note_names_the_note_in_english(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => (string) $task->id,
+            'attachedBy' => $user,
+        ]);
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'note',
+            'sourceId' => (string) $note->id,
+            'attachedBy' => $user,
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files/' . $file->id . '?archive=true',
+            server: ['HTTP_X_LOCALE' => 'en'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'This file is attached to a note. Detach it from that resource first.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'This file is attached to a note. Detach it from that resource first.',
+        ]);
+    }
+
     /** The task being detached from is the only other one: the file is attached to two tasks. */
     public function test_detach_with_archive_while_attached_to_another_task_returns_422(): void
     {

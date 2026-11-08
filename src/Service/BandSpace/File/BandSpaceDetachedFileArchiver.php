@@ -20,6 +20,7 @@ readonly class BandSpaceDetachedFileArchiver
     public function __construct(
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceFileArchiver $fileArchiver,
+        private BandSpaceFileAttachmentLabels $attachmentLabels,
     ) {
     }
 
@@ -40,7 +41,7 @@ readonly class BandSpaceDetachedFileArchiver
             throw new TranslatableHttpException(
                 Response::HTTP_UNPROCESSABLE_ENTITY,
                 'band_space.file.delete_attached',
-                ['sources' => BandSpaceFileAttachmentLabels::describe($otherSourceTypes)],
+                ['sources' => $this->attachmentLabels->describe($otherSourceTypes)],
             );
         }
 
