@@ -2,18 +2,48 @@
   <div
     v-if="tasksStore.isSelectionMode && tasksStore.selectedTaskIds.size > 0"
     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-900 dark:bg-surface-800 text-white rounded-xl shadow-xl px-4 py-2 flex items-center gap-3"
+    :class="{ 'w-max max-w-[calc(100vw-1rem)] flex-wrap justify-center': isPhone }"
   >
-    <span class="text-sm font-medium">
+    <span class="text-sm font-medium" :class="{ 'basis-full text-center': isPhone }">
       {{ t('band_space_tasks.bulk_bar.selected_count', tasksStore.selectedTaskIds.size) }}
     </span>
 
-    <div class="w-px h-6 bg-surface-600"></div>
+    <div v-if="!isPhone" class="w-px h-6 bg-surface-600"></div>
+
+    <Button
+      v-bind="actionName('band_space_tasks.field.status')"
+      v-tooltip.top="isPhone ? t('band_space_tasks.field.status') : null"
+      icon="pi pi-arrow-right"
+      size="small"
+      severity="secondary"
+      :disabled="!!busy"
+      @click="(e) => statusPopover.toggle(e)"
+    />
+    <Popover ref="statusPopover">
+      <div class="flex flex-col gap-2 min-w-[16rem]">
+        <Select
+          v-model="statusDraft"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          :placeholder="t('band_space_tasks.bulk_bar.choose_status')"
+        />
+        <Button
+          :label="t('band_space_tasks.bulk_bar.apply')"
+          size="small"
+          :loading="busy === 'status'"
+          :disabled="statusDraft === null"
+          @click="handleStatus"
+        />
+      </div>
+    </Popover>
 
     <!-- The tooltip sits on the wrapper, since a disabled button fires no pointer event of its
          own, and a tooltip carries no accessible name either, hence the sr-only twin. -->
     <span v-tooltip.top="archiveBlockedReason">
       <Button
-        :label="t('band_space_tasks.common.archive')"
+        v-bind="actionName('band_space_tasks.common.archive')"
+        v-tooltip.top="isPhone ? t('band_space_tasks.common.archive') : null"
         icon="pi pi-box"
         size="small"
         severity="secondary"
@@ -25,7 +55,8 @@
     </span>
 
     <Button
-      :label="t('band_space_tasks.field.category')"
+      v-bind="actionName('band_space_tasks.field.category')"
+      v-tooltip.top="isPhone ? t('band_space_tasks.field.category') : null"
       icon="pi pi-tag"
       size="small"
       severity="secondary"
@@ -51,7 +82,8 @@
     </Popover>
 
     <Button
-      :label="t('band_space_tasks.field.assignees')"
+      v-bind="actionName('band_space_tasks.field.assignees')"
+      v-tooltip.top="isPhone ? t('band_space_tasks.field.assignees') : null"
       icon="pi pi-users"
       size="small"
       severity="secondary"
@@ -82,7 +114,8 @@
 
     <span v-tooltip.top="deleteBlockedReason">
       <Button
-        :label="t('band_space_tasks.common.delete')"
+        v-bind="actionName('band_space_tasks.common.delete')"
+        v-tooltip.top="isPhone ? t('band_space_tasks.common.delete') : null"
         icon="pi pi-trash"
         size="small"
         severity="danger"
@@ -93,7 +126,7 @@
       <span v-if="deleteBlockedReason" class="sr-only">{{ deleteBlockedReason }}</span>
     </span>
 
-    <div class="w-px h-6 bg-surface-600"></div>
+    <div v-if="!isPhone" class="w-px h-6 bg-surface-600"></div>
 
     <Button
       icon="pi pi-times"
@@ -119,6 +152,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useIsBelowMd } from '../../../composables/useIsPhone.js'
+import { TASK_STATUSES } from '../../../constants/taskStatuses.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
@@ -136,12 +171,28 @@ const { isAdmin } = useBandSpaceNavigation()
 const toast = useToast()
 const confirm = useConfirm()
 const { t } = useI18n()
+// The phone tasks layout's breakpoint (Tasks.vue), where the bar is too narrow for its labels.
+const isPhone = useIsBelowMd()
 
 const busy = ref(null)
+const statusDraft = ref(null)
 const categoryDraft = ref(null)
 const assigneeDraft = ref([])
+const statusPopover = ref()
 const categoryPopover = ref()
 const assigneePopover = ref()
+
+const statusOptions = computed(() =>
+  TASK_STATUSES.map((status) => ({ label: t(status.labelKey), value: status.value }))
+)
+
+/**
+ * On a phone the actions are icons, named by an aria-label and a tooltip. Switched here rather than
+ * with a class, which PrimeVue's unlayered CSS would beat on its own button.
+ */
+function actionName(key) {
+  return isPhone.value ? { 'aria-label': t(key) } : { label: t(key) }
+}
 
 const categoryOptions = computed(() => [
   { label: t('band_space_tasks.field.no_category'), value: null },
@@ -198,6 +249,19 @@ function handleArchive() {
   runBulk('archive', async () => {
     await tasksStore.bulkPatch(props.bandSpaceId, { archived: true })
     toast.add({ severity: 'success', summary: t('band_space_tasks.bulk_bar.archived'), life: 3000 })
+  })
+}
+
+function handleStatus() {
+  statusPopover.value?.hide()
+  runBulk('status', async () => {
+    await tasksStore.bulkPatch(props.bandSpaceId, { status: statusDraft.value })
+    toast.add({
+      severity: 'success',
+      summary: t('band_space_tasks.bulk_bar.status_updated'),
+      life: 3000
+    })
+    statusDraft.value = null
   })
 }
 

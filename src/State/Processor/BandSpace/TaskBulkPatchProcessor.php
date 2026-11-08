@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  */
 readonly class TaskBulkPatchProcessor implements ProcessorInterface
 {
-    private const ALLOWED_KEYS = ['archived', 'category_id', 'assignee_ids'];
+    private const ALLOWED_KEYS = ['archived', 'category_id', 'assignee_ids', 'status'];
 
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,

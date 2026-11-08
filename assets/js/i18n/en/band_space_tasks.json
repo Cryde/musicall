@@ -79,6 +79,7 @@
   },
   "bulk_bar": {
     "selected_count": "{count} task selected | {count} tasks selected",
+    "choose_status": "Choose a status",
     "choose_category": "Choose a category",
     "apply": "Apply",
     "no_assignee": "None",
@@ -89,6 +90,7 @@
     "failed": "Bulk action failed",
     "generic_error": "An error occurred",
     "archived": "Tasks archived",
+    "status_updated": "Status updated",
     "category_updated": "Category updated",
     "assignees_updated": "Assignees updated",
     "deleted": "Tasks deleted",
