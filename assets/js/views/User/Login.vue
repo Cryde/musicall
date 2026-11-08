@@ -108,7 +108,7 @@
         <div class="text-center w-full">
           <span class="text-surface-600 dark:text-surface-400">{{ t('auth.login.no_account') }}</span>
           <RouterLink
-            :to="{ name: 'app_register', query: returnUrl ? { return_url: returnUrl } : {} }"
+            :to="registerRouteFromLogin(returnUrl)"
             class="ml-2 text-primary font-medium cursor-pointer hover:text-primary-emphasis"
           >
             {{ t('auth.login.create_account') }}
@@ -134,6 +134,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import SocialSignInButtons from '../../components/Auth/SocialSignInButtons.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { registerRouteFromLogin } from '../../utils/bandSpaceInvitation.js'
 
 const { t } = useI18n()
 

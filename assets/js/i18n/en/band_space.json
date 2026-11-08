@@ -220,7 +220,16 @@
     "decline": "Decline",
     "accept": "Accept",
     "declined_title": "Invitation declined",
-    "declined_text": "You have declined this invitation."
+    "declined_text": "You have declined this invitation.",
+    "refusal": {
+      "already_member_title": "You are already in this band",
+      "already_member_text": "You are already a member of this Band Space, there is nothing more to do. Find the band in your Band Spaces.",
+      "already_member_action": "Go to my Band Spaces",
+      "no_longer_valid_title": "This invitation is no longer valid",
+      "no_longer_valid_text": "It has expired, been cancelled or already been used. Ask a member of the band to send you a new invitation.",
+      "other_recipient_title": "This invitation is meant for another account",
+      "other_recipient_text": "It was sent to a different email address from the one on your account. Sign out, then sign in with the account of the invited address to join."
+    }
   },
   "general": {
     "name_help": "This name appears in the menu, in notifications and on tech riders.",
