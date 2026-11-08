@@ -213,6 +213,7 @@
           :loading="isUploading"
           @click="fileInput?.click()"
         />
+        <FileDetachConfirmDialog ref="detachDialog" :band-space-id="bandSpaceId" />
       </div>
 
       <Divider v-if="!isBelowMd" />
@@ -245,7 +246,7 @@ import Drawer from 'primevue/drawer'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
@@ -257,6 +258,7 @@ import { recordOpenedItem } from '../../../utils/openedItemRecorder.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
+import FileDetachConfirmDialog from '../Files/FileDetachConfirmDialog.vue'
 import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
 import InlineEditField from './Song/InlineEditField.vue'
 
@@ -315,6 +317,7 @@ const { t } = useI18n()
 const songsStore = useBandSongsStore()
 const confirm = useConfirm()
 const toast = useToast()
+const detachDialog = useTemplateRef('detachDialog')
 
 const fileInput = ref(null)
 const isUploading = ref(false)
@@ -382,7 +385,9 @@ async function handleFileSelected(event) {
 
 function confirmDetach(file) {
   if (!props.song) return
-  confirm.require({
+  detachDialog.value.open({
+    file,
+    source: { type: 'song', id: props.song.id },
     message: t('band_space_setlist.song_drawer.detach_confirm_message', {
       name: file.original_name
     }),
@@ -390,12 +395,14 @@ function confirmDetach(file) {
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: t('band_space_setlist.attached_files.detach'),
     rejectLabel: t('band_space_setlist.common.cancel'),
-    accept: async () => {
+    onDetach: async (archive) => {
       try {
-        await bandSpaceSongsApi.detachFile(props.bandSpaceId, props.song.id, file.id)
+        await bandSpaceSongsApi.detachFile(props.bandSpaceId, props.song.id, file.id, { archive })
         toast.add({
           severity: 'success',
-          summary: t('band_space_setlist.attached_files.detached'),
+          summary: archive
+            ? t('band_space_files.detach_dialog.trashed')
+            : t('band_space_setlist.attached_files.detached'),
           life: 3000
         })
         await loadFiles()

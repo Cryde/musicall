@@ -14,7 +14,7 @@ use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\BandSpaceChangeSignal;
-use DateTimeImmutable;
+use App\Service\BandSpace\File\BandSpaceDetachedFileArchiver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -35,6 +35,7 @@ readonly class BandSpaceTaskFileDetachProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceDetachedFileArchiver $detachedFileArchiver,
         private BandSpaceChangeSignal $changeSignal,
     ) {
     }
@@ -46,7 +47,7 @@ readonly class BandSpaceTaskFileDetachProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {
@@ -82,16 +83,7 @@ readonly class BandSpaceTaskFileDetachProcessor implements ProcessorInterface
         );
 
         if ($shouldArchive) {
-            $file->archiveDatetime = new DateTimeImmutable();
-
-            $this->activityRecorder->record(
-                $bandSpace,
-                BandSpaceModule::File,
-                BandSpaceFileActivityType::Archived,
-                resourceId: (string) $file->id,
-                actor: $user,
-                payload: ['original_name' => $file->originalName],
-            );
+            $this->detachedFileArchiver->archive($membership, $attachment);
         }
 
         $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);

@@ -343,8 +343,8 @@ export default {
       .catch(handleApiError)
   },
 
-  detachFromSource(bandSpaceId, sourceType, sourceId, fileId) {
-    const route =
+  detachFromSource(bandSpaceId, sourceType, sourceId, fileId, { archive = false } = {}) {
+    const baseUrl =
       sourceType === 'task'
         ? Routing.generate('api_band_space_task_files_detach', {
             bandSpaceId,
@@ -356,7 +356,8 @@ export default {
             entryId: sourceId,
             id: fileId
           })
+    const url = archive ? `${baseUrl}?archive=true` : baseUrl
 
-    return axios.delete(route).catch(handleApiError)
+    return axios.delete(url).catch(handleApiError)
   }
 }

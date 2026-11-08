@@ -14,6 +14,7 @@ use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\BandSpaceDetachedFileArchiver;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -35,6 +36,7 @@ readonly class BandSpaceSetlistFileDetachProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceDetachedFileArchiver $detachedFileArchiver,
     ) {
     }
 
@@ -45,7 +47,7 @@ readonly class BandSpaceSetlistFileDetachProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $setlist = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['setlistId'], $bandSpace);
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
@@ -95,16 +97,7 @@ readonly class BandSpaceSetlistFileDetachProcessor implements ProcessorInterface
         );
 
         if ($shouldArchive) {
-            $file->archiveDatetime = new DateTimeImmutable();
-
-            $this->activityRecorder->record(
-                $bandSpace,
-                BandSpaceModule::File,
-                BandSpaceFileActivityType::Archived,
-                resourceId: (string) $file->id,
-                actor: $user,
-                payload: ['original_name' => $file->originalName],
-            );
+            $this->detachedFileArchiver->archive($membership, $attachment);
         }
 
         $this->entityManager->flush();

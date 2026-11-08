@@ -15,7 +15,7 @@ use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\BandSpaceChangeSignal;
-use DateTimeImmutable;
+use App\Service\BandSpace\File\BandSpaceDetachedFileArchiver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -36,6 +36,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private BandSpaceDetachedFileArchiver $detachedFileArchiver,
         private BandSpaceChangeSignal $changeSignal,
     ) {
     }
@@ -47,7 +48,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
@@ -87,16 +88,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
         );
 
         if ($shouldArchive) {
-            $file->archiveDatetime = new DateTimeImmutable();
-
-            $this->activityRecorder->record(
-                $bandSpace,
-                BandSpaceModule::File,
-                BandSpaceFileActivityType::Archived,
-                resourceId: (string) $file->id,
-                actor: $user,
-                payload: ['original_name' => $file->originalName],
-            );
+            $this->detachedFileArchiver->archive($membership, $attachment);
         }
 
         // A personal entry stays between its owner and the server, so the band hears nothing.
