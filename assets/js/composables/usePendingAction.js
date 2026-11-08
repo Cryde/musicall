@@ -35,13 +35,14 @@ export function usePendingAction() {
   const userSecurityStore = useUserSecurityStore()
 
   /**
-   * @param {{ kind: string, payload: unknown, stoppedOnSubmit: boolean }} action  plain values only
+   * @param {{ kind: string, payload: unknown, stoppedOnSubmit: boolean, route?: string }} action  plain values
+   *   only; `route` when the visitor comes back to another page than this one
    * @returns {boolean} whether it was kept
    */
-  function keep({ kind, payload, stoppedOnSubmit }) {
+  function keep({ kind, payload, stoppedOnSubmit, route: resumeOn = route.fullPath }) {
     return keepPendingAction(
       openPendingActionStorage(),
-      { kind, route: route.fullPath, payload, stoppedOnSubmit },
+      { kind, route: resumeOn, payload, stoppedOnSubmit },
       {
         isVisitor: !userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated
       }

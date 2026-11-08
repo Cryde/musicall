@@ -18,9 +18,10 @@
       </div>
 
       <!-- A shortcut nobody knows about helps nobody, hence the visible twin of Ctrl+K. On a phone it is
-           one more round icon beside the others, the only way four of them fit next to the logo. -->
+           one more round icon beside the others, the only way four of them fit next to the logo. Not on a
+           space the member is not in: there is nothing there to search. -->
       <button
-        v-if="currentSpaceId"
+        v-if="currentSpace"
         type="button"
         class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors duration-150 shrink-0 max-sm:ml-auto max-sm:size-10 max-sm:justify-center max-sm:rounded-full max-sm:border-0 max-sm:p-0"
         :aria-label="$t('band_menu.search_aria_label')"
@@ -42,7 +43,7 @@
       <div v-if="isCompactNav" class="sm:ml-auto flex items-center gap-1 -mr-2.5">
         <NavbarInbox v-if="userSecurityStore.isAuthenticated" />
         <button
-          v-if="currentSpaceId"
+          v-if="currentSpace"
           ref="menuButton"
           type="button"
           class="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer text-surface-900 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
@@ -82,7 +83,7 @@
   </nav>
 
   <BandSpaceMobileMenu
-    v-if="isCompactNav && currentSpaceId"
+    v-if="isCompactNav && currentSpace"
     :id="MENU_ID"
     v-model:visible="isMenuOpen"
     @after-hide="returnFocus"
@@ -112,7 +113,7 @@ const emit = defineEmits(['open-search'])
 
 const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()
-const { currentSpaceId, navigateToSpace } = useBandSpaceNavigation()
+const { currentSpace, navigateToSpace } = useBandSpaceNavigation()
 
 const menuButton = useTemplateRef('menuButton')
 const { isCompactNav, isMenuOpen, returnFocus } = useCompactMenu(menuButton)

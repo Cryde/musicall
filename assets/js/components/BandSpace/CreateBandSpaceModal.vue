@@ -49,7 +49,6 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
-import { openDraftNameStorage, takeDraftName } from '../../utils/bandSpaceDraftName.js'
 
 const emit = defineEmits(['created'])
 
@@ -70,12 +69,13 @@ const isVisible = computed({
 })
 
 // Immediate because /band-space opens the modal before navigating, so it can already be open when
-// the band layout mounts this component.
+// the band layout mounts this component. The name too: a create resumed after sign-in can prefill a
+// dialog the band layout has just opened empty.
 watch(
-  isVisible,
-  (newValue) => {
-    if (newValue) {
-      name.value = takeDraftName(openDraftNameStorage())
+  () => [isVisible.value, bandSpaceStore.createModalName],
+  ([visible]) => {
+    if (visible) {
+      name.value = bandSpaceStore.createModalName
       error.value = ''
     }
   },

@@ -90,9 +90,8 @@ export function returnPathOf(route) {
 
 /**
  * Where creating a Band Space from its presentation brings a visitor back after signing up: the deep
- * link the presentation was handed, or else the band layout, whose create modal picks up the draft
- * name. Not the presentation itself: the reload empties its field, and creating again from there
- * would clear the draft.
+ * link the presentation was handed, or else the band layout, which resumes the create (#1304). Not
+ * the presentation itself: the reload empties its field.
  *
  * @param {{query?: Record<string, unknown>}} route the presentation
  * @param {string} bandIndexPath the band layout's own path
