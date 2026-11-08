@@ -200,6 +200,22 @@ describe('returnPathOf', () => {
     )
   })
 
+  it('hands nothing on from a sign-in step given a return that is not a path of the site', () => {
+    for (const name of ['app_login', 'app_register']) {
+      for (const handed of [
+        'evil_url.com',
+        'https://evil_url.com',
+        ['/messages', '//evil.example']
+      ]) {
+        assert.equal(
+          returnPathOf({ name, fullPath: '/login', query: { return_url: handed } }),
+          null,
+          `${name} ${handed}`
+        )
+      }
+    }
+  })
+
   it('tolerates a missing route', () => {
     assert.equal(returnPathOf(undefined), null)
   })

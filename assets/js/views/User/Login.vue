@@ -135,7 +135,7 @@ import { useRoute } from 'vue-router'
 import SocialSignInButtons from '../../components/Auth/SocialSignInButtons.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { registerRouteFromLogin } from '../../utils/bandSpaceInvitation.js'
-import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
+import { returnPathOf, signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 
@@ -148,7 +148,8 @@ const email = ref('')
 const password = ref('')
 const isLoginSubmitting = ref(false)
 
-const returnUrl = computed(() => route.query.return_url || null)
+// Checked here once, so no link on this page hands an unsafe return on to the next step.
+const returnUrl = computed(() => returnPathOf(route))
 const oauthError = computed(() => route.query.oauth_error)
 
 const OAUTH_ERROR_KEYS = {
