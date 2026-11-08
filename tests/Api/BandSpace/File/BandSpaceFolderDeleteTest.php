@@ -279,6 +279,50 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         ]);
     }
 
+    public function test_delete_cascade_names_the_attached_sources_in_english(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'name' => 'Live'])->create();
+        $attachedToTask = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'folder' => $folder])->create();
+        $attachedToNote = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'folder' => $folder])->create();
+
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attachedToTask,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::v7()->toRfc4122(),
+            'attachedBy' => $admin,
+        ]);
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attachedToNote,
+            'sourceType' => 'note',
+            'sourceId' => Uuid::v7()->toRfc4122(),
+            'attachedBy' => $admin,
+        ]);
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id . '?strategy=cascade',
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => 'en'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'This folder contains 2 files attached to a note and a task. Detach them from those resources first.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'This folder contains 2 files attached to a note and a task. Detach them from those resources first.',
+        ]);
+    }
+
     /**
      * The folder rows are gone and band_space_file.folder_id is ON DELETE SET NULL, so the Archived
      * activity is the only thing left saying where a restored file used to live.

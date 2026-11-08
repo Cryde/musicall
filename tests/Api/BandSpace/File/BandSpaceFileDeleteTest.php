@@ -262,4 +262,39 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             'description' => "Ce fichier est attaché à une entrée financière. Détache-le d'abord depuis la ressource concernée.",
         ]);
     }
+
+    public function test_delete_attached_file_names_the_source_in_english(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::v7()->toRfc4122(),
+            'attachedBy' => $user,
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => 'en'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'This file is attached to a finance entry. Detach it from that resource first.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'This file is attached to a finance entry. Detach it from that resource first.',
+        ]);
+    }
 }

@@ -65,6 +65,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private BandSpaceFileArchiver $fileArchiver,
+        private BandSpaceFileAttachmentLabels $attachmentLabels,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -174,11 +175,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             return;
         }
 
-        // Sorted because the sentence is asserted verbatim: without it the list follows whatever order
-        // the database returned the attachment rows in.
-        $sourceTypes = array_merge(...array_values($sourceTypesByFile));
-        sort($sourceTypes);
-        $sources = BandSpaceFileAttachmentLabels::describe($sourceTypes);
+        $sources = $this->attachmentLabels->describe(array_merge(...array_values($sourceTypesByFile)));
 
         throw count($sourceTypesByFile) === 1
             ? new TranslatableHttpException(

@@ -29,6 +29,7 @@ readonly class BandSpaceFileBulkDeleteProcedure
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceFileArchiver $fileArchiver,
+        private BandSpaceFileAttachmentLabels $attachmentLabels,
     ) {
     }
 
@@ -117,11 +118,7 @@ readonly class BandSpaceFileBulkDeleteProcedure
             return;
         }
 
-        // Sorted because the sentence is asserted verbatim: without it the list follows whatever order
-        // the database returned the attachment rows in.
-        $sourceTypes = array_merge(...array_values($sourceTypesByFile));
-        sort($sourceTypes);
-        $sources = BandSpaceFileAttachmentLabels::describe($sourceTypes);
+        $sources = $this->attachmentLabels->describe(array_merge(...array_values($sourceTypesByFile)));
 
         throw count($sourceTypesByFile) === 1
             ? new TranslatableHttpException(

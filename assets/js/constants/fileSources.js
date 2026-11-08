@@ -4,7 +4,7 @@ import { i18n } from '../i18n/index.js'
 /**
  * Everything the frontend knows about the resources a band space file can be attached to.
  *
- * The backend allowlist is `BandSpaceFileSourceTypes::ALL` and its French wording lives in
+ * The backend allowlist is `BandSpaceFileSourceTypes::ALL` and its wording lives in
  * `BandSpaceFileAttachmentLabels`; both delete paths refuse to trash a file attached to any of them.
  * The screens reading `source_type` each used to carry their own three-of-five copy of that list, so
  * a file attached to a song or a setlist read as a generic « Ressource », had no way back to its

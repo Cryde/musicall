@@ -35,6 +35,7 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceFileShareRevoker $shareRevoker,
         private BandSpaceActivityRecorder $activityRecorder,
+        private BandSpaceFileAttachmentLabels $attachmentLabels,
         private Security $security,
     ) {
     }
@@ -63,7 +64,7 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
             throw new TranslatableHttpException(
                 Response::HTTP_UNPROCESSABLE_ENTITY,
                 'band_space.file.delete_attached',
-                ['sources' => BandSpaceFileAttachmentLabels::describe($sourceTypes)],
+                ['sources' => $this->attachmentLabels->describe($sourceTypes)],
             );
         }
 
