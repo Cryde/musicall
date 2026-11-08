@@ -250,6 +250,7 @@ import emailVerificationApi from '../../api/user/emailVerification.js'
 import securityApi from '../../api/user/security.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
 import SocialSignInButtons from '../../components/Auth/SocialSignInButtons.vue'
+import { returnPathOf } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 
@@ -258,7 +259,8 @@ useTitle(computed(() => t('auth.register.page_title')))
 const route = useRoute()
 const router = useRouter()
 
-const returnUrl = computed(() => route.query.return_url || null)
+// Checked here once, so no link on this page hands an unsafe return on to the next step.
+const returnUrl = computed(() => returnPathOf(route))
 const invitationToken = computed(() => route.query.invitation_token || null)
 const invitationBandSpaceName = ref(null)
 

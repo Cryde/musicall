@@ -49,13 +49,13 @@
       <div class="flex gap-2">
         <Button
           as="router-link"
-          :to="{ name: 'app_login' }"
+          :to="signInRouteFrom('app_login', route)"
           :label="t('common.login')"
           severity="info"
           outlined
           class="flex-1"
         />
-        <Button as="router-link" :to="{ name: 'app_register' }" :label="t('common.register')" class="flex-1" />
+        <Button as="router-link" :to="signInRouteFrom('app_register', route)" :label="t('common.register')" class="flex-1" />
       </div>
     </template>
   </MobileMenuDrawer>
@@ -65,10 +65,12 @@
 import Button from 'primevue/button'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { CAN_CHOOSE_LOCALE } from '../../composables/useLocaleChoice.js'
 import { useUserMenu } from '../../composables/useUserMenu.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 import { bandInitial } from '../../utils/userMenu.js'
 import LocaleToggle from './LocaleToggle.vue'
 import MobileMenuAccount from './MobileMenuAccount.vue'
@@ -85,6 +87,7 @@ const BAND_MARK =
   'flex size-6 shrink-0 items-center justify-center rounded-md bg-primary-600 dark:bg-primary-400 text-xs font-semibold text-white dark:text-surface-900'
 
 const { t } = useI18n()
+const route = useRoute()
 const userSecurityStore = useUserSecurityStore()
 const bandSpaceStore = useBandSpaceStore()
 const { logout } = useUserMenu()

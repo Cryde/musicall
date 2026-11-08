@@ -37,7 +37,7 @@
       <!-- On a phone the large button with its icon wrapped its label under the icon: full width, no icon. -->
       <Button
         as="router-link"
-        :to="{ name: 'app_register' }"
+        :to="signInRouteFrom('app_register', route)"
         :label="t('home.visitor.cta.button')"
         :icon="isPhone ? undefined : 'pi pi-user-plus'"
         :size="isPhone ? undefined : 'large'"
@@ -58,7 +58,7 @@
 import Button from 'primevue/button'
 import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import musicianSearchApi from '../../api/search/musician.js'
 import teacherProfileApi from '../../api/user/teacherProfile.js'
 import HomeAnnounces from '../../components/Home/HomeAnnounces.vue'
@@ -73,6 +73,7 @@ import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { ANNOUNCE_FILTER_ALL, announceTypeForFilter } from '../../utils/homeSearch.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 // Heavy modals (message / announce / auth) only appear on a user action — load their
 // chunks on demand (paired with v-if below) so they stay out of the initial bundle.
@@ -89,6 +90,7 @@ const musicianAnnounceStore = useMusicianAnnounceStore()
 const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
 
+const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const isPhone = useIsPhone()

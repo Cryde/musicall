@@ -167,7 +167,7 @@
         <p class="text-white/90 text-base mb-5 md:text-lg md:mb-8 max-w-xl mx-auto">
           {{ t('home.discover.cta.body') }}
         </p>
-        <router-link :to="{ name: 'app_register' }">
+        <router-link :to="signInRouteFrom('app_register', route)">
           <Button :label="t('home.discover.cta.button')" icon="pi pi-user-plus" size="large" severity="contrast" class="shadow-xl" />
         </router-link>
       </div>
@@ -186,6 +186,7 @@
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import BandSpaceMobileApp from '../../components/BandSpace/Presentation/BandSpaceMobileApp.vue'
 import DiscoverSection from '../../components/Discover/DiscoverSection.vue'
 import FeatureItem from '../../components/Discover/FeatureItem.vue'
@@ -196,9 +197,11 @@ import PublicationsMockup from '../../components/Discover/Mockup/PublicationsMoc
 import HomeBandSpaceDemo from '../../components/Home/HomeBandSpaceDemo.vue'
 import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 useTitle(() => t('home.discover.title'))
 
+const route = useRoute()
 const userSecurityStore = useUserSecurityStore()
 </script>

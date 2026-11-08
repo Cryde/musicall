@@ -2,6 +2,7 @@
 
 namespace App\Service\User;
 
+use App\Http\ReturnUrl;
 use App\Repository\UserRepository;
 use App\Service\Mail\Brevo\User\ResetPasswordEmail;
 use Doctrine\ORM\NonUniqueResultException;
@@ -21,7 +22,7 @@ readonly class ResetPassword
     /**
      * @throws NonUniqueResultException
      */
-    public function resetPasswordByLogin(string $login): void
+    public function resetPasswordByLogin(string $login, ?string $returnUrl = null): void
     {
         if (!($user = $this->userRepository->findOneByEmailOrLogin($login)) instanceof \App\Entity\User) {
             // we just do nothing no need to send exception
@@ -32,11 +33,11 @@ readonly class ResetPassword
         $this->userTokenGenerator->generate($user);
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $this->resetPasswordEmail->send(
-            $user->email,
-            $user->username,
-            $baseUrl . 'lost-password/' . $user->token,
-            $user->locale,
-        );
+        $link = $baseUrl . 'lost-password/' . $user->token;
+        // The link opens a new page, often in another tab, so the return can only travel inside it.
+        if ($returnUrl !== null && ReturnUrl::isSafePath($returnUrl)) {
+            $link .= '?' . http_build_query(['return_url' => $returnUrl]);
+        }
+        $this->resetPasswordEmail->send($user->email, $user->username, $link, $user->locale);
     }
 }

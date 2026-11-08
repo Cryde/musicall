@@ -30,10 +30,10 @@
       </template>
       <template v-else>
         <Button asChild v-slot="slotProps" severity="info" outlined>
-          <RouterLink :to="{ name: 'app_login' }" :class="slotProps.class">{{ t('common.login') }}</RouterLink>
+          <RouterLink :to="signInRouteFrom('app_login', route)" :class="slotProps.class">{{ t('common.login') }}</RouterLink>
         </Button>
         <Button asChild v-slot="slotProps" severity="primary">
-          <RouterLink :to="{ name: 'app_register' }" :class="slotProps.class">{{ t('common.register') }}</RouterLink>
+          <RouterLink :to="signInRouteFrom('app_register', route)" :class="slotProps.class">{{ t('common.register') }}</RouterLink>
         </Button>
       </template>
     </div>
@@ -46,15 +46,17 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { CAN_CHOOSE_LOCALE } from '../composables/useLocaleChoice.js'
 import { useUserMenu } from '../composables/useUserMenu.js'
 import { useUserSecurityStore } from '../store/user/security.js'
 import { getAvatarStyle } from '../utils/avatar.js'
+import { signInRouteFrom } from '../utils/unauthenticatedRedirect.js'
 import LocaleSwitcher from './Global/LocaleSwitcher.vue'
 import NavbarInbox from './Global/NavbarInbox.vue'
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 const { entries, logout } = useUserMenu()

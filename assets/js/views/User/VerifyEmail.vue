@@ -78,6 +78,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import emailVerificationApi from '../../api/user/emailVerification.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 
@@ -142,7 +143,7 @@ onBeforeUnmount(() => {
 
 onMounted(async () => {
   if (!email.value) {
-    await router.replace({ name: 'app_login' })
+    await router.replace(signInRouteFrom('app_login', route))
     return
   }
 
@@ -198,6 +199,6 @@ async function handleResendCode() {
 }
 
 function goToLogin() {
-  router.push({ name: 'app_login' })
+  router.push(signInRouteFrom('app_login', route))
 }
 </script>

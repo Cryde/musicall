@@ -25,7 +25,10 @@ import FeedbackDrawer from './components/Feedback/FeedbackDrawer.vue'
 import PendingActionPrompt from './components/Global/PendingActionPrompt.vue'
 import { honourLocaleChoice } from './composables/useLocaleChoice.js'
 import { useUserSecurityStore } from './store/user/security.js'
-import { resolveUnauthenticatedRedirect } from './utils/unauthenticatedRedirect.js'
+import {
+  resolveSignedInRedirect,
+  resolveUnauthenticatedRedirect
+} from './utils/unauthenticatedRedirect.js'
 
 const userSecurityStore = useUserSecurityStore()
 const router = useRouter()
@@ -41,12 +44,13 @@ onMounted(async () => {
     //
     // Following a return_url is gated separately by whoever consumes it: the store checks
     // isSafeReturnUrl before touching window.location, and the OAuth start route is validated
-    // server side. This guard only ever produces a same-origin path from the router itself.
+    // server side. The signed-in branch below follows one too, through the same isSafeReturnUrl.
     if (to.meta.isAuthRequired && !isAuthenticated.value) {
       return resolveUnauthenticatedRedirect(to)
     }
+    // Signed in meanwhile, in another tab for instance: on to where the sign-in was taking them.
     if (to.meta.isGuestOnly && isAuthenticated.value) {
-      return { name: 'app_home' }
+      return resolveSignedInRedirect(to)
     }
     // The admin SPA used to be gated by isAuthRequired alone, so any logged-in account rendered the
     // whole back office. Nothing leaked, because every admin endpoint answers 403, but the views

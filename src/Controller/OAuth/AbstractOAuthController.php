@@ -62,6 +62,8 @@ abstract class AbstractOAuthController extends AbstractController
     public function callback(Request $request): RedirectResponse
     {
         $client = $this->clientRegistry->getClient($this->getClientName());
+        // Read before anything can fail, so a refused sign-in still knows the way back.
+        $returnUrl = $this->extractReturnUrlFromState($request);
 
         try {
             $accessToken = $client->getAccessToken();
@@ -78,20 +80,18 @@ abstract class AbstractOAuthController extends AbstractController
                 $currentUser
             );
 
-            $redirectUrl = $this->webSignIn->redirectUrlFor($this->extractReturnUrlFromState($request));
-
-            return $this->webSignIn->complete($result->user, $redirectUrl, $request);
+            return $this->webSignIn->complete($result->user, $this->webSignIn->redirectUrlFor($returnUrl), $request);
         } catch (OAuthEmailExistsException) {
-            return $this->webSignIn->fail('email_exists');
+            return $this->webSignIn->fail('email_exists', $returnUrl);
         } catch (OAuthEmailNotVerifiedException) {
-            return $this->webSignIn->fail('email_not_verified');
+            return $this->webSignIn->fail('email_not_verified', $returnUrl);
         } catch (\Exception $e) {
             $this->logger->error('OAuth authentication failed', [
                 'provider' => $this->getProviderName(),
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->webSignIn->fail('oauth_failed');
+            return $this->webSignIn->fail('oauth_failed', $returnUrl);
         }
     }
 

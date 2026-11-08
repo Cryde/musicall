@@ -34,7 +34,7 @@
     <template v-if="!isLoading">
       <ProfilePostCommentForm v-if="userSecurityStore.isAuthenticated" :post-id="postId" @posted="add" />
       <p v-else class="text-sm text-surface-500 dark:text-surface-400 m-0">
-      <RouterLink :to="{ name: 'app_login' }" class="text-primary font-medium">{{ t('profile.wall.login') }}</RouterLink>
+      <RouterLink :to="signInRouteFrom('app_login', route)" class="text-primary font-medium">{{ t('profile.wall.login') }}</RouterLink>
       {{ t('profile.wall.login_to_comment') }}
       </p>
     </template>
@@ -46,9 +46,11 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import profileWallApi from '../../../api/user/profileWall.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { commentTree, treeWithComment, treeWithoutComment } from '../../../utils/profileWall.js'
+import { signInRouteFrom } from '../../../utils/unauthenticatedRedirect.js'
 import ProfilePostCommentForm from './ProfilePostCommentForm.vue'
 import ProfilePostCommentItem from './ProfilePostCommentItem.vue'
 
@@ -59,6 +61,7 @@ const props = defineProps({
 /** How far the post's comment count moved: a comment added, or a comment and its replies removed. */
 const emit = defineEmits(['count-changed'])
 const { t } = useI18n()
+const route = useRoute()
 const toast = useToast()
 const userSecurityStore = useUserSecurityStore()
 

@@ -122,6 +122,7 @@ import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { ctaLabel, DEMO_PAINS, DEMO_SIZES, sizeLabel } from '../../utils/bandSpaceDemo.js'
 import { openDraftNameStorage, saveDraftName } from '../../utils/bandSpaceDraftName.js'
+import { bandSpaceCreateReturnPath, routeReturningTo } from '../../utils/unauthenticatedRedirect.js'
 
 const QUESTION = 'text-[13px] md:text-sm font-bold tracking-wider uppercase text-primary'
 const PILL = 'rounded-lg border font-semibold cursor-pointer transition-colors'
@@ -184,7 +185,8 @@ function handleCreate() {
   saveDraftName(openDraftNameStorage(), bandName.value)
 
   if (!userSecurityStore.isAuthenticated) {
-    router.push({ name: 'app_register' })
+    const bandIndexPath = router.resolve({ name: 'app_band_index' }).href
+    router.push(routeReturningTo('app_register', bandSpaceCreateReturnPath(route, bandIndexPath)))
     return
   }
 

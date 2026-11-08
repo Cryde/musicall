@@ -182,6 +182,18 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertSame([], $this->appleTokens()->exchanges);
     }
 
+    /** Back to the login form to use the password, and from there to the page the visitor started from (#1302). */
+    public function test_an_email_owned_by_an_existing_account_keeps_the_way_back(): void
+    {
+        UserFactory::new()->asBaseUser()->create(['username' => 'alice_drums', 'email' => 'alice@example.com']);
+        $attempt = AppleSignInAttempt::start('/band/1/agenda?view=month');
+        $this->apple()->accept('an-id-token', $this->claims('alice@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertRefused('email_exists', '&return_url=%2Fband%2F1%2Fagenda%3Fview%3Dmonth');
+    }
+
     public function test_an_unverified_email_is_refused(): void
     {
         $attempt = AppleSignInAttempt::start(null);
@@ -299,6 +311,27 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertRefused('oauth_failed');
     }
 
+    public function test_a_sign_in_cancelled_on_apple_keeps_the_way_back(): void
+    {
+        $attempt = AppleSignInAttempt::start('/band/1/agenda');
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'error' => 'user_cancelled_authorize']);
+
+        $this->assertRefused('oauth_failed', '&return_url=%2Fband%2F1%2Fagenda');
+    }
+
+    /** Checked again on the way out, not trusted because it sat in our cookie. */
+    public function test_a_refused_sign_in_drops_a_return_url_that_leaves_the_origin(): void
+    {
+        foreach (['https://evil.example/phish', '//evil.example', '/\\evil.example', 'http://localhost/forum'] as $returnUrl) {
+            $attempt = new AppleSignInAttempt('the-state', 'the-nonce', $returnUrl);
+
+            $this->postToCallback($attempt, ['state' => 'the-state', 'error' => 'user_cancelled_authorize']);
+
+            $this->assertRefused('oauth_failed');
+        }
+    }
+
     public function test_apple_unreachable_is_refused(): void
     {
         $attempt = AppleSignInAttempt::start(null);
@@ -355,9 +388,9 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertSame($username, JwtPayload::of($cookies['jwt_hp']->getValue() . '.signature')['username']);
     }
 
-    private function assertRefused(string $error): void
+    private function assertRefused(string $error, string $returnQuery = ''): void
     {
-        $this->assertResponseRedirects(self::FRONTEND_URL . '/login?oauth_error=' . $error, Response::HTTP_FOUND);
+        $this->assertResponseRedirects(self::FRONTEND_URL . '/login?oauth_error=' . $error . $returnQuery, Response::HTTP_FOUND);
         $cookies = $this->client->getResponse()->headers->getCookies();
         $this->assertCount(1, $cookies, 'Only the attempt cookie, cleared: no session is issued');
         $this->assertSame(AppleController::ATTEMPT_COOKIE, $cookies[0]->getName());
