@@ -2,12 +2,20 @@
 
 namespace App\Tests\Api\User;
 
+use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\Role;
 use App\Repository\User\EmailVerificationCodeRepository;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Double\RecordingHub;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -72,6 +80,32 @@ class UserRegisterTest extends ApiTestCase
         $this->assertEmailHeaderSame($this->getMailerMessage(), 'templateId', '19');
     }
 
+
+    /**
+     * Anyone can register with an address they do not own (#1353): the invitation waits for the email to
+     * be confirmed, so the band gets no unconfirmed member and the real owner still finds it pending.
+     */
+    public function test_registering_an_invited_email_does_not_join_the_band_before_it_is_confirmed(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'band_admin', 'email' => 'admin@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new()->create(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin]);
+        $invitation = BandSpaceInvitationFactory::new()->create(['bandSpace' => $bandSpace, 'invitedBy' => $admin, 'email' => 'super_email@mail.com']);
+
+        $this->client->jsonRequest('POST', '/api/users/register', [
+            'username' => 'super_username',
+            'password' => 'password',
+            'email' => 'super_email@mail.com',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+
+        $this->assertSame([
+            'members' => [['band_admin', 'admin', 'active']],
+            'invitation' => ['pending', null],
+        ], $this->bandOf((string) $invitation->id));
+        $this->assertSame([], self::getContainer()->get(RecordingHub::class)->updates);
+    }
 
     public function test_register_with_bad_input_1(): void
     {
@@ -263,5 +297,25 @@ password: Le mot de passe doit au moins contenir 8 caractères',
         ]);
 
         $this->assertEmailCount(0);
+    }
+
+    /**
+     * The invitation's band read back from the database: its members, and what became of the invitation.
+     *
+     * @return array{members: list<array{string, string, string}>, invitation: array{string, ?string}}
+     */
+    private function bandOf(string $invitationId): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $invitation = $entityManager->find(BandSpaceInvitation::class, $invitationId);
+        $this->assertInstanceOf(BandSpaceInvitation::class, $invitation);
+        $members = array_map(
+            static fn (BandSpaceMembership $membership): array => [$membership->user->username, $membership->role->value, $membership->status->value],
+            $entityManager->getRepository(BandSpaceMembership::class)->findBy(['bandSpace' => $invitation->bandSpace]),
+        );
+        sort($members);
+
+        return ['members' => $members, 'invitation' => [$invitation->status->value, $invitation->existingUser?->username]];
     }
 }

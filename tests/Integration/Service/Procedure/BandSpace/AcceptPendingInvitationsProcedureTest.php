@@ -1,30 +1,29 @@
 <?php declare(strict_types=1);
 
-namespace App\Tests\Integration\EventSubscriber;
+namespace App\Tests\Integration\Service\Procedure\BandSpace;
 
 use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
-use App\Event\UserRegisteredEvent;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Notification\NotificationRepository;
+use App\Service\Procedure\BandSpace\AcceptPendingInvitationsProcedure;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
 #[ResetDatabase]
-class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
+class AcceptPendingInvitationsProcedureTest extends KernelTestCase
 {
-    public function test_auto_accepts_pending_invitation_on_registration(): void
+    public function test_accepts_a_pending_invitation(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
@@ -46,8 +45,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $em->persist($newUser);
         $em->flush();
 
-        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+        self::getContainer()->get(AcceptPendingInvitationsProcedure::class)->process($newUser);
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
         $this->assertTrue($membershipRepo->isMember($bandSpace, $newUser));
@@ -58,7 +56,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $this->assertSame($newUser->id, $updated->existingUser->id);
     }
 
-    public function test_auto_accepts_multiple_invitations(): void
+    public function test_accepts_multiple_invitations(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();
         $bandSpace1 = BandSpaceFactory::new()->create();
@@ -88,8 +86,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $em->persist($newUser);
         $em->flush();
 
-        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+        self::getContainer()->get(AcceptPendingInvitationsProcedure::class)->process($newUser);
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
         $this->assertTrue($membershipRepo->isMember($bandSpace1, $newUser));
@@ -121,8 +118,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $em->persist($newUser);
         $em->flush();
 
-        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+        self::getContainer()->get(AcceptPendingInvitationsProcedure::class)->process($newUser);
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
         $this->assertFalse($membershipRepo->isMember($bandSpace, $newUser));
@@ -130,7 +126,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
 
     /**
      * Symmetry with the explicit accept endpoint, which rejects joining a space pending deletion. Skipped
-     * silently rather than thrown: this runs inside registration and must never break it.
+     * silently rather than thrown: this runs inside sign-up and must never break it.
      */
     public function test_skips_invitations_to_a_space_pending_deletion(): void
     {
@@ -164,8 +160,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $em->persist($newUser);
         $em->flush();
 
-        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+        self::getContainer()->get(AcceptPendingInvitationsProcedure::class)->process($newUser);
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
         $this->assertFalse($membershipRepo->isMember($condemned, $newUser));
@@ -190,14 +185,13 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $em->persist($newUser);
         $em->flush();
 
-        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+        self::getContainer()->get(AcceptPendingInvitationsProcedure::class)->process($newUser);
 
-        // No exception thrown — just runs silently
+        // No exception thrown: just runs silently
         $this->assertTrue(true);
     }
 
-    public function test_auto_accept_notifies_the_inviter(): void
+    public function test_accepting_notifies_the_inviter(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
@@ -219,8 +213,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $em->persist($newUser);
         $em->flush();
 
-        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+        self::getContainer()->get(AcceptPendingInvitationsProcedure::class)->process($newUser);
 
         $notifications = self::getContainer()->get(NotificationRepository::class)->findForRecipient($admin, 10, 0);
         $this->assertCount(1, $notifications);

@@ -86,8 +86,8 @@ readonly class OAuthUserService
             $this->entityManager->flush();
         }
 
-        // Not on an event: UserRegisteredEvent would mail a code to an already verified email, and
-        // EmailVerificationCheckProcessor dispatches UserConfirmedEvent for password users too.
+        // Not on an event: UserRegisteredEvent would mail a code to an already verified email, and a
+        // UserConfirmedEvent listener would run it twice here. The password path calls it at confirmation.
         $this->acceptPendingInvitationsProcedure->process($user);
         // Now, not at terminate: the web callbacks answer a redirect, which the signal treats as a failure.
         $this->bandSpaceChangeSignal->publish();
