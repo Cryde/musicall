@@ -68,6 +68,7 @@ class SetlistItemsCopyTest extends ApiTestCase
                         'tempo' => 132,
                         'tonality' => 'Bm',
                         'reference_duration' => 232,
+                        'notes' => null,
                         'has_lyrics' => false,
                         'archive_datetime' => null,
                         '@type' => 'SetlistItemSongInfo',

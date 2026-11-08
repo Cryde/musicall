@@ -196,6 +196,7 @@ class SetlistRestoreTest extends ApiTestCase
                         'tempo' => 128,
                         'tonality' => 'Am',
                         'reference_duration' => 210,
+                        'notes' => null,
                         'has_lyrics' => false,
                         'archive_datetime' => $archivedSong->archiveDatetime->format(DateTimeInterface::ATOM),
                         '@type' => 'SetlistItemSongInfo',

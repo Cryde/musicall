@@ -537,6 +537,33 @@ class SetlistPdfExportTest extends ApiTestCase
         $this->assertStringContainsString('↳', $html);
     }
 
+    public function test_large_template_prints_the_song_notes_with_the_notes_option(): void
+    {
+        $bandSpace = BandSpaceFactory::new()->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        $withNotes = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Wonderwall', 'notes' => 'Capo 2, couper le dernier refrain'])->create();
+        $withoutNotes = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Driftwood', 'notes' => null])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withNotes, 'position' => 0])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withoutNotes, 'position' => 1])->create();
+
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+        $twig = self::getContainer()->get(Environment::class);
+        $render = static fn (bool $showNotes): string => $twig->render('pdf/setlist/setlist_large.html.twig', [
+            'setlist' => $entity,
+            'options' => new SetlistPdfOptions(layout: SetlistPdfLayout::Large, showNotes: $showNotes),
+            'total_duration_seconds' => 0,
+            'missing_duration_items' => 0,
+            'font' => SetlistPdfFont::Inter,
+        ]);
+
+        $shown = $render(true);
+        // One line, for the one song that has notes: a song without any prints nothing.
+        $this->assertSame(1, substr_count($shown, '<span class="sub-line song-notes">'));
+        $this->assertStringContainsString('<span class="sub-line song-notes">Capo 2, couper le dernier refrain</span>', $shown);
+
+        $this->assertStringNotContainsString('Capo 2, couper le dernier refrain', $render(false));
+    }
+
     public function test_large_template_renders_dash_placeholder_for_empty_cells(): void
     {
         $bandSpace = BandSpaceFactory::new()->create();
@@ -660,6 +687,7 @@ class SetlistPdfExportTest extends ApiTestCase
             'tempo' => 87,
             'tonality' => 'Em',
             'referenceDuration' => 258,
+            'notes' => 'SONG_NOTES_HIDDEN',
         ])->create();
         SetlistItemFactory::new([
             'setlist' => $setlist,
@@ -684,6 +712,7 @@ class SetlistPdfExportTest extends ApiTestCase
         $this->assertStringContainsString($bandSpace->name, $html);
         $this->assertStringNotContainsString('SHOULD_NOT_APPEAR', $html);
         $this->assertStringNotContainsString('NOT_VISIBLE', $html);
+        $this->assertStringNotContainsString('SONG_NOTES_HIDDEN', $html);
         $this->assertStringNotContainsString('87', $html, 'Compact must not show BPM');
         $this->assertStringNotContainsString('Em', $html, 'Compact must not show tonality');
     }

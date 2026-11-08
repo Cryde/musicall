@@ -87,6 +87,8 @@
         .sub-line .seg-sep { color: #ccc; margin: 0 1.5mm; }
         .sub-line .seg-trans { color: #444; }
         .sub-line .seg-note { color: #555; font-style: italic; }
+        {# A song's notes are free text over several lines, so the author's line breaks are kept. #}
+        .sub-line.song-notes { color: #444; white-space: pre-line; }
 
         tr.non-song td.title { color: #777; font-style: italic; font-weight: normal; }
         tr.non-song .idx-pill { background: #d0d0d0; }
@@ -158,6 +160,9 @@
                     <td class="title">
                         {% if not is_song %}<span class="non-song-icon"></span>{% endif %}
                         {{ is_song ? item.song.title : (item.label ?: '—') }}
+                        {% if options.showNotes and is_song and item.song.notes %}
+                            <span class="sub-line song-notes">{{ item.song.notes }}</span>
+                        {% endif %}
                         {% if (options.showNotes and item.note) or (options.showTransitions and item.transition) %}
                             <span class="sub-line">
                                 <span class="seg-arrow">↳</span>

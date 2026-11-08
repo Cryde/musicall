@@ -274,7 +274,7 @@ class SetlistItemsBulkCreateTest extends ApiTestCase
             'band_space_id' => (string) $space->id,
             'setlist_id' => (string) $setlist->id,
             'type' => 'song',
-            'song' => [...$song, 'has_lyrics' => false, 'archive_datetime' => null, '@type' => 'SetlistItemSongInfo'],
+            'song' => [...$song, 'notes' => null, 'has_lyrics' => false, 'archive_datetime' => null, '@type' => 'SetlistItemSongInfo'],
             'label' => null,
             'duration_override' => null,
             'note' => null,

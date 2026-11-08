@@ -9,6 +9,7 @@ class SetlistItemSongInfo
     public ?int $tempo = null;
     public ?string $tonality = null;
     public ?int $referenceDuration = null;
+    public ?string $notes = null;
     public bool $hasLyrics = false;
     public ?\DateTimeInterface $archiveDatetime = null;
 }

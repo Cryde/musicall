@@ -64,6 +64,7 @@ class SetlistItemCreateTest extends ApiTestCase
                 'tempo' => 120,
                 'tonality' => 'C',
                 'reference_duration' => 200,
+                'notes' => null,
                 'has_lyrics' => false,
                 'archive_datetime' => null,
                 '@type' => 'SetlistItemSongInfo',
