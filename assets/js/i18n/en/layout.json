@@ -117,7 +117,8 @@
     "post_announce": "Sign up to post your ad",
     "default": "You need to log in to do this.",
     "register_with_google": "Sign up with Google",
-    "no_google_account": "No Google account?",
+    "register_with_apple": "Sign up with Apple",
+    "no_social_account": "No Google or Apple account?",
     "register_with_email": "Sign up with email",
     "has_account": "Already have an account?"
   }

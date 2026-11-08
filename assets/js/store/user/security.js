@@ -14,6 +14,7 @@ import {
   secondsUntilExpiry
 } from '../../utils/sessionRefresh.js'
 import { clearRequestDrafts, openRequestDraftStorage } from '../../utils/trialRequest.js'
+import { routeReturningTo } from '../../utils/unauthenticatedRedirect.js'
 
 /**
  * How often the proactive timer looks at the token.
@@ -58,7 +59,9 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
       if (e?.response?.status === 401) {
         const data = e.response.data
         if (data.message === 'account_not_verified' && data.email) {
-          await router.replace({ name: 'app_verify_email', query: { email: data.email } })
+          await router.replace(
+            routeReturningTo('app_verify_email', returnUrl, { email: data.email })
+          )
           return
         }
         loginErrors.value = [

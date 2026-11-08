@@ -113,7 +113,7 @@ final class AppleController extends AbstractController
 
         // Apple's own refusal, `user_cancelled_authorize` when the person closes its page.
         if (isset($form['error'])) {
-            return $this->webSignIn->fail('oauth_failed');
+            return $this->webSignIn->fail('oauth_failed', $attempt->returnUrl);
         }
 
         try {
@@ -132,15 +132,15 @@ final class AppleController extends AbstractController
 
             return $this->webSignIn->complete($result->user, $this->webSignIn->redirectUrlFor($attempt->returnUrl), $request);
         } catch (OAuthEmailExistsException) {
-            return $this->webSignIn->fail('email_exists');
+            return $this->webSignIn->fail('email_exists', $attempt->returnUrl);
         } catch (OAuthEmailNotVerifiedException) {
-            return $this->webSignIn->fail('email_not_verified');
+            return $this->webSignIn->fail('email_not_verified', $attempt->returnUrl);
         } catch (\Exception $exception) {
             // Apple's token refused or out of reach, and anything else, as the Google callback does:
             // a cross-site POST lands on the login page with a message, never on an error page.
             $this->logger->warning('Sign in with Apple failed', ['exception' => $exception]);
 
-            return $this->webSignIn->fail('oauth_failed');
+            return $this->webSignIn->fail('oauth_failed', $attempt->returnUrl);
         }
     }
 

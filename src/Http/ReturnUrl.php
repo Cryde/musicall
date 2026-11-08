@@ -53,4 +53,11 @@ final class ReturnUrl
             // A host is case insensitive, so MUSICALL.FR really is the frontend's own origin.
             && strcasecmp($host, $frontendHost) === 0;
     }
+
+    /** The relative half alone: the only form the SPA's login page follows, so the only one worth handing it. */
+    public static function isSafePath(string $url): bool
+    {
+        // With no frontend host to match, no absolute URL can pass.
+        return self::isSafe($url, '');
+    }
 }

@@ -66,6 +66,28 @@ class GoogleOAuthConnectTest extends ApiTestCase
         return $stashed;
     }
 
+    /**
+     * Google answers `?error=access_denied&state=...` when the person cancels, so no code: the sign-in
+     * fails, and the login page it lands on still knows where the visitor started (#1302).
+     */
+    public function test_a_failed_callback_keeps_the_way_back(): void
+    {
+        $this->client->request('GET', '/oauth/google?return_url=' . urlencode('/band/1/agenda?view=month'));
+        parse_str((string) parse_url((string) $this->client->getResponse()->headers->get('Location'), PHP_URL_QUERY), $query);
+        $state = is_string($query['state'] ?? null) ? $query['state'] : '';
+
+        $this->client->request('GET', '/oauth/google/callback?' . http_build_query(['error' => 'access_denied', 'state' => $state]));
+
+        $this->assertResponseRedirects('http://localhost/login?oauth_error=oauth_failed&return_url=%2Fband%2F1%2Fagenda%3Fview%3Dmonth', Response::HTTP_FOUND);
+    }
+
+    public function test_a_failed_callback_without_a_return_url_lands_on_the_bare_login_page(): void
+    {
+        $this->client->request('GET', '/oauth/google/callback?' . http_build_query(['error' => 'access_denied', 'state' => 'not-ours']));
+
+        $this->assertResponseRedirects('http://localhost/login?oauth_error=oauth_failed', Response::HTTP_FOUND);
+    }
+
     public function test_connect_without_return_url_still_redirects(): void
     {
         $this->client->request('GET', '/oauth/google');

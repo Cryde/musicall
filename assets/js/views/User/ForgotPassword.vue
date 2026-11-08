@@ -80,7 +80,7 @@
 
           <div class="text-center w-full">
             <RouterLink
-              :to="{ name: 'app_login' }"
+              :to="signInRouteFrom('app_login', route)"
               class="text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
               <i class="pi pi-arrow-left mr-2"></i>
@@ -102,13 +102,15 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
+import { returnPathOf, signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 
 useTitle(computed(() => t('auth.forgot_password.page_title')))
 
+const route = useRoute()
 const router = useRouter()
 
 const login = ref('')
@@ -143,7 +145,8 @@ async function handleSubmit() {
   globalError.value = ''
 
   try {
-    await securityApi.requestResetPassword(login.value.trim())
+    // The reset link in the email carries the return, the only way it reaches the page that link opens.
+    await securityApi.requestResetPassword(login.value.trim(), returnPathOf(route))
     isRequestSent.value = true
   } catch (error) {
     if (error.status === 429 || error.response?.status === 429) {
@@ -158,6 +161,6 @@ async function handleSubmit() {
 }
 
 function goToLogin() {
-  router.push({ name: 'app_login' })
+  router.push(signInRouteFrom('app_login', route))
 }
 </script>

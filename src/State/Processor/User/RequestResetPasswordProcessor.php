@@ -27,6 +27,6 @@ readonly class RequestResetPasswordProcessor implements ProcessorInterface
         $ip = $this->requestStack->getCurrentRequest()?->getClientIp() ?? 'unknown';
         $this->passwordResetLimiter->create($ip)->consume()->ensureAccepted();
 
-        $this->resetPassword->resetPasswordByLogin($data->login);
+        $this->resetPassword->resetPasswordByLogin($data->login, $data->returnUrl);
     }
 }

@@ -57,12 +57,12 @@
     class="text-center py-4 text-surface-600 dark:text-surface-400"
   >
     <template #login>
-      <RouterLink :to="{ name: 'app_login' }" class="text-primary font-medium">
+      <RouterLink :to="signInRouteFrom('app_login', route)" class="text-primary font-medium">
         {{ t('publication.comment.form.login_link') }}
       </RouterLink>
     </template>
     <template #register>
-      <RouterLink :to="{ name: 'app_register' }" class="text-primary font-medium">
+      <RouterLink :to="signInRouteFrom('app_register', route)" class="text-primary font-medium">
         {{ t('publication.comment.form.register_link') }}
       </RouterLink>
     </template>
@@ -77,9 +77,11 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useCommentStore } from '../../store/comment/comment.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const props = defineProps({
   parentId: { type: Number, default: null },
@@ -90,6 +92,7 @@ const props = defineProps({
 const emit = defineEmits(['posted', 'cancel'])
 
 const { t } = useI18n()
+const route = useRoute()
 const userSecurityStore = useUserSecurityStore()
 const commentStore = useCommentStore()
 

@@ -114,8 +114,14 @@ readonly class OAuthWebSignIn
         return $response;
     }
 
-    public function fail(string $error): RedirectResponse
+    /** Back to the login page with the error key, still on the way back to the page the visitor started from. */
+    public function fail(string $error, ?string $returnUrl = null): RedirectResponse
     {
-        return new RedirectResponse($this->frontendUrl . '/login?oauth_error=' . $error);
+        $query = ['oauth_error' => $error];
+        if ($returnUrl !== null && ReturnUrl::isSafePath($returnUrl)) {
+            $query['return_url'] = $returnUrl;
+        }
+
+        return new RedirectResponse($this->frontendUrl . '/login?' . http_build_query($query));
     }
 }

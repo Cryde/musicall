@@ -7,6 +7,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mime\Header\ParameterizedHeader;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -69,6 +70,77 @@ class UserRequestPasswordChangeTest extends ApiTestCase
         $this->assertEmailHeaderSame($email, 'templateId', '17');
         $this->assertEmailTextBodyContains($email, 'Réinitialisation du mot de passe');
         $this->assertEmailAddressContains($email, 'To', 'base_user1@email.com');
+    }
+
+    /** The reset link opens a new page, so the way back has to travel inside it (#1302). */
+    public function test_the_reset_link_carries_a_safe_return_url(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+
+        $this->client->jsonRequest('POST', '/api/users/request-reset-password', [
+            'login' => 'base_user_1',
+            'return_url' => '/band/1/agenda?view=month',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+
+        $this->assertSame(
+            'http://musicall.test/lost-password/' . $user->token . '?return_url=%2Fband%2F1%2Fagenda%3Fview%3Dmonth',
+            $this->sentResetLink(),
+        );
+    }
+
+    public function test_the_reset_link_drops_a_return_url_that_leaves_the_site(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+
+        $this->client->jsonRequest('POST', '/api/users/request-reset-password', [
+            'login' => 'base_user_1',
+            'return_url' => '//evil.example/phish',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+
+        $this->assertSame('http://musicall.test/lost-password/' . $user->token, $this->sentResetLink());
+    }
+
+    public function test_an_over_long_return_url_is_refused(): void
+    {
+        UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+
+        $this->client->jsonRequest('POST', '/api/users/request-reset-password', [
+            'login' => 'base_user_1',
+            'return_url' => '/' . str_repeat('a', 2048),
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/d94b19cc-114f-4f44-9cc4-4138e80a87b9',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'return_url',
+                    'message' => 'Cette chaîne est trop longue. Elle doit contenir au maximum 2048 caractères.',
+                    'code' => 'd94b19cc-114f-4f44-9cc4-4138e80a87b9',
+                ],
+            ],
+            'detail' => 'return_url: Cette chaîne est trop longue. Elle doit contenir au maximum 2048 caractères.',
+            'description' => 'return_url: Cette chaîne est trop longue. Elle doit contenir au maximum 2048 caractères.',
+            'type' => '/validation_errors/d94b19cc-114f-4f44-9cc4-4138e80a87b9',
+            'title' => 'An error occurred',
+        ]);
+
+        $this->assertEmailCount(0);
+    }
+
+    private function sentResetLink(): mixed
+    {
+        $this->assertEmailCount(1);
+        $params = $this->getMailerMessage()?->getHeaders()->get('params');
+        $this->assertInstanceOf(ParameterizedHeader::class, $params);
+
+        return $params->getParameters()['change_password_link'] ?? null;
     }
 
     public function test_request_password_change_with_account_not_found(): void

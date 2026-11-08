@@ -96,11 +96,11 @@ export default {
       .then((resp) => resp.data)
   },
 
-  requestResetPassword(login) {
+  requestResetPassword(login, returnUrl = null) {
     return axios
       .post(
         Routing.generate('api_users_request_reset_password'),
-        { login },
+        { login, return_url: returnUrl },
         {
           headers: {
             'Content-Type': 'application/ld+json',

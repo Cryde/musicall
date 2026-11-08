@@ -102,6 +102,17 @@ class ReturnUrlTest extends TestCase
         self::assertFalse(ReturnUrl::isSafe('messages', self::FRONTEND_URL));
     }
 
+    /** What a link to the SPA's login page may carry: a safe path, and nothing absolute, not even the site's own. */
+    public function test_only_a_safe_path_is_a_safe_path(): void
+    {
+        self::assertTrue(ReturnUrl::isSafePath('/band/1/agenda?view=month'));
+        self::assertFalse(ReturnUrl::isSafePath('https://musicall.fr/messages'));
+        self::assertFalse(ReturnUrl::isSafePath('//evil.example'));
+        self::assertFalse(ReturnUrl::isSafePath('/\\evil.example'));
+        self::assertFalse(ReturnUrl::isSafePath("/\t/evil.example"));
+        self::assertFalse(ReturnUrl::isSafePath(''));
+    }
+
     /**
      * A frontend URL with no host would otherwise make every absolute URL match on null === null.
      */

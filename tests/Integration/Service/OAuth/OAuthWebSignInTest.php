@@ -41,6 +41,27 @@ class OAuthWebSignInTest extends KernelTestCase
         $this->assertSame('http://localhost/login?oauth_error=email_exists', $this->webSignIn()->fail('email_exists')->getTargetUrl());
     }
 
+    /** @return iterable<string, array{?string, string}> */
+    public static function failureReturnUrls(): iterable
+    {
+        yield 'none' => [null, 'http://localhost/login?oauth_error=email_exists'];
+        yield 'empty' => ['', 'http://localhost/login?oauth_error=email_exists'];
+        yield 'a page of the site' => ['/band/1/agenda?view=month', 'http://localhost/login?oauth_error=email_exists&return_url=%2Fband%2F1%2Fagenda%3Fview%3Dmonth'];
+        // The login page follows a path only, so the site's own absolute URL would be dropped there anyway.
+        yield 'the site, absolute' => ['http://localhost/forum', 'http://localhost/login?oauth_error=email_exists'];
+        yield 'another site' => ['https://evil.example/phish', 'http://localhost/login?oauth_error=email_exists'];
+        yield 'protocol relative' => ['//evil.example', 'http://localhost/login?oauth_error=email_exists'];
+        yield 'a backslash trick' => ['/\\evil.example', 'http://localhost/login?oauth_error=email_exists'];
+        yield 'a tab trick' => ["/\t/evil.example", 'http://localhost/login?oauth_error=email_exists'];
+    }
+
+    /** A refused sign-in still knows the way back, so signing in another way lands where the visitor started. */
+    #[DataProvider('failureReturnUrls')]
+    public function test_a_failure_keeps_only_a_safe_return_url(?string $returnUrl, string $expected): void
+    {
+        $this->assertSame($expected, $this->webSignIn()->fail('email_exists', $returnUrl)->getTargetUrl());
+    }
+
     public function test_a_signed_in_user_gets_the_session_cookies(): void
     {
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice_drums']);

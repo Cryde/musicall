@@ -11,7 +11,7 @@
       class="text-sm text-center text-surface-600 dark:text-surface-400"
     >
       <template #login>
-        <RouterLink :to="{ name: 'app_login' }" class="font-semibold text-primary hover:underline">{{ t('common.login') }}</RouterLink>
+        <RouterLink :to="signInRouteFrom('app_login', route)" class="font-semibold text-primary hover:underline">{{ t('common.login') }}</RouterLink>
       </template>
     </i18n-t>
   </div>
@@ -20,7 +20,9 @@
 <script setup>
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { signInRouteFrom } from '../../../utils/unauthenticatedRedirect.js'
 
 /** The create button with what it promises; under the form on a wide screen, under the demo on a phone. */
 defineProps({
@@ -30,5 +32,6 @@ defineProps({
 const emit = defineEmits(['create'])
 
 const { t } = useI18n()
+const route = useRoute()
 const userSecurityStore = useUserSecurityStore()
 </script>

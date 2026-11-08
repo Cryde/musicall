@@ -15,6 +15,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class RequestResetPassword
 {
+    // The same cap as the Apple sign-in: it travels in a link the member clicks.
+    private const int RETURN_URL_MAX_LENGTH = 2048;
+
     #[Assert\NotBlank()]
     public string $login;
+
+    /** Where the reset link brings the member back to after signing in. Dropped when it leaves the site. */
+    #[Assert\Length(max: self::RETURN_URL_MAX_LENGTH)]
+    public ?string $returnUrl = null;
 }

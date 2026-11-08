@@ -117,7 +117,8 @@
     "post_announce": "Inscris-toi pour poster ton annonce",
     "default": "Tu dois te connecter pour effectuer cette action.",
     "register_with_google": "S'inscrire avec Google",
-    "no_google_account": "Pas de compte Google ?",
+    "register_with_apple": "S'inscrire avec Apple",
+    "no_social_account": "Pas de compte Google ou Apple ?",
     "register_with_email": "S'inscrire avec un email",
     "has_account": "Déjà un compte ?"
   }

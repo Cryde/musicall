@@ -90,7 +90,7 @@
 
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-0">
           <RouterLink
-            :to="{ name: 'app_forgot_password' }"
+            :to="signInRouteFrom('app_forgot_password', route)"
             class="text-surface-500 dark:text-surface-400 font-medium cursor-pointer hover:text-surface-600 dark:hover:text-surface-300 text-sm"
           >
             {{ t('auth.login.forgot_password') }}
@@ -135,6 +135,7 @@ import { useRoute } from 'vue-router'
 import SocialSignInButtons from '../../components/Auth/SocialSignInButtons.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { registerRouteFromLogin } from '../../utils/bandSpaceInvitation.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 

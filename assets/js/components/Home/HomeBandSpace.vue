@@ -39,7 +39,7 @@
         />
         <Button
           as="router-link"
-          :to="{ name: userSecurityStore.isAuthenticated ? 'app_band_index' : 'app_register' }"
+          :to="userSecurityStore.isAuthenticated ? { name: 'app_band_index' } : signInRouteFrom('app_register', route)"
           :label="userSecurityStore.isAuthenticated ? t('home.band_space.open_mine') : t('home.band_space.create')"
           severity="secondary"
           outlined
@@ -54,11 +54,14 @@
 <script setup>
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 import HomeBandSpaceDemo from './HomeBandSpaceDemo.vue'
 
 /** The Band Space pitch on the homepage (#1074); the full tour is its presentation page. */
 const { t } = useI18n()
+const route = useRoute()
 const userSecurityStore = useUserSecurityStore()
 </script>

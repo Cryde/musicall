@@ -117,7 +117,7 @@
 
           <div class="text-center w-full">
             <RouterLink
-              :to="{ name: 'app_login' }"
+              :to="signInRouteFrom('app_login', route)"
               class="text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
               <i class="pi pi-arrow-left mr-2"></i>
@@ -139,6 +139,7 @@ import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
+import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
 
@@ -230,10 +231,10 @@ async function handleSubmit() {
 }
 
 function goToLogin() {
-  router.push({ name: 'app_login' })
+  router.push(signInRouteFrom('app_login', route))
 }
 
 function goToForgotPassword() {
-  router.push({ name: 'app_forgot_password' })
+  router.push(signInRouteFrom('app_forgot_password', route))
 }
 </script>
