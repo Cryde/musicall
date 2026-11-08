@@ -220,7 +220,16 @@
     "decline": "Décliner",
     "accept": "Accepter",
     "declined_title": "Invitation déclinée",
-    "declined_text": "Tu as décliné cette invitation."
+    "declined_text": "Tu as décliné cette invitation.",
+    "refusal": {
+      "already_member_title": "Tu fais déjà partie de ce groupe",
+      "already_member_text": "Tu es déjà membre de ce Band Space, tu n'as rien à faire de plus. Retrouve le groupe dans tes Band Spaces.",
+      "already_member_action": "Aller à mes Band Spaces",
+      "no_longer_valid_title": "Cette invitation n'est plus valable",
+      "no_longer_valid_text": "Elle a expiré, a été annulée ou a déjà été utilisée. Demande à un membre du groupe de t'envoyer une nouvelle invitation.",
+      "other_recipient_title": "Cette invitation est destinée à un autre compte",
+      "other_recipient_text": "Elle a été envoyée à une autre adresse e-mail que celle de ton compte. Déconnecte-toi, puis connecte-toi avec le compte de l'adresse invitée pour la rejoindre."
+    }
   },
   "general": {
     "name_help": "Ce nom apparaît dans le menu, dans les notifications et sur les tech riders.",
