@@ -18,9 +18,23 @@
 export function resolveUnauthenticatedRedirect(to) {
   const destination = to?.meta?.unauthenticatedRedirect ?? 'app_login'
 
-  if (destination !== 'app_login' || !to?.fullPath) {
+  if (destination !== 'app_login') {
     return { name: destination }
   }
 
-  return { name: destination, query: { return_url: to.fullPath } }
+  return loginRouteReturningTo(to?.fullPath)
+}
+
+/**
+ * The login form, told where to go once signed in. `return_url` is the only key Login.vue reads.
+ *
+ * @param {string|undefined} returnPath the router `fullPath` to come back to
+ * @returns {{name: string, query?: {return_url: string}}}
+ */
+export function loginRouteReturningTo(returnPath) {
+  if (!returnPath) {
+    return { name: 'app_login' }
+  }
+
+  return { name: 'app_login', query: { return_url: returnPath } }
 }

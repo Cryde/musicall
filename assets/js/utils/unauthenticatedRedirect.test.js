@@ -1,6 +1,22 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { resolveUnauthenticatedRedirect } from './unauthenticatedRedirect.js'
+import { loginRouteReturningTo, resolveUnauthenticatedRedirect } from './unauthenticatedRedirect.js'
+
+// What an expired session pushes (#1300). The login form only reads `return_url`, so any other key
+// sent the member back to the home page after signing in again.
+describe('loginRouteReturningTo', () => {
+  it('hands the login form the page the member was on, under the key it reads', () => {
+    assert.deepEqual(loginRouteReturningTo('/band/1/agenda?view=month'), {
+      name: 'app_login',
+      query: { return_url: '/band/1/agenda?view=month' }
+    })
+  })
+
+  it('omits the query rather than sending an empty one when there is no path', () => {
+    assert.deepEqual(loginRouteReturningTo(undefined), { name: 'app_login' })
+    assert.deepEqual(loginRouteReturningTo(''), { name: 'app_login' })
+  })
+})
 
 describe('resolveUnauthenticatedRedirect', () => {
   it('sends a route with no preference to the login form, carrying the destination', () => {
