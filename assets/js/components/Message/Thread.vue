@@ -196,9 +196,11 @@
         {{ t('message.thread.recipient_deleted') }}
       </p>
       <!-- The band chat's composer with nobody to mention: Enter sends, and the server's own sentence
-           shows when it refuses, a block from either side included. -->
+           shows when it refuses, a block from either side included. Keyed on the conversation, so a
+           voice note waiting to be resent (#1057) can never go to another one. -->
       <ChatComposer
         v-else
+        :key="messageStore.currentThreadId"
         :mentions="false"
         :media="canSendMedia"
         :send-message="sendToThread"

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
+import { MAX_VOICE_NOTE_SECONDS } from '../utils/chatVoiceNote.js'
+import { createVoiceNoteSender } from '../utils/chatVoiceNoteDraft.js'
 import { useVoiceRecorder } from './useVoiceRecorder.js'
 
 /**
@@ -113,6 +115,34 @@ describe('useVoiceRecorder', () => {
     recorder.cancel()
     await new Promise((resolve) => setTimeout(resolve, 5))
 
+    assert.equal(recorder.isRecording.value, false)
+    assert.equal(stoppedTracks, 1)
+  })
+
+  // Wired as ChatComposer wires it (#1057): the note the limit sends by itself is the one with the
+  // most to lose, so its failed send is kept for a resend too.
+  it('keeps the note the five minute limit sent by itself when that send fails', async () => {
+    let onKept
+    const kept = new Promise((resolve) => {
+      onKept = resolve
+    })
+    const sender = createVoiceNoteSender({
+      deliver: async () => false,
+      onDraftChange: onKept,
+      urls: { create: () => 'blob:limit', revoke: () => {} }
+    })
+    const recorder = useVoiceRecorder({
+      onLimitReached: (recording) => sender.send(recording, recorder.elapsedSeconds.value)
+    })
+    await recorder.start()
+
+    now = MAX_VOICE_NOTE_SECONDS * 1000
+    // The recorder's next tick, a quarter of a second away, stops the recording and sends it.
+    const draft = await kept
+
+    assert.equal(draft.durationSeconds, MAX_VOICE_NOTE_SECONDS)
+    assert.equal(draft.file.type, 'audio/webm;codecs=opus')
+    assert.equal(draft.playbackUrl, 'blob:limit')
     assert.equal(recorder.isRecording.value, false)
     assert.equal(stoppedTracks, 1)
   })
