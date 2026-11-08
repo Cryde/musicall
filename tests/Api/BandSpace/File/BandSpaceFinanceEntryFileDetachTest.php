@@ -15,6 +15,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -119,6 +120,52 @@ class BandSpaceFinanceEntryFileDetachTest extends ApiTestCase
         $reloaded = $repo->find($file->id);
         $this->assertNotNull($reloaded);
         $this->assertNotNull($reloaded->archiveDatetime);
+    }
+
+    public function test_detach_with_archive_while_attached_to_a_task_returns_422(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace])->create();
+        $entry = FinanceEntryFactory::new(['category' => $category, 'scope' => FinanceEntryScope::Band])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => (string) $entry->id,
+            'attachedBy' => $user,
+        ]);
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => (string) $task->id,
+            'attachedBy' => $user,
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files/' . $file->id . '?archive=true',
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Ce fichier est attaché à une tâche. Détache-le d'abord depuis la ressource concernée.",
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => "Ce fichier est attaché à une tâche. Détache-le d'abord depuis la ressource concernée.",
+        ]);
+
+        $fileId = (string) $file->id;
+        self::getContainer()->get(\Doctrine\ORM\EntityManagerInterface::class)->clear();
+        $this->assertNull(self::getContainer()->get(BandSpaceFileRepository::class)->find($fileId)?->archiveDatetime);
     }
 
     public function test_detach_personal_entry_by_non_owner_returns_403(): void

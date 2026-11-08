@@ -66,21 +66,23 @@
       :source-id="sourceId"
       @attached="handleAttached"
     />
+
+    <FileDetachConfirmDialog ref="detachDialog" :band-space-id="bandSpaceId" />
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
-import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { ref, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import Avatar from '../../User/Avatar.vue'
 import AttachFileDialog from './AttachFileDialog.vue'
+import FileDetachConfirmDialog from './FileDetachConfirmDialog.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -93,8 +95,8 @@ const emit = defineEmits(['attached', 'detached', 'count'])
 
 const { t } = useI18n()
 const router = useRouter()
-const confirm = useConfirm()
 const toast = useToast()
+const detachDialog = useTemplateRef('detachDialog')
 
 const attachedFiles = ref([])
 const isLoading = ref(false)
@@ -141,7 +143,9 @@ function openFileDrawer(file) {
 }
 
 function confirmDetach(file) {
-  confirm.require({
+  detachDialog.value.open({
+    file,
+    source: { type: props.sourceType, id: props.sourceId },
     message:
       props.sourceType === 'task'
         ? t('band_space_files.attached_section.detach_confirm_task', { name: file.original_name })
@@ -152,19 +156,22 @@ function confirmDetach(file) {
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: t('band_space_files.attached_section.detach'),
     rejectLabel: t('band_space_files.common.cancel'),
-    accept: async () => {
+    onDetach: async (archive) => {
       try {
         await bandSpaceFilesApi.detachFromSource(
           props.bandSpaceId,
           props.sourceType,
           props.sourceId,
-          file.id
+          file.id,
+          { archive }
         )
         attachedFiles.value = attachedFiles.value.filter((f) => f.id !== file.id)
         emit('detached', file.id)
         toast.add({
           severity: 'success',
-          summary: t('band_space_files.attached_section.detached'),
+          summary: archive
+            ? t('band_space_files.detach_dialog.trashed')
+            : t('band_space_files.attached_section.detached'),
           life: 3000
         })
       } catch (e) {

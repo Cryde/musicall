@@ -69,24 +69,30 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
      * sentence it ends up building has room for.
      *
      * @param string[] $fileIds
+     * @param ?BandSpaceFileAttachment $leaving left out of the count: a detach that also trashes the file
+     *                                          asks before its own removal is flushed
      *
      * @return array<string, string[]> file id => distinct source types
      */
-    public function findDeleteBlockingSourceTypesByFileIds(array $fileIds): array
+    public function findDeleteBlockingSourceTypesByFileIds(array $fileIds, ?BandSpaceFileAttachment $leaving = null): array
     {
         if (count($fileIds) === 0) {
             return [];
         }
 
-        $rows = $this->createQueryBuilder('a')
+        $queryBuilder = $this->createQueryBuilder('a')
             ->select('IDENTITY(a.bandSpaceFile) AS file_id', 'a.sourceType AS source_type')
             ->where('a.bandSpaceFile IN (:ids)')
             ->andWhere('a.sourceType != :chatMessage')
             ->groupBy('a.bandSpaceFile', 'a.sourceType')
             ->setParameter('ids', $fileIds)
-            ->setParameter('chatMessage', BandSpaceFileSourceTypes::CHAT_MESSAGE)
-            ->getQuery()
-            ->getArrayResult();
+            ->setParameter('chatMessage', BandSpaceFileSourceTypes::CHAT_MESSAGE);
+
+        if ($leaving instanceof BandSpaceFileAttachment) {
+            $queryBuilder->andWhere('a.id != :leavingId')->setParameter('leavingId', (string) $leaving->id);
+        }
+
+        $rows = $queryBuilder->getQuery()->getArrayResult();
 
         $sourceTypesByFile = [];
         foreach ($rows as $row) {

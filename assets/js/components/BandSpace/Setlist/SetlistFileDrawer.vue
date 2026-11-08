@@ -54,6 +54,7 @@
           @click="fileInput?.click()"
         />
       </template>
+      <FileDetachConfirmDialog ref="detachDialog" :band-space-id="bandSpaceId" />
     </div>
   </Drawer>
 </template>
@@ -62,12 +63,12 @@
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Skeleton from 'primevue/skeleton'
-import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { ref, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
+import FileDetachConfirmDialog from '../Files/FileDetachConfirmDialog.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -80,7 +81,7 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
 const toast = useToast()
-const confirm = useConfirm()
+const detachDialog = useTemplateRef('detachDialog')
 const fileInput = ref(null)
 const isUploading = ref(false)
 const files = ref([])
@@ -141,7 +142,9 @@ async function handleFileSelected(event) {
 }
 
 function confirmDetach(file) {
-  confirm.require({
+  detachDialog.value.open({
+    file,
+    source: { type: 'setlist', id: props.setlistId },
     message: t('band_space_setlist.file_drawer.detach_confirm_message', {
       name: file.original_name
     }),
@@ -149,12 +152,16 @@ function confirmDetach(file) {
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: t('band_space_setlist.attached_files.detach'),
     rejectLabel: t('band_space_setlist.common.cancel'),
-    accept: async () => {
+    onDetach: async (archive) => {
       try {
-        await bandSpaceSetlistsApi.detachFile(props.bandSpaceId, props.setlistId, file.id)
+        await bandSpaceSetlistsApi.detachFile(props.bandSpaceId, props.setlistId, file.id, {
+          archive
+        })
         toast.add({
           severity: 'success',
-          summary: t('band_space_setlist.attached_files.detached'),
+          summary: archive
+            ? t('band_space_files.detach_dialog.trashed')
+            : t('band_space_setlist.attached_files.detached'),
           life: 3000
         })
         await loadFiles()

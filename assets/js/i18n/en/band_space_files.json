@@ -276,6 +276,11 @@
     "detached": "File detached",
     "detach_failed": "Could not detach"
   },
+  "detach_dialog": {
+    "also_trash": "Also move it to the bin",
+    "kept_by": "It stays in Files, because it is also attached to {sources}.",
+    "trashed": "File detached and moved to the bin"
+  },
   "new_version_dialog": {
     "title": "Upload a new version",
     "drop_zone": "Drag and drop the file or {browse}",

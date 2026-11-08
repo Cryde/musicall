@@ -276,6 +276,11 @@
     "detached": "Fichier détaché",
     "detach_failed": "Détachement impossible"
   },
+  "detach_dialog": {
+    "also_trash": "Déplacer aussi vers la corbeille",
+    "kept_by": "Il reste dans le module Fichiers, car il est aussi attaché à {sources}.",
+    "trashed": "Fichier détaché et déplacé dans la corbeille"
+  },
   "new_version_dialog": {
     "title": "Importer une nouvelle version",
     "drop_zone": "Glisse-dépose le fichier ou {browse}",
