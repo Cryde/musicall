@@ -10,6 +10,12 @@ export default {
       .then((resp) => resp.data)
   },
 
+  getItem(id) {
+    return axios
+      .get(Routing.generate('api_musician_announces_get_item', { id }))
+      .then((resp) => resp.data)
+  },
+
   getByCurrentUser() {
     return axios
       .get(Routing.generate('api_musician_announces_get_self_collection'))

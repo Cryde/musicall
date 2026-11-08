@@ -142,5 +142,14 @@
     "musician_question": "Tu recherches plutôt un musicien pour ton groupe ?",
     "search_musician": "Rechercher un musicien",
     "login_required": "Tu dois te connecter pour créer ton profil professeur."
+  },
+  "pending": {
+    "announce_sign_in": "Connecte-toi pour publier ton annonce, on garde ce que tu as écrit.",
+    "announce_label": "Publier ton annonce",
+    "contact_sign_in": "Connecte-toi pour envoyer ton message à {name}, on garde ce que tu as écrit.",
+    "contact_label": "Ton message à {name}",
+    "contact_announce_gone": "Cette annonce n'est plus en ligne, ton message n'a pas été envoyé.",
+    "contact_recipient_deleted": "Ce compte a été supprimé, ton message n'a pas été envoyé.",
+    "contact_own_announce": "C'est ta propre annonce, ton message n'a pas été envoyé."
   }
 }

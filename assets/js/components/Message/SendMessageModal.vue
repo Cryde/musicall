@@ -142,6 +142,7 @@ import { useI18n } from 'vue-i18n'
 import userSearchApi from '../../api/search/user.js'
 import { useSendMessage } from '../../composables/useSendMessage.js'
 import { displayName } from '../../helper/user/displayName.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 
 const props = defineProps({
@@ -154,12 +155,20 @@ const props = defineProps({
   contactOrigin: {
     type: Object,
     default: null
+  },
+  /** A message written before signing in (#1306), back in the box when it opens. */
+  initialContent: {
+    type: String,
+    default: ''
   }
 })
 
+// `sign-in-required` carries what a visitor wrote when they click « Envoyer »: nothing is sent for them.
+const emit = defineEmits(['sign-in-required'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
+const userSecurityStore = useUserSecurityStore()
 
 const recipient = ref(null)
 const content = ref('')
@@ -186,6 +195,14 @@ watch(
   { immediate: true }
 )
 
+watch(
+  visible,
+  (isVisible) => {
+    if (isVisible) content.value = props.initialContent
+  },
+  { immediate: true }
+)
+
 const debouncedSearch = useDebounceFn(async (query) => {
   try {
     recipientsOptions.value = await userSearchApi.searchUsers(query)
@@ -205,6 +222,10 @@ function searchUsers(event) {
 async function sendMessage() {
   const targetRecipient = props.selectedRecipient || recipient.value
   if (!targetRecipient || !content.value.trim()) return
+  if (!userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated) {
+    emit('sign-in-required', { content: content.value })
+    return
+  }
 
   const sent = await send({
     recipientId: targetRecipient.id,

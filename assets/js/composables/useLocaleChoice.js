@@ -1,6 +1,6 @@
 import { until, useLocalStorage } from '@vueuse/core'
 import { useToast } from 'primevue/usetoast'
-import { computed, readonly, ref } from 'vue'
+import { computed, nextTick, readonly, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import securityApi from '../api/user/security.js'
@@ -37,6 +37,10 @@ const SUGGESTION_DISMISSED_KEY = 'locale_suggestion_dismissed'
 const cookieLocale = ref(CAN_CHOOSE_LOCALE ? readLocaleCookie() : null)
 // Shared by every switcher: two quick choices would otherwise finish their saves in either order.
 const isSwitching = ref(false)
+// Set once the arrival's locale is applied. A new locale remounts the page, so whatever reopens a form on it
+// (the pending action, #1306) waits for this, or it opens in the instance about to be destroyed.
+const localeSettled = ref(false)
+export const isLocaleSettled = readonly(localeSettled)
 
 function rememberLocale(locale) {
   saveLocaleCookie(locale)
@@ -81,10 +85,18 @@ export function useLocaleChoice() {
  * API call, so it waits for the profile.
  */
 export async function honourLocaleChoice(router, userSecurityStore) {
-  if (!CAN_CHOOSE_LOCALE) {
-    return
+  try {
+    if (CAN_CHOOSE_LOCALE) {
+      await applyArrivalLocale(router, userSecurityStore)
+    }
+  } finally {
+    // After the remount a new locale causes, so the page that stays is the one mounted.
+    await nextTick()
+    localeSettled.value = true
   }
+}
 
+async function applyArrivalLocale(router, userSecurityStore) {
   try {
     const accountLocale = userSecurityStore.isAuthenticated
       ? await until(() => userSecurityStore.userProfile?.locale).toBeTruthy({

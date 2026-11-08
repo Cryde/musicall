@@ -142,5 +142,14 @@
     "musician_question": "Looking for a musician for your band instead?",
     "search_musician": "Find a musician",
     "login_required": "You need to log in to create your teacher profile."
+  },
+  "pending": {
+    "announce_sign_in": "Sign in to publish your ad, we keep what you wrote.",
+    "announce_label": "Publish your ad",
+    "contact_sign_in": "Sign in to send your message to {name}, we keep what you wrote.",
+    "contact_label": "Your message to {name}",
+    "contact_announce_gone": "This ad is no longer online, your message was not sent.",
+    "contact_recipient_deleted": "This account was deleted, your message was not sent.",
+    "contact_own_announce": "This is your own ad, your message was not sent."
   }
 }
