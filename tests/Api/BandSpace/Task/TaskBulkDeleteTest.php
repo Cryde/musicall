@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace\Task;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\TaskRepository;
@@ -47,6 +49,52 @@ class TaskBulkDeleteTest extends ApiTestCase
         $repo = self::getContainer()->get(TaskRepository::class);
         $this->assertNull($repo->find($task1Id));
         $this->assertNull($repo->find($task2Id));
+    }
+
+    /** #1354: one line for the whole selection, so a large one cannot flush the dashboard's last ten. */
+    public function test_bulk_delete_records_one_tasks_deleted_line(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $taskIds = [];
+        foreach (['Réserver le studio', 'Imprimer la setlist', 'Accorder la basse', 'Charger le camion'] as $title) {
+            $taskIds[] = (string) TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => $title])->create()->id;
+        }
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
+            ['task_ids' => $taskIds],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame('', (string) $this->client->getResponse()->getContent());
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
+            ->findBy(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task]);
+
+        $this->assertSame(
+            [[
+                'type' => 'tasks_deleted',
+                'resource_id' => null,
+                'actor' => (string) $user->id,
+                'payload' => [
+                    'count' => 4,
+                    'titles' => ['Réserver le studio', 'Imprimer la setlist', 'Accorder la basse'],
+                ],
+            ]],
+            array_map(static fn ($activity): array => [
+                'type' => $activity->type,
+                'resource_id' => $activity->resourceId,
+                'actor' => (string) $activity->actor?->id,
+                'payload' => $activity->payload,
+            ], $activities),
+        );
     }
 
     public function test_bulk_delete_by_admin(): void

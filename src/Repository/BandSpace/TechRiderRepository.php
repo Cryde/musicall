@@ -58,4 +58,23 @@ class TechRiderRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Which of these riders an activity line may still link to (#1354): an archived one opens under its banner.
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('r')
+            ->select('r.id')
+            ->where('r.bandSpace = :bandSpace')
+            ->andWhere('r.id IN (:ids)')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

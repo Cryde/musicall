@@ -7,10 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\BandSpace\BandSpaceChangeSignal;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -28,7 +29,7 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
         private TaskRepository $taskRepository,
         private BandSpaceFileSourceDetacher $fileSourceDetacher,
         private Security $security,
-        private BandSpaceChangeSignal $changeSignal,
+        private BandSpaceActivityRecorder $activityRecorder,
     ) {
     }
 
@@ -61,8 +62,15 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
             $user,
         );
 
+        $this->activityRecorder->record(
+            bandSpace: $membership->bandSpace,
+            module: BandSpaceModule::Task,
+            type: BandSpaceTaskActivityType::TaskDeleted,
+            resourceId: $task->id,
+            actor: $user,
+            payload: ['title' => $task->title],
+        );
         $this->entityManager->remove($task);
-        $this->changeSignal->changed($membership->bandSpace, BandSpaceModule::Task);
 
         $this->entityManager->flush();
     }

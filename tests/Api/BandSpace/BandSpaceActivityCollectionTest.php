@@ -3,12 +3,18 @@
 namespace App\Tests\Api\BandSpace;
 
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\Role;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\BandSpaceNoteFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
+use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
+use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\DateTime;
@@ -384,6 +390,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
                     'band_space_id' => $bandSpace->id,
                     'module' => 'settings',
                     'resource_id' => null,
+                    'resource_available' => null,
                     'type' => 'invitation_sent',
                     'payload' => [
                         'email' => 'j***@gmail.com',
@@ -403,6 +410,307 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         // Belt and braces: the address must be absent from the whole body, not just from the field we
         // happened to look at. Masking in the frontend would still have shipped it here.
         $this->assertStringNotContainsString('john.doe@gmail.com', (string) $this->client->getResponse()->getContent());
+    }
+
+    /**
+     * #1354: a line written before its item was deleted must stop linking to it. Two task lines and two
+     * note lines cost one query per kind of item, not one per line.
+     */
+    public function test_a_line_whose_task_or_note_was_deleted_since_is_not_available(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'title' => 'Réserver le studio'])->create();
+        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Paroles'])->create();
+        $deletedTaskId = '0199a000-0000-7000-8000-000000000001';
+        $deletedNoteId = '0199a000-0000-7000-8000-000000000002';
+
+        $openTask = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'resourceId' => $task->id, 'type' => 'status_changed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-06 10:00:00')])->create();
+        $goneTask = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'resourceId' => $deletedTaskId, 'type' => 'task_archived', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-05 10:00:00')])->create();
+        $deletion = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'resourceId' => $deletedTaskId, 'type' => 'task_deleted', 'actor' => null, 'payload' => ['title' => 'Ancienne tâche'], 'creationDatetime' => new \DateTime('2026-04-04 10:00:00')])->create();
+        $openNote = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Notes, 'resourceId' => $note->id, 'type' => 'note_renamed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-03 10:00:00')])->create();
+        $goneNote = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Notes, 'resourceId' => $deletedNoteId, 'type' => 'note_renamed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-02 10:00:00')])->create();
+        $rename = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Settings, 'type' => 'band_renamed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-01 10:00:00')])->create();
+
+        $this->client->loginUser($member);
+        $this->client->enableProfiler();
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $base = '/api/band_spaces/' . $bandSpace->id . '/activities/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceActivity',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/activities',
+            '@type' => 'Collection',
+            'totalItems' => 6,
+            'member' => [
+                [
+                    '@id' => $base . $openTask->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $openTask->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'task',
+                    'resource_id' => $task->id,
+                    'resource_available' => true,
+                    'type' => 'status_changed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-06T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $goneTask->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $goneTask->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'task',
+                    'resource_id' => $deletedTaskId,
+                    'resource_available' => false,
+                    'type' => 'task_archived',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-05T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $deletion->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $deletion->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'task',
+                    'resource_id' => $deletedTaskId,
+                    'resource_available' => null,
+                    'type' => 'task_deleted',
+                    'payload' => ['title' => 'Ancienne tâche'],
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-04T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $openNote->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $openNote->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'notes',
+                    'resource_id' => $note->id,
+                    'resource_available' => true,
+                    'type' => 'note_renamed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-03T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $goneNote->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $goneNote->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'notes',
+                    'resource_id' => $deletedNoteId,
+                    'resource_available' => false,
+                    'type' => 'note_renamed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-02T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $rename->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $rename->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'settings',
+                    'resource_id' => null,
+                    'resource_available' => null,
+                    'type' => 'band_renamed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-01T10:00:00+00:00',
+                ],
+            ],
+        ]);
+
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile, 'The profiler must be enabled to inspect the queries.');
+        $queries = array_column($profile->getCollector('db')->getQueries()['default'] ?? [], 'sql');
+        $reading = static fn (string $table): array => array_values(array_filter(
+            $queries,
+            static fn (string $sql): bool => preg_match('/\bFROM ' . $table . '\b/', $sql) === 1,
+        ));
+        $this->assertCount(1, $reading('task'));
+        $this->assertCount(1, $reading('band_space_note'));
+    }
+
+    /**
+     * #1354: a file in the bin answers 404 to the Files screen, and another member's personal finance
+     * entry is not the viewer's to open, so neither line links any more. A category line names nothing.
+     */
+    public function test_a_trashed_file_and_a_finance_entry_the_viewer_cannot_see_are_not_available(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $other = UserFactory::new()->create(['username' => 'other', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+        $otherMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other, 'role' => Role::User])->create();
+
+        $liveFile = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'originalName' => 'setlist.pdf'])->create();
+        $trashedFile = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'originalName' => 'old.pdf', 'archiveDatetime' => new \DateTimeImmutable('2026-04-01 09:00:00')])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio'])->create();
+        $bandEntry = FinanceEntryFactory::new(['category' => $category, 'label' => 'Location'])->create();
+        $personalEntry = FinanceEntryFactory::new(['category' => $category, 'label' => 'Cotisation', 'scope' => FinanceEntryScope::Personal, 'member' => $otherMembership])->create();
+
+        $openFile = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::File, 'resourceId' => $liveFile->id, 'type' => 'uploaded', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-05 10:00:00')])->create();
+        $binnedFile = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::File, 'resourceId' => $trashedFile->id, 'type' => 'renamed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-04 10:00:00')])->create();
+        $openEntry = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Finance, 'resourceId' => $bandEntry->id, 'type' => 'entry_created', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-03 10:00:00')])->create();
+        $hiddenEntry = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Finance, 'resourceId' => $personalEntry->id, 'type' => 'entry_created', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-02 10:00:00')])->create();
+        $categoryLine = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Finance, 'resourceId' => $category->id, 'type' => 'category_created', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-01 10:00:00')])->create();
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $base = '/api/band_spaces/' . $bandSpace->id . '/activities/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceActivity',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/activities',
+            '@type' => 'Collection',
+            'totalItems' => 5,
+            'member' => [
+                [
+                    '@id' => $base . $openFile->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $openFile->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'file',
+                    'resource_id' => $liveFile->id,
+                    'resource_available' => true,
+                    'type' => 'uploaded',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-05T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $binnedFile->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $binnedFile->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'file',
+                    'resource_id' => $trashedFile->id,
+                    'resource_available' => false,
+                    'type' => 'renamed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-04T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $openEntry->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $openEntry->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'finance',
+                    'resource_id' => $bandEntry->id,
+                    'resource_available' => true,
+                    'type' => 'entry_created',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-03T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $hiddenEntry->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $hiddenEntry->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'finance',
+                    'resource_id' => $personalEntry->id,
+                    'resource_available' => false,
+                    'type' => 'entry_created',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-02T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $categoryLine->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $categoryLine->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'finance',
+                    'resource_id' => $category->id,
+                    'resource_available' => null,
+                    'type' => 'category_created',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-01T10:00:00+00:00',
+                ],
+            ],
+        ]);
+    }
+
+    /** #1354: an id that names another band's task or note is not this band's to open. */
+    public function test_a_line_naming_an_item_of_another_band_space_is_not_available(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $otherBandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $otherBandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $foreignTask = TaskFactory::new(['bandSpace' => $otherBandSpace, 'title' => 'Ailleurs'])->create();
+        $foreignNote = BandSpaceNoteFactory::new(['bandSpace' => $otherBandSpace, 'title' => 'Ailleurs'])->create();
+
+        $taskLine = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'resourceId' => $foreignTask->id, 'type' => 'status_changed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-02 10:00:00')])->create();
+        $noteLine = BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Notes, 'resourceId' => $foreignNote->id, 'type' => 'note_renamed', 'actor' => null, 'creationDatetime' => new \DateTime('2026-04-01 10:00:00')])->create();
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $base = '/api/band_spaces/' . $bandSpace->id . '/activities/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceActivity',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/activities',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => $base . $taskLine->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $taskLine->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'task',
+                    'resource_id' => $foreignTask->id,
+                    'resource_available' => false,
+                    'type' => 'status_changed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-02T10:00:00+00:00',
+                ],
+                [
+                    '@id' => $base . $noteLine->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $noteLine->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'notes',
+                    'resource_id' => $foreignNote->id,
+                    'resource_available' => false,
+                    'type' => 'note_renamed',
+                    'payload' => null,
+                    'actor' => null,
+                    'creation_datetime' => '2026-04-01T10:00:00+00:00',
+                ],
+            ],
+        ]);
     }
 
     public function test_non_member_forbidden(): void

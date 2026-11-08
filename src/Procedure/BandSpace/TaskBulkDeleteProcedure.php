@@ -7,21 +7,25 @@ use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\Role;
 use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\TaskRepository;
-use App\Service\BandSpace\BandSpaceChangeSignal;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class TaskBulkDeleteProcedure
 {
+    /** The feed names the first few, so a long selection still reads as one sentence. */
+    private const int TITLES_IN_ACTIVITY = 3;
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TaskRepository $taskRepository,
         private BandSpaceFileSourceDetacher $fileSourceDetacher,
-        private BandSpaceChangeSignal $changeSignal,
+        private BandSpaceActivityRecorder $activityRecorder,
     ) {
     }
 
@@ -54,10 +58,20 @@ readonly class TaskBulkDeleteProcedure
             $titlesByTaskId[(string) $task->id] = $task->title;
         }
 
-        $this->changeSignal->changed($bandSpace, BandSpaceModule::Task);
-
         $this->entityManager->wrapInTransaction(function () use ($bandSpace, $tasks, $titlesByTaskId, $user): void {
             $this->fileSourceDetacher->detachDeletedSources($bandSpace, 'task', $titlesByTaskId, $user);
+
+            // One line for the whole selection, so a large one cannot push everything else off the dashboard.
+            $this->activityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Task,
+                type: BandSpaceTaskActivityType::TasksDeleted,
+                actor: $user,
+                payload: [
+                    'count' => count($tasks),
+                    'titles' => array_slice(array_values($titlesByTaskId), 0, self::TITLES_IN_ACTIVITY),
+                ],
+            );
 
             foreach ($tasks as $task) {
                 $this->entityManager->remove($task);

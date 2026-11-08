@@ -309,3 +309,32 @@ describe('file and folder activity sentences', () => {
     }
   })
 })
+
+describe('task activity sentences', () => {
+  it('name a deleted task by its title, since nothing is left to open (#1354)', () => {
+    assert.equal(
+      activitySentence({
+        module: 'task',
+        type: 'task_deleted',
+        payload: { title: 'Réserver le studio' }
+      }),
+      'a supprimé la tâche « Réserver le studio »'
+    )
+  })
+
+  it('name a bulk deletion by its count and its first titles (#1354)', () => {
+    const deleted = (payload) =>
+      activitySentence({ module: 'task', type: 'tasks_deleted', payload })
+    assert.equal(
+      deleted({ count: 2, titles: ['Studio', 'Affiche'] }),
+      'a supprimé 2 tâches : « Studio », « Affiche »'
+    )
+    assert.equal(
+      deleted({ count: 5, titles: ['Studio', 'Affiche', 'Setlist'] }),
+      'a supprimé 5 tâches, dont « Studio », « Affiche », « Setlist »'
+    )
+    assert.equal(deleted({ count: 1, titles: ['Studio'] }), 'a supprimé la tâche « Studio »')
+    assert.equal(deleted({ count: 4, titles: [] }), 'a supprimé 4 tâches')
+    assert.equal(deleted({}), 'a supprimé des tâches')
+  })
+})

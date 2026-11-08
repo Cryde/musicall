@@ -107,4 +107,24 @@ class LyricsRepository extends ServiceEntityRepository
 
         return array_fill_keys(array_map(strval(...), $rows), true);
     }
+
+    /**
+     * Which of these lyrics an activity line may still link to (#1354): « Paroles » only opens live ones.
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('l')
+            ->select('l.id')
+            ->where('l.bandSpace = :bandSpace')
+            ->andWhere('l.id IN (:ids)')
+            ->andWhere('l.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

@@ -392,4 +392,23 @@ class TaskRepository extends ServiceEntityRepository
             ->setParameter('today', new DateTimeImmutable('today'))
             ->setParameter('doneStatus', TaskStatus::Done->value);
     }
+
+    /**
+     * Which of these tasks an activity line may still link to (#1354): any that exists, archived included, as the board opens those.
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('t')
+            ->select('t.id')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.id IN (:ids)')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

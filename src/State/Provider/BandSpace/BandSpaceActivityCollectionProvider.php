@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityAvailability;
 use App\Service\BandSpace\BandSpaceActivityFilter;
 use App\Service\Builder\BandSpace\BandSpaceActivityBuilder;
 use DateTimeImmutable;
@@ -30,6 +31,7 @@ readonly class BandSpaceActivityCollectionProvider implements ProviderInterface
         private Security $security,
         private RequestStack $requestStack,
         private Pagination $pagination,
+        private BandSpaceActivityAvailability $availability,
     ) {
     }
 
@@ -40,7 +42,7 @@ readonly class BandSpaceActivityCollectionProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $page = $this->pagination->getPage($context);
         $itemsPerPage = $this->pagination->getLimit($operation, $context);
@@ -52,6 +54,7 @@ readonly class BandSpaceActivityCollectionProvider implements ProviderInterface
         $totalItems = $this->bandSpaceActivityRepository->countForBandSpace($bandSpace, $filter);
 
         $dtos = $this->bandSpaceActivityBuilder->buildFromList($entities);
+        $this->availability->fill($dtos, $bandSpace, $membership);
 
         return new TraversablePaginator(
             new \ArrayIterator($dtos),

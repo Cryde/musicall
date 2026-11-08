@@ -658,4 +658,25 @@ class FinanceEntryRepository extends ServiceEntityRepository
 
         return $this->applyVisibleTo($qb, $viewer);
     }
+
+    /**
+     * Which of these entries an activity line may still link to (#1354): one the viewer can open,
+     * so not another member's personal entry.
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, BandSpaceMembership $viewer, array $ids): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('e.id')
+            ->innerJoin('e.category', 'c')
+            ->where('c.bandSpace = :bandSpace')
+            ->andWhere('e.id IN (:ids)')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids);
+
+        return $this->applyVisibleTo($qb, $viewer)->getQuery()->getSingleColumnResult();
+    }
 }

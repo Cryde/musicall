@@ -173,4 +173,23 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
             ->where('n.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace);
     }
+
+    /**
+     * Which of these notes an activity line may still link to (#1354).
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('n')
+            ->select('n.id')
+            ->where('n.bandSpace = :bandSpace')
+            ->andWhere('n.id IN (:ids)')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }
