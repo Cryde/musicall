@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceApi from '../../api/bandSpace/band-space.js'
+import { latestOnly } from '../../utils/latestOnly.js'
 
 export const useBandSpaceStore = defineStore('bandSpaces', () => {
   const spaces = ref([])
@@ -17,29 +18,26 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
   // Map for O(1) lookup by ID
   const spacesMap = computed(() => new Map(spaces.value.map((s) => [s.id, s])))
 
-  // Monotonic token to discard stale responses if loadMyBandSpaces is called
-  // multiple times in quick succession (auth state churn, retries).
-  let loadToken = 0
+  // Two loads can overlap (a locale switch remounts the layout mid-load): each caller gets the
+  // newest answer, so none goes on with a list that has not arrived yet.
+  const fetchMySpaces = latestOnly(() => bandSpaceApi.getMyBandSpaces())
 
   /** `quiet` re-reads in place for a live refetch (#1157): no loading state, and a failure keeps the list. */
   async function loadMyBandSpaces({ quiet = false } = {}) {
-    const token = ++loadToken
     if (!quiet) {
       isLoading.value = true
       error.value = null
     }
 
     try {
-      const data = await bandSpaceApi.getMyBandSpaces()
-      if (token !== loadToken) return
-      spaces.value = data
+      spaces.value = await fetchMySpaces()
     } catch (e) {
-      if (token !== loadToken || quiet) return
+      if (quiet) return
       error.value = e.message || 'Failed to load band spaces'
       spaces.value = []
       throw e
     } finally {
-      if (token === loadToken) {
+      if (!quiet) {
         isLoading.value = false
       }
     }
