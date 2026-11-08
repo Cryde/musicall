@@ -20,11 +20,10 @@ use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class BandSpaceFileBuilder
 {
-    private const string CHAT_MESSAGE_LABEL = 'Message du chat';
-
     public function __construct(
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
@@ -37,6 +36,7 @@ readonly class BandSpaceFileBuilder
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private BandSpaceMemberNames $memberNames,
         private UrlGeneratorInterface $urlGenerator,
+        private TranslatorInterface $translator,
         #[Autowire('%band_space.file_retention_days%')]
         private int $retentionDays,
     ) {
@@ -214,7 +214,9 @@ readonly class BandSpaceFileBuilder
             }
         }
 
-        return array_map(static function ($a) use ($taskTitles, $entryLabels, $noteTitles, $songTitles, $setlistNames): array {
+        $chatMessageLabel = $this->translator->trans('band_space.file.source.chat_message');
+
+        return array_map(static function ($a) use ($taskTitles, $entryLabels, $noteTitles, $songTitles, $setlistNames, $chatMessageLabel): array {
             $sourceId = (string) $a->sourceId;
             $label = match ($a->sourceType) {
                 'task' => $taskTitles[$sourceId] ?? '—',
@@ -222,7 +224,7 @@ readonly class BandSpaceFileBuilder
                 'note' => $noteTitles[$sourceId] ?? '—',
                 'song' => $songTitles[$sourceId] ?? '—',
                 'setlist' => $setlistNames[$sourceId] ?? '—',
-                BandSpaceFileSourceTypes::CHAT_MESSAGE => self::CHAT_MESSAGE_LABEL,
+                BandSpaceFileSourceTypes::CHAT_MESSAGE => $chatMessageLabel,
                 default => '—',
             };
 

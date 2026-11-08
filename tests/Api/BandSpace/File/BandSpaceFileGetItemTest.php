@@ -10,7 +10,10 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
+use App\Tests\Factory\Message\MessageFactory;
+use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -62,6 +65,88 @@ class BandSpaceFileGetItemTest extends ApiTestCase
         $this->assertSame(3, $response['current_version_number']);
         $this->assertSame('alice', $response['created_by']['username']);
         $this->assertStringContainsString('/download', $response['download_url']);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function chatMessageSourceLabels(): iterable
+    {
+        yield 'in French' => ['fr', 'Message du chat'];
+        yield 'in English' => ['en', 'Chat message'];
+    }
+
+    /** The one source label the server writes itself, a chat message having no title, follows the reader's language. */
+    #[DataProvider('chatMessageSourceLabels')]
+    public function test_get_item_names_a_chat_message_source_in_the_reader_locale(string $locale, string $sourceLabel): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+        $message = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $user,
+            'content' => '',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+        ])->create();
+
+        $file = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'photo.webp',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+        ])->withAttachment(['type' => 'message', 'id' => (string) $message->id])->create();
+        $version = BandSpaceFileVersionFactory::new([
+            'bandSpaceFile' => $file,
+            'createdBy' => $user,
+            'mimeType' => 'image/webp',
+            'size' => 2048,
+        ])->create();
+        $file->currentVersion = $version;
+        $message->imageFileId = (string) $file->id;
+        \Zenstruck\Foundry\Persistence\save($file);
+        \Zenstruck\Foundry\Persistence\save($message);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_X_LOCALE' => $locale],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => 'photo.webp',
+            'size' => 2048,
+            'mime_type' => 'image/webp',
+            'folder_id' => null,
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [
+                ['source_type' => 'message', 'source_id' => $message->id, 'source_label' => $sourceLabel],
+            ],
+            'current_version_id' => $version->id,
+            'current_version_number' => 1,
+            'version_count' => 1,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'batteur',
+                'display_name' => 'batteur',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => '2026-09-10T20:00:00+00:00',
+            'update_datetime' => null,
+            'archive_datetime' => null,
+            'purge_datetime' => null,
+        ]);
     }
 
     public function test_get_item_not_found_returns_404(): void
