@@ -12,6 +12,7 @@
     <!-- Mounted here rather than in a layout so the trigger works from every route, the layout-less
          live setlist view included. -->
     <FeedbackDrawer />
+    <PendingActionPrompt />
 </template>
 
 <script setup>
@@ -21,6 +22,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import FeedbackDrawer from './components/Feedback/FeedbackDrawer.vue'
+import PendingActionPrompt from './components/Global/PendingActionPrompt.vue'
 import { honourLocaleChoice } from './composables/useLocaleChoice.js'
 import { useUserSecurityStore } from './store/user/security.js'
 import { resolveUnauthenticatedRedirect } from './utils/unauthenticatedRedirect.js'

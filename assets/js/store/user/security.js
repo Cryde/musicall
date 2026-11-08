@@ -4,6 +4,7 @@ import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import { i18n } from '../../i18n/index.js'
 import router from '../../router/index.js'
+import { clearPendingAction, openPendingActionStorage } from '../../utils/pendingAction.js'
 import { isSafeReturnUrl } from '../../utils/returnUrl.js'
 import { grantsAdmin, grantsTester } from '../../utils/roles.js'
 import {
@@ -259,6 +260,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     userProfile.value = null
     localStorage.removeItem('was_logged_in')
     clearRequestDrafts(openRequestDraftStorage())
+    clearPendingAction(openPendingActionStorage())
     stopProactiveRefresh()
 
     isAuthenticated.value = false

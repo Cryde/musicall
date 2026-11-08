@@ -214,5 +214,8 @@
   },
   "sheet": {
     "close": "Close"
+  },
+  "pending_action": {
+    "offer": "Continue: {label}"
   }
 }
