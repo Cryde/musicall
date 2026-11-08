@@ -77,6 +77,52 @@ class LyricsPdfExportTest extends ApiTestCase
         ]);
     }
 
+    /** The lookup comes first (#1097): past the limit, a wrong id is still a 404. */
+    public function test_lyrics_of_another_space_are_not_found_past_the_limit_too(): void
+    {
+        [$space, $singer] = $this->lyricsSungBy();
+        $elsewhere = LyricsFactory::createOne(['content' => 'Secret']);
+        self::getContainer()->get('limiter.lyrics_pdf')->create($singer->id)->consume(20);
+
+        $this->client->loginUser($singer);
+        $this->client->request('GET', $this->url($space, $elsewhere), server: ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Paroles introuvables',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Paroles introuvables',
+        ]);
+    }
+
+    /** #1097: past the limit Gotenberg is not even asked. */
+    public function test_a_member_past_the_limit_is_refused_before_any_render(): void
+    {
+        [$space, $singer, $lyrics] = $this->lyricsSungBy();
+        self::getContainer()->get('limiter.lyrics_pdf')->create($singer->id)->consume(20);
+
+        $this->client->loginUser($singer);
+        $this->client->request('GET', $this->url($space, $lyrics), server: ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
+        $this->assertSame([], self::getContainer()->get(RecordingGotenbergClient::class)->calls());
+    }
+
     public function test_unlinked_lyrics_print_under_their_own_title_with_no_key(): void
     {
         [$space, $singer, $lyrics] = $this->lyricsSungBy();

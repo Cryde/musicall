@@ -4,9 +4,16 @@
       <!-- Only the failure is announced: a refresh follows every autosave, and saying so each
            time would talk over the editing. -->
       <span role="status" class="flex items-center gap-2 min-w-0">
-        <template v-if="error">
-          <i class="pi pi-times text-red-600 dark:text-red-400" aria-hidden="true" />
-          <span>{{ t('band_space_tech_rider.pdf_preview.unavailable') }}</span>
+        <template v-if="failure">
+          <i
+            :class="isRateLimited ? 'pi pi-pause' : 'pi pi-times text-red-600 dark:text-red-400'"
+            aria-hidden="true"
+          />
+          <span>{{
+            isRateLimited
+              ? t('band_space_tech_rider.pdf_preview.paused')
+              : t('band_space_tech_rider.pdf_preview.unavailable')
+          }}</span>
           <Button :label="t('band_space_tech_rider.common.retry')" size="small" severity="secondary" text @click="scheduler.refresh()" />
         </template>
       </span>
@@ -48,7 +55,7 @@
       v-else
       class="flex-1 min-h-0 flex items-center justify-center rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800"
     >
-      <ProgressSpinner v-if="!error" style="width: 2rem; height: 2rem" />
+      <ProgressSpinner v-if="!failure" style="width: 2rem; height: 2rem" />
     </div>
   </div>
 </template>
@@ -60,6 +67,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceTechRidersApi from '../../../api/bandSpace/band-space-tech-riders.js'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
+import { PDF_EXPORT_RATE_LIMITED, pdfExportFailure } from '../../../utils/pdfExportFailure.js'
 import { createPdfPreviewScheduler } from '../../../utils/pdfPreviewScheduler.js'
 
 /**
@@ -77,7 +85,10 @@ const techRidersStore = useBandTechRidersStore()
 
 const pdfUrl = ref(null)
 const isBusy = ref(false)
-const error = ref(false)
+// Null until a render fails, and again once one succeeds. A failed render keeps the PDF on screen
+// and the next change tries again, so a rate limited pause can also lift without the button.
+const failure = ref(null)
+const isRateLimited = computed(() => failure.value === PDF_EXPORT_RATE_LIMITED)
 let isMounted = true
 // A render still out when the preview closes or the rider changes is not worth waiting for.
 const abortController = new AbortController()
@@ -90,7 +101,7 @@ const viewerUrl = computed(() =>
 
 // A save still on its way counts too: the change is not in the store yet, so not in the scheduler.
 const isOutdated = computed(
-  () => !error.value && (isBusy.value || techRidersStore.saveStatus === 'saving')
+  () => !failure.value && (isBusy.value || techRidersStore.saveStatus === 'saving')
 )
 
 async function render() {
@@ -102,9 +113,9 @@ async function render() {
     const previous = pdfUrl.value
     pdfUrl.value = URL.createObjectURL(blob)
     if (previous) URL.revokeObjectURL(previous)
-    error.value = false
+    failure.value = null
   } catch (e) {
-    if (isMounted) error.value = true
+    if (isMounted) failure.value = pdfExportFailure(e)
     throw e
   }
 }

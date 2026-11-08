@@ -125,6 +125,68 @@ class TechRiderPdfExportTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
+    // ------------------------------------------------------------------ the rate limit (#1097)
+
+    /** The live preview calls this export on its own, so past the limit Gotenberg is not even asked. */
+    public function test_a_member_past_the_limit_is_refused_before_any_render(): void
+    {
+        [$user, $bandSpace, $rider] = $this->seed();
+        self::getContainer()->get('limiter.tech_rider_pdf')->create($user->id)->consume(40);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', $this->url($bandSpace, $rider));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
+        $this->assertSame([], self::getContainer()->get(RecordingGotenbergClient::class)->calls());
+    }
+
+    /** The access check comes first: an outsider learns nothing from the limiter. */
+    public function test_an_outsider_past_the_limit_is_still_refused_as_an_outsider(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $rider = TechRiderFactory::new(['bandSpace' => $bandSpace])->create();
+        self::getContainer()->get('limiter.tech_rider_pdf')->create($user->id)->consume(40);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', $this->url($bandSpace, $rider));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Tu n'es pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Tu n'es pas membre de ce Band Space",
+        ]);
+    }
+
+    /** One limiter per export: a member who spent the setlist budget still gets the rider. */
+    public function test_another_export_spent_does_not_block_the_rider(): void
+    {
+        [$user, $bandSpace, $rider] = $this->seed();
+        self::getContainer()->get('limiter.setlist_pdf')->create($user->id)->consume(20);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', $this->url($bandSpace, $rider));
+
+        $this->assertResponseIsSuccessful();
+        $this->assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
     /**
      * New failure mode: the rider used to be data, and is now a call to a service. A dependency being
      * down is a 502, not the 500 an uncaught transport error would produce. The detail is deliberately

@@ -130,6 +130,7 @@ import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 import { downloadBlob } from '../../../utils/downloadBlob.js'
+import { PDF_EXPORT_RATE_LIMITED, pdfExportFailure } from '../../../utils/pdfExportFailure.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -218,7 +219,10 @@ async function handleExport() {
     toast.add({
       severity: 'error',
       summary: t('band_space_setlist.pdf_export.failed_summary'),
-      detail: t('band_space_setlist.pdf_export.failed_detail'),
+      detail:
+        pdfExportFailure(error) === PDF_EXPORT_RATE_LIMITED
+          ? t('band_space_setlist.pdf_export.rate_limited_detail')
+          : t('band_space_setlist.pdf_export.failed_detail'),
       life: 6000
     })
   } finally {

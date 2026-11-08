@@ -219,7 +219,8 @@
     "generating": "Génération...",
     "download": "Télécharger le PDF",
     "failed_summary": "Export impossible",
-    "failed_detail": "Le PDF n’a pas pu être généré. Réessaie dans un instant."
+    "failed_detail": "Le PDF n’a pas pu être généré. Réessaie dans un instant.",
+    "rate_limited_detail": "Trop de PDF générés en peu de temps. Réessaie dans une minute."
   },
   "file_drawer": {
     "header": "Fichiers de la setlist",

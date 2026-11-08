@@ -13,9 +13,11 @@ use App\Service\BandSpace\Song\SongPdfRenderer;
 use App\Service\BandSpace\Song\SongSheetBuilder;
 use App\Service\BandSpace\Song\SongSheetOptions;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * Archived lyrics download too: this is a read.
@@ -30,6 +32,8 @@ readonly class LyricsPdfExportProvider implements ProviderInterface
         private SongSheetBuilder $sheetBuilder,
         private SongPdfRenderer $pdfRenderer,
         private Security $security,
+        #[Target('lyrics_pdf')]
+        private RateLimiterFactoryInterface $pdfLimiter,
     ) {
     }
 
@@ -46,6 +50,9 @@ readonly class LyricsPdfExportProvider implements ProviderInterface
         if (!$lyrics instanceof Lyrics) {
             throw new NotFoundHttpException('band_space.lyrics.not_found');
         }
+
+        // Charged once the export is known to be real: an outsider or a wrong id spends nothing.
+        $this->pdfLimiter->create($user->id)->consume()->ensureAccepted();
 
         $sheet = $this->sheetBuilder->buildFromLyrics($lyrics, SongSheetOptions::fromParameters($operation->getParameters()));
         $response = new Response($this->pdfRenderer->renderSheet($sheet));
