@@ -5,13 +5,21 @@ declare(strict_types=1);
 namespace App\Tests\Api\OAuth;
 
 use App\Controller\OAuth\AppleController;
+use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\SocialAccount;
 use App\Entity\User;
+use App\Enum\BandSpace\Role;
+use App\Mercure\MercureTopic;
 use App\Repository\UserRepository;
 use App\Service\OAuth\Apple\AppleSignInAttempt;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakeAppleIdentityTokenVerifier;
 use App\Tests\Double\FakeAppleTokenClient;
+use App\Tests\Double\RecordingHub;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\JwtPayload;
@@ -20,6 +28,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\BrowserKit\Cookie as BrowserCookie;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Update;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -103,6 +112,35 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertSignedInAs('elodiedupre');
         $this->assertSame(['refresh_token' => 'r.apple-refresh-token', 'refresh_token_client_id' => self::WEB_CLIENT_ID], $this->storedRefreshToken());
         $this->assertSame([['code' => 'a-code', 'client_id' => self::WEB_CLIENT_ID]], $this->appleTokens()->exchanges);
+    }
+
+    /**
+     * Invited before the account existed: signing up with Apple joins the band, as a password sign-up does.
+     * The callback answers a redirect, and the band still hears that its members changed.
+     */
+    public function test_a_first_sign_in_joins_the_band_its_email_was_invited_to(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'band_admin', 'email' => 'admin@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new()->create(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin]);
+        $invitation = BandSpaceInvitationFactory::new()->create(['bandSpace' => $bandSpace, 'invitedBy' => $admin, 'email' => 'nouveau@example.com']);
+        $attempt = AppleSignInAttempt::start(null);
+        $this->apple()->accept('an-id-token', $this->claims('nouveau@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
+        $this->assertSignedInAs('nouveau');
+        $newMember = self::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'nouveau']);
+        $this->assertInstanceOf(User::class, $newMember);
+        $this->assertSame([
+            'members' => [['band_admin', 'admin', 'active'], ['nouveau', 'user', 'active']],
+            'invitation' => ['accepted', 'nouveau'],
+        ], $this->bandOf((string) $invitation->id));
+        $this->assertEqualsCanonicalizing([
+            MercureTopic::userNotifications((string) $admin->id),
+            MercureTopic::userNotifications((string) $newMember->id),
+        ], $this->changeSignalTopics());
     }
 
     /** The same Apple ID as the app's, since the Services ID is grouped under its App ID. */
@@ -335,6 +373,37 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertInstanceOf(SocialAccount::class, $account);
 
         return ['refresh_token' => $account->refreshToken, 'refresh_token_client_id' => $account->refreshTokenClientId];
+    }
+
+    /**
+     * The invitation's band read back from the database: its members, and what became of the invitation.
+     *
+     * @return array{members: list<array{string, string, string}>, invitation: array{string, ?string}}
+     */
+    private function bandOf(string $invitationId): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $invitation = $entityManager->find(BandSpaceInvitation::class, $invitationId);
+        $this->assertInstanceOf(BandSpaceInvitation::class, $invitation);
+        $members = array_map(
+            static fn (BandSpaceMembership $membership): array => [$membership->user->username, $membership->role->value, $membership->status->value],
+            $entityManager->getRepository(BandSpaceMembership::class)->findBy(['bandSpace' => $invitation->bandSpace]),
+        );
+        sort($members);
+
+        return ['members' => $members, 'invitation' => [$invitation->status->value, $invitation->existingUser?->username]];
+    }
+
+    /** @return list<string> */
+    private function changeSignalTopics(): array
+    {
+        $updates = array_filter(
+            self::getContainer()->get(RecordingHub::class)->updates,
+            static fn (Update $update): bool => str_contains($update->getData(), '"band_space_changed"'),
+        );
+
+        return array_merge(...array_map(static fn (Update $update): array => $update->getTopics(), array_values($updates)));
     }
 
     private function apple(): FakeAppleIdentityTokenVerifier

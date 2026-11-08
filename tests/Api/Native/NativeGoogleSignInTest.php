@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Native;
 
+use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\SocialAccount;
 use App\Entity\User;
+use App\Enum\BandSpace\Role;
+use App\Mercure\MercureTopic;
 use App\Repository\UserRepository;
 use App\Security\Native\NativeOAuthAttemptLimiter;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakeGoogleIdTokenVerifier;
+use App\Tests\Double\RecordingHub;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\JwtPayload;
@@ -19,6 +27,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bridge\PhpUnit\Attribute\TimeSensitive;
 use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\RateLimiter\Policy\SlidingWindowLimiter;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -61,6 +70,57 @@ class NativeGoogleSignInTest extends ApiTestCase
         $this->assertCount(1, $socialAccounts);
         $this->assertSame(self::GOOGLE_ID, $socialAccounts[0]->providerId);
         $this->assertSessionBodyFor($user->username);
+    }
+
+    /** Invited before the account existed: signing up with Google joins the band, as a password sign-up does. */
+    public function test_a_first_sign_in_joins_the_band_its_email_was_invited_to(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'band_admin', 'email' => 'admin@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new()->create(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin]);
+        $invitation = BandSpaceInvitationFactory::new()->create(['bandSpace' => $bandSpace, 'invitedBy' => $admin, 'email' => 'nouveau@example.com']);
+        $this->google()->accept('a-token', $this->claims('nouveau@example.com', name: 'Nina'));
+
+        $this->signIn('a-token');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('nina');
+        $newMember = self::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'nina']);
+        $this->assertInstanceOf(User::class, $newMember);
+        $this->assertSame([
+            'members' => [['band_admin', 'admin', 'active'], ['nina', 'user', 'active']],
+            'invitation' => ['accepted', 'nina'],
+        ], $this->bandOf((string) $invitation->id));
+        $this->assertEqualsCanonicalizing([
+            MercureTopic::userNotifications((string) $admin->id),
+            MercureTopic::userNotifications((string) $newMember->id),
+        ], $this->changeSignalTopics(), 'The band hears that its members changed');
+    }
+
+    /** Only a new account joins on its own: a returning one answers the invitation like anybody else. */
+    public function test_a_returning_sign_in_leaves_an_invitation_for_the_person_to_answer(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice_drums', 'email' => 'alice@example.com', 'password' => null]);
+        SocialAccountFactory::new()->create(['user' => $user, 'providerId' => self::GOOGLE_ID, 'email' => 'alice@example.com']);
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'band_admin', 'email' => 'admin@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new()->create(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin]);
+        $invitation = BandSpaceInvitationFactory::new()->create([
+            'bandSpace' => $bandSpace,
+            'invitedBy' => $admin,
+            'email' => 'alice@example.com',
+            'existingUser' => $user,
+        ]);
+        $this->google()->accept('a-token', $this->claims('alice@example.com'));
+
+        $this->signIn('a-token');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('alice_drums');
+        $this->assertSame([
+            'members' => [['band_admin', 'admin', 'active']],
+            'invitation' => ['pending', 'alice_drums'],
+        ], $this->bandOf((string) $invitation->id));
     }
 
     public function test_a_token_google_does_not_vouch_for_is_refused(): void
@@ -212,6 +272,36 @@ class NativeGoogleSignInTest extends ApiTestCase
         $this->assertResponseStatusCodeSame($status);
         $this->assertJsonEquals(['code' => $status, 'message' => $message]);
         $this->assertSame([], $this->client->getResponse()->headers->getCookies());
+    }
+
+    /**
+     * The invitation's band read back from the database: its members, and what became of the invitation.
+     *
+     * @return array{members: list<array{string, string, string}>, invitation: array{string, ?string}}
+     */
+    private function bandOf(string $invitationId): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $invitation = $entityManager->find(BandSpaceInvitation::class, $invitationId);
+        $this->assertInstanceOf(BandSpaceInvitation::class, $invitation);
+        $members = array_map(
+            static fn (BandSpaceMembership $membership): array => [$membership->user->username, $membership->role->value, $membership->status->value],
+            $entityManager->getRepository(BandSpaceMembership::class)->findBy(['bandSpace' => $invitation->bandSpace]),
+        );
+        sort($members);
+
+        return ['members' => $members, 'invitation' => [$invitation->status->value, $invitation->existingUser?->username]];
+    }
+
+    /** @return list<string> */
+    private function changeSignalTopics(): array
+    {
+        $updates = array_filter(
+            self::getContainer()->get(RecordingHub::class)->updates,
+            static fn (Update $update): bool => str_contains($update->getData(), '"band_space_changed"'),
+        );
+        return array_merge(...array_map(static fn (Update $update): array => $update->getTopics(), array_values($updates)));
     }
 
     private function google(): FakeGoogleIdTokenVerifier
