@@ -214,5 +214,8 @@
   },
   "sheet": {
     "close": "Fermer"
+  },
+  "pending_action": {
+    "offer": "Reprendre : {label}"
   }
 }
