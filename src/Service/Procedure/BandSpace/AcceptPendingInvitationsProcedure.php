@@ -22,8 +22,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Adds a new account to the band spaces its email was invited to, whether it signed up with a password
- * or with Google or Apple (#1301).
+ * Adds a new account to the band spaces its email was invited to, once that email is proven: at code
+ * confirmation for a password sign-up (#1353), at creation for Google or Apple (#1301).
  */
 readonly class AcceptPendingInvitationsProcedure
 {
@@ -70,7 +70,7 @@ readonly class AcceptPendingInvitationsProcedure
             }
 
             // Symmetry with BandSpaceInvitationAcceptProcessor, which rejects joining a condemned space.
-            // Skipped silently rather than thrown: this runs inside registration and must never break it.
+            // Skipped silently rather than thrown: this runs inside sign-up and must never break it.
             // The invitation stays pending and gets purged with the space.
             if ($invitation->bandSpace->isPendingDeletion()) {
                 continue;

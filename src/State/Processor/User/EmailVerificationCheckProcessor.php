@@ -10,6 +10,7 @@ use App\ApiResource\User\EmailVerificationCheck;
 use App\Event\UserConfirmedEvent;
 use App\Exception\User\EmailVerificationException;
 use App\Repository\UserRepository;
+use App\Service\Procedure\BandSpace\AcceptPendingInvitationsProcedure;
 use App\Service\User\EmailVerificationService;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -29,6 +30,7 @@ readonly class EmailVerificationCheckProcessor implements ProcessorInterface
         #[Target('email_verification_check')]
         private RateLimiterFactoryInterface $emailVerificationCheckLimiter,
         private RequestStack $requestStack,
+        private AcceptPendingInvitationsProcedure $acceptPendingInvitationsProcedure,
     ) {
     }
 
@@ -53,6 +55,9 @@ readonly class EmailVerificationCheckProcessor implements ProcessorInterface
             throw new BadRequestHttpException($e->getMessage(), $e);
         }
 
+        // Only now that the address is proven theirs (#1353): at registration anyone could claim an
+        // invited email and join the band. The 201 lets BandSpaceChangeSignal publish at terminate.
+        $this->acceptPendingInvitationsProcedure->process($user);
         $this->eventDispatcher->dispatch(new UserConfirmedEvent($user));
     }
 }

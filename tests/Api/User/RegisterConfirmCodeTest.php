@@ -4,15 +4,27 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\User;
 
+use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\Role;
+use App\Enum\Notification\NotificationType;
+use App\Mercure\MercureTopic;
+use App\Repository\Notification\NotificationRepository;
 use App\Repository\User\EmailVerificationCodeRepository;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Double\RecordingHub;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\EmailVerificationCodeFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -65,6 +77,43 @@ class RegisterConfirmCodeTest extends ApiTestCase
         $this->assertEmailHeaderSame($email, 'templateId', '6');
         $this->assertEmailAddressContains($email, 'From', 'no-reply@musicall.com');
         $this->assertEmailAddressContains($email, 'To', 'user@email.com');
+    }
+
+    /** A password sign-up joins the bands its email was invited to once that email is confirmed (#1353). */
+    public function test_confirming_an_invited_email_joins_the_band(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'band_admin', 'email' => 'admin@example.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new()->create(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin]);
+        $invitation = BandSpaceInvitationFactory::new()->create(['bandSpace' => $bandSpace, 'invitedBy' => $admin, 'email' => 'user@email.com']);
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'nouveau',
+            'confirmationDatetime' => null,
+            'email' => 'user@email.com',
+        ]);
+        EmailVerificationCodeFactory::createOne([
+            'user' => $user,
+            'hashedCode' => $this->hashCode('123456'),
+        ]);
+
+        $this->client->jsonRequest('POST', '/api/email/verify/check', [
+            'email' => 'user@email.com',
+            'code' => '123456',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+
+        // Before bandOf(), which clears the entity manager and so detaches $admin.
+        $notifications = self::getContainer()->get(NotificationRepository::class)->findForRecipient($admin, 10, 0);
+        $this->assertSame([NotificationType::BandSpaceInvitationAccepted], array_map(static fn ($notification) => $notification->type, $notifications));
+        $this->assertSame([
+            'members' => [['band_admin', 'admin', 'active'], ['nouveau', 'user', 'active']],
+            'invitation' => ['accepted', 'nouveau'],
+        ], $this->bandOf((string) $invitation->id));
+        $this->assertEqualsCanonicalizing([
+            MercureTopic::userNotifications((string) $admin->id),
+            MercureTopic::userNotifications((string) $user->id),
+        ], $this->changeSignalTopics(), 'The band hears that its members changed');
     }
 
     public function test_verify_code_invalid_code(): void
@@ -313,5 +362,36 @@ class RegisterConfirmCodeTest extends ApiTestCase
             'type' => '/errors/429',
             'description' => 'Rate Limit Exceeded',
         ]);
+    }
+
+    /**
+     * The invitation's band read back from the database: its members, and what became of the invitation.
+     *
+     * @return array{members: list<array{string, string, string}>, invitation: array{string, ?string}}
+     */
+    private function bandOf(string $invitationId): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $invitation = $entityManager->find(BandSpaceInvitation::class, $invitationId);
+        $this->assertInstanceOf(BandSpaceInvitation::class, $invitation);
+        $members = array_map(
+            static fn (BandSpaceMembership $membership): array => [$membership->user->username, $membership->role->value, $membership->status->value],
+            $entityManager->getRepository(BandSpaceMembership::class)->findBy(['bandSpace' => $invitation->bandSpace]),
+        );
+        sort($members);
+
+        return ['members' => $members, 'invitation' => [$invitation->status->value, $invitation->existingUser?->username]];
+    }
+
+    /** @return list<string> */
+    private function changeSignalTopics(): array
+    {
+        $updates = array_filter(
+            self::getContainer()->get(RecordingHub::class)->updates,
+            static fn (Update $update): bool => str_contains($update->getData(), '"band_space_changed"'),
+        );
+
+        return array_merge(...array_map(static fn (Update $update): array => $update->getTopics(), array_values($updates)));
     }
 }
