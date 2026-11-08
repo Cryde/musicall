@@ -92,6 +92,7 @@
   },
   "add_topic": {
     "title": "Ajouter un nouveau sujet",
+    "forum_placeholder": "Choisis un forum",
     "title_label": "Titre du sujet",
     "title_placeholder": "Ton titre ici",
     "title_too_short": "Le titre doit contenir au moins {min} caractères",
