@@ -66,6 +66,7 @@ class BandSpaceActivityItemTest extends ApiTestCase
             'band_space_id' => $bandSpace->id,
             'module' => 'task',
             'resource_id' => null,
+            'resource_available' => null,
             'type' => 'status_changed',
             'payload' => ['from' => 'todo', 'to' => 'done'],
             'actor' => [
@@ -74,6 +75,47 @@ class BandSpaceActivityItemTest extends ApiTestCase
                 'display_name' => $admin->username,
                 'profile_picture_url' => null,
             ],
+            'creation_datetime' => '2026-04-01T10:00:00+00:00',
+        ]);
+    }
+
+    /** #1354: the line inserted live says, like the feed, that the task it names is gone. */
+    public function test_a_single_activity_says_its_task_was_deleted_since(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $activity = BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Task,
+            'resourceId' => '0199a000-0000-7000-8000-000000000001',
+            'type' => 'task_archived',
+            'actor' => null,
+            'creationDatetime' => new \DateTime('2026-04-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/activities/' . $activity->id,
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceActivity',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/activities/' . $activity->id,
+            '@type' => 'BandSpaceActivity',
+            'id' => $activity->id,
+            'band_space_id' => $bandSpace->id,
+            'module' => 'task',
+            'resource_id' => '0199a000-0000-7000-8000-000000000001',
+            'resource_available' => false,
+            'type' => 'task_archived',
+            'payload' => null,
+            'actor' => null,
             'creation_datetime' => '2026-04-01T10:00:00+00:00',
         ]);
     }
@@ -116,6 +158,7 @@ class BandSpaceActivityItemTest extends ApiTestCase
             'band_space_id' => $bandSpace->id,
             'module' => 'settings',
             'resource_id' => null,
+            'resource_available' => null,
             'type' => 'invitation_sent',
             'payload' => [
                 'email' => 'j***@gmail.com',

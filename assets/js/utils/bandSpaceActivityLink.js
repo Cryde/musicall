@@ -3,12 +3,22 @@
  *
  * Chosen per type, not per module, because the id is not always the item a screen opens: a finance
  * category or recurrence, a folder, a rider section, a member or an invitation has no screen of its
- * own, and a deleted or trashed item has nothing left to open. Those lines stay plain text.
+ * own, and a deleted or trashed item has nothing left to open. Those lines stay plain text, and so does
+ * a line whose item was deleted since, which the server reports as `resource_available: false` (#1354).
+ *
+ * The server keeps the same table to know which ids to check: each activity type enum declares it in
+ * `resourceKind()`, and tests/Fixtures/BandSpaceActivity/links.json holds the two sides together.
  */
 
 /** Each module's screen, the query key it opens an item by, and which types name such an item. */
 const LINKS = {
-  task: [{ route: 'app_band_tasks', key: 'task', types: 'all' }],
+  task: [
+    {
+      route: 'app_band_tasks',
+      key: 'task',
+      types: { except: ['task_deleted', 'tasks_deleted'] }
+    }
+  ],
   notes: [{ route: 'app_band_notes', key: 'note', types: { except: ['note_deleted'] } }],
   agenda: [
     {
@@ -126,18 +136,17 @@ const LINKS = {
 }
 
 function namesItem(types, type) {
-  if (types === 'all') return true
   if (types.only) return types.only.includes(type)
   return !types.except.includes(type)
 }
 
 /**
- * @param {{module: string, type: string, resource_id: string|null}} activity
+ * @param {{module: string, type: string, resource_id: string|null, resource_available?: boolean|null}} activity
  * @param {string} bandSpaceId
  * @returns {object | null} a route location
  */
 export function activityLink(activity, bandSpaceId) {
-  if (!activity?.resource_id) return null
+  if (!activity?.resource_id || activity.resource_available === false) return null
 
   const link = (LINKS[activity.module] ?? []).find((candidate) =>
     namesItem(candidate.types, activity.type)

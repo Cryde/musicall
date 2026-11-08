@@ -63,6 +63,40 @@ class TaskDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
 
+    /** #1354: without it, the feed's last word on a deleted task was whatever happened to it before. */
+    public function test_delete_task_records_task_deleted(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Réserver le studio'])->create();
+        $taskId = (string) $task->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $taskId,
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame('', (string) $this->client->getResponse()->getContent());
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
+            ->findForResource($bandSpace, BandSpaceModule::Task, $taskId);
+        $this->assertSame(
+            [['type' => 'task_deleted', 'actor' => (string) $user->id, 'payload' => ['title' => 'Réserver le studio']]],
+            array_map(static fn ($activity): array => [
+                'type' => $activity->type,
+                'actor' => (string) $activity->actor?->id,
+                'payload' => $activity->payload,
+            ], $activities),
+        );
+    }
+
     public function test_delete_task_detaches_its_files_and_leaves_them_deletable(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

@@ -22,4 +22,23 @@ enum BandSpaceRiderActivityType: string
 
     case RiderPatchListUpdated = 'rider_patch_list_updated';
     case RiderStagePlotUpdated = 'rider_stage_plot_updated';
+
+    /** The kind of item a line of this type names, which a screen can open (#1354); null when it names none. */
+    public function resourceKind(): ?BandSpaceActivityResourceKind
+    {
+        return match ($this) {
+            self::RiderCreated,
+            self::RiderRenamed,
+            self::RiderUnarchived,
+            self::RiderDuplicated,
+            self::RiderItemReordered => BandSpaceActivityResourceKind::Rider,
+            self::RiderArchived,
+            self::RiderItemAdded,
+            self::RiderItemRenamed,
+            self::RiderItemUpdated,
+            self::RiderItemRemoved,
+            self::RiderPatchListUpdated,
+            self::RiderStagePlotUpdated => null,
+        };
+    }
 }

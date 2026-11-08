@@ -16,4 +16,21 @@ enum BandSpaceAgendaActivityType: string
     case SeriesTruncated = 'series_truncated';
     case FeedGenerated = 'feed_generated';
     case FeedRevoked = 'feed_revoked';
+
+    /** The kind of item a line of this type names, which a screen can open (#1354); null when it names none. */
+    public function resourceKind(): ?BandSpaceActivityResourceKind
+    {
+        return match ($this) {
+            self::EntryCreated,
+            self::TitleChanged,
+            self::DescriptionChanged,
+            self::LocationChanged,
+            self::EventDatetimeChanged,
+            self::EndDatetimeChanged,
+            self::IsAllDayChanged,
+            self::OccurrenceCancelled,
+            self::SeriesTruncated => BandSpaceActivityResourceKind::AgendaEntry,
+            self::EntryDeleted, self::FeedGenerated, self::FeedRevoked => null,
+        };
+    }
 }

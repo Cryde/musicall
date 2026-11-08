@@ -26,4 +26,26 @@ enum BandSpaceFileActivityType: string
      * of crediting the deleter with an action they never took.
      */
     case SourceDeleted = 'source_deleted';
+
+    /** The kind of item a line of this type names, which a screen can open (#1354); null when it names none. */
+    public function resourceKind(): ?BandSpaceActivityResourceKind
+    {
+        return match ($this) {
+            self::Uploaded,
+            self::Restored,
+            self::Renamed,
+            self::Moved,
+            self::Tagged,
+            self::Untagged,
+            self::VersionAdded,
+            self::RolledBack,
+            self::Shared,
+            self::ShareRevoked,
+            self::PublicAccessed,
+            self::Attached,
+            self::Detached,
+            self::SourceDeleted => BandSpaceActivityResourceKind::File,
+            self::Archived, self::Purged => null,
+        };
+    }
 }

@@ -42,4 +42,34 @@ enum BandSpaceSetlistActivityType: string
     // Setlist files
     case SetlistFileAttached = 'setlist_file_attached';
     case SetlistFileDetached = 'setlist_file_detached';
+
+    /** The kind of item a line of this type names, which a screen can open (#1354); null when it names none. */
+    public function resourceKind(): ?BandSpaceActivityResourceKind
+    {
+        return match ($this) {
+            self::SetlistCreated,
+            self::SetlistRenamed,
+            self::SetlistDuplicated,
+            self::SetlistUnarchived,
+            self::SetlistItemAdded,
+            self::SetlistItemsAdded,
+            self::SetlistItemsCopied,
+            self::SetlistItemRemoved,
+            self::SetlistItemReordered,
+            self::SetlistItemUpdated,
+            self::SetlistFileAttached,
+            self::SetlistFileDetached => BandSpaceActivityResourceKind::Setlist,
+            self::SongAdded,
+            self::SongUpdated,
+            self::SongUnarchived,
+            self::SongFileAttached,
+            self::SongFileDetached => BandSpaceActivityResourceKind::Song,
+            self::LyricsAdded,
+            self::LyricsUpdated,
+            self::LyricsRestored,
+            self::LyricsLinked,
+            self::LyricsUnlinked => BandSpaceActivityResourceKind::Lyrics,
+            self::SongArchived, self::SongsArchived, self::LyricsArchived, self::SetlistArchived => null,
+        };
+    }
 }

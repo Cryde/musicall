@@ -494,4 +494,24 @@ class BandSpaceFileRepository extends ServiceEntityRepository
 
         return $files;
     }
+
+    /**
+     * Which of these files an activity line may still link to (#1354): one in the bin answers 404 to the Files screen.
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('bsf')
+            ->select('bsf.id')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.id IN (:ids)')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

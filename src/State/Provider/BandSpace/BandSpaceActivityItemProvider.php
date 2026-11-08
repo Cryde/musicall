@@ -9,6 +9,7 @@ use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityAvailability;
 use App\Service\Builder\BandSpace\BandSpaceActivityBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -28,6 +29,7 @@ readonly class BandSpaceActivityItemProvider implements ProviderInterface
         private BandSpaceActivityRepository $bandSpaceActivityRepository,
         private BandSpaceActivityBuilder $bandSpaceActivityBuilder,
         private Security $security,
+        private BandSpaceActivityAvailability $availability,
     ) {
     }
 
@@ -39,13 +41,16 @@ readonly class BandSpaceActivityItemProvider implements ProviderInterface
         }
 
         // Same membership check as the collection: the feed is open to every member, not just admins.
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $activity = $this->bandSpaceActivityRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$activity instanceof BandSpaceActivity) {
             throw new NotFoundHttpException('band_space.activity.not_found');
         }
 
-        return $this->bandSpaceActivityBuilder->buildItem($activity);
+        $dto = $this->bandSpaceActivityBuilder->buildItem($activity);
+        $this->availability->fill([$dto], $bandSpace, $membership);
+
+        return $dto;
     }
 }

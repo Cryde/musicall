@@ -97,6 +97,25 @@ const SENTENCES = {
     }),
   'task.task_archived': () => t('band_space_activity.task.task_archived'),
   'task.task_unarchived': () => t('band_space_activity.task.task_unarchived'),
+  'task.task_deleted': (a) =>
+    t('band_space_activity.task.task_deleted', { title: a.payload?.title ?? noValue() }),
+  'task.tasks_deleted': (a) => {
+    const count = a.payload?.count
+    const titles = a.payload?.titles ?? []
+    if (count == null) return t('band_space_activity.task.tasks_deleted_some')
+    if (count === 1) {
+      return t('band_space_activity.task.task_deleted', { title: titles[0] ?? noValue() })
+    }
+    if (titles.length === 0) return t('band_space_activity.task.tasks_deleted_count', { count })
+    const named = titles
+      .map((title) => t('band_space_activity.task.quoted_title', { title }))
+      .join(', ')
+    // Only the first few titles travel in the payload, so a larger selection says « dont ».
+    if (count > titles.length) {
+      return t('band_space_activity.task.tasks_deleted_more', { count, titles: named })
+    }
+    return t('band_space_activity.task.tasks_deleted', { count, titles: named })
+  },
   'task.comment_added': () => t('band_space_activity.task.comment_added'),
   'task.comment_edited': () => t('band_space_activity.task.comment_edited'),
   'task.comment_deleted': () => t('band_space_activity.task.comment_deleted'),

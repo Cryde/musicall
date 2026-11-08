@@ -23,4 +23,30 @@ enum BandSpaceFinanceActivityType: string
     case RecurrenceEndDateChanged = 'recurrence_end_date_changed';
     case RecurrenceDeleted = 'recurrence_deleted';
     case CategoriesBootstrapped = 'categories_bootstrapped';
+
+    /** The kind of item a line of this type names, which a screen can open (#1354); null when it names none. */
+    public function resourceKind(): ?BandSpaceActivityResourceKind
+    {
+        return match ($this) {
+            self::EntryCreated,
+            self::EntryStatusChanged,
+            self::EntryLabelChanged,
+            self::EntryAmountChanged,
+            self::EntryCategoryChanged,
+            self::EntryDateChanged,
+            self::SplitAdded,
+            self::SplitRemoved => BandSpaceActivityResourceKind::FinanceEntry,
+            self::EntryDeleted,
+            self::CategoryCreated,
+            self::CategoryRenamed,
+            self::CategoryDeleted,
+            self::RecurrenceCreated,
+            self::RecurrenceUpdated,
+            self::RecurrenceStarted,
+            self::RecurrenceStopped,
+            self::RecurrenceEndDateChanged,
+            self::RecurrenceDeleted,
+            self::CategoriesBootstrapped => null,
+        };
+    }
 }

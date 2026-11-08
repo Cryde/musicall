@@ -160,4 +160,23 @@ class AgendaEntryRepository extends ServiceEntityRepository
             ->where('a.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace);
     }
+
+    /**
+     * Which of these agenda entries an activity line may still link to (#1354).
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a.id')
+            ->where('a.bandSpace = :bandSpace')
+            ->andWhere('a.id IN (:ids)')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

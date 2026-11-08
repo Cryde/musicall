@@ -124,4 +124,24 @@ class SongRepository extends ServiceEntityRepository
             ->andWhere('s.archiveDatetime IS NULL')
             ->setParameter('bandSpace', $bandSpace);
     }
+
+    /**
+     * Which of these songs an activity line may still link to (#1354): the repertoire only opens a live one.
+     *
+     * @param string[] $ids
+     *
+     * @return string[]
+     */
+    public function findIdsStillOpenable(BandSpace $bandSpace, array $ids): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s.id')
+            ->where('s.bandSpace = :bandSpace')
+            ->andWhere('s.id IN (:ids)')
+            ->andWhere('s.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

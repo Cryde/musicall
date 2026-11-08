@@ -93,6 +93,10 @@ class BandSpaceActivityResource
 
     public string $module;
     public ?string $resourceId = null;
+
+    /** Whether the item `resource_id` names can still be opened (#1354); null when the line names nothing a screen opens. */
+    public ?bool $resourceAvailable = null;
+
     public string $type;
 
     /** @var array<string, mixed>|null */
