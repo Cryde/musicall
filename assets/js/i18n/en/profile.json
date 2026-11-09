@@ -632,7 +632,9 @@
     "avatar_of": "Avatar of {name}",
     "view_profile": "View profile",
     "contact": "Contact",
-    "contact_auth_required": "You need to log in to send a message to this user."
+    "contact_auth_required": "You need to log in to send a message to this user.",
+    "pending_contact_profile_gone": "This profile is no longer available, your message was not sent.",
+    "pending_contact_own_profile": "This is your own profile, your message was not sent."
   },
   "musician_page": {
     "instruments": "Instruments",

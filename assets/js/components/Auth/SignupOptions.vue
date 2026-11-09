@@ -39,16 +39,23 @@
 import Divider from 'primevue/divider'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { isSafeReturnUrl } from '../../utils/returnUrl.js'
 import { returnPathOf, routeReturningTo } from '../../utils/unauthenticatedRedirect.js'
 import SocialSignInButtons from './SocialSignInButtons.vue'
 
 /**
  * Google and Apple first, then the other ways in, all bringing the visitor back to the page they are
- * on. Relative, because the login page refuses an absolute return address and dropped the visitor on
- * the homepage after an email sign in (#1084).
+ * on, or to `returnPath`. Relative, because the login page refuses an absolute return address and
+ * dropped the visitor on the homepage after an email sign in (#1084).
  */
+const props = defineProps({
+  returnPath: { type: String, default: null }
+})
 defineEmits(['navigate'])
 
 const route = useRoute()
-const returnUrl = computed(() => returnPathOf(route))
+// Checked here too: the Google and Apple links hand it to the server without going through the router.
+const returnUrl = computed(() =>
+  isSafeReturnUrl(props.returnPath) ? props.returnPath : returnPathOf(route)
+)
 </script>

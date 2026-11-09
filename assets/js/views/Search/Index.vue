@@ -435,19 +435,17 @@ import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
 import GuidedNoResults from '../../components/Search/Guided/GuidedNoResults.vue'
 import GuidedSearch from '../../components/Search/Guided/GuidedSearch.vue'
 import GuidedSignupCard from '../../components/Search/Guided/GuidedSignupCard.vue'
+import {
+  useAnnounceDraftResumer,
+  useKeepAnnounceDraft
+} from '../../composables/useAnnounceDraft.js'
 import { useContactDraftResumer } from '../../composables/useContactDraft.js'
-import { usePendingAction, usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { lastNavigationRestoredScroll } from '../../router/scrollPosition.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import {
-  ANNOUNCE_CREATE,
-  announceDraftPayload,
-  announceModalProps
-} from '../../utils/announceDraft.js'
 import { isAnnounceLanguage, languageName, languageOptions } from '../../utils/announceLanguages.js'
 import {
   DEFAULT_RADIUS,
@@ -555,7 +553,7 @@ const createFromSearch = ref(false)
 const resumedAnnounce = ref(null)
 const isResumedContactOpen = ref(false)
 const resumedContact = ref(null)
-const pendingAction = usePendingAction()
+const keepAnnounceDraft = useKeepAnnounceDraft()
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 const authModalVariant = ref('default')
@@ -1226,41 +1224,22 @@ async function handleAnnounceCreated() {
 }
 
 function handleAnnounceSignInRequired(values) {
-  const isKept = pendingAction.keep({
-    kind: ANNOUNCE_CREATE,
-    payload: announceDraftPayload(values),
-    stoppedOnSubmit: true
-  })
+  const isKept = keepAnnounceDraft(values)
   // Promised only when kept: a browser that blocks storage gets the usual prompt.
   openAuthModal('post_announce', isKept ? t('search.pending.announce_sign_in') : '')
 }
 
 // --- Resumed after sign-in (#1306): reopened prefilled, never sent on their own -----------------------
 
-usePendingActionResumer(ANNOUNCE_CREATE, resumeAnnounce)
+useAnnounceDraftResumer((initialProps) => {
+  createFromSearch.value = false
+  resumedAnnounce.value = initialProps
+  showAnnounceModal.value = true
+})
 useContactDraftResumer((contact) => {
   resumedContact.value = contact
   isResumedContactOpen.value = true
 })
-
-async function resumeAnnounce(payload) {
-  if (instrumentStore.instruments.length === 0 || styleStore.styles.length === 0) {
-    await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
-  }
-  const initialProps = announceModalProps(payload, {
-    instruments: instrumentStore.instruments,
-    styles: styleStore.styles
-  })
-
-  return {
-    label: t('search.pending.announce_label'),
-    resume: () => {
-      createFromSearch.value = false
-      resumedAnnounce.value = initialProps
-      showAnnounceModal.value = true
-    }
-  }
-}
 
 // Note: No onUnmounted cleanup - state is preserved by KeepAlive for back navigation
 </script>

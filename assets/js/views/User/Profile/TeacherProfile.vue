@@ -420,10 +420,12 @@
       v-model:visible="showMessageModal"
       :selected-recipient="contactRecipient"
       :contact-origin="{ fromTeacherProfile: true }"
+      :initial-content="initialMessage"
+      @sign-in-required="handleContactSignInRequired"
     />
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      :message="t('profile.common.contact_auth_required')"
+      :message="authModalMessage"
     />
   </div>
 </template>
@@ -448,6 +450,10 @@ import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowca
 import TrialRequestDialog from '../../../components/Teacher/TrialRequestDialog.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
+import {
+  useKeepProfileContactDraft,
+  useProfileContactDraftResumer
+} from '../../../composables/useContactDraft.js'
 import {
   getAgeGroupLabel,
   getDayOfWeekLabel,
@@ -520,6 +526,10 @@ const showEditModal = ref(false)
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
 const contactRecipient = ref(null)
+// A message written before signing in, back in the box after it (#1305).
+const initialMessage = ref('')
+const authModalMessage = ref('')
+const keepProfileContactDraft = useKeepProfileContactDraft()
 const showPlayer = ref(false)
 const showRequestDialog = ref(false)
 const playingMedia = ref(null)
@@ -786,17 +796,33 @@ function reopenPendingRequest() {
   }
 }
 
+// A visitor writes first (#1305): « Envoyer » asks them to sign in, and this page gives the message back.
 function handleContact() {
-  if (!userSecurityStore.isAuthenticated) {
-    showAuthModal.value = true
-    return
-  }
+  openMessage('')
+}
+
+function openMessage(content) {
   contactRecipient.value = {
     id: profile.value.user_id,
     username: profile.value.username
   }
+  initialMessage.value = content
   showMessageModal.value = true
 }
+
+function handleContactSignInRequired({ content }) {
+  authModalMessage.value = keepProfileContactDraft({ profile: profile.value, content })
+  showAuthModal.value = true
+}
+
+// The page sends its own origin, « Cours », whatever the draft says.
+useProfileContactDraftResumer(
+  {
+    isLoading,
+    loadedProfile: () => (notFound.value || isPrivate.value ? null : profile.value)
+  },
+  ({ content }) => openMessage(content)
+)
 
 watch(
   () => route.params.username,
