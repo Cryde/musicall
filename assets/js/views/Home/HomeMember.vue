@@ -62,7 +62,12 @@
       :contact-origin="selectedContactOrigin"
       :initial-content="initialMessage"
     />
-    <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="announcesKey++" />
+    <AddAnnounceModal
+      v-if="showAnnounceModal"
+      v-model:visible="showAnnounceModal"
+      v-bind="resumedAnnounce ? { ...resumedAnnounce, isResumed: true } : {}"
+      @created="announcesKey++"
+    />
     <AddTopicModal v-if="showTopicModal" v-model:visible="showTopicModal" @created="openTopic" />
   </div>
 </template>
@@ -83,6 +88,7 @@ import HomeMemberMyAnnounces from '../../components/Home/Member/HomeMemberMyAnno
 import HomeMemberSearch from '../../components/Home/Member/HomeMemberSearch.vue'
 import HomeMemberTeacher from '../../components/Home/Member/HomeMemberTeacher.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import { useAnnounceDraftResumer } from '../../composables/useAnnounceDraft.js'
 import { useContactDraftResumer } from '../../composables/useContactDraft.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useVideoStore } from '../../store/publication/video.js'
@@ -121,6 +127,8 @@ onMounted(async () => {
 })
 
 const showAnnounceModal = ref(false)
+// The modal's props for an announce filled in on the visitor home, while it is open (#1305).
+const resumedAnnounce = ref(null)
 const showTopicModal = ref(false)
 const showMessageModal = ref(false)
 const selectedRecipient = ref(null)
@@ -150,7 +158,15 @@ function openMessageTo(announce) {
   showMessageModal.value = true
 }
 
-// What a visitor wrote from the visitor home, given back after sign-in (#1306).
+watch(showAnnounceModal, (isOpen) => {
+  if (!isOpen) resumedAnnounce.value = null
+})
+
+// What a visitor wrote from the visitor home, given back after sign-in (#1306, #1305).
+useAnnounceDraftResumer((initialProps) => {
+  resumedAnnounce.value = initialProps
+  showAnnounceModal.value = true
+})
 useContactDraftResumer(({ recipient, contactOrigin, content }) => {
   selectedRecipient.value = recipient
   selectedContactOrigin.value = contactOrigin

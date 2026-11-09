@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, shallowReactive } from 'vue'
+import { onActivated, onDeactivated, onMounted, onUnmounted, shallowReactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserSecurityStore } from '../store/user/security.js'
 import { keepPendingAction, openPendingActionStorage } from '../utils/pendingAction.js'
@@ -20,10 +20,16 @@ export const pendingActionResumers = shallowReactive(new Map())
  * @param {(payload: unknown) => Promise<{ label?: string, resume?: () => void, unavailable?: string }> | object} resumer
  */
 export function usePendingActionResumer(kind, resumer) {
-  onMounted(() => pendingActionResumers.set(kind, resumer))
-  onUnmounted(() => {
+  const register = () => pendingActionResumers.set(kind, resumer)
+  const unregister = () => {
     if (pendingActionResumers.get(kind) === resumer) pendingActionResumers.delete(kind)
-  })
+  }
+  onMounted(register)
+  onUnmounted(unregister)
+  // A page kept alive (the search) is not remounted on the way back, while the page visited meanwhile may have
+  // replaced and then removed its resumer of the same kind.
+  onActivated(register)
+  onDeactivated(unregister)
 }
 
 /**

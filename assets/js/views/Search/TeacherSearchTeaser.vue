@@ -160,7 +160,11 @@
     </section>
 
     <!-- Auth Modal -->
-    <AuthRequiredModal v-model:visible="showAuthModal" :message="authModalMessage" />
+    <AuthRequiredModal
+      v-model:visible="showAuthModal"
+      :message="authModalMessage"
+      :return-path="teacherProfileFormPath"
+    />
   </div>
 </template>
 
@@ -201,12 +205,18 @@ onMounted(async () => {
   }
 })
 
+// Nothing to keep, only a destination: signing in lands the visitor on the form (#1305).
+const TEACHER_PROFILE_FORM = 'app_user_settings_profile'
+const teacherProfileFormPath = computed(
+  () => router.resolve({ name: TEACHER_PROFILE_FORM }).fullPath
+)
+
 function handleCreateProfile() {
   if (!userSecurityStore.isAuthenticated) {
     authModalMessage.value = t('search.teacher_teaser.login_required')
     showAuthModal.value = true
     return
   }
-  router.push({ name: 'app_user_settings_profile' })
+  router.push({ name: TEACHER_PROFILE_FORM })
 }
 </script>

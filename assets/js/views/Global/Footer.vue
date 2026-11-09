@@ -98,15 +98,27 @@
       </RouterLink>
     </div>
 
-    <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" />
-    <AuthRequiredModal v-if="showAuthModal" v-model:visible="showAuthModal" variant="post_announce" />
+    <AddAnnounceModal
+      v-if="showAnnounceModal"
+      v-model:visible="showAnnounceModal"
+      @sign-in-required="handleAnnounceSignInRequired"
+    />
+    <AuthRequiredModal
+      v-if="showAuthModal"
+      v-model:visible="showAuthModal"
+      variant="post_announce"
+      :message="authModalMessage"
+      :return-path="authModalReturnPath"
+    />
   </footer>
 </template>
 
 <script setup>
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import MobileAppBadges from '../../components/MobileApp/MobileAppBadges.vue'
+import { useKeepAnnounceDraft } from '../../composables/useAnnounceDraft.js'
 import { useIsPhone } from '../../composables/useIsPhone.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { offersMobileApp } from '../../utils/mobileApp.js'
@@ -231,12 +243,22 @@ const userSecurityStore = useUserSecurityStore()
 const offersApp = computed(() => offersMobileApp(userSecurityStore.userProfile))
 const showAnnounceModal = ref(false)
 const showAuthModal = ref(false)
+const authModalMessage = ref('')
+const authModalReturnPath = ref(null)
+const router = useRouter()
+const keepAnnounceDraft = useKeepAnnounceDraft()
 
+// A visitor fills it in too: only « Publier » asks them to sign in.
 function handlePostAnnounce() {
-  if (!userSecurityStore.isAuthenticated) {
-    showAuthModal.value = true
-    return
-  }
   showAnnounceModal.value = true
+}
+
+// Not a page anyone comes back to: the musician search, which resumes an announce, gives it back (#1305).
+function handleAnnounceSignInRequired(values) {
+  authModalReturnPath.value = router.resolve({ name: 'app_search_musician' }).fullPath
+  const isKept = keepAnnounceDraft(values, authModalReturnPath.value)
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  authModalMessage.value = isKept ? t('search.pending.announce_sign_in') : ''
+  showAuthModal.value = true
 }
 </script>

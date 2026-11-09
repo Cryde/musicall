@@ -9,7 +9,7 @@
       {{ displayMessage }}
     </p>
 
-    <SignupOptions @navigate="emit('update:visible', false)" />
+    <SignupOptions :return-path="returnPath" @navigate="emit('update:visible', false)" />
   </Dialog>
 </template>
 
@@ -36,6 +36,11 @@ const props = defineProps({
   message: {
     type: String,
     default: ''
+  },
+  // Where signing in brings the visitor back when it is not this page, e.g. the page that resumes their action.
+  returnPath: {
+    type: String,
+    default: null
   }
 })
 

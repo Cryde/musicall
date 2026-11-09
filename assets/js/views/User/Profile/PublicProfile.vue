@@ -102,11 +102,13 @@
       v-model:visible="showMessageModal"
       :selected-recipient="messageRecipient"
       :contact-origin="contactOrigin"
+      :initial-content="initialMessage"
+      @sign-in-required="handleContactSignInRequired"
     />
 
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      :message="t('profile.common.contact_auth_required')"
+      :message="authModalMessage"
     />
 
     <!-- Profile picture view modal -->
@@ -229,6 +231,10 @@ import EditProfileModal from '../../../components/User/Profile/EditProfileModal.
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
 import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
+import {
+  useKeepProfileContactDraft,
+  useProfileContactDraftResumer
+} from '../../../composables/useContactDraft.js'
 import { useUserBlockStore } from '../../../store/user/block.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
@@ -296,6 +302,10 @@ const isDesktop = useMediaQuery('(min-width: 1024px)')
 const isWide = useMediaQuery('(min-width: 1280px)')
 
 const contactOrigin = ref(null)
+// A message written before signing in, back in the box after it (#1305).
+const initialMessage = ref('')
+const authModalMessage = ref('')
+const keepProfileContactDraft = useKeepProfileContactDraft()
 const messageRecipient = computed(() => {
   if (!profile.value) return null
   return {
@@ -423,15 +433,34 @@ function handleContactAbout(announce) {
   openMessage({ musicianAnnounceId: announce.id })
 }
 
+// A visitor writes first (#1305): « Envoyer » asks them to sign in, and this page gives the message back.
 function openMessage(origin) {
   trackUmamiEvent('profile-contact-click')
-  if (!userSecurityStore.isAuthenticated) {
-    showAuthModal.value = true
-    return
-  }
   contactOrigin.value = origin
+  initialMessage.value = ''
   showMessageModal.value = true
 }
+
+function handleContactSignInRequired({ content }) {
+  authModalMessage.value = keepProfileContactDraft({
+    profile: profile.value,
+    announceId: contactOrigin.value?.musicianAnnounceId ?? null,
+    content
+  })
+  showAuthModal.value = true
+}
+
+useProfileContactDraftResumer(
+  {
+    isLoading,
+    loadedProfile: () => (notFound.value || isPrivate.value ? null : profile.value)
+  },
+  ({ contactOrigin: origin, content }) => {
+    contactOrigin.value = origin
+    initialMessage.value = content
+    showMessageModal.value = true
+  }
+)
 
 async function loadProfile() {
   isLoading.value = true

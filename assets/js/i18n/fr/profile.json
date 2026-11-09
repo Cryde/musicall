@@ -632,7 +632,9 @@
     "avatar_of": "Avatar de {name}",
     "view_profile": "Voir le profil",
     "contact": "Contacter",
-    "contact_auth_required": "Tu dois te connecter pour envoyer un message à cet utilisateur."
+    "contact_auth_required": "Tu dois te connecter pour envoyer un message à cet utilisateur.",
+    "pending_contact_profile_gone": "Ce profil n'est plus disponible, ton message n'a pas été envoyé.",
+    "pending_contact_own_profile": "C'est ton propre profil, ton message n'a pas été envoyé."
   },
   "musician_page": {
     "instruments": "Instruments",

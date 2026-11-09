@@ -54,8 +54,18 @@
       :contact-origin="selectedContactOrigin"
       @sign-in-required="handleContactSignInRequired"
     />
-    <AuthRequiredModal v-if="showAuthModal" v-model:visible="showAuthModal" :message="authModalMessage" />
-    <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="handleAnnounceCreated" />
+    <AuthRequiredModal
+      v-if="showAuthModal"
+      v-model:visible="showAuthModal"
+      :message="authModalMessage"
+      :return-path="authModalReturnPath"
+    />
+    <AddAnnounceModal
+      v-if="showAnnounceModal"
+      v-model:visible="showAnnounceModal"
+      @created="handleAnnounceCreated"
+      @sign-in-required="handleAnnounceSignInRequired"
+    />
   </div>
 </template>
 
@@ -73,6 +83,7 @@ import HomeHero from '../../components/Home/HomeHero.vue'
 import HomePublications from '../../components/Home/HomePublications.vue'
 import HomeTeachers from '../../components/Home/HomeTeachers.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import { useKeepAnnounceDraft } from '../../composables/useAnnounceDraft.js'
 import { useKeepContactDraft } from '../../composables/useContactDraft.js'
 import { useIsPhone } from '../../composables/useIsPhone.js'
 import { displayName } from '../../helper/user/displayName.js'
@@ -98,6 +109,7 @@ const musicianAnnounceStore = useMusicianAnnounceStore()
 const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
 const keepContactDraft = useKeepContactDraft()
+const keepAnnounceDraft = useKeepAnnounceDraft()
 
 const route = useRoute()
 const router = useRouter()
@@ -113,6 +125,8 @@ const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
 const selectedContactOrigin = ref(null)
 const authModalMessage = ref('')
+// Where the sign-in prompt brings the visitor back, when not to this page.
+const authModalReturnPath = ref(null)
 const announceFilter = ref(ANNOUNCE_FILTER_ALL)
 // Taken from the first, unfiltered answer, so the hero keeps its glimpse while the list below is filtered.
 const heroAnnounces = ref([])
@@ -164,10 +178,19 @@ async function loadFrequentSearches() {
   }
 }
 
+function openAuthModal(message, returnPath = null) {
+  authModalMessage.value = message
+  authModalReturnPath.value = returnPath
+  showAuthModal.value = true
+}
+
+// Nothing to keep, only a destination: the visitor lands on the form after signing in (#1305).
 function handleCreateTeacherProfile() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = t('home.visitor.auth.teacher_profile')
-    showAuthModal.value = true
+    openAuthModal(
+      t('home.visitor.auth.teacher_profile'),
+      router.resolve({ name: 'app_user_settings_profile' }).fullPath
+    )
     return
   }
   router.push({ name: 'app_user_settings_profile' })
@@ -175,20 +198,21 @@ function handleCreateTeacherProfile() {
 
 function handleOpenDiscoverModal() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = t('home.visitor.auth.discover')
-    showAuthModal.value = true
+    openAuthModal(t('home.visitor.auth.discover'))
     return
   }
   videoStore.openModal()
 }
 
+// A visitor fills it in too (#1305): « Publier » asks them to sign in, and the member home gives it back.
 function handleOpenAnnounceModal() {
-  if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = t('home.visitor.auth.announce')
-    showAuthModal.value = true
-    return
-  }
   showAnnounceModal.value = true
+}
+
+function handleAnnounceSignInRequired(values) {
+  const isKept = keepAnnounceDraft(values)
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  openAuthModal(isKept ? t('search.pending.announce_sign_in') : t('home.visitor.auth.announce'))
 }
 
 async function handleAnnounceCreated() {
@@ -209,10 +233,11 @@ function handleContactSignInRequired({ content }) {
     content
   })
   // Promised only when kept: a browser that blocks storage gets the usual prompt.
-  authModalMessage.value = isKept
-    ? t('search.pending.contact_sign_in', { name: displayName(selectedRecipient.value) })
-    : t('home.visitor.auth.contact')
-  showAuthModal.value = true
+  openAuthModal(
+    isKept
+      ? t('search.pending.contact_sign_in', { name: displayName(selectedRecipient.value) })
+      : t('home.visitor.auth.contact')
+  )
 }
 
 async function handleDiscoverPublished() {

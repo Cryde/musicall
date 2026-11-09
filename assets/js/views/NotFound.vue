@@ -129,8 +129,12 @@
     </div>
 
     <!-- Modals -->
-    <AuthRequiredModal v-model:visible="showAuthModal" :message="authModalMessage" />
-    <AddAnnounceModal v-model:visible="showAnnounceModal" />
+    <AuthRequiredModal
+      v-model:visible="showAuthModal"
+      :message="authModalMessage"
+      :return-path="authModalReturnPath"
+    />
+    <AddAnnounceModal v-model:visible="showAnnounceModal" @sign-in-required="handleAnnounceSignInRequired" />
   </div>
 </template>
 
@@ -140,20 +144,23 @@ import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import AuthRequiredModal from '../components/Auth/AuthRequiredModal.vue'
-import { useUserSecurityStore } from '../store/user/security.js'
+import { useKeepAnnounceDraft } from '../composables/useAnnounceDraft.js'
 import AddAnnounceModal from './User/Announce/AddAnnounceModal.vue'
 
 const { t } = useI18n()
 
 useTitle(computed(() => t('shared.not_found.page_title')))
 
-const userSecurityStore = useUserSecurityStore()
+const router = useRouter()
+const keepAnnounceDraft = useKeepAnnounceDraft()
 
 // State
 const showAuthModal = ref(false)
 const showAnnounceModal = ref(false)
 const authModalMessage = ref('')
+const authModalReturnPath = ref(null)
 const notesPlayed = ref(0)
 const playStartTime = ref(null)
 const activeKeys = ref(new Set())
@@ -370,14 +377,21 @@ function handleKeyUp(event) {
   }
 }
 
+// A visitor fills it in too (#1305): only « Publier » asks them to sign in.
 function handleOpenAnnounceModal() {
   trackClick('announce-modal')
-  if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = t('shared.not_found.login_to_post_announce')
-    showAuthModal.value = true
-    return
-  }
   showAnnounceModal.value = true
+}
+
+// Not a page anyone comes back to: the musician search, which resumes an announce, gives it back.
+function handleAnnounceSignInRequired(values) {
+  authModalReturnPath.value = router.resolve({ name: 'app_search_musician' }).fullPath
+  const isKept = keepAnnounceDraft(values, authModalReturnPath.value)
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  authModalMessage.value = isKept
+    ? t('search.pending.announce_sign_in')
+    : t('shared.not_found.login_to_post_announce')
+  showAuthModal.value = true
 }
 
 function trackClick(action) {
