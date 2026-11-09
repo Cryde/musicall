@@ -59,6 +59,7 @@
           text
           size="small"
           :loading="isUploadingImage"
+          :disabled="userSecurityStore.isAuthenticatedLoading"
           @click="triggerImageUpload"
         />
         <input
@@ -140,6 +141,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import forumApi from '../../api/forum/forum.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
 // An example URL, the same in every language.
 const YOUTUBE_URL_EXAMPLE = 'https://www.youtube.com/watch?v=...'
@@ -152,12 +154,23 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: null
+  },
+  /**
+   * `previousContent` is a draft brought back after sign-in (#1305): announced on creation, so it can be sent as is.
+   * Not for editing a post, which stays unsavable until changed.
+   */
+  isRestoredDraft: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['content-update'])
+// `sign-in-required` when a visitor picks an image: the upload needs an account, and its 401 would send them to the
+// login page, losing what they wrote (#1305).
+const emit = defineEmits(['content-update', 'sign-in-required'])
 const { t } = useI18n()
 const toast = useToast()
+const userSecurityStore = useUserSecurityStore()
 
 const imageInputRef = ref(null)
 const isUploadingImage = ref(false)
@@ -186,13 +199,18 @@ const editor = useEditor({
     })
   ],
   content: props.previousContent,
-  onUpdate: ({ editor }) => {
-    emit('content-update', {
-      html: editor.getHTML(),
-      text: editor.getText()
-    })
-  }
+  onCreate: ({ editor }) => {
+    if (props.isRestoredDraft && !editor.isEmpty) emitContent(editor)
+  },
+  onUpdate: ({ editor }) => emitContent(editor)
 })
+
+function emitContent(editor) {
+  emit('content-update', {
+    html: editor.getHTML(),
+    text: editor.getText()
+  })
+}
 
 onBeforeUnmount(() => {
   editor.value?.destroy()
@@ -208,6 +226,10 @@ watch(
 )
 
 function triggerImageUpload() {
+  if (!userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated) {
+    emit('sign-in-required')
+    return
+  }
   imageInputRef.value?.click()
 }
 

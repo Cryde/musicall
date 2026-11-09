@@ -1,8 +1,15 @@
 <template>
-  <div v-if="userSecurityStore.isAuthenticated" class="flex gap-4">
+  <!-- A visitor writes a comment too (#1305): « Poster le commentaire » asks them to sign in, keeping it. -->
+  <div v-if="userSecurityStore.isAuthenticated || parentId === null" ref="formRef" class="flex gap-4">
     <div class="shrink-0">
       <Avatar
-        v-if="userSecurityStore.profilePictureUrl"
+        v-if="!userSecurityStore.isAuthenticated"
+        icon="pi pi-user"
+        shape="circle"
+        :size="parentId === null ? 'large' : 'normal'"
+      />
+      <Avatar
+        v-else-if="userSecurityStore.profilePictureUrl"
         :image="userSecurityStore.profilePictureUrl"
         shape="circle"
         :size="parentId === null ? 'large' : 'normal'"
@@ -48,25 +55,13 @@
         />
       </div>
     </div>
-  </div>
 
-  <i18n-t
-    v-else-if="parentId === null"
-    keypath="publication.comment.form.login_required"
-    tag="div"
-    class="text-center py-4 text-surface-600 dark:text-surface-400"
-  >
-    <template #login>
-      <RouterLink :to="signInRouteFrom('app_login', route)" class="text-primary font-medium">
-        {{ t('publication.comment.form.login_link') }}
-      </RouterLink>
-    </template>
-    <template #register>
-      <RouterLink :to="signInRouteFrom('app_register', route)" class="text-primary font-medium">
-        {{ t('publication.comment.form.register_link') }}
-      </RouterLink>
-    </template>
-  </i18n-t>
+    <AuthRequiredModal
+      v-if="showAuthModal"
+      v-model:visible="showAuthModal"
+      :message="isDraftKept ? t('publication.pending.comment_sign_in') : ''"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -75,13 +70,15 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useKeepCommentDraft } from '../../composables/useCommentDraft.js'
 import { useCommentStore } from '../../store/comment/comment.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
-import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
+
+// Only a visitor ever sees it, so it stays out of the bundle until then.
+const AuthRequiredModal = defineAsyncComponent(() => import('../Auth/AuthRequiredModal.vue'))
 
 const props = defineProps({
   parentId: { type: Number, default: null },
@@ -92,15 +89,24 @@ const props = defineProps({
 const emit = defineEmits(['posted', 'cancel'])
 
 const { t } = useI18n()
-const route = useRoute()
 const userSecurityStore = useUserSecurityStore()
 const commentStore = useCommentStore()
+const keepCommentDraft = useKeepCommentDraft()
 
 const content = ref('')
 const error = ref('')
+const formRef = ref(null)
 const textareaRef = ref(null)
+const showAuthModal = ref(false)
+const isDraftKept = ref(false)
 
-const canPost = computed(() => content.value.trim().length > 0 && !commentStore.isPosting)
+// Not while the session is checked: a visitor's click would reach the API, and its 401 would lose the text.
+const canPost = computed(
+  () =>
+    !userSecurityStore.isAuthenticatedLoading &&
+    content.value.trim().length > 0 &&
+    !commentStore.isPosting
+)
 
 onMounted(() => {
   if (props.autofocus) {
@@ -110,8 +116,30 @@ onMounted(() => {
   }
 })
 
+// A comment brought back after sign-in goes in the page's own form, which is then brought into view.
+watch(
+  () => commentStore.restoredDraft,
+  async (draft) => {
+    if (draft === null || props.parentId !== null) return
+    content.value = commentStore.takeRestoredDraft()
+    await nextTick()
+    formRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    textareaRef.value?.$el?.focus({ preventScroll: true })
+  },
+  { immediate: true }
+)
+
 async function handleSubmit() {
   error.value = ''
+  if (!userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated) {
+    // Promised only when kept: a browser that blocks storage gets the usual prompt.
+    isDraftKept.value = keepCommentDraft({
+      threadId: commentStore.threadId,
+      content: content.value
+    })
+    showAuthModal.value = true
+    return
+  }
 
   try {
     await commentStore.postComment({

@@ -48,7 +48,13 @@
 
         <div class="flex flex-col gap-2">
           <label class="font-medium">{{ t('forum.add_topic.message_label') }}</label>
-          <MessageEditor ref="editorRef" @content-update="handleContentUpdate" />
+          <MessageEditor
+            ref="editorRef"
+            :previous-content="initialMessage"
+            :is-restored-draft="initialMessage !== ''"
+            @content-update="handleContentUpdate"
+            @sign-in-required="emitSignInRequired('image')"
+          />
           <small v-if="contentText.length > 0 && contentText.length < MIN_MESSAGE_LENGTH" class="text-red-500">
             {{ t('forum.add_topic.message_too_short', { min: MIN_MESSAGE_LENGTH }) }}
           </small>
@@ -106,6 +112,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForumStore } from '../../store/forum/forum.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import { forumPickerGroups } from '../../utils/forumPicker.js'
 import MessageEditor from './MessageEditor.vue'
 
@@ -121,13 +128,24 @@ const props = defineProps({
   forumSlug: {
     type: String,
     default: null
+  },
+  /** Reopened on what a visitor wrote before signing in (#1305). */
+  initialTitle: {
+    type: String,
+    default: ''
+  },
+  initialMessage: {
+    type: String,
+    default: ''
   }
 })
 
-const emit = defineEmits(['update:visible', 'created'])
+// `sign-in-required` carries what a visitor wrote when they click « Créer » or pick an image: nothing is sent for them.
+const emit = defineEmits(['update:visible', 'created', 'sign-in-required'])
 
 const { t } = useI18n()
 const forumStore = useForumStore()
+const userSecurityStore = useUserSecurityStore()
 const toast = useToast()
 
 const title = ref('')
@@ -147,8 +165,10 @@ const visibleModel = computed({
 const targetForumSlug = computed(() => props.forumSlug ?? pickedForumSlug.value)
 const forumGroups = computed(() => forumPickerGroups(forumStore.categories))
 
+// Not while the session is checked: a visitor's click would reach the API, and its 401 would lose the text.
 const canSubmit = computed(() => {
   return (
+    !userSecurityStore.isAuthenticatedLoading &&
     targetForumSlug.value !== null &&
     title.value.trim().length >= MIN_TITLE_LENGTH &&
     contentText.value.trim().length >= MIN_MESSAGE_LENGTH
@@ -160,8 +180,17 @@ function handleContentUpdate({ html, text }) {
   contentText.value = text
 }
 
+/** @param {'publish' | 'image'} reason  what the visitor was doing when stopped */
+function emitSignInRequired(reason) {
+  emit('sign-in-required', { title: title.value, html: contentHtml.value, reason })
+}
+
 async function handleSubmit() {
   if (!canSubmit.value) return
+  if (!userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated) {
+    emitSignInRequired('publish')
+    return
+  }
 
   isSending.value = true
   try {
@@ -203,9 +232,14 @@ watch(
   { immediate: true }
 )
 
-// Reset form when modal is closed
-watch(visibleModel, (newValue) => {
-  if (!newValue) {
+// Filled in when the dialog opens, reset when it closes. Immediate, since a parent may mount it already open.
+watch(
+  visibleModel,
+  (newValue) => {
+    if (newValue) {
+      title.value = props.initialTitle
+      return
+    }
     pickedForumSlug.value = null
     title.value = ''
     contentHtml.value = ''
@@ -213,6 +247,7 @@ watch(visibleModel, (newValue) => {
     isSent.value = false
     createdTopic.value = null
     editorRef.value?.reset()
-  }
-})
+  },
+  { immediate: true }
+)
 </script>

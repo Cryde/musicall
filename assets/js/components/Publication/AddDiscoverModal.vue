@@ -21,7 +21,10 @@
           :disabled="videoStore.isLoadingPreview || videoStore.isLoadingAdd"
           class="w-full"
         />
-        <small v-if="!videoStore.isLoadingPreview" class="text-surface-500">
+        <small v-if="isVisitor" class="text-surface-500">
+          {{ t('publication.pending.video_preview_sign_in') }}
+        </small>
+        <small v-else-if="!videoStore.isLoadingPreview" class="text-surface-500">
           {{ t('home.add_discover.url_hint') }}
         </small>
         <small v-else class="text-surface-500 flex items-center gap-2">
@@ -106,11 +109,23 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ERROR_CODES } from '../../constants/errorCodes.js'
 import { useVideoStore } from '../../store/publication/video.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
-const emit = defineEmits(['published'])
+const props = defineProps({
+  /** The link a visitor pasted before signing in (#1305), previewed once the dialog opens. */
+  initialUrl: {
+    type: String,
+    default: ''
+  }
+})
+
+// `sign-in-required` carries the link when a visitor clicks « Publier »: the preview, and so the rest of the form,
+// needs an account, and its 401 would send them to the login page, losing the link (#1305).
+const emit = defineEmits(['published', 'sign-in-required'])
 
 const { t } = useI18n()
 const videoStore = useVideoStore()
+const userSecurityStore = useUserSecurityStore()
 const toast = useToast()
 
 const videoUrl = ref('')
@@ -132,12 +147,19 @@ const isVisible = computed({
   }
 })
 
+const isVisitor = computed(
+  () => !userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated
+)
+
 const isValidYoutubeUrl = computed(() => {
   const url = videoUrl.value.trim()
   return url.startsWith('https://') && (url.includes('youtube') || url.includes('youtu.be'))
 })
 
+// Not while the session is checked: a visitor's click would reach the API, and its 401 would lose the link.
 const canPublish = computed(() => {
+  if (userSecurityStore.isAuthenticatedLoading) return false
+  if (isVisitor.value) return isValidYoutubeUrl.value
   return (
     showPreview.value &&
     !isExistingVideo.value &&
@@ -150,6 +172,7 @@ const canPublish = computed(() => {
 watch(isVisible, (newValue) => {
   if (newValue) {
     resetForm()
+    videoUrl.value = props.initialUrl
   }
 })
 
@@ -205,7 +228,7 @@ watch(videoUrl, (newUrl) => {
     return
   }
 
-  if (isValidYoutubeUrl.value) {
+  if (isValidYoutubeUrl.value && !isVisitor.value) {
     debouncedFetchPreview(trimmedUrl)
   }
 })
@@ -227,6 +250,10 @@ function handleClose() {
 }
 
 async function handlePublish() {
+  if (isVisitor.value) {
+    emit('sign-in-required', { url: videoUrl.value.trim() })
+    return
+  }
   errors.value = {}
 
   try {

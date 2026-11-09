@@ -23,7 +23,9 @@ import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import PublicationDetailLayout from '../../components/Publication/PublicationDetailLayout.vue'
+import { useCommentDraftResumer } from '../../composables/useCommentDraft.js'
 import { useContentLanguage } from '../../composables/useContentLanguage.js'
+import { useContentPageLoad } from '../../composables/useContentPageLoad.js'
 import { usePublicationStore } from '../../store/publication/publication.js'
 
 const { t } = useI18n()
@@ -31,6 +33,7 @@ const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication, relatedPublications } = storeToRefs(publicationStore)
 const moveToContentLanguage = useContentLanguage()
+const pageLoad = useContentPageLoad()
 
 const pageTitle = computed(() =>
   publication.value
@@ -40,28 +43,33 @@ const pageTitle = computed(() =>
 
 useTitle(pageTitle)
 
+/** @returns {Promise<boolean>} whether it moved the page under the publication's language */
 async function loadData(slug) {
   const loadedPath = route.path
   await publicationStore.loadPublication(slug)
   if (moveToContentLanguage(publication.value?.language, loadedPath)) {
-    return
+    return true
   }
   trackUmamiEvent('course-view', { course: slug })
   publicationStore.loadRelatedPublications(slug)
+  return false
 }
 
 onMounted(() => {
-  loadData(route.params.slug)
+  pageLoad.track(loadData(route.params.slug))
 })
 
 watch(
   () => route.params.slug,
   (newSlug) => {
     if (newSlug) {
-      loadData(newSlug)
+      pageLoad.track(loadData(newSlug))
     }
   }
 )
+
+// A comment written before signing in comes back in the form (#1305).
+useCommentDraftResumer({ publication, whenLoaded: pageLoad.whenLoaded })
 
 const breadCrumbs = computed(() => [
   { label: t('publication.course.list.heading'), to: { name: 'app_course' } },

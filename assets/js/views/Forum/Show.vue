@@ -56,7 +56,10 @@
     <AddTopicModal
       v-model:visible="showAddTopicModal"
       :forum-slug="forumSlug"
+      :initial-title="resumedTopic?.title ?? ''"
+      :initial-message="resumedTopic?.html ?? ''"
       @created="handleTopicCreated"
+      @sign-in-required="handleTopicSignInRequired"
     />
 
     <AuthRequiredModal
@@ -81,8 +84,16 @@ import TopicListItem from '../../components/Forum/TopicListItem.vue'
 import TopicListItemSkeleton from '../../components/Forum/TopicListItemSkeleton.vue'
 import FadeList from '../../components/Global/FadeList.vue'
 import { useContentLanguage } from '../../composables/useContentLanguage.js'
+import { useContentPageLoad } from '../../composables/useContentPageLoad.js'
+import { useKeepDraft } from '../../composables/useKeepDraft.js'
+import { usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useForumStore } from '../../store/forum/forum.js'
-import { useUserSecurityStore } from '../../store/user/security.js'
+import {
+  FORUM_TOPIC_CREATE,
+  readTopicDraft,
+  topicCreateAvailability,
+  topicDraftPayload
+} from '../../utils/forumDraft.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const TOPICS_PER_PAGE = 15
@@ -91,10 +102,13 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const forumStore = useForumStore()
-const userSecurityStore = useUserSecurityStore()
 const moveToContentLanguage = useContentLanguage()
+const pageLoad = useContentPageLoad()
+const keepDraft = useKeepDraft()
 
 const showAddTopicModal = ref(false)
+// The topic a visitor wrote before signing in (#1305), while the dialog reopened on it.
+const resumedTopic = ref(null)
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 
@@ -117,13 +131,15 @@ useTitle(
   )
 )
 
+/** @returns {Promise<boolean>} whether it moved the page under the forum's language */
 async function fetchData() {
   const loadedPath = route.path
   await forumStore.loadForum(forumSlug.value)
   if (moveToContentLanguage(forumStore.currentForum?.locale, loadedPath)) {
-    return
+    return true
   }
   await forumStore.loadTopics({ forumSlug: forumSlug.value, page: currentPage.value })
+  return false
 }
 
 function handlePageChange(event) {
@@ -135,13 +151,10 @@ function handlePageChange(event) {
   })
 }
 
+// A visitor writes too (#1305): only « Créer » asks them to sign in.
 function handleOpenAddTopicModal() {
   trackUmamiEvent('forum-new-topic-click', { forum: forumSlug.value })
-  if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = t('forum.show.login_to_create')
-    showAuthModal.value = true
-    return
-  }
+  resumedTopic.value = null
   showAddTopicModal.value = true
 }
 
@@ -159,10 +172,43 @@ watch(
 )
 
 onMounted(async () => {
-  await fetchData()
+  await pageLoad.track(fetchData())
 })
 
 onUnmounted(() => {
   forumStore.clearForum()
+})
+
+// --- A topic written before signing in (#1305): reopened prefilled, never published on its own ------------
+
+function handleTopicSignInRequired({ title, html, reason }) {
+  const payload = topicDraftPayload({ forumSlug: forumSlug.value, title, html })
+  const isKept = keepDraft(FORUM_TOPIC_CREATE, payload)
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  authModalMessage.value = isKept
+    ? t(reason === 'image' ? 'forum.pending.image_sign_in' : 'forum.pending.topic_sign_in')
+    : t('forum.show.login_to_create')
+  showAuthModal.value = true
+}
+
+usePendingActionResumer(FORUM_TOPIC_CREATE, async (payload) => {
+  const draft = readTopicDraft(payload)
+  const isForumThere = await pageLoad.whenLoaded()
+  const availability = topicCreateAvailability({
+    forum: isForumThere ? forumStore.currentForum : null,
+    forumSlug: draft?.forumSlug,
+    pageForumSlug: forumSlug.value
+  })
+  if (availability !== 'available') {
+    return { unavailable: t('forum.pending.topic_forum_gone') }
+  }
+
+  return {
+    label: t('forum.pending.topic_label'),
+    resume: () => {
+      resumedTopic.value = draft
+      showAddTopicModal.value = true
+    }
+  }
 })
 </script>

@@ -33,11 +33,15 @@
     </div>
   </div>
 
-  <AddDiscoverModal @published="handleDiscoverPublished" />
+  <AddDiscoverModal
+    :initial-url="resumedDiscoverUrl"
+    @published="handleDiscoverPublished"
+    @sign-in-required="handleDiscoverSignInRequired"
+  />
   <AuthRequiredModal
     v-if="showAuthModal"
     v-model:visible="showAuthModal"
-    :message="t('publication.list.auth_required')"
+    :message="isDiscoverKept ? t('publication.pending.discover_sign_in') : t('publication.list.auth_required')"
   />
 
   <div class="flex flex-col md:flex-row gap-5">
@@ -134,11 +138,17 @@ import { useRoute, useRouter } from 'vue-router'
 import FadeList from '../../components/Global/FadeList.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
+import { useKeepDraft } from '../../composables/useKeepDraft.js'
+import { usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { useGalleriesStore } from '../../store/gallery/galleries.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
-import { useUserSecurityStore } from '../../store/user/security.js'
+import {
+  discoverDraftPayload,
+  PUBLICATION_DISCOVER,
+  readDiscoverDraft
+} from '../../utils/videoDraft.js'
 import GalleryListItem from '../Gallery/GalleryListItem.vue'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import PublicationListItem from './PublicationListItem.vue'
@@ -163,7 +173,7 @@ const router = useRouter()
 const publicationsStore = usePublicationsStore()
 const galleriesStore = useGalleriesStore()
 const videoStore = useVideoStore()
-const userSecurityStore = useUserSecurityStore()
+const keepDraft = useKeepDraft()
 
 const sortMenu = ref()
 const isInitialized = ref(false)
@@ -175,6 +185,9 @@ const currentPage = ref(1)
 const { filters: urlFilters } = useUrlFilters({ sort: 'desc' })
 const fetchedItems = ref()
 const showAuthModal = ref(false)
+const isDiscoverKept = ref(false)
+// The link a visitor pasted before signing in (#1305), while the dialog reopened on it.
+const resumedDiscoverUrl = ref('')
 
 const isPhotosCategory = computed(() => selectCategoryFilter.value?.slug === 'photos')
 
@@ -365,13 +378,26 @@ const sortOptions = computed(() => [
   }
 ])
 
+// A visitor pastes the link too (#1305): only « Publier » asks them to sign in.
 function handleOpenDiscoverModal() {
-  if (!userSecurityStore.isAuthenticated) {
-    showAuthModal.value = true
-    return
-  }
+  resumedDiscoverUrl.value = ''
   videoStore.openModal()
 }
+
+function handleDiscoverSignInRequired({ url }) {
+  const payload = discoverDraftPayload({ url })
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  isDiscoverKept.value = keepDraft(PUBLICATION_DISCOVER, payload)
+  showAuthModal.value = true
+}
+
+usePendingActionResumer(PUBLICATION_DISCOVER, (payload) => ({
+  label: t('publication.pending.discover_label'),
+  resume: () => {
+    resumedDiscoverUrl.value = readDiscoverDraft(payload).url
+    videoStore.openModal()
+  }
+}))
 
 async function handleDiscoverPublished() {
   await resetList()

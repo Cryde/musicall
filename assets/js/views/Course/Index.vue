@@ -26,12 +26,15 @@
   <AddCourseVideoModal
     v-model:visible="showCourseModal"
     :categories="coursesStore.courseCategories"
+    :initial-url="resumedCourse?.url ?? ''"
+    :initial-category="resumedCourse?.category ?? null"
     @published="handleCoursePublished"
+    @sign-in-required="handleCourseSignInRequired"
   />
   <AuthRequiredModal
     v-if="showAuthModal"
     v-model:visible="showAuthModal"
-    :message="t('publication.course.list.auth_required')"
+    :message="isCourseKept ? t('publication.pending.course_sign_in') : t('publication.course.list.auth_required')"
   />
 
   <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mt-2 mb-6">
@@ -127,8 +130,10 @@ import AddCourseVideoModal from '../../components/Course/AddCourseVideoModal.vue
 import FadeList from '../../components/Global/FadeList.vue'
 import ColumnCardRadio from '../../components/RadioGroup/ColumnCardRadio.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
+import { useKeepDraft } from '../../composables/useKeepDraft.js'
+import { usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useCoursesStore } from '../../store/course/course.js'
-import { useUserSecurityStore } from '../../store/user/security.js'
+import { COURSE_CREATE, courseDraftPayload, readCourseDraft } from '../../utils/videoDraft.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import CourseListItem from './CourseListItem.vue'
 
@@ -141,7 +146,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const coursesStore = useCoursesStore()
-const userSecurityStore = useUserSecurityStore()
+const keepDraft = useKeepDraft()
 
 const currentPage = ref(1)
 const orientation = ref('desc')
@@ -150,6 +155,9 @@ const selectCategoryFilter = ref('')
 const sortMenu = ref()
 const showCourseModal = ref(false)
 const showAuthModal = ref(false)
+const isCourseKept = ref(false)
+// What a visitor filled in before signing in (#1305), while the dialog reopened on it.
+const resumedCourse = ref(null)
 const isInitialized = ref(false)
 const mapInstrumentImage = {
   guitare: guitarImg,
@@ -313,13 +321,33 @@ const sortOptions = computed(() => [
   }
 ])
 
+// A visitor fills it in too (#1305): only « Publier » asks them to sign in.
 function handleOpenCourseModal() {
-  if (!userSecurityStore.isAuthenticated) {
-    showAuthModal.value = true
-    return
-  }
+  resumedCourse.value = null
   showCourseModal.value = true
 }
+
+function handleCourseSignInRequired({ url, categoryId }) {
+  const payload = courseDraftPayload({ url, categoryId })
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  isCourseKept.value = keepDraft(COURSE_CREATE, payload)
+  showAuthModal.value = true
+}
+
+usePendingActionResumer(COURSE_CREATE, async (payload) => {
+  if (coursesStore.courseCategories.length === 0) {
+    await coursesStore.loadCategories()
+  }
+  const draft = readCourseDraft(payload, coursesStore.courseCategories)
+
+  return {
+    label: t('publication.pending.course_label'),
+    resume: () => {
+      resumedCourse.value = draft
+      showCourseModal.value = true
+    }
+  }
+})
 
 async function handleCoursePublished() {
   await resetList()

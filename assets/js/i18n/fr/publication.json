@@ -391,9 +391,6 @@
       "placeholder": "Ajouter un commentaire...",
       "aria_label": "Ton commentaire",
       "post": "Poster le commentaire",
-      "login_required": "Tu dois {login} ou {register} pour pouvoir poster un commentaire",
-      "login_link": "être connecté",
-      "register_link": "inscrit",
       "rate_limited": "Trop de commentaires postés. Patiente un instant.",
       "error": "Une erreur est survenue"
     },
@@ -409,5 +406,15 @@
     "thread": {
       "count": "Il n'y a pas encore de commentaires | 1 commentaire | {count} commentaires"
     }
+  },
+  "pending": {
+    "comment_sign_in": "Connecte-toi pour publier ton commentaire, on garde ce que tu as écrit.",
+    "comment_label": "Ton commentaire",
+    "comment_publication_gone": "Cette publication n'est plus en ligne, ton commentaire n'a pas été publié.",
+    "discover_sign_in": "Connecte-toi pour publier ta découverte, on garde ton lien.",
+    "discover_label": "Publier ta découverte",
+    "course_sign_in": "Connecte-toi pour publier ton cours, on garde ton lien et ta catégorie.",
+    "course_label": "Publier ton cours",
+    "video_preview_sign_in": "Connecte-toi pour récupérer les informations de la vidéo et la publier."
   }
 }

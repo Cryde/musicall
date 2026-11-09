@@ -82,6 +82,7 @@
           :topic-slug="forumStore.currentTopic.slug"
           :is-locked="forumStore.currentTopic.is_locked"
           @message-created="handleMessageCreated"
+          @sign-in-required="handleReplySignInRequired"
         />
       </div>
     </template>
@@ -109,11 +110,24 @@ import AddMessageForm from '../../components/Forum/AddMessageForm.vue'
 import TopicPost from '../../components/Forum/TopicPost.vue'
 import TopicPostSkeleton from '../../components/Forum/TopicPostSkeleton.vue'
 import { useContentLanguage } from '../../composables/useContentLanguage.js'
+import { useContentPageLoad } from '../../composables/useContentPageLoad.js'
+import { useKeepDraft } from '../../composables/useKeepDraft.js'
+import { usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import {
+  FORUM_REPLY,
+  readReplyDraft,
+  replyAvailability,
+  replyDraftPayload
+} from '../../utils/forumDraft.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const POSTS_PER_PAGE = 10
+const UNAVAILABLE_KEYS = {
+  topic_gone: 'forum.pending.reply_topic_gone',
+  topic_locked: 'forum.pending.reply_topic_locked'
+}
 
 const { t } = useI18n()
 const route = useRoute()
@@ -121,6 +135,8 @@ const router = useRouter()
 const forumStore = useForumStore()
 const userSecurityStore = useUserSecurityStore()
 const moveToContentLanguage = useContentLanguage()
+const pageLoad = useContentPageLoad()
+const keepDraft = useKeepDraft()
 const toast = useToast()
 
 const showAuthModal = ref(false)
@@ -133,9 +149,12 @@ const replyFormSectionRef = ref(null)
 
 function handleQuote(quote) {
   addMessageFormRef.value?.insertQuote(quote)
-  nextTick(() => {
-    replyFormSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
+  scrollToReplyForm()
+}
+
+async function scrollToReplyForm() {
+  await nextTick()
+  replyFormSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 const canManageTopic = computed(() => {
@@ -239,15 +258,17 @@ useTitle(
   )
 )
 
+/** @returns {Promise<boolean>} whether it moved the page under the topic's language */
 async function fetchData() {
   const loadedPath = route.path
   await forumStore.loadTopic(topicSlug.value)
   if (moveToContentLanguage(forumStore.currentTopic?.locale, loadedPath)) {
-    return
+    return true
   }
   trackUmamiEvent('forum-topic-view', { topic: topicSlug.value })
   await forumStore.loadPosts({ topicSlug: topicSlug.value, page: currentPage.value })
   await scrollToHash()
+  return false
 }
 
 async function scrollToHash() {
@@ -301,10 +322,42 @@ watch(
 )
 
 onMounted(async () => {
-  await fetchData()
+  await pageLoad.track(fetchData())
 })
 
 onUnmounted(() => {
   forumStore.clearTopic()
+})
+
+// --- A reply written before signing in (#1305): put back in the form, never sent on its own ---------------
+
+function handleReplySignInRequired({ html, reason }) {
+  const payload = replyDraftPayload({ topicSlug: topicSlug.value, html })
+  const isKept = keepDraft(FORUM_REPLY, payload)
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  authModalMessage.value = isKept
+    ? t(reason === 'image' ? 'forum.pending.image_sign_in' : 'forum.pending.reply_sign_in')
+    : t('forum.reply.login_to_post')
+  showAuthModal.value = true
+}
+
+usePendingActionResumer(FORUM_REPLY, async (payload) => {
+  const draft = readReplyDraft(payload)
+  const isTopicThere = await pageLoad.whenLoaded()
+  const availability = replyAvailability({
+    topic: isTopicThere ? forumStore.currentTopic : null,
+    topicSlug: draft?.topicSlug
+  })
+  if (availability !== 'available') {
+    return { unavailable: t(UNAVAILABLE_KEYS[availability]) }
+  }
+
+  return {
+    label: t('forum.pending.reply_label'),
+    resume: () => {
+      addMessageFormRef.value?.restore(draft.html)
+      scrollToReplyForm()
+    }
+  }
 })
 </script>

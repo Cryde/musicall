@@ -8,9 +8,13 @@ export const useCommentStore = defineStore('comment', () => {
   const totalComments = ref(0)
   const isLoading = ref(false)
   const isPosting = ref(false)
+  // A comment written before signing in (#1305), waiting for the comment form to take it.
+  const restoredDraft = ref(null)
 
   async function loadThread(id) {
     threadId.value = id
+    // A draft is for the thread it was written under. The form takes it while mounting, before this runs.
+    restoredDraft.value = null
     isLoading.value = true
 
     try {
@@ -47,10 +51,22 @@ export const useCommentStore = defineStore('comment', () => {
     }
   }
 
+  function restoreDraft(content) {
+    restoredDraft.value = content
+  }
+
+  /** The restored comment, handed over once. */
+  function takeRestoredDraft() {
+    const content = restoredDraft.value
+    restoredDraft.value = null
+    return content
+  }
+
   function clear() {
     threadId.value = null
     comments.value = []
     totalComments.value = 0
+    restoredDraft.value = null
   }
 
   return {
@@ -59,8 +75,11 @@ export const useCommentStore = defineStore('comment', () => {
     totalComments: readonly(totalComments),
     isLoading: readonly(isLoading),
     isPosting: readonly(isPosting),
+    restoredDraft: readonly(restoredDraft),
     loadThread,
     postComment,
+    restoreDraft,
+    takeRestoredDraft,
     clear
   }
 })
