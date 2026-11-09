@@ -7,6 +7,7 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
   const spaces = ref([])
   const isLoading = ref(false)
   const isCreateModalOpen = ref(false)
+  const createModalName = ref('')
   const isCreating = ref(false)
   const isRenaming = ref(false)
   const error = ref(null)
@@ -74,12 +75,17 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
     return spacesMap.value.get(id) || null
   }
 
-  function openCreateModal() {
+  /** `name` prefills the dialog; without one, a dialog already open keeps the name it was opened with. */
+  function openCreateModal(name) {
+    if (name !== undefined) {
+      createModalName.value = name
+    }
     isCreateModalOpen.value = true
   }
 
   function closeCreateModal() {
     isCreateModalOpen.value = false
+    createModalName.value = ''
   }
 
   function clearError() {
@@ -105,6 +111,7 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
     spaces: readonly(spaces),
     isLoading: readonly(isLoading),
     isCreateModalOpen: readonly(isCreateModalOpen),
+    createModalName: readonly(createModalName),
     isCreating: readonly(isCreating),
     isRenaming: readonly(isRenaming),
     error: readonly(error),

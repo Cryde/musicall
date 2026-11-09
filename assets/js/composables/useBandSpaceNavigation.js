@@ -37,10 +37,6 @@ export function useBandSpaceNavigation() {
     return router.push({ name: routeName, params: { id: spaceId } })
   }
 
-  function navigateToIndex() {
-    return router.replace({ name: BAND_SPACE_ROUTES.INDEX })
-  }
-
   function handleRedirect() {
     if (!bandSpaceStore.hasSpaces) {
       bandSpaceStore.openCreateModal()
@@ -54,18 +50,6 @@ export function useBandSpaceNavigation() {
     router.replace({ name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: targetSpace.id } })
   }
 
-  function validateCurrentSpace() {
-    const spaceId = currentSpaceId.value
-    if (!spaceId) return true
-
-    const space = bandSpaceStore.getById(spaceId)
-    if (!space) {
-      navigateToIndex()
-      return false
-    }
-    return true
-  }
-
   return {
     currentSpaceId,
     currentSpace,
@@ -74,8 +58,6 @@ export function useBandSpaceNavigation() {
     setLastSpaceId,
     clearLastSpaceId,
     navigateToSpace,
-    navigateToIndex,
-    handleRedirect,
-    validateCurrentSpace
+    handleRedirect
   }
 }

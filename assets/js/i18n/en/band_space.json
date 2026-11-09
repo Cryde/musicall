@@ -76,8 +76,9 @@
     "account_settings": "Account settings",
     "page_title_with_space": "{section} - {space} {separator} MusicAll",
     "page_title": "{section} {separator} MusicAll",
-    "not_found_summary": "Band Space not found",
-    "not_found_detail": "This Band Space does not exist or you do not have access to it",
+    "outsider_title": "You are not part of this band",
+    "outsider_body": "This Band Space does not exist, or you are not one of its members. To join it, ask a member to send you an invitation.",
+    "outsider_my_spaces": "See my Band Spaces",
     "load_spaces_error": "Could not load your Band Spaces"
   },
   "sidebar": {

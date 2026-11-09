@@ -114,15 +114,12 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import BandSpaceCreateCall from '../../components/BandSpace/Presentation/BandSpaceCreateCall.vue'
 import BandSpaceDemoPreview from '../../components/BandSpace/Presentation/BandSpaceDemoPreview.vue'
 import BandSpaceMobileApp from '../../components/BandSpace/Presentation/BandSpaceMobileApp.vue'
-import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
-import { useUserSecurityStore } from '../../store/user/security.js'
+import { useStartBandSpaceCreate } from '../../composables/useStartBandSpaceCreate.js'
 import { ctaLabel, DEMO_PAINS, DEMO_SIZES, sizeLabel } from '../../utils/bandSpaceDemo.js'
-import { openDraftNameStorage, saveDraftName } from '../../utils/bandSpaceDraftName.js'
-import { bandSpaceCreateReturnPath, routeReturningTo } from '../../utils/unauthenticatedRedirect.js'
 
 const QUESTION = 'text-[13px] md:text-sm font-bold tracking-wider uppercase text-primary'
 const PILL = 'rounded-lg border font-semibold cursor-pointer transition-colors'
@@ -158,9 +155,7 @@ const reasons = computed(() => [
 ])
 
 const route = useRoute()
-const router = useRouter()
-const bandSpaceStore = useBandSpaceStore()
-const userSecurityStore = useUserSecurityStore()
+const startBandSpaceCreate = useStartBandSpaceCreate()
 
 const bandName = ref('')
 const bandSize = ref(4)
@@ -179,18 +174,8 @@ function togglePain(key) {
     : [...pickedPains.value, key]
 }
 
-// A visitor signs up first and finds the name waiting in the create modal afterwards. A member goes
-// straight to the band layout, which mounts the modal already open.
+// Only the name carries over: the create dialog takes nothing else, the size and needs only shape the demo.
 function handleCreate() {
-  saveDraftName(openDraftNameStorage(), bandName.value)
-
-  if (!userSecurityStore.isAuthenticated) {
-    const bandIndexPath = router.resolve({ name: 'app_band_index' }).href
-    router.push(routeReturningTo('app_register', bandSpaceCreateReturnPath(route, bandIndexPath)))
-    return
-  }
-
-  bandSpaceStore.openCreateModal()
-  router.push({ name: 'app_band_index' })
+  startBandSpaceCreate(bandName.value)
 }
 </script>

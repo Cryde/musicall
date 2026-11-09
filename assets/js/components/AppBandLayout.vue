@@ -21,6 +21,7 @@
       <CommandPalette v-model:visible="paletteVisible" />
       <div class="flex">
         <aside
+          v-if="!isOutsider"
           class="hidden lg:block w-[var(--band-sidebar-width)] shrink-0 sticky top-16 h-[calc(100dvh-4rem)] bg-surface-0 dark:bg-surface-900 border-r border-surface-200 dark:border-surface-700 self-start transition-[width] duration-150"
         >
           <BandSidebar
@@ -53,9 +54,29 @@
                 </template>
               </i18n-t>
             </div>
+            <!-- The same screen whether the space does not exist or the member is not in it: the list
+                 cannot tell them apart, and saying which would tell a stranger the space exists. -->
+            <section
+              v-if="isOutsider"
+              class="flex flex-col items-center gap-4 max-w-xl mx-auto py-12 lg:py-20 text-center"
+              aria-labelledby="band-space-outsider-title"
+            >
+              <i class="pi pi-lock text-5xl text-surface-400" aria-hidden="true" />
+              <h1 id="band-space-outsider-title" class="m-0 text-2xl md:text-3xl font-semibold text-surface-900 dark:text-surface-0">
+                {{ t('band_space.layout.outsider_title') }}
+              </h1>
+              <p class="m-0 text-surface-600 dark:text-surface-300">{{ t('band_space.layout.outsider_body') }}</p>
+              <Button
+                as="router-link"
+                :to="{ name: BAND_SPACE_ROUTES.INDEX }"
+                :label="t('band_space.layout.outsider_my_spaces')"
+                icon="pi pi-arrow-right"
+                icon-pos="right"
+              />
+            </section>
             <!-- Force remount on space switch so module views never retain
                  another space's bandSpaceId or store state. -->
-            <router-view :key="route.params.id" />
+            <router-view v-else :key="route.params.id" />
           </div>
         </main>
       </div>
@@ -73,8 +94,10 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBandSpaceLiveRefresh } from '../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
+import { usePendingActionResumer } from '../composables/usePendingAction.js'
 import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
+import { BAND_SPACE_CREATE_ACTION, bandSpaceCreateName } from '../utils/bandSpaceCreateAction.js'
 import { formatDateLong } from '../utils/date.js'
 import MenuBand from '../views/Global/MenuBand.vue'
 import BandSidebar from './BandSpace/BandSidebar.vue'
@@ -86,13 +109,14 @@ const route = useRoute()
 const toast = useToast()
 const { t } = useI18n()
 
-const { currentSpace, setLastSpaceId, handleRedirect, validateCurrentSpace } =
-  useBandSpaceNavigation()
+const { currentSpace, setLastSpaceId, handleRedirect } = useBandSpaceNavigation()
 
 const deletionScheduledFor = computed(() => currentSpace.value?.deletion_scheduled_datetime ?? null)
 
 const isLoading = ref(true)
 const hasError = ref(false)
+// A space in the URL that is not in the member's list (#1304), decided once the list is loaded.
+const isOutsider = ref(false)
 const paletteVisible = ref(false)
 
 /**
@@ -103,8 +127,8 @@ function handleSearchShortcut(event) {
   if (event.key?.toLowerCase() !== 'k' || !(event.ctrlKey || event.metaKey)) {
     return
   }
-  // No space in the URL yet means no space to search, so leave the shortcut alone.
-  if (!route.params.id) {
+  // No space of the member's in the URL means no space to search, so leave the shortcut alone.
+  if (!currentSpace.value) {
     return
   }
 
@@ -177,6 +201,18 @@ onMounted(() => {
   window.addEventListener('keydown', handleSearchShortcut)
 })
 
+// Creating a space a visitor started before signing up (#1304). Answered at once: on /band a member who has
+// spaces is redirected while the list loads, and the dialog lives in the store, so it follows them. A member at
+// the limit still gets the dialog, whose submit shows the server's refusal.
+usePendingActionResumer(BAND_SPACE_CREATE_ACTION, (payload) => ({
+  label: t('band_space.selector.create'),
+  resume: () => bandSpaceStore.openCreateModal(bandSpaceCreateName(payload))
+}))
+
+function checkMembership() {
+  isOutsider.value = Boolean(route.params.id) && !currentSpace.value
+}
+
 onUnmounted(() => window.removeEventListener('keydown', handleSearchShortcut))
 
 async function loadSpaces() {
@@ -188,15 +224,8 @@ async function loadSpaces() {
 
     if (route.name === BAND_SPACE_ROUTES.INDEX) {
       handleRedirect()
-    } else if (route.params.id) {
-      if (!validateCurrentSpace()) {
-        toast.add({
-          severity: 'warn',
-          summary: t('band_space.layout.not_found_summary'),
-          detail: t('band_space.layout.not_found_detail'),
-          life: 5000
-        })
-      }
+    } else {
+      checkMembership()
     }
   } catch (error) {
     hasError.value = true
@@ -235,16 +264,9 @@ watch(
       setLastSpaceId(newId)
     }
 
-    if (isLoading.value || hasError.value || !newId) return
+    if (isLoading.value || hasError.value) return
 
-    if (!validateCurrentSpace()) {
-      toast.add({
-        severity: 'warn',
-        summary: t('band_space.layout.not_found_summary'),
-        detail: t('band_space.layout.not_found_detail'),
-        life: 5000
-      })
-    }
+    checkMembership()
   },
   { immediate: true }
 )

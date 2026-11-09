@@ -262,7 +262,7 @@ describe('bandSpaceCreateReturnPath', () => {
     )
   })
 
-  // The presentation itself would come back with an empty field, and creating again would clear the draft.
+  // The presentation itself would come back with an empty field.
   it('goes to the band layout, never back to the presentation, when it was handed nothing', () => {
     assert.equal(bandSpaceCreateReturnPath({ query: {} }, '/band'), '/band')
     assert.equal(bandSpaceCreateReturnPath({}, '/band'), '/band')

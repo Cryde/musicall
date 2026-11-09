@@ -76,8 +76,9 @@
     "account_settings": "Paramètres du compte",
     "page_title_with_space": "{section} - {space} {separator} MusicAll",
     "page_title": "{section} {separator} MusicAll",
-    "not_found_summary": "Band Space introuvable",
-    "not_found_detail": "Ce Band Space n'existe pas ou tu n'y as pas accès",
+    "outsider_title": "Tu ne fais pas partie de ce groupe",
+    "outsider_body": "Ce Band Space n'existe pas, ou tu n'en es pas membre. Pour le rejoindre, demande à l'un de ses membres de t'envoyer une invitation.",
+    "outsider_my_spaces": "Voir mes Band Spaces",
     "load_spaces_error": "Impossible de charger tes Band Spaces"
   },
   "sidebar": {

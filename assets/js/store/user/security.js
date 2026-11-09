@@ -264,6 +264,12 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     localStorage.removeItem('was_logged_in')
     clearRequestDrafts(openRequestDraftStorage())
     clearPendingAction(openPendingActionStorage())
+    // The Band Space draft name kept before #1304: remove once old drafts have aged out.
+    try {
+      localStorage.removeItem('band-space-draft-name')
+    } catch {
+      // Blocked storage holds no draft.
+    }
     stopProactiveRefresh()
 
     isAuthenticated.value = false
