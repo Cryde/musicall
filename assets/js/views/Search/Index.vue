@@ -384,12 +384,17 @@
     <AddAnnounceModal
         v-if="showAnnounceModal"
         v-model:visible="showAnnounceModal"
-        :initial-type="announceInitialType"
-        :initial-instrument="announceInitialInstrument"
-        :initial-styles="announceInitialStyles"
-        :initial-location="announceInitialLocation"
-        :initial-languages="announceInitialLanguages"
+        v-bind="announceInitialProps"
         @created="handleAnnounceCreated"
+        @sign-in-required="handleAnnounceSignInRequired"
+    />
+    <!-- A message written before signing in, back after it (#1306). -->
+    <SendMessageModal
+        v-if="isResumedContactOpen"
+        v-model:visible="isResumedContactOpen"
+        :selected-recipient="resumedContact.recipient"
+        :contact-origin="resumedContact.contactOrigin"
+        :initial-content="resumedContact.content"
     />
     <AuthRequiredModal
         v-if="showAuthModal"
@@ -430,12 +435,19 @@ import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
 import GuidedNoResults from '../../components/Search/Guided/GuidedNoResults.vue'
 import GuidedSearch from '../../components/Search/Guided/GuidedSearch.vue'
 import GuidedSignupCard from '../../components/Search/Guided/GuidedSignupCard.vue'
+import { useContactDraftResumer } from '../../composables/useContactDraft.js'
+import { usePendingAction, usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { lastNavigationRestoredScroll } from '../../router/scrollPosition.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import {
+  ANNOUNCE_CREATE,
+  announceDraftPayload,
+  announceModalProps
+} from '../../utils/announceDraft.js'
 import { isAnnounceLanguage, languageName, languageOptions } from '../../utils/announceLanguages.js'
 import {
   DEFAULT_RADIUS,
@@ -454,6 +466,9 @@ const AuthRequiredModal = defineAsyncComponent(
   () => import('../../components/Auth/AuthRequiredModal.vue')
 )
 const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
+const SendMessageModal = defineAsyncComponent(
+  () => import('../../components/Message/SendMessageModal.vue')
+)
 
 const { t } = useI18n()
 const route = useRoute()
@@ -536,6 +551,11 @@ const {
 
 const showAnnounceModal = ref(false)
 const createFromSearch = ref(false)
+// The modal's props for an announce a visitor filled in before signing in (#1306), while it is open.
+const resumedAnnounce = ref(null)
+const isResumedContactOpen = ref(false)
+const resumedContact = ref(null)
+const pendingAction = usePendingAction()
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 const authModalVariant = ref('default')
@@ -836,34 +856,28 @@ function selectType(type) {
   trackUmamiEvent('musician-type-toggle', { type: type.name })
 }
 
-// Computed values for announce modal initial values (only when creating from search)
-const announceInitialType = computed(() => {
-  if (!createFromSearch.value) return null
-  // key 2 = Musicien (searching for a musician) => announce type "musician" (looking for a musician)
-  // key 1 = Groupe (searching for a band) => announce type "band" (looking for a band)
-  if (!selectSearchType.value) return null
-  return selectSearchType.value.key === 2 ? 'musician' : 'band'
+// key 2 = Musicien (searching for a musician) => announce type "musician" (looking for a musician)
+// key 1 = Groupe (searching for a band) => announce type "band" (looking for a band)
+const ANNOUNCE_TYPE_BY_SEARCH_KEY = { 2: 'musician', 1: 'band' }
+
+// What the announce modal opens on: a draft kept over sign-in, the search's criteria, or nothing.
+const announceInitialProps = computed(() => {
+  if (resumedAnnounce.value) return { ...resumedAnnounce.value, isResumed: true }
+  if (!createFromSearch.value) return {}
+  return {
+    initialType: ANNOUNCE_TYPE_BY_SEARCH_KEY[selectSearchType.value?.key] ?? null,
+    initialInstrument: selectedInstrument.value,
+    initialStyles: selectedStyles.value,
+    initialLocation:
+      selectedLocation.value && typeof selectedLocation.value === 'object'
+        ? selectedLocation.value
+        : null,
+    initialLanguages: selectedLanguage.value ? [selectedLanguage.value] : []
+  }
 })
 
-const announceInitialInstrument = computed(() => {
-  if (!createFromSearch.value) return null
-  return selectedInstrument.value
-})
-
-const announceInitialStyles = computed(() => {
-  if (!createFromSearch.value) return []
-  return selectedStyles.value
-})
-
-const announceInitialLocation = computed(() => {
-  if (!createFromSearch.value) return null
-  if (!selectedLocation.value || typeof selectedLocation.value !== 'object') return null
-  return selectedLocation.value
-})
-
-const announceInitialLanguages = computed(() => {
-  if (!createFromSearch.value || !selectedLanguage.value) return []
-  return [selectedLanguage.value]
+watch(showAnnounceModal, (isOpen) => {
+  if (!isOpen) resumedAnnounce.value = null
 })
 
 function insertExample(e) {
@@ -1077,9 +1091,9 @@ async function loadMore() {
   isLoadingMore.value = false
 }
 
-function openAuthModal(variant, _musicianName = null) {
+function openAuthModal(variant, message = '') {
   authModalVariant.value = variant
-  authModalMessage.value = ''
+  authModalMessage.value = message
   showAuthModal.value = true
 }
 
@@ -1190,12 +1204,9 @@ function clearAllFilters(skipTracking = false) {
   loadInitialResults()
 }
 
+// A visitor fills it in too (#1306): only « Publier » asks them to sign in.
 function handleOpenAnnounceModal() {
   trackUmamiEvent('musician-post-ad-click')
-  if (!userSecurityStore.isAuthenticated) {
-    openAuthModal('post_announce')
-    return
-  }
   createFromSearch.value = false
   showAnnounceModal.value = true
   trackUmamiEvent('announce-modal-opened', { fromSearch: false })
@@ -1203,10 +1214,6 @@ function handleOpenAnnounceModal() {
 
 function handleOpenAnnounceModalFromSearch() {
   trackUmamiEvent('musician-post-ad-from-search-click')
-  if (!userSecurityStore.isAuthenticated) {
-    openAuthModal('post_announce')
-    return
-  }
   createFromSearch.value = true
   showAnnounceModal.value = true
   trackUmamiEvent('announce-modal-opened', { fromSearch: true })
@@ -1216,6 +1223,43 @@ async function handleAnnounceCreated() {
   createFromSearch.value = false
   // Refresh search results
   await search()
+}
+
+function handleAnnounceSignInRequired(values) {
+  const isKept = pendingAction.keep({
+    kind: ANNOUNCE_CREATE,
+    payload: announceDraftPayload(values),
+    stoppedOnSubmit: true
+  })
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  openAuthModal('post_announce', isKept ? t('search.pending.announce_sign_in') : '')
+}
+
+// --- Resumed after sign-in (#1306): reopened prefilled, never sent on their own -----------------------
+
+usePendingActionResumer(ANNOUNCE_CREATE, resumeAnnounce)
+useContactDraftResumer((contact) => {
+  resumedContact.value = contact
+  isResumedContactOpen.value = true
+})
+
+async function resumeAnnounce(payload) {
+  if (instrumentStore.instruments.length === 0 || styleStore.styles.length === 0) {
+    await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
+  }
+  const initialProps = announceModalProps(payload, {
+    instruments: instrumentStore.instruments,
+    styles: styleStore.styles
+  })
+
+  return {
+    label: t('search.pending.announce_label'),
+    resume: () => {
+      createFromSearch.value = false
+      resumedAnnounce.value = initialProps
+      showAnnounceModal.value = true
+    }
+  }
 }
 
 // Note: No onUnmounted cleanup - state is preserved by KeepAlive for back navigation

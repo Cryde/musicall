@@ -130,8 +130,14 @@
             v-model:visible="showMessageModal"
             :selected-recipient="user"
             :contact-origin="announceId ? { musicianAnnounceId: announceId } : null"
+            @sign-in-required="handleSignInRequired"
         />
-        <AuthRequiredModal v-model:visible="showAuthModal" variant="contact" :musician-name="userName" />
+        <AuthRequiredModal
+            v-model:visible="showAuthModal"
+            variant="contact"
+            :musician-name="userName"
+            :message="isDraftKept ? t('search.pending.contact_sign_in', { name: userName }) : ''"
+        />
     </div>
 </template>
 
@@ -146,6 +152,7 @@ import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import ReportButton from '../../components/Report/ReportButton.vue'
 import UserName from '../../components/User/UserName.vue'
+import { useKeepContactDraft } from '../../composables/useContactDraft.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { separator } from '../../i18n/formatLocale.js'
@@ -201,8 +208,11 @@ const allStylesText = computed(() => props.styles.map((s) => s.name).join(', '))
 const languagesText = computed(() => languageListLabel(props.languages))
 
 const userSecurityStore = useUserSecurityStore()
+const keepContactDraft = useKeepContactDraft()
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
+// Whether the message was kept for after sign-in, the only case the prompt may promise it.
+const isDraftKept = ref(false)
 
 const isOwnAnnounce = computed(() => userSecurityStore.userProfile?.id === props.user.id)
 
@@ -224,12 +234,18 @@ const formattedDistance = computed(() => {
   return dist < 10 ? `${dist.toFixed(1)} km` : `${Math.round(dist)} km`
 })
 
+// A visitor writes too (#1306): « Envoyer » asks them to sign in, and the search page gives the message back.
 function handleContact() {
   trackUmamiEvent('musician-result-contact')
-  if (!userSecurityStore.isAuthenticated) {
-    showAuthModal.value = true
-    return
-  }
   showMessageModal.value = true
+}
+
+function handleSignInRequired({ content }) {
+  isDraftKept.value = keepContactDraft({
+    announceId: props.announceId,
+    recipientId: props.user.id,
+    content
+  })
+  showAuthModal.value = true
 }
 </script>

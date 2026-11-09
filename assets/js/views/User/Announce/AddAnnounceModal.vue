@@ -34,11 +34,11 @@
       <!-- Six labelled steps do not fit a phone: where the member is, in words, over a six-part bar. -->
       <div v-if="isBelowMd" class="flex flex-col gap-2">
         <p class="m-0 text-sm font-medium text-surface-700 dark:text-surface-200" aria-live="polite">
-          {{ t('profile.announce.add.step_progress', { current: Number(currentStep), total: STEP_LABELS.length, label: t(STEP_LABELS[Number(currentStep) - 1]) }) }}
+          {{ t('profile.announce.add.step_progress', { current: Number(currentStep), total: stepLabels.length, label: t(stepLabels[Number(currentStep) - 1]) }) }}
         </p>
-        <div class="grid grid-cols-6 gap-1" aria-hidden="true">
+        <div :class="['grid gap-1', stepLabels.length === 6 ? 'grid-cols-6' : 'grid-cols-5']" aria-hidden="true">
           <span
-            v-for="(label, index) in STEP_LABELS"
+            v-for="(label, index) in stepLabels"
             :key="label"
             :class="['h-1 rounded-full', index < Number(currentStep) ? 'bg-primary' : 'bg-surface-200 dark:bg-surface-700']"
           />
@@ -49,8 +49,8 @@
         <Step value="2">{{ t('profile.announce.add.step_instrument') }}</Step>
         <Step value="3">{{ t('profile.announce.add.step_styles') }}</Step>
         <Step value="4">{{ t('profile.announce.add.step_location') }}</Step>
-        <Step value="5">{{ t('profile.announce.add.step_profile') }}</Step>
-        <Step value="6">{{ t('profile.announce.add.step_note') }}</Step>
+        <Step v-if="!isVisitor" value="5">{{ t('profile.announce.add.step_profile') }}</Step>
+        <Step :value="noteStep">{{ t('profile.announce.add.step_note') }}</Step>
       </StepList>
 
       <StepPanels>
@@ -222,7 +222,8 @@
           </div>
         </StepPanel>
 
-        <StepPanel v-slot="{ activateCallback }" value="5">
+        <!-- It edits the member's musician profile, so a visitor meets it after signing in (#1306). -->
+        <StepPanel v-if="!isVisitor" v-slot="{ activateCallback }" value="5">
           <MusicianProfileStepContent
             :announcement-type="selectedType"
             :selected-instrument="selectedInstrument"
@@ -232,7 +233,7 @@
           />
         </StepPanel>
 
-        <StepPanel v-slot="{ activateCallback }" value="6">
+        <StepPanel v-slot="{ activateCallback }" :value="noteStep">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
               {{ t('profile.announce.add.note_question') }}
@@ -301,7 +302,7 @@
               icon="pi pi-arrow-left"
               severity="secondary"
               text
-              @click="activateCallback('5')"
+              @click="activateCallback(isVisitor ? '4' : '5')"
             />
             <Button
               :label="t('profile.announce.add.submit')"
@@ -360,10 +361,14 @@ const props = defineProps({
   initialStyles: { type: Array, default: () => [] },
   initialLocation: { type: Object, default: null },
   /** Language codes the search asked for, welcomed on top of the author's own. */
-  initialLanguages: { type: Array, default: () => [] }
+  initialLanguages: { type: Array, default: () => [] },
+  initialNote: { type: String, default: '' },
+  /** Reopened from what a visitor filled in before signing in (#1306): its languages are taken as they are. */
+  isResumed: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['created'])
+// `sign-in-required` carries the form's values when a visitor clicks « Publier »: nothing is sent for them.
+const emit = defineEmits(['created', 'sign-in-required'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 const { t, locale } = useI18n()
 
@@ -382,6 +387,15 @@ const STEP_LABELS = [
   'profile.announce.add.step_profile',
   'profile.announce.add.step_note'
 ]
+const PROFILE_STEP_LABEL = 'profile.announce.add.step_profile'
+const isVisitor = computed(
+  () => !userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated
+)
+const stepLabels = computed(() =>
+  isVisitor.value ? STEP_LABELS.filter((label) => label !== PROFILE_STEP_LABEL) : STEP_LABELS
+)
+// The stepper shows a step's value as its number: without the profile step, the note is a visitor's fifth.
+const noteStep = computed(() => (isVisitor.value ? '5' : '6'))
 
 // A screen of its own on a phone, where a 95vw dialog cut the steps off at « St ».
 const isBelowMd = useIsBelowMd()
@@ -427,12 +441,15 @@ watch(
   async (isVisible) => {
     if (isVisible) {
       initializeFromProps()
+      if (isVisitor.value) return
       // Load user profile (404 means no profile, which is fine)
       try {
         await musicianProfileStore.loadMyProfile()
       } catch {
         // No profile exists, that's OK
       }
+      // Asked before the profile was in: a member who has one goes straight to the note.
+      if (currentStep.value === '5') currentStep.value = getFirstMissingStep()
     }
   },
   { immediate: true }
@@ -452,7 +469,8 @@ function initializeFromProps() {
   if (props.initialLocation) {
     selectedLocation.value = props.initialLocation
   }
-  selectedLanguages.value = startingLanguages()
+  note.value = props.initialNote
+  selectedLanguages.value = props.isResumed ? [...props.initialLanguages] : startingLanguages()
 
   // Find the first step with missing data
   currentStep.value = getFirstMissingStep()
@@ -463,8 +481,14 @@ function getFirstMissingStep() {
   if (!selectedInstrument.value) return '2'
   if (selectedStyles.value.length === 0) return '3'
   if (!selectedLocation.value) return '4'
-  // Skip profile step if user has profile or already completed this step
-  if (musicianProfileStore.profile || musicianProfileStore.profileStepCompleted) return '6'
+  // Skip profile step if user has profile or already completed this step; a visitor meets it after signing in
+  if (
+    isVisitor.value ||
+    musicianProfileStore.profile ||
+    musicianProfileStore.profileStepCompleted
+  ) {
+    return noteStep.value
+  }
   return '5'
 }
 
@@ -476,7 +500,7 @@ function startingLanguages() {
 }
 
 function handleLocationNext(activateCallback) {
-  // Always show profile step - component handles display mode based on profile existence
+  // Always show profile step - component handles display mode based on profile existence. A visitor's 5 is the note.
   activateCallback('5')
 }
 
@@ -497,6 +521,18 @@ function searchLocation(event) {
 }
 
 async function save() {
+  if (isVisitor.value) {
+    emit('sign-in-required', {
+      type: selectedType.value,
+      instrument: selectedInstrument.value,
+      styles: selectedStyles.value,
+      location: selectedLocation.value,
+      note: note.value,
+      languages: selectedLanguages.value
+    })
+    return
+  }
+
   const success = await userAnnounceStore.createAnnounce({
     type: selectedType.value,
     instrument: selectedInstrument.value,

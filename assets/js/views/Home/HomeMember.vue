@@ -55,7 +55,13 @@
     </div>
 
     <AddDiscoverModal @published="discoveriesKey++" />
-    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" :contact-origin="selectedContactOrigin" />
+    <SendMessageModal
+      v-if="showMessageModal"
+      v-model:visible="showMessageModal"
+      :selected-recipient="selectedRecipient"
+      :contact-origin="selectedContactOrigin"
+      :initial-content="initialMessage"
+    />
     <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="announcesKey++" />
     <AddTopicModal v-if="showTopicModal" v-model:visible="showTopicModal" @created="openTopic" />
   </div>
@@ -77,6 +83,7 @@ import HomeMemberMyAnnounces from '../../components/Home/Member/HomeMemberMyAnno
 import HomeMemberSearch from '../../components/Home/Member/HomeMemberSearch.vue'
 import HomeMemberTeacher from '../../components/Home/Member/HomeMemberTeacher.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import { useContactDraftResumer } from '../../composables/useContactDraft.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import {
@@ -118,6 +125,7 @@ const showTopicModal = ref(false)
 const showMessageModal = ref(false)
 const selectedRecipient = ref(null)
 const selectedContactOrigin = ref(null)
+const initialMessage = ref('')
 // Bumped to reload a block after the member posted to it.
 const announcesKey = ref(0)
 const discoveriesKey = ref(0)
@@ -138,6 +146,15 @@ function openTopic(topic) {
 function openMessageTo(announce) {
   selectedRecipient.value = announce.author
   selectedContactOrigin.value = { musicianAnnounceId: announce.id }
+  initialMessage.value = ''
   showMessageModal.value = true
 }
+
+// What a visitor wrote from the visitor home, given back after sign-in (#1306).
+useContactDraftResumer(({ recipient, contactOrigin, content }) => {
+  selectedRecipient.value = recipient
+  selectedContactOrigin.value = contactOrigin
+  initialMessage.value = content
+  showMessageModal.value = true
+})
 </script>

@@ -22,6 +22,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { isLocaleSettled } from '../../composables/useLocaleChoice.js'
 import { pendingActionResumers } from '../../composables/usePendingAction.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import {
@@ -41,8 +42,12 @@ const toast = useToast()
 const userSecurityStore = useUserSecurityStore()
 const storage = openPendingActionStorage()
 
+// And the page in its final locale: the account's language, applied after sign-in, remounts the page.
 const isSignedIn = computed(
-  () => !userSecurityStore.isAuthenticatedLoading && userSecurityStore.isAuthenticated
+  () =>
+    !userSecurityStore.isAuthenticatedLoading &&
+    userSecurityStore.isAuthenticated &&
+    isLocaleSettled.value
 )
 // The path the « Reprendre » toast is showing on, and whether a resumer is still checking: each offers once. A
 // trigger during the check is run after it, so a page that remounts meanwhile still gets its offer.

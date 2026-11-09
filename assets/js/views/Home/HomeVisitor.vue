@@ -47,7 +47,13 @@
 
     <!-- Modals -->
     <AddDiscoverModal @published="handleDiscoverPublished" />
-    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" :contact-origin="selectedContactOrigin" />
+    <SendMessageModal
+      v-if="showMessageModal"
+      v-model:visible="showMessageModal"
+      :selected-recipient="selectedRecipient"
+      :contact-origin="selectedContactOrigin"
+      @sign-in-required="handleContactSignInRequired"
+    />
     <AuthRequiredModal v-if="showAuthModal" v-model:visible="showAuthModal" :message="authModalMessage" />
     <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="handleAnnounceCreated" />
   </div>
@@ -67,7 +73,9 @@ import HomeHero from '../../components/Home/HomeHero.vue'
 import HomePublications from '../../components/Home/HomePublications.vue'
 import HomeTeachers from '../../components/Home/HomeTeachers.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import { useKeepContactDraft } from '../../composables/useContactDraft.js'
 import { useIsPhone } from '../../composables/useIsPhone.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
@@ -89,6 +97,7 @@ const publicationsStore = usePublicationsStore()
 const musicianAnnounceStore = useMusicianAnnounceStore()
 const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
+const keepContactDraft = useKeepContactDraft()
 
 const route = useRoute()
 const router = useRouter()
@@ -186,15 +195,24 @@ async function handleAnnounceCreated() {
   await loadAnnounces()
 }
 
+// A visitor writes first (#1306): « Envoyer » asks them to sign in, and the member home gives the message back.
 function handleContactAnnounce(announce) {
-  if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = t('home.visitor.auth.contact')
-    showAuthModal.value = true
-    return
-  }
   selectedRecipient.value = announce.author
   selectedContactOrigin.value = { musicianAnnounceId: announce.id }
   showMessageModal.value = true
+}
+
+function handleContactSignInRequired({ content }) {
+  const isKept = keepContactDraft({
+    announceId: selectedContactOrigin.value.musicianAnnounceId,
+    recipientId: selectedRecipient.value.id,
+    content
+  })
+  // Promised only when kept: a browser that blocks storage gets the usual prompt.
+  authModalMessage.value = isKept
+    ? t('search.pending.contact_sign_in', { name: displayName(selectedRecipient.value) })
+    : t('home.visitor.auth.contact')
+  showAuthModal.value = true
 }
 
 async function handleDiscoverPublished() {
