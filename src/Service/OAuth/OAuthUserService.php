@@ -7,6 +7,8 @@ namespace App\Service\OAuth;
 use App\Entity\SocialAccount;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
+use App\Enum\User\RegistrationMethod;
+use App\Enum\User\RegistrationPlatform;
 use App\Event\UserConfirmedEvent;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
@@ -15,6 +17,7 @@ use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use App\Service\BandSpace\BandSpaceChangeSignal;
 use App\Service\Procedure\BandSpace\AcceptPendingInvitationsProcedure;
+use App\Service\User\RegistrationOriginRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -32,14 +35,17 @@ readonly class OAuthUserService
         private RequestLocaleResolver             $requestLocaleResolver,
         private AcceptPendingInvitationsProcedure $acceptPendingInvitationsProcedure,
         private BandSpaceChangeSignal             $bandSpaceChangeSignal,
+        private RegistrationOriginRecorder        $registrationOriginRecorder,
     ) {
     }
 
     /**
+     * @param RegistrationPlatform $platformWithoutHeader what a new account is recorded as when the client did not name itself
+     *
      * @throws OAuthEmailExistsException
      * @throws OAuthEmailNotVerifiedException
      */
-    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null): OAuthResult
+    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null, RegistrationPlatform $platformWithoutHeader = RegistrationPlatform::Web): OAuthResult
     {
         // Check if social account already exists
         $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $userData->id);
@@ -77,7 +83,7 @@ readonly class OAuthUserService
         }
 
         // Create new user
-        $user = $this->createUser($userData->email, $userData->username, $userData->displayName);
+        $user = $this->createUser($userData->email, $userData->username, $userData->displayName, RegistrationMethod::from($provider), $platformWithoutHeader);
         $this->createSocialAccount($user, $provider, $userData->id, $userData->email);
 
         // Import profile picture from OAuth provider
@@ -96,7 +102,7 @@ readonly class OAuthUserService
         return new OAuthResult($user, true);
     }
 
-    private function createUser(string $email, string $username, ?string $displayName): User
+    private function createUser(string $email, string $username, ?string $displayName, RegistrationMethod $method, RegistrationPlatform $platformWithoutHeader): User
     {
         // Ensure username is unique
         $baseUsername = $this->sanitizeUsername($username);
@@ -114,6 +120,7 @@ readonly class OAuthUserService
         if ($request !== null) {
             $user->locale = $this->requestLocaleResolver->resolve($request, null);
         }
+        $this->registrationOriginRecorder->record($user, $method, $platformWithoutHeader);
 
         $profile = new UserProfile();
         $profile->displayName = $displayName;

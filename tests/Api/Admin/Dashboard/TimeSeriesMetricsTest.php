@@ -7,6 +7,8 @@ namespace App\Tests\Api\Admin\Dashboard;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Search\MusicianSearchLog;
 use App\Enum\Search\MusicianSearchKind;
+use App\Enum\User\RegistrationMethod;
+use App\Enum\User\RegistrationPlatform;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
@@ -60,6 +62,72 @@ class TimeSeriesMetricsTest extends ApiTestCase
                 ],
             ],
             'total' => 1,
+        ]);
+    }
+
+    public function test_get_time_series_registrations_by_platform(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+
+        $today = new \DateTimeImmutable();
+        $todayStr = $today->format('Y-m-d');
+        $yesterdayStr = $today->modify('-1 day')->format('Y-m-d');
+
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Android]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Android]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Web]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => RegistrationPlatform::Ios]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => RegistrationPlatform::UnknownApp]);
+        // Outside the range
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-10 days'), 'registrationPlatform' => RegistrationPlatform::Ios]);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=registrations_by_platform&from=' . $yesterdayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'registrations_by_platform',
+            'from' => $yesterdayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $yesterdayStr, 'segment' => 'ios', 'count' => 1],
+                ['date_label' => $yesterdayStr, 'segment' => 'unknown_app', 'count' => 1],
+                ['date_label' => $todayStr, 'segment' => 'android', 'count' => 2],
+                ['date_label' => $todayStr, 'segment' => 'web', 'count' => 1],
+            ],
+            'total' => 5,
+        ]);
+    }
+
+    public function test_get_time_series_registrations_by_method(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+
+        $todayStr = (new \DateTimeImmutable())->format('Y-m-d');
+
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationMethod' => RegistrationMethod::Password]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationMethod' => RegistrationMethod::Google]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationMethod' => RegistrationMethod::Google]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationMethod' => RegistrationMethod::Apple]);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=registrations_by_method&from=' . $todayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'registrations_by_method',
+            'from' => $todayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $todayStr, 'segment' => 'apple', 'count' => 1],
+                ['date_label' => $todayStr, 'segment' => 'google', 'count' => 2],
+                ['date_label' => $todayStr, 'segment' => 'password', 'count' => 1],
+            ],
+            'total' => 4,
         ]);
     }
 

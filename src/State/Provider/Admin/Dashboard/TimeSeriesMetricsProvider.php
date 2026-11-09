@@ -44,6 +44,8 @@ readonly class TimeSeriesMetricsProvider implements ProviderInterface
 
         $dataPoints = match ($metric) {
             'registrations' => $this->userRepository->countRegistrationsByDate($from, $to),
+            'registrations_by_platform' => $this->userRepository->countRegistrationsByDateAndPlatform($from, $to),
+            'registrations_by_method' => $this->userRepository->countRegistrationsByDateAndMethod($from, $to),
             'logins' => $this->userRepository->countLoginsByDate($from, $to),
             'messages' => $this->messageRepository->countMessagesByDate($from, $to),
             'publications' => $this->publicationRepository->countPublicationsByDate($from, $to),

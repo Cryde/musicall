@@ -417,6 +417,48 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
+     * Registrations per day and per platform (web, ios, android, unknown_app).
+     *
+     * @return array<int, array{date_label: string, segment: string, count: int}>
+     */
+    public function countRegistrationsByDateAndPlatform(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        return $this->countRegistrationsByDateAnd('registration_platform', $from, $to);
+    }
+
+    /**
+     * Registrations per day and per method (password, google, apple).
+     *
+     * @return array<int, array{date_label: string, segment: string, count: int}>
+     */
+    public function countRegistrationsByDateAndMethod(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        return $this->countRegistrationsByDateAnd('registration_method', $from, $to);
+    }
+
+    /**
+     * @param 'registration_platform'|'registration_method' $column
+     *
+     * @return array<int, array{date_label: string, segment: string, count: int}>
+     */
+    private function countRegistrationsByDateAnd(string $column, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $result = $this->getEntityManager()->getConnection()->executeQuery(
+            "SELECT DATE(creation_datetime) AS date_label, $column AS segment, COUNT(id) AS count
+             FROM fos_user
+             WHERE creation_datetime >= :from AND creation_datetime < :to
+             GROUP BY DATE(creation_datetime), $column
+             ORDER BY date_label ASC, segment ASC",
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
+        );
+
+        return array_map(
+            fn (array $row): array => ['date_label' => $row['date_label'], 'segment' => $row['segment'], 'count' => (int) $row['count']],
+            $result->fetchAllAssociative()
+        );
+    }
+
+    /**
      * Count logins grouped by date within a range.
      *
      * @return array<int, array{date_label: string, count: int}>

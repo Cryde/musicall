@@ -1,5 +1,6 @@
 // One file per area like fr/, loaded on demand by setLocale(). A key it lacks shows in French.
 
+import admin from './admin.json' with { type: 'json' }
 import auth from './auth.json' with { type: 'json' }
 import bandSpace from './band_space.json' with { type: 'json' }
 import bandSpaceActivity from './band_space_activity.json' with { type: 'json' }
@@ -24,6 +25,7 @@ import shared from './shared.json' with { type: 'json' }
 
 export default {
   ...layout,
+  admin,
   auth,
   band_space: bandSpace,
   band_space_activity: bandSpaceActivity,

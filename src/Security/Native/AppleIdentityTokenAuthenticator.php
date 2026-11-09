@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Native;
 
 use App\Entity\SocialAccount;
+use App\Enum\User\RegistrationPlatform;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Service\OAuth\Apple\AppleIdentityTokenUnverifiableException;
@@ -69,7 +70,7 @@ final class AppleIdentityTokenAuthenticator extends AbstractAuthenticator
                 ?? throw new InvalidAppleIdentityTokenException('No identity_token');
             $claims = $this->verifier->verify($identityToken, $this->clientId);
             $userData = AppleUserDataMapper::fromClaims($claims, self::stringField($body, 'given_name'), self::stringField($body, 'family_name'));
-            $result = $this->oAuthUserService->findOrCreateUser($userData, SocialAccount::PROVIDER_APPLE);
+            $result = $this->oAuthUserService->findOrCreateUser($userData, SocialAccount::PROVIDER_APPLE, platformWithoutHeader: RegistrationPlatform::UnknownApp);
         } catch (InvalidAppleIdentityTokenException) {
             throw new CustomUserMessageAuthenticationException('invalid_id_token');
         } catch (AppleIdentityTokenUnverifiableException $exception) {

@@ -8,8 +8,10 @@ use ApiPlatform\Validator\ValidatorInterface;
 use App\ApiResource\User\Register;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
+use App\Enum\User\RegistrationMethod;
 use App\Event\UserRegisteredEvent;
 use App\Exception\User\UserAlreadyLoggedException;
+use App\Service\User\RegistrationOriginRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -36,6 +38,7 @@ readonly class RegisterProcessor implements ProcessorInterface
         private ValidatorInterface $validator,
         private RequestStack $requestStack,
         private LocaleSwitcher $localeSwitcher,
+        private RegistrationOriginRecorder $registrationOriginRecorder,
     ) {
     }
 
@@ -62,6 +65,7 @@ readonly class RegisterProcessor implements ProcessorInterface
         $user->plainPassword = $data->password;
         // The language they signed up in, so their emails follow it from the verification code on.
         $user->locale = $this->localeSwitcher->getLocale();
+        $this->registrationOriginRecorder->record($user, RegistrationMethod::Password);
 
         $user->password = $this->userPasswordHasher->hashPassword(
             $user,

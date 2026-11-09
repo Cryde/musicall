@@ -7,6 +7,8 @@ use App\Entity\User\UserProfile;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
+use App\Enum\User\RegistrationMethod;
+use App\Enum\User\RegistrationPlatform;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Notification\NotificationRepository;
@@ -41,6 +43,8 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->username = 'newuser';
         $newUser->email = 'newuser@example.com';
         $newUser->password = 'hashed';
+        $newUser->registrationPlatform = RegistrationPlatform::Web;
+        $newUser->registrationMethod = RegistrationMethod::Password;
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -82,6 +86,8 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->username = 'newuser';
         $newUser->email = 'newuser@example.com';
         $newUser->password = 'hashed';
+        $newUser->registrationPlatform = RegistrationPlatform::Web;
+        $newUser->registrationMethod = RegistrationMethod::Password;
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -114,6 +120,8 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->username = 'newuser';
         $newUser->email = 'newuser@example.com';
         $newUser->password = 'hashed';
+        $newUser->registrationPlatform = RegistrationPlatform::Web;
+        $newUser->registrationMethod = RegistrationMethod::Password;
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -156,6 +164,8 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->username = 'newuser';
         $newUser->email = 'newuser@example.com';
         $newUser->password = 'hashed';
+        $newUser->registrationPlatform = RegistrationPlatform::Web;
+        $newUser->registrationMethod = RegistrationMethod::Password;
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -181,6 +191,8 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->username = 'newuser';
         $newUser->email = 'newuser@example.com';
         $newUser->password = 'hashed';
+        $newUser->registrationPlatform = RegistrationPlatform::Web;
+        $newUser->registrationMethod = RegistrationMethod::Password;
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -209,6 +221,8 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->username = 'newuser';
         $newUser->email = 'newuser@example.com';
         $newUser->password = 'hashed';
+        $newUser->registrationPlatform = RegistrationPlatform::Web;
+        $newUser->registrationMethod = RegistrationMethod::Password;
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();

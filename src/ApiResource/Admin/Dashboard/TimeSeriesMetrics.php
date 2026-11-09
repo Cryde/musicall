@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Constraints\Sequentially;
             constraints: [
                 new Sequentially(constraints: [
                     new NotBlank(),
-                    new Choice(choices: ['registrations', 'logins', 'messages', 'publications', 'comments', 'forum_posts', 'musician_announces', 'musician_searches', 'ai_searches', 'band_spaces', 'band_chat_messages']),
+                    new Choice(choices: ['registrations', 'registrations_by_platform', 'registrations_by_method', 'logins', 'messages', 'publications', 'comments', 'forum_posts', 'musician_announces', 'musician_searches', 'ai_searches', 'band_spaces', 'band_chat_messages']),
                 ]),
             ],
         ),
@@ -52,7 +52,11 @@ class TimeSeriesMetrics
     public string $from;
     public string $to;
 
-    /** @var array<int, array{date_label: string, count: int}> */
+    /**
+     * A segmented metric (`registrations_by_platform`, `registrations_by_method`) adds the `segment` of each count.
+     *
+     * @var array<int, array{date_label: string, count: int}|array{date_label: string, segment: string, count: int}>
+     */
     public array $dataPoints = [];
 
     public int $total = 0;

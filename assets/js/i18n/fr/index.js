@@ -1,6 +1,7 @@
 // One file per area, each loaded as the top-level namespace it is named after, so parallel work on two
 // areas never edits the same file. layout.json holds the app chrome's namespaces from #1181.
 
+import admin from './admin.json' with { type: 'json' }
 import auth from './auth.json' with { type: 'json' }
 import bandSpace from './band_space.json' with { type: 'json' }
 import bandSpaceActivity from './band_space_activity.json' with { type: 'json' }
@@ -25,6 +26,7 @@ import shared from './shared.json' with { type: 'json' }
 
 export default {
   ...layout,
+  admin,
   auth,
   band_space: bandSpace,
   band_space_activity: bandSpaceActivity,

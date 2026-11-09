@@ -70,6 +70,49 @@ class NativeAppleSignInTest extends ApiTestCase
         $this->assertSessionBodyFor('elodiedupre');
     }
 
+    public function test_a_sign_up_from_the_ios_app_records_it_with_its_version(): void
+    {
+        $this->apple()->accept('a-token', $this->claims('x7k2@privaterelay.appleid.com'));
+
+        $this->client->jsonRequest('POST', '/api/native/oauth/apple', ['identity_token' => 'a-token', 'given_name' => 'Élodie', 'family_name' => 'Dupré'], [
+            'HTTP_X_CLIENT_PLATFORM' => 'ios',
+            'HTTP_X_CLIENT_VERSION' => '1.13.0+42',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('elodiedupre');
+        $this->assertSame(['ios', 'apple', '1.13.0+42'], $this->registrationOf('elodiedupre'));
+    }
+
+    /** The native route is the app for sure, but which one only the header can say. */
+    public function test_a_sign_up_without_the_platform_header_is_an_unknown_app(): void
+    {
+        $this->apple()->accept('a-token', $this->claims('x7k2@privaterelay.appleid.com'));
+
+        $this->client->jsonRequest('POST', '/api/native/oauth/apple', ['identity_token' => 'a-token', 'given_name' => 'Élodie', 'family_name' => 'Dupré'], [
+            'HTTP_X_CLIENT_VERSION' => '1.13.0',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('elodiedupre');
+        $this->assertSame(['unknown_app', 'apple', '1.13.0'], $this->registrationOf('elodiedupre'));
+    }
+
+    /** `web` is not something the app can claim to be on its native route: dropped, and the bad version with it. */
+    public function test_a_sign_up_with_an_invalid_platform_header_is_an_unknown_app(): void
+    {
+        $this->apple()->accept('a-token', $this->claims('x7k2@privaterelay.appleid.com'));
+
+        $this->client->jsonRequest('POST', '/api/native/oauth/apple', ['identity_token' => 'a-token', 'given_name' => 'Élodie', 'family_name' => 'Dupré'], [
+            'HTTP_X_CLIENT_PLATFORM' => 'web',
+            'HTTP_X_CLIENT_VERSION' => 'latest',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('elodiedupre');
+        $this->assertSame(['unknown_app', 'apple', null], $this->registrationOf('elodiedupre'));
+    }
+
     /** Invited before the account existed: signing up with Apple joins the band, as a password sign-up does. */
     public function test_a_first_sign_in_joins_the_band_its_email_was_invited_to(): void
     {
@@ -304,6 +347,17 @@ class NativeAppleSignInTest extends ApiTestCase
             'refresh_token' => $account->refreshToken,
             'refresh_token_client_id' => $account->refreshTokenClientId,
         ];
+    }
+
+    /** @return array{string, string, ?string} the platform, method and app version stored for the account */
+    private function registrationOf(string $username): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion];
     }
 
     private function assertSessionBodyFor(string $username): void

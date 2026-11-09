@@ -18,6 +18,8 @@ use App\ApiResource\Publication\GalleryResource;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User\UserNotificationPreference;
 use App\Entity\User\UserProfile;
+use App\Enum\User\RegistrationMethod;
+use App\Enum\User\RegistrationPlatform;
 use App\Repository\UserRepository;
 use DateTime;
 use DateTimeInterface;
@@ -121,6 +123,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::STRING, length: 10, options: ['default' => 'fr'])]
     public string $locale = 'fr';
+
+    // No defaults: every place that creates an account has to say where and how.
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: RegistrationPlatform::class)]
+    public RegistrationPlatform $registrationPlatform;
+
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: RegistrationMethod::class)]
+    public RegistrationMethod $registrationMethod;
+
+    #[ORM\Column(type: Types::STRING, length: 32, nullable: true)]
+    public ?string $registrationAppVersion = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, GalleryResource::LIST])]

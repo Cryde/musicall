@@ -1,0 +1,21 @@
+{
+  "registrations": {
+    "by_platform": "Inscriptions par plateforme",
+    "by_method": "Inscriptions par méthode"
+  },
+  "registration_platform": {
+    "web": "Site web",
+    "android": "App Android",
+    "ios": "App iOS",
+    "unknown_app": "App non identifiée"
+  },
+  "registration_method": {
+    "password": "Mot de passe",
+    "google": "Google",
+    "apple": "Apple"
+  },
+  "time_series": {
+    "segment_total": "{segment} ({total})",
+    "no_data": "Aucune donnée"
+  }
+}
