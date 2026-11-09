@@ -391,9 +391,6 @@
       "placeholder": "Add a comment...",
       "aria_label": "Your comment",
       "post": "Post comment",
-      "login_required": "You need to {login} or {register} to post a comment",
-      "login_link": "log in",
-      "register_link": "sign up",
       "rate_limited": "Too many comments posted. Please wait a moment.",
       "error": "An error occurred"
     },
@@ -409,5 +406,15 @@
     "thread": {
       "count": "No comments yet | 1 comment | {count} comments"
     }
+  },
+  "pending": {
+    "comment_sign_in": "Sign in to post your comment, we keep what you wrote.",
+    "comment_label": "Your comment",
+    "comment_publication_gone": "This publication is no longer online, your comment was not posted.",
+    "discover_sign_in": "Sign in to post your discovery, we keep your link.",
+    "discover_label": "Post your discovery",
+    "course_sign_in": "Sign in to post your lesson, we keep your link and category.",
+    "course_label": "Post your lesson",
+    "video_preview_sign_in": "Sign in to fetch the video's details and post it."
   }
 }

@@ -1,17 +1,6 @@
 <template>
   <div>
-    <template v-if="!userSecurityStore.isAuthenticated">
-      <Card>
-        <template #content>
-          <div class="text-center py-4">
-            <p class="mb-4">{{ t('forum.reply.login_to_post') }}</p>
-            <Button :label="t('common.login')" icon="pi pi-sign-in" @click="handleLogin" />
-          </div>
-        </template>
-      </Card>
-    </template>
-
-    <template v-else-if="isLocked">
+    <template v-if="isLocked">
       <Card>
         <template #content>
           <div class="text-center py-4 text-surface-500">
@@ -22,8 +11,14 @@
       </Card>
     </template>
 
+    <!-- A visitor writes too (#1305): « Envoyer » asks them to sign in, keeping what they wrote. -->
     <template v-else>
-      <MessageEditor ref="editorRef" @content-update="handleContentUpdate" />
+      <MessageEditor
+        ref="editorRef"
+        :previous-content="restoredHtml"
+        @content-update="handleContentUpdate"
+        @sign-in-required="emitSignInRequired('image')"
+      />
 
       <div class="flex justify-end mt-4">
         <Button
@@ -35,11 +30,6 @@
         />
       </div>
     </template>
-
-    <AuthRequiredModal
-      v-model:visible="showAuthModal"
-      :message="t('forum.reply.login_to_post')"
-    />
   </div>
 </template>
 
@@ -52,7 +42,6 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
 import MessageEditor from './MessageEditor.vue'
 
 const MIN_MESSAGE_LENGTH = 10
@@ -68,7 +57,8 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['message-created'])
+// `sign-in-required` carries what a visitor wrote when they click « Envoyer » or pick an image: nothing is sent.
+const emit = defineEmits(['message-created', 'sign-in-required'])
 
 const { t } = useI18n()
 const forumStore = useForumStore()
@@ -79,10 +69,15 @@ const contentHtml = ref('')
 const contentText = ref('')
 const isSending = ref(false)
 const editorRef = ref(null)
-const showAuthModal = ref(false)
+// A reply brought back after sign-in, handed to the editor (#1305).
+const restoredHtml = ref('')
 
+// Not while the session is checked: a visitor's click would reach the API, and its 401 would lose the text.
 const canSubmit = computed(() => {
-  return contentText.value.trim().length >= MIN_MESSAGE_LENGTH
+  return (
+    !userSecurityStore.isAuthenticatedLoading &&
+    contentText.value.trim().length >= MIN_MESSAGE_LENGTH
+  )
 })
 
 function handleContentUpdate({ html, text }) {
@@ -90,18 +85,28 @@ function handleContentUpdate({ html, text }) {
   contentText.value = text
 }
 
-function handleLogin() {
-  showAuthModal.value = true
-}
-
 function insertQuote(quote) {
   editorRef.value?.insertQuote(quote)
 }
 
-defineExpose({ insertQuote })
+/** Puts back a reply written before signing in. */
+function restore(html) {
+  restoredHtml.value = html
+}
+
+defineExpose({ insertQuote, restore })
+
+/** @param {'publish' | 'image'} reason  what the visitor was doing when stopped */
+function emitSignInRequired(reason) {
+  emit('sign-in-required', { html: contentHtml.value, reason })
+}
 
 async function handleSubmit() {
   if (!canSubmit.value) return
+  if (!userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated) {
+    emitSignInRequired('publish')
+    return
+  }
 
   isSending.value = true
   try {
@@ -111,6 +116,7 @@ async function handleSubmit() {
     })
     trackUmamiEvent('forum-reply-submit', { topic: props.topicSlug })
     editorRef.value?.reset()
+    restoredHtml.value = ''
     contentHtml.value = ''
     contentText.value = ''
     toast.add({

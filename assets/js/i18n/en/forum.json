@@ -123,5 +123,15 @@
     "image_added": "Image added",
     "upload_failed": "Upload failed",
     "quote_author": "{author} wrote:"
+  },
+  "pending": {
+    "topic_sign_in": "Sign in to publish your topic, we keep what you wrote.",
+    "topic_label": "Publish your topic",
+    "topic_forum_gone": "This forum no longer exists, your topic was not published.",
+    "reply_sign_in": "Sign in to send your reply, we keep what you wrote.",
+    "reply_label": "Your reply to this topic",
+    "reply_topic_gone": "This topic no longer exists, your reply was not sent.",
+    "reply_topic_locked": "This topic was locked, your reply was not sent.",
+    "image_sign_in": "Sign in to add an image, we keep what you wrote."
   }
 }

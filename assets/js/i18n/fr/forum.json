@@ -123,5 +123,15 @@
     "image_added": "Image ajoutée",
     "upload_failed": "Échec du téléchargement",
     "quote_author": "{author} a écrit :"
+  },
+  "pending": {
+    "topic_sign_in": "Connecte-toi pour publier ton sujet, on garde ce que tu as écrit.",
+    "topic_label": "Publier ton sujet",
+    "topic_forum_gone": "Ce forum n'existe plus, ton sujet n'a pas été publié.",
+    "reply_sign_in": "Connecte-toi pour envoyer ta réponse, on garde ce que tu as écrit.",
+    "reply_label": "Ta réponse à ce sujet",
+    "reply_topic_gone": "Ce sujet n'existe plus, ta réponse n'a pas été envoyée.",
+    "reply_topic_locked": "Ce sujet a été verrouillé, ta réponse n'a pas été envoyée.",
+    "image_sign_in": "Connecte-toi pour ajouter une image, on garde ce que tu as écrit."
   }
 }
