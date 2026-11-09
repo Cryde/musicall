@@ -180,10 +180,15 @@ const isRecipientDeleted = computed(() => {
   return !!target?.deletion_datetime
 })
 
+// Not while the session is checked: a visitor's click would reach the API, and its 401 would lose the message.
 const canSend = computed(() => {
   const hasRecipient = props.selectedRecipient || recipient.value
   return (
-    content.value.trim().length > 0 && hasRecipient && !isSending.value && !isRecipientDeleted.value
+    !userSecurityStore.isAuthenticatedLoading &&
+    content.value.trim().length > 0 &&
+    hasRecipient &&
+    !isSending.value &&
+    !isRecipientDeleted.value
   )
 })
 
@@ -220,8 +225,8 @@ function searchUsers(event) {
 }
 
 async function sendMessage() {
+  if (!canSend.value) return
   const targetRecipient = props.selectedRecipient || recipient.value
-  if (!targetRecipient || !content.value.trim()) return
   if (!userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated) {
     emit('sign-in-required', { content: content.value })
     return

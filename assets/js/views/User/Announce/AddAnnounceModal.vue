@@ -308,7 +308,7 @@
               :label="t('profile.announce.add.submit')"
               icon="pi pi-check"
               :loading="userAnnounceStore.isSaving"
-              :disabled="selectedLanguages.length === 0"
+              :disabled="!canPublish"
               @click="save"
             />
           </div>
@@ -393,6 +393,10 @@ const isVisitor = computed(
 )
 const stepLabels = computed(() =>
   isVisitor.value ? STEP_LABELS.filter((label) => label !== PROFILE_STEP_LABEL) : STEP_LABELS
+)
+// Not while the session is checked: a visitor's click would reach the API, and its 401 would lose the announce.
+const canPublish = computed(
+  () => !userSecurityStore.isAuthenticatedLoading && selectedLanguages.value.length > 0
 )
 // The stepper shows a step's value as its number: without the profile step, the note is a visitor's fifth.
 const noteStep = computed(() => (isVisitor.value ? '5' : '6'))
@@ -521,6 +525,7 @@ function searchLocation(event) {
 }
 
 async function save() {
+  if (!canPublish.value) return
   if (isVisitor.value) {
     emit('sign-in-required', {
       type: selectedType.value,
