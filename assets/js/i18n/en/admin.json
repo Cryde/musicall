@@ -1,0 +1,21 @@
+{
+  "registrations": {
+    "by_platform": "Sign-ups by platform",
+    "by_method": "Sign-ups by method"
+  },
+  "registration_platform": {
+    "web": "Website",
+    "android": "Android app",
+    "ios": "iOS app",
+    "unknown_app": "Unidentified app"
+  },
+  "registration_method": {
+    "password": "Password",
+    "google": "Google",
+    "apple": "Apple"
+  },
+  "time_series": {
+    "segment_total": "{segment} ({total})",
+    "no_data": "No data"
+  }
+}

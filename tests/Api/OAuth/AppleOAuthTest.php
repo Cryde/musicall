@@ -112,6 +112,10 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertSignedInAs('elodiedupre');
         $this->assertSame(['refresh_token' => 'r.apple-refresh-token', 'refresh_token_client_id' => self::WEB_CLIENT_ID], $this->storedRefreshToken());
         $this->assertSame([['code' => 'a-code', 'client_id' => self::WEB_CLIENT_ID]], $this->appleTokens()->exchanges);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $stored = $entityManager->find(User::class, $user->id);
+        $this->assertSame(['web', 'apple', null], [$stored?->registrationPlatform->value, $stored?->registrationMethod->value, $stored?->registrationAppVersion]);
     }
 
     /**

@@ -76,6 +76,23 @@
         />
       </div>
 
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SegmentedTimeSeriesChart
+          :title="t('admin.registrations.by_platform')"
+          icon="pi-mobile"
+          :segments="PLATFORM_SEGMENTS"
+          :series-data="dashboardStore.timeSeries.registrations_by_platform"
+          :all-dates="allDates"
+        />
+        <SegmentedTimeSeriesChart
+          :title="t('admin.registrations.by_method')"
+          icon="pi-key"
+          :segments="METHOD_SEGMENTS"
+          :series-data="dashboardStore.timeSeries.registrations_by_method"
+          :all-dates="allDates"
+        />
+      </div>
+
       <!-- Engagement & Retention Section -->
       <Panel header="Engagement & rétention" toggleable>
         <template #icons>
@@ -499,12 +516,28 @@ import ProgressBar from 'primevue/progressbar'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ComingSoonBadge from '../../components/Admin/ComingSoonBadge.vue'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
+import SegmentedTimeSeriesChart from '../../components/Admin/SegmentedTimeSeriesChart.vue'
 import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
 import UserSearchPanel from '../../components/Admin/UserSearchPanel.vue'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 
+// The values the server records (#1355), each with its literal key so the catalogue test sees it used.
+const PLATFORM_SEGMENTS = [
+  { value: 'web', labelKey: 'admin.registration_platform.web', color: '#6366f1' },
+  { value: 'android', labelKey: 'admin.registration_platform.android', color: '#22c55e' },
+  { value: 'ios', labelKey: 'admin.registration_platform.ios', color: '#0ea5e9' },
+  { value: 'unknown_app', labelKey: 'admin.registration_platform.unknown_app', color: '#94a3b8' }
+]
+const METHOD_SEGMENTS = [
+  { value: 'password', labelKey: 'admin.registration_method.password', color: '#6366f1' },
+  { value: 'google', labelKey: 'admin.registration_method.google', color: '#f59e0b' },
+  { value: 'apple', labelKey: 'admin.registration_method.apple', color: '#64748b' }
+]
+
+const { t } = useI18n()
 const dashboardStore = useAdminDashboardStore()
 
 const metrics = computed(() => dashboardStore.userMetrics)
@@ -528,7 +561,13 @@ function loadDateFilteredData() {
   const from = formatDate(dateFrom.value)
   const to = formatDate(dateTo.value)
   dashboardStore.loadUserMetrics(from, to)
-  const metricNames = ['registrations', 'logins', 'messages']
+  const metricNames = [
+    'registrations',
+    'logins',
+    'messages',
+    'registrations_by_platform',
+    'registrations_by_method'
+  ]
   for (const metric of metricNames) {
     dashboardStore.loadTimeSeries(metric, from, to)
   }

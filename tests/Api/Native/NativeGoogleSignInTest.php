@@ -72,6 +72,47 @@ class NativeGoogleSignInTest extends ApiTestCase
         $this->assertSessionBodyFor($user->username);
     }
 
+    public function test_a_sign_up_from_the_android_app_records_it_with_its_version(): void
+    {
+        $this->google()->accept('a-token', $this->claims('nouveau@example.com', name: 'Nina'));
+
+        $this->client->jsonRequest('POST', '/api/native/oauth/google', ['id_token' => 'a-token'], [
+            'HTTP_X_CLIENT_PLATFORM' => 'android',
+            'HTTP_X_CLIENT_VERSION' => '1.13.0',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('nina');
+        $this->assertSame(['android', 'google', '1.13.0'], $this->registrationOf('nina'));
+    }
+
+    /** The native route is the app for sure, but which one only the header can say. */
+    public function test_a_sign_up_without_the_platform_header_is_an_unknown_app(): void
+    {
+        $this->google()->accept('a-token', $this->claims('nouveau@example.com', name: 'Nina'));
+
+        $this->signIn('a-token');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('nina');
+        $this->assertSame(['unknown_app', 'google', null], $this->registrationOf('nina'));
+    }
+
+    /** A platform the app cannot be is dropped like a missing one; the version stays, since the route is the app. */
+    public function test_a_sign_up_with_an_invalid_platform_header_is_an_unknown_app(): void
+    {
+        $this->google()->accept('a-token', $this->claims('nouveau@example.com', name: 'Nina'));
+
+        $this->client->jsonRequest('POST', '/api/native/oauth/google', ['id_token' => 'a-token'], [
+            'HTTP_X_CLIENT_PLATFORM' => 'windows',
+            'HTTP_X_CLIENT_VERSION' => '1.13.0',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSessionBodyFor('nina');
+        $this->assertSame(['unknown_app', 'google', '1.13.0'], $this->registrationOf('nina'));
+    }
+
     /** Invited before the account existed: signing up with Google joins the band, as a password sign-up does. */
     public function test_a_first_sign_in_joins_the_band_its_email_was_invited_to(): void
     {
@@ -254,6 +295,17 @@ class NativeGoogleSignInTest extends ApiTestCase
     private function claims(string $email, bool $verified = true, string $name = 'Alice'): array
     {
         return ['sub' => self::GOOGLE_ID, 'email' => $email, 'email_verified' => $verified, 'name' => $name];
+    }
+
+    /** @return array{string, string, ?string} the platform, method and app version stored for the account */
+    private function registrationOf(string $username): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion];
     }
 
     private function assertSessionBodyFor(string $username): void

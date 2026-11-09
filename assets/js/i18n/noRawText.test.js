@@ -9,6 +9,7 @@ import { parse } from 'vue/compiler-sfc'
 // here. Strings built in <script> are not seen, so those stay a review concern.
 const MIGRATED_PATHS = [
   'App.vue',
+  'components/Admin/SegmentedTimeSeriesChart.vue',
   'components/Announce/',
   'components/AppAdminLayout.vue',
   'components/AppBandLayout.vue',

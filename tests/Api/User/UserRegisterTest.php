@@ -16,6 +16,7 @@ use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -80,6 +81,55 @@ class UserRegisterTest extends ApiTestCase
         $this->assertEmailHeaderSame($this->getMailerMessage(), 'templateId', '19');
     }
 
+
+    public function test_a_web_sign_up_is_recorded_as_web_with_a_password(): void
+    {
+        $this->register([]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame(['web', 'password', null], $this->registrationOf('super_username'));
+    }
+
+    /** @param array<string, string> $headers */
+    #[DataProvider('appHeaders')]
+    public function test_an_app_sign_up_records_the_app_and_its_version(array $headers, array $expected): void
+    {
+        $this->register($headers);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame($expected, $this->registrationOf('super_username'));
+    }
+
+    public static function appHeaders(): iterable
+    {
+        yield 'ios' => [['HTTP_X_CLIENT_PLATFORM' => 'ios', 'HTTP_X_CLIENT_VERSION' => '1.13.0'], ['ios', 'password', '1.13.0']];
+        yield 'android with a build number' => [['HTTP_X_CLIENT_PLATFORM' => 'android', 'HTTP_X_CLIENT_VERSION' => '1.13.0+42'], ['android', 'password', '1.13.0+42']];
+        yield 'android without a version' => [['HTTP_X_CLIENT_PLATFORM' => 'android'], ['android', 'password', null]];
+    }
+
+    /** The headers are client supplied and only feed statistics: anything unexpected is dropped, never refused. */
+    #[DataProvider('invalidAppHeaders')]
+    public function test_an_invalid_client_header_is_ignored(array $headers, array $expected): void
+    {
+        $this->register($headers);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame($expected, $this->registrationOf('super_username'));
+    }
+
+    public static function invalidAppHeaders(): iterable
+    {
+        yield 'unknown platform' => [['HTTP_X_CLIENT_PLATFORM' => 'windows', 'HTTP_X_CLIENT_VERSION' => '1.13.0'], ['web', 'password', null]];
+        yield 'platform in another case' => [['HTTP_X_CLIENT_PLATFORM' => 'IOS', 'HTTP_X_CLIENT_VERSION' => '1.13.0'], ['web', 'password', null]];
+        yield 'platform a server value' => [['HTTP_X_CLIENT_PLATFORM' => 'unknown_app'], ['web', 'password', null]];
+        yield 'version without a platform' => [['HTTP_X_CLIENT_VERSION' => '1.13.0'], ['web', 'password', null]];
+        yield 'version not a version' => [['HTTP_X_CLIENT_PLATFORM' => 'ios', 'HTTP_X_CLIENT_VERSION' => "1.13.0'; DROP TABLE fos_user"], ['ios', 'password', null]];
+        yield 'version too long' => [['HTTP_X_CLIENT_PLATFORM' => 'ios', 'HTTP_X_CLIENT_VERSION' => '1.13.0+' . str_repeat('9', 40)], ['ios', 'password', null]];
+        yield 'version with a trailing newline' => [['HTTP_X_CLIENT_PLATFORM' => 'android', 'HTTP_X_CLIENT_VERSION' => "1.13.0\n"], ['android', 'password', null]];
+    }
 
     /**
      * Anyone can register with an address they do not own (#1353): the invitation waits for the email to
@@ -297,6 +347,27 @@ password: Le mot de passe doit au moins contenir 8 caractères',
         ]);
 
         $this->assertEmailCount(0);
+    }
+
+    /** @param array<string, string> $headers */
+    private function register(array $headers): void
+    {
+        $this->client->jsonRequest('POST', '/api/users/register', [
+            'username' => 'super_username',
+            'password' => 'password',
+            'email' => 'super_email@mail.com',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', ...$headers]);
+    }
+
+    /** @return array{string, string, ?string} the platform, method and app version stored for the account */
+    private function registrationOf(string $username): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion];
     }
 
     /**
