@@ -152,14 +152,13 @@ import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import ReportButton from '../../components/Report/ReportButton.vue'
 import UserName from '../../components/User/UserName.vue'
+import { useKeepContactDraft } from '../../composables/useContactDraft.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
-import { usePendingAction } from '../../composables/usePendingAction.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { separator } from '../../i18n/formatLocale.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { languageListLabel } from '../../utils/announceLanguages.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
-import { contactDraftPayload, MESSAGE_SEND } from '../../utils/contactDraft.js'
 import { MAX_VISIBLE_STYLES } from '../../utils/styles.js'
 
 const props = defineProps({
@@ -209,7 +208,7 @@ const allStylesText = computed(() => props.styles.map((s) => s.name).join(', '))
 const languagesText = computed(() => languageListLabel(props.languages))
 
 const userSecurityStore = useUserSecurityStore()
-const pendingAction = usePendingAction()
+const keepContactDraft = useKeepContactDraft()
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
 // Whether the message was kept for after sign-in, the only case the prompt may promise it.
@@ -242,14 +241,10 @@ function handleContact() {
 }
 
 function handleSignInRequired({ content }) {
-  isDraftKept.value = pendingAction.keep({
-    kind: MESSAGE_SEND,
-    payload: contactDraftPayload({
-      announceId: props.announceId,
-      recipientId: props.user.id,
-      content
-    }),
-    stoppedOnSubmit: true
+  isDraftKept.value = keepContactDraft({
+    announceId: props.announceId,
+    recipientId: props.user.id,
+    content
   })
   showAuthModal.value = true
 }

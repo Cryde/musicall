@@ -4,6 +4,8 @@
  *
  * Stored as `{ kind, route, payload, stoppedOnSubmit, createdAt }`, one at a time: a new one replaces the old.
  */
+import { DEFAULT_LOCALE } from '../i18n/index.js'
+import { pathInLocale } from '../i18n/localizedPath.js'
 import { isSafeReturnUrl } from './returnUrl.js'
 
 const STORAGE_KEY = 'pending-action'
@@ -73,9 +75,15 @@ export function clearPendingAction(storage) {
   }
 }
 
-/** On the page of its route: the path alone, since a page may rewrite its own query string on arrival. */
+/**
+ * On the page of its route: the path alone, since a page may rewrite its own query string on arrival, and in any
+ * locale, since signing in applies the account's, which moves `/rechercher-un-musicien` to `/en/find-a-musician`.
+ */
 export function isOnPendingActionPage(action, path) {
-  return action.route.split(/[?#]/)[0] === path
+  return (
+    pathInLocale(action.route.split(/[?#]/)[0], DEFAULT_LOCALE) ===
+    pathInLocale(path, DEFAULT_LOCALE)
+  )
 }
 
 /**

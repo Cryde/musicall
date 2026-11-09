@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
+// Vue first: runtime-dom reads `document` as it loads, and the stub below is no DOM.
+import '../i18n/index.js'
+
+// English enabled, so the page an action comes back on can be its translated path. Set before the modules load,
+// since they read the attribute once.
+globalThis.document = { documentElement: { lang: 'fr', dataset: { enabledLocales: 'fr,en' } } }
+const {
   clearPendingAction,
   isOnPendingActionPage,
   keepPendingAction,
   PENDING_ACTION_LIFETIME_MS,
   readPendingAction,
   resumePendingAction
-} from './pendingAction.js'
+} = await import('./pendingAction.js')
 
 /**
  * What a visitor started before signing in has to come back on its page, once, for a short while, and only to the
@@ -214,8 +220,19 @@ describe('isOnPendingActionPage', () => {
     assert.equal(isOnPendingActionPage(announce({ route: '/search#results' }), '/search'), true)
   })
 
+  it('matches the same page in the locale the account switched to on sign-in', () => {
+    const fromSearch = announce({ route: '/rechercher-un-musicien?type=1' })
+    assert.equal(isOnPendingActionPage(fromSearch, '/en/find-a-musician'), true)
+    assert.equal(isOnPendingActionPage(announce({ route: '/' }), '/en'), true)
+    assert.equal(
+      isOnPendingActionPage(announce({ route: '/en/find-a-musician' }), '/rechercher-un-musicien'),
+      true
+    )
+  })
+
   it('does not match another page', () => {
     assert.equal(isOnPendingActionPage(announce(), '/'), false)
+    assert.equal(isOnPendingActionPage(announce({ route: '/' }), '/en/find-a-musician'), false)
     assert.equal(isOnPendingActionPage(announce(), '/search/guitarist'), false)
   })
 })

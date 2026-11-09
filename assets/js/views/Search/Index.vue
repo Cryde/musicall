@@ -428,7 +428,6 @@ import {
 } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import musicianAnnounceApi from '../../api/announce/musician.js'
 import geocodingApi from '../../api/geocoding.js'
 import searchApi from '../../api/search/musician.js'
 import profileApi from '../../api/user/profile.js'
@@ -436,9 +435,9 @@ import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
 import GuidedNoResults from '../../components/Search/Guided/GuidedNoResults.vue'
 import GuidedSearch from '../../components/Search/Guided/GuidedSearch.vue'
 import GuidedSignupCard from '../../components/Search/Guided/GuidedSignupCard.vue'
+import { useContactDraftResumer } from '../../composables/useContactDraft.js'
 import { usePendingAction, usePendingActionResumer } from '../../composables/usePendingAction.js'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
-import { displayName } from '../../helper/user/displayName.js'
 import { lastNavigationRestoredScroll } from '../../router/scrollPosition.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
@@ -450,7 +449,6 @@ import {
   announceModalProps
 } from '../../utils/announceDraft.js'
 import { isAnnounceLanguage, languageName, languageOptions } from '../../utils/announceLanguages.js'
-import { contactAvailability, MESSAGE_SEND, readContactDraft } from '../../utils/contactDraft.js'
 import {
   DEFAULT_RADIUS,
   GUIDED_MODE,
@@ -1239,14 +1237,11 @@ function handleAnnounceSignInRequired(values) {
 
 // --- Resumed after sign-in (#1306): reopened prefilled, never sent on their own -----------------------
 
-const CONTACT_UNAVAILABLE_KEYS = {
-  announce_gone: 'search.pending.contact_announce_gone',
-  recipient_deleted: 'search.pending.contact_recipient_deleted',
-  own_announce: 'search.pending.contact_own_announce'
-}
-
 usePendingActionResumer(ANNOUNCE_CREATE, resumeAnnounce)
-usePendingActionResumer(MESSAGE_SEND, resumeContact)
+useContactDraftResumer((contact) => {
+  resumedContact.value = contact
+  isResumedContactOpen.value = true
+})
 
 async function resumeAnnounce(payload) {
   if (instrumentStore.instruments.length === 0 || styleStore.styles.length === 0) {
@@ -1264,41 +1259,6 @@ async function resumeAnnounce(payload) {
       resumedAnnounce.value = initialProps
       showAnnounceModal.value = true
     }
-  }
-}
-
-async function resumeContact(payload) {
-  const draft = readContactDraft(payload)
-  const announce = draft ? await announceStillOnline(draft.announceId) : null
-  const availability = contactAvailability({
-    announce,
-    recipientId: draft?.recipientId,
-    signedInUsername: userSecurityStore.user?.username ?? null
-  })
-  if (availability !== 'available') {
-    return { unavailable: t(CONTACT_UNAVAILABLE_KEYS[availability]) }
-  }
-
-  return {
-    label: t('search.pending.contact_label', { name: displayName(announce.author) }),
-    resume: () => {
-      resumedContact.value = {
-        recipient: announce.author,
-        contactOrigin: { musicianAnnounceId: draft.announceId },
-        content: draft.content
-      }
-      isResumedContactOpen.value = true
-    }
-  }
-}
-
-/** The announce, or null once it is deleted. Any other failure is thrown, so the draft is kept for later. */
-async function announceStillOnline(id) {
-  try {
-    return await musicianAnnounceApi.getItem(id)
-  } catch (error) {
-    if (error?.response?.status === 404) return null
-    throw error
   }
 }
 
