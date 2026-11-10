@@ -11,6 +11,7 @@ use App\Entity\User\UserProfile;
 use App\Enum\User\RegistrationMethod;
 use App\Event\UserRegisteredEvent;
 use App\Exception\User\UserAlreadyLoggedException;
+use App\Service\User\RegistrationCampaign;
 use App\Service\User\RegistrationOriginRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -65,7 +66,13 @@ readonly class RegisterProcessor implements ProcessorInterface
         $user->plainPassword = $data->password;
         // The language they signed up in, so their emails follow it from the verification code on.
         $user->locale = $this->localeSwitcher->getLocale();
-        $this->registrationOriginRecorder->record($user, RegistrationMethod::Password);
+        $campaign = RegistrationCampaign::fromFields([
+            'utm_source' => $data->utmSource,
+            'utm_medium' => $data->utmMedium,
+            'utm_campaign' => $data->utmCampaign,
+            'referrer_host' => $data->referrerHost,
+        ]);
+        $this->registrationOriginRecorder->record($user, RegistrationMethod::Password, campaign: $campaign);
 
         $user->password = $this->userPasswordHasher->hashPassword(
             $user,

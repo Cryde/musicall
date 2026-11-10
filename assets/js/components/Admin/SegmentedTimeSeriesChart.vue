@@ -48,7 +48,8 @@ const props = defineProps({
   icon: { type: String, required: true },
   seriesData: { type: Object, default: null },
   allDates: { type: Array, required: true },
-  // [{ value, labelKey, color }], in the order they stack
+  // [{ value, labelKey, color }], in the order they stack. A segment named by the data, a referring site,
+  // has its `label` instead of a `labelKey`.
   segments: { type: Array, required: true }
 })
 
@@ -67,7 +68,7 @@ const chartData = computed(() => {
     labels: props.allDates.map((d) => format(parseISO(d), 'd MMM', { locale: dateFnsLocale() })),
     datasets: props.segments.map((segment, index) => ({
       label: t('admin.time_series.segment_total', {
-        segment: t(segment.labelKey),
+        segment: segment.label ?? t(segment.labelKey),
         total: series[index].total
       }),
       data: series[index].data,

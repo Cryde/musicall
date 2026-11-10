@@ -14,6 +14,8 @@ use App\Service\OAuth\Apple\AppleUserDataMapper;
 use App\Service\OAuth\Apple\InvalidAppleIdentityTokenException;
 use App\Service\OAuth\OAuthUserService;
 use App\Service\OAuth\OAuthWebSignIn;
+use App\Service\User\RegistrationCampaign;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -40,6 +42,7 @@ final class AppleController extends AbstractController
     private const string AUTHORIZE_URL = 'https://appleid.apple.com/auth/authorize';
     // A browser silently drops a cookie over about 4 KB, which would fail the callback for no visible reason.
     private const int RETURN_URL_MAX_LENGTH = 2048;
+    private const string CAMPAIGN_CACHE_PREFIX = 'apple_sign_in_campaign_';
 
     public function __construct(
         private readonly OAuthWebSignIn $webSignIn,
@@ -49,6 +52,7 @@ final class AppleController extends AbstractController
         private readonly LoggerInterface $logger,
         #[Autowire(param: 'app.apple.web_client_id')]
         private readonly string $clientId,
+        private readonly CacheItemPoolInterface $cache,
     ) {
     }
 
@@ -64,6 +68,7 @@ final class AppleController extends AbstractController
         $returnUrl = self::stringOf($request->query->all(), 'return_url');
         $keepsReturnUrl = $returnUrl !== '' && strlen($returnUrl) <= self::RETURN_URL_MAX_LENGTH && $this->webSignIn->isSafeReturnUrl($returnUrl);
         $attempt = AppleSignInAttempt::start($keepsReturnUrl ? $returnUrl : null);
+        $this->stashCampaign($attempt->state, RegistrationCampaign::fromFields($request->query->all()));
 
         $response = new RedirectResponse(self::AUTHORIZE_URL . '?' . http_build_query([
             'client_id' => $this->clientId,
@@ -110,6 +115,7 @@ final class AppleController extends AbstractController
 
             return $this->webSignIn->fail('oauth_failed');
         }
+        $campaign = $this->takeCampaign($attempt->state);
 
         // Apple's own refusal, `user_cancelled_authorize` when the person closes its page.
         if (isset($form['error'])) {
@@ -123,7 +129,7 @@ final class AppleController extends AbstractController
             }
             [$givenName, $familyName] = self::nameOf(self::stringOf($form, 'user'));
             $userData = AppleUserDataMapper::fromClaims($claims, $givenName, $familyName);
-            $result = $this->oAuthUserService->findOrCreateUser($userData, SocialAccount::PROVIDER_APPLE);
+            $result = $this->oAuthUserService->findOrCreateUser($userData, SocialAccount::PROVIDER_APPLE, campaign: $campaign);
 
             $authorizationCode = self::stringOf($form, 'code');
             if ($authorizationCode !== '') {
@@ -142,6 +148,34 @@ final class AppleController extends AbstractController
 
             return $this->webSignIn->fail('oauth_failed', $attempt->returnUrl);
         }
+    }
+
+    /**
+     * The campaign of the visit (#1369) waits on the server, keyed by the attempt, for the callback. Not in the
+     * attempt cookie: the privacy policy promises it is never kept in the browser.
+     */
+    private function stashCampaign(string $state, RegistrationCampaign $campaign): void
+    {
+        if ($campaign->isEmpty()) {
+            return;
+        }
+        $item = $this->cache->getItem(self::campaignKey($state));
+        $this->cache->save($item->set($campaign->toFields())->expiresAfter(self::ATTEMPT_LIFETIME));
+    }
+
+    /** Single use, like the attempt. */
+    private function takeCampaign(string $state): RegistrationCampaign
+    {
+        $key = self::campaignKey($state);
+        $fields = $this->cache->getItem($key)->get();
+        $this->cache->deleteItem($key);
+
+        return RegistrationCampaign::fromFields(is_array($fields) ? $fields : []);
+    }
+
+    public static function campaignKey(string $state): string
+    {
+        return self::CAMPAIGN_CACHE_PREFIX . hash('sha256', $state);
     }
 
     /** @param array<mixed> $fields */

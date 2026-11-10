@@ -131,6 +131,90 @@ class UserRegisterTest extends ApiTestCase
         yield 'version with a trailing newline' => [['HTTP_X_CLIENT_PLATFORM' => 'android', 'HTTP_X_CLIENT_VERSION' => "1.13.0\n"], ['android', 'password', null]];
     }
 
+    public function test_a_web_sign_up_records_the_campaign_of_its_visit(): void
+    {
+        $this->register([], [
+            'utm_source' => 'google',
+            'utm_medium' => 'cpc',
+            'utm_campaign' => 'pmax-musiciens',
+            'referrer_host' => 'www.google.com',
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame(['google', 'cpc', 'pmax-musiciens', 'www.google.com'], $this->campaignOf('super_username'));
+    }
+
+    public function test_a_sign_up_without_a_campaign_records_none(): void
+    {
+        $this->register([]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame([null, null, null, null], $this->campaignOf('super_username'));
+    }
+
+    /**
+     * Client supplied and only feeding statistics (#1369): a value that is not what a browser sends is dropped,
+     * and the sign-up goes through all the same.
+     *
+     * @param array<string, mixed> $campaign
+     * @param array{?string, ?string, ?string, ?string} $expected
+     */
+    #[DataProvider('campaignsToClean')]
+    public function test_a_campaign_value_is_cleaned_or_dropped_without_failing_the_sign_up(array $campaign, array $expected): void
+    {
+        $this->register([], $campaign);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame($expected, $this->campaignOf('super_username'));
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, array{?string, ?string, ?string, ?string}}> */
+    public static function campaignsToClean(): iterable
+    {
+        yield 'too long' => [
+            ['utm_source' => str_repeat('a', 101), 'utm_medium' => 'cpc', 'utm_campaign' => 'pmax', 'referrer_host' => str_repeat('a', 254)],
+            [null, 'cpc', 'pmax', null],
+        ];
+        yield 'control characters' => [
+            ['utm_source' => "goo\u{0007}gle", 'utm_medium' => "c\0pc", 'utm_campaign' => "pmax\nmusiciens", 'referrer_host' => "www.google\u{0007}.com"],
+            [null, null, null, null],
+        ];
+        yield 'not strings' => [
+            ['utm_source' => ['google'], 'utm_medium' => 42, 'utm_campaign' => true, 'referrer_host' => ['host' => 'www.google.com']],
+            [null, null, null, null],
+        ];
+        yield 'a URL as the referrer, markup as a campaign' => [
+            ['utm_source' => 'google', 'utm_campaign' => '<b>pmax</b>', 'referrer_host' => 'https://www.google.com/search?q=musicall'],
+            ['google', null, null, null],
+        ];
+        yield 'trimmed and lowercased' => [
+            ['utm_source' => '  Google ', 'utm_medium' => 'CPC', 'utm_campaign' => 'PMax-Musiciens', 'referrer_host' => ' WWW.Google.COM '],
+            ['google', 'cpc', 'pmax-musiciens', 'www.google.com'],
+        ];
+        // Back on the site from a failed Google or Apple sign-in: they did not bring the visitor.
+        yield 'a sign-in provider as the referrer' => [
+            ['utm_source' => 'newsletter', 'referrer_host' => 'accounts.google.com'],
+            ['newsletter', null, null, null],
+        ];
+        yield 'Apple sign-in as the referrer' => [
+            ['referrer_host' => 'appleid.apple.com'],
+            [null, null, null, null],
+        ];
+    }
+
+    /** The apps measure no campaign: what an app would send is ignored. */
+    public function test_an_app_sign_up_records_no_campaign(): void
+    {
+        $this->register(['HTTP_X_CLIENT_PLATFORM' => 'android', 'HTTP_X_CLIENT_VERSION' => '1.13.0'], ['utm_source' => 'google', 'referrer_host' => 'www.google.com']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame([null, null, null, null], $this->campaignOf('super_username'));
+    }
+
     /**
      * Anyone can register with an address they do not own (#1353): the invitation waits for the email to
      * be confirmed, so the band gets no unconfirmed member and the real owner still finds it pending.
@@ -349,14 +433,29 @@ password: Le mot de passe doit au moins contenir 8 caractères',
         $this->assertEmailCount(0);
     }
 
-    /** @param array<string, string> $headers */
-    private function register(array $headers): void
+    /**
+     * @param array<string, string> $headers
+     * @param array<string, mixed> $campaign
+     */
+    private function register(array $headers, array $campaign = []): void
     {
         $this->client->jsonRequest('POST', '/api/users/register', [
             'username' => 'super_username',
             'password' => 'password',
             'email' => 'super_email@mail.com',
+            ...$campaign,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', ...$headers]);
+    }
+
+    /** @return array{?string, ?string, ?string, ?string} the utm_source, utm_medium, utm_campaign and referrer host stored for the account */
+    private function campaignOf(string $username): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->registrationUtmSource, $user->registrationUtmMedium, $user->registrationUtmCampaign, $user->registrationReferrerHost];
     }
 
     /** @return array{string, string, ?string} the platform, method and app version stored for the account */

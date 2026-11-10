@@ -6,6 +6,7 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Enum\User\RegistrationPlatform;
 use App\Repository\User\Relation\UserBlockRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -437,19 +438,73 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * @param 'registration_platform'|'registration_method' $column
+     * Web registrations per day and per source (#1369): the campaign's utm_source, else the referring site's host,
+     * else `(direct)`, which no recorded value can be since neither allows parentheses. The apps record no
+     * campaign, so counting them would only inflate `(direct)`.
      *
      * @return array<int, array{date_label: string, segment: string, count: int}>
      */
-    private function countRegistrationsByDateAnd(string $column, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    public function countRegistrationsByDateAndSource(\DateTimeImmutable $from, \DateTimeImmutable $to): array
     {
+        // `(direct)` is matched by DIRECT_SOURCE in assets/js/views/Admin/UserDashboard.vue.
+        return $this->countRegistrationsByDateAnd("COALESCE(registration_utm_source, registration_referrer_host, '(direct)')", $from, $to, RegistrationPlatform::Web);
+    }
+
+    /**
+     * The campaigns sign-ups came from (#1369), one row per utm_campaign, utm_source and utm_medium recorded
+     * together, most sign-ups first. A sign-up without any of the three is left out.
+     *
+     * @return list<array{campaign: ?string, source: ?string, medium: ?string, count: int}>
+     */
+    public function countRegistrationsByCampaign(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit): array
+    {
+        /** @var list<array{campaign: ?string, source: ?string, medium: ?string, registrations: int|string}> $rows */
+        $rows = $this->createQueryBuilder('user')
+            ->select('user.registrationUtmCampaign AS campaign', 'user.registrationUtmSource AS source', 'user.registrationUtmMedium AS medium', 'COUNT(user.id) AS registrations')
+            ->where('user.creationDatetime >= :from')
+            ->andWhere('user.creationDatetime < :to')
+            ->andWhere('user.registrationUtmCampaign IS NOT NULL OR user.registrationUtmSource IS NOT NULL OR user.registrationUtmMedium IS NOT NULL')
+            ->groupBy('user.registrationUtmCampaign')
+            ->addGroupBy('user.registrationUtmSource')
+            ->addGroupBy('user.registrationUtmMedium')
+            ->orderBy('registrations', 'DESC')
+            ->addOrderBy('user.registrationUtmCampaign')
+            ->addOrderBy('user.registrationUtmSource')
+            ->addOrderBy('user.registrationUtmMedium')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            fn (array $row): array => ['campaign' => $row['campaign'], 'source' => $row['source'], 'medium' => $row['medium'], 'count' => (int) $row['registrations']],
+            $rows
+        );
+    }
+
+    /**
+     * @param literal-string $segment the SQL naming the segment of each account
+     * @param RegistrationPlatform|null $platform only the accounts created there, or all of them
+     *
+     * @return array<int, array{date_label: string, segment: string, count: int}>
+     */
+    private function countRegistrationsByDateAnd(string $segment, \DateTimeImmutable $from, \DateTimeImmutable $to, ?RegistrationPlatform $platform = null): array
+    {
+        $parameters = ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')];
+        $platformFilter = '';
+        if ($platform instanceof RegistrationPlatform) {
+            $platformFilter = 'AND registration_platform = :platform';
+            $parameters['platform'] = $platform->value;
+        }
+
         $result = $this->getEntityManager()->getConnection()->executeQuery(
-            "SELECT DATE(creation_datetime) AS date_label, $column AS segment, COUNT(id) AS count
+            "SELECT DATE(creation_datetime) AS date_label, $segment AS segment, COUNT(id) AS count
              FROM fos_user
-             WHERE creation_datetime >= :from AND creation_datetime < :to
-             GROUP BY DATE(creation_datetime), $column
+             WHERE creation_datetime >= :from AND creation_datetime < :to $platformFilter
+             GROUP BY DATE(creation_datetime), $segment
              ORDER BY date_label ASC, segment ASC",
-            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
+            $parameters
         );
 
         return array_map(

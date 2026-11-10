@@ -25,6 +25,8 @@
 </template>
 
 <script setup>
+import { useLandingAttribution } from '../../composables/useLandingAttribution.js'
+
 /**
  * The social ways in of the login and sign-up pages, Google and Apple (#1271), each bringing the
  * visitor back to `returnUrl`. The labels come translated, so each page keeps its own wording.
@@ -35,9 +37,12 @@ const props = defineProps({
   appleLabel: { type: String, required: true }
 })
 
+// The campaign of the visit rides along on the login page too: signing in with Google or Apple may
+// create the account, and the server keeps it only then (#1369).
 function authUrl(routeName) {
-  return props.returnUrl
-    ? Routing.generate(routeName, { return_url: props.returnUrl })
-    : Routing.generate(routeName)
+  const params = useLandingAttribution()
+  if (props.returnUrl) params.return_url = props.returnUrl
+
+  return Routing.generate(routeName, params)
 }
 </script>

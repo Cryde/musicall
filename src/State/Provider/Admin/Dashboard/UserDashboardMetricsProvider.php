@@ -18,6 +18,8 @@ use App\Repository\UserRepository;
  */
 readonly class UserDashboardMetricsProvider implements ProviderInterface
 {
+    private const int CAMPAIGN_LIMIT = 20;
+
     public function __construct(
         private UserRepository $userRepository,
         private MessageRepository $messageRepository,
@@ -63,6 +65,8 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
                 'profile_completion_percent' => $item['profile_completion'],
             ];
         }
+
+        $metrics->registrationCampaigns = $this->userRepository->countRegistrationsByCampaign($from, $to, self::CAMPAIGN_LIMIT);
 
         // Top Messagers within date range
         $rangeDays = max(1, $from->diff($to)->days ?: 1);

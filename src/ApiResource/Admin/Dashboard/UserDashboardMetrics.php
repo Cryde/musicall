@@ -54,6 +54,10 @@ class UserDashboardMetrics
     /** @var array<int, array{id: string, username: string, message_count: int, account_age_days: int, avg_messages_per_day: float}> */
     public array $topMessagers = [];
 
+    // Sign-ups by campaign (#1369), the most frequent first
+    /** @var list<array{campaign: ?string, source: ?string, medium: ?string, count: int}> */
+    public array $registrationCampaigns = [];
+
     // Recent Teachers
     /** @var array<int, array{username: string, registration_date: string}> */
     public array $recentTeachers = [];

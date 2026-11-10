@@ -42,6 +42,12 @@ class AppleOAuthTest extends ApiTestCase
     private const string WEB_CLIENT_ID = 'com.musicall.web';
     private const string FRONTEND_URL = 'http://localhost';
     private const string CALLBACK_URL = 'https://musicall.test/oauth/apple/callback';
+    private const array CAMPAIGN = [
+        'utm_source' => 'google',
+        'utm_medium' => 'cpc',
+        'utm_campaign' => 'pmax-musiciens',
+        'referrer_host' => 'www.google.com',
+    ];
 
     public function test_start_sends_the_visitor_to_apple_with_a_fresh_attempt(): void
     {
@@ -88,6 +94,75 @@ class AppleOAuthTest extends ApiTestCase
             $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
             $this->assertNull(AppleSignInAttempt::fromCookie($this->attemptCookie()->getValue() ?? '')?->returnUrl, sprintf('%s must not be kept', json_encode($returnUrl)));
         }
+    }
+
+    /**
+     * The campaign of the visit (#1369) waits on the server for the callback: the attempt cookie carries only
+     * the attempt, since the privacy policy promises the campaign is never kept in the browser.
+     */
+    public function test_start_keeps_the_campaign_of_the_visit_on_the_server(): void
+    {
+        $this->client->request('GET', '/oauth/apple?' . http_build_query(['return_url' => '/band-space/abc', ...self::CAMPAIGN]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $cookie = (string) $this->attemptCookie()->getValue();
+        $attempt = AppleSignInAttempt::fromCookie($cookie);
+        $this->assertInstanceOf(AppleSignInAttempt::class, $attempt);
+        $this->assertSame(['state', 'nonce', 'return_url'], array_keys((array) json_decode((string) base64_decode(strtr($cookie, '-_', '+/')), true)));
+        $this->assertSame(self::CAMPAIGN, $this->stashedCampaign($attempt->state));
+    }
+
+    public function test_start_without_a_campaign_keeps_none(): void
+    {
+        $this->client->request('GET', '/oauth/apple?' . http_build_query(['utm_source' => '<b>', 'referrer_host' => 'https://www.google.com/']));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $attempt = AppleSignInAttempt::fromCookie($this->attemptCookie()->getValue() ?? '');
+        $this->assertInstanceOf(AppleSignInAttempt::class, $attempt);
+        $this->assertNull($this->stashedCampaign($attempt->state));
+    }
+
+    public function test_a_first_sign_in_records_the_campaign_of_its_visit(): void
+    {
+        $attempt = AppleSignInAttempt::start(null);
+        $this->stashCampaign($attempt->state, self::CAMPAIGN);
+        $this->apple()->accept('an-id-token', $this->claims('nouveau@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
+        $this->assertSignedInAs('nouveau');
+        $this->assertSame(['google', 'cpc', 'pmax-musiciens', 'www.google.com'], $this->campaignOf('nouveau@example.com'));
+        $this->assertNull($this->stashedCampaign($attempt->state), 'Single use, like the attempt');
+    }
+
+    /** Nothing stashed, or the entry expired before Apple answered: the account is created all the same. */
+    public function test_a_first_sign_in_without_a_stashed_campaign_records_none(): void
+    {
+        $attempt = AppleSignInAttempt::start(null);
+        $this->apple()->accept('an-id-token', $this->claims('nouveau@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
+        $this->assertSignedInAs('nouveau');
+        $this->assertSame([null, null, null, null], $this->campaignOf('nouveau@example.com'));
+    }
+
+    /** A login is not a sign-up: the campaign of this visit says nothing about how the account came. */
+    public function test_a_sign_in_to_an_existing_account_records_no_campaign(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice_drums', 'email' => 'alice@example.com', 'password' => null]);
+        SocialAccountFactory::new()->create(['user' => $user, 'provider' => SocialAccount::PROVIDER_APPLE, 'providerId' => self::APPLE_ID]);
+        $attempt = AppleSignInAttempt::start(null);
+        $this->stashCampaign($attempt->state, self::CAMPAIGN);
+        $this->apple()->accept('an-id-token', $this->claims('alice@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
+        $this->assertSignedInAs('alice_drums');
+        $this->assertSame([null, null, null, null], $this->campaignOf('alice@example.com'));
     }
 
     public function test_a_first_sign_in_creates_an_account_named_after_the_person(): void
@@ -344,6 +419,29 @@ class AppleOAuthTest extends ApiTestCase
         $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
 
         $this->assertRefused('oauth_failed');
+    }
+
+    /** @param array<string, string> $campaign */
+    private function stashCampaign(string $state, array $campaign): void
+    {
+        $cache = self::getContainer()->get('cache.app');
+        $cache->save($cache->getItem(AppleController::campaignKey($state))->set($campaign));
+    }
+
+    private function stashedCampaign(string $state): mixed
+    {
+        return self::getContainer()->get('cache.app')->getItem(AppleController::campaignKey($state))->get();
+    }
+
+    /** @return array{?string, ?string, ?string, ?string} */
+    private function campaignOf(string $email): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->registrationUtmSource, $user->registrationUtmMedium, $user->registrationUtmCampaign, $user->registrationReferrerHost];
     }
 
     /** @param array<string, string|list<string>> $form */

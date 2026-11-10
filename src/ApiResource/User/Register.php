@@ -33,4 +33,11 @@ class Register
     #[Assert\Length(min: 8, max: 4096, minMessage: 'user.register.password_too_short')]
     #[Assert\NotCompromisedPassword(skipOnError: true, message: 'user.password.compromised')]
     public string $password;
+
+    // The campaign of the visit (#1369). Untyped and unvalidated on purpose: they only feed statistics, so
+    // a wrong value must never fail the sign-up. RegistrationCampaign drops what it does not accept.
+    public mixed $utmSource = null;
+    public mixed $utmMedium = null;
+    public mixed $utmCampaign = null;
+    public mixed $referrerHost = null;
 }

@@ -10,6 +10,7 @@ use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use App\Service\OAuth\OAuthWebSignIn;
+use App\Service\User\RegistrationCampaign;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 abstract class AbstractOAuthController extends AbstractController
 {
     private const string RETURN_URL_SESSION_PREFIX = 'oauth_return_url.';
+    private const string CAMPAIGN_SESSION_PREFIX = 'oauth_campaign.';
 
     public function __construct(
         protected readonly ClientRegistry $clientRegistry,
@@ -41,29 +43,36 @@ abstract class AbstractOAuthController extends AbstractController
 
     public function connect(Request $request): RedirectResponse
     {
-        $returnUrl = $request->query->getString('return_url');
-        $options = [];
+        // Use a random, unguessable state nonce (KnpU stores it in the session
+        // and verifies it on callback for CSRF) and stash the return URL against
+        // it, rather than encoding the return URL into the state itself - which
+        // made the state predictable (SECURITY-FIX.md finding 13).
+        $nonce = bin2hex(random_bytes(32));
+        $session = $request->getSession();
 
+        $returnUrl = $request->query->getString('return_url');
         if ($returnUrl !== '' && $this->webSignIn->isSafeReturnUrl($returnUrl)) {
-            // Use a random, unguessable state nonce (KnpU stores it in the session
-            // and verifies it on callback for CSRF) and stash the return URL against
-            // it, rather than encoding the return URL into the state itself - which
-            // made the state predictable (SECURITY-FIX.md finding 13).
-            $nonce = bin2hex(random_bytes(32));
-            $request->getSession()->set(self::RETURN_URL_SESSION_PREFIX . $nonce, $returnUrl);
-            $options['state'] = $nonce;
+            $session->set(self::RETURN_URL_SESSION_PREFIX . $nonce, $returnUrl);
+        }
+        // Server side like the return URL, never in the browser (#1369); used only if the sign-in creates the account.
+        $campaign = RegistrationCampaign::fromFields($request->query->all());
+        if (!$campaign->isEmpty()) {
+            $session->set(self::CAMPAIGN_SESSION_PREFIX . $nonce, $campaign->toFields());
         }
 
         return $this->clientRegistry
             ->getClient($this->getClientName())
-            ->redirect($this->getScopes(), $options);
+            ->redirect($this->getScopes(), ['state' => $nonce]);
     }
 
     public function callback(Request $request): RedirectResponse
     {
         $client = $this->clientRegistry->getClient($this->getClientName());
         // Read before anything can fail, so a refused sign-in still knows the way back.
-        $returnUrl = $this->extractReturnUrlFromState($request);
+        $stashedReturnUrl = $this->takeFromSession($request, self::RETURN_URL_SESSION_PREFIX);
+        $returnUrl = is_string($stashedReturnUrl) ? $stashedReturnUrl : null;
+        $stashedCampaign = $this->takeFromSession($request, self::CAMPAIGN_SESSION_PREFIX);
+        $campaign = RegistrationCampaign::fromFields(is_array($stashedCampaign) ? $stashedCampaign : []);
 
         try {
             $accessToken = $client->getAccessToken();
@@ -77,7 +86,8 @@ abstract class AbstractOAuthController extends AbstractController
             $result = $this->oAuthUserService->findOrCreateUser(
                 $userData,
                 $this->getProviderName(),
-                $currentUser
+                $currentUser,
+                campaign: $campaign,
             );
 
             return $this->webSignIn->complete($result->user, $this->webSignIn->redirectUrlFor($returnUrl), $request);
@@ -95,20 +105,19 @@ abstract class AbstractOAuthController extends AbstractController
         }
     }
 
-    private function extractReturnUrlFromState(Request $request): ?string
+    private function takeFromSession(Request $request, string $prefix): mixed
     {
         $state = $request->query->getString('state');
         if ($state === '') {
             return null;
         }
 
-        // The state is now an opaque nonce; the return URL was stashed against it in
-        // the session at connect() time. Resolve and consume it (single use).
+        // The state is an opaque nonce; what connect() stashed against it in the
+        // session is resolved and consumed (single use).
         $session = $request->getSession();
-        $sessionKey = self::RETURN_URL_SESSION_PREFIX . $state;
-        $returnUrl = $session->get($sessionKey);
-        $session->remove($sessionKey);
+        $value = $session->get($prefix . $state);
+        $session->remove($prefix . $state);
 
-        return is_string($returnUrl) ? $returnUrl : null;
+        return $value;
     }
 }

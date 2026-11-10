@@ -250,6 +250,7 @@ import emailVerificationApi from '../../api/user/emailVerification.js'
 import securityApi from '../../api/user/security.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
 import SocialSignInButtons from '../../components/Auth/SocialSignInButtons.vue'
+import { useLandingAttribution } from '../../composables/useLandingAttribution.js'
 import { returnPathOf } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
@@ -497,7 +498,8 @@ async function handleSubmit() {
     await securityApi.register({
       username: form.username.trim(),
       email: form.email.trim(),
-      password: form.password
+      password: form.password,
+      attribution: useLandingAttribution()
     })
     trackUmamiEvent('user-register')
 

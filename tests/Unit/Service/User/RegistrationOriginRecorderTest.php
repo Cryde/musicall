@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Service\User;
 use App\Entity\User;
 use App\Enum\User\RegistrationMethod;
 use App\Enum\User\RegistrationPlatform;
+use App\Service\User\RegistrationCampaign;
 use App\Service\User\RegistrationOriginRecorder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -65,6 +66,46 @@ class RegistrationOriginRecorderTest extends TestCase
         yield 'too many version parts' => ['ios', '1.2.3.4.5', $web, RegistrationPlatform::Ios, null];
         yield 'a build number too long' => ['ios', '1.0+12345678901', $web, RegistrationPlatform::Ios, null];
         yield 'an empty version' => ['ios', '', $web, RegistrationPlatform::Ios, null];
+    }
+
+    public function test_a_web_sign_up_records_its_campaign(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/'));
+        $user = new User();
+        $campaign = RegistrationCampaign::fromFields(['utm_source' => 'google', 'utm_medium' => 'cpc', 'utm_campaign' => 'pmax-musiciens', 'referrer_host' => 'www.google.com']);
+
+        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Password, campaign: $campaign);
+
+        $this->assertSame(
+            ['google', 'cpc', 'pmax-musiciens', 'www.google.com'],
+            [$user->registrationUtmSource, $user->registrationUtmMedium, $user->registrationUtmCampaign, $user->registrationReferrerHost],
+        );
+    }
+
+    /** The apps measure no campaign (#1369), whatever they send. */
+    #[DataProvider('appOrigins')]
+    public function test_an_app_sign_up_records_no_campaign(array $server, RegistrationPlatform $platformWithoutHeader): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', server: $server));
+        $user = new User();
+        $campaign = RegistrationCampaign::fromFields(['utm_source' => 'google', 'utm_medium' => 'cpc', 'utm_campaign' => 'pmax-musiciens', 'referrer_host' => 'www.google.com']);
+
+        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Google, $platformWithoutHeader, $campaign);
+
+        $this->assertSame(
+            [null, null, null, null],
+            [$user->registrationUtmSource, $user->registrationUtmMedium, $user->registrationUtmCampaign, $user->registrationReferrerHost],
+        );
+    }
+
+    /** @return iterable<string, array{array<string, string>, RegistrationPlatform}> */
+    public static function appOrigins(): iterable
+    {
+        yield 'ios' => [['HTTP_X_CLIENT_PLATFORM' => 'ios'], RegistrationPlatform::Web];
+        yield 'android' => [['HTTP_X_CLIENT_PLATFORM' => 'android'], RegistrationPlatform::Web];
+        yield 'an unidentified app' => [[], RegistrationPlatform::UnknownApp];
     }
 
     public function test_without_a_request_the_default_platform_is_recorded(): void

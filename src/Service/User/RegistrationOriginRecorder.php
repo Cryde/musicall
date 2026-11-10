@@ -10,8 +10,9 @@ use App\Enum\User\RegistrationPlatform;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Stamps a new account with where and how it was created (#1355). The app names itself in two headers;
- * they are client supplied and only feed statistics, so an unexpected value is ignored, never refused.
+ * Stamps a new account with where and how it was created (#1355), and on the web with the campaign that
+ * brought it (#1369). The app names itself in two headers; they are client supplied and only feed
+ * statistics, so an unexpected value is ignored, never refused.
  */
 readonly class RegistrationOriginRecorder
 {
@@ -24,7 +25,7 @@ readonly class RegistrationOriginRecorder
     {
     }
 
-    public function record(User $user, RegistrationMethod $method, RegistrationPlatform $platformWithoutHeader = RegistrationPlatform::Web): void
+    public function record(User $user, RegistrationMethod $method, RegistrationPlatform $platformWithoutHeader = RegistrationPlatform::Web, ?RegistrationCampaign $campaign = null): void
     {
         $headers = $this->requestStack->getCurrentRequest()?->headers;
         $platform = match ($headers?->get(self::PLATFORM_HEADER)) {
@@ -39,5 +40,12 @@ readonly class RegistrationOriginRecorder
         $user->registrationAppVersion = $platform !== RegistrationPlatform::Web && $version !== null && preg_match(self::VERSION_PATTERN, $version) === 1
             ? $version
             : null;
+
+        // Web only: the apps measure no campaign.
+        $webCampaign = $platform === RegistrationPlatform::Web ? $campaign : null;
+        $user->registrationUtmSource = $webCampaign?->utmSource;
+        $user->registrationUtmMedium = $webCampaign?->utmMedium;
+        $user->registrationUtmCampaign = $webCampaign?->utmCampaign;
+        $user->registrationReferrerHost = $webCampaign?->referrerHost;
     }
 }

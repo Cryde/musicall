@@ -134,6 +134,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::STRING, length: 32, nullable: true)]
     public ?string $registrationAppVersion = null;
 
+    // The campaign and the referring site of the visit a web account was created in (#1369).
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    public ?string $registrationUtmSource = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    public ?string $registrationUtmMedium = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    public ?string $registrationUtmCampaign = null;
+
+    #[ORM\Column(type: Types::STRING, length: 253, nullable: true)]
+    public ?string $registrationReferrerHost = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, GalleryResource::LIST])]
     public ?\DateTimeImmutable $deletionDatetime = null;
