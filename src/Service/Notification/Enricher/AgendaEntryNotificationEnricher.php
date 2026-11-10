@@ -18,6 +18,10 @@ use App\Repository\BandSpace\BandSpaceMembershipRepository;
  * notification written before `is_all_day` existed carries no such value: the feed reads a missing
  * flag as false, which is how those datetimes were being read when they were stored.
  *
+ * `recurrence_frequency` and `recurrence_until_date` follow the same rule (#1374), so a series edited
+ * into a single date, or the reverse, reads as it now is. One stored before they existed and not
+ * refreshed carries neither, and the feed reads it as a single date.
+ *
  * Like the task-title refresh, it follows the reader's current access (#817): a recipient who has
  * left the band space keeps the title and date as they stood when they were told, rather than a live
  * feed of where and when the band is now rehearsing.
@@ -82,6 +86,8 @@ readonly class AgendaEntryNotificationEnricher implements NotificationEnricherIn
                 $notification->payload['entry_title'] = $entry->title;
                 $notification->payload['event_datetime'] = $entry->eventDatetime->format(\DateTimeInterface::ATOM);
                 $notification->payload['is_all_day'] = $entry->isAllDay;
+                $notification->payload['recurrence_frequency'] = $entry->recurrenceFrequency?->value;
+                $notification->payload['recurrence_until_date'] = $entry->recurrenceUntilDate?->format('Y-m-d');
             }
         }
     }

@@ -149,6 +149,40 @@ class PushContentBuilderTest extends KernelTestCase
         $this->assertStringEndsWith('…', $body);
     }
 
+    /** A series is one notification, so its push says how often it repeats (#1374). */
+    #[DataProvider('agendaEntryFrequencies')]
+    public function test_a_new_agenda_entry_says_how_often_it_repeats(string $locale, ?string $frequency, string $expected): void
+    {
+        $content = $this->builder()->forNotification(NotificationType::BandSpaceAgendaEntryCreated, [
+            'band_space_id' => 'b1',
+            'band_space_name' => 'Les Cactus',
+            'entry_title' => 'Répétition',
+            'recurrence_frequency' => $frequency,
+            'recurrence_until_date' => $frequency === null ? null : '2027-06-30',
+            'actor_username' => 'alice',
+        ], $locale);
+
+        $this->assertSame($expected, $content->body);
+        $this->assertSame(['type' => 'band_space_agenda_entry_created', 'route' => '/band/b1/agenda'], $content->data);
+    }
+
+    /** @return iterable<string, array{string, ?string, string}> */
+    public static function agendaEntryFrequencies(): iterable
+    {
+        yield 'daily, French' => ['fr', 'daily', 'alice a ajouté l\'événement quotidien « Répétition »'];
+        yield 'weekly, French' => ['fr', 'weekly', 'alice a ajouté l\'événement hebdomadaire « Répétition »'];
+        yield 'monthly, French' => ['fr', 'monthly', 'alice a ajouté l\'événement mensuel « Répétition »'];
+        yield 'yearly, French' => ['fr', 'yearly', 'alice a ajouté l\'événement annuel « Répétition »'];
+        yield 'single date, French' => ['fr', null, 'alice a ajouté l\'événement « Répétition »'];
+        yield 'unknown frequency, French' => ['fr', 'fortnightly', 'alice a ajouté l\'événement « Répétition »'];
+        yield 'daily, English' => ['en', 'daily', 'alice added the daily event "Répétition"'];
+        yield 'weekly, English' => ['en', 'weekly', 'alice added the weekly event "Répétition"'];
+        yield 'monthly, English' => ['en', 'monthly', 'alice added the monthly event "Répétition"'];
+        yield 'yearly, English' => ['en', 'yearly', 'alice added the yearly event "Répétition"'];
+        yield 'single date, English' => ['en', null, 'alice added the event "Répétition"'];
+        yield 'unknown frequency, English' => ['en', 'fortnightly', 'alice added the event "Répétition"'];
+    }
+
     /**
      * Every sentence renders exactly as the sprintf it replaced (#1191), apostrophes included: in an
      * ICU message a quote can open a literal, which would swallow a placeholder or drop the quote.

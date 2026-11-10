@@ -72,6 +72,8 @@ readonly class PushContentBuilder
             'band' => $bandName,
             'task' => $text('task_title'),
             'event' => $text('entry_title'),
+            // An ICU select in the agenda entry sentence: no frequency or an unknown one takes `other`.
+            'frequency' => $text('recurrence_frequency'),
             'expense' => $text('entry_label'),
         ], self::DOMAIN, $locale);
 
