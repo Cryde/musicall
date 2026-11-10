@@ -11,7 +11,13 @@ notification:
     task_mention: "{actor} mentioned you in the task \"{task}\""
     band_space_chat_mention: "{actor} mentioned you in the \"{band}\" chat"
     task_comment: "{actor} commented on the task \"{task}\""
-    band_space_agenda_entry_created: "{actor} added the event \"{event}\""
+    band_space_agenda_entry_created: >-
+        {frequency, select,
+        daily {{actor} added the daily event "{event}"}
+        weekly {{actor} added the weekly event "{event}"}
+        monthly {{actor} added the monthly event "{event}"}
+        yearly {{actor} added the yearly event "{event}"}
+        other {{actor} added the event "{event}"}}
     band_space_agenda_availability_requested: "{actor} is asking for your availability for \"{event}\""
     band_space_finance_split_assigned: "{actor} assigned you a share of \"{expense}\""
     band_space_role_changed:

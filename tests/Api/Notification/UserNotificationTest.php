@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Notification;
 
+use App\Enum\BandSpace\AgendaRecurrenceFrequency;
+use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\Notification\NotificationType;
@@ -774,6 +776,8 @@ class UserNotificationTest extends ApiTestCase
                         'entry_title' => 'Titre actuel',
                         'event_datetime' => '2026-08-15T20:00:00+00:00',
                         'is_all_day' => false,
+                        'recurrence_frequency' => null,
+                        'recurrence_until_date' => null,
                         'actor_id' => 'actor-1',
                         'actor_username' => 'creator',
                     ],
@@ -836,6 +840,139 @@ class UserNotificationTest extends ApiTestCase
                         'entry_title' => 'Festival',
                         'event_datetime' => '2026-08-15T00:00:00+00:00',
                         'is_all_day' => true,
+                        'recurrence_frequency' => null,
+                        'recurrence_until_date' => null,
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'creator',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_agenda_entry_notification_refreshes_the_recurrence_of_an_edited_series(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new \DateTimeImmutable('2027-01-06T19:00:00+00:00'),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Monthly,
+            'recurrenceMonthlyMode' => AgendaRecurrenceMonthlyMode::ByDate,
+            'recurrenceUntilDate' => new \DateTimeImmutable('2027-12-31'),
+        ])->create();
+        // Told about a weekly series, which has since become a monthly one running to the end of the year.
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceAgendaEntryCreated,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'band_space_name' => 'The Rockers',
+                'agenda_entry_id' => (string) $entry->id,
+                'entry_title' => 'Répétition',
+                'event_datetime' => '2027-01-06T19:00:00+00:00',
+                'is_all_day' => false,
+                'recurrence_frequency' => 'weekly',
+                'recurrence_until_date' => '2027-06-30',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'creator',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_agenda_entry_created',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'band_space_name' => 'The Rockers',
+                        'agenda_entry_id' => (string) $entry->id,
+                        'entry_title' => 'Répétition',
+                        'event_datetime' => '2027-01-06T19:00:00+00:00',
+                        'is_all_day' => false,
+                        'recurrence_frequency' => 'monthly',
+                        'recurrence_until_date' => '2027-12-31',
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'creator',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_agenda_entry_notification_stops_repeating_once_the_series_is_a_single_date(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new \DateTimeImmutable('2027-01-06T19:00:00+00:00'),
+        ])->create();
+        // Told about a weekly series whose recurrence has since been removed.
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceAgendaEntryCreated,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'band_space_name' => 'The Rockers',
+                'agenda_entry_id' => (string) $entry->id,
+                'entry_title' => 'Répétition',
+                'event_datetime' => '2027-01-06T19:00:00+00:00',
+                'is_all_day' => false,
+                'recurrence_frequency' => 'weekly',
+                'recurrence_until_date' => '2027-06-30',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'creator',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_agenda_entry_created',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'band_space_name' => 'The Rockers',
+                        'agenda_entry_id' => (string) $entry->id,
+                        'entry_title' => 'Répétition',
+                        'event_datetime' => '2027-01-06T19:00:00+00:00',
+                        'is_all_day' => false,
+                        'recurrence_frequency' => null,
+                        'recurrence_until_date' => null,
                         'actor_id' => 'actor-1',
                         'actor_username' => 'creator',
                     ],

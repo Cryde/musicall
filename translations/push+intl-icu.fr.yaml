@@ -11,7 +11,15 @@ notification:
     task_mention: "{actor} t'a mentionné dans la tâche « {task} »"
     band_space_chat_mention: "{actor} t'a mentionné dans la discussion de « {band} »"
     task_comment: "{actor} a commenté la tâche « {task} »"
-    band_space_agenda_entry_created: "{actor} a ajouté l'événement « {event} »"
+    # A series says how often it repeats (#1374): no frequency, or one this does not know, takes `other`.
+    # The series wording is ahead of the app's AppNotification.preview until the app catches up.
+    band_space_agenda_entry_created: >-
+        {frequency, select,
+        daily {{actor} a ajouté l'événement quotidien « {event} »}
+        weekly {{actor} a ajouté l'événement hebdomadaire « {event} »}
+        monthly {{actor} a ajouté l'événement mensuel « {event} »}
+        yearly {{actor} a ajouté l'événement annuel « {event} »}
+        other {{actor} a ajouté l'événement « {event} »}}
     band_space_agenda_availability_requested: "{actor} demande tes disponibilités pour « {event} »"
     band_space_finance_split_assigned: "{actor} t'a attribué une dépense sur « {expense} »"
     band_space_role_changed:
