@@ -42,6 +42,7 @@
             <li><strong>Musician and band search</strong>: your search criteria (type, instrument, genres, city), the number of results returned and, for assisted search, the free text you enter. These searches are recorded with no link to your account, to show frequent searches and improve the service</li>
             <li><strong>Technical data</strong>: IP address, server logs, application error reports</li>
             <li><strong>Audience measurement</strong>: aggregated visit statistics, without cookies</li>
+            <li><strong>Where your sign-up came from</strong> (when you create your account on the website): the campaign that brought you, as the link you followed names it (the utm_source, utm_medium and utm_campaign parameters), and the site you came from, reduced to its domain name, without the address of the page. The page keeps them in memory for the length of your visit, without cookies or storage in your browser, and they are recorded with your account if it is created during that visit, for statistics only. During a Google or Apple sign-in, they travel in the sign-in link and are kept on our servers for a few minutes, until the sign-in completes</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Your IP address is used to secure the service and to limit the rate of requests, and it appears in the server logs. It is not stored in the database: votes and view counters rely on a hashed identifier that cannot be traced back to your address. Recorded searches carry a hashed identifier that changes every day: it is used to count distinct people without making it possible to link your searches from one day to the next.
@@ -58,6 +59,7 @@
             <li>Securing the service, preventing abuse and spam, limiting the rate of requests: <strong>legitimate interest</strong> (Art. 6(1)(f))</li>
             <li>Detecting and fixing technical errors: <strong>legitimate interest</strong></li>
             <li>Measuring the site's audience in aggregate in order to improve it: <strong>legitimate interest</strong></li>
+            <li>Knowing which campaigns and which sites bring sign-ups, for statistics: <strong>legitimate interest</strong></li>
             <li>Interpreting your natural language musician search to turn it into filters: <strong>legitimate interest</strong></li>
             <li>Recording musician and band searches, with no link to your account, to show frequent searches and improve search: <strong>legitimate interest</strong></li>
             <li>Sending you the emails your account needs to work (address verification, password reset, invitations): <strong>performance of a contract</strong></li>
@@ -173,7 +175,7 @@
             <li><strong>is_dark_mode</strong>: remembers the light or dark theme you chose (1 year)</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            MusicAll sets no advertising, profiling or cross-site tracking cookies, and audience measurement works without cookies. The external content described in section 5 may, however, set its own cookies when it is loaded.
+            MusicAll sets no advertising, profiling or cross-site tracking cookies, and audience measurement works without cookies. The campaign and the site your visit came from (see section 2) are kept neither in a cookie nor in your browser's storage. The external content described in section 5 may, however, set its own cookies when it is loaded.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             The mobile app sets no cookies and contains no audience measurement or advertising tools: your session is kept in your phone's secure storage (see section 11).
@@ -242,5 +244,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Privacy policy - MusicAll')
 
-const lastUpdate = '7 November 2026'
+const lastUpdate = '10 November 2026'
 </script>

@@ -14,6 +14,7 @@ use App\Repository\UserRepository;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use App\Service\OAuth\ProfilePictureImporter;
+use App\Service\User\RegistrationCampaign;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -227,6 +228,54 @@ class OAuthUserServiceTest extends KernelTestCase
         $this->assertSame([RegistrationPlatform::Web, RegistrationMethod::Password, null], [$stored->registrationPlatform, $stored->registrationMethod, $stored->registrationAppVersion]);
     }
 
+    public function test_find_or_create_user_records_the_campaign_of_a_new_account(): void
+    {
+        $this->mockProfilePictureImporter();
+        self::getContainer()->get(RequestStack::class)->push(Request::create('/oauth/google/callback'));
+
+        $result = $this->getOAuthUserService()->findOrCreateUser(
+            new OAuthUserData(id: 'google-id-new', email: 'newuser@example.com', username: 'New User', pictureUrl: null, emailVerified: true),
+            SocialAccount::PROVIDER_GOOGLE,
+            campaign: $this->campaign(),
+        );
+
+        $this->assertTrue($result->isNew);
+        $this->assertSame(['google', 'cpc', 'pmax-musiciens', 'www.google.com'], $this->storedCampaignOf($result->user->id));
+    }
+
+    /** A login is not a sign-up: the campaign of this visit says nothing about how the account came. */
+    public function test_find_or_create_user_records_no_campaign_on_a_login(): void
+    {
+        $existingUser = UserFactory::new()->asBaseUser()->create();
+        SocialAccountFactory::new()->create(['user' => $existingUser, 'provider' => SocialAccount::PROVIDER_GOOGLE, 'providerId' => 'google-id-123']);
+        self::getContainer()->get(RequestStack::class)->push(Request::create('/oauth/google/callback'));
+
+        $result = $this->getOAuthUserService()->findOrCreateUser(
+            new OAuthUserData(id: 'google-id-123', email: 'test@example.com', username: 'Test User', pictureUrl: null, emailVerified: true),
+            SocialAccount::PROVIDER_GOOGLE,
+            campaign: $this->campaign(),
+        );
+
+        $this->assertFalse($result->isNew);
+        $this->assertSame([null, null, null, null], $this->storedCampaignOf($existingUser->id));
+    }
+
+    public function test_find_or_create_user_records_no_campaign_on_a_link(): void
+    {
+        $currentUser = UserFactory::new()->asBaseUser()->create();
+        self::getContainer()->get(RequestStack::class)->push(Request::create('/oauth/google/callback'));
+
+        $result = $this->getOAuthUserService()->findOrCreateUser(
+            new OAuthUserData(id: 'google-id-456', email: 'oauth@example.com', username: 'OAuth User', pictureUrl: null, emailVerified: true),
+            SocialAccount::PROVIDER_GOOGLE,
+            $currentUser,
+            campaign: $this->campaign(),
+        );
+
+        $this->assertFalse($result->isNew);
+        $this->assertSame([null, null, null, null], $this->storedCampaignOf($currentUser->id));
+    }
+
     public function test_find_or_create_user_stores_the_locale_the_request_asks_for(): void
     {
         $this->mockProfilePictureImporter();
@@ -373,6 +422,21 @@ class OAuthUserServiceTest extends KernelTestCase
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
     }
 
+
+    private function campaign(): RegistrationCampaign
+    {
+        return RegistrationCampaign::fromFields(['utm_source' => 'google', 'utm_medium' => 'cpc', 'utm_campaign' => 'pmax-musiciens', 'referrer_host' => 'www.google.com']);
+    }
+
+    /** @return array{?string, ?string, ?string, ?string} */
+    private function storedCampaignOf(string $userId): array
+    {
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $stored = $this->getUserRepository()->find($userId);
+        $this->assertNotNull($stored);
+
+        return [$stored->registrationUtmSource, $stored->registrationUtmMedium, $stored->registrationUtmCampaign, $stored->registrationReferrerHost];
+    }
 
     private function mockProfilePictureImporter(): void
     {

@@ -1,7 +1,8 @@
 {
   "registrations": {
     "by_platform": "Sign-ups by platform",
-    "by_method": "Sign-ups by method"
+    "by_method": "Sign-ups by method",
+    "by_source": "Sign-ups by source"
   },
   "registration_platform": {
     "web": "Website",
@@ -13,6 +14,18 @@
     "password": "Password",
     "google": "Google",
     "apple": "Apple"
+  },
+  "registration_source": {
+    "direct": "Direct",
+    "other": "Other"
+  },
+  "registration_campaigns": {
+    "title": "Sign-ups by campaign",
+    "campaign": "Campaign",
+    "source": "Source",
+    "medium": "Medium",
+    "count": "Sign-ups",
+    "empty": "No sign-up came from a campaign in this period"
   },
   "time_series": {
     "segment_total": "{segment} ({total})",

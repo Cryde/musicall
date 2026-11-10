@@ -91,6 +91,43 @@
           :series-data="dashboardStore.timeSeries.registrations_by_method"
           :all-dates="allDates"
         />
+        <SegmentedTimeSeriesChart
+          :title="t('admin.registrations.by_source')"
+          icon="pi-megaphone"
+          :segments="sourceChart.segments"
+          :series-data="sourceChart.seriesData"
+          :all-dates="allDates"
+        />
+        <Card class="min-w-0">
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-flag text-primary" />
+              <span>{{ t('admin.registration_campaigns.title') }}</span>
+            </div>
+          </template>
+          <template #content>
+            <DataTable
+              v-if="metrics.registration_campaigns.length > 0"
+              :value="metrics.registration_campaigns"
+              size="small"
+              stripedRows
+            >
+              <Column field="campaign" :header="t('admin.registration_campaigns.campaign')">
+                <template #body="{ data }"><span class="break-all">{{ data.campaign ?? '-' }}</span></template>
+              </Column>
+              <Column field="source" :header="t('admin.registration_campaigns.source')">
+                <template #body="{ data }"><span class="break-all">{{ data.source ?? '-' }}</span></template>
+              </Column>
+              <Column field="medium" :header="t('admin.registration_campaigns.medium')">
+                <template #body="{ data }"><span class="break-all">{{ data.medium ?? '-' }}</span></template>
+              </Column>
+              <Column field="count" :header="t('admin.registration_campaigns.count')" />
+            </DataTable>
+            <div v-else class="text-surface-400 text-center py-4">
+              {{ t('admin.registration_campaigns.empty') }}
+            </div>
+          </template>
+        </Card>
       </div>
 
       <!-- Engagement & Retention Section -->
@@ -523,6 +560,7 @@ import SegmentedTimeSeriesChart from '../../components/Admin/SegmentedTimeSeries
 import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
 import UserSearchPanel from '../../components/Admin/UserSearchPanel.vue'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
+import { cappedSegments } from '../../utils/segmentedTimeSeries.js'
 
 // The values the server records (#1355), each with its literal key so the catalogue test sees it used.
 const PLATFORM_SEGMENTS = [
@@ -536,12 +574,43 @@ const METHOD_SEGMENTS = [
   { value: 'google', labelKey: 'admin.registration_method.google', color: '#f59e0b' },
   { value: 'apple', labelKey: 'admin.registration_method.apple', color: '#64748b' }
 ]
+// A source is a utm_source or a referring site, so there can be hundreds: the rest is one « Autres » bar (#1369).
+const SOURCE_SEGMENT_LIMIT = 6
+// What UserRepository::countRegistrationsByDateAndSource() names a web sign-up with neither.
+const DIRECT_SOURCE = '(direct)'
+const OTHER_SOURCES = '(other)'
+const SOURCE_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#0ea5e9', '#ec4899', '#14b8a6']
 
 const { t } = useI18n()
 const dashboardStore = useAdminDashboardStore()
 
 const metrics = computed(() => dashboardStore.userMetrics)
 const generalMetrics = computed(() => dashboardStore.generalMetrics)
+
+const sourceChart = computed(() => {
+  const series = dashboardStore.timeSeries.registrations_by_source
+  if (!series?.data) return { seriesData: series, segments: [] }
+
+  const { segments, dataPoints } = cappedSegments(
+    series.data.data_points,
+    SOURCE_SEGMENT_LIMIT,
+    OTHER_SOURCES
+  )
+  return {
+    seriesData: { ...series, data: { ...series.data, data_points: dataPoints } },
+    segments: segments.map(sourceSegment)
+  }
+})
+
+function sourceSegment(value, index) {
+  if (value === DIRECT_SOURCE) {
+    return { value, labelKey: 'admin.registration_source.direct', color: '#94a3b8' }
+  }
+  if (value === OTHER_SOURCES) {
+    return { value, labelKey: 'admin.registration_source.other', color: '#cbd5e1' }
+  }
+  return { value, label: value, color: SOURCE_COLORS[index % SOURCE_COLORS.length] }
+}
 
 const today = new Date()
 const dateFrom = ref(subDays(today, 30))
@@ -566,7 +635,8 @@ function loadDateFilteredData() {
     'logins',
     'messages',
     'registrations_by_platform',
-    'registrations_by_method'
+    'registrations_by_method',
+    'registrations_by_source'
   ]
   for (const metric of metricNames) {
     dashboardStore.loadTimeSeries(metric, from, to)

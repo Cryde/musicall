@@ -1,7 +1,8 @@
 {
   "registrations": {
     "by_platform": "Inscriptions par plateforme",
-    "by_method": "Inscriptions par méthode"
+    "by_method": "Inscriptions par méthode",
+    "by_source": "Inscriptions par source"
   },
   "registration_platform": {
     "web": "Site web",
@@ -13,6 +14,18 @@
     "password": "Mot de passe",
     "google": "Google",
     "apple": "Apple"
+  },
+  "registration_source": {
+    "direct": "Direct",
+    "other": "Autres"
+  },
+  "registration_campaigns": {
+    "title": "Inscriptions par campagne",
+    "campaign": "Campagne",
+    "source": "Source",
+    "medium": "Support",
+    "count": "Inscriptions",
+    "empty": "Aucune inscription venue d'une campagne sur cette période"
   },
   "time_series": {
     "segment_total": "{segment} ({total})",

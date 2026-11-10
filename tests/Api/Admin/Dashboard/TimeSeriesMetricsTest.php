@@ -131,6 +131,49 @@ class TimeSeriesMetricsTest extends ApiTestCase
         ]);
     }
 
+    /** Web sign-ups by the campaign's utm_source, else the referring site, else « (direct) » (#1369). */
+    public function test_get_time_series_registrations_by_source(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+
+        $today = new \DateTimeImmutable();
+        $todayStr = $today->format('Y-m-d');
+        $yesterdayStr = $today->modify('-1 day')->format('Y-m-d');
+
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationUtmSource' => 'google', 'registrationReferrerHost' => 'www.google.com']);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationUtmSource' => 'google']);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationReferrerHost' => 'www.facebook.com']);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationUtmMedium' => 'email', 'registrationUtmCampaign' => 'relance']);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day')]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationReferrerHost' => 'www.facebook.com']);
+        // The apps record no campaign: they would only swell « (direct) »
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Android]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => RegistrationPlatform::Ios]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::UnknownApp]);
+        // Outside the range
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-10 days'), 'registrationUtmSource' => 'google']);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=registrations_by_source&from=' . $yesterdayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'registrations_by_source',
+            'from' => $yesterdayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $yesterdayStr, 'segment' => '(direct)', 'count' => 1],
+                ['date_label' => $yesterdayStr, 'segment' => 'www.facebook.com', 'count' => 1],
+                ['date_label' => $todayStr, 'segment' => '(direct)', 'count' => 1],
+                ['date_label' => $todayStr, 'segment' => 'google', 'count' => 2],
+                ['date_label' => $todayStr, 'segment' => 'www.facebook.com', 'count' => 1],
+            ],
+            'total' => 6,
+        ]);
+    }
+
     public function test_get_time_series_comments(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create();

@@ -15,11 +15,12 @@ export default {
   logout() {
     return axios.post(Routing.generate('api_token_invalidate')).then((resp) => resp.data)
   },
-  register({ username, email, password }) {
+  // `attribution`: the campaign of the visit (#1369), see useLandingAttribution()
+  register({ username, email, password, attribution }) {
     return axios
       .post(
         Routing.generate('api_users_register'),
-        { username, email, password },
+        { username, email, password, ...attribution },
         {
           headers: {
             'Content-Type': 'application/ld+json',

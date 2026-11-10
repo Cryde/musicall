@@ -42,6 +42,7 @@
             <li><strong>Recherche de musiciens et de groupes</strong> : les critères de vos recherches (type, instrument, styles, ville), le nombre de résultats obtenus et, pour la recherche assistée, le texte libre que vous saisissez. Ces recherches sont enregistrées sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer le service</li>
             <li><strong>Données techniques</strong> : adresse IP, journaux du serveur, rapports d'erreur applicative</li>
             <li><strong>Mesure d'audience</strong> : statistiques de visite agrégées, sans cookie</li>
+            <li><strong>Origine de l'inscription</strong> (lorsque vous créez votre compte sur le site) : la campagne qui vous a amené, telle que l'indique le lien suivi (paramètres utm_source, utm_medium et utm_campaign), et le site d'où vous veniez, réduit à son nom de domaine, sans l'adresse de la page. La page les garde en mémoire le temps de votre visite, sans cookie ni stockage dans votre navigateur, et ils sont enregistrés avec votre compte s'il est créé pendant cette visite, uniquement pour des statistiques. Lors d'une connexion avec Google ou Apple, ils passent dans le lien de connexion et sont conservés quelques minutes sur nos serveurs, le temps qu'elle aboutisse</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Votre adresse IP sert à sécuriser le service et à limiter le débit des requêtes, et figure dans les journaux du serveur. Elle n'est pas conservée en base de données : les votes et les compteurs de vues reposent sur un identifiant haché qui ne permet pas de remonter à votre adresse. Les recherches enregistrées portent un identifiant haché qui change chaque jour : il sert à compter les personnes différentes sans permettre de relier vos recherches d'un jour à l'autre.
@@ -58,6 +59,7 @@
             <li>Sécuriser le service, prévenir les abus et le spam, limiter le débit des requêtes : <strong>intérêt légitime</strong> (art. 6.1.f)</li>
             <li>Détecter et corriger les erreurs techniques : <strong>intérêt légitime</strong></li>
             <li>Mesurer l'audience du site de façon agrégée afin de l'améliorer : <strong>intérêt légitime</strong></li>
+            <li>Savoir quelles campagnes et quels sites amènent les inscriptions, pour des statistiques : <strong>intérêt légitime</strong></li>
             <li>Interpréter votre recherche de musiciens en langage naturel pour la convertir en filtres : <strong>intérêt légitime</strong></li>
             <li>Enregistrer les recherches de musiciens et de groupes, sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer la recherche : <strong>intérêt légitime</strong></li>
             <li>Vous envoyer les emails nécessaires au fonctionnement de votre compte (validation d'adresse, réinitialisation de mot de passe, invitations) : <strong>exécution du contrat</strong></li>
@@ -173,7 +175,7 @@
             <li><strong>is_dark_mode</strong> : mémorisation du thème clair ou sombre que vous avez choisi (1 an)</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            Aucun cookie publicitaire, de profilage ou de suivi entre sites n'est déposé par MusicAll, et la mesure d'audience fonctionne sans cookie. Les contenus externes décrits à la section 5 peuvent en revanche déposer leurs propres cookies lorsqu'ils sont chargés.
+            Aucun cookie publicitaire, de profilage ou de suivi entre sites n'est déposé par MusicAll, et la mesure d'audience fonctionne sans cookie. La campagne et le site d'où vient votre visite (voir la section 2) ne sont conservés ni dans un cookie ni dans le stockage de votre navigateur. Les contenus externes décrits à la section 5 peuvent en revanche déposer leurs propres cookies lorsqu'ils sont chargés.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             L'application mobile ne dépose pas de cookie et ne contient aucun outil de mesure d'audience ou de publicité : votre session y est conservée dans le stockage sécurisé de votre téléphone (voir la section 11).
@@ -240,5 +242,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '7 novembre 2026'
+const lastUpdate = '10 novembre 2026'
 </script>

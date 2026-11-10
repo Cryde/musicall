@@ -13,6 +13,7 @@ import Tooltip from 'primevue/tooltip'
 import facebookLogoUrl from '../image/facebook-logo.jpg'
 import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
+import { rememberLandingAttribution } from './composables/useLandingAttribution.js'
 import { PRIME_VUE_CALENDAR_LOCALES } from './constants/primeVueLocale.js'
 import { DEFAULT_TITLE_KEY, refreshedDefaultTitle } from './i18n/defaultTitle.js'
 import { forActiveLocale } from './i18n/formatLocale.js'
@@ -24,6 +25,10 @@ import MusicAllPreset from './theme/musicAllPreset.js'
 import { hasLiveToken, isAuthEndpoint, refreshSession } from './utils/sessionRefresh.js'
 import { isChunkLoadError, reloadOnceForStaleBuild } from './utils/staleBuild.js'
 import { loginRouteReturningTo } from './utils/unauthenticatedRedirect.js'
+
+// First, while the URL is still the one the visitor landed on: the router has not navigated yet, and its
+// locale redirect may rewrite the path (#1369).
+rememberLandingAttribution()
 
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()

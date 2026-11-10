@@ -43,6 +43,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             ],
             'recent_registrations' => [],
             'top_messagers' => [],
+            'registration_campaigns' => [],
             'recent_teachers' => [],
             'total_users' => 1,
             'unconfirmed_accounts' => 0,
@@ -86,6 +87,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             'profile_completion_rates' => $response['profile_completion_rates'],
             'recent_registrations' => $response['recent_registrations'],
             'top_messagers' => [],
+            'registration_campaigns' => [],
             'recent_teachers' => [],
             'total_users' => 3,
             'unconfirmed_accounts' => 0,
@@ -143,6 +145,7 @@ class UserDashboardMetricsTest extends ApiTestCase
                     'avg_messages_per_day' => 0.2,
                 ],
             ],
+            'registration_campaigns' => [],
             'recent_teachers' => [],
             'total_users' => 2,
             'unconfirmed_accounts' => 0,
@@ -185,6 +188,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             ],
             'recent_registrations' => [],
             'top_messagers' => [],
+            'registration_campaigns' => [],
             'recent_teachers' => [],
             'total_users' => 1,
             'unconfirmed_accounts' => 1,
@@ -225,6 +229,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             ],
             'recent_registrations' => [],
             'top_messagers' => [],
+            'registration_campaigns' => [],
             'recent_teachers' => [],
             'total_users' => 1,
             'unconfirmed_accounts' => 0,
@@ -234,6 +239,49 @@ class UserDashboardMetricsTest extends ApiTestCase
                 'welcome' => 2,
                 'inactivity_reminder' => 1,
             ],
+        ]);
+    }
+
+    /** The campaigns of the range (#1369), most sign-ups first; a sign-up without any utm_* is left out. */
+    public function test_get_user_dashboard_metrics_with_registration_campaigns(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+        $musiciens = ['registrationUtmCampaign' => 'pmax-musiciens', 'registrationUtmSource' => 'google', 'registrationUtmMedium' => 'cpc'];
+
+        $this->createUserRegisteredOn(new \DateTime(), $musiciens);
+        $this->createUserRegisteredOn(new \DateTime(), [...$musiciens, 'registrationReferrerHost' => 'www.google.com']);
+        $this->createUserRegisteredOn(new \DateTime(), ['registrationUtmCampaign' => 'pmax-band-space', 'registrationUtmSource' => 'google', 'registrationUtmMedium' => 'cpc']);
+        $this->createUserRegisteredOn(new \DateTime(), ['registrationUtmSource' => 'newsletter', 'registrationUtmMedium' => 'email']);
+        // Neither a campaign nor any utm_*: not in the table
+        $this->createUserRegisteredOn(new \DateTime(), ['registrationReferrerHost' => 'www.facebook.com']);
+        $this->createUserRegisteredOn(new \DateTime(), []);
+        // Outside the range
+        $this->createUserRegisteredOn(new \DateTime('-10 days'), $musiciens);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserDashboardMetrics',
+            '@id' => '/api/admin/dashboard/users',
+            '@type' => 'UserDashboardMetrics',
+            'recent_empty_accounts' => $response['recent_empty_accounts'],
+            'profile_completion_rates' => $response['profile_completion_rates'],
+            'recent_registrations' => $response['recent_registrations'],
+            'top_messagers' => [],
+            'registration_campaigns' => [
+                ['campaign' => 'pmax-musiciens', 'source' => 'google', 'medium' => 'cpc', 'count' => 2],
+                ['campaign' => null, 'source' => 'newsletter', 'medium' => 'email', 'count' => 1],
+                ['campaign' => 'pmax-band-space', 'source' => 'google', 'medium' => 'cpc', 'count' => 1],
+            ],
+            'recent_teachers' => [],
+            'total_users' => 8,
+            'unconfirmed_accounts' => 0,
+            'total_musician_profiles' => 0,
+            'total_teacher_profiles' => 0,
+            'emails_sent_by_type' => [],
         ]);
     }
 
@@ -277,5 +325,11 @@ class UserDashboardMetricsTest extends ApiTestCase
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    /** @param array<string, ?string> $campaign */
+    private function createUserRegisteredOn(\DateTime $creationDatetime, array $campaign): void
+    {
+        UserFactory::new()->create(['creationDatetime' => $creationDatetime, 'confirmationDatetime' => $creationDatetime, ...$campaign]);
     }
 }
