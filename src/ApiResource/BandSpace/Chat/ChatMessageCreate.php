@@ -104,4 +104,7 @@ class ChatMessageCreate
         )],
     )]
     public ?File $voiceNote = null;
+
+    /** The id of the message this one answers (#1377), checked by ChatMessagePostProcessor against the channel. */
+    public ?string $replyTo = null;
 }

@@ -39,6 +39,12 @@
           @pointerdown="forgetLongPress"
           @click.capture="swallowClickAfterLongPress"
         >
+          <ChatReplyQuote
+            v-if="message.reply_to"
+            :quote="message.reply_to"
+            :is-mine="isMine"
+            @open="emit('open-reply')"
+          />
           <ChatMessageImage v-if="message.image && imageSrc" :image="message.image" :src="imageSrc" />
           <ChatMessageVoiceNote v-if="message.voice_note && loadVoiceNote" :voice-note="message.voice_note" :fetch-blob="loadVoiceNote" />
           <!-- An attachment-only message has no text (#971), and an empty line here would pad the
@@ -97,6 +103,16 @@
             <i class="pi pi-bookmark-fill" aria-hidden="true" />
             {{ t('band_space_chat.pin.pinned') }}
           </span>
+          <!-- First of the actions (#1377), revealed on hover like the others from `lg` up. -->
+          <button
+            v-if="canReply && !actionsInSheet"
+            type="button"
+            class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
+            :aria-label="t('band_space_chat.reply.action')"
+            @click="emit('reply')"
+          >
+            <i class="pi pi-reply text-xs" aria-hidden="true" />
+          </button>
           <!-- In a sheet, the actions are reached from here by a keyboard or a screen reader: out of
                sight until focused, since a finger opens them with a long press. -->
           <button
@@ -177,6 +193,7 @@ import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
 import ChatMessageImage from './ChatMessageImage.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'
 import ChatMessageVoiceNote from './ChatMessageVoiceNote.vue'
+import ChatReplyQuote from './ChatReplyQuote.vue'
 
 /**
  * One message of a conversation, the band chat's or a direct one (#1244). No store inside: the list
@@ -194,6 +211,8 @@ const props = defineProps({
   /** Fetches a voice note as a blob; null where the conversation has none. */
   loadVoiceNote: { type: Function, default: null },
   reactable: { type: Boolean, default: false },
+  /** The band chat only (#1377): its list decides, see canReplyToChatMessage(). */
+  canReply: { type: Boolean, default: false },
   canPin: { type: Boolean, default: false },
   isPinPending: { type: Boolean, default: false },
   pinLabel: { type: String, default: '' },
@@ -210,6 +229,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
+  'reply',
+  'open-reply',
   'pin',
   'create-task',
   'report',

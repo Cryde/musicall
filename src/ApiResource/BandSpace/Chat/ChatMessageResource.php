@@ -143,6 +143,15 @@ class ChatMessageResource
      */
     public ?array $voiceNote = null;
 
+    /**
+     * The message this one answers (#1377), null when it answers nothing. `excerpt` is one plain line,
+     * empty for a message without text; once the answered message is deleted, `is_deleted` is true and
+     * the excerpt and both media flags are emptied.
+     *
+     * @var array{id: string, author_id: string, author_display_name: string, excerpt: string, has_image: bool, has_voice_note: bool, is_deleted: bool}|null
+     */
+    public ?array $replyTo = null;
+
     /** Null until the author edits it, which is what the « modifié » marker reads (#966). */
     public ?DateTimeInterface $updateDatetime = null;
 

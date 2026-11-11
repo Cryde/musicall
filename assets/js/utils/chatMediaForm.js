@@ -11,6 +11,7 @@
  * @param {string|null} [message.thread] the thread IRI, for a direct conversation
  * @param {File|null} [message.image]
  * @param {File|null} [message.voiceNote]
+ * @param {string|null} [message.replyTo] the id of the message answered, in the band chat (#1377)
  * @returns {FormData}
  */
 export function mediaMessageForm({
@@ -18,7 +19,8 @@ export function mediaMessageForm({
   attachments = [],
   thread = null,
   image = null,
-  voiceNote = null
+  voiceNote = null,
+  replyTo = null
 }) {
   const form = new FormData()
   if (thread) form.append('thread', thread)
@@ -28,6 +30,7 @@ export function mediaMessageForm({
   }
   if (image) form.append('image', image)
   if (voiceNote) form.append('voice_note', voiceNote)
+  if (replyTo) form.append('reply_to', replyTo)
 
   return form
 }

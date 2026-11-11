@@ -59,6 +59,16 @@
     "go_to": "Go to {author}'s message",
     "unpin": "Unpin {author}'s message"
   },
+  "reply": {
+    "action": "Reply",
+    "banner": "Replying to {name}",
+    "cancel": "Cancel the reply",
+    "open_quoted": "See the message from {name}",
+    "photo": "Photo",
+    "voice_note": "Voice note",
+    "attachment": "Attachment",
+    "deleted": "Message deleted"
+  },
   "error": {
     "load_messages": "Could not load the chat",
     "load_older": "Could not load older messages.",

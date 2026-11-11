@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { canDeleteChatMessage } from './chatMessageActions.js'
+import { canDeleteChatMessage, canReplyToChatMessage } from './chatMessageActions.js'
 
 /**
  * These pin the rule the chat pane reads off a message before offering a bin, so it cannot drift
@@ -41,5 +41,24 @@ describe('canDeleteChatMessage', () => {
   it('refuses a missing message instead of throwing', () => {
     assert.equal(canDeleteChatMessage(null, true, true), false)
     assert.equal(canDeleteChatMessage(undefined, true, true), false)
+  })
+})
+
+describe('canReplyToChatMessage', () => {
+  it('lets anybody reply to a message', () => {
+    assert.equal(canReplyToChatMessage(message(), false), true)
+  })
+
+  it('refuses a deleted message', () => {
+    assert.equal(canReplyToChatMessage(message({ content: '', is_deleted: true }), false), false)
+  })
+
+  it('is not offered while an edit box is open', () => {
+    assert.equal(canReplyToChatMessage(message(), true), false)
+  })
+
+  it('refuses a missing message instead of throwing', () => {
+    assert.equal(canReplyToChatMessage(null, false), false)
+    assert.equal(canReplyToChatMessage(undefined, false), false)
   })
 })

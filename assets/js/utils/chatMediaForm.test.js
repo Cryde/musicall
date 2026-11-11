@@ -39,4 +39,16 @@ describe('mediaMessageForm', () => {
       ['voice_note', 'file:note-vocale.webm']
     ])
   })
+
+  it('names the message a band chat photo answers', () => {
+    const image = new File(['x'], 'scene.jpg', { type: 'image/jpeg' })
+
+    const form = mediaMessageForm({ content: '', image, replyTo: 'message-1' })
+
+    assert.deepEqual(fieldsOf(form), [
+      ['content', ''],
+      ['image', 'file:scene.jpg'],
+      ['reply_to', 'message-1']
+    ])
+  })
 })

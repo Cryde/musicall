@@ -81,6 +81,7 @@
               :image-src="message.image ? bandSpaceChatApi.imageUrl(bandSpaceId, message.image.file_id) : null"
               :load-voice-note="loadVoiceNote"
               reactable
+              :can-reply="canReplyToChatMessage(message, editingId !== null)"
               can-pin
               :is-pin-pending="chatPin.isPending(message)"
               :pin-label="chatPin.actionLabel(message)"
@@ -91,10 +92,12 @@
               :can-delete="canDelete(message)"
               :actions-in-sheet="actionsInSheet"
               @open-actions="openActions(message)"
+              @reply="handleReply(message)"
+              @open-reply="chatStore.jumpToMessage(bandSpaceId, message.reply_to.id)"
               @pin="chatPin.togglePin(message)"
               @create-task="handleCreateTask(message)"
               @report="openReport(message)"
-              @edit="startEdit(message)"
+              @edit="handleEdit(message)"
               @delete="confirmDelete(message)"
               @react="(emojiKey) => chatStore.toggleReaction(bandSpaceId, message.id, emojiKey)"
             >
@@ -165,6 +168,7 @@
     <MessageActionsSheet
       v-model:visible="isActionsOpen"
       :message="actionsMessage"
+      :can-reply="canReplyToChatMessage(actionsMessage, editingId !== null)"
       :can-edit="actionsMessage ? canEdit(actionsMessage) : false"
       :can-delete="actionsMessage ? canDelete(actionsMessage) : false"
       :can-report="actionsMessage ? !isMine(actionsMessage) && !actionsMessage.is_deleted : false"
@@ -173,7 +177,8 @@
       :can-create-task="actionsMessage ? !actionsMessage.is_deleted : false"
       :is-task-pending="actionsMessage ? chatStore.pendingTaskMessageId === actionsMessage.id : false"
       @react="(emojiKey) => chatStore.toggleReaction(bandSpaceId, actionsMessage.id, emojiKey)"
-      @edit="startEdit(actionsMessage)"
+      @reply="handleReply(actionsMessage)"
+      @edit="handleEdit(actionsMessage)"
       @pin="chatPin.togglePin(actionsMessage)"
       @create-task="handleCreateTask(actionsMessage)"
       @report="openReport(actionsMessage)"
@@ -196,7 +201,7 @@ import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
+import { canDeleteChatMessage, canReplyToChatMessage } from '../../../utils/chatMessageActions.js'
 import { readReceiptLabel } from '../../../utils/chatReadReceipt.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
@@ -216,6 +221,9 @@ const props = defineProps({
    */
   members: { type: Array, default: () => [] }
 })
+
+/** `reply`: a message was picked to answer, so the panel can put the member in the composer. */
+const emit = defineEmits(['reply'])
 
 const { t } = useI18n()
 const chatStore = useBandSpaceChatStore()
@@ -270,6 +278,17 @@ const {
   edit: (messageId, content) => chatStore.editMessage(props.bandSpaceId, messageId, content),
   remove: (messageId) => chatStore.deleteMessage(props.bandSpaceId, messageId)
 })
+
+function handleReply(message) {
+  chatStore.startReply(message)
+  emit('reply')
+}
+
+// A reply and an edit don't mix (#1377): the edit box takes over, and the reply goes.
+function handleEdit(message) {
+  chatStore.cancelReply()
+  startEdit(message)
+}
 
 function loadVoiceNote(fileId) {
   return bandSpaceChatApi.getVoiceNote(props.bandSpaceId, fileId)

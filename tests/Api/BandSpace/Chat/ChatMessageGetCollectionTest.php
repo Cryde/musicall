@@ -475,6 +475,7 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_by_display_names' => [],
             'read_count' => 0,
+            'reply_to' => null,
             'image' => null,
             'voice_note' => null,
         ];

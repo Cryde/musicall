@@ -119,16 +119,17 @@ export default {
    * same endpoint.
    *
    * @param {{image?: File, voiceNote?: File}|null} media
+   * @param {string|null} replyTo the id of the message this one answers (#1377)
    */
-  postMessage(bandSpaceId, content, attachments = [], media = null) {
+  postMessage(bandSpaceId, content, attachments = [], media = null, replyTo = null) {
     const url = Routing.generate('api_band_space_chat_messages_post', { bandSpaceId })
     const request = media
-      ? axios.post(url, mediaMessageForm({ content, attachments, ...media }), {
+      ? axios.post(url, mediaMessageForm({ content, attachments, ...media, replyTo }), {
           headers: { Accept: 'application/ld+json' }
         })
       : axios.post(
           url,
-          { content, attachments },
+          replyTo ? { content, attachments, reply_to: replyTo } : { content, attachments },
           { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
         )
 

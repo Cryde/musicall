@@ -5,8 +5,7 @@ namespace App\Service\Notification\Push;
 use App\Entity\Message\Message;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
-use App\Service\BandSpace\ChatMentionRenderer;
-use App\Service\Message\MessagePlainTextExtractor;
+use App\Service\Message\MessagePreviewText;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -20,8 +19,7 @@ readonly class PushContentBuilder
     private const int BODY_MAX_LENGTH = 140;
 
     public function __construct(
-        private MessagePlainTextExtractor $plainTextExtractor,
-        private ChatMentionRenderer $chatMentionRenderer,
+        private MessagePreviewText $previewText,
         private TranslatorInterface $translator,
     ) {
     }
@@ -159,16 +157,12 @@ readonly class PushContentBuilder
             return $this->translator->trans('message.attachment_only', [], self::DOMAIN, $locale);
         }
 
-        $content = $isChannel
-            ? $this->chatMentionRenderer->renderPlain($message->content, $mentionUsernamesById, $locale)
-            : $message->content;
-
-        return $this->plainTextExtractor->extractOneLine($content);
+        return $this->previewText->oneLine($message->content, $mentionUsernamesById, $isChannel, $locale);
     }
 
     private static function shorten(string $text): string
     {
-        return mb_strlen($text) > self::BODY_MAX_LENGTH ? mb_substr($text, 0, self::BODY_MAX_LENGTH - 1) . '…' : $text;
+        return MessagePreviewText::shorten($text, self::BODY_MAX_LENGTH);
     }
 
     /**

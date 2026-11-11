@@ -19,6 +19,9 @@
       {{ recorder.error.value }}
     </Message>
 
+    <!-- What the parent wants said about the draft, such as the message it answers (#1377). -->
+    <slot />
+
     <div v-if="image" class="relative mb-2 inline-block">
       <img
         :src="image.previewUrl"
@@ -450,6 +453,9 @@ async function focusTextBox() {
   await nextTick()
   composer.value?.focus()
 }
+
+// Picking a message to answer puts the member in the text box (#1377).
+defineExpose({ focus: focusTextBox })
 
 function toggleDraftPlayback() {
   const audio = draftAudio.value

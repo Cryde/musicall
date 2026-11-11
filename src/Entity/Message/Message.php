@@ -69,6 +69,14 @@ class Message
     public ?User $pinnedBy = null;
 
     /**
+     * The message this one answers (#1377). SET NULL because the band space purge deletes the rows;
+     * a deleted message is a tombstone that keeps its row, so the quote survives it.
+     */
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?Message $replyTo = null;
+
+    /**
      * The band space file holding the image this message carries (#973).
      *
      * No foreign key on purpose: the file can be purged from the Files trash while the message stays,

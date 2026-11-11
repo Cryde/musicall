@@ -3,6 +3,7 @@ import { computed, readonly, ref } from 'vue'
 import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
 import { i18n } from '../../i18n/index.js'
 import { createReactionToggle } from '../../utils/chatReactionToggle.js'
+import { replyQuoteFromMessage, withQuotesRefreshed } from '../../utils/chatReply.js'
 import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
 import {
   isHeld,
@@ -79,6 +80,11 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   // What the list should scroll to and light up. A fresh object each time, so asking for the same
   // message twice still moves the pane.
   const focusRequest = ref(null)
+  /**
+   * The message the composer answers (#1377), as the quote the reply will carry. Kept through a failed
+   * send, like the draft it belongs to, and dropped once the reply is out.
+   */
+  const replyTarget = ref(null)
 
   const hasOlderMessages = computed(() =>
     isAtTail.value
@@ -286,6 +292,14 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     }
   }
 
+  function startReply(message) {
+    replyTarget.value = replyQuoteFromMessage(message)
+  }
+
+  function cancelReply() {
+    replyTarget.value = null
+  }
+
   function dismissJumpError() {
     jumpError.value = null
   }
@@ -308,10 +322,21 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
    */
   async function sendMessage(bandSpaceId, content, attachments = [], media = null) {
     isSending.value = true
+    const replyToId = replyTarget.value?.id ?? null
 
     try {
-      const message = await bandSpaceChatApi.postMessage(bandSpaceId, content, attachments, media)
+      const message = await bandSpaceChatApi.postMessage(
+        bandSpaceId,
+        content,
+        attachments,
+        media,
+        replyToId
+      )
       typingNotifier.reset()
+      // Unless another message was picked meanwhile: that reply is still to be written.
+      if (replyTarget.value?.id === replyToId) {
+        replyTarget.value = null
+      }
       // Written from a window far up the history: appending it there would open a gap between the
       // window and today. The member wrote it, so they mean to see it, where it really is.
       if (!isAtTail.value) {
@@ -442,9 +467,26 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
    */
   async function deleteMessage(bandSpaceId, messageId) {
     await bandSpaceChatApi.deleteMessage(bandSpaceId, messageId)
-    messages.value = messages.value.map((message) =>
-      message.id === messageId ? { ...message, content: '', is_deleted: true } : message
-    )
+    const tombstones = []
+    messages.value = messages.value.map((message) => {
+      if (message.id !== messageId) return message
+      const tombstone = { ...message, content: '', is_deleted: true }
+      tombstones.push(tombstone)
+      return tombstone
+    })
+    refreshQuotesOf(tombstones)
+  }
+
+  /**
+   * The quotes on screen and the banner follow what they answer (#1377): a reply cannot be sent to a
+   * deleted message, so the banner goes rather than leading to a refused send.
+   */
+  function refreshQuotesOf(answered) {
+    messages.value = withQuotesRefreshed(messages.value, answered)
+    const target = answered.find((message) => message.id === replyTarget.value?.id)
+    if (target) {
+      replyTarget.value = target.is_deleted ? null : replyQuoteFromMessage(target)
+    }
   }
 
   /**
@@ -632,6 +674,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
           fetched,
           reactionToggle.pendingMessageIds()
         )
+        refreshQuotesOf(fetched)
       } catch (e) {
         // The next load puts it right; a live refresh must never turn a readable pane into an error.
         console.error('Failed to refresh a changed chat message:', e)
@@ -743,6 +786,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     isLoadingOlder.value = false
     loadOlderError.value = null
     isSending.value = false
+    replyTarget.value = null
     reactionError.value = null
     reactionToggle.reset()
     pinnedMessages.value = []
@@ -776,6 +820,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     jumpError: readonly(jumpError),
     jumpingTo: readonly(jumpingTo),
     focusRequest: readonly(focusRequest),
+    replyTarget: readonly(replyTarget),
     hasOlderMessages,
     hasNewerMessages,
     loadMessages,
@@ -788,6 +833,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     pinMessage,
     unpinMessage,
     sendMessage,
+    startReply,
+    cancelReply,
     toggleReaction,
     editMessage,
     deleteMessage,

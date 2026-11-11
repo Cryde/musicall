@@ -27,6 +27,9 @@
       </div>
 
       <ul class="m-0 list-none divide-y divide-surface-200 border-t border-surface-200 p-0 dark:divide-surface-700 dark:border-surface-700">
+        <li v-if="canReply">
+          <SheetAction icon="pi-reply" @click="act(() => emit('reply'))">{{ t('band_space_chat.reply.action') }}</SheetAction>
+        </li>
         <li v-if="text">
           <SheetAction icon="pi-copy" @click="act(copy)">{{ t('message.actions.copy') }}</SheetAction>
         </li>
@@ -72,7 +75,7 @@ import SheetAction from '../Global/SheetAction.vue'
 
 /**
  * What a long press on a message opens where there is no hover, in a direct conversation and in the
- * band chat: the reactions, then copy, edit, pin, make a task, report and delete as the message allows,
+ * band chat: the reactions, then reply, copy, edit, pin, make a task, report and delete as the message allows,
  * in the Android app's order. The conversation does the work; this only asks.
  */
 const props = defineProps({
@@ -81,13 +84,14 @@ const props = defineProps({
   canDelete: { type: Boolean, default: false },
   canReport: { type: Boolean, default: false },
   // The band chat only.
+  canReply: { type: Boolean, default: false },
   canPin: { type: Boolean, default: false },
   isPinPending: { type: Boolean, default: false },
   canCreateTask: { type: Boolean, default: false },
   isTaskPending: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['react', 'edit', 'pin', 'create-task', 'report', 'delete'])
+const emit = defineEmits(['react', 'reply', 'edit', 'pin', 'create-task', 'report', 'delete'])
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 

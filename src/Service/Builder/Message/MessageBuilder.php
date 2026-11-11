@@ -15,7 +15,7 @@ use App\Repository\Message\MessageContactOriginRepository;
 use App\Repository\Message\MessageFileRepository;
 use App\Repository\Message\MessageReactionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
-use App\Service\Message\MessagePlainTextExtractor;
+use App\Service\Message\MessagePreviewText;
 use App\Service\Message\ThreadSeenPosition;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
@@ -26,7 +26,7 @@ readonly class MessageBuilder
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $contentSanitizer,
-        private MessagePlainTextExtractor $plainTextExtractor,
+        private MessagePreviewText $previewText,
         private ChatMentionRenderer $chatMentionRenderer,
         private ContactOriginBuilder $contactOriginBuilder,
         private MessageContactOriginRepository $messageContactOriginRepository,
@@ -202,11 +202,7 @@ readonly class MessageBuilder
             return $this->translator->trans('message.preview.attachment_only');
         }
 
-        $content = $isChannel
-            ? $this->chatMentionRenderer->renderPlain($entity->content, $mentionUsernamesById)
-            : $entity->content;
-
-        return $this->plainTextExtractor->extractOneLine($content);
+        return $this->previewText->oneLine($entity->content, $mentionUsernamesById, $isChannel);
     }
 
     private function buildShallowThread(?string $threadId): MessageThreadResource
