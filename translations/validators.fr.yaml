@@ -28,6 +28,7 @@ band_space.chat.image_too_large: "L'image est trop volumineuse ({{ size }} {{ su
 band_space.chat.image_too_many_pixels: "L'image est trop grande ({{ pixels }} pixels), la limite est de {{ max_pixels }} pixels"
 band_space.chat.image_type_invalid: "Format d'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF)"
 band_space.chat.reaction_unknown: "Réaction inconnue"
+band_space.chat.reply_to_invalid: "Le message auquel tu réponds n'est plus disponible"
 band_space.chat.tab_id_invalid: "Identifiant d'onglet invalide"
 band_space.chat.voice_note_must_be_alone: "Une note vocale s'envoie seule, sans texte, image ni pièce jointe"
 band_space.chat.voice_note_too_large: "La note vocale est trop volumineuse ({{ size }} {{ suffix }}), la limite est de {{ limit }} {{ suffix }}"

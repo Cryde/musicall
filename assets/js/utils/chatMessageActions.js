@@ -28,3 +28,15 @@ export function canDeleteChatMessage(message, isAuthor, isAdmin) {
 
   return isAuthor || isAdmin
 }
+
+/**
+ * « Répondre » (#1377): any member, on any message still there. Not while an edit box is open, since
+ * a reply and an edit would share the composer's attention.
+ *
+ * @param {{is_deleted?: boolean}} message
+ * @param {boolean} isEditing Whether the viewer has an edit box open in this conversation.
+ * @returns {boolean}
+ */
+export function canReplyToChatMessage(message, isEditing) {
+  return Boolean(message) && !message.is_deleted && !isEditing
+}

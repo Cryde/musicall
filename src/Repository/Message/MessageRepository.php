@@ -46,7 +46,7 @@ class MessageRepository extends ServiceEntityRepository
      * tombstones out would leave holes in a conversation and put the page size out of step with the
      * count below (#967).
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable, replyToId: ?string, replyToContent: ?string, replyToDeletionDatetime: ?\DateTimeImmutable, replyToImageFileId: ?string, replyToVoiceNoteFileId: ?string, replyToAuthorId: ?string, replyToAuthorUsername: ?string, replyToAuthorDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findForThread(MessageThread $thread, int $limit, int $offset): array
     {
@@ -66,7 +66,7 @@ class MessageRepository extends ServiceEntityRepository
      * message is far up the history and therefore almost never on the page the pane has loaded (#969).
      * Unbounded on purpose: ChatMessagePinProcessor caps a channel at ten, so there is no page to turn.
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable, replyToId: ?string, replyToContent: ?string, replyToDeletionDatetime: ?\DateTimeImmutable, replyToImageFileId: ?string, replyToVoiceNoteFileId: ?string, replyToAuthorId: ?string, replyToAuthorUsername: ?string, replyToAuthorDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findPinnedForThread(MessageThread $thread): array
     {
@@ -86,7 +86,7 @@ class MessageRepository extends ServiceEntityRepository
      * message sits without counting everything newer, and the id breaks the ties the second granular
      * column produces constantly, in the same direction the list orders them.
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable, replyToId: ?string, replyToContent: ?string, replyToDeletionDatetime: ?\DateTimeImmutable, replyToImageFileId: ?string, replyToVoiceNoteFileId: ?string, replyToAuthorId: ?string, replyToAuthorUsername: ?string, replyToAuthorDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findOlderInThread(MessageThread $thread, Message $anchor, int $limit, bool $inclusive = false): array
     {
@@ -108,7 +108,7 @@ class MessageRepository extends ServiceEntityRepository
      * The messages written after `$anchor`, oldest first, at most `$limit` of them. The mirror of
      * findOlderInThread().
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable, replyToId: ?string, replyToContent: ?string, replyToDeletionDatetime: ?\DateTimeImmutable, replyToImageFileId: ?string, replyToVoiceNoteFileId: ?string, replyToAuthorId: ?string, replyToAuthorUsername: ?string, replyToAuthorDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findNewerInThread(MessageThread $thread, Message $anchor, int $limit): array
     {
@@ -166,10 +166,21 @@ class MessageRepository extends ServiceEntityRepository
                 'pinner.id AS pinnedById',
                 'pinner.username AS pinnedByUsername',
                 'pinner.deletionDatetime AS pinnedByDeletionDatetime',
+                // The message this one answers (#1377), for its quote, joined for the same reason.
+                'answered.id AS replyToId',
+                'answered.content AS replyToContent',
+                'answered.deletionDatetime AS replyToDeletionDatetime',
+                'answered.imageFileId AS replyToImageFileId',
+                'answered.voiceNoteFileId AS replyToVoiceNoteFileId',
+                'answeredAuthor.id AS replyToAuthorId',
+                'answeredAuthor.username AS replyToAuthorUsername',
+                'answeredAuthor.deletionDatetime AS replyToAuthorDeletionDatetime',
             )
             ->join('message.author', 'author')
             ->leftJoin('author.profilePicture', 'picture')
             ->leftJoin('message.pinnedBy', 'pinner')
+            ->leftJoin('message.replyTo', 'answered')
+            ->leftJoin('answered.author', 'answeredAuthor')
             ->where('message.thread = :thread')
             ->setParameter('thread', $thread);
     }

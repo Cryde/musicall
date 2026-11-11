@@ -9,9 +9,8 @@ use App\Event\MessagePostedEvent;
 use App\EventSubscriber\MessagePostedListener;
 use App\Messenger\SendPushNotification;
 use App\Service\BandSpace\BandSpaceMemberNames;
-use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\BandSpace\ChatMentionResolver;
-use App\Service\Message\MessagePlainTextExtractor;
+use App\Service\Message\MessagePreviewText;
 use App\Service\Message\ThreadMemberResolver;
 use App\Service\Notification\NotificationCreator;
 use App\Service\Notification\Push\PushContentBuilder;
@@ -122,8 +121,7 @@ class PushRecipientLocaleTest extends KernelTestCase
     private function builder(TranslatorInterface $translator): PushContentBuilder
     {
         return new PushContentBuilder(
-            self::getContainer()->get(MessagePlainTextExtractor::class),
-            self::getContainer()->get(ChatMentionRenderer::class),
+            self::getContainer()->get(MessagePreviewText::class),
             $translator,
         );
     }

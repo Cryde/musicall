@@ -15,12 +15,19 @@ use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\Message\MessageReactionsBuilder;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use App\Service\Message\MessageAttachmentResolver;
+use App\Service\Message\MessagePreviewText;
 use App\Translation\DisplayNameTranslator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
+/**
+ * @phpstan-type AnsweredMessage array{id: string, content: string, isDeleted: bool, hasImage: bool, hasVoiceNote: bool, authorId: string, authorUsername: string, authorIsDeleted: bool}
+ * @phpstan-type ReplyQuote array{id: string, author_id: string, author_display_name: string, excerpt: string, has_image: bool, has_voice_note: bool, is_deleted: bool}
+ */
 readonly class ChatMessageBuilder
 {
+    private const int REPLY_EXCERPT_MAX_LENGTH = 140;
+
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
@@ -34,6 +41,7 @@ readonly class ChatMessageBuilder
         private BandSpaceMemberNames $memberNames,
         private DisplayNameTranslator $displayNames,
         private MessageReactionsBuilder $reactionsBuilder,
+        private MessagePreviewText $previewText,
     ) {
     }
 
@@ -44,7 +52,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedById: ?string, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable, replyToId: ?string, replyToContent: ?string, replyToDeletionDatetime: ?\DateTimeImmutable, replyToImageFileId: ?string, replyToVoiceNoteFileId: ?string, replyToAuthorId: ?string, replyToAuthorUsername: ?string, replyToAuthorDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param BandSpaceMembership $viewer who is reading: it decides the reaction tallies marked as theirs,
      *                                   the attachment titles they may see (#1048), and which rows
      *                                   carry their editable content.
@@ -57,11 +65,18 @@ readonly class ChatMessageBuilder
     {
         $viewerId = (string) $viewer->user->id;
         $messageIds = array_map(static fn (array $row): string => (string) $row['id'], $rows);
+        $answeredByMessage = [];
+        foreach ($rows as $row) {
+            $answeredByMessage[(string) $row['id']] = $this->answeredFromRow($row);
+        }
 
         // One query for the whole page, never one per message. The lookup lives here rather than in
         // the caller so that no entry point can forget it and quietly render every name as
-        // `@inconnu` (#964).
-        $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds($messageIds, $this->displayNames->deletedUser());
+        // `@inconnu` (#964). The answered messages ride along, for the names in their quotes (#1377).
+        $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds(
+            $this->withAnsweredIds($messageIds, $answeredByMessage),
+            $this->displayNames->deletedUser(),
+        );
         // Same rule, same reason (#968): one grouped query for the page, here rather than in the
         // caller so no entry point can forget it and silently drop every reaction.
         $reactionsByMessage = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer->user);
@@ -111,6 +126,7 @@ readonly class ChatMessageBuilder
                     $row['voiceNotePeaks'],
                     $liveMediaFileIds,
                 ),
+                $this->replyQuoteOf($answeredByMessage[(string) $row['id']], $bandSpaceId, $mentionsByMessage),
             ),
             $rows,
         );
@@ -128,6 +144,11 @@ readonly class ChatMessageBuilder
             array_values(array_filter([$imageFileId, $voiceNoteFileId], static fn (?string $id): bool => $id !== null)),
             $bandSpaceId,
         );
+        $answered = $this->answeredFromEntity($entity->replyTo);
+        $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds(
+            $this->withAnsweredIds([$messageId], [$answered]),
+            $this->displayNames->deletedUser(),
+        );
 
         return $this->build(
             $messageId,
@@ -138,7 +159,7 @@ readonly class ChatMessageBuilder
             $this->profilePictureUrlBuilder->build($entity->author),
             $entity->content,
             $entity->creationDatetime,
-            $this->messageMentionRepository->findUsernamesByMessageIds([$messageId], $this->displayNames->deletedUser())[$messageId] ?? [],
+            $mentionsByMessage[$messageId] ?? [],
             $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer->user)[$messageId] ?? [],
             $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId, $viewer)[$messageId] ?? [],
             $entity->updateDatetime,
@@ -156,7 +177,103 @@ readonly class ChatMessageBuilder
             ),
             $this->imageOf($imageFileId, $liveMediaFileIds),
             $this->voiceNoteOf($voiceNoteFileId, $entity->voiceNoteDurationSeconds, $entity->voiceNotePeaks, $liveMediaFileIds),
+            $this->replyQuoteOf($answered, $bandSpaceId, $mentionsByMessage),
         );
+    }
+
+    /**
+     * @param array{replyToId: ?string, replyToContent: ?string, replyToDeletionDatetime: ?\DateTimeImmutable, replyToImageFileId: ?string, replyToVoiceNoteFileId: ?string, replyToAuthorId: ?string, replyToAuthorUsername: ?string, replyToAuthorDeletionDatetime: ?\DateTimeImmutable} $row
+     *
+     * @return AnsweredMessage|null
+     */
+    private function answeredFromRow(array $row): ?array
+    {
+        if ($row['replyToId'] === null || $row['replyToAuthorId'] === null) {
+            return null;
+        }
+
+        return [
+            'id' => (string) $row['replyToId'],
+            'content' => (string) $row['replyToContent'],
+            'isDeleted' => $row['replyToDeletionDatetime'] !== null,
+            'hasImage' => $row['replyToImageFileId'] !== null,
+            'hasVoiceNote' => $row['replyToVoiceNoteFileId'] !== null,
+            'authorId' => (string) $row['replyToAuthorId'],
+            'authorUsername' => (string) $row['replyToAuthorUsername'],
+            'authorIsDeleted' => $row['replyToAuthorDeletionDatetime'] !== null,
+        ];
+    }
+
+    /**
+     * @return AnsweredMessage|null
+     */
+    private function answeredFromEntity(?Message $answered): ?array
+    {
+        if (!$answered instanceof Message) {
+            return null;
+        }
+
+        return [
+            'id' => (string) $answered->id,
+            'content' => $answered->content,
+            'isDeleted' => $answered->isDeleted(),
+            'hasImage' => $answered->imageFileId !== null,
+            'hasVoiceNote' => $answered->isVoiceNote(),
+            'authorId' => (string) $answered->author->id,
+            'authorUsername' => $answered->author->username,
+            'authorIsDeleted' => $answered->author->isDeleted(),
+        ];
+    }
+
+    /**
+     * @param array<string>               $messageIds
+     * @param array<AnsweredMessage|null> $answered
+     *
+     * @return list<string>
+     */
+    private function withAnsweredIds(array $messageIds, array $answered): array
+    {
+        foreach ($answered as $message) {
+            if ($message !== null) {
+                $messageIds[] = $message['id'];
+            }
+        }
+
+        return array_values(array_unique($messageIds));
+    }
+
+    /**
+     * The quote a reply shows (#1377). A deleted message keeps its author, so the quote still says who
+     * was answered, and nothing of what it said.
+     *
+     * @param AnsweredMessage|null                 $answered
+     * @param array<string, array<string, string>> $mentionsByMessage message id => the names its mentions resolve to
+     *
+     * @return ReplyQuote|null
+     */
+    private function replyQuoteOf(?array $answered, string $bandSpaceId, array $mentionsByMessage): ?array
+    {
+        if ($answered === null) {
+            return null;
+        }
+
+        $isDeleted = $answered['isDeleted'];
+        $excerpt = $isDeleted || $answered['content'] === ''
+            ? ''
+            : MessagePreviewText::shorten(
+                $this->previewText->oneLine($answered['content'], $mentionsByMessage[$answered['id']] ?? [], true),
+                self::REPLY_EXCERPT_MAX_LENGTH,
+            );
+
+        return [
+            'id' => $answered['id'],
+            'author_id' => $answered['authorId'],
+            'author_display_name' => $this->memberNames->nameById($bandSpaceId, $answered['authorId'], $answered['authorUsername'], $answered['authorIsDeleted']),
+            'excerpt' => $excerpt,
+            'has_image' => !$isDeleted && $answered['hasImage'],
+            'has_voice_note' => !$isDeleted && $answered['hasVoiceNote'],
+            'is_deleted' => $isDeleted,
+        ];
     }
 
     /**
@@ -251,6 +368,7 @@ readonly class ChatMessageBuilder
      * @param list<array{userId: string, username: string}> $readers
      * @param array{file_id: string, is_available: bool}|null $image
      * @param array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool}|null $voiceNote
+     * @param ReplyQuote|null $replyTo
      */
     private function build(
         string $id,
@@ -274,6 +392,7 @@ readonly class ChatMessageBuilder
         array $readers = [],
         ?array $image = null,
         ?array $voiceNote = null,
+        ?array $replyTo = null,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -320,6 +439,7 @@ readonly class ChatMessageBuilder
         $dto->readCount = count($readers);
         $dto->image = $image;
         $dto->voiceNote = $voiceNote;
+        $dto->replyTo = $replyTo;
 
         return $dto;
     }

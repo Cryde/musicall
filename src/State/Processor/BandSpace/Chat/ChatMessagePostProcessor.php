@@ -4,6 +4,7 @@ namespace App\State\Processor\BandSpace\Chat;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use ApiPlatform\Validator\Exception\ValidationException;
 use App\ApiResource\BandSpace\Chat\ChatMessageCreate;
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\BandSpace\BandSpaceFile;
@@ -14,6 +15,7 @@ use App\Entity\Message\MessageMention;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\Event\BandSpaceChatMentionedEvent;
+use App\Repository\Message\MessageRepository;
 use App\Repository\Message\MessageThreadRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\Chat\ChatMediaStore;
@@ -31,15 +33,22 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @implements ProcessorInterface<ChatMessageCreate, ChatMessageResource>
  */
 readonly class ChatMessagePostProcessor implements ProcessorInterface
 {
+    public const string REPLY_TO_INVALID_ERROR_CODE = 'music_all_e51d39ee-c6c8-407c-ac27-52a6db756708';
+
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private MessageThreadRepository $messageThreadRepository,
+        private MessageRepository $messageRepository,
         private MessageSenderProcedure $messageSenderProcedure,
         private ChatMessageBuilder $chatMessageBuilder,
         private ChatMentionResolver $chatMentionResolver,
@@ -49,6 +58,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         private EventDispatcherInterface $eventDispatcher,
         private LoggerInterface $logger,
         private Security $security,
+        private TranslatorInterface $translator,
         // The same budget as a direct message, on purpose: one person has one sending allowance
         // whether they are writing to their band or to somebody in particular, and a conversation
         // that needs more than 20 messages a minute is not a band chat.
@@ -79,11 +89,14 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
             throw new NotFoundHttpException('band_space.chat.no_conversation');
         }
 
+        // Before any media is stored, so a refused reply leaves nothing behind in Files.
+        $replyTo = $this->answeredMessage($data->replyTo, $channel);
+
         $content = $this->contentOf($data);
         $image = $data->image instanceof File ? $this->chatMediaStore->storeImage($data->image, $bandSpace, $user) : null;
         $voiceNote = $data->voiceNote instanceof File ? $this->chatMediaStore->storeVoiceNote($data->voiceNote, $bandSpace, $user) : null;
         $media = $image ?? $voiceNote?->file;
-        $message = $this->sendMessage($channel, $user, $content, $media);
+        $message = $this->sendMessage($channel, $user, $content, $media, $replyTo);
 
         // Set before attachMedia(), whose flush writes them along with the attachment row.
         if ($image instanceof BandSpaceFile) {
@@ -116,16 +129,54 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
      * The media is already stored at this point, so a message that could not be sent takes it back
      * out: otherwise it would sit in the Files root, attached to nothing.
      */
-    private function sendMessage(MessageThread $channel, User $user, string $content, ?BandSpaceFile $media): Message
+    private function sendMessage(MessageThread $channel, User $user, string $content, ?BandSpaceFile $media, ?Message $replyTo): Message
     {
         try {
-            return $this->messageSenderProcedure->processByThread($channel, $user, $content);
+            return $this->messageSenderProcedure->processByThread(
+                $channel,
+                $user,
+                $content,
+                static function (Message $message) use ($replyTo): void {
+                    $message->replyTo = $replyTo;
+                },
+            );
         } catch (\Throwable $e) {
             if ($media instanceof BandSpaceFile) {
                 $this->discardQuietly($media);
             }
             throw $e;
         }
+    }
+
+    /**
+     * A live message of this channel, or a 422: an id from another conversation is refused the same
+     * way as an unknown one, so it cannot be used to probe it.
+     */
+    private function answeredMessage(?string $replyTo, MessageThread $channel): ?Message
+    {
+        // Empty is no reply: a multipart client may send every field of its form, filled or not.
+        if ($replyTo === null || $replyTo === '') {
+            return null;
+        }
+
+        $message = Uuid::isValid($replyTo) ? $this->messageRepository->findOneInThread($replyTo, $channel) : null;
+        if ($message instanceof Message && !$message->isDeleted()) {
+            return $message;
+        }
+
+        $messageKey = 'band_space.chat.reply_to_invalid';
+        // Built by hand, so it skips the validator, which is what translates a constraint message.
+        throw new ValidationException(new ConstraintViolationList([
+            new ConstraintViolation(
+                $this->translator->trans($messageKey, [], 'validators'),
+                $messageKey,
+                [],
+                null,
+                'replyTo',
+                $replyTo,
+                code: self::REPLY_TO_INVALID_ERROR_CODE,
+            ),
+        ]));
     }
 
     /**

@@ -165,6 +165,8 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         MessageReactionFactory::new(['message' => $message, 'user' => $member])->create();
         // And the same again for an attachment (#970).
         MessageAttachmentFactory::new(['message' => $message])->create();
+        // A reply points at a message of the same channel (#1377), which the one DELETE removes along with it.
+        $reply = MessageFactory::new(['thread' => $channel, 'author' => $member, 'replyTo' => $message])->create();
 
         $channel->lastMessage = $message;
         \Zenstruck\Foundry\Persistence\save($channel);
@@ -176,6 +178,7 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         $dueSpaceId = (string) $dueSpace->id;
         $channelId = (string) $channel->id;
         $messageId = (string) $message->id;
+        $replyId = (string) $reply->id;
         $directThreadId = (string) $directThread->id;
         $directMessageId = (string) $directMessage->id;
 
@@ -185,6 +188,7 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         $this->assertSame(0, $this->countBandSpaceRows($dueSpaceId));
         $this->assertSame(0, $this->countRows('message_thread', 'band_space_id', $dueSpaceId));
         $this->assertSame(0, $this->countRows('message', 'thread_id', $channelId));
+        $this->assertSame(0, $this->countRows('message', 'id', $replyId));
         $this->assertSame(0, $this->countRows('message_thread_meta', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_participant', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_mention', 'message_id', $messageId));

@@ -57,11 +57,15 @@
       ref="messageList"
       :band-space-id="bandSpaceId"
       :members="settingsStore.members"
+      @reply="composer?.focus()"
     />
 
     <ChatTypingLine :names="typistNames" />
 
+    <!-- Escape drops the reply. The `@` suggestions stop their own Escape first, so closing the list
+         keeps the reply. -->
     <ChatComposer
+      ref="composer"
       :members="settingsStore.members"
       :band-space-id="bandSpaceId"
       media
@@ -72,7 +76,14 @@
       :is-sending="chatStore.isSending"
       @sent="messageList?.scrollToBottom()"
       @typing="chatStore.notifyTyping()"
-    />
+      @keydown.esc="chatStore.cancelReply()"
+    >
+      <ChatReplyBanner
+        v-if="chatStore.replyTarget"
+        :quote="chatStore.replyTarget"
+        @cancel="cancelReply"
+      />
+    </ChatComposer>
   </div>
 </template>
 
@@ -90,6 +101,7 @@ import ChatComposer from './ChatComposer.vue'
 import ChatMessageList from './ChatMessageList.vue'
 import ChatPinnedBar from './ChatPinnedBar.vue'
 import ChatPresenceAvatar from './ChatPresenceAvatar.vue'
+import ChatReplyBanner from './ChatReplyBanner.vue'
 import ChatTypingLine from './ChatTypingLine.vue'
 
 /**
@@ -116,6 +128,7 @@ const chatStore = useBandSpaceChatStore()
 // would be the point to extract a shared one instead.
 const settingsStore = useBandSpaceSettingsStore()
 const messageList = useTemplateRef('messageList')
+const composer = useTemplateRef('composer')
 
 // Synchronously, before the first render, so another band's conversation never flashes here.
 chatStore.clear()
@@ -159,6 +172,12 @@ const onlineMembers = computed(() =>
   settingsStore.members.filter((member) => chatStore.onlineUserIds.includes(member.user_id))
 )
 onUnmounted(() => chatStore.clear())
+
+// Back to the text box, which the close button took the focus from.
+function cancelReply() {
+  chatStore.cancelReply()
+  composer.value?.focus()
+}
 
 const typistNames = computed(() => memberNames(chatStore.currentTypists, settingsStore.members))
 </script>

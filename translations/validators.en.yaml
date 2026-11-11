@@ -28,6 +28,7 @@ band_space.chat.image_too_large: "The image is too large ({{ size }} {{ suffix }
 band_space.chat.image_too_many_pixels: "The image is too big ({{ pixels }} pixels), the limit is {{ max_pixels }} pixels"
 band_space.chat.image_type_invalid: "Unsupported image format (accepted formats: JPEG, PNG, WebP, GIF)"
 band_space.chat.reaction_unknown: "Unknown reaction"
+band_space.chat.reply_to_invalid: "The message you are replying to is no longer available"
 band_space.chat.tab_id_invalid: "Invalid tab identifier"
 band_space.chat.voice_note_must_be_alone: "A voice note is sent on its own, with no text, image or attachment"
 band_space.chat.voice_note_too_large: "The voice note is too large ({{ size }} {{ suffix }}), the limit is {{ limit }} {{ suffix }}"

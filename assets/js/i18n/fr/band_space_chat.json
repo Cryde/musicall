@@ -59,6 +59,16 @@
     "go_to": "Aller au message de {author}",
     "unpin": "Détacher le message de {author}"
   },
+  "reply": {
+    "action": "Répondre",
+    "banner": "Réponse à {name}",
+    "cancel": "Annuler la réponse",
+    "open_quoted": "Voir le message de {name}",
+    "photo": "Photo",
+    "voice_note": "Note vocale",
+    "attachment": "Pièce jointe",
+    "deleted": "Message supprimé"
+  },
   "error": {
     "load_messages": "Impossible de charger la discussion",
     "load_older": "Impossible de charger les messages plus anciens.",
