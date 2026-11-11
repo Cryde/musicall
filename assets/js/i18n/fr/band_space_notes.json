@@ -48,6 +48,7 @@
       "categories_label": "Catégories d'emoji",
       "no_results": "Aucun emoji trouvé",
       "categories": {
+        "recent": "Récemment utilisés",
         "smileys_people": "Smileys et personnes",
         "animals_nature": "Animaux et nature",
         "food_drink": "Nourriture et boissons",

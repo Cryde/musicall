@@ -15,6 +15,7 @@
               <EmojiPicker
                 set="native"
                 skin-tone-position="none"
+                recent="recent"
                 :theme="emojiPickerTheme"
                 :i18n="emojiPickerTexts"
                 @select="handleEmojiSelect"
@@ -416,6 +417,7 @@ const emojiPickerTexts = computed(() => ({
   categoriesLabel: t('band_space_notes.editor.emoji_picker.categories_label'),
   noResults: t('band_space_notes.editor.emoji_picker.no_results'),
   categories: {
+    recent: t('band_space_notes.editor.emoji_picker.categories.recent'),
     smileys_people: t('band_space_notes.editor.emoji_picker.categories.smileys_people'),
     animals_nature: t('band_space_notes.editor.emoji_picker.categories.animals_nature'),
     food_drink: t('band_space_notes.editor.emoji_picker.categories.food_drink'),
