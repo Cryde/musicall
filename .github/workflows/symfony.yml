@@ -17,7 +17,7 @@ concurrency:
 jobs:
     backend:
         name: Backend (PHP ${{ matrix.php-versions }})
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-26.04
         services:
             mysql:
                 image: mariadb:11.8.6
@@ -144,7 +144,7 @@ jobs:
 
     frontend:
         name: Frontend (Node ${{ matrix.node-versions }})
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-26.04
         strategy:
             fail-fast: true
             matrix:
