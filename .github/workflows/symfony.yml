@@ -20,12 +20,12 @@ jobs:
         runs-on: ubuntu-24.04
         services:
             mysql:
-                image: mariadb:10.11
+                image: mariadb:11.8.6
                 env:
                     MYSQL_ROOT_PASSWORD: toor
                 ports:
                     - 3306:3306
-                options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+                options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3
 
             # Renders the setlist PDF export. Most tests substitute the client and need nothing
             # running, but two of them read the embedded font table and the real page count out of
