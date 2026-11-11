@@ -79,11 +79,13 @@ class NativeGoogleSignInTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/native/oauth/google', ['id_token' => 'a-token'], [
             'HTTP_X_CLIENT_PLATFORM' => 'android',
             'HTTP_X_CLIENT_VERSION' => '1.13.0',
+            // The app sends its own language, which the account is created in (#1371).
+            'HTTP_ACCEPT_LANGUAGE' => 'en',
         ]);
 
         $this->assertResponseIsSuccessful();
         $this->assertSessionBodyFor('nina');
-        $this->assertSame(['android', 'google', '1.13.0'], $this->registrationOf('nina'));
+        $this->assertSame(['android', 'google', '1.13.0', 'en'], $this->registrationOf('nina'));
     }
 
     /** The native route is the app for sure, but which one only the header can say. */
@@ -95,7 +97,7 @@ class NativeGoogleSignInTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSessionBodyFor('nina');
-        $this->assertSame(['unknown_app', 'google', null], $this->registrationOf('nina'));
+        $this->assertSame(['unknown_app', 'google', null, 'fr'], $this->registrationOf('nina'));
     }
 
     /** A platform the app cannot be is dropped like a missing one; the version stays, since the route is the app. */
@@ -110,7 +112,7 @@ class NativeGoogleSignInTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSessionBodyFor('nina');
-        $this->assertSame(['unknown_app', 'google', '1.13.0'], $this->registrationOf('nina'));
+        $this->assertSame(['unknown_app', 'google', '1.13.0', 'fr'], $this->registrationOf('nina'));
     }
 
     /** Invited before the account existed: signing up with Google joins the band, as a password sign-up does. */
@@ -297,7 +299,7 @@ class NativeGoogleSignInTest extends ApiTestCase
         return ['sub' => self::GOOGLE_ID, 'email' => $email, 'email_verified' => $verified, 'name' => $name];
     }
 
-    /** @return array{string, string, ?string} the platform, method and app version stored for the account */
+    /** @return array{string, string, ?string, string} the platform, method, app version and language stored for the account */
     private function registrationOf(string $username): array
     {
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
@@ -305,7 +307,7 @@ class NativeGoogleSignInTest extends ApiTestCase
         $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
         $this->assertInstanceOf(User::class, $user);
 
-        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion];
+        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion, $user->registrationLocale];
     }
 
     private function assertSessionBodyFor(string $username): void

@@ -45,6 +45,7 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->password = 'hashed';
         $newUser->registrationPlatform = ClientPlatform::Web;
         $newUser->registrationMethod = RegistrationMethod::Password;
+        $newUser->registrationLocale = 'fr';
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -88,6 +89,7 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->password = 'hashed';
         $newUser->registrationPlatform = ClientPlatform::Web;
         $newUser->registrationMethod = RegistrationMethod::Password;
+        $newUser->registrationLocale = 'fr';
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -122,6 +124,7 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->password = 'hashed';
         $newUser->registrationPlatform = ClientPlatform::Web;
         $newUser->registrationMethod = RegistrationMethod::Password;
+        $newUser->registrationLocale = 'fr';
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -166,6 +169,7 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->password = 'hashed';
         $newUser->registrationPlatform = ClientPlatform::Web;
         $newUser->registrationMethod = RegistrationMethod::Password;
+        $newUser->registrationLocale = 'fr';
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -193,6 +197,7 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->password = 'hashed';
         $newUser->registrationPlatform = ClientPlatform::Web;
         $newUser->registrationMethod = RegistrationMethod::Password;
+        $newUser->registrationLocale = 'fr';
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();
@@ -223,6 +228,7 @@ class AcceptPendingInvitationsProcedureTest extends KernelTestCase
         $newUser->password = 'hashed';
         $newUser->registrationPlatform = ClientPlatform::Web;
         $newUser->registrationMethod = RegistrationMethod::Password;
+        $newUser->registrationLocale = 'fr';
         $newUser->profile = new UserProfile();
         $em->persist($newUser);
         $em->flush();

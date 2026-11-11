@@ -17,6 +17,17 @@ class AppleSignInAttemptTest extends TestCase
         $this->assertEquals($attempt, AppleSignInAttempt::fromCookie($attempt->toCookie()));
         $withoutReturnUrl = AppleSignInAttempt::start(null);
         $this->assertEquals($withoutReturnUrl, AppleSignInAttempt::fromCookie($withoutReturnUrl->toCookie()));
+        $withLocale = AppleSignInAttempt::start(null, 'en');
+        $this->assertSame('en', AppleSignInAttempt::fromCookie($withLocale->toCookie())?->locale);
+    }
+
+    /** Started before the locale was carried (#1371), still read: the attempt simply knows no language. */
+    public function test_a_cookie_without_a_locale_is_an_attempt_without_one(): void
+    {
+        $attempt = AppleSignInAttempt::fromCookie(base64_encode('{"state":"abc","nonce":"def","return_url":null}'));
+
+        $this->assertInstanceOf(AppleSignInAttempt::class, $attempt);
+        $this->assertNull($attempt->locale);
     }
 
     public function test_the_state_and_the_nonce_are_unguessable_and_distinct(): void
@@ -45,6 +56,7 @@ class AppleSignInAttemptTest extends TestCase
         yield 'no nonce' => [base64_encode('{"state":"abc","return_url":null}')];
         yield 'an empty state' => [base64_encode('{"state":"","nonce":"abc","return_url":null}')];
         yield 'a return URL that is not a string' => [base64_encode('{"state":"abc","nonce":"def","return_url":["/"]}')];
+        yield 'a locale that is not a string' => [base64_encode('{"state":"abc","nonce":"def","return_url":null,"locale":["en"]}')];
     }
 
     #[DataProvider('unreadableCookies')]

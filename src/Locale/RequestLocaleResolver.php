@@ -74,6 +74,12 @@ readonly class RequestLocaleResolver
         return $request->getPreferredLanguage($candidates) ?? $this->defaultLocale;
     }
 
+    /** A locale a client sends alongside a request, kept only when it is an enabled one. */
+    public function enabledOrNull(mixed $locale): ?string
+    {
+        return is_string($locale) && $this->isEnabled($locale) ? $locale : null;
+    }
+
     private function isEnabled(string $locale): bool
     {
         return in_array($locale, $this->enabledLocales, true);

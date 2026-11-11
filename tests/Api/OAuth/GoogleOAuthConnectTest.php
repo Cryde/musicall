@@ -95,6 +95,52 @@ class GoogleOAuthConnectTest extends ApiTestCase
         $this->assertSame([], $this->stashedCampaigns());
     }
 
+    /** The page's language (#1371) waits in the session too: Google's redirect back carries no X-Locale. */
+    public function test_connect_stashes_the_language_of_the_page(): void
+    {
+        $this->client->request('GET', '/oauth/google?' . http_build_query(['locale' => 'en']));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertSame(['en'], $this->stashedLocales());
+    }
+
+    public function test_connect_stashes_no_language_the_site_does_not_speak(): void
+    {
+        foreach (['de', 'EN', 'en ', ''] as $locale) {
+            $this->client->request('GET', '/oauth/google?' . http_build_query(['locale' => $locale]));
+
+            $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+            $this->assertSame([], $this->stashedLocales(), sprintf('%s must not be stashed', json_encode($locale)));
+        }
+        $this->client->request('GET', '/oauth/google?' . http_build_query(['locale' => ['en']]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertSame([], $this->stashedLocales());
+    }
+
+    /** An English page, a French browser: the account is English, like the page the visitor signed up from. */
+    public function test_a_google_sign_up_records_the_language_of_the_page(): void
+    {
+        $this->fakeGoogle(['sub' => 'google-id-new', 'email' => 'nouveau@example.com', 'email_verified' => true, 'name' => 'Nouveau']);
+
+        $this->signInWithGoogle(['locale' => 'en']);
+
+        $this->assertResponseRedirects('http://localhost', Response::HTTP_FOUND);
+        $this->assertSame(['en', 'en'], $this->languagesOf('nouveau@example.com'));
+    }
+
+    /** No page language, as from an older tab: the browser's decides, as before. */
+    public function test_a_google_sign_up_without_the_language_of_the_page_records_the_browsers(): void
+    {
+        $this->fakeGoogle(['sub' => 'google-id-new', 'email' => 'nouveau@example.com', 'email_verified' => true, 'name' => 'Nouveau']);
+        $this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'en');
+
+        $this->signInWithGoogle([]);
+
+        $this->assertResponseRedirects('http://localhost', Response::HTTP_FOUND);
+        $this->assertSame(['en', 'en'], $this->languagesOf('nouveau@example.com'));
+    }
+
     public function test_a_google_sign_up_records_the_campaign_of_its_visit(): void
     {
         $this->fakeGoogle(['sub' => 'google-id-new', 'email' => 'nouveau@example.com', 'email_verified' => true, 'name' => 'Nouveau']);
@@ -105,17 +151,18 @@ class GoogleOAuthConnectTest extends ApiTestCase
         $this->assertSame(['google', 'cpc', 'pmax-musiciens', 'www.google.com'], $this->campaignOf('nouveau@example.com'));
     }
 
-    /** A login is not a sign-up: the campaign of this visit says nothing about how the account came. */
-    public function test_a_google_login_records_no_campaign(): void
+    /** A login is not a sign-up: the campaign and the page language of this visit say nothing about how the account came. */
+    public function test_a_google_login_records_no_campaign_and_keeps_the_account_language(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create(['email' => 'alice@example.com']);
+        $user = UserFactory::new()->asBaseUser()->create(['email' => 'alice@example.com', 'locale' => 'fr', 'registrationLocale' => 'fr']);
         SocialAccountFactory::new()->create(['user' => $user, 'provider' => SocialAccount::PROVIDER_GOOGLE, 'providerId' => 'google-id-alice']);
         $this->fakeGoogle(['sub' => 'google-id-alice', 'email' => 'alice@example.com', 'email_verified' => true, 'name' => 'Alice']);
 
-        $this->signInWithGoogle(self::CAMPAIGN);
+        $this->signInWithGoogle([...self::CAMPAIGN, 'locale' => 'en']);
 
         $this->assertResponseRedirects('http://localhost', Response::HTTP_FOUND);
         $this->assertSame([null, null, null, null], $this->campaignOf('alice@example.com'));
+        $this->assertSame(['fr', 'fr'], $this->languagesOf('alice@example.com'));
     }
 
     /**
@@ -129,10 +176,10 @@ class GoogleOAuthConnectTest extends ApiTestCase
         self::getContainer()->set('knpu.oauth2.client.google', new FakeGoogleOAuthClient($claims));
     }
 
-    /** @param array<string, string> $campaign */
-    private function signInWithGoogle(array $campaign): void
+    /** @param array<string, string> $startQuery the start URL's campaign and page language */
+    private function signInWithGoogle(array $startQuery): void
     {
-        $this->client->request('GET', '/oauth/google?' . http_build_query($campaign));
+        $this->client->request('GET', '/oauth/google?' . http_build_query($startQuery));
         parse_str((string) parse_url((string) $this->client->getResponse()->headers->get('Location'), PHP_URL_QUERY), $query);
         $state = is_string($query['state'] ?? null) ? $query['state'] : '';
 
@@ -148,6 +195,32 @@ class GoogleOAuthConnectTest extends ApiTestCase
         $this->assertInstanceOf(User::class, $user);
 
         return [$user->registrationUtmSource, $user->registrationUtmMedium, $user->registrationUtmCampaign, $user->registrationReferrerHost];
+    }
+
+    /** @return array{string, string} the account's language and the one it was created in */
+    private function languagesOf(string $email): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->locale, $user->registrationLocale];
+    }
+
+    /**
+     * @return list<mixed> the languages connect() put in the session, in insertion order
+     */
+    private function stashedLocales(): array
+    {
+        $stashed = [];
+        foreach ($this->client->getRequest()->getSession()->all() as $key => $value) {
+            if (str_starts_with($key, 'oauth_locale.')) {
+                $stashed[] = $value;
+            }
+        }
+
+        return $stashed;
     }
 
     /**

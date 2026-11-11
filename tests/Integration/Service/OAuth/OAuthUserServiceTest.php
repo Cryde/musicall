@@ -293,7 +293,42 @@ class OAuthUserServiceTest extends KernelTestCase
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
         $this->assertTrue($result->isNew);
-        $this->assertSame('en', $result->user->locale);
+        $this->assertSame(['en', 'en'], [$result->user->locale, $result->user->registrationLocale]);
+    }
+
+    /** A web callback knows the page's language only from its start URL (#1371): it outranks the browser's. */
+    public function test_find_or_create_user_stores_the_language_of_the_page_the_sign_in_started_from(): void
+    {
+        $this->mockProfilePictureImporter();
+        self::getContainer()->get(RequestStack::class)->push(Request::create('/oauth/google/callback', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']));
+
+        $result = $this->getOAuthUserService()->findOrCreateUser(
+            new OAuthUserData(id: 'google-id-new', email: 'newuser@example.com', username: 'New User', pictureUrl: null, emailVerified: true),
+            SocialAccount::PROVIDER_GOOGLE,
+            pageLocale: 'en',
+        );
+
+        $this->assertTrue($result->isNew);
+        $this->assertSame(['en', 'en'], [$result->user->locale, $result->user->registrationLocale]);
+    }
+
+    /** A login is not a sign-up: the account keeps the language it was created in, and the one it chose since. */
+    public function test_find_or_create_user_leaves_the_languages_of_an_existing_account_alone(): void
+    {
+        $existingUser = UserFactory::new()->asBaseUser()->create(['locale' => 'fr', 'registrationLocale' => 'fr']);
+        SocialAccountFactory::new()->create(['user' => $existingUser, 'provider' => SocialAccount::PROVIDER_GOOGLE, 'providerId' => 'google-id-123']);
+        self::getContainer()->get(RequestStack::class)->push(Request::create('/oauth/google/callback'));
+
+        $result = $this->getOAuthUserService()->findOrCreateUser(
+            new OAuthUserData(id: 'google-id-123', email: 'test@example.com', username: 'Test User', pictureUrl: null, emailVerified: true),
+            SocialAccount::PROVIDER_GOOGLE,
+            pageLocale: 'en',
+        );
+
+        $this->assertFalse($result->isNew);
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $stored = $this->getUserRepository()->find($existingUser->id);
+        $this->assertSame(['fr', 'fr'], [$stored->locale, $stored->registrationLocale]);
     }
 
     public function test_find_or_create_user_sanitizes_username(): void

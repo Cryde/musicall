@@ -27,6 +27,7 @@ final class UserFactory extends PersistentObjectFactory
             'username' => self::faker()->userName(),
             'registrationPlatform' => ClientPlatform::Web,
             'registrationMethod' => RegistrationMethod::Password,
+            'registrationLocale' => 'fr',
         ];
     }
 

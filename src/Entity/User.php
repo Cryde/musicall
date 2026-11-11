@@ -131,7 +131,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::STRING, length: 10, options: ['default' => 'fr'])]
     public string $locale = 'fr';
 
-    // No defaults: every place that creates an account has to say where and how.
+    // No defaults: every place that creates an account has to say where, how and in which language.
     #[ORM\Column(type: Types::STRING, length: 20, enumType: ClientPlatform::class)]
     public ClientPlatform $registrationPlatform;
 
@@ -140,6 +140,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::STRING, length: 32, nullable: true)]
     public ?string $registrationAppVersion = null;
+
+    // The language the account was created in (#1371). `locale` starts equal to it, then follows the member's choice.
+    #[ORM\Column(type: Types::STRING, length: 10)]
+    public string $registrationLocale;
 
     // The campaign and the referring site of the visit a web account was created in (#1369).
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]

@@ -32,7 +32,7 @@ class RegistrationOriginRecorderTest extends TestCase
         $requestStack->push(Request::create('/', server: $server));
         $user = new User();
 
-        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Google, $platformWithoutHeader);
+        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Google, 'fr', $platformWithoutHeader);
 
         $this->assertSame(
             [RegistrationMethod::Google, $expectedPlatform, $expectedVersion],
@@ -68,6 +68,16 @@ class RegistrationOriginRecorderTest extends TestCase
         yield 'an empty version' => ['ios', '', $web, ClientPlatform::Ios, null];
     }
 
+    /** The account's language starts as the one it was created in (#1371). */
+    public function test_it_records_the_sign_up_language_as_the_account_language(): void
+    {
+        $user = new User();
+
+        (new RegistrationOriginRecorder(new RequestStack()))->record($user, RegistrationMethod::Password, 'en');
+
+        $this->assertSame(['en', 'en'], [$user->registrationLocale, $user->locale]);
+    }
+
     public function test_a_web_sign_up_records_its_campaign(): void
     {
         $requestStack = new RequestStack();
@@ -75,7 +85,7 @@ class RegistrationOriginRecorderTest extends TestCase
         $user = new User();
         $campaign = RegistrationCampaign::fromFields(['utm_source' => 'google', 'utm_medium' => 'cpc', 'utm_campaign' => 'pmax-musiciens', 'referrer_host' => 'www.google.com']);
 
-        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Password, campaign: $campaign);
+        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Password, 'fr', campaign: $campaign);
 
         $this->assertSame(
             ['google', 'cpc', 'pmax-musiciens', 'www.google.com'],
@@ -92,7 +102,7 @@ class RegistrationOriginRecorderTest extends TestCase
         $user = new User();
         $campaign = RegistrationCampaign::fromFields(['utm_source' => 'google', 'utm_medium' => 'cpc', 'utm_campaign' => 'pmax-musiciens', 'referrer_host' => 'www.google.com']);
 
-        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Google, $platformWithoutHeader, $campaign);
+        (new RegistrationOriginRecorder($requestStack))->record($user, RegistrationMethod::Google, 'fr', $platformWithoutHeader, $campaign);
 
         $this->assertSame(
             [null, null, null, null],
@@ -112,7 +122,7 @@ class RegistrationOriginRecorderTest extends TestCase
     {
         $user = new User();
 
-        (new RegistrationOriginRecorder(new RequestStack()))->record($user, RegistrationMethod::Password);
+        (new RegistrationOriginRecorder(new RequestStack()))->record($user, RegistrationMethod::Password, 'fr');
 
         $this->assertSame(
             [RegistrationMethod::Password, ClientPlatform::Web, null],
