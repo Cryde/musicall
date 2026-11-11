@@ -68,11 +68,14 @@ services:
             - ./.docker/cli-musicall/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
 
     db:
-        image: mariadb:10.11
+        # Pinned to the version prod runs.
+        image: mariadb:11.8.6
         container_name: musicall-db
         environment:
             MYSQL_ROOT_PASSWORD: toor
             MYSQL_DATABASE: musicall
+            # Upgrades the system tables of a volume created by an older MariaDB on start.
+            MARIADB_AUTO_UPGRADE: '1'
         volumes:
             - db_files:/var/lib/mysql
             - ./volumes/db/logs:/var/log/mysql
