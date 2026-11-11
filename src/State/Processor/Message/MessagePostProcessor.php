@@ -15,6 +15,7 @@ use App\Repository\Message\MessageThreadRepository;
 use App\Service\Access\ThreadAccess;
 use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Message\DirectMessageMediaStore;
+use App\Service\Message\ReplyTargetResolver;
 use App\Service\Message\StoredVoiceNote;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use App\Service\User\Relation\UserContactPolicy;
@@ -41,6 +42,7 @@ class MessagePostProcessor implements ProcessorInterface
         private readonly MessageRepository       $messageRepository,
         private readonly UserContactPolicy       $contactPolicy,
         private readonly DirectMessageMediaStore $mediaStore,
+        private readonly ReplyTargetResolver     $replyTargetResolver,
         private readonly LoggerInterface         $logger,
         #[Target('message_send')]
         private readonly RateLimiterFactoryInterface $messageSendLimiter,
@@ -71,16 +73,25 @@ class MessagePostProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException(UserContactPolicy::BLOCKED_MESSAGE);
         }
 
+        // Before any media is stored, so a refused reply leaves no file behind.
+        $replyTo = $this->replyTargetResolver->resolve($data->replyTo, $thread);
         $message = $data->hasMedia()
-            ? $this->sendWithMedia($thread, $user, $data)
-            : $this->messageSenderProcedure->processByThread($thread, $user, $data->content);
+            ? $this->sendWithMedia($thread, $user, $data, $replyTo)
+            : $this->messageSenderProcedure->processByThread(
+                $thread,
+                $user,
+                $data->content,
+                static function (Message $message) use ($replyTo): void {
+                    $message->replyTo = $replyTo;
+                },
+            );
 
         // With the sender as viewer, so the message lands on their screen ready to edit (#1245).
         return $this->messageBuilder->buildItem($message, viewer: $user);
     }
 
     /** An image or a voice note (#1247): nobody receives one from a stranger they never answered. */
-    private function sendWithMedia(MessageThread $thread, User $user, MessageCreation $data): Message
+    private function sendWithMedia(MessageThread $thread, User $user, MessageCreation $data, ?Message $replyTo): Message
     {
         if (!$this->messageRepository->hasMessageFromOtherThan($thread, $user)) {
             throw new AccessDeniedHttpException('message.media.reply_first');
@@ -99,7 +110,8 @@ class MessagePostProcessor implements ProcessorInterface
                 $thread,
                 $user,
                 $content,
-                static function (Message $message) use ($image, $voiceNote): void {
+                static function (Message $message) use ($image, $voiceNote, $replyTo): void {
+                    $message->replyTo = $replyTo;
                     if ($image instanceof MessageFile) {
                         $message->imageFileId = (string) $image->id;
                     }

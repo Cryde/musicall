@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { isHeld, mayMergeNewestPage, paneAfterWindow, withRefreshedHeld } from './chatWindow.js'
+import {
+  isHeld,
+  isShownOnScreen,
+  mayMergeNewestPage,
+  paneAfterWindow,
+  withRefreshedHeld
+} from './chatWindow.js'
 
 /**
  * Run with `npm test`.
@@ -65,6 +71,16 @@ describe('isHeld', () => {
     assert.equal(isHeld(held, 'b'), true)
     assert.equal(isHeld(held, 'z'), false)
     assert.equal(isHeld([], 'a'), false)
+  })
+})
+
+describe('isShownOnScreen', () => {
+  it('counts a message held or quoted by a held reply', () => {
+    const held = [{ id: 'a' }, { id: 'b', reply_to: { id: 'far-up' } }, { id: 'c', reply_to: null }]
+
+    assert.equal(isShownOnScreen(held, 'a'), true)
+    assert.equal(isShownOnScreen(held, 'far-up'), true)
+    assert.equal(isShownOnScreen(held, 'elsewhere'), false)
   })
 })
 

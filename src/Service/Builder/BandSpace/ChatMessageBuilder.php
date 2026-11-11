@@ -13,21 +13,19 @@ use App\Repository\Message\MessageThreadMetaRepository;
 use App\Service\BandSpace\BandSpaceMemberNames;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\Message\MessageReactionsBuilder;
+use App\Service\Builder\Message\ReplyQuoteBuilder;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use App\Service\Message\MessageAttachmentResolver;
-use App\Service\Message\MessagePreviewText;
 use App\Translation\DisplayNameTranslator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 /**
- * @phpstan-type AnsweredMessage array{id: string, content: string, isDeleted: bool, hasImage: bool, hasVoiceNote: bool, authorId: string, authorUsername: string, authorIsDeleted: bool}
- * @phpstan-type ReplyQuote array{id: string, author_id: string, author_display_name: string, excerpt: string, has_image: bool, has_voice_note: bool, is_deleted: bool}
+ * @phpstan-import-type AnsweredMessage from ReplyQuoteBuilder
+ * @phpstan-import-type ReplyQuote from ReplyQuoteBuilder
  */
 readonly class ChatMessageBuilder
 {
-    private const int REPLY_EXCERPT_MAX_LENGTH = 140;
-
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $sanitizer,
@@ -41,7 +39,7 @@ readonly class ChatMessageBuilder
         private BandSpaceMemberNames $memberNames,
         private DisplayNameTranslator $displayNames,
         private MessageReactionsBuilder $reactionsBuilder,
-        private MessagePreviewText $previewText,
+        private ReplyQuoteBuilder $replyQuotes,
     ) {
     }
 
@@ -144,7 +142,7 @@ readonly class ChatMessageBuilder
             array_values(array_filter([$imageFileId, $voiceNoteFileId], static fn (?string $id): bool => $id !== null)),
             $bandSpaceId,
         );
-        $answered = $this->answeredFromEntity($entity->replyTo);
+        $answered = $entity->replyTo instanceof Message ? $this->replyQuotes->answeredOf($entity->replyTo) : null;
         $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds(
             $this->withAnsweredIds([$messageId], [$answered]),
             $this->displayNames->deletedUser(),
@@ -205,27 +203,6 @@ readonly class ChatMessageBuilder
     }
 
     /**
-     * @return AnsweredMessage|null
-     */
-    private function answeredFromEntity(?Message $answered): ?array
-    {
-        if (!$answered instanceof Message) {
-            return null;
-        }
-
-        return [
-            'id' => (string) $answered->id,
-            'content' => $answered->content,
-            'isDeleted' => $answered->isDeleted(),
-            'hasImage' => $answered->imageFileId !== null,
-            'hasVoiceNote' => $answered->isVoiceNote(),
-            'authorId' => (string) $answered->author->id,
-            'authorUsername' => $answered->author->username,
-            'authorIsDeleted' => $answered->author->isDeleted(),
-        ];
-    }
-
-    /**
      * @param array<string>               $messageIds
      * @param array<AnsweredMessage|null> $answered
      *
@@ -243,9 +220,6 @@ readonly class ChatMessageBuilder
     }
 
     /**
-     * The quote a reply shows (#1377). A deleted message keeps its author, so the quote still says who
-     * was answered, and nothing of what it said.
-     *
      * @param AnsweredMessage|null                 $answered
      * @param array<string, array<string, string>> $mentionsByMessage message id => the names its mentions resolve to
      *
@@ -257,23 +231,12 @@ readonly class ChatMessageBuilder
             return null;
         }
 
-        $isDeleted = $answered['isDeleted'];
-        $excerpt = $isDeleted || $answered['content'] === ''
-            ? ''
-            : MessagePreviewText::shorten(
-                $this->previewText->oneLine($answered['content'], $mentionsByMessage[$answered['id']] ?? [], true),
-                self::REPLY_EXCERPT_MAX_LENGTH,
-            );
-
-        return [
-            'id' => $answered['id'],
-            'author_id' => $answered['authorId'],
-            'author_display_name' => $this->memberNames->nameById($bandSpaceId, $answered['authorId'], $answered['authorUsername'], $answered['authorIsDeleted']),
-            'excerpt' => $excerpt,
-            'has_image' => !$isDeleted && $answered['hasImage'],
-            'has_voice_note' => !$isDeleted && $answered['hasVoiceNote'],
-            'is_deleted' => $isDeleted,
-        ];
+        return $this->replyQuotes->build(
+            $answered,
+            $this->memberNames->nameById($bandSpaceId, $answered['authorId'], $answered['authorUsername'], $answered['authorIsDeleted']),
+            $mentionsByMessage[$answered['id']] ?? [],
+            true,
+        );
     }
 
     /**

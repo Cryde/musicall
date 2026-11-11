@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
-  hasOlderToLoad,
-  mergeMessages,
-  nextOlderPageToLoad,
-  pageHoldingMessage
-} from './messagePagination.js'
+import { hasOlderToLoad, mergeMessages, nextOlderPageToLoad } from './messagePagination.js'
 
 const at = (iri, time) => ({ '@id': iri, creation_datetime: time })
 
@@ -165,20 +160,5 @@ describe('mergeMessages', () => {
 
     assert.equal(held.length, 1)
     assert.equal(page.length, 1)
-  })
-})
-
-describe('pageHoldingMessage', () => {
-  const held = Array.from({ length: 120 }, (_, index) => ({ id: `m${index}` }))
-
-  it('counts from the newest end, as the pages do', () => {
-    assert.equal(pageHoldingMessage(held, 'm119', 50), 1)
-    assert.equal(pageHoldingMessage(held, 'm70', 50), 1)
-    assert.equal(pageHoldingMessage(held, 'm69', 50), 2)
-    assert.equal(pageHoldingMessage(held, 'm0', 50), 3)
-  })
-
-  it('is null for a message the conversation does not hold', () => {
-    assert.equal(pageHoldingMessage(held, 'elsewhere', 50), null)
   })
 })

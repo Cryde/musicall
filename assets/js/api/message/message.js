@@ -31,15 +31,18 @@ export default {
    * on the same endpoint, as in the band chat.
    *
    * @param {{image?: File, voiceNote?: File}|null} media
+   * @param {string|null} replyTo the id of the message this one answers (#1380)
    */
-  postMessageInThread({ threadId, content, media = null }) {
+  postMessageInThread({ threadId, content, media = null, replyTo = null }) {
     const thread = `/api/message_threads/${threadId}`
     const url = Routing.generate('api_message_post')
     const request = media
-      ? axios.post(url, mediaMessageForm({ content, thread, ...media }), {
+      ? axios.post(url, mediaMessageForm({ content, thread, ...media, replyTo }), {
           headers: { Accept: 'application/ld+json' }
         })
-      : axios.post(url, { content, thread }, { headers: { 'Content-Type': 'application/ld+json' } })
+      : axios.post(url, replyTo ? { content, thread, reply_to: replyTo } : { content, thread }, {
+          headers: { 'Content-Type': 'application/ld+json' }
+        })
 
     return request.then((resp) => resp.data)
   },
@@ -80,6 +83,19 @@ export default {
         params: { 'order[creation_datetime]': 'desc', 'order[id]': 'desc', page }
       })
       .then((resp) => resp.data)
+  },
+
+  /**
+   * A stretch of the conversation anchored on one message (#1380), oldest first: `{ around }` to land
+   * on it, `{ before }` and `{ after }` to read on from a window. The band chat's (#1039) for two.
+   */
+  getMessageWindow(threadId, anchor) {
+    return axios
+      .get(Routing.generate('api_message_thread_message_window_get', { threadId }), {
+        params: anchor
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   },
 
   /** « I am writing » in a direct conversation (#1242). Nothing is stored, so nothing comes back. */

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { replyQuoteFromMessage, replyQuoteText, withQuotesRefreshed } from './chatReply.js'
+import {
+  conversationAuthor,
+  replyQuoteFromMessage,
+  replyQuoteText,
+  withQuotesRefreshed
+} from './chatReply.js'
 
 /** What a reply quote says, in the banner and in the bubble (#1377). Run with `npm test`. */
 
@@ -14,6 +19,17 @@ function quote(overrides = {}) {
     excerpt: '',
     has_image: false,
     has_voice_note: false,
+    is_deleted: false,
+    ...overrides
+  }
+}
+
+/** A message of a conversation (#1380): the author is the embedded user, not flat fields. */
+function conversationMessage(overrides = {}) {
+  return {
+    id: 'message-1',
+    author: { id: 'user-lea', username: 'lea', display_name: 'Léa Martin' },
+    content: 'On se voit samedi ?',
     is_deleted: false,
     ...overrides
   }
@@ -98,6 +114,18 @@ describe('replyQuoteFromMessage', () => {
     assert.equal(quoted.is_deleted, true)
   })
 
+  it('names the author of a conversation message the way the conversation does', () => {
+    assert.deepEqual(replyQuoteFromMessage(conversationMessage(), conversationAuthor), {
+      id: 'message-1',
+      author_id: 'user-lea',
+      author_display_name: 'Léa Martin',
+      excerpt: 'On se voit samedi ?',
+      has_image: false,
+      has_voice_note: false,
+      is_deleted: false
+    })
+  })
+
   it('flags the media of a message without text', () => {
     const photo = replyQuoteFromMessage(
       message({ content: '', image: { file_id: 'f1', is_available: true } })
@@ -136,5 +164,21 @@ describe('withQuotesRefreshed', () => {
     )
 
     assert.equal(refreshed.reply_to.excerpt, 'On répète dimanche ?')
+  })
+
+  it('quotes a conversation message with its embedded author', () => {
+    const [refreshed] = withQuotesRefreshed(
+      [
+        {
+          id: 'reply-1',
+          reply_to: quote({ author_id: 'user-lea', excerpt: 'On se voit samedi ?' })
+        }
+      ],
+      [conversationMessage({ content: 'On se voit dimanche ?' })],
+      conversationAuthor
+    )
+
+    assert.equal(refreshed.reply_to.excerpt, 'On se voit dimanche ?')
+    assert.equal(refreshed.reply_to.author_display_name, 'Léa Martin')
   })
 })

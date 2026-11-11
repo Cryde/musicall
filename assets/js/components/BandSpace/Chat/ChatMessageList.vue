@@ -191,12 +191,13 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { useChatMessageActions } from '../../../composables/useChatMessageActions.js'
 import { useChatPin } from '../../../composables/useChatPin.js'
 import { useMessageActionsSheet } from '../../../composables/useMessageActionsSheet.js'
+import { useMessageFocus } from '../../../composables/useMessageFocus.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
@@ -412,43 +413,9 @@ watch(
   { deep: true }
 )
 
-/** Long enough to find the message with your eyes, short enough not to become part of the page. */
-const HIGHLIGHT_DURATION_MS = 2500
-
-const highlightedMessageId = ref(null)
-let highlightTimer = null
-
-/**
- * Scrolls to the message the store was asked to show and lights it up (#1039). By the time a request
- * arrives the message is held, whether it was already on the page or a window was loaded around it,
- * so there is always something to land on. A frame after the DOM update rather than on it, so the
- * landing wins over anything else moving the pane in the same tick.
- */
-function focusMessage(messageId) {
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      const element = document.getElementById(`chat-message-${messageId}`)
-      if (!element) {
-        return
-      }
-
-      element.scrollIntoView({ block: 'center' })
-      highlightedMessageId.value = messageId
-      clearTimeout(highlightTimer)
-      highlightTimer = setTimeout(() => {
-        highlightedMessageId.value = null
-      }, HIGHLIGHT_DURATION_MS)
-    })
-  })
-}
-
-watch(
+const { highlightedMessageId, focusMessage } = useMessageFocus(
   () => chatStore.focusRequest,
-  (request) => {
-    if (request) {
-      focusMessage(request.messageId)
-    }
-  }
+  (messageId) => `chat-message-${messageId}`
 )
 
 onMounted(() => {
@@ -460,8 +427,6 @@ onMounted(() => {
   }
   scrollToBottom()
 })
-
-onUnmounted(() => clearTimeout(highlightTimer))
 
 // Sending is the one case where the reader is moved without being asked: they wrote it, so they mean
 // to see it, even if they were up in the history a moment ago.

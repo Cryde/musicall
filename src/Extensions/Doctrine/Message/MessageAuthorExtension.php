@@ -6,11 +6,12 @@ use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Message\Message;
+use App\Repository\Message\MessageRepository;
 use Doctrine\ORM\QueryBuilder;
 
 /**
- * Loads each message's author and their profile with the page, since every bubble can name its
- * author (#1118). Left lazy, that is two queries per distinct author.
+ * Loads what each bubble of a conversation page shows with the page, see
+ * MessageRepository::joinConversationPage().
  */
 class MessageAuthorExtension implements QueryCollectionExtensionInterface
 {
@@ -25,12 +26,6 @@ class MessageAuthorExtension implements QueryCollectionExtensionInterface
             return;
         }
 
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-        $authorAlias = $queryNameGenerator->generateJoinAlias('author');
-        $profileAlias = $queryNameGenerator->generateJoinAlias('author_profile');
-        $queryBuilder
-            ->innerJoin(sprintf('%s.author', $rootAlias), $authorAlias)
-            ->innerJoin(sprintf('%s.profile', $authorAlias), $profileAlias)
-            ->addSelect($authorAlias, $profileAlias);
+        MessageRepository::joinConversationPage($queryBuilder, $queryBuilder->getRootAliases()[0]);
     }
 }

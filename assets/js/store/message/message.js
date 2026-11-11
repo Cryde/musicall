@@ -4,15 +4,25 @@ import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
 import { i18n } from '../../i18n/index.js'
 import { createReactionToggle } from '../../utils/chatReactionToggle.js'
+import {
+  conversationAuthor,
+  replyQuoteFromMessage,
+  withQuotesRefreshed
+} from '../../utils/chatReply.js'
 import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
-import { isHeld, withRefreshedHeld } from '../../utils/chatWindow.js'
+import {
+  isHeld,
+  isShownOnScreen,
+  mayMergeNewestPage,
+  paneAfterWindow,
+  withRefreshedHeld
+} from '../../utils/chatWindow.js'
 import { createCoalescedCall } from '../../utils/coalescedCall.js'
 import { isChannel } from '../../utils/conversationIdentity.js'
 import {
   hasOlderToLoad,
   mergeMessages,
-  nextOlderPageToLoad,
-  pageHoldingMessage
+  nextOlderPageToLoad
 } from '../../utils/messagePagination.js'
 import { isMessageAlreadyListed, messageSignalPlan } from '../../utils/messageSignal.js'
 import { useNotificationStore } from '../notification/notification.js'
@@ -50,6 +60,23 @@ export const useMessageStore = defineStore('message', () => {
   const isAddingMessage = ref(false)
   const reactionError = ref(null)
 
+  // Whether `messages` runs back from the newest message with no gap, as in the band chat (#1039). It
+  // does, except after a jump to a quoted message above the loaded pages (#1380), when the pane holds a
+  // window in the middle of the history: reading on then goes through the window endpoint, and a live
+  // signal must not splice today's page into it.
+  const isAtTail = ref(true)
+  const windowHasOlder = ref(false)
+  const windowHasNewer = ref(false)
+  const isLoadingNewerMessages = ref(false)
+  const loadNewerError = ref(null)
+  const jumpError = ref(null)
+  // What the conversation should scroll to and light up: a fresh object each time, so asking for the
+  // same message twice still moves the pane.
+  const focusRequest = ref(null)
+  // The message the composer answers (#1380), as the quote the reply will carry. Kept through a failed
+  // send, like the draft it belongs to.
+  const replyTarget = ref(null)
+
   // Newest conversation first.
   const orderedThreads = computed(() =>
     [...threads.value].sort((a, b) => {
@@ -60,8 +87,11 @@ export const useMessageStore = defineStore('message', () => {
   )
 
   const hasOlderMessages = computed(() =>
-    hasOlderToLoad(messages.value.length, totalMessages.value)
+    isAtTail.value
+      ? hasOlderToLoad(messages.value.length, totalMessages.value)
+      : windowHasOlder.value
   )
+  const hasNewerMessages = computed(() => !isAtTail.value && windowHasNewer.value)
 
   const currentThread = computed(() => {
     return threads.value.find((t) => t.thread.id === currentThreadId.value)
@@ -126,13 +156,22 @@ export const useMessageStore = defineStore('message', () => {
 
   /** Same rule as loadThreads(): a refresh nobody asked for neither blanks the pane nor wipes it. */
   async function loadMessages(threadId, { silent = false } = {}) {
+    // A window, or a jump on its way to one, has no use for the newest page (#1380), and bumping the
+    // generation for it would drop the jump's answer.
+    if (silent && !isAtTail.value) return
     const currentRequestId = ++messagesRequestId
     if (!silent) {
       isLoadingMessages.value = true
     }
     try {
       const response = await messageApi.getMessages({ threadId })
-      if (currentRequestId !== messagesRequestId) return
+      // The newest page only belongs in a pane that runs back from the newest message (#1380).
+      if (
+        currentRequestId !== messagesRequestId ||
+        !mayMergeNewestPage({ silent, isAtTail: isAtTail.value })
+      ) {
+        return
+      }
       // Reverse to show oldest first
       const newest = (response.member || []).reverse()
       // A silent reload is a live signal refetching the newest page, and the reader may have loaded
@@ -140,6 +179,7 @@ export const useMessageStore = defineStore('message', () => {
       messages.value = silent ? mergeMessages(messages.value, newest) : newest
       totalMessages.value = response.totalItems ?? newest.length
       loadOlderError.value = null
+      if (!silent) resetWindow()
     } catch (e) {
       console.error('Failed to load messages:', e)
       if (!silent && currentRequestId === messagesRequestId) {
@@ -173,6 +213,15 @@ export const useMessageStore = defineStore('message', () => {
     isLoadingOlderMessages.value = true
     loadOlderError.value = null
     try {
+      if (!isAtTail.value) {
+        const page = await messageApi.getMessageWindow(threadId, { before: messages.value[0]?.id })
+        if (currentRequestId !== messagesRequestId || threadId !== currentThreadId.value) return
+        messages.value = mergeMessages(messages.value, page.messages ?? [])
+        windowHasOlder.value = page.has_older
+
+        return
+      }
+
       const response = await messageApi.getMessages({
         threadId,
         page: nextOlderPageToLoad(messages.value.length)
@@ -185,6 +234,132 @@ export const useMessageStore = defineStore('message', () => {
       loadOlderError.value = i18n.global.t('message.thread.load_older_error')
     } finally {
       isLoadingOlderMessages.value = false
+    }
+  }
+
+  /**
+   * Reads on towards the present from a window (#1380). Reaching the newest message ends the window,
+   * and the conversation is read again, as arriving on it would do.
+   */
+  async function loadNewerMessages() {
+    const threadId = currentThreadId.value
+    if (!threadId || isLoadingNewerMessages.value || !hasNewerMessages.value) {
+      return
+    }
+
+    const currentRequestId = ++messagesRequestId
+    isLoadingNewerMessages.value = true
+    loadNewerError.value = null
+    try {
+      const page = await messageApi.getMessageWindow(threadId, { after: messages.value.at(-1)?.id })
+      if (currentRequestId !== messagesRequestId || threadId !== currentThreadId.value) return
+      messages.value = mergeMessages(messages.value, page.messages ?? [])
+      applyWindow(page)
+      if (isAtTail.value) await markCurrentAsRead()
+    } catch (e) {
+      console.error('Failed to load newer messages:', e)
+      loadNewerError.value = i18n.global.t('band_space_chat.error.load_newer')
+    } finally {
+      isLoadingNewerMessages.value = false
+    }
+  }
+
+  /** The pane runs back from the newest message again, the page arithmetic its own. */
+  function resetWindow() {
+    isAtTail.value = true
+    windowHasOlder.value = false
+    windowHasNewer.value = false
+  }
+
+  /** After a window answer has been merged in: see paneAfterWindow(). */
+  function applyWindow(page) {
+    const pane = paneAfterWindow(page, messages.value.length)
+    isAtTail.value = pane.isAtTail
+    windowHasOlder.value = pane.hasOlder
+    windowHasNewer.value = pane.hasNewer
+    if (pane.total !== null) {
+      totalMessages.value = pane.total
+    }
+  }
+
+  /**
+   * Shows one message in context (#1380), the one a quote answers. Already held, the pane just scrolls
+   * to it; otherwise the pane is replaced by a window around it, as in the band chat (#1039).
+   */
+  async function jumpToMessage(messageId) {
+    const threadId = currentThreadId.value
+    jumpError.value = null
+    if (isHeld(messages.value, messageId)) {
+      focusRequest.value = { messageId }
+
+      return
+    }
+
+    const currentRequestId = ++messagesRequestId
+    // Out of the live end before the request: a message landing meanwhile must not splice today's
+    // page into the pane the window is about to replace. Put back if the jump fails.
+    const wasAtTail = isAtTail.value
+    isAtTail.value = false
+    try {
+      const page = await messageApi.getMessageWindow(threadId, { around: messageId })
+      if (currentRequestId !== messagesRequestId || threadId !== currentThreadId.value) return
+      messages.value = page.messages ?? []
+      loadOlderError.value = null
+      loadNewerError.value = null
+      applyWindow(page)
+      focusRequest.value = { messageId }
+    } catch (e) {
+      console.error('Failed to jump to a message:', e)
+      if (currentRequestId === messagesRequestId) {
+        isAtTail.value = wasAtTail
+        // A message that arrived meanwhile was held back for the window that never came.
+        if (wasAtTail) loadMessages(threadId, { silent: true })
+        jumpError.value =
+          e.status === 404
+            ? i18n.global.t('band_space_chat.error.message_unavailable')
+            : i18n.global.t('band_space_chat.error.jump_failed')
+      }
+    }
+  }
+
+  function dismissJumpError() {
+    jumpError.value = null
+  }
+
+  /** Back to the live end of the conversation from a window. */
+  async function returnToLatest() {
+    const threadId = currentThreadId.value
+    if (!threadId) return
+    await loadMessages(threadId)
+    await markCurrentAsRead()
+  }
+
+  async function markCurrentAsRead() {
+    const threadMeta = threads.value.find((t) => t.thread.id === currentThreadId.value)
+    if (threadMeta && threadMeta.unread_count > 0) {
+      await markAsRead(threadMeta.id)
+    }
+  }
+
+  function startReply(message) {
+    replyTarget.value = replyQuoteFromMessage(message, conversationAuthor)
+  }
+
+  function cancelReply() {
+    replyTarget.value = null
+  }
+
+  /**
+   * The quotes on screen and the banner follow what they answer: a reply cannot be sent to a deleted
+   * message, so the banner goes rather than leading to a refused send.
+   */
+  function refreshQuotesOf(answered) {
+    messages.value = withQuotesRefreshed(messages.value, answered, conversationAuthor)
+    const target = answered.find((message) => message.id === replyTarget.value?.id)
+    if (target) {
+      replyTarget.value = target.is_deleted
+        ? null
+        : replyQuoteFromMessage(target, conversationAuthor)
     }
   }
 
@@ -222,13 +397,22 @@ export const useMessageStore = defineStore('message', () => {
   /** `media` is an image or a voice note (#1247), `{ image }` or `{ voiceNote }`. */
   async function postMessageInThread({ threadId, content, media = null }) {
     isAddingMessage.value = true
+    const replyTo = replyTarget.value?.id ?? null
     try {
-      const newMessage = await messageApi.postMessageInThread({ threadId, content, media })
+      const newMessage = await messageApi.postMessageInThread({ threadId, content, media, replyTo })
       typingNotifier.reset()
-      // The signal for this very message can arrive before this promise resolves, because the server
-      // publishes inside the send and answers afterwards. That refetch has already put the message in
-      // the list, so pushing it again would show it twice.
-      if (!isMessageAlreadyListed(messages.value, newMessage)) {
+      // Unless another message was picked meanwhile: that reply is still to be written.
+      if (replyTarget.value?.id === replyTo) {
+        replyTarget.value = null
+      }
+      // Written from a window up the history: appending it there would open a gap between the window
+      // and today. The member wrote it, so they mean to see it, where it really is.
+      if (!isAtTail.value) {
+        await returnToLatest()
+      } else if (!isMessageAlreadyListed(messages.value, newMessage)) {
+        // The signal for this very message can arrive before this promise resolves, because the server
+        // publishes inside the send and answers afterwards. That refetch has already put the message
+        // in the list, so pushing it again would show it twice.
         messages.value.push(newMessage)
       }
 
@@ -252,6 +436,7 @@ export const useMessageStore = defineStore('message', () => {
     const message = await messageApi.updateMessage({ threadId, messageId, content })
     if (threadId === currentThreadId.value) {
       messages.value = mergeMessages(messages.value, [message])
+      refreshQuotesOf([message])
     }
   }
 
@@ -260,11 +445,14 @@ export const useMessageStore = defineStore('message', () => {
     const threadId = currentThreadId.value
     await messageApi.deleteMessage({ threadId, messageId })
     if (threadId !== currentThreadId.value) return
-    messages.value = messages.value.map((message) =>
-      message.id === messageId
-        ? { ...message, content: '', is_deleted: true, editable_content: undefined }
-        : message
-    )
+    const tombstones = []
+    messages.value = messages.value.map((message) => {
+      if (message.id !== messageId) return message
+      const tombstone = { ...message, content: '', is_deleted: true, editable_content: undefined }
+      tombstones.push(tombstone)
+      return tombstone
+    })
+    refreshQuotesOf(tombstones)
   }
 
   function patchReactions(messageId, reactions) {
@@ -314,30 +502,41 @@ export const useMessageStore = defineStore('message', () => {
     if (hasLoadedThreads.value && change !== 'reaction') {
       inboxRefresh.request()
     }
-    if (!threadId || threadId !== currentThreadId.value || !isHeld(messages.value, messageId)) {
+    if (
+      !threadId ||
+      threadId !== currentThreadId.value ||
+      !isShownOnScreen(messages.value, messageId)
+    ) {
       return
     }
     changedMessageIds.add(messageId)
     messageChangeRefresh.request()
   }
 
+  /**
+   * Re-reads each changed message through the window around it, which works in a window up the
+   * history too (#1380), and swaps in the copies of what the pane holds. One window covers its
+   * neighbours, so a burst of changes close together is one request.
+   */
   async function refreshChangedMessages() {
     const threadId = currentThreadId.value
-    const pages = new Set(
-      [...changedMessageIds].map((messageId) => pageHoldingMessage(messages.value, messageId))
-    )
+    const messageIds = [...changedMessageIds]
     changedMessageIds.clear()
-    pages.delete(null)
 
-    for (const page of pages) {
+    const refreshed = new Set()
+    for (const messageId of messageIds) {
+      if (refreshed.has(messageId) || !isShownOnScreen(messages.value, messageId)) continue
       try {
-        const response = await messageApi.getMessages({ threadId, page })
+        const page = await messageApi.getMessageWindow(threadId, { around: messageId })
         if (threadId !== currentThreadId.value) return
+        const fetched = page.messages ?? []
+        for (const message of fetched) refreshed.add(message.id)
         messages.value = withRefreshedHeld(
           messages.value,
-          response.member ?? [],
+          fetched,
           reactionToggle.pendingMessageIds()
         )
+        refreshQuotesOf(fetched)
       } catch (e) {
         // The next load puts it right; a live refresh never turns a readable pane into an error.
         console.error('Failed to refresh a changed message:', e)
@@ -385,6 +584,12 @@ export const useMessageStore = defineStore('message', () => {
     const openThread = threads.value.find((t) => t.thread.id === openThreadId)
     if (isChannel(openThread)) {
       if (plan.markRead) openThread.unread_count = 0
+      return
+    }
+
+    // A window up the history: today's page has nowhere to go, the way down just grows (#1380).
+    if (!isAtTail.value) {
+      windowHasNewer.value = true
       return
     }
 
@@ -497,6 +702,11 @@ export const useMessageStore = defineStore('message', () => {
     reactionToggle.reset()
     changedMessageIds.clear()
     messageChangeRefresh.cancel()
+    replyTarget.value = null
+    jumpError.value = null
+    loadNewerError.value = null
+    focusRequest.value = null
+    resetWindow()
   }
 
   function clearCurrentThread() {
@@ -529,6 +739,13 @@ export const useMessageStore = defineStore('message', () => {
     loadOlderError: readonly(loadOlderError),
     totalMessages: readonly(totalMessages),
     hasOlderMessages,
+    hasNewerMessages,
+    isAtTail: readonly(isAtTail),
+    isLoadingNewerMessages: readonly(isLoadingNewerMessages),
+    loadNewerError: readonly(loadNewerError),
+    jumpError: readonly(jumpError),
+    focusRequest: readonly(focusRequest),
+    replyTarget: readonly(replyTarget),
     isAddingMessage: readonly(isAddingMessage),
     reactionError: readonly(reactionError),
     orderedThreads,
@@ -538,6 +755,12 @@ export const useMessageStore = defineStore('message', () => {
     postMessage,
     postMessageInThread,
     loadOlderMessages,
+    loadNewerMessages,
+    jumpToMessage,
+    dismissJumpError,
+    returnToLatest,
+    startReply,
+    cancelReply,
     handleIncomingMessage,
     handleTyping,
     handleThreadRead,

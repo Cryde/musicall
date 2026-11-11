@@ -83,8 +83,8 @@ const props = defineProps({
   canEdit: { type: Boolean, default: false },
   canDelete: { type: Boolean, default: false },
   canReport: { type: Boolean, default: false },
-  // The band chat only.
   canReply: { type: Boolean, default: false },
+  // The band chat only.
   canPin: { type: Boolean, default: false },
   isPinPending: { type: Boolean, default: false },
   canCreateTask: { type: Boolean, default: false },

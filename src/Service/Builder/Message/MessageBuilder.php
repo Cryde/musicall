@@ -17,6 +17,7 @@ use App\Repository\Message\MessageReactionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Message\MessagePreviewText;
 use App\Service\Message\ThreadSeenPosition;
+use App\Translation\DisplayNameTranslator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -35,6 +36,8 @@ readonly class MessageBuilder
         private ThreadSeenPosition $threadSeenPosition,
         private MessageFileRepository $messageFileRepository,
         private TranslatorInterface $translator,
+        private ReplyQuoteBuilder $replyQuotes,
+        private DisplayNameTranslator $displayNames,
     ) {
     }
 
@@ -112,6 +115,8 @@ readonly class MessageBuilder
      * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
      * @param list<string>|null $liveMediaIds the media files that still exist; null when the message
      *                                        was just sent, and so are its files
+     * @param bool $withReplyQuote false for an inbox preview, which shows no quote and would otherwise
+     *                             load the answered message and its author for nothing
      */
     public function buildItem(
         Message $entity,
@@ -121,6 +126,7 @@ readonly class MessageBuilder
         ?User $viewer = null,
         array $reactionTallies = [],
         ?array $liveMediaIds = null,
+        bool $withReplyQuote = true,
     ): MessageResource
     {
         $dto = new MessageResource();
@@ -159,8 +165,29 @@ readonly class MessageBuilder
                 'is_available' => $isLive($entity->voiceNoteFileId),
             ];
         }
+        $dto->replyTo = $withReplyQuote ? $this->replyQuoteOf($entity->replyTo) : null;
 
         return $dto;
+    }
+
+    /**
+     * No mentions to render: a conversation has none, and a channel's messages are built by
+     * ChatMessageBuilder, never by this one.
+     *
+     * @return array{id: string, author_id: string, author_display_name: string, excerpt: string, has_image: bool, has_voice_note: bool, is_deleted: bool}|null
+     */
+    private function replyQuoteOf(?Message $answered): ?array
+    {
+        if (!$answered instanceof Message) {
+            return null;
+        }
+
+        return $this->replyQuotes->build(
+            $this->replyQuotes->answeredOf($answered),
+            $this->displayNames->publicName($answered->author),
+            [],
+            false,
+        );
     }
 
     /**

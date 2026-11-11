@@ -36,7 +36,7 @@ readonly class MessageThreadBuilder
             $entity->messageParticipants->toArray(),
         );
         $dto->lastMessage = $entity->lastMessage instanceof Message
-            ? $this->messageBuilder->buildItem($entity->lastMessage, $lastMessageMentionUsernamesById)
+            ? $this->messageBuilder->buildItem($entity->lastMessage, $lastMessageMentionUsernamesById, withReplyQuote: false)
             : null;
 
         $dto->latestContactOrigin = $latestContactOrigin instanceof MessageContactOrigin
