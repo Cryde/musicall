@@ -43,6 +43,21 @@
   },
   "editor": {
     "title_placeholder": "Titre de la note",
+    "emoji_picker": {
+      "search": "Rechercher un emoji",
+      "categories_label": "Catégories d'emoji",
+      "no_results": "Aucun emoji trouvé",
+      "categories": {
+        "smileys_people": "Smileys et personnes",
+        "animals_nature": "Animaux et nature",
+        "food_drink": "Nourriture et boissons",
+        "activities": "Activités",
+        "travel_places": "Voyages et lieux",
+        "objects": "Objets",
+        "symbols": "Symboles",
+        "flags": "Drapeaux"
+      }
+    },
     "content_placeholder": "Commence à écrire...",
     "created_by": "Créée par {author}",
     "save_status": {

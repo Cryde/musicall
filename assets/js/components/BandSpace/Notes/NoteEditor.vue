@@ -13,9 +13,10 @@
             </button>
             <div v-if="showEmojiPicker" class="absolute top-12 left-0 z-50">
               <EmojiPicker
-                :native="true"
-                :disable-skin-tones="true"
-                theme="auto"
+                set="native"
+                skin-tone-position="none"
+                :theme="emojiPickerTheme"
+                :i18n="emojiPickerTexts"
                 @select="handleEmojiSelect"
               />
             </div>
@@ -382,9 +383,10 @@ import UserName from '../../User/UserName.vue'
 import NoteSaveStatus from './NoteSaveStatus.vue'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
+import { useDarkMode } from '../../../composables/useDarkMode.js'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
 import { useBandSpaceNotesStore } from '../../../store/bandSpace/bandSpaceNotes.js'
 import { checkLinkAddress } from '../../../utils/noteLinkAddress.js'
@@ -404,6 +406,26 @@ const notesStore = useBandSpaceNotesStore()
 
 const showEmojiPicker = ref(false)
 const emojiPickerRef = ref(null)
+const { isDarkMode } = useDarkMode()
+
+// The picker's own `auto` theme follows the system setting, not the site's dark mode toggle.
+const emojiPickerTheme = computed(() => (isDarkMode.value ? 'dark' : 'light'))
+const emojiPickerTexts = computed(() => ({
+  search: t('band_space_notes.editor.emoji_picker.search'),
+  searchLabel: t('band_space_notes.editor.emoji_picker.search'),
+  categoriesLabel: t('band_space_notes.editor.emoji_picker.categories_label'),
+  noResults: t('band_space_notes.editor.emoji_picker.no_results'),
+  categories: {
+    smileys_people: t('band_space_notes.editor.emoji_picker.categories.smileys_people'),
+    animals_nature: t('band_space_notes.editor.emoji_picker.categories.animals_nature'),
+    food_drink: t('band_space_notes.editor.emoji_picker.categories.food_drink'),
+    activities: t('band_space_notes.editor.emoji_picker.categories.activities'),
+    travel_places: t('band_space_notes.editor.emoji_picker.categories.travel_places'),
+    objects: t('band_space_notes.editor.emoji_picker.categories.objects'),
+    symbols: t('band_space_notes.editor.emoji_picker.categories.symbols'),
+    flags: t('band_space_notes.editor.emoji_picker.categories.flags')
+  }
+}))
 
 onClickOutside(emojiPickerRef, () => {
   showEmojiPicker.value = false
@@ -624,7 +646,7 @@ function shouldShowTableMenu({ editor }) {
 
 function handleEmojiSelect(emoji) {
   showEmojiPicker.value = false
-  emit('update-emoji', emoji.i)
+  emit('update-emoji', emoji.native)
 }
 
 function handleTitleBlur() {

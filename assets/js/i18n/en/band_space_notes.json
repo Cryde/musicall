@@ -43,6 +43,21 @@
   },
   "editor": {
     "title_placeholder": "Note title",
+    "emoji_picker": {
+      "search": "Search emoji",
+      "categories_label": "Emoji categories",
+      "no_results": "No emoji found",
+      "categories": {
+        "smileys_people": "Smileys and people",
+        "animals_nature": "Animals and nature",
+        "food_drink": "Food and drink",
+        "activities": "Activities",
+        "travel_places": "Travel and places",
+        "objects": "Objects",
+        "symbols": "Symbols",
+        "flags": "Flags"
+      }
+    },
     "content_placeholder": "Start writing...",
     "created_by": "Created by {author}",
     "save_status": {
