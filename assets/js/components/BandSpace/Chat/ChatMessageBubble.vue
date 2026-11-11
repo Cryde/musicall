@@ -211,7 +211,7 @@ const props = defineProps({
   /** Fetches a voice note as a blob; null where the conversation has none. */
   loadVoiceNote: { type: Function, default: null },
   reactable: { type: Boolean, default: false },
-  /** The band chat only (#1377): its list decides, see canReplyToChatMessage(). */
+  /** The list decides (#1377, #1380), see canReplyToChatMessage(). */
   canReply: { type: Boolean, default: false },
   canPin: { type: Boolean, default: false },
   isPinPending: { type: Boolean, default: false },

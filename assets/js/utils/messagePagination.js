@@ -115,22 +115,3 @@ function writtenAt(message) {
 
   return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed
 }
-
-/**
- * The page a held message sits on, to re-read it after a live change (#1245). Counted from the newest
- * end like the pages themselves, so a message that arrived since shifts it by at most one page, and
- * withRefreshedHeld() simply finds nothing to swap if it slid out.
- *
- * @param {object[]} held oldest first
- * @param {string} messageId
- * @param {number} pageSize
- * @returns {number | null} 1 based page number, or null when the message is not held
- */
-export function pageHoldingMessage(held, messageId, pageSize = MESSAGES_PAGE_SIZE) {
-  const index = held.findIndex((message) => message.id === messageId)
-  if (index === -1 || pageSize <= 0) {
-    return null
-  }
-
-  return Math.floor((held.length - 1 - index) / pageSize) + 1
-}

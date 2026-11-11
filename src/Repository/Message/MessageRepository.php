@@ -90,16 +90,7 @@ class MessageRepository extends ServiceEntityRepository
      */
     public function findOlderInThread(MessageThread $thread, Message $anchor, int $limit, bool $inclusive = false): array
     {
-        return $this->projectionForThread($thread)
-            ->andWhere(sprintf(
-                '(message.creationDatetime < :anchorDatetime OR (message.creationDatetime = :anchorDatetime AND message.id %s :anchorId))',
-                $inclusive ? '<=' : '<',
-            ))
-            ->setParameter('anchorDatetime', $anchor->creationDatetime)
-            ->setParameter('anchorId', (string) $anchor->id)
-            ->orderBy('message.creationDatetime', 'DESC')
-            ->addOrderBy('message.id', 'DESC')
-            ->setMaxResults($limit)
+        return self::olderThan($this->projectionForThread($thread), $anchor, $limit, $inclusive)
             ->getQuery()
             ->getResult();
     }
@@ -112,15 +103,95 @@ class MessageRepository extends ServiceEntityRepository
      */
     public function findNewerInThread(MessageThread $thread, Message $anchor, int $limit): array
     {
-        return $this->projectionForThread($thread)
+        return self::newerThan($this->projectionForThread($thread), $anchor, $limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * findOlderInThread() for a conversation (#1380), as entities with what a bubble shows, for
+     * MessageBuilder.
+     *
+     * @return list<Message>
+     */
+    public function findOlderInConversation(MessageThread $thread, Message $anchor, int $limit, bool $inclusive = false): array
+    {
+        return self::olderThan($this->conversationPage($thread), $anchor, $limit, $inclusive)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * findNewerInThread() for a conversation (#1380).
+     *
+     * @return list<Message>
+     */
+    public function findNewerInConversation(MessageThread $thread, Message $anchor, int $limit): array
+    {
+        return self::newerThan($this->conversationPage($thread), $anchor, $limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * What a bubble of a conversation shows besides the message, joined rather than left lazy, which
+     * would be queries per row: its author and their profile (#1118), and the message it answers with
+     * that one's author (#1380). Shared with MessageAuthorExtension, which builds the paginated list.
+     * The `conversation_*` aliases are fixed, so it is applied once per query.
+     */
+    public static function joinConversationPage(QueryBuilder $queryBuilder, string $messageAlias): QueryBuilder
+    {
+        return $queryBuilder
+            ->innerJoin($messageAlias . '.author', 'conversation_author')
+            ->innerJoin('conversation_author.profile', 'conversation_author_profile')
+            ->leftJoin($messageAlias . '.replyTo', 'conversation_answered')
+            ->leftJoin('conversation_answered.author', 'conversation_answered_author')
+            ->leftJoin('conversation_answered_author.profile', 'conversation_answered_author_profile')
+            ->addSelect(
+                'conversation_author',
+                'conversation_author_profile',
+                'conversation_answered',
+                'conversation_answered_author',
+                'conversation_answered_author_profile',
+            );
+    }
+
+    private function conversationPage(MessageThread $thread): QueryBuilder
+    {
+        return self::joinConversationPage($this->createQueryBuilder('message'), 'message')
+            ->where('message.thread = :thread')
+            ->setParameter('thread', $thread);
+    }
+
+    /**
+     * Newest first, keyed on `(creation_datetime, id)`: see findOlderInThread().
+     */
+    private static function olderThan(QueryBuilder $queryBuilder, Message $anchor, int $limit, bool $inclusive): QueryBuilder
+    {
+        return $queryBuilder
+            ->andWhere(sprintf(
+                '(message.creationDatetime < :anchorDatetime OR (message.creationDatetime = :anchorDatetime AND message.id %s :anchorId))',
+                $inclusive ? '<=' : '<',
+            ))
+            ->setParameter('anchorDatetime', $anchor->creationDatetime)
+            ->setParameter('anchorId', (string) $anchor->id)
+            ->orderBy('message.creationDatetime', 'DESC')
+            ->addOrderBy('message.id', 'DESC')
+            ->setMaxResults($limit);
+    }
+
+    /**
+     * Oldest first, the mirror of olderThan().
+     */
+    private static function newerThan(QueryBuilder $queryBuilder, Message $anchor, int $limit): QueryBuilder
+    {
+        return $queryBuilder
             ->andWhere('(message.creationDatetime > :anchorDatetime OR (message.creationDatetime = :anchorDatetime AND message.id > :anchorId))')
             ->setParameter('anchorDatetime', $anchor->creationDatetime)
             ->setParameter('anchorId', (string) $anchor->id)
             ->orderBy('message.creationDatetime', 'ASC')
             ->addOrderBy('message.id', 'ASC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->setMaxResults($limit);
     }
 
     /**

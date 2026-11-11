@@ -116,6 +116,14 @@
           <Message v-if="messageStore.reactionError" severity="error" :closable="false">
             {{ messageStore.reactionError }}
           </Message>
+          <Message
+            v-if="messageStore.jumpError"
+            severity="error"
+            closable
+            @close="messageStore.dismissJumpError()"
+          >
+            {{ messageStore.jumpError }}
+          </Message>
 
           <!-- One block per burst (#1031): consecutive messages from one side share their corners. -->
           <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
@@ -136,8 +144,10 @@
           >
             <div
               v-for="(message, index) in block.messages"
+              :id="`conversation-message-${message.id}`"
               :key="message['@id']"
-              class="group/message flex max-w-[85%] flex-col"
+              class="group/message flex max-w-[85%] flex-col rounded-2xl transition-shadow duration-300"
+              :class="{ 'ring-2 ring-primary-500': highlightedMessageId === message.id }"
             >
               <ContactOrigin
                 v-if="message.contact_origin"
@@ -155,13 +165,16 @@
                 :image-src="message.image ? messageApi.imageUrl(messageStore.currentThreadId, message.image.file_id) : null"
                 :load-voice-note="loadVoiceNote"
                 reactable
+                :can-reply="canReply(message)"
                 can-report
                 :can-edit="canEdit(message)"
                 :can-delete="canDeleteChatMessage(message, isSender(message), false)"
                 :actions-in-sheet="actionsInSheet"
                 @open-actions="openActions(message)"
+                @reply="handleReply(message)"
+                @open-reply="messageStore.jumpToMessage(message.reply_to.id)"
                 @report="openReport(message)"
-                @edit="startEdit(message)"
+                @edit="handleEdit(message)"
                 @delete="confirmDelete(message)"
                 @react="(emojiKey) => messageStore.toggleReaction(message.id, emojiKey)"
               >
@@ -184,6 +197,34 @@
           <p v-if="isNewestSeen" class="-mt-3 text-right text-xs text-surface-500 dark:text-surface-400">
             {{ t('message.thread.seen') }}
           </p>
+
+          <!-- Reading a window up the history (#1380): the conversation goes on below it, and the way
+               back to the present stays in reach however far the reader has scrolled. -->
+          <template v-if="messageStore.hasNewerMessages">
+            <Message v-if="messageStore.loadNewerError" severity="error" :closable="false">
+              {{ messageStore.loadNewerError }}
+            </Message>
+            <div class="flex justify-center">
+              <Button
+                :label="t('band_space_chat.message_list.load_newer')"
+                severity="secondary"
+                outlined
+                size="small"
+                :loading="messageStore.isLoadingNewerMessages"
+                @click="handleLoadNewer"
+              />
+            </div>
+            <div class="sticky bottom-0 flex justify-center pb-1">
+              <Button
+                :label="t('band_space_chat.message_list.back_to_latest')"
+                icon="pi pi-arrow-down"
+                size="small"
+                rounded
+                class="shadow-md"
+                @click="messageStore.returnToLatest()"
+              />
+            </div>
+          </template>
         </template>
       </div>
 
@@ -201,24 +242,34 @@
       <ChatComposer
         v-else
         :key="messageStore.currentThreadId"
+        ref="composer"
         :mentions="false"
         :media="canSendMedia"
         :send-message="sendToThread"
         :is-sending="messageStore.isAddingMessage"
         @sent="scrollToBottom"
         @typing="messageStore.notifyTyping()"
-      />
+        @keydown.esc="messageStore.cancelReply()"
+      >
+        <ChatReplyBanner
+          v-if="messageStore.replyTarget"
+          :quote="messageStore.replyTarget"
+          @cancel="cancelReply"
+        />
+      </ChatComposer>
 
       <ReportDialog v-model:visible="isReportVisible" target-type="message" :target-id="reportedMessageId" />
 
       <MessageActionsSheet
         v-model:visible="isActionsOpen"
         :message="actionsMessage"
+        :can-reply="actionsMessage ? canReply(actionsMessage) : false"
         :can-edit="actionsMessage ? canEdit(actionsMessage) : false"
         :can-delete="actionsMessage ? canDeleteChatMessage(actionsMessage, isSender(actionsMessage), false) : false"
         :can-report="actionsMessage ? !isSender(actionsMessage) && !actionsMessage.is_deleted : false"
         @react="(emojiKey) => messageStore.toggleReaction(actionsMessage.id, emojiKey)"
-        @edit="startEdit(actionsMessage)"
+        @reply="handleReply(actionsMessage)"
+        @edit="handleEdit(actionsMessage)"
         @delete="confirmDelete(actionsMessage)"
         @report="openReport(actionsMessage)"
       />
@@ -239,7 +290,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
@@ -247,17 +298,19 @@ import BandChatPanel from '../../components/BandSpace/Chat/BandChatPanel.vue'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageBubble from '../../components/BandSpace/Chat/ChatMessageBubble.vue'
 import ChatMessageEditBox from '../../components/BandSpace/Chat/ChatMessageEditBox.vue'
+import ChatReplyBanner from '../../components/BandSpace/Chat/ChatReplyBanner.vue'
 import ChatTypingLine from '../../components/BandSpace/Chat/ChatTypingLine.vue'
 import { useChatMessageActions } from '../../composables/useChatMessageActions.js'
 import { useChatPresence } from '../../composables/useChatPresence.js'
 import { useMessageActionsSheet } from '../../composables/useMessageActionsSheet.js'
+import { useMessageFocus } from '../../composables/useMessageFocus.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import absoluteDate from '../../helper/date/absolute-date.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
-import { canDeleteChatMessage } from '../../utils/chatMessageActions.js'
+import { canDeleteChatMessage, canReplyToChatMessage } from '../../utils/chatMessageActions.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
@@ -274,6 +327,7 @@ const messageStore = useMessageStore()
 const securityStore = useUserSecurityStore()
 const notificationStore = useNotificationStore()
 const messagesContainer = ref(null)
+const composer = useTemplateRef('composer')
 const isReportVisible = ref(false)
 const reportedMessageId = ref(null)
 
@@ -326,9 +380,10 @@ const canSendMedia = computed(
 // Two people in a conversation, so whoever is writing is the one the header names.
 const typistNames = computed(() => (messageStore.currentTypists.length > 0 ? [title.value] : []))
 
+// A window up the history (#1380) does not hold the newest message.
 const isNewestSeen = computed(() => {
   const newest = messageStore.messages.at(-1)
-  return !!newest && isSender(newest) && newest.is_seen === true
+  return messageStore.isAtTail && !!newest && isSender(newest) && newest.is_seen === true
 })
 
 // The conversation leaves the inbox and its badge once blocked (#1117), so both are reloaded and the
@@ -368,6 +423,34 @@ const {
   edit: (messageId, content) => messageStore.editMessage(messageId, content),
   remove: (messageId) => messageStore.deleteMessage(messageId)
 })
+
+// Nowhere to send a reply once the other person has closed their account: the composer is gone.
+function canReply(message) {
+  return !isRecipientDeleted.value && canReplyToChatMessage(message, editingId.value !== null)
+}
+
+// Picking a message to answer puts the member in the text box (#1380).
+function handleReply(message) {
+  messageStore.startReply(message)
+  composer.value?.focus()
+}
+
+// Back to the text box, which the close button took the focus from.
+function cancelReply() {
+  messageStore.cancelReply()
+  composer.value?.focus()
+}
+
+// A reply and an edit don't mix, as in the band chat: the edit box takes over, and the reply goes.
+function handleEdit(message) {
+  messageStore.cancelReply()
+  startEdit(message)
+}
+
+const { highlightedMessageId } = useMessageFocus(
+  () => messageStore.focusRequest,
+  (messageId) => `conversation-message-${messageId}`
+)
 
 // An edit box or a message's sheet left open would follow the reader into the next conversation.
 watch(
@@ -442,6 +525,22 @@ async function handleLoadOlder() {
   }
 }
 
+/**
+ * Reading on towards the present from a window: the new rows land below the reader, who keeps their
+ * place, so the follow rule below must not take them to the bottom of what was just loaded.
+ */
+let isLoadingNewer = false
+
+async function handleLoadNewer() {
+  isLoadingNewer = true
+  try {
+    await messageStore.loadNewerMessages()
+    await nextTick()
+  } finally {
+    isLoadingNewer = false
+  }
+}
+
 // Scroll to bottom when messages change, unless the reader has gone back up. Messages now arrive on
 // their own (#989), so yanking the view to the bottom would interrupt somebody rereading history
 // rather than follow along with them. Read before the DOM updates, which is what a pre-flush watcher
@@ -469,7 +568,8 @@ watch(
     const grewAtTheEnd = tailIri !== lastTailIri
     lastTailIri = tailIri
 
-    if (grewAtTheEnd && isFollowingTheConversation()) {
+    // Never while a window is shown or read on (#1380): following only means something at the live end.
+    if (grewAtTheEnd && messageStore.isAtTail && !isLoadingNewer && isFollowingTheConversation()) {
       scrollToBottom()
     }
   },

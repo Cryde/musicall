@@ -153,4 +153,13 @@ class MessageResource
      */
     #[Groups([MessageResource::LIST, MessageResource::ITEM])]
     public ?array $voiceNote = null;
+
+    /**
+     * The message this one answers (#1380), in the band chat's shape (#1377); absent when it answers
+     * nothing.
+     *
+     * @var array{id: string, author_id: string, author_display_name: string, excerpt: string, has_image: bool, has_voice_note: bool, is_deleted: bool}|null
+     */
+    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    public ?array $replyTo = null;
 }

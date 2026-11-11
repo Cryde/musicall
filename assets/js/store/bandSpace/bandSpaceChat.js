@@ -7,6 +7,7 @@ import { replyQuoteFromMessage, withQuotesRefreshed } from '../../utils/chatRepl
 import { createTypingNotifier, createTypistTracker } from '../../utils/chatTyping.js'
 import {
   isHeld,
+  isShownOnScreen,
   mayMergeNewestPage,
   paneAfterWindow,
   withRefreshedHeld
@@ -631,7 +632,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     if (change === 'pin' || pinnedMessages.value.some((pinned) => pinned.id === messageId)) {
       pinnedBarIsStale = true
     }
-    if (isHeld(messages.value, messageId)) {
+    if (isShownOnScreen(messages.value, messageId)) {
       changedMessageIds.add(messageId)
     }
     if (changedMessageIds.size > 0 || pinnedBarIsStale) {
@@ -657,7 +658,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     const token = loadToken
     const refreshed = new Set()
     for (const messageId of messageIds) {
-      if (refreshed.has(messageId) || !isHeld(messages.value, messageId)) {
+      if (refreshed.has(messageId) || !isShownOnScreen(messages.value, messageId)) {
         continue
       }
       try {

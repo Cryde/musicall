@@ -11,7 +11,7 @@
  * @param {string|null} [message.thread] the thread IRI, for a direct conversation
  * @param {File|null} [message.image]
  * @param {File|null} [message.voiceNote]
- * @param {string|null} [message.replyTo] the id of the message answered, in the band chat (#1377)
+ * @param {string|null} [message.replyTo] the id of the message answered (#1377, #1380)
  * @returns {FormData}
  */
 export function mediaMessageForm({

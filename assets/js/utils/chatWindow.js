@@ -47,6 +47,17 @@ export function isHeld(held, messageId) {
 }
 
 /**
+ * Whether a change to this message shows on screen (#1380): it is held, or a held reply quotes it,
+ * however far up the history it sits.
+ *
+ * @param {ReadonlyArray<{id: string, reply_to?: {id: string}|null}>} held
+ * @param {string} messageId
+ */
+export function isShownOnScreen(held, messageId) {
+  return held.some((message) => message.id === messageId || message.reply_to?.id === messageId)
+}
+
+/**
  * The pane with the fetched copies of the messages it already holds (#1056), and nothing else: a
  * fetched message that is not held is left out, since slipping it in would open a gap in the history.
  *

@@ -20,10 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * the newest message (#955), and an offset cannot say where a given message sits without counting
  * everything newer. This one is keyed on the anchor instead, `(creation_datetime, id)`.
  *
- * Exactly one of `around`, `before` and `after`:
- * - `around`: the anchor with up to 25 messages on each side, the landing window
- * - `before`: up to 50 messages older than the anchor
- * - `after`: up to 50 messages newer than the anchor
+ * Exactly one of `around`, `before` and `after`, see MessageWindowReader.
  */
 #[ApiResource(
     shortName: 'ChatMessageWindow',
@@ -48,10 +45,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class ChatMessageWindow
 {
-    public const int AROUND_EACH_SIDE = 25;
-
-    public const int PAGE_SIZE = 50;
-
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 

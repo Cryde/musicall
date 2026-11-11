@@ -57,6 +57,9 @@ class MessageCreation
     )]
     public ?File $voiceNote = null;
 
+    /** The id of the message this one answers (#1380), checked against the thread by MessagePostProcessor. */
+    public ?string $replyTo = null;
+
     public function hasMedia(): bool
     {
         return $this->image instanceof File || $this->voiceNote instanceof File;
