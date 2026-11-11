@@ -17,7 +17,7 @@ concurrency:
 jobs:
     backend:
         name: Backend (PHP ${{ matrix.php-versions }})
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-26.04
         services:
             mysql:
                 image: mariadb:11.8.6
@@ -60,14 +60,36 @@ jobs:
                   coverage: pcov
 
             # Chat voice notes are converted and measured by ffmpeg and ffprobe (#974). The runner
-            # image does not ship them.
+            # image does not ship them. The .deb files are cached so a hit installs with dpkg alone
+            # and never reaches the Ubuntu mirror, which has gone unresolvable mid-run before. The
+            # key follows the runner image, since the packages depend on the libraries it ships.
+            - name: Get runner image version
+              id: runner-image
+              run: echo "version=${ImageOS}-${ImageVersion}" >> "$GITHUB_OUTPUT"
+
+            - name: Cache ffmpeg packages
+              id: ffmpeg-cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/ffmpeg-debs
+                  key: ffmpeg-debs-${{ steps.runner-image.outputs.version }}
+
             - name: Install ffmpeg
-              run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+              timeout-minutes: 5
+              run: |
+                  if [ "${{ steps.ffmpeg-cache.outputs.cache-hit }}" != 'true' ]; then
+                      sudo apt-get update
+                      sudo apt-get install -y --no-install-recommends --download-only ffmpeg
+                      mkdir -p ~/ffmpeg-debs
+                      cp /var/cache/apt/archives/*.deb ~/ffmpeg-debs/
+                  fi
+                  sudo dpkg -i ~/ffmpeg-debs/*.deb
+                  ffprobe -version | head -n 1
 
             # —— Composer ——————————————————————————————————————————————————————————
             - name: Get Composer Cache Directory
               id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
             - uses: actions/cache@v4
               with:
@@ -122,7 +144,7 @@ jobs:
 
     frontend:
         name: Frontend (Node ${{ matrix.node-versions }})
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-26.04
         strategy:
             fail-fast: true
             matrix:
