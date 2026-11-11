@@ -21,6 +21,12 @@ export default {
       .then((resp) => resp.data)
   },
 
+  getPlatformActivity(from, to) {
+    return axios
+      .get(Routing.generate('_api_/admin/dashboard/platform-activity_get', { from, to }))
+      .then((resp) => resp.data)
+  },
+
   getContentOverview(from, to) {
     return axios
       .get(Routing.generate('_api_/admin/dashboard/content-overview_get', { from, to }))

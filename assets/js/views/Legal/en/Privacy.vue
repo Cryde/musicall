@@ -43,6 +43,7 @@
             <li><strong>Technical data</strong>: IP address, server logs, application error reports</li>
             <li><strong>Audience measurement</strong>: aggregated visit statistics, without cookies</li>
             <li><strong>Where your sign-up came from</strong> (when you create your account on the website): the campaign that brought you, as the link you followed names it (the utm_source, utm_medium and utm_campaign parameters), and the site you came from, reduced to its domain name, without the address of the page. The page keeps them in memory for the length of your visit, without cookies or storage in your browser, and they are recorded with your account if it is created during that visit, for statistics only. During a Google or Apple sign-in, they travel in the sign-in link and are kept on our servers for a few minutes, until the sign-in completes</li>
+            <li><strong>Platform used</strong> (when you are logged in): for each day you use MusicAll, whether it was on the website, the iOS app or the Android app, with the version of the app. Nothing else is attached to it, no IP address and no information about your browser or your phone. It is used only for statistics and to know which versions of the app are still in use</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Your IP address is used to secure the service and to limit the rate of requests, and it appears in the server logs. It is not stored in the database: votes and view counters rely on a hashed identifier that cannot be traced back to your address. Recorded searches carry a hashed identifier that changes every day: it is used to count distinct people without making it possible to link your searches from one day to the next.
@@ -60,6 +61,7 @@
             <li>Detecting and fixing technical errors: <strong>legitimate interest</strong></li>
             <li>Measuring the site's audience in aggregate in order to improve it: <strong>legitimate interest</strong></li>
             <li>Knowing which campaigns and which sites bring sign-ups, for statistics: <strong>legitimate interest</strong></li>
+            <li>Knowing on which platforms and with which versions of the app MusicAll is used, for statistics and to maintain the app: <strong>legitimate interest</strong></li>
             <li>Interpreting your natural language musician search to turn it into filters: <strong>legitimate interest</strong></li>
             <li>Recording musician and band searches, with no link to your account, to show frequent searches and improve search: <strong>legitimate interest</strong></li>
             <li>Sending you the emails your account needs to work (address verification, password reset, invitations): <strong>performance of a contract</strong></li>
@@ -139,6 +141,7 @@
             <li><strong>Deleted Band Space files:</strong> 30 days, then permanent erasure</li>
             <li><strong>Deleted Band Space:</strong> 30 days, then permanent erasure of the space and all its content</li>
             <li><strong>Musician and band searches:</strong> 6 months, then permanent erasure</li>
+            <li><strong>Platform used each day:</strong> 13 months, then permanent erasure, or as soon as your account is deleted</li>
             <li><strong>Device identifier for push notifications:</strong> deleted when you log out of the app on that device, when your account is deleted or suspended, or as soon as Firebase tells us it is no longer valid (app uninstalled, notifications revoked)</li>
             <li><strong>Data kept on your phone by the app:</strong> erased when you log out, see section 11</li>
             <li><strong>Audience statistics:</strong> kept in aggregated form, not linked to any individual</li>
@@ -244,5 +247,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Privacy policy - MusicAll')
 
-const lastUpdate = '10 November 2026'
+const lastUpdate = '11 November 2026'
 </script>

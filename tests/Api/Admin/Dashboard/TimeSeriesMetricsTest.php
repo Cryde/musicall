@@ -7,8 +7,8 @@ namespace App\Tests\Api\Admin\Dashboard;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Search\MusicianSearchLog;
 use App\Enum\Search\MusicianSearchKind;
+use App\Enum\User\ClientPlatform;
 use App\Enum\User\RegistrationMethod;
-use App\Enum\User\RegistrationPlatform;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
@@ -73,13 +73,13 @@ class TimeSeriesMetricsTest extends ApiTestCase
         $todayStr = $today->format('Y-m-d');
         $yesterdayStr = $today->modify('-1 day')->format('Y-m-d');
 
-        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Android]);
-        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Android]);
-        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Web]);
-        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => RegistrationPlatform::Ios]);
-        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => RegistrationPlatform::UnknownApp]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => ClientPlatform::Android]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => ClientPlatform::Android]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => ClientPlatform::Web]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => ClientPlatform::Ios]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => ClientPlatform::UnknownApp]);
         // Outside the range
-        UserFactory::new()->create(['creationDatetime' => new \DateTime('-10 days'), 'registrationPlatform' => RegistrationPlatform::Ios]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-10 days'), 'registrationPlatform' => ClientPlatform::Ios]);
 
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/time-series?metric=registrations_by_platform&from=' . $yesterdayStr . '&to=' . $todayStr);
@@ -147,9 +147,9 @@ class TimeSeriesMetricsTest extends ApiTestCase
         UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day')]);
         UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationReferrerHost' => 'www.facebook.com']);
         // The apps record no campaign: they would only swell « (direct) »
-        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::Android]);
-        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => RegistrationPlatform::Ios]);
-        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => RegistrationPlatform::UnknownApp]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => ClientPlatform::Android]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime('-1 day'), 'registrationPlatform' => ClientPlatform::Ios]);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationPlatform' => ClientPlatform::UnknownApp]);
         // Outside the range
         UserFactory::new()->create(['creationDatetime' => new \DateTime('-10 days'), 'registrationUtmSource' => 'google']);
 

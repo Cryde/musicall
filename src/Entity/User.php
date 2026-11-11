@@ -18,8 +18,8 @@ use App\ApiResource\Publication\GalleryResource;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User\UserNotificationPreference;
 use App\Entity\User\UserProfile;
+use App\Enum\User\ClientPlatform;
 use App\Enum\User\RegistrationMethod;
-use App\Enum\User\RegistrationPlatform;
 use App\Repository\UserRepository;
 use DateTime;
 use DateTimeInterface;
@@ -106,6 +106,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $lastActivityDatetime = null;
 
+    // What the member was on at that last write (#1370); null until their first one.
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true, enumType: ClientPlatform::class)]
+    public ?ClientPlatform $lastPlatform = null;
+
+    #[ORM\Column(type: Types::STRING, length: 32, nullable: true)]
+    public ?string $lastAppVersion = null;
+
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     public ?int $oldId = null;
 
@@ -125,8 +132,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public string $locale = 'fr';
 
     // No defaults: every place that creates an account has to say where and how.
-    #[ORM\Column(type: Types::STRING, length: 20, enumType: RegistrationPlatform::class)]
-    public RegistrationPlatform $registrationPlatform;
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: ClientPlatform::class)]
+    public ClientPlatform $registrationPlatform;
 
     #[ORM\Column(type: Types::STRING, length: 20, enumType: RegistrationMethod::class)]
     public RegistrationMethod $registrationMethod;

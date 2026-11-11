@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Service\OAuth;
 
 use App\Entity\SocialAccount;
+use App\Enum\User\ClientPlatform;
 use App\Enum\User\RegistrationMethod;
-use App\Enum\User\RegistrationPlatform;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Repository\SocialAccountRepository;
@@ -202,13 +202,13 @@ class OAuthUserServiceTest extends KernelTestCase
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $stored = $this->getUserRepository()->find($result->user->id);
-        $this->assertSame([RegistrationPlatform::Web, RegistrationMethod::Google, null], [$stored->registrationPlatform, $stored->registrationMethod, $stored->registrationAppVersion]);
+        $this->assertSame([ClientPlatform::Web, RegistrationMethod::Google, null], [$stored->registrationPlatform, $stored->registrationMethod, $stored->registrationAppVersion]);
     }
 
     /** A login is not a sign-up: an existing account keeps the origin it was created with. */
     public function test_find_or_create_user_leaves_the_origin_of_an_existing_account_alone(): void
     {
-        $existingUser = UserFactory::new()->asBaseUser()->create(['registrationPlatform' => RegistrationPlatform::Web, 'registrationMethod' => RegistrationMethod::Password]);
+        $existingUser = UserFactory::new()->asBaseUser()->create(['registrationPlatform' => ClientPlatform::Web, 'registrationMethod' => RegistrationMethod::Password]);
         SocialAccountFactory::new()->create(['user' => $existingUser, 'provider' => SocialAccount::PROVIDER_GOOGLE, 'providerId' => 'google-id-123']);
         self::getContainer()->get(RequestStack::class)->push(Request::create('/api/native/oauth/google', server: ['HTTP_X_CLIENT_PLATFORM' => 'android']));
 
@@ -220,12 +220,12 @@ class OAuthUserServiceTest extends KernelTestCase
             emailVerified: true,
         );
 
-        $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE, platformWithoutHeader: RegistrationPlatform::UnknownApp);
+        $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE, platformWithoutHeader: ClientPlatform::UnknownApp);
 
         $this->assertFalse($result->isNew);
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $stored = $this->getUserRepository()->find($existingUser->id);
-        $this->assertSame([RegistrationPlatform::Web, RegistrationMethod::Password, null], [$stored->registrationPlatform, $stored->registrationMethod, $stored->registrationAppVersion]);
+        $this->assertSame([ClientPlatform::Web, RegistrationMethod::Password, null], [$stored->registrationPlatform, $stored->registrationMethod, $stored->registrationAppVersion]);
     }
 
     public function test_find_or_create_user_records_the_campaign_of_a_new_account(): void

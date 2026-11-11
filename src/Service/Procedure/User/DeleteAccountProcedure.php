@@ -11,6 +11,7 @@ use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
+use App\Repository\User\UserDailyActivityRepository;
 use App\Service\OAuth\Apple\AppleTokenRevoker;
 use App\Service\Procedure\BandSpace\WithdrawUserFromBandSpacesProcedure;
 use Doctrine\DBAL\Connection;
@@ -30,6 +31,7 @@ readonly class DeleteAccountProcedure
         private AppleTokenRevoker $appleTokenRevoker,
         private ProfilePostRepository $profilePostRepository,
         private ProfilePostLikeRepository $profilePostLikeRepository,
+        private UserDailyActivityRepository $userDailyActivityRepository,
     ) {
     }
 
@@ -73,6 +75,8 @@ readonly class DeleteAccountProcedure
         $user->resetRequestDatetime = null;
         $user->confirmationDatetime = null;
         $user->lastLoginDatetime = null;
+        $user->lastPlatform = null;
+        $user->lastAppVersion = null;
         $user->usernameChangedDatetime = null;
         $user->deletionDatetime = new \DateTimeImmutable();
 
@@ -130,6 +134,8 @@ readonly class DeleteAccountProcedure
         // Stop pushing to the phones of an account that no longer exists
         $this->deviceTokenRepository->deleteForUser($user);
         $this->userBlockRepository->deleteForUser($user);
+        // Kept by day and platform for statistics (#1370): an anonymized account keeps none of it.
+        $this->userDailyActivityRepository->deleteForUser($user);
 
         // wrapInTransaction() flushes before it commits, so the caller gets one atomic unit.
         return $promotions;

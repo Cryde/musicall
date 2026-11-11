@@ -6,7 +6,7 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
-use App\Enum\User\RegistrationPlatform;
+use App\Enum\User\ClientPlatform;
 use App\Repository\User\Relation\UserBlockRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -447,7 +447,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function countRegistrationsByDateAndSource(\DateTimeImmutable $from, \DateTimeImmutable $to): array
     {
         // `(direct)` is matched by DIRECT_SOURCE in assets/js/views/Admin/UserDashboard.vue.
-        return $this->countRegistrationsByDateAnd("COALESCE(registration_utm_source, registration_referrer_host, '(direct)')", $from, $to, RegistrationPlatform::Web);
+        return $this->countRegistrationsByDateAnd("COALESCE(registration_utm_source, registration_referrer_host, '(direct)')", $from, $to, ClientPlatform::Web);
     }
 
     /**
@@ -485,15 +485,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     /**
      * @param literal-string $segment the SQL naming the segment of each account
-     * @param RegistrationPlatform|null $platform only the accounts created there, or all of them
+     * @param ClientPlatform|null $platform only the accounts created there, or all of them
      *
      * @return array<int, array{date_label: string, segment: string, count: int}>
      */
-    private function countRegistrationsByDateAnd(string $segment, \DateTimeImmutable $from, \DateTimeImmutable $to, ?RegistrationPlatform $platform = null): array
+    private function countRegistrationsByDateAnd(string $segment, \DateTimeImmutable $from, \DateTimeImmutable $to, ?ClientPlatform $platform = null): array
     {
         $parameters = ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')];
         $platformFilter = '';
-        if ($platform instanceof RegistrationPlatform) {
+        if ($platform instanceof ClientPlatform) {
             $platformFilter = 'AND registration_platform = :platform';
             $parameters['platform'] = $platform->value;
         }

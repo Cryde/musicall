@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Native;
 
 use App\Entity\SocialAccount;
-use App\Enum\User\RegistrationPlatform;
+use App\Enum\User\ClientPlatform;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Service\OAuth\Google\GoogleIdTokenUnverifiableException;
@@ -62,7 +62,7 @@ final class GoogleIdTokenAuthenticator extends AbstractAuthenticator
 
         try {
             $claims = $this->verifier->verify(self::idTokenOf($request));
-            $result = $this->oAuthUserService->findOrCreateUser(GoogleUserDataMapper::fromClaims($claims), SocialAccount::PROVIDER_GOOGLE, platformWithoutHeader: RegistrationPlatform::UnknownApp);
+            $result = $this->oAuthUserService->findOrCreateUser(GoogleUserDataMapper::fromClaims($claims), SocialAccount::PROVIDER_GOOGLE, platformWithoutHeader: ClientPlatform::UnknownApp);
         } catch (InvalidGoogleIdTokenException) {
             throw new CustomUserMessageAuthenticationException('invalid_id_token');
         } catch (GoogleIdTokenUnverifiableException $exception) {

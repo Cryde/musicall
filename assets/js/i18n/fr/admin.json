@@ -27,6 +27,18 @@
     "count": "Inscriptions",
     "empty": "Aucune inscription venue d'une campagne sur cette période"
   },
+  "platform_activity": {
+    "daily": "Membres actifs par jour et par plateforme",
+    "period": "Membres actifs sur la période",
+    "multi_platform": "Sur plusieurs plateformes",
+    "by_registration_platform": "Par plateforme d'inscription",
+    "app_versions": "Versions de l'app (30 derniers jours)",
+    "platform": "Plateforme",
+    "version": "Version",
+    "members": "Membres",
+    "no_version": "Inconnue",
+    "no_app_activity": "Aucune activité dans les apps sur les 30 derniers jours"
+  },
   "time_series": {
     "segment_total": "{segment} ({total})",
     "no_data": "Aucune donnée"

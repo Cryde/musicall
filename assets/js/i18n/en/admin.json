@@ -27,6 +27,18 @@
     "count": "Sign-ups",
     "empty": "No sign-up came from a campaign in this period"
   },
+  "platform_activity": {
+    "daily": "Active members per day and platform",
+    "period": "Active members over the period",
+    "multi_platform": "On several platforms",
+    "by_registration_platform": "By sign-up platform",
+    "app_versions": "App versions (last 30 days)",
+    "platform": "Platform",
+    "version": "Version",
+    "members": "Members",
+    "no_version": "Unknown",
+    "no_app_activity": "No activity in the apps in the last 30 days"
+  },
   "time_series": {
     "segment_total": "{segment} ({total})",
     "no_data": "No data"

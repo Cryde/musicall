@@ -7,8 +7,11 @@ namespace App\Tests\Api\User;
 use App\Entity\Publication;
 use App\Entity\SocialAccount;
 use App\Entity\User;
+use App\Entity\User\UserDailyActivity;
+use App\Enum\User\ClientPlatform;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
+use App\Repository\User\UserDailyActivityRepository;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -17,6 +20,7 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\User\DeviceTokenFactory;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserBlockFactory;
+use App\Tests\Factory\User\UserDailyActivityFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -75,6 +79,8 @@ class DeleteAccountTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => 'base_user_1',
             'email' => 'base_user1@email.com',
+            'lastPlatform' => ClientPlatform::Ios,
+            'lastAppVersion' => '1.14.0',
         ]);
 
         $publication = PublicationFactory::new()->create([
@@ -88,6 +94,9 @@ class DeleteAccountTest extends ApiTestCase
         UserBlockFactory::new()->create(['blocker' => $user]);
         UserBlockFactory::new()->create(['blocked' => $user]);
         $someoneElsesBlock = UserBlockFactory::new()->create();
+        UserDailyActivityFactory::new()->create(['user' => $user, 'platform' => ClientPlatform::Ios, 'appVersion' => '1.14.0']);
+        UserDailyActivityFactory::new()->create(['user' => $user, 'day' => new \DateTimeImmutable('yesterday')]);
+        $someoneElsesDay = UserDailyActivityFactory::new()->create();
 
         $realUser = $user;
         $userId = $realUser->id;
@@ -130,6 +139,10 @@ class DeleteAccountTest extends ApiTestCase
         // Their blocks go, both ways; other people's stay
         $blocks = static::getContainer()->get(UserBlockRepository::class)->findAll();
         $this->assertSame([$someoneElsesBlock->id], array_map(static fn ($block) => $block->id, $blocks));
+        // Their platform activity goes, on the account and day by day; other people's stays
+        $this->assertSame([null, null], [$deletedUser->lastPlatform, $deletedUser->lastAppVersion]);
+        $days = static::getContainer()->get(UserDailyActivityRepository::class)->findAll();
+        $this->assertSame([$someoneElsesDay->id], array_map(static fn (UserDailyActivity $day) => $day->id, $days));
     }
 
     public function test_delete_account_oauth_user_no_password(): void

@@ -50,7 +50,11 @@ const props = defineProps({
   allDates: { type: Array, required: true },
   // [{ value, labelKey, color }], in the order they stack. A segment named by the data, a referring site,
   // has its `label` instead of a `labelKey`.
-  segments: { type: Array, required: true }
+  segments: { type: Array, required: true },
+  // Side by side bars when one item can be in several segments, as a member active on two platforms.
+  stacked: { type: Boolean, default: true },
+  // Each segment's total by value, when it is not the sum of its days (distinct members).
+  segmentTotals: { type: Object, default: null }
 })
 
 const { t } = useI18n()
@@ -69,16 +73,16 @@ const chartData = computed(() => {
     datasets: props.segments.map((segment, index) => ({
       label: t('admin.time_series.segment_total', {
         segment: segment.label ?? t(segment.labelKey),
-        total: series[index].total
+        total: props.segmentTotals?.[segment.value] ?? series[index].total
       }),
       data: series[index].data,
       backgroundColor: segment.color,
-      stack: 'registrations'
+      stack: props.stacked ? 'segments' : undefined
     }))
   }
 })
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -86,15 +90,15 @@ const chartOptions = {
   },
   scales: {
     x: {
-      stacked: true,
+      stacked: props.stacked,
       grid: { display: false },
       ticks: { maxRotation: 45, font: { size: 10 } }
     },
     y: {
-      stacked: true,
+      stacked: props.stacked,
       beginAtZero: true,
       ticks: { precision: 0 }
     }
   }
-}
+}))
 </script>

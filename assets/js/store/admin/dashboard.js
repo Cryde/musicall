@@ -11,6 +11,8 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
   const usersError = ref(null)
 
   const timeSeries = reactive({})
+  const platformActivity = ref(null)
+  const isLoadingPlatformActivity = ref(false)
   const contentOverview = ref(null)
   const isLoadingContentOverview = ref(false)
   const forumRecentActivity = ref(null)
@@ -57,6 +59,18 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     }
   }
 
+  async function loadPlatformActivity(from, to) {
+    isLoadingPlatformActivity.value = true
+    try {
+      platformActivity.value = await adminDashboardApi.getPlatformActivity(from, to)
+    } catch (e) {
+      console.error('Failed to load platform activity:', e)
+      platformActivity.value = null
+    } finally {
+      isLoadingPlatformActivity.value = false
+    }
+  }
+
   async function loadContentOverview(from, to) {
     isLoadingContentOverview.value = true
     try {
@@ -84,6 +98,7 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
   function clear() {
     generalMetrics.value = null
     userMetrics.value = null
+    platformActivity.value = null
     contentOverview.value = null
     forumRecentActivity.value = null
     generalError.value = null
@@ -101,6 +116,8 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     generalError: readonly(generalError),
     usersError: readonly(usersError),
     timeSeries,
+    platformActivity: readonly(platformActivity),
+    isLoadingPlatformActivity: readonly(isLoadingPlatformActivity),
     contentOverview: readonly(contentOverview),
     isLoadingContentOverview: readonly(isLoadingContentOverview),
     forumRecentActivity: readonly(forumRecentActivity),
@@ -108,6 +125,7 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     loadGeneralMetrics,
     loadUserMetrics,
     loadTimeSeries,
+    loadPlatformActivity,
     loadContentOverview,
     loadForumRecentActivity,
     clear
