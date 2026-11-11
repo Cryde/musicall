@@ -53,6 +53,22 @@ class PushNotifierTest extends KernelTestCase
         ], $this->messaging->multicasts[0]['message']);
     }
 
+    /** Android replaces the conversation's notification still in the shade, iOS stacks its thread (#1378). */
+    public function test_a_conversation_key_is_the_android_tag_and_the_ios_thread(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'ines_piano', 'email' => 'ines.piano@example.com']);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+
+        $this->notifier()->sendToUser($user, 'Les Cactus', 'alice : on répète ?', ['type' => 'band_space_message'], 'band_chat_b1');
+
+        $this->assertSame([
+            'data' => ['type' => 'band_space_message'],
+            'notification' => ['title' => 'Les Cactus', 'body' => 'alice : on répète ?'],
+            'android' => ['priority' => 'high', 'notification' => ['channel_id' => 'musicall_default', 'tag' => 'band_chat_b1']],
+            'apns' => ['headers' => ['apns-priority' => '10'], 'payload' => ['aps' => ['sound' => 'default', 'thread-id' => 'band_chat_b1']]],
+        ], $this->messaging->multicasts[0]['message']);
+    }
+
     public function test_a_user_without_device_is_a_no_op(): void
     {
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'tom_banjo', 'email' => 'tom.banjo@example.com']);

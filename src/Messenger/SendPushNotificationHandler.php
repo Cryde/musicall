@@ -32,7 +32,7 @@ readonly class SendPushNotificationHandler
             return;
         }
 
-        $outcome = $this->pushNotifier->sendToUser($user, $message->title, $message->body, $message->data);
+        $outcome = $this->pushNotifier->sendToUser($user, $message->title, $message->body, $message->data, $message->conversationKey);
 
         if ($outcome === PushOutcome::RetryLater) {
             throw new RecoverableMessageHandlingException('FCM unreachable for every device, retrying');

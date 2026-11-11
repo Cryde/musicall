@@ -49,7 +49,7 @@ readonly class PushQueue
 
             foreach ($userIds as $userId) {
                 try {
-                    $this->messageBus->dispatch(new SendPushNotification($userId, $content->title, $content->body, $content->data, $category));
+                    $this->messageBus->dispatch(new SendPushNotification($userId, $content->title, $content->body, $content->data, $category, $content->conversationKey));
                 } catch (\Throwable $throwable) {
                     $this->logger->error('Could not queue a push notification', [
                         'exception' => $throwable,

@@ -6,12 +6,14 @@ namespace App\Service\Notification\Push;
 final readonly class PushContent
 {
     /**
-     * @param array<non-empty-string, string> $data FCM only accepts string values
+     * @param array<non-empty-string, string> $data            FCM only accepts string values
+     * @param string|null                     $conversationKey groups the pushes of one conversation (#1378), see PushNotifier
      */
     public function __construct(
         public string $title,
         public string $body,
         public array $data,
+        public ?string $conversationKey = null,
     ) {
     }
 }

@@ -47,6 +47,8 @@ class MessagePushTest extends ApiTestCase
                 'On répète mardi ?',
                 ['type' => 'message', 'route' => '/messages/' . $message->thread->id],
                 PushCategory::MessageReceived,
+                // One notification per conversation on the phone (#1378).
+                'thread_' . $message->thread->id,
             ),
         ], $this->queuedPushes());
     }
@@ -83,13 +85,16 @@ class MessagePushTest extends ApiTestCase
                 'alice_drums : Salut @carl_keys !',
                 ['type' => 'band_space_message', 'route' => '/band/' . $band->id . '/chat?message=' . $message->id],
                 PushCategory::BandChat,
+                'band_chat_' . $band->id,
             ),
+            // The mention is a line of the band's conversation, so it carries the same key (#1378).
             new SendPushNotification(
                 (string) $mentioned->id,
                 'Les Cactus',
                 'alice_drums t\'a mentionné dans la discussion de « Les Cactus »',
                 ['type' => 'band_space_chat_mention', 'route' => '/band/' . $band->id . '/chat?message=' . $message->id],
                 PushCategory::BandMention,
+                'band_chat_' . $band->id,
             ),
         ], $this->queuedPushes());
     }
@@ -121,8 +126,8 @@ class MessagePushTest extends ApiTestCase
         $route = '/band/' . $band->id . '/chat?message=' . $message->id;
         // The mention push is still queued; the worker drops it on the preference.
         $this->assertEquals([
-            new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums : Salut @carl_keys !', ['type' => 'band_space_message', 'route' => $route], PushCategory::BandChat),
-            new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums t\'a mentionné dans la discussion de « Les Cactus »', ['type' => 'band_space_chat_mention', 'route' => $route], PushCategory::BandMention),
+            new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums : Salut @carl_keys !', ['type' => 'band_space_message', 'route' => $route], PushCategory::BandChat, 'band_chat_' . $band->id),
+            new SendPushNotification((string) $mentioned->id, 'Les Cactus', 'alice_drums t\'a mentionné dans la discussion de « Les Cactus »', ['type' => 'band_space_chat_mention', 'route' => $route], PushCategory::BandMention, 'band_chat_' . $band->id),
         ], $this->queuedPushes());
     }
 
