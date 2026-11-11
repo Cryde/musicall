@@ -40,6 +40,28 @@ class RequestLocaleResolverTest extends TestCase
         yield 'oversized' => [str_repeat('en', 10000)];
     }
 
+    public function test_an_enabled_locale_a_client_sends_is_kept(): void
+    {
+        self::assertSame('en', $this->resolver->enabledOrNull('en'));
+    }
+
+    /** The same values the header refuses, plus what a query string can hold that a header cannot. */
+    #[DataProvider('frontEndLocalesThatAreNotAnEnabledLocale')]
+    #[DataProvider('clientLocalesThatAreNotAString')]
+    public function test_a_locale_a_client_sends_that_is_not_exactly_an_enabled_one_is_dropped(mixed $locale): void
+    {
+        self::assertNull($this->resolver->enabledOrNull($locale));
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function clientLocalesThatAreNotAString(): iterable
+    {
+        yield 'missing' => [null];
+        yield 'a list' => [['en']];
+    }
+
     #[DataProvider('frontEndLocalesThatAreNotAnEnabledLocale')]
     public function test_a_front_end_locale_that_is_not_exactly_an_enabled_locale_falls_through_to_the_user(string $frontEndLocale): void
     {

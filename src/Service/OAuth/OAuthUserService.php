@@ -43,11 +43,13 @@ readonly class OAuthUserService
     /**
      * @param ClientPlatform $platformWithoutHeader what a new account is recorded as when the client did not name itself
      * @param RegistrationCampaign|null $campaign the campaign of the visit, recorded only if the account is created here
+     * @param string|null $pageLocale the enabled locale of the page a web sign-in started from (#1371): its callback
+     *                                carries no X-Locale, and Apple's cross-site POST not even the locale cookie
      *
      * @throws OAuthEmailExistsException
      * @throws OAuthEmailNotVerifiedException
      */
-    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null, ClientPlatform $platformWithoutHeader = ClientPlatform::Web, ?RegistrationCampaign $campaign = null): OAuthResult
+    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null, ClientPlatform $platformWithoutHeader = ClientPlatform::Web, ?RegistrationCampaign $campaign = null, ?string $pageLocale = null): OAuthResult
     {
         // Check if social account already exists
         $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $userData->id);
@@ -85,7 +87,7 @@ readonly class OAuthUserService
         }
 
         // Create new user
-        $user = $this->createUser($userData->email, $userData->username, $userData->displayName, RegistrationMethod::from($provider), $platformWithoutHeader, $campaign);
+        $user = $this->createUser($userData->email, $userData->username, $userData->displayName, RegistrationMethod::from($provider), $platformWithoutHeader, $campaign, $pageLocale);
         $this->createSocialAccount($user, $provider, $userData->id, $userData->email);
 
         // Import profile picture from OAuth provider
@@ -104,7 +106,7 @@ readonly class OAuthUserService
         return new OAuthResult($user, true);
     }
 
-    private function createUser(string $email, string $username, ?string $displayName, RegistrationMethod $method, ClientPlatform $platformWithoutHeader, ?RegistrationCampaign $campaign): User
+    private function createUser(string $email, string $username, ?string $displayName, RegistrationMethod $method, ClientPlatform $platformWithoutHeader, ?RegistrationCampaign $campaign, ?string $pageLocale): User
     {
         // Ensure username is unique
         $baseUsername = $this->sanitizeUsername($username);
@@ -116,13 +118,7 @@ readonly class OAuthUserService
         $user->password = null; // Social-only user, no password
         $user->confirmationDatetime = new \DateTime(); // Auto-confirmed
         $user->lastLoginDatetime = new \DateTime(); // First login
-        // Resolved here, not read from the LocaleSwitcher: the app's Google sign-in creates the user inside
-        // the firewall, before RequestLocaleListener has run. Nobody is signed in yet, hence no user.
-        $request = $this->requestStack->getCurrentRequest();
-        if ($request !== null) {
-            $user->locale = $this->requestLocaleResolver->resolve($request, null);
-        }
-        $this->registrationOriginRecorder->record($user, $method, $platformWithoutHeader, $campaign);
+        $this->registrationOriginRecorder->record($user, $method, $pageLocale ?? $this->requestLocale($user), $platformWithoutHeader, $campaign);
 
         $profile = new UserProfile();
         $profile->displayName = $displayName;
@@ -132,6 +128,17 @@ readonly class OAuthUserService
         $this->entityManager->flush();
 
         return $user;
+    }
+
+    /**
+     * Resolved here, not read from the LocaleSwitcher: the app's Google sign-in creates the user inside the firewall,
+     * before RequestLocaleListener has run. Nobody is signed in yet, hence no user. No request at all keeps the default.
+     */
+    private function requestLocale(User $newUser): string
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        return $request !== null ? $this->requestLocaleResolver->resolve($request, null) : $newUser->locale;
     }
 
     private function createSocialAccount(User $user, string $provider, string $providerId, string $email): SocialAccount

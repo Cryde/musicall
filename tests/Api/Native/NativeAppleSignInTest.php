@@ -77,11 +77,13 @@ class NativeAppleSignInTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/native/oauth/apple', ['identity_token' => 'a-token', 'given_name' => 'Élodie', 'family_name' => 'Dupré'], [
             'HTTP_X_CLIENT_PLATFORM' => 'ios',
             'HTTP_X_CLIENT_VERSION' => '1.13.0+42',
+            // The app sends its own language, which the account is created in (#1371).
+            'HTTP_ACCEPT_LANGUAGE' => 'en',
         ]);
 
         $this->assertResponseIsSuccessful();
         $this->assertSessionBodyFor('elodiedupre');
-        $this->assertSame(['ios', 'apple', '1.13.0+42'], $this->registrationOf('elodiedupre'));
+        $this->assertSame(['ios', 'apple', '1.13.0+42', 'en'], $this->registrationOf('elodiedupre'));
     }
 
     /** The native route is the app for sure, but which one only the header can say. */
@@ -95,7 +97,7 @@ class NativeAppleSignInTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSessionBodyFor('elodiedupre');
-        $this->assertSame(['unknown_app', 'apple', '1.13.0'], $this->registrationOf('elodiedupre'));
+        $this->assertSame(['unknown_app', 'apple', '1.13.0', 'fr'], $this->registrationOf('elodiedupre'));
     }
 
     /** `web` is not something the app can claim to be on its native route: dropped, and the bad version with it. */
@@ -110,7 +112,7 @@ class NativeAppleSignInTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSessionBodyFor('elodiedupre');
-        $this->assertSame(['unknown_app', 'apple', null], $this->registrationOf('elodiedupre'));
+        $this->assertSame(['unknown_app', 'apple', null, 'fr'], $this->registrationOf('elodiedupre'));
     }
 
     /** Invited before the account existed: signing up with Apple joins the band, as a password sign-up does. */
@@ -349,7 +351,7 @@ class NativeAppleSignInTest extends ApiTestCase
         ];
     }
 
-    /** @return array{string, string, ?string} the platform, method and app version stored for the account */
+    /** @return array{string, string, ?string, string} the platform, method, app version and language stored for the account */
     private function registrationOf(string $username): array
     {
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
@@ -357,7 +359,7 @@ class NativeAppleSignInTest extends ApiTestCase
         $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
         $this->assertInstanceOf(User::class, $user);
 
-        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion];
+        return [$user->registrationPlatform->value, $user->registrationMethod->value, $user->registrationAppVersion, $user->registrationLocale];
     }
 
     private function assertSessionBodyFor(string $username): void

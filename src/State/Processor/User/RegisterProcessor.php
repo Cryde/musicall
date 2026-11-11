@@ -64,15 +64,14 @@ readonly class RegisterProcessor implements ProcessorInterface
         $user->username = $data->username;
         $user->email = $data->email;
         $user->plainPassword = $data->password;
-        // The language they signed up in, so their emails follow it from the verification code on.
-        $user->locale = $this->localeSwitcher->getLocale();
         $campaign = RegistrationCampaign::fromFields([
             'utm_source' => $data->utmSource,
             'utm_medium' => $data->utmMedium,
             'utm_campaign' => $data->utmCampaign,
             'referrer_host' => $data->referrerHost,
         ]);
-        $this->registrationOriginRecorder->record($user, RegistrationMethod::Password, campaign: $campaign);
+        // The language they signed up in, so their emails follow it from the verification code on.
+        $this->registrationOriginRecorder->record($user, RegistrationMethod::Password, $this->localeSwitcher->getLocale(), campaign: $campaign);
 
         $user->password = $this->userPasswordHasher->hashPassword(
             $user,

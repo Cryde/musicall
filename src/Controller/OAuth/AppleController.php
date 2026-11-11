@@ -7,6 +7,7 @@ namespace App\Controller\OAuth;
 use App\Entity\SocialAccount;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
+use App\Locale\RequestLocaleResolver;
 use App\Service\OAuth\Apple\AppleIdentityTokenVerifierInterface;
 use App\Service\OAuth\Apple\AppleRefreshTokenRecorder;
 use App\Service\OAuth\Apple\AppleSignInAttempt;
@@ -53,6 +54,7 @@ final class AppleController extends AbstractController
         #[Autowire(param: 'app.apple.web_client_id')]
         private readonly string $clientId,
         private readonly CacheItemPoolInterface $cache,
+        private readonly RequestLocaleResolver $requestLocaleResolver,
     ) {
     }
 
@@ -67,7 +69,8 @@ final class AppleController extends AbstractController
 
         $returnUrl = self::stringOf($request->query->all(), 'return_url');
         $keepsReturnUrl = $returnUrl !== '' && strlen($returnUrl) <= self::RETURN_URL_MAX_LENGTH && $this->webSignIn->isSafeReturnUrl($returnUrl);
-        $attempt = AppleSignInAttempt::start($keepsReturnUrl ? $returnUrl : null);
+        $pageLocale = $this->requestLocaleResolver->enabledOrNull($request->query->all()['locale'] ?? null);
+        $attempt = AppleSignInAttempt::start($keepsReturnUrl ? $returnUrl : null, $pageLocale);
         $this->stashCampaign($attempt->state, RegistrationCampaign::fromFields($request->query->all()));
 
         $response = new RedirectResponse(self::AUTHORIZE_URL . '?' . http_build_query([
@@ -129,7 +132,12 @@ final class AppleController extends AbstractController
             }
             [$givenName, $familyName] = self::nameOf(self::stringOf($form, 'user'));
             $userData = AppleUserDataMapper::fromClaims($claims, $givenName, $familyName);
-            $result = $this->oAuthUserService->findOrCreateUser($userData, SocialAccount::PROVIDER_APPLE, campaign: $campaign);
+            $result = $this->oAuthUserService->findOrCreateUser(
+                $userData,
+                SocialAccount::PROVIDER_APPLE,
+                campaign: $campaign,
+                pageLocale: $this->requestLocaleResolver->enabledOrNull($attempt->locale),
+            );
 
             $authorizationCode = self::stringOf($form, 'code');
             if ($authorizationCode !== '') {

@@ -2,6 +2,7 @@
   "registrations": {
     "by_platform": "Sign-ups by platform",
     "by_method": "Sign-ups by method",
+    "by_locale": "Sign-ups by language",
     "by_source": "Sign-ups by source"
   },
   "registration_platform": {
@@ -14,6 +15,10 @@
     "password": "Password",
     "google": "Google",
     "apple": "Apple"
+  },
+  "registration_locale": {
+    "fr": "French",
+    "en": "English"
   },
   "registration_source": {
     "direct": "Direct",

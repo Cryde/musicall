@@ -75,10 +75,25 @@ class UserRegisterTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $user = static::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'super_username']);
-        $this->assertSame('en', $user?->locale);
+        $this->assertSame(['en', 'en'], [$user?->locale, $user?->registrationLocale]);
         // The verification code goes out in the stored locale's template.
         $this->assertEmailCount(1);
         $this->assertEmailHeaderSame($this->getMailerMessage(), 'templateId', '19');
+    }
+
+    /** The site sends the page's language as X-Locale, whatever the browser asks for (#1371). */
+    public function test_a_web_sign_up_records_the_language_of_the_page(): void
+    {
+        $this->client->jsonRequest('POST', '/api/users/register', [
+            'username' => 'super_username',
+            'password' => 'password',
+            'email' => 'super_email@mail.com',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', 'HTTP_ACCEPT_LANGUAGE' => 'fr', 'HTTP_X_LOCALE' => 'en']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+
+        $user = static::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'super_username']);
+        $this->assertSame(['en', 'en'], [$user?->locale, $user?->registrationLocale]);
     }
 
 

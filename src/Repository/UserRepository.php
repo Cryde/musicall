@@ -438,6 +438,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
+     * Registrations per day and per language the account was created in (#1371).
+     *
+     * @return array<int, array{date_label: string, segment: string, count: int}>
+     */
+    public function countRegistrationsByDateAndLocale(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        return $this->countRegistrationsByDateAnd('registration_locale', $from, $to);
+    }
+
+    /**
      * Web registrations per day and per source (#1369): the campaign's utm_source, else the referring site's host,
      * else `(direct)`, which no recorded value can be since neither allows parentheses. The apps record no
      * campaign, so counting them would only inflate `(direct)`.

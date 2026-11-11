@@ -2,6 +2,7 @@
   "registrations": {
     "by_platform": "Inscriptions par plateforme",
     "by_method": "Inscriptions par méthode",
+    "by_locale": "Inscriptions par langue",
     "by_source": "Inscriptions par source"
   },
   "registration_platform": {
@@ -14,6 +15,10 @@
     "password": "Mot de passe",
     "google": "Google",
     "apple": "Apple"
+  },
+  "registration_locale": {
+    "fr": "Français",
+    "en": "Anglais"
   },
   "registration_source": {
     "direct": "Direct",

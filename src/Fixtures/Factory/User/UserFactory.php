@@ -28,6 +28,7 @@ final class UserFactory extends PersistentObjectFactory
             'username' => self::faker()->userName(),
             'registrationPlatform' => ClientPlatform::Web,
             'registrationMethod' => RegistrationMethod::Password,
+            'registrationLocale' => 'fr',
             'confirmationDatetime' => self::faker()->dateTime('-1 year'),
         ];
     }

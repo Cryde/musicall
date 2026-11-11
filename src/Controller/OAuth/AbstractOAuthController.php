@@ -7,6 +7,7 @@ namespace App\Controller\OAuth;
 use App\Entity\User;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
+use App\Locale\RequestLocaleResolver;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use App\Service\OAuth\OAuthWebSignIn;
@@ -21,12 +22,14 @@ abstract class AbstractOAuthController extends AbstractController
 {
     private const string RETURN_URL_SESSION_PREFIX = 'oauth_return_url.';
     private const string CAMPAIGN_SESSION_PREFIX = 'oauth_campaign.';
+    private const string LOCALE_SESSION_PREFIX = 'oauth_locale.';
 
     public function __construct(
         protected readonly ClientRegistry $clientRegistry,
         protected readonly OAuthUserService $oAuthUserService,
         protected readonly OAuthWebSignIn $webSignIn,
         protected readonly LoggerInterface $logger,
+        private readonly RequestLocaleResolver $requestLocaleResolver,
     ) {
     }
 
@@ -59,6 +62,11 @@ abstract class AbstractOAuthController extends AbstractController
         if (!$campaign->isEmpty()) {
             $session->set(self::CAMPAIGN_SESSION_PREFIX . $nonce, $campaign->toFields());
         }
+        // The page's language (#1371): the callback is a redirect from Google, with no X-Locale and no `/en` prefix.
+        $pageLocale = $this->requestLocaleResolver->enabledOrNull($request->query->all()['locale'] ?? null);
+        if ($pageLocale !== null) {
+            $session->set(self::LOCALE_SESSION_PREFIX . $nonce, $pageLocale);
+        }
 
         return $this->clientRegistry
             ->getClient($this->getClientName())
@@ -73,6 +81,7 @@ abstract class AbstractOAuthController extends AbstractController
         $returnUrl = is_string($stashedReturnUrl) ? $stashedReturnUrl : null;
         $stashedCampaign = $this->takeFromSession($request, self::CAMPAIGN_SESSION_PREFIX);
         $campaign = RegistrationCampaign::fromFields(is_array($stashedCampaign) ? $stashedCampaign : []);
+        $pageLocale = $this->requestLocaleResolver->enabledOrNull($this->takeFromSession($request, self::LOCALE_SESSION_PREFIX));
 
         try {
             $accessToken = $client->getAccessToken();
@@ -88,6 +97,7 @@ abstract class AbstractOAuthController extends AbstractController
                 $this->getProviderName(),
                 $currentUser,
                 campaign: $campaign,
+                pageLocale: $pageLocale,
             );
 
             return $this->webSignIn->complete($result->user, $this->webSignIn->redirectUrlFor($returnUrl), $request);

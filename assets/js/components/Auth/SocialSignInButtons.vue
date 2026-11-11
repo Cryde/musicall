@@ -25,6 +25,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { useLandingAttribution } from '../../composables/useLandingAttribution.js'
 
 /**
@@ -37,10 +38,13 @@ const props = defineProps({
   appleLabel: { type: String, required: true }
 })
 
-// The campaign of the visit rides along on the login page too: signing in with Google or Apple may
-// create the account, and the server keeps it only then (#1369).
+const { locale } = useI18n()
+
+// The campaign of the visit and the page's language ride along on the login page too: signing in with
+// Google or Apple may create the account, and the server keeps them only then (#1369, #1371).
 function authUrl(routeName) {
   const params = useLandingAttribution()
+  params.locale = locale.value
   if (props.returnUrl) params.return_url = props.returnUrl
 
   return Routing.generate(routeName, params)

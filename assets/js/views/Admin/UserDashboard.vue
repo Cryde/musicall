@@ -92,6 +92,13 @@
           :all-dates="allDates"
         />
         <SegmentedTimeSeriesChart
+          :title="t('admin.registrations.by_locale')"
+          icon="pi-language"
+          :segments="LOCALE_SEGMENTS"
+          :series-data="dashboardStore.timeSeries.registrations_by_locale"
+          :all-dates="allDates"
+        />
+        <SegmentedTimeSeriesChart
           :title="t('admin.registrations.by_source')"
           icon="pi-megaphone"
           :segments="sourceChart.segments"
@@ -638,7 +645,7 @@ import UserSearchPanel from '../../components/Admin/UserSearchPanel.vue'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 import { cappedSegments } from '../../utils/segmentedTimeSeries.js'
 
-// The values the server records (#1355, #1370), each with its literal key so the catalogue test sees it used.
+// The values the server records (#1355, #1370, #1371), each with its literal key so the catalogue test sees it used.
 const PLATFORM_SEGMENTS = [
   { value: 'web', labelKey: 'admin.registration_platform.web', color: '#6366f1' },
   { value: 'android', labelKey: 'admin.registration_platform.android', color: '#22c55e' },
@@ -649,6 +656,11 @@ const METHOD_SEGMENTS = [
   { value: 'password', labelKey: 'admin.registration_method.password', color: '#6366f1' },
   { value: 'google', labelKey: 'admin.registration_method.google', color: '#f59e0b' },
   { value: 'apple', labelKey: 'admin.registration_method.apple', color: '#64748b' }
+]
+// app.enabled_locales: a locale enabled later needs its segment here, or its sign-ups are not drawn.
+const LOCALE_SEGMENTS = [
+  { value: 'fr', labelKey: 'admin.registration_locale.fr', color: '#6366f1' },
+  { value: 'en', labelKey: 'admin.registration_locale.en', color: '#ec4899' }
 ]
 // A source is a utm_source or a referring site, so there can be hundreds: the rest is one « Autres » bar (#1369).
 const SOURCE_SEGMENT_LIMIT = 6
@@ -729,6 +741,7 @@ function loadDateFilteredData() {
     'messages',
     'registrations_by_platform',
     'registrations_by_method',
+    'registrations_by_locale',
     'registrations_by_source'
   ]
   for (const metric of metricNames) {

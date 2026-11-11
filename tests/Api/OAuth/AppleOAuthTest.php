@@ -108,7 +108,7 @@ class AppleOAuthTest extends ApiTestCase
         $cookie = (string) $this->attemptCookie()->getValue();
         $attempt = AppleSignInAttempt::fromCookie($cookie);
         $this->assertInstanceOf(AppleSignInAttempt::class, $attempt);
-        $this->assertSame(['state', 'nonce', 'return_url'], array_keys((array) json_decode((string) base64_decode(strtr($cookie, '-_', '+/')), true)));
+        $this->assertSame(['state', 'nonce', 'return_url', 'locale'], array_keys((array) json_decode((string) base64_decode(strtr($cookie, '-_', '+/')), true)));
         $this->assertSame(self::CAMPAIGN, $this->stashedCampaign($attempt->state));
     }
 
@@ -120,6 +120,53 @@ class AppleOAuthTest extends ApiTestCase
         $attempt = AppleSignInAttempt::fromCookie($this->attemptCookie()->getValue() ?? '');
         $this->assertInstanceOf(AppleSignInAttempt::class, $attempt);
         $this->assertNull($this->stashedCampaign($attempt->state));
+    }
+
+    /** The page's language (#1371) rides the attempt: Apple's cross-site POST brings neither X-Locale nor the locale cookie. */
+    public function test_start_keeps_the_language_of_the_page_in_the_attempt(): void
+    {
+        $this->client->request('GET', '/oauth/apple?' . http_build_query(['locale' => 'en']));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertSame('en', AppleSignInAttempt::fromCookie($this->attemptCookie()->getValue() ?? '')?->locale);
+    }
+
+    public function test_start_keeps_no_language_the_site_does_not_speak(): void
+    {
+        foreach (['de', 'EN', str_repeat('e', 5000), ['en']] as $locale) {
+            $this->client->request('GET', '/oauth/apple?' . http_build_query(['locale' => $locale]));
+
+            $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+            $attempt = AppleSignInAttempt::fromCookie($this->attemptCookie()->getValue() ?? '');
+            $this->assertInstanceOf(AppleSignInAttempt::class, $attempt);
+            $this->assertNull($attempt->locale, sprintf('%s must not be kept', json_encode($locale)));
+        }
+    }
+
+    /** An English page, a French browser: the account is English, like the page the visitor signed up from. */
+    public function test_a_first_sign_in_records_the_language_of_the_page(): void
+    {
+        $attempt = AppleSignInAttempt::start(null, 'en');
+        $this->apple()->accept('an-id-token', $this->claims('nouveau@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
+        $this->assertSignedInAs('nouveau');
+        $this->assertSame(['en', 'en'], $this->languagesOf('nouveau@example.com'));
+    }
+
+    /** The attempt is checked again where it is used: a language the site does not speak leaves the browser's. */
+    public function test_a_first_sign_in_ignores_a_language_the_site_does_not_speak(): void
+    {
+        $attempt = AppleSignInAttempt::start(null, 'de');
+        $this->apple()->accept('an-id-token', $this->claims('nouveau@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
+
+        $this->postToCallback($attempt, ['state' => $attempt->state, 'id_token' => 'an-id-token']);
+
+        $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
+        $this->assertSignedInAs('nouveau');
+        $this->assertSame(['fr', 'fr'], $this->languagesOf('nouveau@example.com'));
     }
 
     public function test_a_first_sign_in_records_the_campaign_of_its_visit(): void
@@ -149,12 +196,12 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertSame([null, null, null, null], $this->campaignOf('nouveau@example.com'));
     }
 
-    /** A login is not a sign-up: the campaign of this visit says nothing about how the account came. */
-    public function test_a_sign_in_to_an_existing_account_records_no_campaign(): void
+    /** A login is not a sign-up: the campaign and the page language of this visit say nothing about how the account came. */
+    public function test_a_sign_in_to_an_existing_account_records_no_campaign_and_keeps_its_language(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice_drums', 'email' => 'alice@example.com', 'password' => null]);
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice_drums', 'email' => 'alice@example.com', 'password' => null, 'locale' => 'fr', 'registrationLocale' => 'fr']);
         SocialAccountFactory::new()->create(['user' => $user, 'provider' => SocialAccount::PROVIDER_APPLE, 'providerId' => self::APPLE_ID]);
-        $attempt = AppleSignInAttempt::start(null);
+        $attempt = AppleSignInAttempt::start(null, 'en');
         $this->stashCampaign($attempt->state, self::CAMPAIGN);
         $this->apple()->accept('an-id-token', $this->claims('alice@example.com', $attempt->nonce), self::WEB_CLIENT_ID);
 
@@ -163,6 +210,7 @@ class AppleOAuthTest extends ApiTestCase
         $this->assertResponseRedirects(self::FRONTEND_URL, Response::HTTP_FOUND);
         $this->assertSignedInAs('alice_drums');
         $this->assertSame([null, null, null, null], $this->campaignOf('alice@example.com'));
+        $this->assertSame(['fr', 'fr'], $this->languagesOf('alice@example.com'));
     }
 
     public function test_a_first_sign_in_creates_an_account_named_after_the_person(): void
@@ -431,6 +479,17 @@ class AppleOAuthTest extends ApiTestCase
     private function stashedCampaign(string $state): mixed
     {
         return self::getContainer()->get('cache.app')->getItem(AppleController::campaignKey($state))->get();
+    }
+
+    /** @return array{string, string} the account's language and the one it was created in */
+    private function languagesOf(string $email): array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $this->assertInstanceOf(User::class, $user);
+
+        return [$user->locale, $user->registrationLocale];
     }
 
     /** @return array{?string, ?string, ?string, ?string} */

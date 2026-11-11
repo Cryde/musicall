@@ -131,6 +131,35 @@ class TimeSeriesMetricsTest extends ApiTestCase
         ]);
     }
 
+    /** By the language the account was created in, not the one it has switched to since (#1371). */
+    public function test_get_time_series_registrations_by_locale(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+
+        $todayStr = (new \DateTimeImmutable())->format('Y-m-d');
+
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationLocale' => 'fr', 'locale' => 'fr']);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationLocale' => 'en', 'locale' => 'en']);
+        UserFactory::new()->create(['creationDatetime' => new \DateTime(), 'registrationLocale' => 'en', 'locale' => 'fr']);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=registrations_by_locale&from=' . $todayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'registrations_by_locale',
+            'from' => $todayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $todayStr, 'segment' => 'en', 'count' => 2],
+                ['date_label' => $todayStr, 'segment' => 'fr', 'count' => 1],
+            ],
+            'total' => 3,
+        ]);
+    }
+
     /** Web sign-ups by the campaign's utm_source, else the referring site, else « (direct) » (#1369). */
     public function test_get_time_series_registrations_by_source(): void
     {
