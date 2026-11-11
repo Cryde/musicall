@@ -18,6 +18,13 @@ readonly class PushContentBuilder
     private const string DOMAIN = 'push';
     private const int BODY_MAX_LENGTH = 140;
 
+    /**
+     * The conversation keys (#1378), rebuilt by the app from the ids its chat screens hold
+     * (Cryde/musicall-app#164). A band has one channel, so its key is the band space's.
+     */
+    private const string BAND_CHAT_KEY = 'band_chat_%s';
+    private const string THREAD_KEY = 'thread_%s';
+
     public function __construct(
         private MessagePreviewText $previewText,
         private TranslatorInterface $translator,
@@ -75,11 +82,18 @@ readonly class PushContentBuilder
             'expense' => $text('entry_label'),
         ], self::DOMAIN, $locale);
 
+        // A mention is a line of its band's conversation, as on WhatsApp, not a notification of its own.
+        $bandSpaceId = $payload['band_space_id'] ?? null;
+        $conversationKey = $type === NotificationType::BandSpaceChatMention && is_string($bandSpaceId)
+            ? sprintf(self::BAND_CHAT_KEY, $bandSpaceId)
+            : null;
+
         return new PushContent(
             $bandName !== '' ? $bandName : $this->translator->trans('title.default', [], self::DOMAIN, $locale),
             // Trimmed for a notification without an actor, which leaves the sentence starting with a space.
             self::shorten(trim($sentence)),
             self::data($type->value, $this->routeFor($type, $payload)),
+            $conversationKey,
         );
     }
 
@@ -100,6 +114,7 @@ readonly class PushContentBuilder
                 $authorName,
                 self::shorten($preview),
                 self::data('message', sprintf('/messages/%s', $thread->id)),
+                sprintf(self::THREAD_KEY, $thread->id),
             );
         }
 
@@ -107,6 +122,7 @@ readonly class PushContentBuilder
             $bandSpace->name,
             self::shorten($this->translator->trans('message.band_channel_body', ['author' => $authorName, 'preview' => $preview], self::DOMAIN, $locale)),
             self::data('band_space_message', sprintf('/band/%s/chat?message=%s', $bandSpace->id, $message->id)),
+            sprintf(self::BAND_CHAT_KEY, $bandSpace->id),
         );
     }
 

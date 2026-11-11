@@ -42,12 +42,22 @@ readonly class PushNotifier
 
     /**
      * @param array<non-empty-string, string> $data
+     * @param string|null                     $conversationKey one conversation's pushes (#1378): Android replaces
+     *                                                         the one still in the shade, iOS stacks them
      */
-    public function sendToUser(User $user, string $title, string $body, array $data = []): PushOutcome
+    public function sendToUser(User $user, string $title, string $body, array $data = [], ?string $conversationKey = null): PushOutcome
     {
         $tokens = $this->deviceTokenRepository->findTokensForUser($user);
         if ($tokens === []) {
             return PushOutcome::Finished;
+        }
+
+        $androidNotification = ['channel_id' => self::ANDROID_CHANNEL_ID];
+        // APNs has no channel to carry a sound, so without one iOS shows the notification silently.
+        $apns = ApnsConfig::new()->withDefaultSound()->withImmediatePriority();
+        if ($conversationKey !== null) {
+            $androidNotification['tag'] = $conversationKey;
+            $apns = $apns->withApsField('thread-id', $conversationKey);
         }
 
         $message = CloudMessage::new()
@@ -55,10 +65,9 @@ readonly class PushNotifier
             ->withData($data)
             ->withAndroidConfig(AndroidConfig::fromArray([
                 'priority' => 'high',
-                'notification' => ['channel_id' => self::ANDROID_CHANNEL_ID],
+                'notification' => $androidNotification,
             ]))
-            // APNs has no channel to carry a sound, so without one iOS shows the notification silently.
-            ->withApnsConfig(ApnsConfig::new()->withDefaultSound()->withImmediatePriority());
+            ->withApnsConfig($apns);
 
         try {
             $report = $this->messaging->sendMulticast($message, $tokens);

@@ -31,6 +31,8 @@ class PushContentBuilderTest extends KernelTestCase
         $this->assertSame('Les Cactus', $content->title);
         $this->assertSame('alice t\'a assigné à la tâche « Répéter le pont »', $content->body);
         $this->assertSame(['type' => 'band_space_task_assignment', 'route' => '/band/b1/tasks/t1'], $content->data);
+        // Not a conversation: each such push stays a notification of its own (#1378).
+        $this->assertNull($content->conversationKey);
     }
 
     public function test_a_chat_mention_opens_the_message(): void
@@ -44,6 +46,15 @@ class PushContentBuilderTest extends KernelTestCase
 
         $this->assertSame('alice t\'a mentionné dans la discussion de « Les Cactus »', $content->body);
         $this->assertSame(['type' => 'band_space_chat_mention', 'route' => '/band/b1/chat?message=m1'], $content->data);
+        // A line of its band's conversation (#1378).
+        $this->assertSame('band_chat_b1', $content->conversationKey);
+    }
+
+    public function test_a_chat_mention_without_its_band_stays_on_its_own(): void
+    {
+        $content = $this->builder()->forNotification(NotificationType::BandSpaceChatMention, ['actor_username' => 'alice'], 'fr');
+
+        $this->assertNull($content->conversationKey);
     }
 
     public function test_a_role_change_says_which_way_and_opens_the_settings(): void
@@ -103,6 +114,7 @@ class PushContentBuilderTest extends KernelTestCase
         $this->assertSame('Alice Martin', $content->title);
         $this->assertSame('On répète mardi ?', $content->body);
         $this->assertSame(['type' => 'message', 'route' => '/messages/' . $thread->id], $content->data);
+        $this->assertSame('thread_' . $thread->id, $content->conversationKey);
     }
 
     public function test_a_band_message_is_titled_by_the_band_and_names_its_mentions(): void
@@ -117,6 +129,8 @@ class PushContentBuilderTest extends KernelTestCase
         $this->assertSame('Les Cactus', $content->title);
         $this->assertSame('Alice : Salut @bob_bass !', $content->body);
         $this->assertSame(['type' => 'band_space_message', 'route' => '/band/' . $band->id . '/chat?message=' . $message->id], $content->data);
+        // On the band space rather than the thread: the app's band chat screen only knows the band.
+        $this->assertSame('band_chat_' . $band->id, $content->conversationKey);
     }
 
     /** @return iterable<string, array{string, string}> */

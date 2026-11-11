@@ -33,6 +33,47 @@ class SendPushNotificationHandlerTest extends KernelTestCase
         $this->assertSame([self::PHONE], $messaging->multicasts[0]['tokens']);
     }
 
+    public function test_the_conversation_key_reaches_fcm(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'rose_sitar', 'email' => 'rose.sitar@example.com']);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+
+        $this->handler()(new SendPushNotification((string) $user->id, 'Alice', 'On répète ?', ['type' => 'message'], PushCategory::MessageReceived, 'thread_t1'));
+
+        $message = self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts[0]['message'];
+        $this->assertSame('thread_t1', $message['android']['notification']['tag']);
+        $this->assertSame('thread_t1', $message['apns']['payload']['aps']['thread-id']);
+    }
+
+    /**
+     * A push queued before #1378 is unserialized by the worker without the key (the async transport
+     * stores PHP-serialized envelopes): it still goes out, as it did then.
+     */
+    public function test_a_push_queued_before_the_conversation_key_still_sends(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'rose_sitar', 'email' => 'rose.sitar@example.com']);
+        DeviceTokenFactory::new()->create(['user' => $user, 'token' => self::PHONE]);
+        $current = serialize(new SendPushNotification((string) $user->id, 'Titre', 'Corps', ['route' => '/band/7/chat'], PushCategory::BandChat));
+        $objectHeader = sprintf('O:%d:"%s":', strlen(SendPushNotification::class), SendPushNotification::class);
+        $queuedBefore = str_replace(
+            [$objectHeader . '6:{', 's:15:"conversationKey";N;'],
+            [$objectHeader . '5:{', ''],
+            $current,
+        );
+        $this->assertNotSame($current, $queuedBefore);
+
+        $message = unserialize($queuedBefore);
+        $this->assertInstanceOf(SendPushNotification::class, $message);
+        $this->handler()($message);
+
+        $this->assertSame([
+            'data' => ['route' => '/band/7/chat'],
+            'notification' => ['title' => 'Titre', 'body' => 'Corps'],
+            'android' => ['priority' => 'high', 'notification' => ['channel_id' => 'musicall_default']],
+            'apns' => ['headers' => ['apns-priority' => '10'], 'payload' => ['aps' => ['sound' => 'default']]],
+        ], self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts[0]['message']);
+    }
+
     public function test_a_deleted_account_gets_nothing(): void
     {
         $user = UserFactory::new()->asBaseUser()->create([
