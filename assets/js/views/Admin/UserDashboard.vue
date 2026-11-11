@@ -130,6 +130,82 @@
         </Card>
       </div>
 
+      <!-- The platforms members use (#1370) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SegmentedTimeSeriesChart
+          :title="t('admin.platform_activity.daily')"
+          icon="pi-users"
+          :segments="PLATFORM_SEGMENTS"
+          :series-data="dailyActiveMembers"
+          :all-dates="allDates"
+          :stacked="false"
+          :segment-totals="platformActivity?.active_members_by_platform"
+        />
+        <Card class="min-w-0">
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-chart-pie text-primary" />
+              <span>{{ t('admin.platform_activity.period') }}</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingPlatformActivity" class="flex justify-center py-8">
+              <ProgressSpinner style="width: 40px; height: 40px" />
+            </div>
+            <div v-else-if="platformActivity" class="space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-surface-600 dark:text-surface-400">{{ t('admin.platform_activity.multi_platform') }}</span>
+                <span class="text-2xl font-bold">{{ platformActivity.multi_platform_members }}</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-2">
+                  {{ t('admin.platform_activity.by_registration_platform') }}
+                </h3>
+                <ul class="space-y-1">
+                  <li v-for="segment in PLATFORM_SEGMENTS" :key="segment.value" class="flex items-center justify-between gap-2 text-sm">
+                    <span class="flex items-center gap-2 min-w-0">
+                      <span class="w-2.5 h-2.5 rounded-full shrink-0" :style="{ backgroundColor: segment.color }" />
+                      <span class="truncate">{{ t(segment.labelKey) }}</span>
+                    </span>
+                    <span class="font-semibold">{{ platformActivity.active_members_by_registration_platform[segment.value] }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div v-else class="text-surface-400 text-center py-8">
+              {{ t('admin.time_series.no_data') }}
+            </div>
+          </template>
+        </Card>
+        <Card class="min-w-0 md:col-span-2">
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-mobile text-primary" />
+              <span>{{ t('admin.platform_activity.app_versions') }}</span>
+            </div>
+          </template>
+          <template #content>
+            <DataTable
+              v-if="platformActivity?.app_versions.length > 0"
+              :value="platformActivity.app_versions"
+              size="small"
+              stripedRows
+            >
+              <Column field="platform" :header="t('admin.platform_activity.platform')">
+                <template #body="{ data }">{{ platformLabel(data.platform) }}</template>
+              </Column>
+              <Column field="version" :header="t('admin.platform_activity.version')">
+                <template #body="{ data }">{{ data.version ?? t('admin.platform_activity.no_version') }}</template>
+              </Column>
+              <Column field="members" :header="t('admin.platform_activity.members')" />
+            </DataTable>
+            <div v-else class="text-surface-400 text-center py-4">
+              {{ t('admin.platform_activity.no_app_activity') }}
+            </div>
+          </template>
+        </Card>
+      </div>
+
       <!-- Engagement & Retention Section -->
       <Panel header="Engagement & rétention" toggleable>
         <template #icons>
@@ -562,7 +638,7 @@ import UserSearchPanel from '../../components/Admin/UserSearchPanel.vue'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 import { cappedSegments } from '../../utils/segmentedTimeSeries.js'
 
-// The values the server records (#1355), each with its literal key so the catalogue test sees it used.
+// The values the server records (#1355, #1370), each with its literal key so the catalogue test sees it used.
 const PLATFORM_SEGMENTS = [
   { value: 'web', labelKey: 'admin.registration_platform.web', color: '#6366f1' },
   { value: 'android', labelKey: 'admin.registration_platform.android', color: '#22c55e' },
@@ -586,6 +662,22 @@ const dashboardStore = useAdminDashboardStore()
 
 const metrics = computed(() => dashboardStore.userMetrics)
 const generalMetrics = computed(() => dashboardStore.generalMetrics)
+const platformActivity = computed(() => dashboardStore.platformActivity)
+
+// The daily points with the period's distinct total: a member active on several days or platforms counts once.
+const dailyActiveMembers = computed(() => ({
+  data: platformActivity.value && {
+    data_points: platformActivity.value.daily_active_members,
+    total: platformActivity.value.active_members
+  },
+  isLoading: dashboardStore.isLoadingPlatformActivity,
+  error: null
+}))
+
+function platformLabel(value) {
+  const segment = PLATFORM_SEGMENTS.find((platform) => platform.value === value)
+  return segment ? t(segment.labelKey) : value
+}
 
 const sourceChart = computed(() => {
   const series = dashboardStore.timeSeries.registrations_by_source
@@ -630,6 +722,7 @@ function loadDateFilteredData() {
   const from = formatDate(dateFrom.value)
   const to = formatDate(dateTo.value)
   dashboardStore.loadUserMetrics(from, to)
+  dashboardStore.loadPlatformActivity(from, to)
   const metricNames = [
     'registrations',
     'logins',

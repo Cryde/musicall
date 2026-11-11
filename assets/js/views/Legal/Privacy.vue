@@ -43,6 +43,7 @@
             <li><strong>Données techniques</strong> : adresse IP, journaux du serveur, rapports d'erreur applicative</li>
             <li><strong>Mesure d'audience</strong> : statistiques de visite agrégées, sans cookie</li>
             <li><strong>Origine de l'inscription</strong> (lorsque vous créez votre compte sur le site) : la campagne qui vous a amené, telle que l'indique le lien suivi (paramètres utm_source, utm_medium et utm_campaign), et le site d'où vous veniez, réduit à son nom de domaine, sans l'adresse de la page. La page les garde en mémoire le temps de votre visite, sans cookie ni stockage dans votre navigateur, et ils sont enregistrés avec votre compte s'il est créé pendant cette visite, uniquement pour des statistiques. Lors d'une connexion avec Google ou Apple, ils passent dans le lien de connexion et sont conservés quelques minutes sur nos serveurs, le temps qu'elle aboutisse</li>
+            <li><strong>Plateforme utilisée</strong> (lorsque vous êtes connecté) : pour chaque jour où vous utilisez MusicAll, si c'était sur le site, l'application iOS ou l'application Android, avec la version de l'application. Rien d'autre n'y est associé, ni adresse IP ni information sur votre navigateur ou votre téléphone. Elle sert uniquement à des statistiques et à savoir quelles versions de l'application sont encore utilisées</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             Votre adresse IP sert à sécuriser le service et à limiter le débit des requêtes, et figure dans les journaux du serveur. Elle n'est pas conservée en base de données : les votes et les compteurs de vues reposent sur un identifiant haché qui ne permet pas de remonter à votre adresse. Les recherches enregistrées portent un identifiant haché qui change chaque jour : il sert à compter les personnes différentes sans permettre de relier vos recherches d'un jour à l'autre.
@@ -60,6 +61,7 @@
             <li>Détecter et corriger les erreurs techniques : <strong>intérêt légitime</strong></li>
             <li>Mesurer l'audience du site de façon agrégée afin de l'améliorer : <strong>intérêt légitime</strong></li>
             <li>Savoir quelles campagnes et quels sites amènent les inscriptions, pour des statistiques : <strong>intérêt légitime</strong></li>
+            <li>Savoir sur quelles plateformes et avec quelles versions de l'application MusicAll est utilisé, pour des statistiques et pour maintenir l'application : <strong>intérêt légitime</strong></li>
             <li>Interpréter votre recherche de musiciens en langage naturel pour la convertir en filtres : <strong>intérêt légitime</strong></li>
             <li>Enregistrer les recherches de musiciens et de groupes, sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer la recherche : <strong>intérêt légitime</strong></li>
             <li>Vous envoyer les emails nécessaires au fonctionnement de votre compte (validation d'adresse, réinitialisation de mot de passe, invitations) : <strong>exécution du contrat</strong></li>
@@ -139,6 +141,7 @@
             <li><strong>Fichiers Band Space supprimés :</strong> 30 jours, puis effacement définitif</li>
             <li><strong>Band Space supprimé :</strong> 30 jours, puis effacement définitif de l'espace et de tous ses contenus</li>
             <li><strong>Recherches de musiciens et de groupes :</strong> 6 mois, puis effacement définitif</li>
+            <li><strong>Plateforme utilisée chaque jour :</strong> 13 mois, puis effacement définitif, ou dès la suppression de votre compte</li>
             <li><strong>Identifiant d'appareil pour les notifications push :</strong> supprimé lorsque vous vous déconnectez de l'application sur cet appareil, lorsque votre compte est supprimé ou suspendu, ou dès que Firebase nous signale qu'il n'est plus valide (application désinstallée, notifications révoquées)</li>
             <li><strong>Données conservées sur votre téléphone par l'application :</strong> effacées lorsque vous vous déconnectez, voir la section 11</li>
             <li><strong>Statistiques d'audience :</strong> conservées sous forme agrégée et non nominative</li>
@@ -242,5 +245,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '10 novembre 2026'
+const lastUpdate = '11 novembre 2026'
 </script>

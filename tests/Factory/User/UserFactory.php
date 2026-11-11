@@ -4,8 +4,8 @@ namespace App\Tests\Factory\User;
 
 use App\Entity\User;
 use App\Entity\User\UserProfile;
+use App\Enum\User\ClientPlatform;
 use App\Enum\User\RegistrationMethod;
-use App\Enum\User\RegistrationPlatform;
 use DateTime;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -25,7 +25,7 @@ final class UserFactory extends PersistentObjectFactory
             'password' => self::faker()->text(),
             'roles' => [],
             'username' => self::faker()->userName(),
-            'registrationPlatform' => RegistrationPlatform::Web,
+            'registrationPlatform' => ClientPlatform::Web,
             'registrationMethod' => RegistrationMethod::Password,
         ];
     }

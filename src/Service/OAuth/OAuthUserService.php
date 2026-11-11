@@ -7,8 +7,8 @@ namespace App\Service\OAuth;
 use App\Entity\SocialAccount;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
+use App\Enum\User\ClientPlatform;
 use App\Enum\User\RegistrationMethod;
-use App\Enum\User\RegistrationPlatform;
 use App\Event\UserConfirmedEvent;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
@@ -41,13 +41,13 @@ readonly class OAuthUserService
     }
 
     /**
-     * @param RegistrationPlatform $platformWithoutHeader what a new account is recorded as when the client did not name itself
+     * @param ClientPlatform $platformWithoutHeader what a new account is recorded as when the client did not name itself
      * @param RegistrationCampaign|null $campaign the campaign of the visit, recorded only if the account is created here
      *
      * @throws OAuthEmailExistsException
      * @throws OAuthEmailNotVerifiedException
      */
-    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null, RegistrationPlatform $platformWithoutHeader = RegistrationPlatform::Web, ?RegistrationCampaign $campaign = null): OAuthResult
+    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null, ClientPlatform $platformWithoutHeader = ClientPlatform::Web, ?RegistrationCampaign $campaign = null): OAuthResult
     {
         // Check if social account already exists
         $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $userData->id);
@@ -104,7 +104,7 @@ readonly class OAuthUserService
         return new OAuthResult($user, true);
     }
 
-    private function createUser(string $email, string $username, ?string $displayName, RegistrationMethod $method, RegistrationPlatform $platformWithoutHeader, ?RegistrationCampaign $campaign): User
+    private function createUser(string $email, string $username, ?string $displayName, RegistrationMethod $method, ClientPlatform $platformWithoutHeader, ?RegistrationCampaign $campaign): User
     {
         // Ensure username is unique
         $baseUsername = $this->sanitizeUsername($username);
