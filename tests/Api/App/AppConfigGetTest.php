@@ -30,10 +30,13 @@ class AppConfigGetTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertResponseHeaderSame('Content-Type', 'application/json');
         $this->assertSame(
-            '{"android":{"min_supported_build":1,"latest_build":1}}',
+            '{"android":{"min_supported_build":1,"latest_build":1},"ios":{"min_supported_build":1,"latest_build":1}}',
             (string) $this->client->getResponse()->getContent(),
         );
-        $this->assertJsonEquals(['android' => ['min_supported_build' => 1, 'latest_build' => 1]]);
+        $this->assertJsonEquals([
+            'android' => ['min_supported_build' => 1, 'latest_build' => 1],
+            'ios' => ['min_supported_build' => 1, 'latest_build' => 1],
+        ]);
     }
 
     /** @return iterable<string, array{array<string, string>}> */
@@ -55,22 +58,65 @@ class AppConfigGetTest extends ApiTestCase
         $this->client->request('GET', '/api/app/config', [], [], $server + ['HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals(['android' => ['min_supported_build' => 1, 'latest_build' => 1]]);
+        $this->assertJsonEquals([
+            'android' => ['min_supported_build' => 1, 'latest_build' => 1],
+            'ios' => ['min_supported_build' => 1, 'latest_build' => 1],
+        ]);
     }
 
-    /** Raising the builds is a line in the server's environment, read through to the response. */
-    public function test_the_builds_come_from_the_environment(): void
+    /** @return iterable<string, array{array<string, string>, array<string, array<string, int>>}> */
+    public static function environments(): iterable
     {
-        $_SERVER['APP_ANDROID_MIN_SUPPORTED_BUILD'] = $_ENV['APP_ANDROID_MIN_SUPPORTED_BUILD'] = '12';
-        $_SERVER['APP_ANDROID_LATEST_BUILD'] = $_ENV['APP_ANDROID_LATEST_BUILD'] = '15';
+        yield 'Android raised, iOS left alone' => [
+            ['APP_ANDROID_MIN_SUPPORTED_BUILD' => '12', 'APP_ANDROID_LATEST_BUILD' => '15'],
+            [
+                'android' => ['min_supported_build' => 12, 'latest_build' => 15],
+                'ios' => ['min_supported_build' => 1, 'latest_build' => 1],
+            ],
+        ];
+        yield 'iOS raised, Android left alone' => [
+            ['APP_IOS_MIN_SUPPORTED_BUILD' => '12', 'APP_IOS_LATEST_BUILD' => '14'],
+            [
+                'android' => ['min_supported_build' => 1, 'latest_build' => 1],
+                'ios' => ['min_supported_build' => 12, 'latest_build' => 14],
+            ],
+        ];
+        yield 'both raised, each to its own builds' => [
+            [
+                'APP_ANDROID_MIN_SUPPORTED_BUILD' => '12',
+                'APP_ANDROID_LATEST_BUILD' => '15',
+                'APP_IOS_MIN_SUPPORTED_BUILD' => '11',
+                'APP_IOS_LATEST_BUILD' => '14',
+            ],
+            [
+                'android' => ['min_supported_build' => 12, 'latest_build' => 15],
+                'ios' => ['min_supported_build' => 11, 'latest_build' => 14],
+            ],
+        ];
+    }
+
+    /**
+     * Raising the builds is a line in the server's environment, read through to the response.
+     *
+     * @param array<string, string> $environment
+     * @param array<string, array<string, int>> $expected
+     */
+    #[DataProvider('environments')]
+    public function test_the_builds_come_from_the_environment(array $environment, array $expected): void
+    {
+        foreach ($environment as $name => $value) {
+            $_SERVER[$name] = $_ENV[$name] = $value;
+        }
         try {
             $this->client->request('GET', '/api/app/config');
         } finally {
-            unset($_SERVER['APP_ANDROID_MIN_SUPPORTED_BUILD'], $_ENV['APP_ANDROID_MIN_SUPPORTED_BUILD'], $_SERVER['APP_ANDROID_LATEST_BUILD'], $_ENV['APP_ANDROID_LATEST_BUILD']);
+            foreach (array_keys($environment) as $name) {
+                unset($_SERVER[$name], $_ENV[$name]);
+            }
         }
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals(['android' => ['min_supported_build' => 12, 'latest_build' => 15]]);
+        $this->assertJsonEquals($expected);
     }
 
     public function test_an_unsupported_type_is_refused(): void
