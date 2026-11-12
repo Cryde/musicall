@@ -17,7 +17,8 @@ use App\State\Provider\App\AppConfigProvider;
  *
  * **The shape is a contract with every build already on a phone.** Add fields, never rename or remove
  * one. Plain JSON on purpose: the app reads exactly this body, and JSON-LD would wrap it in keys a
- * strict reader could stumble on. An `ios` block goes next to `android` once there is an iOS build.
+ * strict reader could stumble on. One block per platform, since Play and the App Store release apart
+ * (#1386). iOS builds released before then read `android`, so its values still gate them too.
  */
 #[Get(
     uriTemplate: '/app/config',
@@ -33,6 +34,7 @@ final class AppConfig
 {
     public function __construct(
         public PlatformBuilds $android,
+        public PlatformBuilds $ios,
     ) {
     }
 }

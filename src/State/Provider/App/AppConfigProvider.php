@@ -23,15 +23,27 @@ readonly class AppConfigProvider implements ProviderInterface
         private string $androidMinSupportedBuild,
         #[Autowire('%app.android.latest_build%')]
         private string $androidLatestBuild,
+        #[Autowire('%app.ios.min_supported_build%')]
+        private string $iosMinSupportedBuild,
+        #[Autowire('%app.ios.latest_build%')]
+        private string $iosLatestBuild,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AppConfig
     {
-        $minimum = self::build($this->androidMinSupportedBuild);
+        return new AppConfig(
+            android: self::platformBuilds($this->androidMinSupportedBuild, $this->androidLatestBuild),
+            ios: self::platformBuilds($this->iosMinSupportedBuild, $this->iosLatestBuild),
+        );
+    }
+
+    private static function platformBuilds(string $minSupportedBuild, string $latestBuild): PlatformBuilds
+    {
+        $minimum = self::build($minSupportedBuild);
 
         // Latest is never below the minimum, or the app would be told it is up to date and blocked at once.
-        return new AppConfig(new PlatformBuilds($minimum, max($minimum, self::build($this->androidLatestBuild))));
+        return new PlatformBuilds($minimum, max($minimum, self::build($latestBuild)));
     }
 
     /**
