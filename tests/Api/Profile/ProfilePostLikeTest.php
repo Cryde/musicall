@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Profile;
 
+use App\Entity\Profile\ProfilePostLike;
 use App\Entity\User;
 use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -13,10 +14,11 @@ use App\Tests\Factory\Profile\ProfilePostFactory;
 use App\Tests\Factory\Profile\ProfilePostLikeFactory;
 use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-/** Likes on a wall post, and what the wall shows of likes and comments (#1316). */
+/** Likes on a wall post, who gave them a page at a time (#1331), and what the wall shows of likes and comments (#1316). */
 #[ResetDatabase]
 class ProfilePostLikeTest extends ApiTestCase
 {
@@ -150,12 +152,12 @@ class ProfilePostLikeTest extends ApiTestCase
         \Zenstruck\Foundry\Persistence\save($private);
         $blocked = $this->member('marc');
         UserBlockFactory::new()->create(['blocker' => $blocked, 'blocked' => $viewer]);
-        ProfilePostLikeFactory::new()->create([
+        $leaLike = ProfilePostLikeFactory::new()->create([
             'post' => $post,
             'user' => $this->member('lea.dupont'),
             'creationDatetime' => new \DateTimeImmutable('2026-11-02T10:00:00+00:00'),
         ]);
-        ProfilePostLikeFactory::new()->create([
+        $paulLike = ProfilePostLikeFactory::new()->create([
             'post' => $post,
             'user' => $private,
             'creationDatetime' => new \DateTimeImmutable('2026-11-02T11:00:00+00:00'),
@@ -178,9 +180,158 @@ class ProfilePostLikeTest extends ApiTestCase
             '@type' => 'Collection',
             'totalItems' => 2,
             'member' => [
-                ['@id' => '/api/profile_post_likers/paul', '@type' => 'ProfilePostLiker', 'username' => 'paul', 'display_name' => 'paul'],
-                ['@id' => '/api/profile_post_likers/lea.dupont', '@type' => 'ProfilePostLiker', 'username' => 'lea.dupont', 'display_name' => 'lea.dupont'],
+                [
+                    '@id' => '/api/profile_post_likers/paul',
+                    '@type' => 'ProfilePostLiker',
+                    'username' => 'paul',
+                    'display_name' => 'paul',
+                    'cursor' => $paulLike->creationDatetime->getTimestamp() . '_' . $paulLike->id,
+                ],
+                [
+                    '@id' => '/api/profile_post_likers/lea.dupont',
+                    '@type' => 'ProfilePostLiker',
+                    'username' => 'lea.dupont',
+                    'display_name' => 'lea.dupont',
+                    'cursor' => $leaLike->creationDatetime->getTimestamp() . '_' . $leaLike->id,
+                ],
             ],
+        ]);
+    }
+
+    public function test_likers_come_twenty_at_a_time(): void
+    {
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+        $likes = [];
+        foreach (range(1, 21) as $minute) {
+            $likes[$minute] = ProfilePostLikeFactory::new()->create([
+                'post' => $post,
+                'user' => $this->member('fan' . $minute),
+                'creationDatetime' => new \DateTimeImmutable(sprintf('2026-11-02T10:%02d:00+00:00', $minute)),
+            ]);
+        }
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/likes');
+
+        $this->assertResponseIsSuccessful();
+        // Newest first: minutes 21 down to 2, minute 1 waits for the next page.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostLiker',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/likes',
+            '@type' => 'Collection',
+            'totalItems' => 20,
+            'member' => array_map(static fn (int $minute): array => [
+                '@id' => '/api/profile_post_likers/fan' . $minute,
+                '@type' => 'ProfilePostLiker',
+                'username' => 'fan' . $minute,
+                'display_name' => 'fan' . $minute,
+                'cursor' => $likes[$minute]->creationDatetime->getTimestamp() . '_' . $likes[$minute]->id,
+            ], range(21, 2)),
+        ]);
+    }
+
+    public function test_the_next_likers_start_after_the_cursor_without_anyone_blocked_either_way(): void
+    {
+        $viewer = $this->member('chloe');
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+        $blocked = $this->member('marc');
+        UserBlockFactory::new()->create(['blocker' => $viewer, 'blocked' => $blocked]);
+        $sameSecond = new \DateTimeImmutable('2026-11-02T10:00:00+00:00');
+        $likes = [];
+        foreach (['lea', 'paul', 'tom'] as $username) {
+            $likes[] = ProfilePostLikeFactory::new()->create(['post' => $post, 'user' => $this->member($username), 'creationDatetime' => $sameSecond]);
+        }
+        ProfilePostLikeFactory::new()->create(['post' => $post, 'user' => $blocked, 'creationDatetime' => new \DateTimeImmutable('2026-11-02T09:00:00+00:00')]);
+        // The server orders a shared second by id, newest first.
+        usort($likes, static fn (ProfilePostLike $a, ProfilePostLike $b): int => strcmp((string) $b->id, (string) $a->id));
+        [, $middle, $oldest] = $likes;
+        $before = $middle->creationDatetime->getTimestamp() . '_' . $middle->id;
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/likes?before=' . $before);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostLiker',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/likes',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/profile_post_likers/' . $oldest->user->username,
+                    '@type' => 'ProfilePostLiker',
+                    'username' => $oldest->user->username,
+                    'display_name' => $oldest->user->username,
+                    'cursor' => $oldest->creationDatetime->getTimestamp() . '_' . $oldest->id,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/user/profile-posts/' . $post->id . '/likes?before=' . $before,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function malformedCursors(): iterable
+    {
+        yield 'a trailing newline' => ['1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0%0A'];
+        yield 'a null byte' => ['1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0%00'];
+        yield 'a comment cursor' => ['recent_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'a username' => ['chloe'];
+    }
+
+    #[DataProvider('malformedCursors')]
+    public function test_a_malformed_cursor_is_refused(string $cursor): void
+    {
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/likes?before=' . $cursor);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/de1e3db3-5ed4-4941-aae4-59f3667cc3a3',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'before',
+                    'message' => "La suite de la liste demandée n'est pas valide",
+                    'code' => 'de1e3db3-5ed4-4941-aae4-59f3667cc3a3',
+                ],
+            ],
+            'detail' => "before: La suite de la liste demandée n'est pas valide",
+            'type' => '/validation_errors/de1e3db3-5ed4-4941-aae4-59f3667cc3a3',
+            'title' => 'An error occurred',
+            'description' => "before: La suite de la liste demandée n'est pas valide",
+        ]);
+    }
+
+    public function test_a_cursor_given_as_a_list_is_refused(): void
+    {
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/likes?before[]=x');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'before',
+                    'message' => "La suite de la liste demandée n'est pas valide",
+                    'code' => 'ba785a8c-82cb-4283-967c-3cf342181b40',
+                ],
+            ],
+            'detail' => "before: La suite de la liste demandée n'est pas valide",
+            'type' => '/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            'title' => 'An error occurred',
+            'description' => "before: La suite de la liste demandée n'est pas valide",
         ]);
     }
 

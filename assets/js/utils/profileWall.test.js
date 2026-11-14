@@ -2,19 +2,29 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   activitySentenceKey,
+  afterLike,
+  appendLikersPage,
   appendWallPage,
+  COMMENT_ORDERS,
+  COMMENT_PAGE_SIZE,
   canPublish,
   commentTree,
+  DEFAULT_COMMENT_ORDER,
   emptyPostDraft,
+  LIKERS_PAGE_SIZE,
+  loadsAbove,
   MAX_POST_LENGTH,
+  nextCommentsCursor,
+  nextLikersCursor,
   nextWallCursor,
   photoGridClass,
   postAfterCommentCount,
-  postAfterLike,
   postItem,
   postPayload,
   showsPosts,
   treeWithComment,
+  treeWithCommentLike,
+  treeWithNextPage,
   treeWithoutComment,
   WALL_FILTERS,
   WALL_PAGE_SIZE,
@@ -204,17 +214,17 @@ describe('wallAfterPinChange', () => {
   })
 })
 
-describe('postAfterLike', () => {
+describe('afterLike', () => {
   const post = { id: 'p1', like_count: 3, has_liked: false }
 
   it('counts a like and takes it back', () => {
-    const liked = postAfterLike(post, true)
+    const liked = afterLike(post, true)
     assert.deepEqual(liked, { id: 'p1', like_count: 4, has_liked: true })
-    assert.deepEqual(postAfterLike(liked, false), post)
+    assert.deepEqual(afterLike(liked, false), post)
   })
 
   it('leaves the count alone when the state does not change', () => {
-    assert.equal(postAfterLike(post, false), post)
+    assert.equal(afterLike(post, false), post)
   })
 })
 
@@ -226,11 +236,11 @@ describe('postAfterCommentCount', () => {
 })
 
 describe('commentTree', () => {
-  it('puts each reply under its comment, in order, and drops a reply whose comment is missing', () => {
+  it('reads a page down to the newest, each reply under its comment, and drops a reply whose comment is missing', () => {
     const tree = commentTree([
+      { id: 'b' },
       { id: 'a' },
       { id: 'a1', parent_id: 'a' },
-      { id: 'b' },
       { id: 'x1', parent_id: 'hidden' },
       { id: 'a2', parent_id: 'a' }
     ])
@@ -244,6 +254,197 @@ describe('commentTree', () => {
       },
       { id: 'b', replies: [] }
     ])
+  })
+})
+
+describe('commentTree in the oldest order', () => {
+  it('keeps the page as it came, each reply under its comment', () => {
+    assert.deepEqual(
+      commentTree(
+        [{ id: 'a' }, { id: 'a1', parent_id: 'a' }, { id: 'b' }, { id: 'x1', parent_id: 'hidden' }],
+        'oldest'
+      ),
+      [
+        { id: 'a', replies: [{ id: 'a1', parent_id: 'a' }] },
+        { id: 'b', replies: [] }
+      ]
+    )
+  })
+})
+
+describe('COMMENT_ORDERS', () => {
+  it('mirrors CommentOrder, newest first by default', () => {
+    assert.deepEqual(
+      COMMENT_ORDERS.map((order) => order.value),
+      ['recent', 'oldest', 'liked']
+    )
+    assert.equal(DEFAULT_COMMENT_ORDER, 'recent')
+    assert.equal(loadsAbove('recent'), true)
+    assert.equal(loadsAbove('oldest'), false)
+  })
+})
+
+describe('nextCommentsCursor', () => {
+  it('pages like the server', () => {
+    // CommentThread::PAGE_SIZE, which ProfilePostCommentPageTest pins to twenty as well.
+    assert.equal(COMMENT_PAGE_SIZE, 20)
+  })
+
+  const page = (count) =>
+    Array.from({ length: count }, (_, index) => [
+      { id: `c${index}`, cursor: `recent_1_${index}` },
+      { id: `r${index}`, parent_id: `c${index}`, cursor: null }
+    ]).flat()
+
+  it('goes on after the last comment of a full page, whatever its replies', () => {
+    assert.equal(nextCommentsCursor(page(COMMENT_PAGE_SIZE)), `recent_1_${COMMENT_PAGE_SIZE - 1}`)
+  })
+
+  it('goes on after a page reaching down to a notified comment, longer than the others', () => {
+    assert.equal(
+      nextCommentsCursor(page(COMMENT_PAGE_SIZE + 5)),
+      `recent_1_${COMMENT_PAGE_SIZE + 4}`
+    )
+  })
+
+  it('stops after a shorter page, even with enough replies to fill one, or an empty one', () => {
+    assert.equal(nextCommentsCursor(page(COMMENT_PAGE_SIZE - 1)), null)
+    assert.equal(nextCommentsCursor([]), null)
+  })
+})
+
+describe('treeWithNextPage', () => {
+  const tree = [
+    { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+    { id: 'd', replies: [] }
+  ]
+
+  it('puts the older comments of `recent` above, read down to the newest, a comment never twice', () => {
+    assert.deepEqual(
+      treeWithNextPage(
+        tree,
+        [{ id: 'c' }, { id: 'b' }, { id: 'a' }, { id: 'a1', parent_id: 'a' }],
+        'recent'
+      ),
+      [
+        { id: 'a', replies: [{ id: 'a1', parent_id: 'a' }] },
+        { id: 'b', replies: [] },
+        { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+        { id: 'd', replies: [] }
+      ]
+    )
+  })
+
+  it('puts the next comments of `oldest` below, in the order they came, a comment never twice', () => {
+    assert.deepEqual(
+      treeWithNextPage(
+        tree,
+        [{ id: 'd' }, { id: 'e' }, { id: 'e1', parent_id: 'e' }, { id: 'f' }],
+        'oldest'
+      ),
+      [
+        { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+        { id: 'd', replies: [] },
+        { id: 'e', replies: [{ id: 'e1', parent_id: 'e' }] },
+        { id: 'f', replies: [] }
+      ]
+    )
+  })
+})
+
+describe('treeWithCommentLike', () => {
+  const tree = [
+    {
+      id: 'a',
+      like_count: 1,
+      has_liked: false,
+      replies: [{ id: 'a1', parent_id: 'a', like_count: 0, has_liked: false }]
+    },
+    { id: 'b', like_count: 0, has_liked: false, replies: [] }
+  ]
+
+  it('likes a comment, keeping its replies', () => {
+    assert.deepEqual(treeWithCommentLike(tree, 'a', true)[0], {
+      ...tree[0],
+      like_count: 2,
+      has_liked: true
+    })
+  })
+
+  it('likes a reply under its comment, the others untouched', () => {
+    const next = treeWithCommentLike(tree, 'a1', true)
+    assert.deepEqual(next[0].replies, [
+      { id: 'a1', parent_id: 'a', like_count: 1, has_liked: true }
+    ])
+    assert.equal(next[0].like_count, 1)
+    assert.equal(next[1], tree[1])
+  })
+
+  it('takes the count the server answered', () => {
+    assert.equal(treeWithCommentLike(tree, 'b', true, 5)[1].like_count, 5)
+  })
+
+  it('puts a refused like back where it was', () => {
+    const liked = treeWithCommentLike(tree, 'a', true)
+    assert.deepEqual(treeWithCommentLike(liked, 'a', false), tree)
+  })
+})
+
+describe('the most liked order', () => {
+  it('reads top down, the next page below', () => {
+    assert.equal(loadsAbove('liked'), false)
+    assert.deepEqual(
+      commentTree(
+        [{ id: 'popular' }, { id: 'p1', parent_id: 'popular' }, { id: 'quiet' }],
+        'liked'
+      ),
+      [
+        { id: 'popular', replies: [{ id: 'p1', parent_id: 'popular' }] },
+        { id: 'quiet', replies: [] }
+      ]
+    )
+    assert.deepEqual(
+      treeWithNextPage(
+        [{ id: 'popular', replies: [] }],
+        [{ id: 'popular' }, { id: 'quiet' }],
+        'liked'
+      ),
+      [
+        { id: 'popular', replies: [] },
+        { id: 'quiet', replies: [] }
+      ]
+    )
+  })
+})
+
+describe('nextLikersCursor', () => {
+  it('pages like the server', () => {
+    // ProfilePostLiker::PAGE_SIZE, which ProfilePostLikeTest pins to twenty as well.
+    assert.equal(LIKERS_PAGE_SIZE, 20)
+  })
+
+  const page = (count) =>
+    Array.from({ length: count }, (_, index) => ({ username: `fan${index}`, cursor: `1_${index}` }))
+
+  it('goes on after the last liker of a full page', () => {
+    assert.equal(nextLikersCursor(page(LIKERS_PAGE_SIZE)), `1_${LIKERS_PAGE_SIZE - 1}`)
+  })
+
+  it('stops after a shorter page, or an empty one', () => {
+    assert.equal(nextLikersCursor(page(LIKERS_PAGE_SIZE - 1)), null)
+    assert.equal(nextLikersCursor([]), null)
+  })
+})
+
+describe('appendLikersPage', () => {
+  it('adds the new page after what is held, without repeating a member', () => {
+    assert.deepEqual(
+      appendLikersPage(
+        [{ username: 'a' }, { username: 'b' }],
+        [{ username: 'b' }, { username: 'c' }]
+      ),
+      [{ username: 'a' }, { username: 'b' }, { username: 'c' }]
+    )
   })
 })
 

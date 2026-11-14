@@ -105,7 +105,12 @@ export const WALL_PAGE_SIZE = 10
  * tail when a post is deleted or unpinned here.
  */
 export function nextWallCursor(page) {
-  return page.length >= WALL_PAGE_SIZE ? page[page.length - 1].cursor : null
+  return lastCursorOfFullPage(page, WALL_PAGE_SIZE)
+}
+
+// A page shorter than the server's size is the last one.
+function lastCursorOfFullPage(items, pageSize) {
+  return items.length >= pageSize ? items[items.length - 1].cursor : null
 }
 
 /** The lines held so far, followed by a new page, a line never twice. */
@@ -183,12 +188,15 @@ function isNewer(postLine, held) {
   return held.type !== 'post' || postLine.post.id > held.post.id
 }
 
-/** A post as it reads once the viewer liked it or took the like back: the count moves only when the state does. */
-export function postAfterLike(post, liked) {
-  if (post.has_liked === liked) {
-    return post
+/**
+ * A post or a comment as it reads once the viewer liked it or took the like back: the count moves only when the
+ * state does.
+ */
+export function afterLike(item, liked) {
+  if (item.has_liked === liked) {
+    return item
   }
-  return { ...post, has_liked: liked, like_count: Math.max(0, post.like_count + (liked ? 1 : -1)) }
+  return { ...item, has_liked: liked, like_count: Math.max(0, item.like_count + (liked ? 1 : -1)) }
 }
 
 /** A post whose comment count moved by `delta`. */
@@ -196,16 +204,40 @@ export function postAfterCommentCount(post, delta) {
   return { ...post, comment_count: Math.max(0, post.comment_count + delta) }
 }
 
+// Mirrors CommentThread::PAGE_SIZE and ProfilePostLiker::PAGE_SIZE (#1331).
+export const COMMENT_PAGE_SIZE = 20
+export const LIKERS_PAGE_SIZE = 20
+
 /**
- * The server's flat list, oldest first, as roots each holding its replies. A reply whose comment is not in the
- * list has nothing to answer on screen, so it is left out.
+ * The orders of a post's comments, mirroring CommentOrder: `recent` pages the newest first and reads each page down
+ * to the newest, older pages loading above; `oldest` and `liked` read top down, the next page loading below.
  */
-export function commentTree(comments) {
-  const roots = comments
+export const COMMENT_ORDERS = [
+  { value: 'recent', labelKey: 'profile.wall.comments_order.recent' },
+  { value: 'oldest', labelKey: 'profile.wall.comments_order.oldest' },
+  { value: 'liked', labelKey: 'profile.wall.comments_order.liked' }
+]
+export const DEFAULT_COMMENT_ORDER = 'recent'
+
+/** Whether the next page of this order loads above what is held: the older comments of `recent`. */
+export function loadsAbove(order) {
+  return order === 'recent'
+}
+
+/**
+ * A page of the server's thread, its comments in `order` each followed by its replies, as roots in reading order
+ * each holding its replies: `recent` reads down to the newest, `oldest` as it came. A reply whose comment is not in
+ * the page has nothing to answer on screen, so it is left out.
+ */
+export function commentTree(page, order = DEFAULT_COMMENT_ORDER) {
+  const roots = page
     .filter((comment) => !comment.parent_id)
     .map((comment) => ({ ...comment, replies: [] }))
+  if (loadsAbove(order)) {
+    roots.reverse()
+  }
   const byId = new Map(roots.map((root) => [root.id, root]))
-  for (const comment of comments) {
+  for (const comment of page) {
     if (comment.parent_id) {
       byId.get(comment.parent_id)?.replies.push(comment)
     }
@@ -213,7 +245,36 @@ export function commentTree(comments) {
   return roots
 }
 
-/** The tree with a new comment: a root goes last, a reply goes last under its comment. */
+/**
+ * Where the next page starts, in either order: the last comment of a full page, or null after a shorter one.
+ * Replies do not count, a page reaching down to a notified comment (`around`) does.
+ */
+export function nextCommentsCursor(page) {
+  return lastCursorOfFullPage(
+    page.filter((comment) => !comment.parent_id),
+    COMMENT_PAGE_SIZE
+  )
+}
+
+/** The tree with the next page of its order: above it for `recent`, below for `oldest`, a comment never twice. */
+export function treeWithNextPage(tree, page, order) {
+  const held = new Set(tree.map((root) => root.id))
+  const added = commentTree(page, order).filter((root) => !held.has(root.id))
+  return loadsAbove(order) ? [...added, ...tree] : [...tree, ...added]
+}
+
+/** Where the next likers start: the last one of a full page, or null after a shorter one. */
+export function nextLikersCursor(page) {
+  return lastCursorOfFullPage(page, LIKERS_PAGE_SIZE)
+}
+
+/** The likers held so far, followed by a new page, a member never twice. */
+export function appendLikersPage(likers, page) {
+  const held = new Set(likers.map((liker) => liker.username))
+  return [...likers, ...page.filter((liker) => !held.has(liker.username))]
+}
+
+/** The tree with a new comment: a root goes last, as the newest, and a reply goes last under its comment. */
 export function treeWithComment(tree, comment) {
   if (!comment.parent_id) {
     return [...tree, { ...comment, replies: [] }]
@@ -221,6 +282,29 @@ export function treeWithComment(tree, comment) {
   return tree.map((root) =>
     root.id === comment.parent_id ? { ...root, replies: [...root.replies, comment] } : root
   )
+}
+
+/**
+ * The tree once the viewer liked a comment or reply, or took the like back: `likeCount` is the server's count when
+ * it answered one, otherwise the count moves by one with the state.
+ */
+export function treeWithCommentLike(tree, id, liked, likeCount = null) {
+  const change = (comment) => {
+    const next = afterLike(comment, liked)
+    return likeCount === null ? next : { ...next, like_count: likeCount }
+  }
+  return tree.map((root) => {
+    if (root.id === id) {
+      return change(root)
+    }
+    if (!root.replies.some((reply) => reply.id === id)) {
+      return root
+    }
+    return {
+      ...root,
+      replies: root.replies.map((reply) => (reply.id === id ? change(reply) : reply))
+    }
+  })
 }
 
 /** The tree without a comment, and how many went with it: a root takes its replies along. */

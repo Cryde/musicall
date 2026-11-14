@@ -22,7 +22,7 @@ class ProfilePostCommentTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
-    public function test_a_post_s_comments_come_oldest_first_with_their_replies(): void
+    public function test_the_newest_comments_come_first_each_followed_by_its_replies(): void
     {
         $owner = $this->member('julien');
         $chloe = $this->member('chloe');
@@ -34,18 +34,26 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'La MercuryX, sans hésiter',
             'creationDatetime' => new \DateTimeImmutable('2026-11-02T10:00:00+00:00'),
         ]);
-        $reply = ProfilePostCommentFactory::new()->create([
-            'post' => $post,
-            'author' => $owner,
-            'parent' => $first,
-            'content' => 'Merci !',
-            'creationDatetime' => new \DateTimeImmutable('2026-11-02T11:00:00+00:00'),
-        ]);
         $second = ProfilePostCommentFactory::new()->create([
             'post' => $post,
             'author' => $marc,
             'content' => 'La BigSky pour moi',
             'creationDatetime' => new \DateTimeImmutable('2026-11-02T12:00:00+00:00'),
+        ]);
+        // Written after the second comment, a reply still follows the comment it answers.
+        $reply = ProfilePostCommentFactory::new()->create([
+            'post' => $post,
+            'author' => $owner,
+            'parent' => $first,
+            'content' => 'Merci !',
+            'creationDatetime' => new \DateTimeImmutable('2026-11-02T13:00:00+00:00'),
+        ]);
+        $firstReply = ProfilePostCommentFactory::new()->create([
+            'post' => $post,
+            'author' => $marc,
+            'parent' => $first,
+            'content' => 'Pareil',
+            'creationDatetime' => new \DateTimeImmutable('2026-11-02T11:00:00+00:00'),
         ]);
 
         // Chloé may delete her own comment only; the wall is Julien's.
@@ -53,31 +61,13 @@ class ProfilePostCommentTest extends ApiTestCase
         $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments');
 
         $this->assertResponseIsSuccessful();
+        // Only a top-level comment carries a cursor: the next page starts after the last one.
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ProfilePostComment',
             '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
             '@type' => 'Collection',
-            'totalItems' => 3,
+            'totalItems' => 4,
             'member' => [
-                [
-                    '@id' => '/api/user/profile-post-comments/' . $first->id,
-                    '@type' => 'ProfilePostComment',
-                    'id' => $first->id,
-                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'chloe', 'display_name' => 'chloe'],
-                    'content' => 'La MercuryX, sans hésiter',
-                    'creation_datetime' => '2026-11-02T10:00:00+00:00',
-                    'can_delete' => true,
-                ],
-                [
-                    '@id' => '/api/user/profile-post-comments/' . $reply->id,
-                    '@type' => 'ProfilePostComment',
-                    'id' => $reply->id,
-                    'parent_id' => $first->id,
-                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
-                    'content' => 'Merci !',
-                    'creation_datetime' => '2026-11-02T11:00:00+00:00',
-                    'can_delete' => false,
-                ],
                 [
                     '@id' => '/api/user/profile-post-comments/' . $second->id,
                     '@type' => 'ProfilePostComment',
@@ -86,6 +76,45 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'La BigSky pour moi',
                     'creation_datetime' => '2026-11-02T12:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
+                    'cursor' => 'recent_' . $second->creationDatetime->getTimestamp() . '_' . $second->id,
+                ],
+                [
+                    '@id' => '/api/user/profile-post-comments/' . $first->id,
+                    '@type' => 'ProfilePostComment',
+                    'id' => $first->id,
+                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'chloe', 'display_name' => 'chloe'],
+                    'content' => 'La MercuryX, sans hésiter',
+                    'creation_datetime' => '2026-11-02T10:00:00+00:00',
+                    'can_delete' => true,
+                    'like_count' => 0,
+                    'has_liked' => false,
+                    'cursor' => 'recent_' . $first->creationDatetime->getTimestamp() . '_' . $first->id,
+                ],
+                [
+                    '@id' => '/api/user/profile-post-comments/' . $firstReply->id,
+                    '@type' => 'ProfilePostComment',
+                    'id' => $firstReply->id,
+                    'parent_id' => $first->id,
+                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'marc', 'display_name' => 'marc'],
+                    'content' => 'Pareil',
+                    'creation_datetime' => '2026-11-02T11:00:00+00:00',
+                    'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
+                ],
+                [
+                    '@id' => '/api/user/profile-post-comments/' . $reply->id,
+                    '@type' => 'ProfilePostComment',
+                    'id' => $reply->id,
+                    'parent_id' => $first->id,
+                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                    'content' => 'Merci !',
+                    'creation_datetime' => '2026-11-02T13:00:00+00:00',
+                    'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
             ],
         ]);
@@ -114,6 +143,8 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'Bravo',
             'creation_datetime' => '2026-11-02T10:00:00+00:00',
             'can_delete' => true,
+            'like_count' => 0,
+            'has_liked' => false,
         ]);
     }
 
@@ -202,6 +233,9 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'Salut',
                     'creation_datetime' => '2026-11-02T10:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
+                    'cursor' => 'recent_' . $comment->creationDatetime->getTimestamp() . '_' . $comment->id,
                 ],
             ],
         ]);
@@ -312,6 +346,8 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'Superbe clip !',
             'creation_datetime' => $comment->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_delete' => true,
+            'like_count' => 0,
+            'has_liked' => false,
         ]);
         $this->assertSame($post->id, $comment->post->id);
         $this->assertNull($comment->parent);
@@ -341,6 +377,8 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'Merci !',
             'creation_datetime' => $reply->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_delete' => true,
+            'like_count' => 0,
+            'has_liked' => false,
         ]);
     }
 

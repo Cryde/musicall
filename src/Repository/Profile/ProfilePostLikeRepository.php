@@ -7,6 +7,7 @@ namespace App\Repository\Profile;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Profile\ProfilePostLike;
 use App\Entity\User;
+use App\Service\Profile\Wall\DatedPosition;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
@@ -59,7 +60,7 @@ class ProfilePostLikeRepository extends ServiceEntityRepository
      * @param list<string> $postIds
      * @param list<string> $excludedUserIds
      *
-     * @return array<string, int> like count by post id, counted as {@see findLikers()} lists them
+     * @return array<string, int> like count by post id, counted as {@see findLikesPage()} lists them
      */
     public function countByPostIds(array $postIds, array $excludedUserIds = []): array
     {
@@ -112,32 +113,36 @@ class ProfilePostLikeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Who liked a post, newest first, without the users given.
+     * A page of a post's likes with who gave them, newest first, past `$before` (#1331), without the users given.
+     * Every join is to one row, so the limit cuts no likes.
      *
      * @param list<string> $excludedUserIds
      *
-     * @return list<User>
+     * @return list<ProfilePostLike>
      */
-    public function findLikers(ProfilePost $post, array $excludedUserIds): array
+    public function findLikesPage(ProfilePost $post, array $excludedUserIds, ?DatedPosition $before, int $size): array
     {
-        $query = $this->getEntityManager()->createQueryBuilder()
-            ->select('u', 'p', 'pp')
-            ->from(User::class, 'u')
-            ->innerJoin(ProfilePostLike::class, 'l', 'WITH', 'l.user = u')
+        $query = $this->createQueryBuilder('l')
+            ->addSelect('u', 'p', 'pp')
+            ->innerJoin('l.user', 'u')
             ->innerJoin('u.profile', 'p')
             ->leftJoin('u.profilePicture', 'pp')
             ->where('l.post = :post')
             ->setParameter('post', $post)
             ->orderBy('l.creationDatetime', 'DESC')
-            ->addOrderBy('l.id', 'DESC');
+            ->addOrderBy('l.id', 'DESC')
+            ->setMaxResults($size);
         if ($excludedUserIds !== []) {
             $query->andWhere('u.id NOT IN (:excluded)')->setParameter('excluded', $excludedUserIds);
         }
+        if ($before instanceof DatedPosition) {
+            $query->andWhere($before->afterNewestFirst($query, 'l.creationDatetime', 'l.id'));
+        }
 
-        /** @var list<User> $users */
-        $users = $query->getQuery()->getResult();
+        /** @var list<ProfilePostLike> $likes */
+        $likes = $query->getQuery()->getResult();
 
-        return $users;
+        return $likes;
     }
 
     /**

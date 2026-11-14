@@ -98,12 +98,13 @@ function publicationTarget(payload) {
   return { name, params: { slug: payload.publication_slug } }
 }
 
-// A wall post has no page of its own: the profile opens it, comments shown, when it is on the first page.
+// A wall post has no page of its own: the profile opens it, when it is on the first page, its comments shown down
+// to the one notified (#1331).
 function wallPostTarget(payload) {
   return {
     name: 'app_user_public_profile',
     params: { username: payload.wall_username },
-    query: { post: payload.post_id }
+    query: { post: payload.post_id, ...(payload.comment_id ? { comment: payload.comment_id } : {}) }
   }
 }
 

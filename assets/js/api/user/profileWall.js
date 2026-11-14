@@ -58,11 +58,22 @@ export default {
     return axios.delete(Routing.generate('api_profile_posts_delete', { id })).catch(handleApiError)
   },
 
-  getComments(postId) {
+  /**
+   * A page of a post's comments in `order` (newest first without one), each followed by its replies (#1331):
+   * `before` is the last comment's `cursor` of the page held, made for the same order, `around` a comment the
+   * first page must reach down to.
+   */
+  getComments(postId, { order = null, before = null, around = null } = {}) {
     return axios
-      .get(Routing.generate('api_profile_post_comments_list', { postId }), {
-        headers: { Accept: 'application/ld+json' }
-      })
+      .get(
+        Routing.generate('api_profile_post_comments_list', {
+          postId,
+          ...(order ? { order } : {}),
+          ...(before ? { before } : {}),
+          ...(around ? { around } : {})
+        }),
+        { headers: { Accept: 'application/ld+json' } }
+      )
       .then((resp) => resp.data.member)
   },
 
@@ -100,11 +111,30 @@ export default {
       .catch(handleApiError)
   },
 
-  getLikers(postId) {
+  likeComment(id) {
     return axios
-      .get(Routing.generate('api_profile_post_likes_list', { postId }), {
-        headers: { Accept: 'application/ld+json' }
-      })
+      .post(
+        Routing.generate('api_profile_post_comment_like_post', { commentId: id }),
+        {},
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  unlikeComment(id) {
+    return axios
+      .delete(Routing.generate('api_profile_post_comment_like_delete', { commentId: id }))
+      .catch(handleApiError)
+  },
+
+  /** A page of who liked a post, newest first: `before` is the last one's `cursor` of the page held. */
+  getLikers(postId, before = null) {
+    return axios
+      .get(
+        Routing.generate('api_profile_post_likes_list', { postId, ...(before ? { before } : {}) }),
+        { headers: { Accept: 'application/ld+json' } }
+      )
       .then((resp) => resp.data.member)
   }
 }

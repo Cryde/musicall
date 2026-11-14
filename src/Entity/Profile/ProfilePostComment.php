@@ -15,6 +15,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 #[ORM\Entity(repositoryClass: ProfilePostCommentRepository::class)]
 #[ORM\Table(name: 'profile_post_comment')]
 #[ORM\Index(name: 'profile_post_comment_post_idx', columns: ['post_id', 'creation_datetime'])]
+#[ORM\Index(name: 'profile_post_comment_liked_idx', columns: ['post_id', 'like_count', 'creation_datetime', 'id'])]
 class ProfilePostComment
 {
     final public const int MAX_LENGTH = 1000;
@@ -43,6 +44,13 @@ class ProfilePostComment
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $creationDatetime;
+
+    /**
+     * Every like it holds (#1331), kept in step by each like and unlike, for the « Plus appréciés » sort. What a
+     * viewer is shown leaves out the people they block or who block them, counted apart.
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true, 'default' => 0])]
+    public int $likeCount = 0;
 
     public function __construct()
     {

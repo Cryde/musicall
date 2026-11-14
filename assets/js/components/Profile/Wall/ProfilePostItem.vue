@@ -157,7 +157,12 @@
         {{ post.comment_count ? t('profile.wall.comment_count', post.comment_count) : t('profile.wall.comment') }}
       </button>
     </div>
-    <ProfilePostComments v-if="showComments" :post-id="post.id" @count-changed="changeCommentCount" />
+    <ProfilePostComments
+      v-if="showComments"
+      :post-id="post.id"
+      :around-comment-id="focusedCommentId"
+      @count-changed="changeCommentCount"
+    />
     <ProfilePostLikersDialog v-model:visible="showLikers" :post-id="post.id" />
     <AuthRequiredModal v-model:visible="showAuthModal" :message="t('profile.wall.login_to_like')" />
   </article>
@@ -179,10 +184,10 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
 import {
+  afterLike,
   MAX_POST_LENGTH,
   photoGridClass,
   postAfterCommentCount,
-  postAfterLike,
   youtubeThumbnailUrl
 } from '../../../utils/profileWall.js'
 import AuthRequiredModal from '../../Auth/AuthRequiredModal.vue'
@@ -194,7 +199,9 @@ import ProfilePostLikersDialog from './ProfilePostLikersDialog.vue'
 const props = defineProps({
   post: { type: Object, required: true },
   /** Opened from a notification: the comments show straight away. */
-  commentsOpen: { type: Boolean, default: false }
+  commentsOpen: { type: Boolean, default: false },
+  /** The comment that notification is about, which the comments open on. */
+  focusedCommentId: { type: String, default: null }
 })
 
 const emit = defineEmits(['updated', 'deleted'])
@@ -240,12 +247,12 @@ async function toggleLike() {
   // Shown at once, put back if the server refuses.
   const before = props.post
   const liked = !before.has_liked
-  emit('updated', postAfterLike(before, liked))
+  emit('updated', afterLike(before, liked))
   isLiking.value = true
   try {
     if (liked) {
       const state = await profileWallApi.like(before.id)
-      emit('updated', { ...postAfterLike(before, true), like_count: state.like_count })
+      emit('updated', { ...afterLike(before, true), like_count: state.like_count })
     } else {
       await profileWallApi.unlike(before.id)
     }
@@ -253,7 +260,7 @@ async function toggleLike() {
     // A like already gone elsewhere is what was asked for.
     if (liked || e.status !== 404) {
       // Only the like is put back: a comment counted meanwhile stays.
-      emit('updated', postAfterLike(props.post, before.has_liked))
+      emit('updated', afterLike(props.post, before.has_liked))
       toast.add({
         severity: 'error',
         summary: t('profile.wall.error'),

@@ -64,6 +64,7 @@
         <ProfilePostItem
           :post="pinnedPost"
           :comments-open="pinnedPost.id === focusedPostId"
+          :focused-comment-id="pinnedPost.id === focusedPostId ? focusedCommentId : null"
           @updated="handleUpdated"
           @deleted="handleDeleted"
         />
@@ -78,6 +79,7 @@
           v-if="item.type === 'post'"
           :post="item.post"
           :comments-open="item.post.id === focusedPostId"
+          :focused-comment-id="item.post.id === focusedPostId ? focusedCommentId : null"
           @updated="handleUpdated"
           @deleted="handleDeleted"
         />
@@ -162,9 +164,13 @@ const emptyText = computed(() => {
     ? t('profile.wall.empty_owner')
     : t('profile.wall.empty.visitor', { name: props.displayName })
 })
-// A notification links to `?post={id}`: that post opens its comments, when it is among those loaded.
+// A notification links to `?post={id}&comment={id}`: that post opens its comments on the page holding the comment,
+// when the post is among those loaded.
 const focusedPostId = computed(() =>
   typeof route.query.post === 'string' ? route.query.post : null
+)
+const focusedCommentId = computed(() =>
+  typeof route.query.comment === 'string' ? route.query.comment : null
 )
 
 async function load() {
@@ -217,8 +223,8 @@ async function loadMore() {
 
 function selectFilter(option) {
   if (option === filter.value) return
-  // The notified post (`?post=`) is not scrolled back to after every switch.
-  const { post: _notifiedPost, ...query } = route.query
+  // The notified post (`?post=`) and comment are not scrolled back to after every switch.
+  const { post: _notifiedPost, comment: _notifiedComment, ...query } = route.query
   router.replace({ query: { ...query, voir: option.query ?? undefined } })
 }
 
