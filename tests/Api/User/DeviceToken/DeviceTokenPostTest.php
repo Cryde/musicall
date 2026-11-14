@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\User\DeviceToken;
 
 use App\Entity\User\DeviceToken;
+use App\Enum\User\DevicePlatform;
 use App\Repository\User\DeviceTokenRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -58,6 +59,30 @@ class DeviceTokenPostTest extends ApiTestCase
         $stored = $this->findToken(self::TOKEN);
         $this->assertSame($user->id, $stored->user->id);
         $this->assertSame(1, $this->countTokens());
+    }
+
+    public function test_registers_an_ios_token(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'zoe_cello', 'email' => 'zoe.cello@example.com']);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/device-tokens', [
+            'token' => self::TOKEN,
+            'platform' => 'ios',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/DeviceToken',
+            '@id' => '/api/user/device-tokens/' . self::TOKEN,
+            '@type' => 'DeviceToken',
+            'token' => self::TOKEN,
+            'platform' => 'ios',
+        ]);
+
+        $stored = $this->findToken(self::TOKEN);
+        $this->assertSame($user->id, $stored->user->id);
+        $this->assertSame(DevicePlatform::Ios, $stored->platform);
     }
 
     public function test_registering_a_known_token_again_refreshes_it(): void
@@ -122,7 +147,7 @@ class DeviceTokenPostTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/device-tokens', [
             'token' => '',
-            'platform' => 'ios',
+            'platform' => 'windows',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
