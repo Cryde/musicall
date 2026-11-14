@@ -76,6 +76,8 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'La BigSky pour moi',
                     'creation_datetime' => '2026-11-02T12:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => 'recent_' . $second->creationDatetime->getTimestamp() . '_' . $second->id,
                 ],
                 [
@@ -86,6 +88,8 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'La MercuryX, sans hésiter',
                     'creation_datetime' => '2026-11-02T10:00:00+00:00',
                     'can_delete' => true,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => 'recent_' . $first->creationDatetime->getTimestamp() . '_' . $first->id,
                 ],
                 [
@@ -97,6 +101,8 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'Pareil',
                     'creation_datetime' => '2026-11-02T11:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
                 [
                     '@id' => '/api/user/profile-post-comments/' . $reply->id,
@@ -107,6 +113,8 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'Merci !',
                     'creation_datetime' => '2026-11-02T13:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
             ],
         ]);
@@ -135,6 +143,8 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'Bravo',
             'creation_datetime' => '2026-11-02T10:00:00+00:00',
             'can_delete' => true,
+            'like_count' => 0,
+            'has_liked' => false,
         ]);
     }
 
@@ -223,6 +233,8 @@ class ProfilePostCommentTest extends ApiTestCase
                     'content' => 'Salut',
                     'creation_datetime' => '2026-11-02T10:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => 'recent_' . $comment->creationDatetime->getTimestamp() . '_' . $comment->id,
                 ],
             ],
@@ -334,6 +346,8 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'Superbe clip !',
             'creation_datetime' => $comment->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_delete' => true,
+            'like_count' => 0,
+            'has_liked' => false,
         ]);
         $this->assertSame($post->id, $comment->post->id);
         $this->assertNull($comment->parent);
@@ -363,6 +377,8 @@ class ProfilePostCommentTest extends ApiTestCase
             'content' => 'Merci !',
             'creation_datetime' => $reply->creationDatetime->format(\DateTimeInterface::ATOM),
             'can_delete' => true,
+            'like_count' => 0,
+            'has_liked' => false,
         ]);
     }
 

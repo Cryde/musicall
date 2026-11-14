@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   activitySentenceKey,
+  afterLike,
   appendLikersPage,
   appendWallPage,
   COMMENT_ORDERS,
@@ -18,11 +19,11 @@ import {
   nextWallCursor,
   photoGridClass,
   postAfterCommentCount,
-  postAfterLike,
   postItem,
   postPayload,
   showsPosts,
   treeWithComment,
+  treeWithCommentLike,
   treeWithNextPage,
   treeWithoutComment,
   WALL_FILTERS,
@@ -213,17 +214,17 @@ describe('wallAfterPinChange', () => {
   })
 })
 
-describe('postAfterLike', () => {
+describe('afterLike', () => {
   const post = { id: 'p1', like_count: 3, has_liked: false }
 
   it('counts a like and takes it back', () => {
-    const liked = postAfterLike(post, true)
+    const liked = afterLike(post, true)
     assert.deepEqual(liked, { id: 'p1', like_count: 4, has_liked: true })
-    assert.deepEqual(postAfterLike(liked, false), post)
+    assert.deepEqual(afterLike(liked, false), post)
   })
 
   it('leaves the count alone when the state does not change', () => {
-    assert.equal(postAfterLike(post, false), post)
+    assert.equal(afterLike(post, false), post)
   })
 })
 
@@ -275,7 +276,7 @@ describe('COMMENT_ORDERS', () => {
   it('mirrors CommentOrder, newest first by default', () => {
     assert.deepEqual(
       COMMENT_ORDERS.map((order) => order.value),
-      ['recent', 'oldest']
+      ['recent', 'oldest', 'liked']
     )
     assert.equal(DEFAULT_COMMENT_ORDER, 'recent')
     assert.equal(loadsAbove('recent'), true)
@@ -346,6 +347,71 @@ describe('treeWithNextPage', () => {
         { id: 'd', replies: [] },
         { id: 'e', replies: [{ id: 'e1', parent_id: 'e' }] },
         { id: 'f', replies: [] }
+      ]
+    )
+  })
+})
+
+describe('treeWithCommentLike', () => {
+  const tree = [
+    {
+      id: 'a',
+      like_count: 1,
+      has_liked: false,
+      replies: [{ id: 'a1', parent_id: 'a', like_count: 0, has_liked: false }]
+    },
+    { id: 'b', like_count: 0, has_liked: false, replies: [] }
+  ]
+
+  it('likes a comment, keeping its replies', () => {
+    assert.deepEqual(treeWithCommentLike(tree, 'a', true)[0], {
+      ...tree[0],
+      like_count: 2,
+      has_liked: true
+    })
+  })
+
+  it('likes a reply under its comment, the others untouched', () => {
+    const next = treeWithCommentLike(tree, 'a1', true)
+    assert.deepEqual(next[0].replies, [
+      { id: 'a1', parent_id: 'a', like_count: 1, has_liked: true }
+    ])
+    assert.equal(next[0].like_count, 1)
+    assert.equal(next[1], tree[1])
+  })
+
+  it('takes the count the server answered', () => {
+    assert.equal(treeWithCommentLike(tree, 'b', true, 5)[1].like_count, 5)
+  })
+
+  it('puts a refused like back where it was', () => {
+    const liked = treeWithCommentLike(tree, 'a', true)
+    assert.deepEqual(treeWithCommentLike(liked, 'a', false), tree)
+  })
+})
+
+describe('the most liked order', () => {
+  it('reads top down, the next page below', () => {
+    assert.equal(loadsAbove('liked'), false)
+    assert.deepEqual(
+      commentTree(
+        [{ id: 'popular' }, { id: 'p1', parent_id: 'popular' }, { id: 'quiet' }],
+        'liked'
+      ),
+      [
+        { id: 'popular', replies: [{ id: 'p1', parent_id: 'popular' }] },
+        { id: 'quiet', replies: [] }
+      ]
+    )
+    assert.deepEqual(
+      treeWithNextPage(
+        [{ id: 'popular', replies: [] }],
+        [{ id: 'popular' }, { id: 'quiet' }],
+        'liked'
+      ),
+      [
+        { id: 'popular', replies: [] },
+        { id: 'quiet', replies: [] }
       ]
     )
   })

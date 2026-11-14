@@ -135,7 +135,9 @@ class ProfilePostLikeRepository extends ServiceEntityRepository
         if ($excludedUserIds !== []) {
             $query->andWhere('u.id NOT IN (:excluded)')->setParameter('excluded', $excludedUserIds);
         }
-        $before?->applyAfterNewestFirst($query, 'l.creationDatetime', 'l.id');
+        if ($before instanceof DatedPosition) {
+            $query->andWhere($before->afterNewestFirst($query, 'l.creationDatetime', 'l.id'));
+        }
 
         /** @var list<ProfilePostLike> $likes */
         $likes = $query->getQuery()->getResult();

@@ -91,6 +91,11 @@ class ProfilePostCommentResource
 
     public bool $canDelete = false;
 
+    /** Without anyone blocked either way with the viewer (#1331). */
+    public int $likeCount = 0;
+
+    public bool $hasLiked = false;
+
     /** A top-level comment's place in the thread, in a list only: the next page starts after it. */
     public ?string $cursor = null;
 }

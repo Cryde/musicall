@@ -55,6 +55,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                 'content' => 'Commentaire ' . $minute,
                 'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
                 'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
                 'cursor' => self::cursor($comments[$minute]),
             ], array_values(array_diff(range(24, 2), $hiddenMinutes))),
         ]);
@@ -90,6 +92,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => 'Commentaire 1',
                     'creation_datetime' => '2026-11-02T10:01:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => self::cursor($comments[1]),
                 ],
                 [
@@ -101,6 +105,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => 'Réponse 30',
                     'creation_datetime' => '2026-11-02T10:30:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
             ],
             'view' => [
@@ -140,6 +146,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => $oldest->content,
                     'creation_datetime' => '2026-11-02T10:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => self::cursor($oldest),
                 ],
             ],
@@ -161,6 +169,7 @@ class ProfilePostCommentPageTest extends ApiTestCase
         yield 'a wall cursor' => ['post_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
         yield 'a bare comment id' => ['01a1b220-df08-7910-9e2a-d78c147e10d0'];
         yield 'an overlong timestamp' => ['recent_179361360000_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'a most liked cursor without its count' => ['liked_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
     }
 
     #[DataProvider('malformedCursors')]
@@ -239,6 +248,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                 'content' => 'Commentaire ' . $minute,
                 'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
                 'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
                 'cursor' => self::cursor($comments[$minute]),
             ], range(25, 3)),
             'view' => [
@@ -272,6 +283,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => 'Commentaire ' . $minute,
                     'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => self::cursor($comments[$minute]),
                 ], range(22, 1)),
                 [
@@ -283,6 +296,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => 'Réponse 30',
                     'creation_datetime' => '2026-11-02T10:30:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
             ],
             'view' => [
@@ -319,6 +334,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                 'content' => 'Commentaire ' . $minute,
                 'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
                 'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
                 'cursor' => self::cursor($comments[$minute]),
             ], range(22, 3)),
             'view' => [
@@ -351,10 +368,47 @@ class ProfilePostCommentPageTest extends ApiTestCase
                 'content' => 'Commentaire ' . $minute,
                 'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
                 'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
                 'cursor' => self::cursor($comments[$minute]),
             ], range(21, 2)),
             'view' => [
                 '@id' => '/api/user/profile-posts/' . $post->id . '/comments?around=' . $elsewhere->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_around_a_comment_on_the_first_page_opens_the_first_page(): void
+    {
+        $owner = $this->member('julien');
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+        $comments = $this->commentsAt($post, $owner, range(1, 21));
+
+        // The first page already holds minute 5, and stays full, so the client still knows more follow: a page cut
+        // at minute 5 would read as the last one.
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?around=' . $comments[5]->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostComment',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
+            '@type' => 'Collection',
+            'totalItems' => 20,
+            'member' => array_map(static fn (int $minute): array => [
+                '@id' => '/api/user/profile-post-comments/' . $comments[$minute]->id,
+                '@type' => 'ProfilePostComment',
+                'id' => $comments[$minute]->id,
+                'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                'content' => 'Commentaire ' . $minute,
+                'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
+                'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
+                'cursor' => self::cursor($comments[$minute]),
+            ], range(21, 2)),
+            'view' => [
+                '@id' => '/api/user/profile-posts/' . $post->id . '/comments?around=' . $comments[5]->id,
                 '@type' => 'PartialCollectionView',
             ],
         ]);
@@ -383,6 +437,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                 'content' => 'Commentaire ' . $minute,
                 'creation_datetime' => $comments[$minute]->creationDatetime->format(\DATE_ATOM),
                 'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
                 'cursor' => self::cursor($comments[$minute]),
             ], range(100, 81)),
             'view' => [
@@ -475,6 +531,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
             'content' => 'Commentaire ' . $minute,
             'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
             'can_delete' => false,
+            'like_count' => 0,
+            'has_liked' => false,
             'cursor' => self::cursor($comments[$minute], 'oldest'),
         ];
         // Minutes 1 up to 20, minute 21 waits for the next page; the replies follow their comment, oldest first.
@@ -495,6 +553,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => 'Réponse 25',
                     'creation_datetime' => '2026-11-02T10:25:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
                 [
                     '@id' => '/api/user/profile-post-comments/' . $lateReply->id,
@@ -505,6 +565,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => 'Réponse 30',
                     'creation_datetime' => '2026-11-02T10:30:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                 ],
                 ...array_map($comment, range(3, 20)),
             ],
@@ -545,6 +607,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                     'content' => $last->content,
                     'creation_datetime' => '2026-11-02T10:00:00+00:00',
                     'can_delete' => false,
+                    'like_count' => 0,
+                    'has_liked' => false,
                     'cursor' => self::cursor($last, 'oldest'),
                 ],
             ],
@@ -562,6 +626,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
     {
         yield 'a newest first cursor in the oldest order' => ['order=oldest&before=recent_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
         yield 'an oldest first cursor in the default order' => ['before=oldest_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'a most liked cursor in the default order' => ['before=liked_3_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'a newest first cursor in the most liked order' => ['order=liked&before=recent_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
     }
 
     #[DataProvider('cursorsOfAnotherOrder')]
@@ -666,6 +732,8 @@ class ProfilePostCommentPageTest extends ApiTestCase
                 'content' => 'Commentaire ' . $minute,
                 'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
                 'can_delete' => false,
+                'like_count' => 0,
+                'has_liked' => false,
                 'cursor' => self::cursor($comments[$minute], 'oldest'),
             ], range(1, 23)),
             'view' => [

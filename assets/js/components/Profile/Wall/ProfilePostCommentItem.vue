@@ -71,6 +71,20 @@
       <p class="flex items-center gap-3 text-xs text-surface-500 dark:text-surface-400 mt-1 ml-3 mb-0">
         <time :datetime="comment.creation_datetime">{{ formatDateCompactWithYear(comment.creation_datetime) }}</time>
         <button
+          type="button"
+          class="flex items-center gap-1 font-semibold hover:underline cursor-pointer"
+          :class="comment.has_liked ? 'text-rose-600 dark:text-rose-400' : ''"
+          :aria-pressed="comment.has_liked"
+          @click="emit('toggle-like', comment)"
+        >
+          <i :class="comment.has_liked ? 'pi pi-heart-fill' : 'pi pi-heart'" class="text-xs!" aria-hidden="true" />
+          {{ t('profile.wall.like') }}
+        </button>
+        <span v-if="comment.like_count">
+          <span aria-hidden="true">{{ comment.like_count }}</span>
+          <span class="sr-only">{{ t('profile.wall.comment_likes', comment.like_count) }}</span>
+        </span>
+        <button
           v-if="canReply"
           type="button"
           class="font-semibold hover:underline cursor-pointer"
@@ -100,7 +114,7 @@ const props = defineProps({
   canReply: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['reply', 'delete'])
+const emit = defineEmits(['reply', 'delete', 'toggle-like'])
 const { t } = useI18n()
 const confirm = useConfirm()
 

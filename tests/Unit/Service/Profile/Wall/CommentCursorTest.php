@@ -39,6 +39,20 @@ class CommentCursorTest extends TestCase
         }
     }
 
+    public function test_a_most_liked_cursor_carries_the_count(): void
+    {
+        $comment = new ProfilePostComment();
+        $comment->id = '01a1b220-df08-7910-9e2a-d78c147e10d0';
+        $comment->creationDatetime = new \DateTimeImmutable('2026-10-05T10:00:00+00:00');
+        $comment->likeCount = 12;
+
+        $cursor = CommentCursor::of(CommentOrder::Liked, $comment);
+
+        $this->assertSame('liked_12_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0', $cursor->toString());
+        $this->assertEquals($cursor, CommentCursor::parse($cursor->toString()));
+        $this->assertSame('recent_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0', CommentCursor::of(CommentOrder::Recent, $comment)->toString());
+    }
+
     public function test_a_position_reads_back_what_it_wrote(): void
     {
         $position = DatedPosition::of(new \DateTimeImmutable('2026-10-05T10:00:00+00:00'), '01a1b220-df08-7910-9e2a-d78c147e10d0');
@@ -61,6 +75,9 @@ class CommentCursorTest extends TestCase
         yield 'a trailing newline' => ["recent_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0\n"];
         yield 'a null byte' => ["recent_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0\0"];
         yield 'an int id' => ['recent_1791194400_42'];
+        yield 'a most liked cursor without its count' => ['liked_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'a count on another order' => ['recent_3_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'an overlong count' => ['liked_12345678901_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
         yield 'an overlong timestamp' => ['recent_179119440012_01a1b220-df08-7910-9e2a-d78c147e10d0'];
     }
 

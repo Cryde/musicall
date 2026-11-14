@@ -848,6 +848,8 @@
     "likers_more_error": "Impossible de charger la suite de la liste.",
     "likers_retry": "Réessayer",
     "login_to_like": "Connecte-toi pour aimer ce post.",
+    "login_to_like_comment": "Connecte-toi pour aimer ce commentaire.",
+    "comment_likes": "{count} personne aime ce commentaire | {count} personnes aiment ce commentaire",
     "comment": "Commenter",
     "comment_count": "{count} commentaire | {count} commentaires",
     "comments_title": "Commentaires",
@@ -858,7 +860,8 @@
     "comments_order": {
       "label": "Trier les commentaires",
       "recent": "Plus récents",
-      "oldest": "Plus anciens"
+      "oldest": "Plus anciens",
+      "liked": "Plus appréciés"
     },
     "comment_aria": "Ton commentaire",
     "comment_placeholder": "Écris un commentaire...",

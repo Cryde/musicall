@@ -40,10 +40,11 @@
           :can-reply="userSecurityStore.isAuthenticated"
           @reply="replyingTo = comment.id"
           @delete="remove"
+          @toggle-like="toggleLike"
         />
         <ol v-if="comment.replies.length" class="list-none m-0 p-0 pl-10 flex flex-col gap-2">
           <li v-for="reply in comment.replies" :key="reply.id">
-            <ProfilePostCommentItem :comment="reply" @delete="remove" />
+            <ProfilePostCommentItem :comment="reply" @delete="remove" @toggle-like="toggleLike" />
           </li>
         </ol>
         <ProfilePostCommentForm
@@ -74,6 +75,7 @@
       {{ t('profile.wall.login_to_comment') }}
       </p>
     </template>
+    <AuthRequiredModal v-model:visible="showAuthModal" :message="t('profile.wall.login_to_like_comment')" />
   </section>
 </template>
 
@@ -93,10 +95,12 @@ import {
   loadsAbove,
   nextCommentsCursor,
   treeWithComment,
+  treeWithCommentLike,
   treeWithNextPage,
   treeWithoutComment
 } from '../../../utils/profileWall.js'
 import { signInRouteFrom } from '../../../utils/unauthenticatedRedirect.js'
+import AuthRequiredModal from '../../Auth/AuthRequiredModal.vue'
 import ProfilePostCommentForm from './ProfilePostCommentForm.vue'
 import ProfilePostCommentItem from './ProfilePostCommentItem.vue'
 
@@ -123,6 +127,9 @@ const replyingTo = ref(null)
 const nextCursor = ref(null)
 const isLoadingMore = ref(false)
 const hasMoreError = ref(false)
+const showAuthModal = ref(false)
+// The comments whose like is on its way: a second tap waits for the first answer.
+const likingIds = new Set()
 // Only the latest order may write: a page still on its way from the order left must not land in the new one.
 let loadToken = 0
 
@@ -193,6 +200,39 @@ async function loadMore() {
     if (token === loadToken) hasMoreError.value = true
   } finally {
     if (token === loadToken) isLoadingMore.value = false
+  }
+}
+
+// Shown at once, put back if the server refuses, as for a post.
+async function toggleLike(comment) {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  if (likingIds.has(comment.id)) return
+  const liked = !comment.has_liked
+  tree.value = treeWithCommentLike(tree.value, comment.id, liked)
+  likingIds.add(comment.id)
+  try {
+    if (liked) {
+      const state = await profileWallApi.likeComment(comment.id)
+      tree.value = treeWithCommentLike(tree.value, comment.id, true, state.like_count)
+    } else {
+      await profileWallApi.unlikeComment(comment.id)
+    }
+  } catch (e) {
+    // A like already gone elsewhere is what was asked for.
+    if (liked || e.status !== 404) {
+      tree.value = treeWithCommentLike(tree.value, comment.id, !liked)
+      toast.add({
+        severity: 'error',
+        summary: t('profile.wall.error'),
+        detail: e.message,
+        life: 5000
+      })
+    }
+  } finally {
+    likingIds.delete(comment.id)
   }
 }
 

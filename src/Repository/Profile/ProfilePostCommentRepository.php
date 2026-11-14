@@ -33,7 +33,7 @@ class ProfilePostCommentRepository extends ServiceEntityRepository
     public function findRootIdsPage(ProfilePost $post, array $excludedAuthorIds, CommentOrder $order, ?CommentCursor $before, int $size): array
     {
         $query = $this->rootIdsQuery($post, $excludedAuthorIds, $order)->setMaxResults($size);
-        $before?->applyAfter($query, 'c.creationDatetime', 'c.id');
+        $before?->applyAfter($query, 'c');
 
         return array_map('strval', array_column($query->getQuery()->getArrayResult(), 'id'));
     }
@@ -48,7 +48,7 @@ class ProfilePostCommentRepository extends ServiceEntityRepository
     public function findRootIdsDownTo(ProfilePost $post, array $excludedAuthorIds, CommentCursor $last, int $max): array
     {
         $query = $this->rootIdsQuery($post, $excludedAuthorIds, $last->order)->setMaxResults($max);
-        $last->applyUpTo($query, 'c.creationDatetime', 'c.id');
+        $last->applyUpTo($query, 'c');
 
         return array_map('strval', array_column($query->getQuery()->getArrayResult(), 'id'));
     }
@@ -112,12 +112,33 @@ class ProfilePostCommentRepository extends ServiceEntityRepository
             ->where('c.post = :post')
             ->andWhere('c.parent IS NULL')
             ->setParameter('post', $post);
-        $order->orderBy($query, 'c.creationDatetime', 'c.id');
+        $order->orderBy($query, 'c');
         if ($excludedAuthorIds !== []) {
             $query->andWhere('c.author NOT IN (:excluded)')->setParameter('excluded', $excludedAuthorIds);
         }
 
         return $query;
+    }
+
+    /**
+     * The stored like count (#1331) goes up by one. A bulk statement, so two likes at once both count: reading the
+     * count and writing it back would lose one.
+     */
+    public function incrementLikeCount(ProfilePostComment $comment): void
+    {
+        $this->getEntityManager()
+            ->createQuery('UPDATE App\Entity\Profile\ProfilePostComment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :id')
+            ->setParameter('id', $comment->id)
+            ->execute();
+    }
+
+    /** The stored like count goes down by one, never below zero: the column is unsigned. */
+    public function decrementLikeCount(ProfilePostComment $comment): void
+    {
+        $this->getEntityManager()
+            ->createQuery('UPDATE App\Entity\Profile\ProfilePostComment c SET c.likeCount = c.likeCount - 1 WHERE c.id = :id AND c.likeCount > 0')
+            ->setParameter('id', $comment->id)
+            ->execute();
     }
 
     public function findOneOfPost(string $id, ProfilePost $post): ?ProfilePostComment

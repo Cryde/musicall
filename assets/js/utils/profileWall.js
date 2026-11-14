@@ -188,12 +188,15 @@ function isNewer(postLine, held) {
   return held.type !== 'post' || postLine.post.id > held.post.id
 }
 
-/** A post as it reads once the viewer liked it or took the like back: the count moves only when the state does. */
-export function postAfterLike(post, liked) {
-  if (post.has_liked === liked) {
-    return post
+/**
+ * A post or a comment as it reads once the viewer liked it or took the like back: the count moves only when the
+ * state does.
+ */
+export function afterLike(item, liked) {
+  if (item.has_liked === liked) {
+    return item
   }
-  return { ...post, has_liked: liked, like_count: Math.max(0, post.like_count + (liked ? 1 : -1)) }
+  return { ...item, has_liked: liked, like_count: Math.max(0, item.like_count + (liked ? 1 : -1)) }
 }
 
 /** A post whose comment count moved by `delta`. */
@@ -207,11 +210,12 @@ export const LIKERS_PAGE_SIZE = 20
 
 /**
  * The orders of a post's comments, mirroring CommentOrder: `recent` pages the newest first and reads each page down
- * to the newest, older pages loading above; `oldest` reads top down, the next page loading below.
+ * to the newest, older pages loading above; `oldest` and `liked` read top down, the next page loading below.
  */
 export const COMMENT_ORDERS = [
   { value: 'recent', labelKey: 'profile.wall.comments_order.recent' },
-  { value: 'oldest', labelKey: 'profile.wall.comments_order.oldest' }
+  { value: 'oldest', labelKey: 'profile.wall.comments_order.oldest' },
+  { value: 'liked', labelKey: 'profile.wall.comments_order.liked' }
 ]
 export const DEFAULT_COMMENT_ORDER = 'recent'
 
@@ -278,6 +282,29 @@ export function treeWithComment(tree, comment) {
   return tree.map((root) =>
     root.id === comment.parent_id ? { ...root, replies: [...root.replies, comment] } : root
   )
+}
+
+/**
+ * The tree once the viewer liked a comment or reply, or took the like back: `likeCount` is the server's count when
+ * it answered one, otherwise the count moves by one with the state.
+ */
+export function treeWithCommentLike(tree, id, liked, likeCount = null) {
+  const change = (comment) => {
+    const next = afterLike(comment, liked)
+    return likeCount === null ? next : { ...next, like_count: likeCount }
+  }
+  return tree.map((root) => {
+    if (root.id === id) {
+      return change(root)
+    }
+    if (!root.replies.some((reply) => reply.id === id)) {
+      return root
+    }
+    return {
+      ...root,
+      replies: root.replies.map((reply) => (reply.id === id ? change(reply) : reply))
+    }
+  })
 }
 
 /** The tree without a comment, and how many went with it: a root takes its replies along. */

@@ -111,6 +111,23 @@ export default {
       .catch(handleApiError)
   },
 
+  likeComment(id) {
+    return axios
+      .post(
+        Routing.generate('api_profile_post_comment_like_post', { commentId: id }),
+        {},
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  unlikeComment(id) {
+    return axios
+      .delete(Routing.generate('api_profile_post_comment_like_delete', { commentId: id }))
+      .catch(handleApiError)
+  },
+
   /** A page of who liked a post, newest first: `before` is the last one's `cursor` of the page held. */
   getLikers(postId, before = null) {
     return axios

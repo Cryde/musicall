@@ -11,6 +11,7 @@ enum CommentOrder: string
 {
     case Recent = 'recent';
     case Oldest = 'oldest';
+    case Liked = 'liked';
 
     /** @return list<string> */
     public static function values(): array
@@ -18,13 +19,17 @@ enum CommentOrder: string
         return array_column(self::cases(), 'value');
     }
 
-    public function orderBy(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    /** Orders the top-level comments of `$alias`, a ProfilePostComment. */
+    public function orderBy(QueryBuilder $query, string $alias): QueryBuilder
     {
-        $direction = match ($this) {
-            self::Recent => 'DESC',
-            self::Oldest => 'ASC',
-        };
+        if ($this === self::Liked) {
+            // The stored count holds every like, while each comment shows its count without the people the viewer
+            // blocks or is blocked by: a viewer may now and then read « 3 » ranked above « 4 ».
+            $query->orderBy($alias . '.likeCount', 'DESC')->addOrderBy($alias . '.creationDatetime', 'DESC');
+        } else {
+            $query->orderBy($alias . '.creationDatetime', $this === self::Oldest ? 'ASC' : 'DESC');
+        }
 
-        return $query->orderBy($dateField, $direction)->addOrderBy($idField, $direction);
+        return $query->addOrderBy($alias . '.id', $this === self::Oldest ? 'ASC' : 'DESC');
     }
 }

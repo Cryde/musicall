@@ -45,40 +45,47 @@ final readonly class DatedPosition
         return sprintf('%d_%s', $this->timestamp, $this->id);
     }
 
-    /** Keeps the rows that come after this place, newest first. */
-    public function applyAfterNewestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    /*
+     * Each condition below binds its parameters to the query and answers the condition, so a cursor can make it a
+     * part of its own (#1331): the most liked order compares a count first.
+     */
+
+    /** The rows that come after this place, newest first. */
+    public function afterNewestFirst(QueryBuilder $query, string $dateField, string $idField): string
     {
-        return $this->applyBound($query, $dateField, $idField, '<', '<');
+        return $this->bound($query, $dateField, $idField, '<', '<');
     }
 
-    /** Keeps this place and the rows before it, newest first. */
-    public function applyUpToNewestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    /** This place and the rows before it, newest first. */
+    public function upToNewestFirst(QueryBuilder $query, string $dateField, string $idField): string
     {
-        return $this->applyBound($query, $dateField, $idField, '>', '>=');
+        return $this->bound($query, $dateField, $idField, '>', '>=');
     }
 
-    /** Keeps the rows that come after this place, oldest first. */
-    public function applyAfterOldestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    /** The rows that come after this place, oldest first. */
+    public function afterOldestFirst(QueryBuilder $query, string $dateField, string $idField): string
     {
-        return $this->applyBound($query, $dateField, $idField, '>', '>');
+        return $this->bound($query, $dateField, $idField, '>', '>');
     }
 
-    /** Keeps this place and the rows before it, oldest first. */
-    public function applyUpToOldestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    /** This place and the rows before it, oldest first. */
+    public function upToOldestFirst(QueryBuilder $query, string $dateField, string $idField): string
     {
-        return $this->applyBound($query, $dateField, $idField, '<', '<=');
+        return $this->bound($query, $dateField, $idField, '<', '<=');
     }
 
     /** The date decides, the id within one second. */
-    private function applyBound(QueryBuilder $query, string $dateField, string $idField, string $dateOperator, string $idOperator): QueryBuilder
+    private function bound(QueryBuilder $query, string $dateField, string $idField, string $dateOperator, string $idOperator): string
     {
-        return $this->bind($query)->andWhere(sprintf(
+        $this->bind($query);
+
+        return sprintf(
             '%1$s %3$s :positionDate OR (%1$s = :positionDate AND %2$s %4$s :positionId)',
             $dateField,
             $idField,
             $dateOperator,
             $idOperator,
-        ));
+        );
     }
 
     private function bind(QueryBuilder $query): QueryBuilder

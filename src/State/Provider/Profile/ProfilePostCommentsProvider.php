@@ -55,16 +55,16 @@ readonly class ProfilePostCommentsProvider implements ProviderInterface
         $viewer = $this->security->getUser();
         $viewer = $viewer instanceof User ? $viewer : null;
         $post = $this->wallAccess->visiblePost((string) $uriVariables['postId'], $viewer);
-        $comments = $this->thread->page($post, $this->wallAccess->hiddenUserIdsFor($viewer), $order, $before, $around);
-
-        return array_map(function (ProfilePostComment $comment) use ($viewer, $order): ProfilePostCommentResource {
-            $resource = $this->commentBuilder->build($comment, $viewer);
+        $hidden = $this->wallAccess->hiddenUserIdsFor($viewer);
+        $comments = $this->thread->page($post, $hidden, $order, $before, $around);
+        $resources = $this->commentBuilder->buildAll($comments, $viewer, $hidden);
+        foreach ($comments as $index => $comment) {
             if (!$comment->parent instanceof ProfilePostComment) {
-                $resource->cursor = CommentCursor::of($order, $comment)->toString();
+                $resources[$index]->cursor = CommentCursor::of($order, $comment)->toString();
             }
+        }
 
-            return $resource;
-        }, $comments);
+        return $resources;
     }
 
     /**

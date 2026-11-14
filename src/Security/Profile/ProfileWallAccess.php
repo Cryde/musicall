@@ -7,6 +7,7 @@ namespace App\Security\Profile;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Profile\ProfilePostComment;
 use App\Entity\User;
+use App\Repository\Profile\ProfilePostCommentRepository;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
@@ -20,6 +21,7 @@ readonly class ProfileWallAccess
         private PublicProfileGuard $publicProfileGuard,
         private UserBlockRepository $userBlockRepository,
         private ProfilePostRepository $profilePostRepository,
+        private ProfilePostCommentRepository $profilePostCommentRepository,
     ) {
     }
 
@@ -56,6 +58,24 @@ readonly class ProfileWallAccess
         }
 
         return $post;
+    }
+
+    /**
+     * A comment the viewer may read, as its post's list shows it, or a 404: its post's rules, then hidden when
+     * written by someone blocked either way or answering them.
+     */
+    public function visibleComment(string $commentId, ?User $viewer): ProfilePostComment
+    {
+        $comment = $this->profilePostCommentRepository->find($commentId);
+        if (!$comment instanceof ProfilePostComment) {
+            throw new NotFoundHttpException('profile.wall.comment_not_found');
+        }
+        $this->visiblePost((string) $comment->post->id, $viewer);
+        if ($this->hidesComment($comment, $this->hiddenUserIdsFor($viewer))) {
+            throw new NotFoundHttpException('profile.wall.comment_not_found');
+        }
+
+        return $comment;
     }
 
     /**

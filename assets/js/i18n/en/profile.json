@@ -848,6 +848,8 @@
     "likers_more_error": "Could not load the rest of the list.",
     "likers_retry": "Try again",
     "login_to_like": "Sign in to like this post.",
+    "login_to_like_comment": "Sign in to like this comment.",
+    "comment_likes": "{count} person likes this comment | {count} people like this comment",
     "comment": "Comment",
     "comment_count": "{count} comment | {count} comments",
     "comments_title": "Comments",
@@ -858,7 +860,8 @@
     "comments_order": {
       "label": "Sort comments",
       "recent": "Newest",
-      "oldest": "Oldest"
+      "oldest": "Oldest",
+      "liked": "Most liked"
     },
     "comment_aria": "Your comment",
     "comment_placeholder": "Write a comment...",
