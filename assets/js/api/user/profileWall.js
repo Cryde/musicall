@@ -59,14 +59,16 @@ export default {
   },
 
   /**
-   * A page of a post's comments, newest first, each followed by its replies (#1331): `before` is the last comment's
-   * `cursor` of the page held, `around` a comment the first page must reach down to.
+   * A page of a post's comments in `order` (newest first without one), each followed by its replies (#1331):
+   * `before` is the last comment's `cursor` of the page held, made for the same order, `around` a comment the
+   * first page must reach down to.
    */
-  getComments(postId, { before = null, around = null } = {}) {
+  getComments(postId, { order = null, before = null, around = null } = {}) {
     return axios
       .get(
         Routing.generate('api_profile_post_comments_list', {
           postId,
+          ...(order ? { order } : {}),
           ...(before ? { before } : {}),
           ...(around ? { around } : {})
         }),

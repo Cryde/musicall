@@ -7,6 +7,7 @@ namespace App\Repository\Profile;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Profile\ProfilePostComment;
 use App\Service\Profile\Wall\CommentCursor;
+use App\Service\Profile\Wall\CommentOrder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -22,23 +23,23 @@ class ProfilePostCommentRepository extends ServiceEntityRepository
     }
 
     /**
-     * The ids of a page of top-level comments, newest first, past `$before` (#1331), without those of the authors
+     * The ids of a page of top-level comments in `$order`, past `$before` (#1331), without those of the authors
      * given.
      *
      * @param list<string> $excludedAuthorIds
      *
      * @return list<string>
      */
-    public function findRootIdsPage(ProfilePost $post, array $excludedAuthorIds, ?CommentCursor $before, int $size): array
+    public function findRootIdsPage(ProfilePost $post, array $excludedAuthorIds, CommentOrder $order, ?CommentCursor $before, int $size): array
     {
-        $query = $this->rootIdsQuery($post, $excludedAuthorIds)->setMaxResults($size);
+        $query = $this->rootIdsQuery($post, $excludedAuthorIds, $order)->setMaxResults($size);
         $before?->applyAfter($query, 'c.creationDatetime', 'c.id');
 
         return array_map('strval', array_column($query->getQuery()->getArrayResult(), 'id'));
     }
 
     /**
-     * The ids of the top-level comments from the newest down to `$last` included, at most `$max`.
+     * The ids of the top-level comments from the first in `$last`'s order down to `$last` included, at most `$max`.
      *
      * @param list<string> $excludedAuthorIds
      *
@@ -46,7 +47,7 @@ class ProfilePostCommentRepository extends ServiceEntityRepository
      */
     public function findRootIdsDownTo(ProfilePost $post, array $excludedAuthorIds, CommentCursor $last, int $max): array
     {
-        $query = $this->rootIdsQuery($post, $excludedAuthorIds)->setMaxResults($max);
+        $query = $this->rootIdsQuery($post, $excludedAuthorIds, $last->order)->setMaxResults($max);
         $last->applyUpTo($query, 'c.creationDatetime', 'c.id');
 
         return array_map('strval', array_column($query->getQuery()->getArrayResult(), 'id'));
@@ -104,15 +105,14 @@ class ProfilePostCommentRepository extends ServiceEntityRepository
     /**
      * @param list<string> $excludedAuthorIds
      */
-    private function rootIdsQuery(ProfilePost $post, array $excludedAuthorIds): QueryBuilder
+    private function rootIdsQuery(ProfilePost $post, array $excludedAuthorIds, CommentOrder $order): QueryBuilder
     {
         $query = $this->createQueryBuilder('c')
             ->select('c.id')
             ->where('c.post = :post')
             ->andWhere('c.parent IS NULL')
-            ->setParameter('post', $post)
-            ->orderBy('c.creationDatetime', 'DESC')
-            ->addOrderBy('c.id', 'DESC');
+            ->setParameter('post', $post);
+        $order->orderBy($query, 'c.creationDatetime', 'c.id');
         if ($excludedAuthorIds !== []) {
             $query->andWhere('c.author NOT IN (:excluded)')->setParameter('excluded', $excludedAuthorIds);
         }

@@ -206,15 +206,32 @@ export const COMMENT_PAGE_SIZE = 20
 export const LIKERS_PAGE_SIZE = 20
 
 /**
- * A page of the server's thread, its comments newest first each followed by its replies, as roots oldest first each
- * holding its replies: the thread reads down to the newest. A reply whose comment is not in the page has nothing
- * to answer on screen, so it is left out.
+ * The orders of a post's comments, mirroring CommentOrder: `recent` pages the newest first and reads each page down
+ * to the newest, older pages loading above; `oldest` reads top down, the next page loading below.
  */
-export function commentTree(page) {
+export const COMMENT_ORDERS = [
+  { value: 'recent', labelKey: 'profile.wall.comments_order.recent' },
+  { value: 'oldest', labelKey: 'profile.wall.comments_order.oldest' }
+]
+export const DEFAULT_COMMENT_ORDER = 'recent'
+
+/** Whether the next page of this order loads above what is held: the older comments of `recent`. */
+export function loadsAbove(order) {
+  return order === 'recent'
+}
+
+/**
+ * A page of the server's thread, its comments in `order` each followed by its replies, as roots in reading order
+ * each holding its replies: `recent` reads down to the newest, `oldest` as it came. A reply whose comment is not in
+ * the page has nothing to answer on screen, so it is left out.
+ */
+export function commentTree(page, order = DEFAULT_COMMENT_ORDER) {
   const roots = page
     .filter((comment) => !comment.parent_id)
-    .reverse()
     .map((comment) => ({ ...comment, replies: [] }))
+  if (loadsAbove(order)) {
+    roots.reverse()
+  }
   const byId = new Map(roots.map((root) => [root.id, root]))
   for (const comment of page) {
     if (comment.parent_id) {
@@ -225,20 +242,21 @@ export function commentTree(page) {
 }
 
 /**
- * Where the older comments start: the last comment of a full page, or null after a shorter one. Replies do not
- * count, a page reaching down to a notified comment (`around`) does.
+ * Where the next page starts, in either order: the last comment of a full page, or null after a shorter one.
+ * Replies do not count, a page reaching down to a notified comment (`around`) does.
  */
-export function olderCommentsCursor(page) {
+export function nextCommentsCursor(page) {
   return lastCursorOfFullPage(
     page.filter((comment) => !comment.parent_id),
     COMMENT_PAGE_SIZE
   )
 }
 
-/** The tree with a page of older comments above it, a comment never twice. */
-export function treeWithOlderPage(tree, page) {
+/** The tree with the next page of its order: above it for `recent`, below for `oldest`, a comment never twice. */
+export function treeWithNextPage(tree, page, order) {
   const held = new Set(tree.map((root) => root.id))
-  return [...commentTree(page).filter((root) => !held.has(root.id)), ...tree]
+  const added = commentTree(page, order).filter((root) => !held.has(root.id))
+  return loadsAbove(order) ? [...added, ...tree] : [...tree, ...added]
 }
 
 /** Where the next likers start: the last one of a full page, or null after a shorter one. */

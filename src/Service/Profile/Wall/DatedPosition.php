@@ -48,15 +48,37 @@ final readonly class DatedPosition
     /** Keeps the rows that come after this place, newest first. */
     public function applyAfterNewestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
     {
-        return $this->bind($query)
-            ->andWhere(sprintf('%1$s < :positionDate OR (%1$s = :positionDate AND %2$s < :positionId)', $dateField, $idField));
+        return $this->applyBound($query, $dateField, $idField, '<', '<');
     }
 
     /** Keeps this place and the rows before it, newest first. */
     public function applyUpToNewestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
     {
-        return $this->bind($query)
-            ->andWhere(sprintf('%1$s > :positionDate OR (%1$s = :positionDate AND %2$s >= :positionId)', $dateField, $idField));
+        return $this->applyBound($query, $dateField, $idField, '>', '>=');
+    }
+
+    /** Keeps the rows that come after this place, oldest first. */
+    public function applyAfterOldestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    {
+        return $this->applyBound($query, $dateField, $idField, '>', '>');
+    }
+
+    /** Keeps this place and the rows before it, oldest first. */
+    public function applyUpToOldestFirst(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
+    {
+        return $this->applyBound($query, $dateField, $idField, '<', '<=');
+    }
+
+    /** The date decides, the id within one second. */
+    private function applyBound(QueryBuilder $query, string $dateField, string $idField, string $dateOperator, string $idOperator): QueryBuilder
+    {
+        return $this->bind($query)->andWhere(sprintf(
+            '%1$s %3$s :positionDate OR (%1$s = :positionDate AND %2$s %4$s :positionId)',
+            $dateField,
+            $idField,
+            $dateOperator,
+            $idOperator,
+        ));
     }
 
     private function bind(QueryBuilder $query): QueryBuilder

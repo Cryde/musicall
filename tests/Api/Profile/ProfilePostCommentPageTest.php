@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-/** A post's comments a page at a time, and the page a notification opens (#1331). */
+/** A post's comments a page at a time, newest or oldest first, and the page a notification opens (#1331). */
 #[ResetDatabase]
 class ProfilePostCommentPageTest extends ApiTestCase
 {
@@ -456,9 +456,228 @@ class ProfilePostCommentPageTest extends ApiTestCase
         ]);
     }
 
-    private static function cursor(ProfilePostComment $comment): string
+    public function test_the_oldest_order_pages_twenty_comments_with_their_replies_in_date_order(): void
     {
-        return 'recent_' . $comment->creationDatetime->getTimestamp() . '_' . $comment->id;
+        $owner = $this->member('julien');
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+        $comments = $this->commentsAt($post, $owner, range(1, 21));
+        $lateReply = $this->replyAt($comments[2], $owner, 30);
+        $earlyReply = $this->replyAt($comments[2], $owner, 25);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?order=oldest');
+
+        $this->assertResponseIsSuccessful();
+        $comment = static fn (int $minute): array => [
+            '@id' => '/api/user/profile-post-comments/' . $comments[$minute]->id,
+            '@type' => 'ProfilePostComment',
+            'id' => $comments[$minute]->id,
+            'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+            'content' => 'Commentaire ' . $minute,
+            'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
+            'can_delete' => false,
+            'cursor' => self::cursor($comments[$minute], 'oldest'),
+        ];
+        // Minutes 1 up to 20, minute 21 waits for the next page; the replies follow their comment, oldest first.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostComment',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
+            '@type' => 'Collection',
+            'totalItems' => 22,
+            'member' => [
+                $comment(1),
+                $comment(2),
+                [
+                    '@id' => '/api/user/profile-post-comments/' . $earlyReply->id,
+                    '@type' => 'ProfilePostComment',
+                    'id' => $earlyReply->id,
+                    'parent_id' => $comments[2]->id,
+                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                    'content' => 'Réponse 25',
+                    'creation_datetime' => '2026-11-02T10:25:00+00:00',
+                    'can_delete' => false,
+                ],
+                [
+                    '@id' => '/api/user/profile-post-comments/' . $lateReply->id,
+                    '@type' => 'ProfilePostComment',
+                    'id' => $lateReply->id,
+                    'parent_id' => $comments[2]->id,
+                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                    'content' => 'Réponse 30',
+                    'creation_datetime' => '2026-11-02T10:30:00+00:00',
+                    'can_delete' => false,
+                ],
+                ...array_map($comment, range(3, 20)),
+            ],
+            'view' => [
+                '@id' => '/api/user/profile-posts/' . $post->id . '/comments?order=oldest',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_the_oldest_order_pages_a_shared_second_by_id(): void
+    {
+        $owner = $this->member('julien');
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+        $sameSecond = new \DateTimeImmutable('2026-11-02T10:00:00+00:00');
+        $comments = [];
+        foreach (['Un', 'Deux', 'Trois'] as $content) {
+            $comments[] = ProfilePostCommentFactory::new()->create(['post' => $post, 'author' => $owner, 'content' => $content, 'creationDatetime' => $sameSecond]);
+        }
+        // The oldest order takes a shared second by id, lowest first.
+        usort($comments, static fn (ProfilePostComment $a, ProfilePostComment $b): int => strcmp((string) $a->id, (string) $b->id));
+        [, $middle, $last] = $comments;
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?order=oldest&before=' . self::cursor($middle, 'oldest'));
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostComment',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/profile-post-comments/' . $last->id,
+                    '@type' => 'ProfilePostComment',
+                    'id' => $last->id,
+                    'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                    'content' => $last->content,
+                    'creation_datetime' => '2026-11-02T10:00:00+00:00',
+                    'can_delete' => false,
+                    'cursor' => self::cursor($last, 'oldest'),
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/user/profile-posts/' . $post->id . '/comments?before=' . self::cursor($middle, 'oldest') . '&order=oldest',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function cursorsOfAnotherOrder(): iterable
+    {
+        yield 'a newest first cursor in the oldest order' => ['order=oldest&before=recent_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'an oldest first cursor in the default order' => ['before=oldest_1793613600_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+    }
+
+    #[DataProvider('cursorsOfAnotherOrder')]
+    public function test_a_cursor_made_for_another_order_is_refused(string $query): void
+    {
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?' . $query);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_a0ad2e75-8064-463d-b45e-9b31d8703813',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'before',
+                    'message' => 'Cette suite des commentaires a été demandée pour un autre tri',
+                    'code' => 'music_all_a0ad2e75-8064-463d-b45e-9b31d8703813',
+                ],
+            ],
+            'detail' => 'before: Cette suite des commentaires a été demandée pour un autre tri',
+            'type' => '/validation_errors/music_all_a0ad2e75-8064-463d-b45e-9b31d8703813',
+            'title' => 'An error occurred',
+            'description' => 'before: Cette suite des commentaires a été demandée pour un autre tri',
+        ]);
+    }
+
+    public function test_an_unknown_order_is_refused(): void
+    {
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?order=popular');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'order',
+                    'message' => "Ce tri des commentaires n'existe pas",
+                    'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+                ],
+            ],
+            'detail' => "order: Ce tri des commentaires n'existe pas",
+            'type' => '/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            'title' => 'An error occurred',
+            'description' => "order: Ce tri des commentaires n'existe pas",
+        ]);
+    }
+
+    public function test_an_order_given_as_a_list_is_refused(): void
+    {
+        $post = ProfilePostFactory::new()->create(['author' => $this->member('julien')]);
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?order[]=oldest');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'order',
+                    'message' => "Ce tri des commentaires n'existe pas",
+                    'code' => 'ba785a8c-82cb-4283-967c-3cf342181b40',
+                ],
+            ],
+            'detail' => "order: Ce tri des commentaires n'existe pas",
+            'type' => '/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            'title' => 'An error occurred',
+            'description' => "order: Ce tri des commentaires n'existe pas",
+        ]);
+    }
+
+    public function test_around_in_the_oldest_order_reaches_up_to_the_comment(): void
+    {
+        $owner = $this->member('julien');
+        $post = ProfilePostFactory::new()->create(['author' => $owner]);
+        $comments = $this->commentsAt($post, $owner, range(1, 25));
+
+        $this->client->request('GET', '/api/user/profile-posts/' . $post->id . '/comments?order=oldest&around=' . $comments[23]->id);
+
+        $this->assertResponseIsSuccessful();
+        // The same rule in either order: the first page goes on until it holds the comment.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ProfilePostComment',
+            '@id' => '/api/user/profile-posts/' . $post->id . '/comments',
+            '@type' => 'Collection',
+            'totalItems' => 23,
+            'member' => array_map(static fn (int $minute): array => [
+                '@id' => '/api/user/profile-post-comments/' . $comments[$minute]->id,
+                '@type' => 'ProfilePostComment',
+                'id' => $comments[$minute]->id,
+                'author' => ['@type' => 'ProfilePostCommentAuthor', 'username' => 'julien', 'display_name' => 'julien'],
+                'content' => 'Commentaire ' . $minute,
+                'creation_datetime' => sprintf('2026-11-02T10:%02d:00+00:00', $minute),
+                'can_delete' => false,
+                'cursor' => self::cursor($comments[$minute], 'oldest'),
+            ], range(1, 23)),
+            'view' => [
+                '@id' => '/api/user/profile-posts/' . $post->id . '/comments?around=' . $comments[23]->id . '&order=oldest',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    private static function cursor(ProfilePostComment $comment, string $order = 'recent'): string
+    {
+        return $order . '_' . $comment->creationDatetime->getTimestamp() . '_' . $comment->id;
     }
 
     /**

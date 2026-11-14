@@ -25,6 +25,20 @@ class CommentCursorTest extends TestCase
         $this->assertEquals($cursor, CommentCursor::parse($cursor->toString()));
     }
 
+    public function test_every_order_makes_a_cursor_the_pattern_takes(): void
+    {
+        $comment = new ProfilePostComment();
+        $comment->id = '01a1b220-df08-7910-9e2a-d78c147e10d0';
+        $comment->creationDatetime = new \DateTimeImmutable('2026-10-05T10:00:00+00:00');
+
+        foreach (CommentOrder::cases() as $order) {
+            $cursor = CommentCursor::of($order, $comment);
+
+            $this->assertMatchesRegularExpression(CommentCursor::PATTERN, $cursor->toString());
+            $this->assertSame($order, CommentCursor::parse($cursor->toString())?->order);
+        }
+    }
+
     public function test_a_position_reads_back_what_it_wrote(): void
     {
         $position = DatedPosition::of(new \DateTimeImmutable('2026-10-05T10:00:00+00:00'), '01a1b220-df08-7910-9e2a-d78c147e10d0');
@@ -43,7 +57,7 @@ class CommentCursorTest extends TestCase
     public static function notACommentCursor(): iterable
     {
         yield 'a position without its order' => ['1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
-        yield 'an unknown order' => ['liked_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
+        yield 'an unknown order' => ['popular_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
         yield 'a trailing newline' => ["recent_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0\n"];
         yield 'a null byte' => ["recent_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0\0"];
         yield 'an int id' => ['recent_1791194400_42'];

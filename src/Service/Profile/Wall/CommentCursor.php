@@ -13,7 +13,8 @@ use Doctrine\ORM\QueryBuilder;
  */
 final readonly class CommentCursor
 {
-    public const string PATTERN = '/^recent_' . DatedPosition::FORMAT . '\z/';
+    /** Every {@see CommentOrder}, which CommentCursorTest checks. */
+    public const string PATTERN = '/^(?:recent|oldest)_' . DatedPosition::FORMAT . '\z/';
 
     private function __construct(
         public CommentOrder $order,
@@ -46,12 +47,18 @@ final readonly class CommentCursor
     /** Keeps the top-level comments a later page holds. */
     public function applyAfter(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
     {
-        return $this->position->applyAfterNewestFirst($query, $dateField, $idField);
+        return match ($this->order) {
+            CommentOrder::Recent => $this->position->applyAfterNewestFirst($query, $dateField, $idField),
+            CommentOrder::Oldest => $this->position->applyAfterOldestFirst($query, $dateField, $idField),
+        };
     }
 
     /** Keeps this comment and those an earlier page holds. */
     public function applyUpTo(QueryBuilder $query, string $dateField, string $idField): QueryBuilder
     {
-        return $this->position->applyUpToNewestFirst($query, $dateField, $idField);
+        return match ($this->order) {
+            CommentOrder::Recent => $this->position->applyUpToNewestFirst($query, $dateField, $idField),
+            CommentOrder::Oldest => $this->position->applyUpToOldestFirst($query, $dateField, $idField),
+        };
     }
 }

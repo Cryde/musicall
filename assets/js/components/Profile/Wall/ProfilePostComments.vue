@@ -1,17 +1,30 @@
 <template>
   <section class="flex flex-col gap-3 pt-3 border-t border-surface-200 dark:border-surface-700" :aria-label="t('profile.wall.comments_title')">
-    <!-- A page holds the newest comments (#1331): the older ones load above them. -->
-    <div v-if="olderCursor" class="flex flex-col items-start gap-1">
-      <Button
-        :label="t('profile.wall.older_comments')"
-        text
-        size="small"
-        :loading="isLoadingOlder"
-        class="-ml-3"
-        @click="loadOlder"
-      />
-      <p v-if="hasOlderError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
-        {{ t('profile.wall.older_comments_error') }}
+    <div
+      v-if="showsOrderToggle"
+      role="group"
+      :aria-label="t('profile.wall.comments_order.label')"
+      class="flex gap-1.5"
+    >
+      <button
+        v-for="option in COMMENT_ORDERS"
+        :key="option.value"
+        type="button"
+        :aria-pressed="option.value === order"
+        class="rounded-full px-3 py-1 text-xs font-semibold transition-colors cursor-pointer"
+        :class="option.value === order
+          ? 'bg-surface-900 text-surface-0 dark:bg-surface-0 dark:text-surface-900'
+          : 'text-surface-600 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-800'"
+        @click="selectOrder(option.value)"
+      >
+        {{ t(option.labelKey) }}
+      </button>
+    </div>
+    <!-- Newest first (#1331), a page reads down to the newest: the older comments load above it. -->
+    <div v-if="nextCursor && !isLoading && loadsAbove(order)" class="flex flex-col items-start gap-1">
+      <Button :label="t('profile.wall.older_comments')" text size="small" :loading="isLoadingMore" class="-ml-3" @click="loadMore" />
+      <p v-if="hasMoreError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
+        {{ t('profile.wall.comments_more_error') }}
       </p>
     </div>
     <div v-if="isLoading" class="flex justify-center py-2">
@@ -45,7 +58,16 @@
       </li>
     </ol>
 
-    <template v-if="!isLoading">
+    <!-- Oldest first, the thread reads top down: the next comments load below it. -->
+    <div v-if="nextCursor && !isLoading && !loadsAbove(order)" class="flex flex-col items-start gap-1">
+      <Button :label="t('profile.wall.more_comments')" text size="small" :loading="isLoadingMore" class="-ml-3" @click="loadMore" />
+      <p v-if="hasMoreError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
+        {{ t('profile.wall.comments_more_error') }}
+      </p>
+    </div>
+
+    <!-- Kept through a change of order, so a comment being written stays. -->
+    <template v-if="hasLoaded">
       <ProfilePostCommentForm v-if="userSecurityStore.isAuthenticated" :post-id="postId" @posted="add" />
       <p v-else class="text-sm text-surface-500 dark:text-surface-400 m-0">
       <RouterLink :to="signInRouteFrom('app_login', route)" class="text-primary font-medium">{{ t('profile.wall.login') }}</RouterLink>
@@ -59,16 +81,19 @@
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import profileWallApi from '../../../api/user/profileWall.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import {
+  COMMENT_ORDERS,
   commentTree,
-  olderCommentsCursor,
+  DEFAULT_COMMENT_ORDER,
+  loadsAbove,
+  nextCommentsCursor,
   treeWithComment,
-  treeWithOlderPage,
+  treeWithNextPage,
   treeWithoutComment
 } from '../../../utils/profileWall.js'
 import { signInRouteFrom } from '../../../utils/unauthenticatedRedirect.js'
@@ -89,25 +114,58 @@ const toast = useToast()
 const userSecurityStore = useUserSecurityStore()
 
 const tree = ref([])
+const order = ref(DEFAULT_COMMENT_ORDER)
+const hasChosenOrder = ref(false)
 const isLoading = ref(true)
+const hasLoaded = ref(false)
 const hasLoadError = ref(false)
 const replyingTo = ref(null)
-const olderCursor = ref(null)
-const isLoadingOlder = ref(false)
-const hasOlderError = ref(false)
+const nextCursor = ref(null)
+const isLoadingMore = ref(false)
+const hasMoreError = ref(false)
+// Only the latest order may write: a page still on its way from the order left must not land in the new one.
+let loadToken = 0
+
+// Nothing to sort under one comment, unless the member already picked an order.
+const showsOrderToggle = computed(
+  () => hasChosenOrder.value || tree.value.length > 1 || nextCursor.value !== null
+)
 
 onMounted(async () => {
-  try {
-    const page = await profileWallApi.getComments(props.postId, { around: props.aroundCommentId })
-    tree.value = commentTree(page)
-    olderCursor.value = olderCommentsCursor(page)
-  } catch {
-    hasLoadError.value = true
-  } finally {
-    isLoading.value = false
-  }
+  await load(props.aroundCommentId)
   scrollToAroundComment()
 })
+
+async function load(around = null) {
+  const token = ++loadToken
+  isLoading.value = true
+  hasLoadError.value = false
+  isLoadingMore.value = false
+  hasMoreError.value = false
+  tree.value = []
+  nextCursor.value = null
+  replyingTo.value = null
+  try {
+    const page = await profileWallApi.getComments(props.postId, { order: order.value, around })
+    if (token !== loadToken) return
+    tree.value = commentTree(page, order.value)
+    nextCursor.value = nextCommentsCursor(page)
+  } catch {
+    if (token === loadToken) hasLoadError.value = true
+  } finally {
+    if (token === loadToken) {
+      isLoading.value = false
+      hasLoaded.value = true
+    }
+  }
+}
+
+function selectOrder(value) {
+  if (value === order.value) return
+  order.value = value
+  hasChosenOrder.value = true
+  load()
+}
 
 async function scrollToAroundComment() {
   if (!props.aroundCommentId) return
@@ -117,18 +175,24 @@ async function scrollToAroundComment() {
     ?.scrollIntoView({ block: 'center' })
 }
 
-async function loadOlder() {
-  if (!olderCursor.value || isLoadingOlder.value) return
-  isLoadingOlder.value = true
-  hasOlderError.value = false
+async function loadMore() {
+  if (!nextCursor.value || isLoadingMore.value) return
+  const token = loadToken
+  const pageOrder = order.value
+  isLoadingMore.value = true
+  hasMoreError.value = false
   try {
-    const page = await profileWallApi.getComments(props.postId, { before: olderCursor.value })
-    tree.value = treeWithOlderPage(tree.value, page)
-    olderCursor.value = olderCommentsCursor(page)
+    const page = await profileWallApi.getComments(props.postId, {
+      order: pageOrder,
+      before: nextCursor.value
+    })
+    if (token !== loadToken) return
+    tree.value = treeWithNextPage(tree.value, page, pageOrder)
+    nextCursor.value = nextCommentsCursor(page)
   } catch {
-    hasOlderError.value = true
+    if (token === loadToken) hasMoreError.value = true
   } finally {
-    isLoadingOlder.value = false
+    if (token === loadToken) isLoadingMore.value = false
   }
 }
 

@@ -853,7 +853,13 @@
     "comments_title": "Commentaires",
     "comments_error": "Impossible de charger les commentaires.",
     "older_comments": "Voir les commentaires précédents",
-    "older_comments_error": "Impossible de charger les commentaires précédents. Réessaie.",
+    "more_comments": "Voir plus de commentaires",
+    "comments_more_error": "Impossible de charger la suite des commentaires. Réessaie.",
+    "comments_order": {
+      "label": "Trier les commentaires",
+      "recent": "Plus récents",
+      "oldest": "Plus anciens"
+    },
     "comment_aria": "Ton commentaire",
     "comment_placeholder": "Écris un commentaire...",
     "comment_actions": "Actions du commentaire",

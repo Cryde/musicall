@@ -4,15 +4,18 @@ import {
   activitySentenceKey,
   appendLikersPage,
   appendWallPage,
+  COMMENT_ORDERS,
   COMMENT_PAGE_SIZE,
   canPublish,
   commentTree,
+  DEFAULT_COMMENT_ORDER,
   emptyPostDraft,
   LIKERS_PAGE_SIZE,
+  loadsAbove,
   MAX_POST_LENGTH,
+  nextCommentsCursor,
   nextLikersCursor,
   nextWallCursor,
-  olderCommentsCursor,
   photoGridClass,
   postAfterCommentCount,
   postAfterLike,
@@ -20,7 +23,7 @@ import {
   postPayload,
   showsPosts,
   treeWithComment,
-  treeWithOlderPage,
+  treeWithNextPage,
   treeWithoutComment,
   WALL_FILTERS,
   WALL_PAGE_SIZE,
@@ -253,7 +256,34 @@ describe('commentTree', () => {
   })
 })
 
-describe('olderCommentsCursor', () => {
+describe('commentTree in the oldest order', () => {
+  it('keeps the page as it came, each reply under its comment', () => {
+    assert.deepEqual(
+      commentTree(
+        [{ id: 'a' }, { id: 'a1', parent_id: 'a' }, { id: 'b' }, { id: 'x1', parent_id: 'hidden' }],
+        'oldest'
+      ),
+      [
+        { id: 'a', replies: [{ id: 'a1', parent_id: 'a' }] },
+        { id: 'b', replies: [] }
+      ]
+    )
+  })
+})
+
+describe('COMMENT_ORDERS', () => {
+  it('mirrors CommentOrder, newest first by default', () => {
+    assert.deepEqual(
+      COMMENT_ORDERS.map((order) => order.value),
+      ['recent', 'oldest']
+    )
+    assert.equal(DEFAULT_COMMENT_ORDER, 'recent')
+    assert.equal(loadsAbove('recent'), true)
+    assert.equal(loadsAbove('oldest'), false)
+  })
+})
+
+describe('nextCommentsCursor', () => {
   it('pages like the server', () => {
     // CommentThread::PAGE_SIZE, which ProfilePostCommentPageTest pins to twenty as well.
     assert.equal(COMMENT_PAGE_SIZE, 20)
@@ -266,40 +296,56 @@ describe('olderCommentsCursor', () => {
     ]).flat()
 
   it('goes on after the last comment of a full page, whatever its replies', () => {
-    assert.equal(olderCommentsCursor(page(COMMENT_PAGE_SIZE)), `recent_1_${COMMENT_PAGE_SIZE - 1}`)
+    assert.equal(nextCommentsCursor(page(COMMENT_PAGE_SIZE)), `recent_1_${COMMENT_PAGE_SIZE - 1}`)
   })
 
   it('goes on after a page reaching down to a notified comment, longer than the others', () => {
     assert.equal(
-      olderCommentsCursor(page(COMMENT_PAGE_SIZE + 5)),
+      nextCommentsCursor(page(COMMENT_PAGE_SIZE + 5)),
       `recent_1_${COMMENT_PAGE_SIZE + 4}`
     )
   })
 
   it('stops after a shorter page, even with enough replies to fill one, or an empty one', () => {
-    assert.equal(olderCommentsCursor(page(COMMENT_PAGE_SIZE - 1)), null)
-    assert.equal(olderCommentsCursor([]), null)
+    assert.equal(nextCommentsCursor(page(COMMENT_PAGE_SIZE - 1)), null)
+    assert.equal(nextCommentsCursor([]), null)
   })
 })
 
-describe('treeWithOlderPage', () => {
-  it('puts the older comments above, read down to the newest, a comment never twice', () => {
-    const tree = [
-      { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
-      { id: 'd', replies: [] }
-    ]
+describe('treeWithNextPage', () => {
+  const tree = [
+    { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+    { id: 'd', replies: [] }
+  ]
+
+  it('puts the older comments of `recent` above, read down to the newest, a comment never twice', () => {
     assert.deepEqual(
-      treeWithOlderPage(tree, [
-        { id: 'c' },
-        { id: 'b' },
-        { id: 'a' },
-        { id: 'a1', parent_id: 'a' }
-      ]),
+      treeWithNextPage(
+        tree,
+        [{ id: 'c' }, { id: 'b' }, { id: 'a' }, { id: 'a1', parent_id: 'a' }],
+        'recent'
+      ),
       [
         { id: 'a', replies: [{ id: 'a1', parent_id: 'a' }] },
         { id: 'b', replies: [] },
         { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
         { id: 'd', replies: [] }
+      ]
+    )
+  })
+
+  it('puts the next comments of `oldest` below, in the order they came, a comment never twice', () => {
+    assert.deepEqual(
+      treeWithNextPage(
+        tree,
+        [{ id: 'd' }, { id: 'e' }, { id: 'e1', parent_id: 'e' }, { id: 'f' }],
+        'oldest'
+      ),
+      [
+        { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+        { id: 'd', replies: [] },
+        { id: 'e', replies: [{ id: 'e1', parent_id: 'e' }] },
+        { id: 'f', replies: [] }
       ]
     )
   })

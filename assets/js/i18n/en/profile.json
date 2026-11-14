@@ -853,7 +853,13 @@
     "comments_title": "Comments",
     "comments_error": "Could not load the comments.",
     "older_comments": "View earlier comments",
-    "older_comments_error": "Could not load the earlier comments. Try again.",
+    "more_comments": "View more comments",
+    "comments_more_error": "Could not load more comments. Try again.",
+    "comments_order": {
+      "label": "Sort comments",
+      "recent": "Newest",
+      "oldest": "Oldest"
+    },
     "comment_aria": "Your comment",
     "comment_placeholder": "Write a comment...",
     "comment_actions": "Comment actions",

@@ -10,8 +10,8 @@ use App\Repository\Profile\ProfilePostCommentRepository;
 use App\Security\Profile\ProfileWallAccess;
 
 /**
- * A page of a post's comments (#1331): top-level comments newest first, each followed by all its replies, so a reply
- * never arrives without the comment it answers.
+ * A page of a post's comments (#1331): top-level comments in the order asked for, each followed by all its replies,
+ * so a reply never arrives without the comment it answers.
  */
 readonly class CommentThread
 {
@@ -27,18 +27,18 @@ readonly class CommentThread
     }
 
     /**
-     * `$around` names a comment a notification links to: the first page then reaches down to it, so the usual
-     * `before` goes on from there. It only shapes a first page, and falls back to the plain one for a comment
+     * `$around` names a comment a notification links to: the first page in `$order` then reaches down to it, so the
+     * usual `before` goes on from there. It only shapes a first page, and falls back to the plain one for a comment
      * not found, hidden from the viewer, already on it, or too far down.
      *
      * @param list<string> $hiddenUserIds
      *
      * @return list<ProfilePostComment>
      */
-    public function page(ProfilePost $post, array $hiddenUserIds, ?CommentCursor $before, ?string $around): array
+    public function page(ProfilePost $post, array $hiddenUserIds, CommentOrder $order, ?CommentCursor $before, ?string $around): array
     {
-        $rootIds = $before === null && $around !== null ? $this->rootIdsReaching($post, $hiddenUserIds, $around) : null;
-        $rootIds ??= $this->commentRepository->findRootIdsPage($post, $hiddenUserIds, $before, self::PAGE_SIZE);
+        $rootIds = $before === null && $around !== null ? $this->rootIdsReaching($post, $hiddenUserIds, $order, $around) : null;
+        $rootIds ??= $this->commentRepository->findRootIdsPage($post, $hiddenUserIds, $order, $before, self::PAGE_SIZE);
 
         return $this->commentRepository->findWithReplies($rootIds, $hiddenUserIds);
     }
@@ -48,14 +48,14 @@ readonly class CommentThread
      *
      * @return list<string>|null null when the first page will do
      */
-    private function rootIdsReaching(ProfilePost $post, array $hiddenUserIds, string $commentId): ?array
+    private function rootIdsReaching(ProfilePost $post, array $hiddenUserIds, CommentOrder $order, string $commentId): ?array
     {
         $target = $this->commentRepository->findOneOfPost($commentId, $post);
         if (!$target instanceof ProfilePostComment || $this->wallAccess->hidesComment($target, $hiddenUserIds)) {
             return null;
         }
         $root = $target->parent ?? $target;
-        $rootIds = $this->commentRepository->findRootIdsDownTo($post, $hiddenUserIds, CommentCursor::of(CommentOrder::Recent, $root), self::AROUND_LIMIT + 1);
+        $rootIds = $this->commentRepository->findRootIdsDownTo($post, $hiddenUserIds, CommentCursor::of($order, $root), self::AROUND_LIMIT + 1);
 
         // Within the first page, that page holds it; a longer one stays full, so the client still knows more follow.
         return count($rootIds) > self::PAGE_SIZE && count($rootIds) <= self::AROUND_LIMIT ? $rootIds : null;
