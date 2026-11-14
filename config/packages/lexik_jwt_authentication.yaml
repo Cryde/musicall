@@ -3,6 +3,10 @@ lexik_jwt_authentication:
     public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
     pass_phrase: '%env(JWT_PASSPHRASE)%'
     token_ttl:    3600 # one hour
+    # The id, never the username: a username can be changed and then taken by someone else, and a JWT
+    # still carrying it would authenticate as them (#1134). JwtUsernameClaimListener adds the username
+    # back as display data.
+    user_id_claim: id
     set_cookies:
         jwt_hp:
             lifetime: null

@@ -5,6 +5,7 @@ namespace App\Security;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -12,6 +13,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * Refuses a suspended account (#1116). On the api firewall it also refuses a JWT issued before the
  * suspension, which would otherwise work until it expires. Checked after authentication, so only
  * someone holding the password or a valid token learns that the account is suspended.
+ *
+ * Also refuses a deleted account: the JWT resolves by id (#1134), so a token issued before the
+ * deletion would still find the anonymized row. Refused as not found, the 401 it got before.
  */
 class SuspensionChecker implements UserCheckerInterface
 {
@@ -23,6 +27,9 @@ class SuspensionChecker implements UserCheckerInterface
 
     public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void
     {
+        if ($user instanceof User && $user->isDeleted()) {
+            throw new UserNotFoundException();
+        }
         if ($user instanceof User && $user->isSuspended()) {
             throw new CustomUserMessageAccountStatusException(self::MESSAGE_KEY);
         }
