@@ -2,12 +2,17 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   activitySentenceKey,
+  appendLikersPage,
   appendWallPage,
+  COMMENT_PAGE_SIZE,
   canPublish,
   commentTree,
   emptyPostDraft,
+  LIKERS_PAGE_SIZE,
   MAX_POST_LENGTH,
+  nextLikersCursor,
   nextWallCursor,
+  olderCommentsCursor,
   photoGridClass,
   postAfterCommentCount,
   postAfterLike,
@@ -15,6 +20,7 @@ import {
   postPayload,
   showsPosts,
   treeWithComment,
+  treeWithOlderPage,
   treeWithoutComment,
   WALL_FILTERS,
   WALL_PAGE_SIZE,
@@ -226,11 +232,11 @@ describe('postAfterCommentCount', () => {
 })
 
 describe('commentTree', () => {
-  it('puts each reply under its comment, in order, and drops a reply whose comment is missing', () => {
+  it('reads a page down to the newest, each reply under its comment, and drops a reply whose comment is missing', () => {
     const tree = commentTree([
+      { id: 'b' },
       { id: 'a' },
       { id: 'a1', parent_id: 'a' },
-      { id: 'b' },
       { id: 'x1', parent_id: 'hidden' },
       { id: 'a2', parent_id: 'a' }
     ])
@@ -244,6 +250,89 @@ describe('commentTree', () => {
       },
       { id: 'b', replies: [] }
     ])
+  })
+})
+
+describe('olderCommentsCursor', () => {
+  it('pages like the server', () => {
+    // CommentThread::PAGE_SIZE, which ProfilePostCommentPageTest pins to twenty as well.
+    assert.equal(COMMENT_PAGE_SIZE, 20)
+  })
+
+  const page = (count) =>
+    Array.from({ length: count }, (_, index) => [
+      { id: `c${index}`, cursor: `recent_1_${index}` },
+      { id: `r${index}`, parent_id: `c${index}`, cursor: null }
+    ]).flat()
+
+  it('goes on after the last comment of a full page, whatever its replies', () => {
+    assert.equal(olderCommentsCursor(page(COMMENT_PAGE_SIZE)), `recent_1_${COMMENT_PAGE_SIZE - 1}`)
+  })
+
+  it('goes on after a page reaching down to a notified comment, longer than the others', () => {
+    assert.equal(
+      olderCommentsCursor(page(COMMENT_PAGE_SIZE + 5)),
+      `recent_1_${COMMENT_PAGE_SIZE + 4}`
+    )
+  })
+
+  it('stops after a shorter page, even with enough replies to fill one, or an empty one', () => {
+    assert.equal(olderCommentsCursor(page(COMMENT_PAGE_SIZE - 1)), null)
+    assert.equal(olderCommentsCursor([]), null)
+  })
+})
+
+describe('treeWithOlderPage', () => {
+  it('puts the older comments above, read down to the newest, a comment never twice', () => {
+    const tree = [
+      { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+      { id: 'd', replies: [] }
+    ]
+    assert.deepEqual(
+      treeWithOlderPage(tree, [
+        { id: 'c' },
+        { id: 'b' },
+        { id: 'a' },
+        { id: 'a1', parent_id: 'a' }
+      ]),
+      [
+        { id: 'a', replies: [{ id: 'a1', parent_id: 'a' }] },
+        { id: 'b', replies: [] },
+        { id: 'c', replies: [{ id: 'c1', parent_id: 'c' }] },
+        { id: 'd', replies: [] }
+      ]
+    )
+  })
+})
+
+describe('nextLikersCursor', () => {
+  it('pages like the server', () => {
+    // ProfilePostLiker::PAGE_SIZE, which ProfilePostLikeTest pins to twenty as well.
+    assert.equal(LIKERS_PAGE_SIZE, 20)
+  })
+
+  const page = (count) =>
+    Array.from({ length: count }, (_, index) => ({ username: `fan${index}`, cursor: `1_${index}` }))
+
+  it('goes on after the last liker of a full page', () => {
+    assert.equal(nextLikersCursor(page(LIKERS_PAGE_SIZE)), `1_${LIKERS_PAGE_SIZE - 1}`)
+  })
+
+  it('stops after a shorter page, or an empty one', () => {
+    assert.equal(nextLikersCursor(page(LIKERS_PAGE_SIZE - 1)), null)
+    assert.equal(nextLikersCursor([]), null)
+  })
+})
+
+describe('appendLikersPage', () => {
+  it('adds the new page after what is held, without repeating a member', () => {
+    assert.deepEqual(
+      appendLikersPage(
+        [{ username: 'a' }, { username: 'b' }],
+        [{ username: 'b' }, { username: 'c' }]
+      ),
+      [{ username: 'a' }, { username: 'b' }, { username: 'c' }]
+    )
   })
 })
 

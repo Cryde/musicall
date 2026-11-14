@@ -7,10 +7,12 @@ namespace App\State\Provider\Profile;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Profile\ProfilePostLiker;
+use App\Entity\Profile\ProfilePostLike;
 use App\Entity\User;
 use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Security\Profile\ProfileWallAccess;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Service\Profile\Wall\DatedPosition;
 use App\Translation\DisplayNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -36,20 +38,25 @@ readonly class ProfilePostLikesProvider implements ProviderInterface
         $viewer = $this->security->getUser();
         $viewer = $viewer instanceof User ? $viewer : null;
         $post = $this->wallAccess->visiblePost((string) $uriVariables['postId'], $viewer);
+        // The operation's constraints have already refused a malformed cursor with a 422.
+        $beforeValue = $context['filters']['before'] ?? null;
+        $before = is_string($beforeValue) && $beforeValue !== '' ? DatedPosition::parse($beforeValue) : null;
 
         return array_map(
             $this->liker(...),
-            $this->likeRepository->findLikers($post, $this->wallAccess->hiddenUserIdsFor($viewer)),
+            $this->likeRepository->findLikesPage($post, $this->wallAccess->hiddenUserIdsFor($viewer), $before, ProfilePostLiker::PAGE_SIZE),
         );
     }
 
     /** Named as anyone else reads them: a private profile shows its username. */
-    private function liker(User $user): ProfilePostLiker
+    private function liker(ProfilePostLike $like): ProfilePostLiker
     {
+        $user = $like->user;
         $liker = new ProfilePostLiker();
         $liker->username = $user->username;
         $liker->displayName = $this->displayNames->publicName($user);
         $liker->profilePictureUrl = $this->profilePictureUrlBuilder->build($user);
+        $liker->cursor = DatedPosition::of($like->creationDatetime, (string) $like->id)->toString();
 
         return $liker;
     }

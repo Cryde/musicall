@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Profile;
 
 use App\Entity\Profile\ProfilePost;
+use App\Entity\Profile\ProfilePostComment;
 use App\Entity\User;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\User\Relation\UserBlockRepository;
@@ -55,6 +56,17 @@ readonly class ProfileWallAccess
         }
 
         return $post;
+    }
+
+    /**
+     * Whether a comment is out of the viewer's thread: written by someone they cannot see, or answering them.
+     *
+     * @param list<string> $hiddenUserIds from {@see hiddenUserIdsFor()}
+     */
+    public function hidesComment(ProfilePostComment $comment, array $hiddenUserIds): bool
+    {
+        return in_array((string) $comment->author->id, $hiddenUserIds, true)
+            || ($comment->parent instanceof ProfilePostComment && in_array((string) $comment->parent->author->id, $hiddenUserIds, true));
     }
 
     /**

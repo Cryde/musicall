@@ -1,5 +1,19 @@
 <template>
   <section class="flex flex-col gap-3 pt-3 border-t border-surface-200 dark:border-surface-700" :aria-label="t('profile.wall.comments_title')">
+    <!-- A page holds the newest comments (#1331): the older ones load above them. -->
+    <div v-if="olderCursor" class="flex flex-col items-start gap-1">
+      <Button
+        :label="t('profile.wall.older_comments')"
+        text
+        size="small"
+        :loading="isLoadingOlder"
+        class="-ml-3"
+        @click="loadOlder"
+      />
+      <p v-if="hasOlderError" class="text-sm text-surface-500 dark:text-surface-400 m-0" role="alert">
+        {{ t('profile.wall.older_comments_error') }}
+      </p>
+    </div>
     <div v-if="isLoading" class="flex justify-center py-2">
       <ProgressSpinner style="width: 1.5rem; height: 1.5rem" />
     </div>
@@ -42,20 +56,29 @@
 </template>
 
 <script setup>
+import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import profileWallApi from '../../../api/user/profileWall.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { commentTree, treeWithComment, treeWithoutComment } from '../../../utils/profileWall.js'
+import {
+  commentTree,
+  olderCommentsCursor,
+  treeWithComment,
+  treeWithOlderPage,
+  treeWithoutComment
+} from '../../../utils/profileWall.js'
 import { signInRouteFrom } from '../../../utils/unauthenticatedRedirect.js'
 import ProfilePostCommentForm from './ProfilePostCommentForm.vue'
 import ProfilePostCommentItem from './ProfilePostCommentItem.vue'
 
 const props = defineProps({
-  postId: { type: String, required: true }
+  postId: { type: String, required: true },
+  /** A comment a notification links to: the first page reaches down to it, and it is scrolled to. */
+  aroundCommentId: { type: String, default: null }
 })
 
 /** How far the post's comment count moved: a comment added, or a comment and its replies removed. */
@@ -69,16 +92,45 @@ const tree = ref([])
 const isLoading = ref(true)
 const hasLoadError = ref(false)
 const replyingTo = ref(null)
+const olderCursor = ref(null)
+const isLoadingOlder = ref(false)
+const hasOlderError = ref(false)
 
 onMounted(async () => {
   try {
-    tree.value = commentTree(await profileWallApi.getComments(props.postId))
+    const page = await profileWallApi.getComments(props.postId, { around: props.aroundCommentId })
+    tree.value = commentTree(page)
+    olderCursor.value = olderCommentsCursor(page)
   } catch {
     hasLoadError.value = true
   } finally {
     isLoading.value = false
   }
+  scrollToAroundComment()
 })
+
+async function scrollToAroundComment() {
+  if (!props.aroundCommentId) return
+  await nextTick()
+  document
+    .getElementById(`profile-comment-${props.aroundCommentId}`)
+    ?.scrollIntoView({ block: 'center' })
+}
+
+async function loadOlder() {
+  if (!olderCursor.value || isLoadingOlder.value) return
+  isLoadingOlder.value = true
+  hasOlderError.value = false
+  try {
+    const page = await profileWallApi.getComments(props.postId, { before: olderCursor.value })
+    tree.value = treeWithOlderPage(tree.value, page)
+    olderCursor.value = olderCommentsCursor(page)
+  } catch {
+    hasOlderError.value = true
+  } finally {
+    isLoadingOlder.value = false
+  }
+}
 
 function add(comment) {
   tree.value = treeWithComment(tree.value, comment)

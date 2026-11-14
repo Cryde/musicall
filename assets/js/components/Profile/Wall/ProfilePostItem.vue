@@ -157,7 +157,12 @@
         {{ post.comment_count ? t('profile.wall.comment_count', post.comment_count) : t('profile.wall.comment') }}
       </button>
     </div>
-    <ProfilePostComments v-if="showComments" :post-id="post.id" @count-changed="changeCommentCount" />
+    <ProfilePostComments
+      v-if="showComments"
+      :post-id="post.id"
+      :around-comment-id="focusedCommentId"
+      @count-changed="changeCommentCount"
+    />
     <ProfilePostLikersDialog v-model:visible="showLikers" :post-id="post.id" />
     <AuthRequiredModal v-model:visible="showAuthModal" :message="t('profile.wall.login_to_like')" />
   </article>
@@ -194,7 +199,9 @@ import ProfilePostLikersDialog from './ProfilePostLikersDialog.vue'
 const props = defineProps({
   post: { type: Object, required: true },
   /** Opened from a notification: the comments show straight away. */
-  commentsOpen: { type: Boolean, default: false }
+  commentsOpen: { type: Boolean, default: false },
+  /** The comment that notification is about, which the comments open on. */
+  focusedCommentId: { type: String, default: null }
 })
 
 const emit = defineEmits(['updated', 'deleted'])

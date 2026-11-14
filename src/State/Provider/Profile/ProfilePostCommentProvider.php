@@ -40,9 +40,7 @@ readonly class ProfilePostCommentProvider implements ProviderInterface
         }
         $this->wallAccess->visiblePost((string) $comment->post->id, $viewer);
         // Hidden as the list hides it: written by someone blocked either way, or answering them.
-        $hidden = $this->wallAccess->hiddenUserIdsFor($viewer);
-        if (in_array((string) $comment->author->id, $hidden, true)
-            || ($comment->parent instanceof ProfilePostComment && in_array((string) $comment->parent->author->id, $hidden, true))) {
+        if ($this->wallAccess->hidesComment($comment, $this->wallAccess->hiddenUserIdsFor($viewer))) {
             throw new NotFoundHttpException('profile.wall.comment_not_found');
         }
 
