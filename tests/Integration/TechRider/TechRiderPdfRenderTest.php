@@ -357,11 +357,13 @@ class TechRiderPdfRenderTest extends ApiTestCase
      */
     private function contentStreams(string $pdf): string
     {
-        preg_match_all('#stream\r?\n(.*?)endstream#s', $pdf, $matches);
+        // Cut by /Length rather than trimming line breaks: compressed data can end on a 0x0a byte of its
+        // own, and trimming it silently dropped the page's stream from what was searched.
+        preg_match_all('#/Length (\d+)>>\s*stream\r?\n#', $pdf, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
         $inflated = '';
-        foreach ($matches[1] as $stream) {
-            $decoded = @gzuncompress(trim($stream, "\r\n"));
+        foreach ($matches as [[$header, $offset], [$length]]) {
+            $decoded = @gzuncompress(substr($pdf, $offset + strlen($header), (int) $length));
             if ($decoded !== false) {
                 $inflated .= $decoded . "\n";
             }
