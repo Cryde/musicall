@@ -22,7 +22,13 @@ import { setLocale } from './i18n/locale.js'
 import router from './router/index.js'
 import { useUserSecurityStore } from './store/user/security.js'
 import MusicAllPreset from './theme/musicAllPreset.js'
-import { hasLiveToken, isAuthEndpoint, refreshSession } from './utils/sessionRefresh.js'
+import {
+  classifyRefreshFailure,
+  hasLiveToken,
+  isAuthEndpoint,
+  REFRESH_FAILURE,
+  refreshSession
+} from './utils/sessionRefresh.js'
 import { isChunkLoadError, reloadOnceForStaleBuild } from './utils/staleBuild.js'
 import { loginRouteReturningTo } from './utils/unauthenticatedRedirect.js'
 
@@ -77,13 +83,16 @@ axios.interceptors.response.use(
 
     try {
       await refreshSession()
-    } catch {
+    } catch (refreshError) {
       // A refresh token is single use, so when two tabs renew at once one of them is refused. Its
       // cookies have been rewritten by the winner all the same, so a usable token here means there is
-      // nothing wrong beyond having lost a race, and the request just needs sending again.
-      if (!hasLiveToken()) {
+      // nothing wrong beyond having lost a race, and the request just needs sending again. A renewal
+      // that got no answer ends nothing either: this request fails, the session survives (#1022).
+      const failure = classifyRefreshFailure(refreshError, hasLiveToken())
+      if (failure === REFRESH_FAILURE.REFUSED) {
         await endSession()
-
+      }
+      if (failure !== REFRESH_FAILURE.COVERED) {
         return Promise.reject(error)
       }
     }
