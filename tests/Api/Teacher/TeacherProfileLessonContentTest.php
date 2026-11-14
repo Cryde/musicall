@@ -72,6 +72,45 @@ class TeacherProfileLessonContentTest extends ApiTestCase
                 ['artist' => null, 'title' => 'Une berceuse'],
             ],
         ]);
+        // Left out of the body, the switch keeps the entity's default.
+        $this->assertFalse($profile->offersTrial);
+        $this->assertNull($profile->trialPrice);
+    }
+
+    public function test_create_checks_goals_sent_without_levels_against_no_level(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 12,
+            'instrument_ids' => [$guitar->id],
+            'level_goals' => [
+                ['level' => 'beginner', 'title' => 'Jouer ton premier morceau'],
+            ],
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@type' => 'ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'level_goals[0].level',
+                    'message' => 'Ce niveau ne fait pas partie des niveaux acceptés',
+                    'code' => 'music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
+                ],
+            ],
+            'title' => 'An error occurred',
+            'detail' => 'level_goals[0].level: Ce niveau ne fait pas partie des niveaux acceptés',
+            'type' => '/validation_errors/music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
+            'description' => 'level_goals[0].level: Ce niveau ne fait pas partie des niveaux acceptés',
+        ]);
+        $this->assertNull(self::getContainer()->get(TeacherProfileRepository::class)->findOneBy(['user' => $user->id]));
     }
 
     public function test_an_update_that_leaves_them_out_keeps_them(): void
@@ -244,6 +283,77 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'detail' => "level_goals[1].level: Ce niveau ne fait pas partie des niveaux acceptés\nlevel_goals[2].level: Ce niveau a déjà son contenu",
             'type' => '/validation_errors/0=music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73;1=music_all_b2e47c90-1a5d-4f86-8c3b-9d07e6f2a548',
             'description' => "level_goals[1].level: Ce niveau ne fait pas partie des niveaux acceptés\nlevel_goals[2].level: Ce niveau a déjà son contenu",
+        ]);
+    }
+
+    public function test_goals_sent_without_the_levels_are_checked_against_the_stored_levels(): void
+    {
+        [$user, $guitar, $profile] = $this->teacherWithContent();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'level_goals' => [
+                ['level' => 'advanced', 'title' => 'Improviser', 'points' => ['Les modes']],
+            ],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $profile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 12,
+            'student_levels' => ['beginner', 'advanced'],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [
+                ['level' => 'advanced', 'title' => 'Improviser', 'points' => ['Les modes']],
+            ],
+            'songs' => [
+                ['artist' => 'Radiohead', 'title' => 'Weird Fishes'],
+            ],
+        ]);
+    }
+
+    public function test_a_goal_sent_without_the_levels_must_name_a_stored_level(): void
+    {
+        [$user] = $this->teacherWithContent();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'level_goals' => [
+                ['level' => 'intermediate', 'title' => 'Un'],
+            ],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@type' => 'ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'level_goals[0].level',
+                    'message' => 'Ce niveau ne fait pas partie des niveaux acceptés',
+                    'code' => 'music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
+                ],
+            ],
+            'title' => 'An error occurred',
+            'detail' => 'level_goals[0].level: Ce niveau ne fait pas partie des niveaux acceptés',
+            'type' => '/validation_errors/music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
+            'description' => 'level_goals[0].level: Ce niveau ne fait pas partie des niveaux acceptés',
         ]);
     }
 

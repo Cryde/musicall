@@ -114,6 +114,71 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         ]);
     }
 
+    public function test_patch_notification_preferences_left_out_keeps_the_stored_switches(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $preference = new UserNotificationPreference();
+        $preference->user = $user;
+        $preference->siteNews = false;
+        $preference->weeklyRecap = false;
+        $preference->messageReceived = false;
+        $preference->publicationComment = false;
+        $preference->marketing = true;
+        $preference->activityReminder = false;
+        $preference->showOnlinePresence = false;
+        $preference->showReadReceipts = false;
+        $preference->pushMessageReceived = false;
+        $preference->pushPublicationComment = false;
+        $preference->pushForumReply = false;
+        $preference->pushModeration = false;
+        $preference->pushBandChat = false;
+        $preference->pushBandMention = false;
+        $preference->pushBandTasks = false;
+        $preference->pushBandAgenda = false;
+        $preference->pushBandFinance = false;
+        $preference->pushBandMembership = false;
+        $user->notificationPreference = $preference;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/notification-preferences', [
+            'forum_reply' => false,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotificationPreferenceEdit',
+            '@id' => '/api/user/notification-preferences',
+            '@type' => 'UserNotificationPreferenceEdit',
+            'site_news' => false,
+            'weekly_recap' => false,
+            'message_received' => false,
+            'publication_comment' => false,
+            'forum_reply' => false,
+            'marketing' => true,
+            'activity_reminder' => false,
+            'show_online_presence' => false,
+            'show_read_receipts' => false,
+            'push_message_received' => false,
+            'push_publication_comment' => false,
+            'push_forum_reply' => false,
+            'push_moderation' => false,
+            'push_band_chat' => false,
+            'push_band_mention' => false,
+            'push_band_tasks' => false,
+            'push_band_agenda' => false,
+            'push_band_finance' => false,
+            'push_band_membership' => false,
+        ]);
+        $stored = self::getContainer()->get(EntityManagerInterface::class)
+            ->getRepository(UserNotificationPreference::class)
+            ->findOneBy(['user' => $user->id]);
+        $this->assertInstanceOf(UserNotificationPreference::class, $stored);
+        $this->assertFalse($stored->siteNews);
+        $this->assertTrue($stored->marketing);
+        $this->assertFalse($stored->pushBandMembership);
+    }
+
     public function test_patch_notification_preferences_updates_all_fields(): void
     {
         $user = UserFactory::new()->asBaseUser()->create([

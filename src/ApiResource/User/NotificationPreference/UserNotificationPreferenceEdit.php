@@ -25,6 +25,9 @@ use App\State\Provider\User\NotificationPreference\UserNotificationPreferenceEdi
             openapi: new Operation(tags: ['Notification Preferences']),
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_user_notification_preferences_edit',
+            // No URI variable, so API Platform would not read by default: every switch left out of the
+            // merge patch then fell back to its default, wiping a preference an older app does not know.
+            read: true,
             provider: UserNotificationPreferenceEditProvider::class,
             processor: UserNotificationPreferenceEditProcessor::class,
         ),

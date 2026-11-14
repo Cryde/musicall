@@ -994,11 +994,13 @@ async function handleSave() {
     }))
 
   const data = {
-    description: description.value || null,
+    // Empty, not null: null keeps the stored text on an edit (#1327). A cleared description is refused, a
+    // cleared course title is stored empty.
+    description: description.value,
     years_of_experience: yearsOfExperience.value,
     student_levels: studentLevels.value,
     age_groups: ageGroups.value,
-    course_title: courseTitle.value || null,
+    course_title: courseTitle.value,
     offers_trial: offersTrial.value,
     trial_price: offersTrial.value ? trialPriceCents : null,
     locations: locationsInput,

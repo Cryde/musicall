@@ -8,6 +8,8 @@ use App\Entity\Teacher\TeacherAvailability;
 use App\Entity\Teacher\TeacherProfileLocation;
 use App\Entity\Teacher\TeacherProfilePackage;
 use App\Entity\Teacher\TeacherProfilePricing;
+use App\Entity\Teacher\TeacherSocialLink;
+use App\Enum\SocialPlatform;
 use App\Enum\Teacher\DayOfWeek;
 use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
@@ -174,7 +176,7 @@ class TeacherProfileEditTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ConstraintViolation',
             '@type' => 'ConstraintViolation',
-            '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=ad32d13f-c3d4-423b-909a-857b961eb720;2=bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
+            '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=ad32d13f-c3d4-423b-909a-857b961eb720;2=ad32d13f-c3d4-423b-909a-857b961eb720',
             'status' => 422,
             'violations' => [
                 [
@@ -190,14 +192,14 @@ class TeacherProfileEditTest extends ApiTestCase
                 [
                     'propertyPath' => 'instrument_ids',
                     'message' => 'Tu dois sélectionner au moins un instrument',
-                    'code' => 'bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
+                    'code' => 'ad32d13f-c3d4-423b-909a-857b961eb720',
                 ],
             ],
             'title' => 'An error occurred',
             'detail' => 'description: La présentation est obligatoire
 years_of_experience: Les années d\'expérience sont obligatoires
 instrument_ids: Tu dois sélectionner au moins un instrument',
-            'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=ad32d13f-c3d4-423b-909a-857b961eb720;2=bef8e338-6ae5-4caf-b8e2-50e7b0579e69',
+            'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=ad32d13f-c3d4-423b-909a-857b961eb720;2=ad32d13f-c3d4-423b-909a-857b961eb720',
             'description' => 'description: La présentation est obligatoire
 years_of_experience: Les années d\'expérience sont obligatoires
 instrument_ids: Tu dois sélectionner au moins un instrument',
@@ -496,6 +498,437 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
                 ['id' => $responseData['packages'][0]['id'], 'title' => 'Pack intensif', 'description' => '10 cours pour progresser vite', 'sessions_count' => 10, 'price' => 400, '@type' => 'TeacherProfilePackage'],
                 ['id' => $responseData['packages'][1]['id'], 'title' => 'Pack découverte', 'sessions_count' => 2, 'price' => 80, '@type' => 'TeacherProfilePackage'],
             ],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    public function test_update_keeps_every_field_left_out(): void
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $rock = StyleFactory::new()->asRock()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [StudentLevel::BEGINNER->value],
+            'ageGroups' => ['children'],
+            'courseTitle' => 'Guitare rock',
+            'offersTrial' => true,
+            'trialPrice' => 1000,
+            'levelGoals' => ['beginner' => ['title' => 'Jouer ton premier morceau', 'points' => ['Les accords ouverts']]],
+            'songs' => [['artist' => 'Radiohead', 'title' => 'Weird Fishes']],
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        $teacherProfile->addStyle($rock);
+
+        $location = new TeacherProfileLocation();
+        $location->type = LocationType::TEACHER_PLACE;
+        $location->address = '5 rue Initiale';
+        $location->city = 'Lyon';
+        $location->country = 'France';
+        $location->latitude = '45.764';
+        $location->longitude = '4.8357';
+        $teacherProfile->addLocation($location);
+        $pricing = new TeacherProfilePricing();
+        $pricing->duration = SessionDuration::THIRTY_MINUTES;
+        $pricing->price = 2000;
+        $teacherProfile->addPricing($pricing);
+        $availability = new TeacherAvailability();
+        $availability->dayOfWeek = DayOfWeek::TUESDAY;
+        $availability->startTime = new \DateTimeImmutable('10:00');
+        $availability->endTime = new \DateTimeImmutable('12:00');
+        $teacherProfile->addAvailability($availability);
+        $package = new TeacherProfilePackage();
+        $package->title = 'Pack initial';
+        $package->description = 'Trois cours';
+        $package->sessionsCount = 3;
+        $package->price = 5000;
+        $teacherProfile->addPackage($package);
+        $socialLink = new TeacherSocialLink();
+        $socialLink->platform = SocialPlatform::YOUTUBE;
+        $socialLink->url = 'https://www.youtube.com/@prof';
+        $teacherProfile->addSocialLink($socialLink);
+        $entityManager->flush();
+
+        // An app version that knows only some fields sends only those.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'years_of_experience' => 4,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 4,
+            'student_levels' => ['beginner'],
+            'age_groups' => ['children'],
+            'course_title' => 'Guitare rock',
+            'offers_trial' => true,
+            'trial_price' => 1000,
+            'locations' => [
+                [
+                    'id' => $location->id,
+                    'type' => 'teacher_place',
+                    'address' => '5 rue Initiale',
+                    'city' => 'Lyon',
+                    'country' => 'France',
+                    'latitude' => '45.764',
+                    'longitude' => '4.8357',
+                    '@type' => 'TeacherProfileLocation',
+                ],
+            ],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [
+                ['id' => $rock->id, 'name' => 'Rock', '@type' => 'TeacherProfileStyle'],
+            ],
+            'pricing' => [
+                ['id' => $pricing->id, 'duration' => '30min', 'price' => 2000, '@type' => 'TeacherProfilePricing'],
+            ],
+            'availability' => [
+                ['id' => $availability->id, 'day_of_week' => 'tuesday', 'start_time' => '10:00', 'end_time' => '12:00', '@type' => 'TeacherProfileAvailability'],
+            ],
+            'packages' => [
+                ['id' => $package->id, 'title' => 'Pack initial', 'description' => 'Trois cours', 'sessions_count' => 3, 'price' => 5000, '@type' => 'TeacherProfilePackage'],
+            ],
+            'social_links' => [
+                ['id' => $socialLink->id, 'platform' => 'youtube', 'url' => 'https://www.youtube.com/@prof', '@type' => 'TeacherProfileSocialLink'],
+            ],
+            'level_goals' => [
+                ['level' => 'beginner', 'title' => 'Jouer ton premier morceau', 'points' => ['Les accords ouverts']],
+            ],
+            'songs' => [
+                ['artist' => 'Radiohead', 'title' => 'Weird Fishes'],
+            ],
+        ]);
+    }
+
+    public function test_update_trial_switch_sent_without_a_price_clears_the_price(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'courseTitle' => null,
+            'offersTrial' => true,
+            'trialPrice' => 1000,
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+
+        // A free trial: both clients send the switch with a null price.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'offers_trial' => true,
+            'trial_price' => null,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => true,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    public function test_update_trial_price_sent_alone_writes_the_price(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'courseTitle' => null,
+            'offersTrial' => true,
+            'trialPrice' => 1000,
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+
+        // The switch left out keeps its stored value, the price sent is written.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['trial_price' => 1500], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => true,
+            'trial_price' => 1500,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    public function test_update_trial_switched_off_without_a_price_clears_the_price(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'courseTitle' => null,
+            'offersTrial' => true,
+            'trialPrice' => 1000,
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['offers_trial' => false], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+        $this->assertNull($teacherProfile->trialPrice);
+    }
+
+    public function test_update_empty_course_title_clears_it(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'courseTitle' => 'Guitare rock',
+            'offersTrial' => false,
+            'trialPrice' => null,
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+
+        // What the web sends for a cleared title (#1327): an empty string, since null keeps it.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['course_title' => ''], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'course_title' => '',
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+        $this->assertSame('', $teacherProfile->courseTitle);
+    }
+
+    public function test_update_refuses_a_cleared_description(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        TeacherProfileFactory::new()->create(['user' => $user, 'description' => 'Cours de guitare']);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'description' => '',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'description',
+                    'message' => 'La présentation est obligatoire',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                ],
+            ],
+            'detail' => 'description: La présentation est obligatoire',
+            'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            'title' => 'An error occurred',
+            'description' => 'description: La présentation est obligatoire',
+        ]);
+    }
+
+    public function test_update_replaces_the_social_links(): void
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'courseTitle' => null,
+            'offersTrial' => false,
+            'trialPrice' => null,
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        $storedLink = new TeacherSocialLink();
+        $storedLink->platform = SocialPlatform::YOUTUBE;
+        $storedLink->url = 'https://www.youtube.com/@ancien';
+        $teacherProfile->addSocialLink($storedLink);
+        $entityManager->flush();
+
+        // The same platform again: the stored row must go before the new one hits the unique key.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'social_links' => [
+                ['platform' => 'youtube', 'url' => 'https://www.youtube.com/@nouveau'],
+                ['platform' => 'instagram', 'url' => 'https://www.instagram.com/prof'],
+            ],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $responseData = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [
+                ['id' => $responseData['social_links'][0]['id'], 'platform' => 'youtube', 'url' => 'https://www.youtube.com/@nouveau', '@type' => 'TeacherProfileSocialLink'],
+                ['id' => $responseData['social_links'][1]['id'], 'platform' => 'instagram', 'url' => 'https://www.instagram.com/prof', '@type' => 'TeacherProfileSocialLink'],
+            ],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    public function test_update_skips_an_instrument_id_that_does_not_exist(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $drum = InstrumentFactory::new()->asDrum()->create();
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'courseTitle' => null,
+            'offersTrial' => false,
+            'trialPrice' => null,
+        ]);
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'instrument_ids' => [$drum->id, '019a8c2e-0000-7000-8000-000000000000'],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $drum->id, 'instrument_name' => 'Batteur', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
             'social_links' => [],
             'level_goals' => [],
             'songs' => [],
