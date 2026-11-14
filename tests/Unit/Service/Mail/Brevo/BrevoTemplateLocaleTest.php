@@ -17,6 +17,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Messenger\SendEmailMessage;
+use Symfony\Component\Messenger\Envelope as MessengerEnvelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\RawMessage;
 
@@ -24,13 +27,13 @@ use Symfony\Component\Mime\RawMessage;
 class BrevoTemplateLocaleTest extends TestCase
 {
     /**
-     * @return iterable<string, array{\Closure(MailerInterface, string): void, string, string}>
+     * @return iterable<string, array{\Closure(MailerInterface&MessageBusInterface, string): void, string, string}>
      */
     public static function emails(): iterable
     {
         yield 'message received' => [
-            static fn (MailerInterface $mailer, string $locale) => new MessageReceivedEmail($mailer)
-                ->send('to@example.com', 'jane', 'john', 'https://www.musicall.com/messages', $locale),
+            static fn (MessageBusInterface $bus, string $locale) => new MessageReceivedEmail($bus)
+                ->send('to@example.com', 'jane', 'john', 'https://www.musicall.com/messages', $locale, 'thread-id', 'recipient-id'),
             '4', '16',
         ];
         yield 'username changed' => [
@@ -89,16 +92,26 @@ class BrevoTemplateLocaleTest extends TestCase
     }
 
     /**
-     * @param \Closure(MailerInterface, string): void $send
+     * @param \Closure(MailerInterface&MessageBusInterface, string): void $send
      */
     private function templateIdSentFor(\Closure $send, string $locale): string
     {
-        $mailer = new class implements MailerInterface {
+        // A bus too: the message received email is dispatched on it, to carry a stamp (#1156).
+        $mailer = new class implements MailerInterface, MessageBusInterface {
             public ?RawMessage $sent = null;
 
             public function send(RawMessage $message, ?Envelope $envelope = null): void
             {
                 $this->sent = $message;
+            }
+
+            public function dispatch(object $message, array $stamps = []): MessengerEnvelope
+            {
+                if ($message instanceof SendEmailMessage) {
+                    $this->sent = $message->getMessage();
+                }
+
+                return MessengerEnvelope::wrap($message, $stamps);
             }
         };
         $send($mailer, $locale);

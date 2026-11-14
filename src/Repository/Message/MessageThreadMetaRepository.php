@@ -93,7 +93,8 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
 
     /**
      * Lets the next message email this user again, after the one that set the flag failed to send
-     * (#1151). The flag is set inside the send transaction, before the email is attempted, so a
+     * (#1151), in the request or after its last retry in the worker (#1156), hence ids: the worker
+     * has no entity. The flag is set inside the send transaction, before the email is attempted, so a
      * failed email would otherwise leave this thread silent until the recipient reads it.
      *
      * DQL rather than loading the row: it runs after the send's transaction has ended, and an update
@@ -105,12 +106,12 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
      * message sets the flag again while this email was failing, this clears the newer flag and the
      * next message emails once more within the streak. One extra email, never a lost one.
      */
-    public function releasePendingNotification(MessageThread $thread, User $user): void
+    public function releasePendingNotification(string $threadId, string $userId): void
     {
         $this->getEntityManager()
             ->createQuery('UPDATE App\Entity\Message\MessageThreadMeta meta SET meta.pendingNotificationSent = false WHERE meta.thread = :thread AND meta.user = :user')
-            ->setParameter('thread', $thread)
-            ->setParameter('user', $user)
+            ->setParameter('thread', $threadId)
+            ->setParameter('user', $userId)
             ->execute();
     }
 

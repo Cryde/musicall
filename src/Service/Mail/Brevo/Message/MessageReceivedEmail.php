@@ -2,16 +2,22 @@
 
 namespace App\Service\Mail\Brevo\Message;
 
+use App\Messenger\MessageReceivedEmailStamp;
 use App\Service\Mail\Brevo\BrevoTemplateId;
-use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Messenger\SendEmailMessage;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
+/**
+ * Dispatched on the bus rather than through the mailer, which has no way to add a stamp, so the email
+ * carries its thread and recipient to the worker without telling Brevo.
+ */
 class MessageReceivedEmail
 {
     private const array TEMPLATE_IDS = ['fr' => '4', 'en' => '16'];
 
-    public function __construct(private readonly MailerInterface $mailer)
+    public function __construct(private readonly MessageBusInterface $bus)
     {
     }
 
@@ -21,6 +27,8 @@ class MessageReceivedEmail
         string $senderUsername,
         string $messageUrl,
         string $locale,
+        string $threadId,
+        string $recipientId,
     ): void {
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
@@ -33,6 +41,6 @@ class MessageReceivedEmail
                 'sender_username' => $senderUsername,
                 'message_url'     => $messageUrl,
             ]);
-        $this->mailer->send($email);
+        $this->bus->dispatch(new SendEmailMessage($email), [new MessageReceivedEmailStamp($threadId, $recipientId)]);
     }
 }

@@ -13,14 +13,33 @@ framework:
                     max_retries: 3
                     delay: 30000
                     multiplier: 4
+            # Emails on their own queue, so a batch of reminders never holds push back, with a backoff of
+            # about two hours in all (1, 3, 9, 27, 81 minutes): a Brevo outage delays an email, not loses it.
+            email:
+                dsn: 'doctrine://default?queue_name=email&auto_setup=0'
+                retry_strategy:
+                    max_retries: 5
+                    delay: 60000
+                    multiplier: 3
             failed: 'doctrine://default?queue_name=failed&auto_setup=0'
 
         routing:
             App\Messenger\SendPushNotification: async
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: email
 
 when@test:
     framework:
         messenger:
             transports:
                 async: 'in-memory://'
+                # zenstruck/messenger-test: handled as it is sent, so assertEmailCount() keeps counting what
+                # is actually sent, while a test can intercept the queue, run the real retry policy against
+                # a mocked clock, and see what lands in `failed`.
+                email: 'test://?intercept=false&disable_retries=false&support_delay_stamp=true&impacts_assertions_count=false'
                 failed: 'in-memory://'
+
+    services:
+        # The email transport above runs a worker inside the request, and this subscriber would clear the
+        # entity manager under it. The package's documented way to disable it in tests.
+        doctrine.orm.messenger.event_subscriber.doctrine_clear_entity_manager:
+            class: stdClass
