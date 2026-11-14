@@ -5,10 +5,30 @@ import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import symfonyPlugin from 'vite-plugin-symfony'
 
+// Names this build, so a tab can tell when a deploy has replaced the code it runs (#1105). Baked into the
+// bundle below and written next to it as version.json, which the server reads for its X-App-Version
+// header. A timestamp, so every build differs and a reader can tell when it was made.
+const BUILD_ID = new Date().toISOString().replace(/\D/g, '')
+
+function buildVersionFile() {
+  return {
+    name: 'musicall-build-version',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({ version: BUILD_ID })
+      })
+    }
+  }
+}
+
 export default defineConfig({
   plugins: [
     vuePlugin(),
     symfonyPlugin(),
+    buildVersionFile(),
     tailwindcss(),
     Components({
       resolvers: [PrimeVueResolver()]
@@ -21,7 +41,8 @@ export default defineConfig({
     __VUE_I18N_FULL_INSTALL__: true,
     __VUE_I18N_LEGACY_API__: false,
     __INTLIFY_DROP_MESSAGE_COMPILER__: false,
-    __INTLIFY_PROD_DEVTOOLS__: false
+    __INTLIFY_PROD_DEVTOOLS__: false,
+    __APP_BUILD_ID__: JSON.stringify(BUILD_ID)
   },
   build: {
     assetsInlineLimit: 0,

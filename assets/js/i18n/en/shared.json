@@ -217,5 +217,9 @@
   },
   "pending_action": {
     "offer": "Continue: {label}"
+  },
+  "new_version": {
+    "message": "A new version of MusicAll is available.",
+    "reload": "Reload"
   }
 }

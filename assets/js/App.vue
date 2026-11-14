@@ -13,6 +13,7 @@
          live setlist view included. -->
     <FeedbackDrawer />
     <PendingActionPrompt />
+    <NewVersionPrompt />
 </template>
 
 <script setup>
@@ -22,6 +23,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import FeedbackDrawer from './components/Feedback/FeedbackDrawer.vue'
+import NewVersionPrompt from './components/Global/NewVersionPrompt.vue'
 import PendingActionPrompt from './components/Global/PendingActionPrompt.vue'
 import { honourLocaleChoice } from './composables/useLocaleChoice.js'
 import { useUserSecurityStore } from './store/user/security.js'
