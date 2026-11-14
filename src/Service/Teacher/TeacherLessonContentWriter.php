@@ -10,7 +10,7 @@ use App\ApiResource\Teacher\Private\TeacherProfileInput;
 use App\Entity\Teacher\TeacherProfile;
 
 /**
- * Writes « Ce que tu vas apprendre » and « Morceaux travaillés » (#1312) for both the create and the edit processor.
+ * Writes « Ce que tu vas apprendre » and « Morceaux travaillés » (#1312), for TeacherProfileWriter.
  * A field left out of the request keeps what is stored: the Android app saves the whole profile without them.
  */
 readonly class TeacherLessonContentWriter

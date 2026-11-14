@@ -148,6 +148,37 @@ class UserProfilePatchTest extends ApiTestCase
         ]);
     }
 
+    public function test_patch_profile_left_out_fields_keep_their_stored_values(): void
+    {
+        $profile = new UserProfile();
+        $profile->displayName = 'Jean Dupont';
+        $profile->bio = 'Batteur';
+        $profile->location = 'Liège';
+        $profile->latitude = 50.6451;
+        $profile->longitude = 5.5736;
+        $profile->isPublic = false;
+        $user = UserFactory::new()->asBaseUser()->create(['profile' => $profile]);
+
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/profile', server: [
+            'CONTENT_TYPE' => 'application/merge-patch+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ], content: '{}');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'display_name' => 'Jean Dupont',
+            'bio' => 'Batteur',
+            'location' => 'Liège',
+            'latitude' => 50.6451,
+            'longitude' => 5.5736,
+            'is_public' => false,
+        ]);
+    }
+
     public function test_patch_profile_update_multiple_fields(): void
     {
         $user = UserFactory::new()->asBaseUser()->create([
