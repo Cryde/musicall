@@ -22,6 +22,7 @@ class MessageSentListenerTest extends TestCase
         $recipient->email = 'recipient@example.com';
         $recipient->username = 'recipient';
         $recipient->locale = 'en';
+        $recipient->id = 'recipient-id';
         $sender = new User();
         $sender->username = 'sender';
         $sender->locale = 'fr';
@@ -32,7 +33,7 @@ class MessageSentListenerTest extends TestCase
         $router->method('generate')->willReturn('https://musicall.test/');
         $messageReceivedEmail = $this->createMock(MessageReceivedEmail::class);
         $messageReceivedEmail->expects($this->once())->method('send')
-            ->with('recipient@example.com', 'recipient', 'sender', 'https://musicall.test/messages/thread-id', 'en');
+            ->with('recipient@example.com', 'recipient', 'sender', 'https://musicall.test/messages/thread-id', 'en', 'thread-id', 'recipient-id');
         // The listener logs and swallows any send failure, a mismatched argument included: this makes it loud.
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->never())->method('error');

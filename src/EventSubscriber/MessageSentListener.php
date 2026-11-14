@@ -18,7 +18,9 @@ use Symfony\Component\Routing\RouterInterface;
  * flip all live in MessageSenderProcedure::shouldNotify - by the time we
  * dispatch the event, we have already decided an email should go out. The
  * one thing done here is to release that flag when the email fails (#1151),
- * so the thread is not silenced until the recipient reads it.
+ * so the thread is not silenced until the recipient reads it. The email is
+ * queued, so this only catches a failed dispatch; a send that fails in the
+ * worker is released by MessageReceivedEmailFailedListener (#1156).
  *
  * Kept as a listener (rather than calling the email service inline from
  * the procedure) so future side-effects on message-sent (analytics,
@@ -47,6 +49,8 @@ readonly class MessageSentListener
                 $event->sender->username,
                 $baseUrl . 'messages/' . $event->thread->id,
                 $event->recipient->locale,
+                (string) $event->thread->id,
+                $event->recipient->id,
             );
         } catch (\Throwable $e) {
             $this->logger->error('Failed to send the message received email', [
@@ -65,7 +69,7 @@ readonly class MessageSentListener
     private function releasePendingNotification(MessageSentEvent $event): void
     {
         try {
-            $this->messageThreadMetaRepository->releasePendingNotification($event->thread, $event->recipient);
+            $this->messageThreadMetaRepository->releasePendingNotification((string) $event->thread->id, $event->recipient->id);
         } catch (\Throwable $e) {
             $this->logger->error('Failed to release the message notification throttle', [
                 'thread_id' => (string) $event->thread->id,

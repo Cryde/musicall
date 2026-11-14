@@ -95,7 +95,8 @@
         "symfony/stopwatch": "8.1.*",
         "symfony/var-dumper": "8.1.*",
         "symfony/web-profiler-bundle": "8.1.*",
-        "zenstruck/foundry": "^2.8.0"
+        "zenstruck/foundry": "^2.8.0",
+        "zenstruck/messenger-test": "^1.16"
     },
     "config": {
         "preferred-install": {
