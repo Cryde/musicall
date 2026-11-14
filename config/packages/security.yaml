@@ -9,6 +9,12 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User
+        # What the JWT resolves through, since it names its user by id (#1134). Everything else keeps
+        # app_user_provider: refresh tokens, login and rate limiters all key on the username.
+        app_user_id_provider:
+            entity:
+                class: App\Entity\User
+                property: id
 
     # ROLE_TESTER is deliberately absent: it is a feature flag, not a rank. It reveals modules that
     # are merged but not yet announced and lifts the feedback rate limit (#1138), grants no
@@ -25,6 +31,7 @@ security:
         api_token_refresh:
             pattern:  ^/api/token/refresh
             stateless: true
+            provider: app_user_provider
             user_checker: App\Security\UserChecker
             refresh_jwt:
                 check_path: /api/token/refresh
@@ -32,6 +39,7 @@ security:
         login:
             pattern: ^/api/login
             stateless: true
+            provider: app_user_provider
             user_checker: App\Security\UserChecker
             json_login:
                 check_path: /api/login_check
@@ -51,6 +59,7 @@ security:
         native_login:
             pattern: ^/api/native/login
             stateless: true
+            provider: app_user_provider
             user_checker: App\Security\UserChecker
             json_login:
                 check_path: /api/native/login_check
@@ -70,6 +79,7 @@ security:
         native_api_token_refresh:
             pattern: ^/api/native/token/refresh
             stateless: true
+            provider: app_user_provider
             user_checker: App\Security\UserChecker
             refresh_jwt:
                 check_path: /api/native/token/refresh
@@ -89,6 +99,7 @@ security:
         native_oauth:
             pattern: ^/api/native/oauth/
             stateless: true
+            provider: app_user_provider
             user_checker: App\Security\UserChecker
             custom_authenticators:
                 - App\Security\Native\GoogleIdTokenAuthenticator
@@ -102,7 +113,8 @@ security:
             provider: app_user_provider
             # A token issued before a suspension must stop working at once, not when it expires (#1116).
             user_checker: App\Security\SuspensionChecker
-            jwt: ~
+            jwt:
+                provider: app_user_id_provider
             refresh_jwt:
                 check_path: /api/token/refresh
             logout:
