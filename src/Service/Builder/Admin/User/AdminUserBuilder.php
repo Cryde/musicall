@@ -4,18 +4,22 @@ namespace App\Service\Builder\Admin\User;
 
 use App\ApiResource\Admin\User\AdminUser;
 use App\ApiResource\Admin\User\AdminUserActivity;
+use App\ApiResource\Admin\User\AdminUserModerationEmail;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Image\UserProfilePicture;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Publication;
 use App\Entity\User;
+use App\Entity\User\UserEmailLog;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Enum\User\UserEmailType;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Comment\CommentRepository;
 use App\Repository\Forum\ForumPostRepository;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\PublicationRepository;
+use App\Repository\User\UserEmailLogRepository;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -32,6 +36,7 @@ readonly class AdminUserBuilder
         private ForumPostRepository $forumPostRepository,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private UserEmailLogRepository $userEmailLogRepository,
     ) {
     }
 
@@ -91,8 +96,21 @@ readonly class AdminUserBuilder
         ]);
 
         $resource->activity = $activity;
+        $resource->moderationEmails = array_map(
+            $this->buildModerationEmail(...),
+            $this->userEmailLogRepository->findBy(['user' => $user, 'emailType' => UserEmailType::moderation()], ['sentDatetime' => 'DESC']),
+        );
 
         return $resource;
+    }
+
+    private function buildModerationEmail(UserEmailLog $log): AdminUserModerationEmail
+    {
+        $email = new AdminUserModerationEmail();
+        $email->type = $log->emailType->value;
+        $email->sentDatetime = $log->sentDatetime;
+
+        return $email;
     }
 
     private function buildProfilePictureUrl(User $user): ?string

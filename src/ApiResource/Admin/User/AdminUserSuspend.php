@@ -4,6 +4,7 @@ namespace App\ApiResource\Admin\User;
 
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Enum\Moderation\ModerationBasis;
 use App\State\Processor\Admin\User\AdminUserSuspendProcessor;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -24,4 +25,11 @@ class AdminUserSuspend
     #[Assert\NotBlank(message: 'Indique la raison de la suspension')]
     #[Assert\Length(max: 500, maxMessage: 'La raison ne peut pas dépasser {{ limit }} caractères')]
     public string $reason = '';
+
+    /** The clause of the terms or the law the decision rests on, named in the statement of reasons (#1126). */
+    #[Assert\Sequentially([
+        new Assert\NotBlank(message: 'Choisis le fondement de la suspension'),
+        new Assert\Choice(callback: [ModerationBasis::class, 'values'], message: 'Ce fondement n\'existe pas'),
+    ])]
+    public string $basis = '';
 }

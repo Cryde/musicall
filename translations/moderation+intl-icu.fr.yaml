@@ -1,0 +1,34 @@
+# The statement of reasons a moderation decision sends (DSA art. 17, terms §7.3, #1126), ICU syntax.
+# Rendered in the recipient's locale, never the moderator's.
+statement:
+    decision:
+        account_suspended: "Ton compte MusicAll est suspendu jusqu'à nouvel ordre : tu ne peux plus te connecter et ton compte n'apparaît plus dans les recherches."
+    reported_content: "{type} (« {label} »)"
+    human_decision: "Cette décision a été prise par un membre de l'équipe de modération, et non de manière automatisée."
+    redress: "Tu peux contester cette décision en écrivant à contact@musicall.com. Tu conserves la possibilité de saisir les juridictions compétentes."
+
+# One per ModerationBasis case: the item of the terms' §6 breached, or the law for illegal content.
+basis:
+    illegal_content: "Contenu illicite au regard de la loi applicable"
+    objectionable_content: "Conditions générales d'utilisation, article 6 : publication d'un contenu illicite, diffamatoire, discriminatoire, haineux, violent ou pornographique"
+    harassment: "Conditions générales d'utilisation, article 6 : harcèlement, menaces ou intimidation envers d'autres utilisateurs"
+    impersonation: "Conditions générales d'utilisation, article 6 : usurpation de l'identité d'une autre personne"
+    spam: "Conditions générales d'utilisation, article 6 : publication de spam ou de contenu promotionnel non sollicité"
+    security: "Conditions générales d'utilisation, article 6 : atteinte à la sécurité ou au fonctionnement du site"
+    personal_data: "Conditions générales d'utilisation, article 6 : collecte des données personnelles d'autres utilisateurs sans leur consentement"
+    intellectual_property: "Conditions générales d'utilisation, article 6 : violation des droits de propriété intellectuelle de tiers"
+    band_space_storage: "Conditions générales d'utilisation, article 6 : utilisation de Band Space comme espace de stockage de fichiers sans lien avec l'activité d'un groupe"
+    quota_circumvention: "Conditions générales d'utilisation, article 6 : contournement des quotas ou des limitations techniques du service"
+
+# One per ReportTargetType case: what was reported, when the decision came from a report.
+target_type:
+    user: "Ton profil"
+    announce: "Une annonce"
+    message: "Un message privé"
+    band_chat_message: "Un message dans la discussion d'un Band Space"
+    profile_media: "Un média de ton profil"
+    forum_post: "Un message sur le forum"
+    comment: "Un commentaire"
+    publication: "Une publication"
+    profile_post: "Un post de profil"
+    profile_post_comment: "Un commentaire sur un post de profil"

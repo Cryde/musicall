@@ -104,7 +104,7 @@
         v-if="report.target_author"
         v-model:visible="showSuspendDialog"
         :username="report.target_author.username"
-        :submit="(reason) => adminReportApi.suspendAuthor(report.id, reason)"
+        :submit="(reason, basis) => adminReportApi.suspendAuthor(report.id, reason, basis)"
         @suspended="handleActionDone('Compte suspendu')"
       />
     </template>

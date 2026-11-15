@@ -5,6 +5,7 @@ namespace App\Entity\Moderation;
 use App\Entity\Report\Report;
 use App\Entity\User;
 use App\Enum\Moderation\ModerationActionType;
+use App\Enum\Moderation\ModerationBasis;
 use App\Repository\Moderation\ModerationActionRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -39,6 +40,10 @@ class ModerationAction
 
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
     public ?string $reason = null;
+
+    /** Null on the actions that need no ground (a dismissal, a lift) and on those taken before #1126. */
+    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: ModerationBasis::class)]
+    public ?ModerationBasis $basis = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $creationDatetime;

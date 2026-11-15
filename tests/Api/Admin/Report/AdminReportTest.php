@@ -7,13 +7,18 @@ namespace App\Tests\Api\Admin\Report;
 use App\Entity\Report\Report;
 use App\Entity\User;
 use App\Enum\Moderation\ModerationActionType;
+use App\Enum\Moderation\ModerationBasis;
 use App\Enum\Notification\NotificationType;
 use App\Enum\Report\ReportOutcome;
 use App\Enum\Report\ReportTargetType;
+use App\Enum\User\UserEmailType;
 use App\Repository\Moderation\ModerationActionRepository;
 use App\Repository\Notification\NotificationRepository;
 use App\Repository\Report\ReportRepository;
+use App\Repository\User\UserEmailLogRepository;
 use App\Repository\UserRepository;
+use App\Service\Builder\Moderation\StatementOfReasons;
+use App\Service\Mail\Brevo\Moderation\StatementOfReasonsEmail;
 use App\Service\Notification\NotificationCreator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -24,6 +29,8 @@ use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mime\Header\ParameterizedHeader;
+use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -268,7 +275,7 @@ class AdminReportTest extends ApiTestCase
         ReportFactory::new(['reporter' => $admin] + $target)->create();
 
         $this->client->loginUser($admin);
-        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam répété'], self::HEADERS);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam répété', 'basis' => 'spam'], self::HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
         $expected = ['target_type' => 'user', 'target_label' => 'spammer', 'outcome' => 'account_suspended'];
@@ -284,6 +291,87 @@ class AdminReportTest extends ApiTestCase
         $reports = self::getContainer()->get(ReportRepository::class);
         $this->assertSame(ReportOutcome::AccountSuspended, $reports->find($report->id)?->outcome);
         $this->assertSame(0, $reports->countPending());
+    }
+
+    /** DSA art. 17 (#1126): the statement names the reported content, the basis picked and the redress. */
+    public function test_suspending_the_author_emails_the_statement_of_reasons(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $author = UserFactory::new()->create(['username' => 'troll', 'email' => 'troll@test.com']);
+        $report = ReportFactory::new([
+            'targetType' => ReportTargetType::ForumPost,
+            'targetAuthor' => $author,
+            'targetId' => 'b6f1a6a0-0000-4000-8000-000000000001',
+            'snapshotContext' => ['topic_title' => 'Quel ampli choisir ?'],
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Insultes répétées envers les membres', 'basis' => 'harassment'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame('', (string) $this->client->getResponse()->getContent());
+        $this->assertStatementSent('troll@test.com', [
+            'username' => 'troll',
+            'decision' => 'Ton compte MusicAll est suspendu jusqu\'à nouvel ordre : tu ne peux plus te connecter et ton compte n\'apparaît plus dans les recherches.',
+            'decision_date' => new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'))->format('d/m/Y'),
+            'facts' => 'Insultes répétées envers les membres',
+            'reported_content' => 'Un message sur le forum (« Quel ampli choisir ? »)',
+            'basis' => 'Conditions générales d\'utilisation, article 6 : harcèlement, menaces ou intimidation envers d\'autres utilisateurs',
+            'human_decision' => 'Cette décision a été prise par un membre de l\'équipe de modération, et non de manière automatisée.',
+            'redress' => 'Tu peux contester cette décision en écrivant à contact@musicall.com. Tu conserves la possibilité de saisir les juridictions compétentes.',
+        ]);
+        $actions = self::getContainer()->get(ModerationActionRepository::class)->findAll();
+        $this->assertCount(1, $actions);
+        $this->assertSame(ModerationBasis::Harassment, $actions[0]->basis);
+        $this->assertSame($report->id, $actions[0]->report?->id);
+        $logs = self::getContainer()->get(UserEmailLogRepository::class)->findBy(['user' => $author->id]);
+        $this->assertCount(1, $logs);
+        $this->assertSame(UserEmailType::ACCOUNT_SUSPENDED_STATEMENT, $logs[0]->emailType);
+        $this->assertSame($actions[0]->id, $logs[0]->referenceId);
+    }
+
+    /** An author already suspended is not suspended, nor told, a second time. */
+    public function test_suspending_an_author_already_suspended_sends_nothing(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $author = UserFactory::new()->create(['username' => 'troll', 'email' => 'troll@test.com', 'suspensionDatetime' => new \DateTimeImmutable('2026-11-01')]);
+        $report = ReportFactory::new(['targetAuthor' => $author, 'targetId' => (string) $author->id])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam', 'basis' => 'spam'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertEmailCount(0);
+        $this->assertSame(0, self::getContainer()->get(ModerationActionRepository::class)->count());
+    }
+
+    /** The statement is sent after the commit: an email failure never undoes the suspension (#1126). */
+    public function test_a_statement_failure_does_not_undo_the_suspension(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $author = UserFactory::new()->create(['username' => 'troll', 'email' => 'troll@test.com']);
+        $report = ReportFactory::new(['targetAuthor' => $author, 'targetId' => (string) $author->id])->create();
+        self::getContainer()->set(StatementOfReasonsEmail::class, new class extends StatementOfReasonsEmail {
+            public function __construct()
+            {
+            }
+
+            public function send(string $recipientEmail, string $username, StatementOfReasons $statement, string $locale): void
+            {
+                throw new \RuntimeException('Brevo is down');
+            }
+        });
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam', 'basis' => 'spam'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame('', (string) $this->client->getResponse()->getContent());
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertTrue(self::getContainer()->get(UserRepository::class)->find($author->id)?->isSuspended());
+        $this->assertSame(ReportOutcome::AccountSuspended, self::getContainer()->get(ReportRepository::class)->find($report->id)?->outcome);
+        // Nothing was sent, so the admin page must not claim it was.
+        $this->assertSame(0, self::getContainer()->get(UserEmailLogRepository::class)->count());
     }
 
     /** A notification failure never undoes the decision (epic #689 contract item 1). */
@@ -307,7 +395,7 @@ class AdminReportTest extends ApiTestCase
         $report = ReportFactory::new()->create();
 
         $this->client->loginUser($admin);
-        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => ''], self::HEADERS);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => '', 'basis' => 'spam'], self::HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
@@ -323,6 +411,57 @@ class AdminReportTest extends ApiTestCase
             'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
             'title' => 'An error occurred',
         ]);
+        $this->assertEmailCount(0);
+    }
+
+    public function test_suspending_needs_a_basis(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $report = ReportFactory::new()->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . NotBlank::IS_BLANK_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'basis', 'message' => 'Choisis le fondement de la suspension', 'code' => NotBlank::IS_BLANK_ERROR],
+            ],
+            'detail' => 'basis: Choisis le fondement de la suspension',
+            'description' => 'basis: Choisis le fondement de la suspension',
+            'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
+            'title' => 'An error occurred',
+        ]);
+        $this->assertEmailCount(0);
+    }
+
+    public function test_suspending_refuses_an_unknown_basis(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $report = ReportFactory::new()->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Spam', 'basis' => 'bad_mood'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'basis', 'message' => 'Ce fondement n\'existe pas', 'code' => Choice::NO_SUCH_CHOICE_ERROR],
+            ],
+            'detail' => 'basis: Ce fondement n\'existe pas',
+            'description' => 'basis: Ce fondement n\'existe pas',
+            'type' => '/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            'title' => 'An error occurred',
+        ]);
+        $this->assertEmailCount(0);
     }
 
     public function test_an_administrator_cannot_be_suspended(): void
@@ -332,7 +471,7 @@ class AdminReportTest extends ApiTestCase
         $report = ReportFactory::new(['targetAuthor' => $otherAdmin, 'targetId' => (string) $otherAdmin->id])->create();
 
         $this->client->loginUser($admin);
-        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Test'], self::HEADERS);
+        $this->client->jsonRequest('POST', '/api/admin/reports/' . $report->id . '/suspend-author', ['reason' => 'Test', 'basis' => 'spam'], self::HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -379,8 +518,20 @@ class AdminReportTest extends ApiTestCase
         $this->client->request('POST', '/api/admin/users/' . $account->id . '/lift-suspension');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame('', (string) $this->client->getResponse()->getContent());
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $this->assertFalse(self::getContainer()->get(UserRepository::class)->find($account->id)?->isSuspended());
+        $this->assertEmailCount(1);
+        $email = $this->getMailerMessage();
+        // The placeholder id until the Brevo template exists.
+        $this->assertEmailHeaderSame($email, 'templateId', '0');
+        $this->assertEmailAddressContains($email, 'To', 'repenti@test.com');
+        $params = $email?->getHeaders()->get('params');
+        $this->assertInstanceOf(ParameterizedHeader::class, $params);
+        $this->assertSame(['username' => 'repenti', 'lifted_date' => new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'))->format('d/m/Y')], $params->getParameters());
+        $logs = self::getContainer()->get(UserEmailLogRepository::class)->findBy(['user' => $account->id]);
+        $this->assertCount(1, $logs);
+        $this->assertSame(UserEmailType::SUSPENSION_LIFTED, $logs[0]->emailType);
     }
 
     public function test_an_admin_suspends_from_the_user_page(): void
@@ -389,11 +540,96 @@ class AdminReportTest extends ApiTestCase
         $account = UserFactory::new()->create(['username' => 'fauteur', 'email' => 'fauteur@test.com']);
 
         $this->client->loginUser($admin);
-        $this->client->jsonRequest('POST', '/api/admin/users/' . $account->id . '/suspend', ['reason' => 'Harcèlement'], self::HEADERS);
+        $this->client->jsonRequest('POST', '/api/admin/users/' . $account->id . '/suspend', ['reason' => 'Harcèlement', 'basis' => 'illegal_content'], self::HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame('', (string) $this->client->getResponse()->getContent());
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $this->assertSame('Harcèlement', self::getContainer()->get(UserRepository::class)->find($account->id)?->suspensionReason);
+        $this->assertSame(ModerationBasis::IllegalContent, self::getContainer()->get(ModerationActionRepository::class)->findAll()[0]->basis);
+        // Not from a report: no reported content.
+        $this->assertStatementSent('fauteur@test.com', [
+            'username' => 'fauteur',
+            'decision' => 'Ton compte MusicAll est suspendu jusqu\'à nouvel ordre : tu ne peux plus te connecter et ton compte n\'apparaît plus dans les recherches.',
+            'decision_date' => new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'))->format('d/m/Y'),
+            'facts' => 'Harcèlement',
+            'reported_content' => '',
+            'basis' => 'Contenu illicite au regard de la loi applicable',
+            'human_decision' => 'Cette décision a été prise par un membre de l\'équipe de modération, et non de manière automatisée.',
+            'redress' => 'Tu peux contester cette décision en écrivant à contact@musicall.com. Tu conserves la possibilité de saisir les juridictions compétentes.',
+        ]);
+    }
+
+    /** The statement is in the member's language, not the moderator's. */
+    public function test_an_english_member_gets_the_statement_in_english(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $account = UserFactory::new()->create(['username' => 'offender', 'email' => 'offender@test.com', 'locale' => 'en']);
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/users/' . $account->id . '/suspend', ['reason' => 'Spam links', 'basis' => 'spam'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertStatementSent('offender@test.com', [
+            'username' => 'offender',
+            'decision' => 'Your MusicAll account is suspended until further notice: you can no longer log in and your account no longer appears in searches.',
+            'decision_date' => new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'))->format('j F Y'),
+            'facts' => 'Spam links',
+            'reported_content' => '',
+            'basis' => 'Terms of use, section 6: posting spam or unsolicited promotional content',
+            'human_decision' => 'This decision was taken by a member of the moderation team, not by an automated process.',
+            'redress' => 'You can contest this decision by writing to contact@musicall.com. You remain free to bring the matter before the competent courts.',
+        ]);
+    }
+
+    public function test_suspending_from_the_user_page_needs_a_basis(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $account = UserFactory::new()->create(['username' => 'fauteur', 'email' => 'fauteur@test.com']);
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/users/' . $account->id . '/suspend', ['reason' => 'Harcèlement', 'basis' => ''], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . NotBlank::IS_BLANK_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'basis', 'message' => 'Choisis le fondement de la suspension', 'code' => NotBlank::IS_BLANK_ERROR],
+            ],
+            'detail' => 'basis: Choisis le fondement de la suspension',
+            'description' => 'basis: Choisis le fondement de la suspension',
+            'type' => '/validation_errors/' . NotBlank::IS_BLANK_ERROR,
+            'title' => 'An error occurred',
+        ]);
+        $this->assertEmailCount(0);
+    }
+
+    public function test_suspending_from_the_user_page_refuses_an_unknown_basis(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $account = UserFactory::new()->create(['username' => 'fauteur', 'email' => 'fauteur@test.com']);
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/admin/users/' . $account->id . '/suspend', ['reason' => 'Harcèlement', 'basis' => 'Harassment'], self::HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'basis', 'message' => 'Ce fondement n\'existe pas', 'code' => Choice::NO_SUCH_CHOICE_ERROR],
+            ],
+            'detail' => 'basis: Ce fondement n\'existe pas',
+            'description' => 'basis: Ce fondement n\'existe pas',
+            'type' => '/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            'title' => 'An error occurred',
+        ]);
+        $this->assertEmailCount(0);
     }
 
     /** @return array<string, mixed> */
@@ -418,6 +654,19 @@ class AdminReportTest extends ApiTestCase
             'resolved_by_username' => null,
             'outcome' => null,
         ];
+    }
+
+    /** @param array<string, string> $params */
+    private function assertStatementSent(string $recipient, array $params): void
+    {
+        $this->assertEmailCount(1);
+        $email = $this->getMailerMessage();
+        // The placeholder id until the Brevo template exists.
+        $this->assertEmailHeaderSame($email, 'templateId', '0');
+        $this->assertEmailAddressContains($email, 'To', $recipient);
+        $header = $email?->getHeaders()->get('params');
+        $this->assertInstanceOf(ParameterizedHeader::class, $header);
+        $this->assertSame($params, $header->getParameters());
     }
 
     /** @param array<string, mixed> $payload */

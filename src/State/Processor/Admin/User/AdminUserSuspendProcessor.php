@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Admin\User\AdminUserSuspend;
 use App\Entity\User;
+use App\Enum\Moderation\ModerationBasis;
 use App\Repository\UserRepository;
 use App\Service\Procedure\Moderation\AccountSuspensionProcedure;
 use App\Service\Procedure\Moderation\ReportResolutionProcedure;
@@ -38,7 +39,7 @@ readonly class AdminUserSuspendProcessor implements ProcessorInterface
         ReportResolutionProcedure::assertSuspendable($account, $moderator);
 
         if (!$account->isSuspended()) {
-            $this->accountSuspension->suspend($account, trim($data->reason), $moderator);
+            $this->accountSuspension->suspend($account, trim($data->reason), ModerationBasis::from($data->basis), $moderator);
         }
 
         return null;

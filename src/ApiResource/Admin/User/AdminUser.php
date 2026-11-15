@@ -94,4 +94,12 @@ class AdminUser
      */
     #[ApiProperty(genId: false)]
     public ?AdminUserActivity $activity = null;
+
+    /**
+     * Most recent first; null on the collection, like the activity.
+     *
+     * @var list<AdminUserModerationEmail>|null
+     */
+    #[ApiProperty(genId: false)]
+    public ?array $moderationEmails = null;
 }

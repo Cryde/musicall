@@ -129,7 +129,7 @@
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>7.2 How content is moderated.</strong> Moderation is carried out by people, after a report or when reviewing the publications and galleries submitted for approval. The site also applies automatic technical measures that limit the amount of content that can be created over a given period, and filters the HTML code of published content to remove dangerous elements. These technical measures do not lead to content being removed or an account being restricted: no moderation decision is taken on a purely automated basis.
           </p>
-          <!-- 7.3 is only partly implemented, as the comment in ../Terms.vue explains. -->
+          <!-- 7.3 is implemented for account suspensions only (#1126), as the comment in ../Terms.vue explains. -->
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>7.3 Statement of reasons.</strong> When content is removed or made inaccessible, or when an account is suspended or deleted for a moderation reason, the user concerned is informed of the reason for the decision, the ground relied on (a legal provision or a clause of these terms), the facts taken into account and the means of redress available to them.
           </p>

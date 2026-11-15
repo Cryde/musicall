@@ -6,7 +6,9 @@ use App\Entity\Moderation\ModerationAction;
 use App\Entity\Report\Report;
 use App\Entity\User;
 use App\Enum\Moderation\ModerationActionType;
+use App\Enum\Moderation\ModerationBasis;
 use App\Enum\Report\ReportOutcome;
+use App\Event\AccountSuspendedEvent;
 use App\Event\ReportsResolvedEvent;
 use App\Repository\Report\ReportRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,7 +54,7 @@ readonly class ReportResolutionProcedure
         $this->eventDispatcher->dispatch(new ReportsResolvedEvent($resolved, ReportOutcome::Dismissed, $moderator));
     }
 
-    public function suspendAuthor(Report $report, string $reason, User $moderator): void
+    public function suspendAuthor(Report $report, string $reason, ModerationBasis $basis, User $moderator): void
     {
         $author = $report->targetAuthor;
         if (!$author instanceof User) {
@@ -60,14 +62,21 @@ readonly class ReportResolutionProcedure
         }
         self::assertSuspendable($author, $moderator);
 
-        $resolved = $this->entityManager->wrapInTransaction(function () use ($report, $reason, $moderator, $author): array {
-            if (!$author->isSuspended()) {
-                $this->accountSuspension->suspend($author, $reason, $moderator, $report);
-            }
+        /** @var array{list<Report>, ?ModerationAction} $outcome */
+        $outcome = $this->entityManager->wrapInTransaction(function () use ($report, $reason, $basis, $moderator, $author): array {
+            $suspension = $author->isSuspended()
+                ? null
+                : $this->accountSuspension->suspendInTransaction($author, $reason, $basis, $moderator, $report);
 
-            return $this->resolveTarget($report, $moderator, ReportOutcome::AccountSuspended);
+            return [$this->resolveTarget($report, $moderator, ReportOutcome::AccountSuspended), $suspension];
         });
+        [$resolved, $suspension] = $outcome;
 
+        // After the commit, like the reporters' notifications: never a statement for a rolled back suspension.
+
+        if ($suspension instanceof ModerationAction) {
+            $this->eventDispatcher->dispatch(new AccountSuspendedEvent($author, $suspension));
+        }
         $this->eventDispatcher->dispatch(new ReportsResolvedEvent($resolved, ReportOutcome::AccountSuspended, $moderator));
     }
 

@@ -1,0 +1,34 @@
+# The statement of reasons a moderation decision sends (DSA art. 17, terms §7.3, #1126), ICU syntax.
+# Rendered in the recipient's locale, never the moderator's.
+statement:
+    decision:
+        account_suspended: "Your MusicAll account is suspended until further notice: you can no longer log in and your account no longer appears in searches."
+    reported_content: "{type} (\"{label}\")"
+    human_decision: "This decision was taken by a member of the moderation team, not by an automated process."
+    redress: "You can contest this decision by writing to contact@musicall.com. You remain free to bring the matter before the competent courts."
+
+# One per ModerationBasis case: the item of the terms' section 6 breached, or the law for illegal content.
+basis:
+    illegal_content: "Content that is illegal under the applicable law"
+    objectionable_content: "Terms of use, section 6: publishing content that is illegal, defamatory, discriminatory, hateful, violent or pornographic"
+    harassment: "Terms of use, section 6: harassing, threatening or intimidating other users"
+    impersonation: "Terms of use, section 6: impersonating another person"
+    spam: "Terms of use, section 6: posting spam or unsolicited promotional content"
+    security: "Terms of use, section 6: undermining the security or the operation of the site"
+    personal_data: "Terms of use, section 6: collecting other users' personal data without their consent"
+    intellectual_property: "Terms of use, section 6: infringing the intellectual property rights of third parties"
+    band_space_storage: "Terms of use, section 6: using Band Space to store files unrelated to the activity of a band"
+    quota_circumvention: "Terms of use, section 6: circumventing the quotas or technical limits of the service"
+
+# One per ReportTargetType case: what was reported, when the decision came from a report.
+target_type:
+    user: "Your profile"
+    announce: "An ad"
+    message: "A private message"
+    band_chat_message: "A message in a Band Space chat"
+    profile_media: "A media item on your profile"
+    forum_post: "A forum post"
+    comment: "A comment"
+    publication: "A publication"
+    profile_post: "A profile post"
+    profile_post_comment: "A comment on a profile post"
