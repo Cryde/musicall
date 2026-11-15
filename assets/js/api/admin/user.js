@@ -23,10 +23,10 @@ export default {
     )
   },
 
-  suspend(id, reason) {
+  suspend(id, reason, basis) {
     return axios.post(
       Routing.generate('api_admin_users_suspend', { id }),
-      { reason },
+      { reason, basis },
       { headers: { 'Content-Type': 'application/ld+json' } }
     )
   },

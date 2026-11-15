@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Service\Mail\Brevo;
 
+use App\Service\Builder\Moderation\StatementOfReasons;
 use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationExistingUserEmail;
 use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationNewUserEmail;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
+use App\Service\Mail\Brevo\Moderation\StatementOfReasonsEmail;
+use App\Service\Mail\Brevo\Moderation\SuspensionLiftedEmail;
 use App\Service\Mail\Brevo\User\EmailVerificationCodeEmail;
 use App\Service\Mail\Brevo\User\EmailVerificationReminderEmail;
 use App\Service\Mail\Brevo\User\InactivityReminderEmail;
@@ -75,6 +78,17 @@ class BrevoTemplateLocaleTest extends TestCase
             static fn (MailerInterface $mailer, string $locale) => new WelcomeEmail($mailer)
                 ->send('to@example.com', 'jane', $locale),
             '6', '24',
+        ];
+        // Placeholders until the Brevo templates exist (#1126): replace with the real ids.
+        yield 'statement of reasons' => [
+            static fn (MailerInterface $mailer, string $locale) => new StatementOfReasonsEmail($mailer)
+                ->send('to@example.com', 'jane', new StatementOfReasons('decision', '15/11/2026', 'facts', '', 'basis', 'human', 'redress'), $locale),
+            '0', '0',
+        ];
+        yield 'suspension lifted' => [
+            static fn (MailerInterface $mailer, string $locale) => new SuspensionLiftedEmail($mailer)
+                ->send('to@example.com', 'jane', new \DateTimeImmutable('2026-11-15'), $locale),
+            '0', '0',
         ];
     }
 

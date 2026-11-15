@@ -20,10 +20,10 @@ export default {
     return axios.post(Routing.generate('api_admin_reports_dismiss', { id }))
   },
 
-  suspendAuthor(id, reason) {
+  suspendAuthor(id, reason, basis) {
     return axios.post(
       Routing.generate('api_admin_reports_suspend_author', { id }),
-      { reason },
+      { reason, basis },
       { headers: { 'Content-Type': 'application/ld+json' } }
     )
   }

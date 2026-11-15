@@ -134,10 +134,28 @@
             </div>
           </Panel>
 
+          <Panel header="Emails de modération envoyés" class="mt-4">
+            <ul v-if="user.moderation_emails?.length" class="flex flex-col gap-2 text-sm">
+              <li
+                v-for="email in user.moderation_emails"
+                :key="`${email.type}-${email.sent_datetime}`"
+                class="flex justify-between gap-4"
+              >
+                <span>{{ MODERATION_EMAIL_LABELS[email.type] ?? email.type }}</span>
+                <span class="text-right text-surface-600 dark:text-surface-400">
+                  {{ formatDate(email.sent_datetime) }}
+                </span>
+              </li>
+            </ul>
+            <p v-else class="text-sm text-surface-600 dark:text-surface-400">
+              Aucun email de modération n'a été envoyé à ce compte.
+            </p>
+          </Panel>
+
           <SuspendAccountDialog
             v-model:visible="showSuspendDialog"
             :username="user.username"
-            :submit="(reason) => adminUserApi.suspend(user.id, reason)"
+            :submit="(reason, basis) => adminUserApi.suspend(user.id, reason, basis)"
             @suspended="handleSuspensionChanged('Compte suspendu')"
           />
         </TabPanel>
@@ -169,6 +187,7 @@ import { useRoute, useRouter } from 'vue-router'
 import adminUserApi from '../../../api/admin/user.js'
 import SuspendAccountDialog from '../../../components/Admin/SuspendAccountDialog.vue'
 import { GRANTABLE_ROLES } from '../../../constants/adminUser.js'
+import { MODERATION_EMAIL_LABELS } from '../../../constants/moderation.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { formatDate } from '../../../utils/date.js'
 import { grantsAdmin } from '../../../utils/roles.js'

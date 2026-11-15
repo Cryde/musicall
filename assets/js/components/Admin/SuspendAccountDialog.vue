@@ -13,7 +13,20 @@
         suspension.
       </p>
       <div class="flex flex-col gap-2">
-        <label for="suspension-reason" class="text-sm font-medium">Motif de la suspension</label>
+        <label for="suspension-basis" class="text-sm font-medium">Fondement</label>
+        <Select
+          v-model="basis"
+          inputId="suspension-basis"
+          :options="MODERATION_BASIS_OPTIONS"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Clause des CGU ou loi enfreinte"
+          fluid
+          :disabled="isSubmitting"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="suspension-reason" class="text-sm font-medium">Faits reprochés</label>
         <Textarea
           id="suspension-reason"
           v-model="reason"
@@ -23,6 +36,9 @@
           :invalid="!!errorMessage"
         />
       </div>
+      <p class="text-xs text-surface-600 dark:text-surface-300">
+        Le fondement et les faits sont envoyés par email au membre, avec les voies de recours.
+      </p>
       <Message v-if="errorMessage" severity="error" :closable="false">{{ errorMessage }}</Message>
       <div class="flex justify-end gap-2">
         <Button label="Annuler" severity="secondary" text :disabled="isSubmitting" @click="visible = false" />
@@ -32,7 +48,7 @@
           icon="pi pi-ban"
           severity="danger"
           :loading="isSubmitting"
-          :disabled="!reason.trim() || isSubmitting"
+          :disabled="!reason.trim() || !basis || isSubmitting"
         />
       </div>
     </form>
@@ -43,14 +59,19 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { ref } from 'vue'
 import { handleApiError } from '../../api/utils/handleApiError.js'
+import { MODERATION_BASIS_OPTIONS } from '../../constants/moderation.js'
 
-/** Asks the reason a suspension needs, then hands it to `submit`, which does the call (#1116). */
+/**
+ * Asks the basis and the facts a suspension needs, then hands them to `submit`, which does the call
+ * (#1116). Both end up in the statement of reasons the member receives (#1126).
+ */
 const props = defineProps({
   username: { type: String, required: true },
-  /** (reason: string) => Promise, rejected with the axios error on failure. */
+  /** (reason: string, basis: string) => Promise, rejected with the axios error on failure. */
   submit: { type: Function, required: true }
 })
 
@@ -58,6 +79,7 @@ const emit = defineEmits(['suspended'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const reason = ref('')
+const basis = ref(null)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
@@ -65,7 +87,7 @@ async function handleSubmit() {
   isSubmitting.value = true
   errorMessage.value = ''
   try {
-    await props.submit(reason.value.trim())
+    await props.submit(reason.value.trim(), basis.value)
     visible.value = false
     emit('suspended')
   } catch (e) {
@@ -81,6 +103,7 @@ async function handleSubmit() {
 
 function reset() {
   reason.value = ''
+  basis.value = null
   errorMessage.value = ''
 }
 </script>

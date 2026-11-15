@@ -136,11 +136,13 @@
             <strong>7.2 Moyens de modération.</strong> La modération est assurée humainement, après signalement ou lors de l'examen des publications et galeries soumises à validation. Le site applique par ailleurs des mesures techniques automatiques qui limitent le nombre de contenus pouvant être créés sur une période donnée, et un filtrage du code HTML des contenus publiés afin d'écarter les éléments dangereux. Ces mesures techniques n'entraînent ni la suppression d'un contenu, ni la restriction d'un compte : aucune décision de modération n'est prise sur une base purement automatisée.
           </p>
           <!--
-            7.3 describes a behaviour that is only partly implemented: the author is notified when a
-            publication or gallery is approved or rejected (PublicationModerationListener /
-            GalleryModerationListener), but the notification carries no reason, no legal basis and no
-            remedy. The rest is a legal commitment honoured manually until the statement-of-reasons
-            flow is built.
+            7.3 is implemented for account suspensions: the moderator picks the basis (ModerationBasis,
+            one per item of section 6, plus illegal content) and AccountSuspendedListener emails the
+            statement of reasons (decision, facts, basis, human decision, redress); lifting it sends an
+            email too (#1126). Content removal is not built yet (#1122), and the rejection of a
+            publication or gallery still notifies the author without a reason, a basis or a remedy
+            (PublicationModerationListener / GalleryModerationListener): those cases are honoured
+            manually until then.
           -->
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>7.3 Décision motivée.</strong> Lorsqu'un contenu est retiré ou rendu inaccessible, ou lorsqu'un compte est suspendu ou supprimé pour un motif de modération, l'utilisateur concerné est informé du motif de la décision, du fondement invoqué (disposition légale ou clause des présentes conditions), des faits pris en compte et des voies de recours à sa disposition.

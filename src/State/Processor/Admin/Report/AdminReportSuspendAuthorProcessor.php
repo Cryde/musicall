@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Admin\Report\AdminReportSuspendAuthor;
 use App\Entity\Report\Report;
 use App\Entity\User;
+use App\Enum\Moderation\ModerationBasis;
 use App\Repository\Report\ReportRepository;
 use App\Service\Procedure\Moderation\ReportResolutionProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -36,7 +37,7 @@ readonly class AdminReportSuspendAuthorProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Signalement introuvable');
         }
 
-        $this->resolution->suspendAuthor($report, trim($data->reason), $moderator);
+        $this->resolution->suspendAuthor($report, trim($data->reason), ModerationBasis::from($data->basis), $moderator);
 
         return null;
     }

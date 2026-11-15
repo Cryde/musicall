@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Admin\User;
 
+use App\Enum\User\UserEmailType;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationFactory;
+use App\Tests\Factory\User\UserEmailLogFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -85,6 +87,7 @@ class AdminUserGetTest extends ApiTestCase
                 'musician_announces' => 0,
                 'band_spaces' => 0,
             ],
+            'moderation_emails' => [],
         ]);
     }
 
@@ -130,6 +133,56 @@ class AdminUserGetTest extends ApiTestCase
                 'forum_posts' => 0,
                 'musician_announces' => 0,
                 'band_spaces' => 0,
+            ],
+            'moderation_emails' => [],
+        ]);
+    }
+
+    /** What the account was sent about its suspension, most recent first, and no other email (#1126). */
+    public function test_admin_sees_the_moderation_emails_sent(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $target = UserFactory::new()->create([
+            'username' => 'repenti',
+            'email' => 'repenti@email.com',
+            'roles' => [],
+            'creationDatetime' => new \DateTime('2026-01-15 09:00:00'),
+            'lastLoginDatetime' => new \DateTime('2026-09-01 08:00:00'),
+        ]);
+        UserEmailLogFactory::new()->create(['user' => $target, 'emailType' => UserEmailType::ACCOUNT_SUSPENDED_STATEMENT, 'sentDatetime' => new \DateTimeImmutable('2026-10-01 10:00:00')]);
+        UserEmailLogFactory::new()->create(['user' => $target, 'emailType' => UserEmailType::SUSPENSION_LIFTED, 'sentDatetime' => new \DateTimeImmutable('2026-10-20 10:00:00')]);
+        UserEmailLogFactory::new()->create(['user' => $target, 'emailType' => UserEmailType::WELCOME, 'sentDatetime' => new \DateTimeImmutable('2026-01-15 09:00:00')]);
+        UserEmailLogFactory::new()->create(['user' => $admin, 'emailType' => UserEmailType::ACCOUNT_SUSPENDED_STATEMENT, 'sentDatetime' => new \DateTimeImmutable('2026-10-02 10:00:00')]);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/users/' . $target->id);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AdminUser',
+            '@id' => '/api/admin/users/' . $target->id,
+            '@type' => 'AdminUser',
+            'id' => (string) $target->id,
+            'username' => 'repenti',
+            'email' => 'repenti@email.com',
+            'roles' => [],
+            'creation_datetime' => '2026-01-15T09:00:00+00:00',
+            'last_login_datetime' => '2026-09-01T08:00:00+00:00',
+            'is_deleted' => false,
+            'is_suspended' => false,
+            'is_email_confirmed' => false,
+            'has_musician_profile' => false,
+            'has_teacher_profile' => false,
+            'activity' => [
+                '@type' => 'AdminUserActivity',
+                'publications' => 0,
+                'comments' => 0,
+                'forum_posts' => 0,
+                'musician_announces' => 0,
+                'band_spaces' => 0,
+            ],
+            'moderation_emails' => [
+                ['@type' => 'AdminUserModerationEmail', 'type' => 'suspension_lifted', 'sent_datetime' => '2026-10-20T10:00:00+00:00'],
+                ['@type' => 'AdminUserModerationEmail', 'type' => 'account_suspended_statement', 'sent_datetime' => '2026-10-01T10:00:00+00:00'],
             ],
         ]);
     }
