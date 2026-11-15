@@ -4,6 +4,7 @@ namespace App\Repository\Notification;
 
 use App\Entity\Notification\Notification;
 use App\Entity\User;
+use App\Enum\Notification\NotificationType;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -62,6 +63,23 @@ class NotificationRepository extends ServiceEntityRepository
             ->andWhere('n.recipient = :recipient')
             ->setParameter('id', $id)
             ->setParameter('recipient', $recipient)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** The author's unread up vote notification for this publication, the one a new up vote adds to (#1081). */
+    public function findUnreadPublicationVoted(User $recipient, string $publicationId): ?Notification
+    {
+        return $this->createQueryBuilder('n')
+            ->where('n.recipient = :recipient')
+            ->andWhere('n.type = :type')
+            ->andWhere('n.readDatetime IS NULL')
+            ->andWhere('JSON_CONTAINS(n.payload, :candidate) = 1')
+            ->setParameter('recipient', $recipient)
+            ->setParameter('type', NotificationType::PublicationVoted)
+            ->setParameter('candidate', json_encode(['publication_id' => $publicationId], JSON_THROW_ON_ERROR))
+            ->orderBy('n.creationDatetime', 'DESC')
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

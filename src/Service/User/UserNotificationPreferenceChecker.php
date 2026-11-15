@@ -37,6 +37,13 @@ readonly class UserNotificationPreferenceChecker
         return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->publicationComment;
     }
 
+    public function canReceivePublicationVoteNotification(User $user): bool
+    {
+        $preference = $user->notificationPreference;
+
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->publicationVote;
+    }
+
     public function canReceiveForumReplyNotification(User $user): bool
     {
         $preference = $user->notificationPreference;

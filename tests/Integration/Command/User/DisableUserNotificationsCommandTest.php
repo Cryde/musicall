@@ -59,6 +59,7 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
         $this->assertFalse($preference->weeklyRecap);
         $this->assertFalse($preference->messageReceived);
         $this->assertFalse($preference->publicationComment);
+        $this->assertFalse($preference->publicationVote);
         $this->assertFalse($preference->forumReply);
         $this->assertFalse($preference->marketing);
         $this->assertFalse($preference->activityReminder);
@@ -92,6 +93,7 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
         $this->assertFalse($preference->weeklyRecap);
         $this->assertFalse($preference->messageReceived);
         $this->assertFalse($preference->publicationComment);
+        $this->assertFalse($preference->publicationVote);
         $this->assertFalse($preference->forumReply);
         $this->assertFalse($preference->marketing);
         $this->assertFalse($preference->activityReminder);

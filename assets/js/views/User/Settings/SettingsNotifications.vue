@@ -31,6 +31,13 @@
         />
 
         <NotificationToggle
+          v-model="form.publication_vote"
+          :label="t('profile.settings.notifications.email.publication_vote.label')"
+          :description="t('profile.settings.notifications.email.publication_vote.description')"
+          :disabled="isUpdating"
+        />
+
+        <NotificationToggle
           v-model="form.forum_reply"
           :label="t('profile.settings.notifications.email.forum_reply.label')"
           :description="t('profile.settings.notifications.email.forum_reply.description')"
@@ -170,6 +177,7 @@ const DEFAULTS = {
   weekly_recap: true,
   message_received: true,
   publication_comment: true,
+  publication_vote: true,
   forum_reply: true,
   marketing: false,
   activity_reminder: true,

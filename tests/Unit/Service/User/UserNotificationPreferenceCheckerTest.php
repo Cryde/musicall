@@ -48,6 +48,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         yield 'weeklyRecap - no preference' => ['canReceiveWeeklyRecapNotification', null];
         yield 'message - no preference' => ['canReceiveMessageNotification', null];
         yield 'publicationComment - no preference' => ['canReceivePublicationCommentNotification', null];
+        yield 'publicationVote - no preference' => ['canReceivePublicationVoteNotification', null];
         yield 'forumReply - no preference' => ['canReceiveForumReplyNotification', null];
         yield 'activityReminder - no preference' => ['canReceiveActivityReminderNotification', null];
 
@@ -56,6 +57,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         yield 'weeklyRecap - enabled' => ['canReceiveWeeklyRecapNotification', self::createPreference(weeklyRecap: true)];
         yield 'message - enabled' => ['canReceiveMessageNotification', self::createPreference(messageReceived: true)];
         yield 'publicationComment - enabled' => ['canReceivePublicationCommentNotification', self::createPreference(publicationComment: true)];
+        yield 'publicationVote - enabled' => ['canReceivePublicationVoteNotification', self::createPreference(publicationVote: true)];
         yield 'forumReply - enabled' => ['canReceiveForumReplyNotification', self::createPreference(forumReply: true)];
         yield 'activityReminder - enabled' => ['canReceiveActivityReminderNotification', self::createPreference(activityReminder: true)];
         yield 'marketing - enabled' => ['canReceiveMarketingNotification', self::createPreference(marketing: true)];
@@ -74,6 +76,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         yield 'weeklyRecap - disabled' => ['canReceiveWeeklyRecapNotification', self::createPreference(weeklyRecap: false)];
         yield 'message - disabled' => ['canReceiveMessageNotification', self::createPreference(messageReceived: false)];
         yield 'publicationComment - disabled' => ['canReceivePublicationCommentNotification', self::createPreference(publicationComment: false)];
+        yield 'publicationVote - disabled' => ['canReceivePublicationVoteNotification', self::createPreference(publicationVote: false)];
         yield 'forumReply - disabled' => ['canReceiveForumReplyNotification', self::createPreference(forumReply: false)];
         yield 'activityReminder - disabled' => ['canReceiveActivityReminderNotification', self::createPreference(activityReminder: false)];
         yield 'marketing - disabled' => ['canReceiveMarketingNotification', self::createPreference(marketing: false)];
@@ -87,6 +90,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         bool $forumReply = true,
         bool $marketing = false,
         bool $activityReminder = true,
+        bool $publicationVote = true,
     ): UserNotificationPreference {
         $preference = new UserNotificationPreference();
         $preference->siteNews = $siteNews;
@@ -96,6 +100,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         $preference->forumReply = $forumReply;
         $preference->marketing = $marketing;
         $preference->activityReminder = $activityReminder;
+        $preference->publicationVote = $publicationVote;
 
         return $preference;
     }

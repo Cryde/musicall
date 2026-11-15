@@ -36,6 +36,10 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $publicationComment = true;
 
+    /** Up votes on one's publications, in the bell only (#1081). */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $publicationVote = true;
+
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $forumReply = true;
 

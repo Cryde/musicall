@@ -32,6 +32,7 @@ enum NotificationType: string
     case ReportResolved = 'report_resolved';
     case ProfilePostComment = 'profile_post_comment';
     case ProfilePostCommentReply = 'profile_post_comment_reply';
+    case PublicationVoted = 'publication_voted';
 
     /**
      * Where a push of this type sits (#1110), or null when it stays in the bell. A match on purpose: a
@@ -54,6 +55,8 @@ enum NotificationType: string
             self::BandSpaceDeletionScheduled, self::BandSpaceDeletionCancelled => PushCategory::Always,
             // A report and its decision are not urgent; the bell is enough.
             self::ReportReceived, self::ReportResolved => null,
+            // A vote is cheap: a phone buzzing for each one would be noise (#1081).
+            self::PublicationVoted => null,
         };
     }
 }

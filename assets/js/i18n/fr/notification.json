@@ -38,6 +38,7 @@
     "profile_post_comment_reply": "a répondu à ton commentaire sur un post",
     "course_approved": "Ton cours a été publié",
     "publication_approved": "Ta publication a été publiée",
+    "publication_voted": "{count} nouveau vote | {count} nouveaux votes",
     "course_rejected": "Ton cours n'a pas été accepté",
     "publication_rejected": "Ta publication n'a pas été acceptée",
     "gallery_approved": "Ta galerie a été publiée",

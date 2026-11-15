@@ -210,6 +210,15 @@ const TYPE_CONFIG = {
     actions: null,
     target: null
   }),
+  // One row per publication until read (#1081): each new up vote bumps vote_count and brings it back up.
+  publication_voted: (payload) => ({
+    icon: 'pi pi-thumbs-up',
+    avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    title: payload.publication_title,
+    preview: t('notification.preview.publication_voted', payload.vote_count),
+    actions: null,
+    target: publicationTarget(payload)
+  }),
   gallery_approved: (payload) => ({
     icon: 'pi pi-check-circle',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',

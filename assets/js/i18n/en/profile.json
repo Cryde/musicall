@@ -158,6 +158,10 @@
           "label": "Comments on my publications",
           "description": "Get an email when a user comments on one of your publications"
         },
+        "publication_vote": {
+          "label": "Votes on my publications",
+          "description": "Get a notification when your publications receive up votes"
+        },
         "forum_reply": {
           "label": "Forum replies",
           "description": "Get an email when a user replies to one of your forum topics"

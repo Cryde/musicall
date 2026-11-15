@@ -68,6 +68,8 @@ readonly class PushContentBuilder
             NotificationType::GalleryApproved => 'notification.gallery_approved',
             NotificationType::GalleryRejected => 'notification.gallery_rejected',
             NotificationType::ReportReceived, NotificationType::ReportResolved => 'notification.report',
+            // Bell only (#1081): pushing it would first need a sentence of its own.
+            NotificationType::PublicationVoted => throw new \LogicException('An up vote notification is never pushed.'),
         };
 
         // An invitation predates the actor_username convention and names its inviter under its own key.

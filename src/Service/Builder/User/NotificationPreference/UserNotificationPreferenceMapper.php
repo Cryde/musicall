@@ -15,6 +15,7 @@ final class UserNotificationPreferenceMapper
         'weeklyRecap',
         'messageReceived',
         'publicationComment',
+        'publicationVote',
         'forumReply',
         'marketing',
         'activityReminder',

@@ -10,6 +10,8 @@ use App\ApiResource\Publication\PublicationVoteInput;
 use App\ApiResource\Publication\PublicationVoteSummary;
 use App\Entity\Publication;
 use App\Entity\User;
+use App\Enum\Metric\VoteOutcome;
+use App\Event\PublicationVotedEvent;
 use App\Exception\PublicationNotFoundException;
 use App\Repository\Metric\VoteRepository;
 use App\Repository\PublicationRepository;
@@ -18,6 +20,7 @@ use App\Service\Procedure\Metric\VoteProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<PublicationVoteInput, PublicationVoteSummary>
@@ -31,6 +34,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
         private Security              $security,
         private RequestIdentifier     $requestIdentifier,
         private RequestStack          $requestStack,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -47,7 +51,13 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
 
         $userVote = $data->userVote;
 
-        $this->voteProcedure->process($publication, $request, $userVote, $user);
+        $outcome = $this->voteProcedure->process($publication, $request, $userVote, $user);
+
+        // Up votes only (#1081). A down vote turned up gives the author an up vote they did not have, so it
+        // counts like a new one; a withdrawal never notifies.
+        if ($userVote === 1 && $outcome !== VoteOutcome::Withdrawn) {
+            $this->eventDispatcher->dispatch(new PublicationVotedEvent($publication, $user));
+        }
 
         return $this->buildSummary($publication);
     }
