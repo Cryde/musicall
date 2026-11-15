@@ -87,26 +87,55 @@ jobs:
                   ffprobe -version | head -n 1
 
             # —— Composer ——————————————————————————————————————————————————————————
+            # vendor/ itself is cached, keyed on the lock file: a hit skips composer altogether, where an install
+            # from the download cache took about 20s. --no-scripts: the auto-scripts only clear the dev cache and
+            # install public/bundles, which nothing in CI reads.
+            - name: Cache vendor
+              id: vendor-cache
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: vendor-${{ runner.os }}-php${{ matrix.php-versions }}-${{ hashFiles('composer.lock') }}
+
             - name: Get Composer Cache Directory
+              if: steps.vendor-cache.outputs.cache-hit != 'true'
               id: composer-cache
               run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
             - uses: actions/cache@v4
+              if: steps.vendor-cache.outputs.cache-hit != 'true'
               with:
                   path: ${{ steps.composer-cache.outputs.dir }}
                   key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
                   restore-keys: ${{ runner.os }}-composer-
 
             - name: Install dependencies
-              run: composer install --no-progress --prefer-dist --optimize-autoloader
+              if: steps.vendor-cache.outputs.cache-hit != 'true'
+              run: composer install --no-progress --prefer-dist --optimize-autoloader --no-scripts
 
             # —— Symfony ———————————————————————————————————————————————————————————
             - name: Check the Symfony console
               run: bin/console about
 
             # —— Static analysis ———————————————————————————————————————————————————
+            # The result cache (tmpDir in phpstan.neon) comes from the latest master run, so a pull request only
+            # re-analyses the files it changed and what depends on them. Only master saves it.
+            - name: Restore the PHPStan result cache
+              uses: actions/cache/restore@v4
+              with:
+                  path: var/phpstan
+                  key: phpstan-${{ github.sha }}
+                  restore-keys: phpstan-
+
             - name: Static Analysis using PHPStan
               run: vendor/bin/phpstan analyse --no-progress --memory-limit=600M
+
+            - name: Save the PHPStan result cache
+              if: github.ref == 'refs/heads/master'
+              uses: actions/cache/save@v4
+              with:
+                  path: var/phpstan
+                  key: phpstan-${{ github.sha }}
 
             # —— Test database —————————————————————————————————————————————————————
             - name: Create test database
