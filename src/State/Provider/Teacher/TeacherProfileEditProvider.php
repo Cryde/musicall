@@ -14,8 +14,20 @@ use App\ApiResource\Teacher\Private\TeacherProfilePackage;
 use App\ApiResource\Teacher\Private\TeacherProfilePricing;
 use App\ApiResource\Teacher\Private\TeacherProfileSocialLink;
 use App\ApiResource\Teacher\Private\TeacherProfileStyle;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Attribute\Style;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceAvailability;
+use App\Entity\Service\ServiceInstrument;
+use App\Entity\Service\ServiceLink;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Entity\Service\TeachingDetails;
 use App\Entity\User;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServiceKind;
+use App\Enum\Teacher\LocationType;
+use App\Enum\Teacher\SessionDuration;
+use App\Repository\Service\ServiceRepository;
 use App\Translation\ReferenceNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -28,6 +40,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
     public function __construct(
         private Security $security,
         private ReferenceNameTranslator $referenceNames,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -35,31 +48,32 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        if (!$teacherProfile = $user->teacherProfile) {
+        if (!$teacherProfile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching)) {
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 
         return $this->buildFromEntity($teacherProfile);
     }
 
-    public function buildFromEntity(TeacherProfile $profile): TeacherProfileOutput
+    public function buildFromEntity(Service $profile): TeacherProfileOutput
     {
+        $details = TeachingDetails::of($profile);
         $dto = new TeacherProfileOutput();
         $dto->id = $profile->id;
         $dto->description = $profile->description;
         $dto->yearsOfExperience = $profile->yearsOfExperience;
 
-        $dto->studentLevels = $profile->studentLevels;
-        $dto->ageGroups = $profile->ageGroups;
+        $dto->studentLevels = $details->studentLevels;
+        $dto->ageGroups = $details->ageGroups;
 
-        $dto->courseTitle = $profile->courseTitle;
-        $dto->offersTrial = $profile->offersTrial;
-        $dto->trialPrice = $profile->trialPrice;
+        $dto->courseTitle = $profile->headline;
+        $dto->offersTrial = $details->offersTrial;
+        $dto->trialPrice = $details->trialPrice;
 
-        $dto->locations = array_values(array_map(function (\App\Entity\Teacher\TeacherProfileLocation $location): TeacherProfileLocation {
+        $dto->locations = array_values(array_map(function (ServicePlace $location): TeacherProfileLocation {
             $item = new TeacherProfileLocation();
             $item->id = $location->id;
-            $item->type = $location->type->value;
+            $item->type = LocationType::fromPlaceType($location->type)->value;
             $item->address = $location->address;
             $item->city = $location->city;
             $item->country = $location->country;
@@ -68,9 +82,9 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             $item->radius = $location->radius;
 
             return $item;
-        }, $profile->locations->toArray()));
+        }, $profile->places->toArray()));
 
-        $dto->instruments = array_values(array_map(function (\App\Entity\Teacher\TeacherProfileInstrument $instrument): TeacherProfileInstrument {
+        $dto->instruments = array_values(array_map(function (ServiceInstrument $instrument): TeacherProfileInstrument {
             $item = new TeacherProfileInstrument();
             $item->instrumentId = (string) $instrument->instrument->id;
             $item->instrumentName = $this->referenceNames->instrumentMusicianName($instrument->instrument);
@@ -78,7 +92,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->instruments->toArray()));
 
-        $dto->styles = array_values(array_map(function (\App\Entity\Attribute\Style $style): TeacherProfileStyle {
+        $dto->styles = array_values(array_map(function (Style $style): TeacherProfileStyle {
             $item = new TeacherProfileStyle();
             $item->id = (string) $style->id;
             $item->name = $this->referenceNames->style($style);
@@ -86,16 +100,16 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->styles->toArray()));
 
-        $dto->pricing = array_values(array_map(function (\App\Entity\Teacher\TeacherProfilePricing $pricing): TeacherProfilePricing {
+        $dto->pricing = array_map(function (ServiceOffer $pricing): TeacherProfilePricing {
             $item = new TeacherProfilePricing();
             $item->id = $pricing->id;
-            $item->duration = $pricing->duration->value;
+            $item->duration = SessionDuration::fromMinutes($pricing->quantity)->value;
             $item->price = $pricing->price;
 
             return $item;
-        }, $profile->pricing->toArray()));
+        }, $profile->offersIn(OfferUnit::Lesson));
 
-        $dto->availability = array_values(array_map(function (\App\Entity\Teacher\TeacherAvailability $availability): TeacherProfileAvailability {
+        $dto->availability = array_values(array_map(function (ServiceAvailability $availability): TeacherProfileAvailability {
             $item = new TeacherProfileAvailability();
             $item->id = $availability->id;
             $item->dayOfWeek = $availability->dayOfWeek->value;
@@ -105,28 +119,28 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->availability->toArray()));
 
-        $dto->packages = array_values(array_map(function (\App\Entity\Teacher\TeacherProfilePackage $package): TeacherProfilePackage {
+        $dto->packages = array_map(function (ServiceOffer $package): TeacherProfilePackage {
             $item = new TeacherProfilePackage();
             $item->id = $package->id;
-            $item->title = $package->title;
+            $item->title = (string) $package->title;
             $item->description = $package->description;
-            $item->sessionsCount = $package->sessionsCount;
+            $item->sessionsCount = $package->quantity;
             $item->price = $package->price;
 
             return $item;
-        }, $profile->packages->toArray()));
+        }, $profile->offersIn(OfferUnit::Package));
 
-        $dto->socialLinks = array_values(array_map(function (\App\Entity\Teacher\TeacherSocialLink $socialLink): TeacherProfileSocialLink {
+        $dto->socialLinks = array_values(array_map(function (ServiceLink $socialLink): TeacherProfileSocialLink {
             $item = new TeacherProfileSocialLink();
             $item->id = $socialLink->id;
             $item->platform = $socialLink->platform->value;
             $item->url = $socialLink->url;
 
             return $item;
-        }, $profile->socialLinks->toArray()));
+        }, $profile->links->toArray()));
 
-        $dto->levelGoals = $profile->levelGoalList();
-        $dto->songs = $profile->songs;
+        $dto->levelGoals = $details->levelGoalList();
+        $dto->songs = $details->songs;
 
         return $dto;
     }

@@ -17,8 +17,8 @@ use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
 use App\Tests\Factory\Profile\ProfilePostFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileMediaFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceMediaFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -76,8 +76,8 @@ class ProfileWallActivityTest extends ApiTestCase
             'title' => 'Live au Botanique',
             'creationDatetime' => new \DateTimeImmutable('2026-10-02T10:00:00+00:00'),
         ]);
-        $teacherMedia = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => TeacherProfileFactory::new(['user' => $owner]),
+        $teacherMedia = ServiceMediaFactory::new()->create([
+            'service' => ServiceFactory::new(['user' => $owner])->teaching(),
             'platform' => MediaPlatform::SOUNDCLOUD,
             'url' => 'https://soundcloud.com/julien/arpeges',
             'embedId' => 'julien/arpeges',
@@ -266,8 +266,8 @@ class ProfileWallActivityTest extends ApiTestCase
             'title' => 'Live au Botanique',
             'creationDatetime' => new \DateTimeImmutable('2026-10-02T10:00:00+00:00'),
         ]);
-        $teacherMedia = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => TeacherProfileFactory::new(['user' => $owner]),
+        $teacherMedia = ServiceMediaFactory::new()->create([
+            'service' => ServiceFactory::new(['user' => $owner])->teaching(),
             'platform' => MediaPlatform::SOUNDCLOUD,
             'url' => 'https://soundcloud.com/julien/arpeges',
             'embedId' => 'julien/arpeges',
@@ -712,8 +712,8 @@ class ProfileWallActivityTest extends ApiTestCase
             ]);
         }
         // Ranked below a publication, in the same second: it follows the last one.
-        $media = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => TeacherProfileFactory::new(['user' => $owner]),
+        $media = ServiceMediaFactory::new()->create([
+            'service' => ServiceFactory::new(['user' => $owner])->teaching(),
             'title' => 'Arpèges',
             'creationDatetime' => $second,
         ]);

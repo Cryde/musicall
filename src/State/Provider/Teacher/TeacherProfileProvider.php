@@ -7,8 +7,10 @@ namespace App\State\Provider\Teacher;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Teacher\Public\TeacherProfile as PublicTeacherProfile;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use App\Repository\UserRepository;
 use App\Security\Profile\PublicProfileGuard;
 use App\Service\Builder\Teacher\TeacherProfileBuilder;
@@ -25,6 +27,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
         private TeacherProfileBuilder $teacherProfileBuilder,
         private ProfileViewTracker $viewTracker,
         private PublicProfileGuard $publicProfileGuard,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -40,7 +43,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
 
         $this->publicProfileGuard->assertVisible($user);
 
-        if (!($teacherProfile = $user->teacherProfile) instanceof \App\Entity\Teacher\TeacherProfile) {
+        if (!($teacherProfile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching)) instanceof Service) {
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 

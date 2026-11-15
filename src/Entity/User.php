@@ -15,7 +15,6 @@ use App\Entity\Musician\MusicianProfile;
 use App\ApiResource\Message\MessageResource;
 use App\ApiResource\Message\MessageThreadMetaResource;
 use App\ApiResource\Publication\GalleryResource;
-use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User\UserNotificationPreference;
 use App\Entity\User\UserProfile;
 use App\Enum\User\ClientPlatform;
@@ -195,16 +194,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $value->user = $this;
             }
             $this->notificationPreference = $value;
-        }
-    }
-
-    #[ORM\OneToOne(targetEntity: TeacherProfile::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
-    public ?TeacherProfile $teacherProfile = null {
-        set(?TeacherProfile $value) {
-            if ($value instanceof \App\Entity\Teacher\TeacherProfile && $value->user !== $this) {
-                $value->user = $this;
-            }
-            $this->teacherProfile = $value;
         }
     }
 

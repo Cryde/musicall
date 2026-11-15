@@ -4,7 +4,7 @@ namespace App\Service\Builder\Message;
 
 use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Enum\Message\ContactOriginType;
 use App\Translation\ReferenceSnapshotNames;
 
@@ -33,7 +33,7 @@ readonly class ContactOriginBuilder
         return [
             'type' => $origin->type->value,
             'musician_announce_id' => $origin->musicianAnnounce instanceof MusicianAnnounce ? (string) $origin->musicianAnnounce->id : null,
-            'teacher_profile_id' => $origin->teacherProfile instanceof TeacherProfile ? (string) $origin->teacherProfile->id : null,
+            'teacher_profile_id' => $origin->teacherProfile instanceof Service ? (string) $origin->teacherProfile->id : null,
             'announce_type' => $origin->announceType,
             'instruments' => array_map($instrumentName, $origin->instruments),
             'styles' => array_map($this->referenceSnapshotNames->styleName(...), $origin->styles),

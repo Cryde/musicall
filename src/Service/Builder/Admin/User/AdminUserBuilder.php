@@ -11,11 +11,13 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Publication;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Enum\Service\ServiceKind;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Comment\CommentRepository;
 use App\Repository\Forum\ForumPostRepository;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\PublicationRepository;
+use App\Repository\Service\ServiceRepository;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -32,6 +34,7 @@ readonly class AdminUserBuilder
         private ForumPostRepository $forumPostRepository,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -56,7 +59,7 @@ readonly class AdminUserBuilder
         $resource->isSuspended = $user->isSuspended();
         $resource->isEmailConfirmed = $user->confirmationDatetime instanceof \DateTimeInterface;
         $resource->hasMusicianProfile = $user->musicianProfile !== null;
-        $resource->hasTeacherProfile = $user->teacherProfile !== null;
+        $resource->hasTeacherProfile = $this->serviceRepository->count(['user' => $user, 'kind' => ServiceKind::Teaching]) > 0;
         $resource->profilePictureUrl = $this->buildProfilePictureUrl($user);
 
         return $resource;

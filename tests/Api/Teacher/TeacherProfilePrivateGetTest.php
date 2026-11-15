@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Teacher;
 
-use App\Entity\Teacher\TeacherAvailability;
-use App\Entity\Teacher\TeacherProfileLocation;
-use App\Entity\Teacher\TeacherProfilePackage;
-use App\Entity\Teacher\TeacherProfilePricing;
+use App\Entity\Service\ServiceAvailability;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServicePlaceType;
 use App\Enum\Teacher\AgeGroup;
 use App\Enum\Teacher\DayOfWeek;
-use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Enum\Teacher\StudentLevel;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -39,21 +39,21 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $rock = StyleFactory::new()->asRock()->create();
 
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Mon profil de professeur complet',
             'yearsOfExperience' => 15,
             'studentLevels' => [StudentLevel::BEGINNER->value, StudentLevel::INTERMEDIATE->value, StudentLevel::ADVANCED->value],
             'ageGroups' => [AgeGroup::CHILDREN->value, AgeGroup::TEENAGERS->value, AgeGroup::ADULTS->value],
-            'courseTitle' => 'Cours de guitare',
+            'headline' => 'Cours de guitare',
             'offersTrial' => true,
             'trialPrice' => 1500,
             'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
         ]);
 
         // Add instrument
-        TeacherProfileInstrumentFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        ServiceInstrumentFactory::new()->create([
+            'service' => $teacherProfile,
             'instrument' => $guitar,
         ]);
 
@@ -63,36 +63,38 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
         $realProfile->addStyle($rock);
 
         // Add location
-        $location = new TeacherProfileLocation();
-        $location->type = LocationType::TEACHER_PLACE;
+        $location = new ServicePlace();
+        $location->type = ServicePlaceType::AtMyPlace;
         $location->address = '123 rue de la Musique';
         $location->city = 'Paris';
         $location->country = 'France';
         $location->latitude = '48.8566';
         $location->longitude = '2.3522';
         $location->radius = 10;
-        $realProfile->addLocation($location);
+        $realProfile->addPlace($location);
 
         // Add pricing
-        $pricing = new TeacherProfilePricing();
-        $pricing->duration = SessionDuration::ONE_HOUR;
+        $pricing = new ServiceOffer();
+        $pricing->unit = OfferUnit::Lesson;
+        $pricing->quantity = SessionDuration::ONE_HOUR->getMinutes();
         $pricing->price = 4500;
-        $realProfile->addPricing($pricing);
+        $realProfile->addOffer($pricing);
 
         // Add availability
-        $availability = new TeacherAvailability();
+        $availability = new ServiceAvailability();
         $availability->dayOfWeek = DayOfWeek::MONDAY;
         $availability->startTime = new \DateTimeImmutable('09:00');
         $availability->endTime = new \DateTimeImmutable('12:00');
         $realProfile->addAvailability($availability);
 
         // Add package
-        $package = new TeacherProfilePackage();
+        $package = new ServiceOffer();
+        $package->unit = OfferUnit::Package;
         $package->title = 'Forfait 10 cours';
         $package->description = 'Pack de 10 cours d\'une heure';
-        $package->sessionsCount = 10;
+        $package->quantity = 10;
         $package->price = 40000;
-        $realProfile->addPackage($package);
+        $realProfile->addOffer($package);
 
         \Zenstruck\Foundry\Persistence\save($teacherProfile);
 

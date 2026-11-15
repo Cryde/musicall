@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Builder\Teacher;
 
 use App\ApiResource\Teacher\TeacherProfileMedia;
-use App\Entity\Teacher\TeacherProfileMedia as TeacherProfileMediaEntity;
+use App\Entity\Service\ServiceMedia;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -18,7 +18,7 @@ readonly class TeacherProfileMediaResourceBuilder
     }
 
     /**
-     * @param TeacherProfileMediaEntity[] $mediaList
+     * @param ServiceMedia[] $mediaList
      *
      * @return TeacherProfileMedia[]
      */
@@ -27,7 +27,7 @@ readonly class TeacherProfileMediaResourceBuilder
         return array_map($this->buildFromEntity(...), $mediaList);
     }
 
-    public function buildFromEntity(TeacherProfileMediaEntity $media): TeacherProfileMedia
+    public function buildFromEntity(ServiceMedia $media): TeacherProfileMedia
     {
         $profileMedia = new TeacherProfileMedia();
         $profileMedia->id = $media->id;
@@ -41,7 +41,7 @@ readonly class TeacherProfileMediaResourceBuilder
         return $profileMedia;
     }
 
-    private function getThumbnailUrl(TeacherProfileMediaEntity $media): ?string
+    private function getThumbnailUrl(ServiceMedia $media): ?string
     {
         $thumbnailImageName = $media->thumbnailImageName;
         if (!$thumbnailImageName) {

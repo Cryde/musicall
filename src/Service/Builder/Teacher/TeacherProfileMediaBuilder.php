@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Service\Builder\Teacher;
 
 use App\ApiResource\Teacher\Profile\Media;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileMedia;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceMedia;
+use App\Repository\Service\ServiceMediaRepository;
 use App\Service\File\RemoteFileDownloader;
 use App\Service\Musician\MediaMetadata\MediaMetadata;
 use App\Service\Musician\MediaUrlParser\ParsedMediaUrl;
@@ -19,19 +19,19 @@ readonly class TeacherProfileMediaBuilder
     public function __construct(
         private RemoteFileDownloader $remoteFileDownloader,
         private ParameterBagInterface $parameterBag,
-        private TeacherProfileMediaRepository $mediaRepository,
+        private ServiceMediaRepository $mediaRepository,
         private LoggerInterface $logger,
     ) {
     }
 
     public function build(
-        TeacherProfile $profile,
+        Service $profile,
         ParsedMediaUrl $parsed,
         Media $mediaDto,
         MediaMetadata $metadata,
-    ): TeacherProfileMedia {
-        $media = new TeacherProfileMedia();
-        $media->teacherProfile = $profile;
+    ): ServiceMedia {
+        $media = new ServiceMedia();
+        $media->service = $profile;
         $media->platform = $parsed->platform;
         $media->url = $mediaDto->url;
         $media->embedId = $parsed->embedId;

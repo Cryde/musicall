@@ -7,7 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Message\MessageResource;
 use App\ApiResource\Message\MessageUser;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Entity\User;
 use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
@@ -73,7 +73,7 @@ class MessagePostToUserProcessor implements ProcessorInterface
             return $this->contactOriginResolver->musicianAnnounceOf($data->musicianAnnounceId, $data->recipient);
         }
         $profile = $data->fromTeacherProfile ? $this->contactOriginResolver->teacherProfileOf($data->recipient) : null;
-        if (!$profile instanceof TeacherProfile) {
+        if (!$profile instanceof Service) {
             return null;
         }
 

@@ -3,8 +3,8 @@
 namespace App\Service\Message;
 
 use App\Entity\Attribute\Instrument;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileInstrument;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceInstrument;
 use App\Enum\Message\LessonRequest;
 
 /**
@@ -14,7 +14,7 @@ use App\Enum\Message\LessonRequest;
 final readonly class TeacherProfileContact
 {
     public function __construct(
-        public TeacherProfile $profile,
+        public Service $profile,
         public ?Instrument $instrument = null,
         public ?LessonRequest $lessonRequest = null,
     ) {
@@ -32,7 +32,7 @@ final readonly class TeacherProfileContact
         }
 
         return array_values(array_map(
-            static fn (TeacherProfileInstrument $taught): string => $taught->instrument->slug,
+            static fn (ServiceInstrument $taught): string => $taught->instrument->slug,
             $this->profile->instruments->toArray(),
         ));
     }

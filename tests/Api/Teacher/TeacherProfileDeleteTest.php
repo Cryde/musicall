@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Teacher;
 
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Repository\Service\ServiceRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
+use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -20,10 +20,10 @@ class TeacherProfileDeleteTest extends ApiTestCase
 
     public function test_delete_teacher_profile(): void
     {
-        $teacherProfileRepository = self::getContainer()->get(TeacherProfileRepository::class);
+        $teacherProfileRepository = self::getContainer()->get(ServiceRepository::class);
         $user = UserFactory::new()->asBaseUser()->create();
 
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->assertNotNull($teacherProfileRepository->findOneBy(['user' => $user]));
 

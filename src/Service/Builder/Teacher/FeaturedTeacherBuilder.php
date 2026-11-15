@@ -6,8 +6,9 @@ namespace App\Service\Builder\Teacher;
 
 use App\ApiResource\Teacher\Public\FeaturedTeacher;
 use App\ApiResource\Teacher\Public\TeacherProfileInstrument;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileInstrument as TeacherProfileInstrumentEntity;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceInstrument;
+use App\Entity\Service\TeachingDetails;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -22,7 +23,7 @@ readonly class FeaturedTeacherBuilder
     }
 
     /**
-     * @param TeacherProfile[] $profiles
+     * @param Service[] $profiles
      *
      * @return FeaturedTeacher[]
      */
@@ -31,7 +32,7 @@ readonly class FeaturedTeacherBuilder
         return array_map($this->build(...), $profiles);
     }
 
-    private function build(TeacherProfile $profile): FeaturedTeacher
+    private function build(Service $profile): FeaturedTeacher
     {
         $user = $profile->user;
         $dto = new FeaturedTeacher();
@@ -45,7 +46,7 @@ readonly class FeaturedTeacherBuilder
             }
         }
 
-        $dto->instruments = array_values(array_map(function (TeacherProfileInstrumentEntity $instrument): TeacherProfileInstrument {
+        $dto->instruments = array_values(array_map(function (ServiceInstrument $instrument): TeacherProfileInstrument {
             $dto = new TeacherProfileInstrument();
             $dto->instrumentId = (string) $instrument->instrument->id;
             $dto->instrumentName = $this->referenceNames->instrument($instrument->instrument);
@@ -53,8 +54,9 @@ readonly class FeaturedTeacherBuilder
             return $dto;
         }, $profile->instruments->toArray()));
 
-        $dto->offersTrial = $profile->offersTrial;
-        $dto->trialPrice = $profile->trialPrice;
+        $details = TeachingDetails::of($profile);
+        $dto->offersTrial = $details->offersTrial;
+        $dto->trialPrice = $details->trialPrice;
 
         return $dto;
     }

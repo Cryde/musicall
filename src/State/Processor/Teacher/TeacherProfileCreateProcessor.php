@@ -8,8 +8,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Teacher\Private\TeacherProfileInput;
 use App\ApiResource\Teacher\Private\TeacherProfileOutput;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Teacher\TeacherProfileWriter;
 use App\State\Provider\Teacher\TeacherProfileEditProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +29,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private TeacherProfileEditProvider $outputProvider,
         private TeacherProfileWriter $profileWriter,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -39,12 +42,13 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        if ($user->teacherProfile) {
+        if ($this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching) instanceof Service) {
             throw new BadRequestHttpException('profile.teacher.already_exists');
         }
 
-        $profile = new TeacherProfile();
+        $profile = new Service();
         $profile->user = $user;
+        $profile->kind = ServiceKind::Teaching;
 
         $this->profileWriter->write($profile, $data);
 

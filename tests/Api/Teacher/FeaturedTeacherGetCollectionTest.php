@@ -7,8 +7,8 @@ namespace App\Tests\Api\Teacher;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -26,30 +26,30 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $piano = InstrumentFactory::new()->asPiano()->create();
 
-        $profile1 = TeacherProfileFactory::new()
+        $profile1 = ServiceFactory::new()->teaching()
             ->withTrial(0)
             ->create([
                 'user' => $user1,
                 'creationDatetime' => new \DateTimeImmutable('2024-01-01T10:00:00+00:00'),
             ]);
 
-        TeacherProfileInstrumentFactory::new()->create([
-            'teacherProfile' => $profile1,
+        ServiceInstrumentFactory::new()->create([
+            'service' => $profile1,
             'instrument' => $guitar,
         ]);
-        TeacherProfileInstrumentFactory::new()->create([
-            'teacherProfile' => $profile1,
+        ServiceInstrumentFactory::new()->create([
+            'service' => $profile1,
             'instrument' => $piano,
         ]);
 
-        $profile2 = TeacherProfileFactory::new()->create([
+        $profile2 = ServiceFactory::new()->teaching()->create([
             'user' => $user2,
             'offersTrial' => false,
             'creationDatetime' => new \DateTimeImmutable('2024-02-01T10:00:00+00:00'),
         ]);
 
-        TeacherProfileInstrumentFactory::new()->create([
-            'teacherProfile' => $profile2,
+        ServiceInstrumentFactory::new()->create([
+            'service' => $profile2,
             'instrument' => $piano,
         ]);
 
@@ -114,13 +114,13 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
     public function test_a_username_with_a_dot_is_listed(): void
     {
         $user = UserFactory::new()->create(['username' => 'alice.martin']);
-        $profile = TeacherProfileFactory::new()->create([
+        $profile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'offersTrial' => false,
             'creationDatetime' => new \DateTimeImmutable('2024-01-01T10:00:00+00:00'),
         ]);
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $profile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $profile, 'instrument' => $guitar]);
 
         $this->client->request('GET', '/api/teachers/featured');
 

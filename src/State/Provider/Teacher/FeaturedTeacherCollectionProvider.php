@@ -8,7 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Teacher\Public\FeaturedTeacher;
 use App\Entity\User;
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Builder\Teacher\FeaturedTeacherBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -18,7 +19,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 readonly class FeaturedTeacherCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        private TeacherProfileRepository $teacherProfileRepository,
+        private ServiceRepository $serviceRepository,
         private FeaturedTeacherBuilder $featuredTeacherBuilder,
         private Security $security,
     ) {
@@ -30,7 +31,7 @@ readonly class FeaturedTeacherCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $viewer = $this->security->getUser();
-        $profiles = $this->teacherProfileRepository->findAllWithInstruments($viewer instanceof User ? $viewer : null);
+        $profiles = $this->serviceRepository->findAllWithInstrumentsByKind(ServiceKind::Teaching, $viewer instanceof User ? $viewer : null);
 
         return $this->featuredTeacherBuilder->buildList($profiles);
     }

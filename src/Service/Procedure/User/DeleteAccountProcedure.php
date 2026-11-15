@@ -10,6 +10,7 @@ use App\Repository\Message\MessageFileRepository;
 use App\Repository\Profile\ProfilePostCommentLikeRepository;
 use App\Repository\Profile\ProfilePostLikeRepository;
 use App\Repository\Profile\ProfilePostRepository;
+use App\Repository\Service\ServiceRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\User\UserDailyActivityRepository;
@@ -34,6 +35,7 @@ readonly class DeleteAccountProcedure
         private ProfilePostLikeRepository $profilePostLikeRepository,
         private ProfilePostCommentLikeRepository $profilePostCommentLikeRepository,
         private UserDailyActivityRepository $userDailyActivityRepository,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -94,8 +96,10 @@ readonly class DeleteAccountProcedure
         // Remove musician profile
         $user->musicianProfile = null;
 
-        // Remove teacher profile
-        $user->teacherProfile = null;
+        // Remove the services, teaching included
+        foreach ($this->serviceRepository->findBy(['user' => $user]) as $service) {
+            $this->entityManager->remove($service);
+        }
 
         // Anonymize user profile
         $profile = $user->profile;

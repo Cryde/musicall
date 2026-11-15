@@ -8,9 +8,12 @@ use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Teacher\TeacherProfileMedia;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceMedia;
 use App\Entity\User;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceMediaRepository;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Builder\Teacher\TeacherProfileMediaResourceBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -23,8 +26,9 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
 {
     public function __construct(
         private Security $security,
-        private TeacherProfileMediaRepository $mediaRepository,
+        private ServiceMediaRepository $mediaRepository,
         private TeacherProfileMediaResourceBuilder $teacherProfileMediaResourceBuilder,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -35,7 +39,7 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
     {
         /** @var User|null $user */
         $user = $this->security->getUser();
-        $profile = $user?->teacherProfile;
+        $profile = $user instanceof User ? $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching) : null;
 
         if ($operation instanceof CollectionOperationInterface) {
             return $this->provideCollection($profile);
@@ -47,30 +51,30 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
     /**
      * @return TeacherProfileMedia[]
      */
-    private function provideCollection(?TeacherProfile $profile): array
+    private function provideCollection(?Service $profile): array
     {
-        if (!$profile instanceof \App\Entity\Teacher\TeacherProfile) {
+        if (!$profile instanceof Service) {
             return [];
         }
 
         $mediaList = $this->mediaRepository->findBy(
-            ['teacherProfile' => $profile],
+            ['service' => $profile],
             ['position' => 'ASC']
         );
 
         return $this->teacherProfileMediaResourceBuilder->buildList($mediaList);
     }
 
-    private function provideItem(string $id, ?TeacherProfile $profile): TeacherProfileMedia
+    private function provideItem(string $id, ?Service $profile): TeacherProfileMedia
     {
-        if (!$profile instanceof \App\Entity\Teacher\TeacherProfile) {
+        if (!$profile instanceof Service) {
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
-        if (!($media = $this->mediaRepository->find($id)) instanceof \App\Entity\Teacher\TeacherProfileMedia) {
+        if (!($media = $this->mediaRepository->find($id)) instanceof ServiceMedia) {
             throw new NotFoundHttpException('profile.media.not_found');
         }
 
-        if ($media->teacherProfile->id !== $profile->id) {
+        if ($media->service->id !== $profile->id) {
             throw new AccessDeniedHttpException('profile.media.access_forbidden');
         }
 

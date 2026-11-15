@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Validator\Teacher;
 
 use App\ApiResource\Teacher\Private\TeacherProfileInput;
+use App\Entity\Service\Service;
+use App\Entity\Service\TeachingDetails;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -13,8 +17,10 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class ValidLevelGoalsValidator extends ConstraintValidator
 {
-    public function __construct(private readonly Security $security)
-    {
+    public function __construct(
+        private readonly Security $security,
+        private readonly ServiceRepository $serviceRepository,
+    ) {
     }
 
     public function validate(mixed $value, Constraint $constraint): void
@@ -57,7 +63,8 @@ class ValidLevelGoalsValidator extends ConstraintValidator
     private function storedStudentLevels(): array
     {
         $user = $this->security->getUser();
+        $teaching = $user instanceof User ? $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching) : null;
 
-        return $user instanceof User ? $user->teacherProfile->studentLevels ?? [] : [];
+        return $teaching instanceof Service ? TeachingDetails::of($teaching)->studentLevels : [];
     }
 }

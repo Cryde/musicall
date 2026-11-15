@@ -4,10 +4,11 @@ namespace App\Service\Message;
 
 use App\Entity\Attribute\Instrument;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
 use App\Repository\Musician\MusicianAnnounceRepository;
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Repository\Service\ServiceRepository;
 
 /**
  * The announce or teacher profile a direct message says it was sent from (#998), only the
@@ -17,7 +18,7 @@ readonly class ContactOriginResolver
 {
     public function __construct(
         private MusicianAnnounceRepository $musicianAnnounceRepository,
-        private TeacherProfileRepository $teacherProfileRepository,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -28,13 +29,13 @@ readonly class ContactOriginResolver
         return $announce instanceof MusicianAnnounce && (string) $announce->author->id === (string) $recipient->id ? $announce : null;
     }
 
-    public function teacherProfileOf(User $recipient): ?TeacherProfile
+    public function teacherProfileOf(User $recipient): ?Service
     {
-        return $this->teacherProfileRepository->findOneBy(['user' => $recipient]);
+        return $this->serviceRepository->findOneByUserAndKind($recipient, ServiceKind::Teaching);
     }
 
     /** The instrument a lesson request is about (#1322), only one the teacher teaches. */
-    public function taughtInstrumentOf(TeacherProfile $profile, string $instrumentId): ?Instrument
+    public function taughtInstrumentOf(Service $profile, string $instrumentId): ?Instrument
     {
         foreach ($profile->instruments as $taught) {
             if ((string) $taught->instrument->id === $instrumentId) {

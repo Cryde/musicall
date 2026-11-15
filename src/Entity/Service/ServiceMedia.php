@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Entity\Teacher;
+namespace App\Entity\Service;
 
 use App\Enum\Musician\MediaPlatform;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Repository\Service\ServiceMediaRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
-#[ORM\Entity(repositoryClass: TeacherProfileMediaRepository::class)]
-#[ORM\Table(name: 'user_teacher_profile_media')]
-class TeacherProfileMedia
+/** A YouTube, SoundCloud or Spotify embed. */
+#[ORM\Entity(repositoryClass: ServiceMediaRepository::class)]
+#[ORM\Table(name: 'service_media')]
+class ServiceMedia
 {
     #[ORM\Id]
     #[ORM\Column(type: Types::GUID, unique: true)]
@@ -21,9 +22,9 @@ class TeacherProfileMedia
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     public ?string $id = null;
 
-    #[ORM\ManyToOne(targetEntity: TeacherProfile::class, inversedBy: 'media')]
+    #[ORM\ManyToOne(targetEntity: Service::class, inversedBy: 'media')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    public TeacherProfile $teacherProfile;
+    public Service $service;
 
     #[ORM\Column(type: Types::STRING, length: 20, enumType: MediaPlatform::class)]
     public MediaPlatform $platform;

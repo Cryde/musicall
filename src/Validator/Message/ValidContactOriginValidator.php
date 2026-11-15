@@ -3,7 +3,7 @@
 namespace App\Validator\Message;
 
 use App\ApiResource\Message\MessageUser;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Enum\Message\LessonRequest;
 use App\Service\Message\ContactOriginResolver;
 use Symfony\Component\Validator\Constraint;
@@ -55,7 +55,7 @@ class ValidContactOriginValidator extends ConstraintValidator
         }
 
         $profile = $this->contactOriginResolver->teacherProfileOf($value->recipient);
-        if (!$profile instanceof TeacherProfile) {
+        if (!$profile instanceof Service) {
             $this->context->buildViolation($constraint->teacherProfileMessage)->atPath('fromTeacherProfile')->setCode(self::ERROR_CODE_TEACHER_PROFILE)->addViolation();
 
             return;

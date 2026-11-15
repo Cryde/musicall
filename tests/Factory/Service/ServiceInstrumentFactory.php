@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Factory\Teacher;
+namespace App\Tests\Factory\Service;
 
-use App\Entity\Teacher\TeacherProfileInstrument;
+use App\Entity\Service\ServiceInstrument;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentObjectFactory<TeacherProfileInstrument>
+ * @extends PersistentObjectFactory<ServiceInstrument>
  */
-final class TeacherProfileInstrumentFactory extends PersistentObjectFactory
+final class ServiceInstrumentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
         return [
-            'teacherProfile' => TeacherProfileFactory::new(),
+            'service' => ServiceFactory::new()->teaching(),
             'instrument' => InstrumentFactory::new(),
         ];
     }
 
     public static function class(): string
     {
-        return TeacherProfileInstrument::class;
+        return ServiceInstrument::class;
     }
 }

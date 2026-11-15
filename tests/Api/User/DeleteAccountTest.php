@@ -9,6 +9,8 @@ use App\Entity\SocialAccount;
 use App\Entity\User;
 use App\Entity\User\UserDailyActivity;
 use App\Enum\User\ClientPlatform;
+use App\Entity\Service\Service;
+use App\Repository\Service\ServiceRepository;
 use App\Repository\User\DeviceTokenRepository;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\User\UserDailyActivityRepository;
@@ -17,6 +19,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakeAppleTokenClient;
 use App\Tests\Factory\Publication\PublicationFactory;
+use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\User\DeviceTokenFactory;
 use App\Tests\Factory\User\SocialAccountFactory;
 use App\Tests\Factory\User\UserBlockFactory;
@@ -143,6 +146,22 @@ class DeleteAccountTest extends ApiTestCase
         $this->assertSame([null, null], [$deletedUser->lastPlatform, $deletedUser->lastAppVersion]);
         $days = static::getContainer()->get(UserDailyActivityRepository::class)->findAll();
         $this->assertSame([$someoneElsesDay->id], array_map(static fn (UserDailyActivity $day) => $day->id, $days));
+    }
+
+    public function test_deleting_an_account_removes_its_services(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
+        $someoneElses = ServiceFactory::new()->teaching()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/users/delete_account', [
+            'password' => 'password',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $services = static::getContainer()->get(ServiceRepository::class)->findAll();
+        $this->assertSame([$someoneElses->id], array_map(static fn (Service $service): ?string => $service->id, $services));
     }
 
     public function test_delete_account_oauth_user_no_password(): void

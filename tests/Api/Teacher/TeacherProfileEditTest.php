@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Teacher;
 
-use App\Entity\Teacher\TeacherAvailability;
-use App\Entity\Teacher\TeacherProfileLocation;
-use App\Entity\Teacher\TeacherProfilePackage;
-use App\Entity\Teacher\TeacherProfilePricing;
-use App\Entity\Teacher\TeacherSocialLink;
+use App\Entity\Service\ServiceAvailability;
+use App\Entity\Service\ServiceLink;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Entity\Service\TeachingDetails;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServicePlaceType;
 use App\Enum\SocialPlatform;
 use App\Enum\Teacher\DayOfWeek;
-use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Enum\Teacher\StudentLevel;
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Repository\Service\ServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -34,7 +35,7 @@ class TeacherProfileEditTest extends ApiTestCase
 
     public function test_create_teacher_profile(): void
     {
-        $teacherProfileRepository = self::getContainer()->get(TeacherProfileRepository::class);
+        $teacherProfileRepository = self::getContainer()->get(ServiceRepository::class);
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => 'new_teacher',
             'email' => 'new_teacher@test.com',
@@ -149,7 +150,7 @@ class TeacherProfileEditTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $guitarId = $guitar->id;
 
@@ -338,7 +339,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_teacher_profile(): void
     {
-        self::getContainer()->get(TeacherProfileRepository::class);
+        self::getContainer()->get(ServiceRepository::class);
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
 
         $user = UserFactory::new()->asBaseUser()->create();
@@ -354,20 +355,20 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $jazz = StyleFactory::new()->asJazz()->create();
 
         // Create initial profile with all data
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Ancien profil de professeur',
             'yearsOfExperience' => 3,
             'studentLevels' => [StudentLevel::BEGINNER->value],
             'ageGroups' => ['children'],
-            'courseTitle' => 'Cours de guitare',
+            'headline' => 'Cours de guitare',
             'offersTrial' => true,
             'trialPrice' => 10,
         ]);
 
         // Add initial instrument relation
-        TeacherProfileInstrumentFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        ServiceInstrumentFactory::new()->create([
+            'service' => $teacherProfile,
             'instrument' => $guitar,
         ]);
 
@@ -375,37 +376,39 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $teacherProfile->addStyle($rock);
 
         // Add initial location
-        $initialLocation = new TeacherProfileLocation();
-        $initialLocation->teacherProfile = $teacherProfile;
-        $initialLocation->type = LocationType::TEACHER_PLACE;
+        $initialLocation = new ServicePlace();
+        $initialLocation->service = $teacherProfile;
+        $initialLocation->type = ServicePlaceType::AtMyPlace;
         $initialLocation->address = '5 rue Initiale';
         $initialLocation->city = 'Lyon';
         $initialLocation->country = 'France';
-        $teacherProfile->addLocation($initialLocation);
+        $teacherProfile->addPlace($initialLocation);
 
         // Add initial pricing
-        $initialPricing = new TeacherProfilePricing();
-        $initialPricing->teacherProfile = $teacherProfile;
-        $initialPricing->duration = SessionDuration::THIRTY_MINUTES;
+        $initialPricing = new ServiceOffer();
+        $initialPricing->unit = OfferUnit::Lesson;
+        $initialPricing->service = $teacherProfile;
+        $initialPricing->quantity = SessionDuration::THIRTY_MINUTES->getMinutes();
         $initialPricing->price = 20;
-        $teacherProfile->addPricing($initialPricing);
+        $teacherProfile->addOffer($initialPricing);
 
         // Add initial availability
-        $initialAvailability = new TeacherAvailability();
-        $initialAvailability->teacherProfile = $teacherProfile;
+        $initialAvailability = new ServiceAvailability();
+        $initialAvailability->service = $teacherProfile;
         $initialAvailability->dayOfWeek = DayOfWeek::TUESDAY;
         $initialAvailability->startTime = new \DateTimeImmutable('10:00');
         $initialAvailability->endTime = new \DateTimeImmutable('12:00');
         $teacherProfile->addAvailability($initialAvailability);
 
         // Add initial package
-        $initialPackage = new TeacherProfilePackage();
-        $initialPackage->teacherProfile = $teacherProfile;
+        $initialPackage = new ServiceOffer();
+        $initialPackage->unit = OfferUnit::Package;
+        $initialPackage->service = $teacherProfile;
         $initialPackage->title = 'Pack initial';
         $initialPackage->description = 'Description initiale';
-        $initialPackage->sessionsCount = 3;
+        $initialPackage->quantity = 3;
         $initialPackage->price = 50;
-        $teacherProfile->addPackage($initialPackage);
+        $teacherProfile->addOffer($initialPackage);
 
         $entityManager->flush();
 
@@ -510,48 +513,50 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $rock = StyleFactory::new()->asRock()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [StudentLevel::BEGINNER->value],
             'ageGroups' => ['children'],
-            'courseTitle' => 'Guitare rock',
+            'headline' => 'Guitare rock',
             'offersTrial' => true,
             'trialPrice' => 1000,
             'levelGoals' => ['beginner' => ['title' => 'Jouer ton premier morceau', 'points' => ['Les accords ouverts']]],
             'songs' => [['artist' => 'Radiohead', 'title' => 'Weird Fishes']],
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
         $teacherProfile->addStyle($rock);
 
-        $location = new TeacherProfileLocation();
-        $location->type = LocationType::TEACHER_PLACE;
+        $location = new ServicePlace();
+        $location->type = ServicePlaceType::AtMyPlace;
         $location->address = '5 rue Initiale';
         $location->city = 'Lyon';
         $location->country = 'France';
         $location->latitude = '45.764';
         $location->longitude = '4.8357';
-        $teacherProfile->addLocation($location);
-        $pricing = new TeacherProfilePricing();
-        $pricing->duration = SessionDuration::THIRTY_MINUTES;
+        $teacherProfile->addPlace($location);
+        $pricing = new ServiceOffer();
+        $pricing->unit = OfferUnit::Lesson;
+        $pricing->quantity = SessionDuration::THIRTY_MINUTES->getMinutes();
         $pricing->price = 2000;
-        $teacherProfile->addPricing($pricing);
-        $availability = new TeacherAvailability();
+        $teacherProfile->addOffer($pricing);
+        $availability = new ServiceAvailability();
         $availability->dayOfWeek = DayOfWeek::TUESDAY;
         $availability->startTime = new \DateTimeImmutable('10:00');
         $availability->endTime = new \DateTimeImmutable('12:00');
         $teacherProfile->addAvailability($availability);
-        $package = new TeacherProfilePackage();
+        $package = new ServiceOffer();
+        $package->unit = OfferUnit::Package;
         $package->title = 'Pack initial';
         $package->description = 'Trois cours';
-        $package->sessionsCount = 3;
+        $package->quantity = 3;
         $package->price = 5000;
-        $teacherProfile->addPackage($package);
-        $socialLink = new TeacherSocialLink();
+        $teacherProfile->addOffer($package);
+        $socialLink = new ServiceLink();
         $socialLink->platform = SocialPlatform::YOUTUBE;
         $socialLink->url = 'https://www.youtube.com/@prof';
-        $teacherProfile->addSocialLink($socialLink);
+        $teacherProfile->addLink($socialLink);
         $entityManager->flush();
 
         // An app version that knows only some fields sends only those.
@@ -616,17 +621,17 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [],
             'ageGroups' => [],
-            'courseTitle' => null,
+            'headline' => null,
             'offersTrial' => true,
             'trialPrice' => 1000,
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
 
         // A free trial: both clients send the switch with a null price.
         $this->client->loginUser($user);
@@ -664,17 +669,17 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [],
             'ageGroups' => [],
-            'courseTitle' => null,
+            'headline' => null,
             'offersTrial' => true,
             'trialPrice' => 1000,
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
 
         // The switch left out keeps its stored value, the price sent is written.
         $this->client->loginUser($user);
@@ -710,17 +715,17 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [],
             'ageGroups' => [],
-            'courseTitle' => null,
+            'headline' => null,
             'offersTrial' => true,
             'trialPrice' => 1000,
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['offers_trial' => false], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -748,24 +753,24 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'level_goals' => [],
             'songs' => [],
         ]);
-        $this->assertNull($teacherProfile->trialPrice);
+        $this->assertNull(TeachingDetails::of($teacherProfile)->trialPrice);
     }
 
     public function test_update_empty_course_title_clears_it(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [],
             'ageGroups' => [],
-            'courseTitle' => 'Guitare rock',
+            'headline' => 'Guitare rock',
             'offersTrial' => false,
             'trialPrice' => null,
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
 
         // What the web sends for a cleared title (#1327): an empty string, since null keeps it.
         $this->client->loginUser($user);
@@ -795,13 +800,67 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'level_goals' => [],
             'songs' => [],
         ]);
-        $this->assertSame('', $teacherProfile->courseTitle);
+        $this->assertSame('', $teacherProfile->headline);
+    }
+
+    public function test_update_keeps_one_price_per_lesson_length(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'yearsOfExperience' => 3,
+            'studentLevels' => [],
+            'ageGroups' => [],
+            'offersTrial' => false,
+            'trialPrice' => null,
+        ]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
+
+        // A lesson length has one price (#1318): the first one sent wins.
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'pricing' => [
+                ['duration' => '30min', 'price' => 2500],
+                ['duration' => '1h', 'price' => 4500],
+                ['duration' => '30min', 'price' => 3000],
+            ],
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $responseData = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 3,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [
+                ['id' => $responseData['pricing'][0]['id'], 'duration' => '30min', 'price' => 2500, '@type' => 'TeacherProfilePricing'],
+                ['id' => $responseData['pricing'][1]['id'], 'duration' => '1h', 'price' => 4500, '@type' => 'TeacherProfilePricing'],
+            ],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
     }
 
     public function test_update_refuses_a_cleared_description(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
-        TeacherProfileFactory::new()->create(['user' => $user, 'description' => 'Cours de guitare']);
+        ServiceFactory::new()->teaching()->create(['user' => $user, 'description' => 'Cours de guitare']);
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
@@ -833,21 +892,21 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [],
             'ageGroups' => [],
-            'courseTitle' => null,
+            'headline' => null,
             'offersTrial' => false,
             'trialPrice' => null,
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
-        $storedLink = new TeacherSocialLink();
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
+        $storedLink = new ServiceLink();
         $storedLink->platform = SocialPlatform::YOUTUBE;
         $storedLink->url = 'https://www.youtube.com/@ancien';
-        $teacherProfile->addSocialLink($storedLink);
+        $teacherProfile->addLink($storedLink);
         $entityManager->flush();
 
         // The same platform again: the stored row must go before the new one hits the unique key.
@@ -893,17 +952,17 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $drum = InstrumentFactory::new()->asDrum()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 3,
             'studentLevels' => [],
             'ageGroups' => [],
-            'courseTitle' => null,
+            'headline' => null,
             'offersTrial' => false,
             'trialPrice' => null,
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [

@@ -9,7 +9,8 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Admin\Dashboard\UserDashboardMetrics;
 use App\Repository\Message\MessageRepository;
 use App\Repository\Musician\MusicianProfileRepository;
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use App\Repository\User\UserEmailLogRepository;
 use App\Repository\UserRepository;
 
@@ -24,7 +25,7 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         private UserRepository $userRepository,
         private MessageRepository $messageRepository,
         private MusicianProfileRepository $musicianProfileRepository,
-        private TeacherProfileRepository $teacherProfileRepository,
+        private ServiceRepository $serviceRepository,
         private UserEmailLogRepository $userEmailLogRepository,
     ) {
     }
@@ -83,7 +84,7 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         }
 
         // Recent Teachers within date range
-        $recentTeachers = $this->teacherProfileRepository->findRecentTeachers($from, $to, 10);
+        $recentTeachers = $this->serviceRepository->findRecentByKind(ServiceKind::Teaching, $from, $to, 10);
         foreach ($recentTeachers as $teacherProfile) {
             $metrics->recentTeachers[] = [
                 'username' => $teacherProfile->user->username,
@@ -98,7 +99,7 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         $metrics->totalUsers = $this->userRepository->countTotalUsers();
         $metrics->unconfirmedAccounts = $this->userRepository->countUnconfirmedAccounts();
         $metrics->totalMusicianProfiles = $this->musicianProfileRepository->countAll();
-        $metrics->totalTeacherProfiles = $this->teacherProfileRepository->countAll();
+        $metrics->totalTeacherProfiles = $this->serviceRepository->count(['kind' => ServiceKind::Teaching]);
 
         return $metrics;
     }
