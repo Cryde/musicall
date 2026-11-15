@@ -14,8 +14,11 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;
+use PHPUnit\Framework\Attributes\Group;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
+// Serial: StaticDriver::setKeepStaticConnections() is process global, a paratest worker would carry it into later classes.
+#[Group('serial')]
 #[ResetDatabase]
 class PublicationSearchCollectionTest extends ApiTestCase
 {

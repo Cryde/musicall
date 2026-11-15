@@ -14,6 +14,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\SetlistFactory;
 use App\Tests\Factory\BandSpace\SetlistItemFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpClient\HttpClient;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -27,7 +28,10 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
  *
  * These fail rather than skip under CI. A test that skips when the service is missing reports green
  * on a completely broken renderer, which is worse than not having the test.
+ *
+ * Serial: both Gotenberg tests share one Chromium pool behind a 3 second health probe.
  */
+#[Group('serial')]
 #[ResetDatabase]
 class SetlistPdfGotenbergRenderTest extends ApiTestCase
 {

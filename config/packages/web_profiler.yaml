@@ -9,3 +9,5 @@ when@test:
     framework:
         profiler:
             collect: false
+            # One storage per paratest worker: FileProfilerStorage appends to a single index.csv.
+            dsn: 'file:%kernel.cache_dir%/profiler%env(default::TEST_TOKEN)%'

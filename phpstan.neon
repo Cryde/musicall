@@ -1,5 +1,7 @@
 parameters:
     level: 8
+    # In the project, not /tmp: the result cache then survives a `docker compose run --rm` and a CI cache restore.
+    tmpDir: var/phpstan
     paths:
         - src
     excludePaths:
