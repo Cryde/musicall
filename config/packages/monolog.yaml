@@ -4,6 +4,8 @@ monolog:
         # Auth lifecycle events (#1021). The handler that ships these to Sentry Logs lives in
         # config/packages/sentry.yaml, with the rest of the Sentry wiring.
         - auth
+        # One line per 4xx response (#1391), shipped to Sentry Logs by the same handler as `auth`.
+        - http
 
 when@dev:
     monolog:

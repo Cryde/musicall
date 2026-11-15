@@ -15,9 +15,40 @@ when@prod:
             # is an expected business event with a rate, not an exception: routing these through
             # captureMessage would burn the 5k errors/month quota and bury the issue stream.
             enable_logs: true
+            # A 4xx is the API doing its job, not an error (#1391): each one is counted in Sentry Logs
+            # instead, on the `http` channel. Matched with is_a(), so a parent covers its subclasses.
+            # HttpException stays out (a 502 when Gotenberg is down), and so does the Serializer
+            # ExceptionInterface (mapped to 400, but a broken output normalizer throws it too).
+            # Kept in sync with exception_to_status by SentryIgnoreExceptionsDriftTest.
             ignore_exceptions:
                 - 'Symfony\Component\ErrorHandler\Error\FatalError'
-                - 'Symfony\Component\Debug\Exception\FatalErrorException'
+                # 4xx thrown by the framework or by us
+                - 'Symfony\Component\HttpKernel\Exception\NotFoundHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\BadRequestHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\ConflictHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\GoneHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException'
+                - 'Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException'
+                - 'Symfony\Component\Security\Core\Exception\AccessDeniedException' # API Platform's own extends it
+                - 'ApiPlatform\Validator\Exception\ValidationException'
+                - 'App\Exception\TranslatableHttpException' # every throw is a 4xx
+                # mapped to a 4xx by exception_to_status in api_platform.yaml
+                - 'Symfony\Component\RateLimiter\Exception\RateLimitExceededException'
+                - 'Doctrine\ORM\OptimisticLockException'
+                - 'App\Exception\PublicationNotFoundException'
+                - 'App\Exception\CommentNotFoundException'
+                - 'App\Exception\ForumPostNotFoundException'
+                - 'App\Exception\Musician\InvalidSearchException'
+                - 'App\Exception\Musician\NoResultException'
+                - 'App\Exception\Musician\InvalidResultException'
+                - 'App\Exception\User\ResetPasswordInvalidTokenException'
+                - 'App\Exception\User\UserAlreadyLoggedException'
 
             # Specify a fixed sample rate:
             traces_sample_rate: 1.0
@@ -53,18 +84,18 @@ when@prod:
 
     monolog:
         handlers:
-            # Only the `auth` channel. The floor is info rather than the warning the Sentry docs
+            # The `auth` and `http` channels. The floor is info rather than the warning the Sentry docs
             # use, deliberately: refresh successes are logged at info and they are the denominator,
             # so a warning floor would leave a failure count with nothing to divide it by.
             #
-            # Nothing here is auth specific, so another channel is one more entry in the list below.
+            # Another channel is one more entry in the list below.
             # One trap if you add one: LogsHandler drops any record whose context carries an
             # `exception` key holding a Throwable, on the grounds that those belong in Sentry Errors
             # rather than Sentry Logs. Such a record would vanish rather than arrive.
             sentry_logs:
                 type: service
                 id: Sentry\SentryBundle\Monolog\LogsHandler
-                channels: [auth]
+                channels: [auth, http]
 
     services:
         Sentry\SentryBundle\Monolog\LogsHandler:
