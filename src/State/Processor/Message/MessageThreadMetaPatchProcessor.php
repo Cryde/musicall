@@ -14,6 +14,7 @@ use App\Service\Builder\Message\MessageThreadMetaBuilder;
 use App\Service\User\UserNotificationPreferenceChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -49,7 +50,7 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
         // Unreachable while MessageThreadMetaItemProvider guards the same operation, and kept anyway:
         // this lookup is its own, so a future operation wired to a different provider still lands here.
         if ($entity->user->id !== $user->id) {
-            throw new AccessDeniedException('message.thread_meta.update_forbidden');
+            throw new AccessDeniedHttpException('message.thread_meta.update_forbidden');
         }
 
         // When the recipient catches up on the thread, reset the

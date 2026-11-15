@@ -66,7 +66,7 @@ class MessagePostProcessor implements ProcessorInterface
         }
 
         if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-            throw new AccessDeniedException('message.thread.not_participant');
+            throw new AccessDeniedHttpException('message.thread.not_participant');
         }
 
         if (!$this->contactPolicy->canPostInThread($thread, $user)) {

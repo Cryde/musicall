@@ -7,6 +7,7 @@ import {
   forgetSignedIn,
   hasLiveToken,
   isAuthEndpoint,
+  isTokenRefusal,
   lockAcrossTabs,
   needsProactiveRefresh,
   REFRESH_BUFFER_SECONDS,
@@ -47,6 +48,56 @@ describe('isAuthEndpoint', () => {
 
   it('does not choke on a request with no url', () => {
     assert.equal(isAuthEndpoint(undefined), false)
+  })
+})
+
+describe('isTokenRefusal', () => {
+  it('renews on each refusal the firewall writes, whatever its message', () => {
+    for (const message of [
+      'JWT Token not found',
+      'Expired JWT Token',
+      'Invalid JWT Token',
+      'account_suspended'
+    ]) {
+      assert.equal(isTokenRefusal({ status: 401, data: { code: 401, message } }), true, message)
+    }
+  })
+
+  it('passes through a 401 the application answered with a problem document', () => {
+    const jsonLd = {
+      '@context': '/api/contexts/Error',
+      '@id': '/api/errors/401',
+      '@type': 'Error',
+      title: 'An error occurred',
+      detail: 'Mot de passe requis',
+      description: 'Mot de passe requis',
+      status: 401,
+      type: '/errors/401'
+    }
+    const problemJson = { type: '/errors/401', title: 'An error occurred', status: 401 }
+
+    assert.equal(isTokenRefusal({ status: 401, data: jsonLd }), false)
+    assert.equal(isTokenRefusal({ status: 401, data: problemJson }), false)
+  })
+
+  it('still renews on a 401 whose body says nothing, as before', () => {
+    assert.equal(isTokenRefusal({ status: 401 }), true)
+    assert.equal(isTokenRefusal({ status: 401, data: '' }), true)
+    assert.equal(isTokenRefusal({ status: 401, data: null }), true)
+    assert.equal(isTokenRefusal({ status: 401, data: new Blob(['{}']) }), true)
+    assert.equal(isTokenRefusal({ status: 401, data: '<html>Unauthorized</html>' }), true)
+  })
+
+  it('never renews on another status, a 403 refusal above all', () => {
+    assert.equal(
+      isTokenRefusal({ status: 403, data: { status: 403, detail: 'Accès refusé' } }),
+      false
+    )
+    assert.equal(isTokenRefusal({ status: 500, data: { code: 500, message: 'x' } }), false)
+  })
+
+  it('does not choke on a request that got no response', () => {
+    assert.equal(isTokenRefusal(undefined), false)
   })
 })
 
