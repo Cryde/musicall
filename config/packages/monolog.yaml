@@ -27,8 +27,11 @@ when@test:
                 handler: nested
                 excluded_http_codes: [404, 405]
                 channels: ["!event"]
+                # The test log grew past 100 MB: keep only the last 50 records before an error, and two days of files.
+                buffer_size: 50
             nested:
-                type: stream
+                type: rotating_file
+                max_files: 2
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
 

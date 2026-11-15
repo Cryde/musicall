@@ -12,6 +12,7 @@ use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\User\UserFactory;
 use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;
+use PHPUnit\Framework\Attributes\Group;
 
 use function Zenstruck\Foundry\Persistence\delete;
 
@@ -23,7 +24,10 @@ use function Zenstruck\Foundry\Persistence\delete;
  * back the previous class's transaction, whose table locks then block the drop forever. Foundry skips the first
  * of those resets in a run, which is all PublicationSearchCollectionTest gets away with, so a second class using
  * one would hang the suite.
+ *
+ * Serial: setKeepStaticConnections() is process global, a paratest worker would carry it into later classes.
  */
+#[Group('serial')]
 class ForumSearchLocaleTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

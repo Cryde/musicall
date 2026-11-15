@@ -12,6 +12,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\GalleryFactory;
 use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -218,10 +219,10 @@ class UserGalleryImageTest extends ApiTestCase
     }
 
     /**
-     * @group skip-vich-uploader
      * Skipped: VichUploader tries to delete non-existent files created by factory.
      * The delete API works but file cleanup fails in test environment.
      */
+    #[Group('skip-vich-uploader')]
     public function test_delete_image_success(): void
     {
         $this->markTestSkipped('VichUploader file cleanup issue in tests');

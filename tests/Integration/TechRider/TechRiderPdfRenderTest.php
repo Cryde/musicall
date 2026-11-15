@@ -20,6 +20,7 @@ use App\Tests\Factory\BandSpace\TechRiderItemFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpClient\HttpClient;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -33,7 +34,10 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
  *
  * These fail rather than skip under CI, because a test that skips on a missing service reports green
  * on a completely broken renderer.
+ *
+ * Serial: both Gotenberg tests share one Chromium pool behind a 3 second health probe.
  */
+#[Group('serial')]
 #[ResetDatabase]
 class TechRiderPdfRenderTest extends ApiTestCase
 {

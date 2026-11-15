@@ -28,7 +28,9 @@
     <extensions>
         <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension" />
         <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension">
-            <parameter name="clock-mock-namespaces" value="App" />
+            <!-- The vendor namespaces are the #[TimeSensitive] ones of tests/Api/Native. Registered at bootstrap because a paratest
+                 worker loads a test file only when it runs it, after earlier files have already called time(). -->
+            <parameter name="clock-mock-namespaces" value="App,Symfony\Component\RateLimiter\Policy,Symfony\Component\Security\Http\EventListener" />
             <parameter name="dns-mock-namespaces" value="App" />
         </bootstrap>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>

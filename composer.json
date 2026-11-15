@@ -77,6 +77,7 @@
         "vich/uploader-bundle": "^3"
     },
     "require-dev": {
+        "brianium/paratest": "^7.28",
         "dama/doctrine-test-bundle": "^8.4",
         "deployer/deployer": "^8.0",
         "league/flysystem-memory": "^3.29",
@@ -138,6 +139,10 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "test-parallel": [
+            "Composer\\Config::disableProcessTimeout",
+            "bin/test-parallel"
         ]
     },
     "minimum-stability": "dev",
