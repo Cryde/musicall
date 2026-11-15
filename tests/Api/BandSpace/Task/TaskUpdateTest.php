@@ -321,6 +321,16 @@ class TaskUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Seules les tâches terminées peuvent être archivées',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Seules les tâches terminées peuvent être archivées',
+        ]);
 
         $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
         $refreshed = $repo->find($task->id);

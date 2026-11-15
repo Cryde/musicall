@@ -23,8 +23,8 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class TaskUpdateProcedure
@@ -125,7 +125,7 @@ readonly class TaskUpdateProcedure
             return;
         }
 
-        throw new HttpException(422, 'band_space.task.position_not_editable');
+        throw new UnprocessableEntityHttpException('band_space.task.position_not_editable');
     }
 
     /**
@@ -296,7 +296,7 @@ readonly class TaskUpdateProcedure
                 return;
             }
             if ($task->status !== TaskStatus::Done) {
-                throw new HttpException(422, 'band_space.task.archive_requires_done');
+                throw new UnprocessableEntityHttpException('band_space.task.archive_requires_done');
             }
             $task->archiveDatetime = new DateTimeImmutable();
             $this->bandSpaceActivityRecorder->record(

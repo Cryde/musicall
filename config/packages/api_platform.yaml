@@ -41,9 +41,6 @@ api_platform:
         # Only reached outside a firewall, where nobody is signed in: under one, the security listener
         # answers first, 401 when anonymous and 403 when signed in. Refusals throw AccessDeniedHttpException (#1026).
         Symfony\Component\Security\Core\Exception\AccessDeniedException: 401
-        # Api platform specific
-        ApiPlatform\Exception\InvalidArgumentException: 400
-        ApiPlatform\Exception\FilterValidationException: 400
         # Doctrine specific
         Doctrine\ORM\OptimisticLockException: 409
         # APP:
