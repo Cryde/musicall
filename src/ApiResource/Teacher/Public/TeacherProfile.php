@@ -32,6 +32,9 @@ class TeacherProfile
     /** Always true for a visitor; false only for its owner, who still sees their private lessons page (#1317). */
     public bool $isPublic = true;
 
+    /** Always `published` for a visitor; `draft` only for its owner, who sees their draft with its bar (#1406). */
+    public string $status = 'published';
+
     /**
      * The member's instruments as a musician, with their level, for « Le musicien derrière le prof ». Empty without a
      * musician profile.

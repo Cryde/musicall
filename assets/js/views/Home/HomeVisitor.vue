@@ -189,11 +189,11 @@ function handleCreateTeacherProfile() {
   if (!userSecurityStore.isAuthenticated) {
     openAuthModal(
       t('home.visitor.auth.teacher_profile'),
-      router.resolve({ name: 'app_user_settings_profile' }).fullPath
+      router.resolve({ name: 'app_user_services' }).fullPath
     )
     return
   }
-  router.push({ name: 'app_user_settings_profile' })
+  router.push({ name: 'app_user_services' })
 }
 
 function handleOpenDiscoverModal() {

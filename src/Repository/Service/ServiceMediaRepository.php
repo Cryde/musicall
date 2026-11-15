@@ -46,7 +46,7 @@ class ServiceMediaRepository extends ServiceEntityRepository
     }
 
     /**
-     * The media a member added to their service of this kind, for their wall (#1316): newest first, past `$before`.
+     * The media a member added to their published service of this kind, for their wall (#1316): newest first, past `$before`.
      *
      * @return list<ServiceMedia>
      */
@@ -56,6 +56,7 @@ class ServiceMediaRepository extends ServiceEntityRepository
             ->innerJoin('media.service', 'service')
             ->where('service.user = :owner')
             ->andWhere('service.kind = :kind')
+            ->andWhere(ServiceRepository::published('service'))
             ->setParameter('owner', $owner)
             ->setParameter('kind', $kind)
             ->orderBy('media.creationDatetime', 'DESC')

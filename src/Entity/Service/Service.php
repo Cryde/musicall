@@ -10,6 +10,8 @@ use App\Entity\Metric\ViewCache;
 use App\Entity\User;
 use App\Enum\Service\OfferUnit;
 use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServicePart;
+use App\Enum\Service\ServiceStatus;
 use App\Repository\Service\ServiceRepository;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -41,6 +43,10 @@ class Service implements ViewableInterface
 
     #[ORM\Column(type: Types::STRING, length: 30, enumType: ServiceKind::class)]
     public ServiceKind $kind;
+
+    /** A draft by default: only the teacher profile endpoint the app calls creates a published one (#1406). */
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: ServiceStatus::class)]
+    public ServiceStatus $status = ServiceStatus::Draft;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     public ?string $headline = null;
@@ -237,6 +243,26 @@ class Service implements ViewableInterface
         $this->links->removeElement($link);
 
         return $this;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === ServiceStatus::Published;
+    }
+
+    /** @return list<ServicePart> what its kind needs before it can be published and it does not have yet */
+    public function missingToPublish(): array
+    {
+        return array_values(array_filter($this->kind->requiredToPublish(), fn (ServicePart $part): bool => !$part->isFilledIn($this)));
+    }
+
+    /** The share of its kind's parts filled in, from 0 to 100. */
+    public function completeness(): int
+    {
+        $parts = $this->kind->parts();
+        $filled = array_filter($parts, fn (ServicePart $part): bool => $part->isFilledIn($this));
+
+        return (int) round(count($filled) * 100 / count($parts));
     }
 
     public function getViewableId(): ?string

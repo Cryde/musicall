@@ -34,7 +34,8 @@ readonly class ProfileMediaTargetLoader implements ReportTargetLoaderInterface
         $media = $this->musicianMediaRepository->find($id) ?? $this->teacherMediaRepository->find($id);
         [$owner, $profile] = match (true) {
             $media instanceof MusicianProfileMedia => [$media->musicianProfile->user, 'musician'],
-            $media instanceof ServiceMedia => [$media->service->user, 'teacher'],
+            // A draft's media is its owner's alone (#1406): nobody else sees it, so nobody reports it.
+            $media instanceof ServiceMedia && $media->service->isPublished() => [$media->service->user, 'teacher'],
             default => [null, null],
         };
         if (!$owner instanceof User || $owner->isDeleted() || $media === null) {

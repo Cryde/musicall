@@ -28,6 +28,7 @@
     <div v-else-if="profile" class="flex flex-col gap-5 md:gap-6">
       <!-- Only its owner sees a private lessons page (#1317). -->
       <ProfilePrivateBar v-if="isOwnProfile && !profile.is_public" @made-public="refreshProfile" />
+      <ProfileDraftBar v-if="isOwnProfile && profile.status === 'draft'" />
       <!-- The way back: to the profile when the visitor came from it, otherwise into the teacher search. -->
       <div class="flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400 min-h-10">
         <Button
@@ -449,6 +450,7 @@ import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProf
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
 import TrialRequestDialog from '../../../components/Teacher/TrialRequestDialog.vue'
 import PrivateProfileNotice from '../../../components/User/Profile/PrivateProfileNotice.vue'
+import ProfileDraftBar from '../../../components/User/Profile/ProfileDraftBar.vue'
 import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
 import {
   useKeepProfileContactDraft,

@@ -175,13 +175,6 @@
       @saved="refreshProfile"
     />
 
-    <!-- Create teacher profile modal -->
-    <EditTeacherProfileModal
-      v-model:visible="showCreateTeacherProfileModal"
-      :teacher-profile="null"
-      @saved="handleTeacherProfileCreated"
-    />
-
     <!-- Hidden file inputs -->
     <input
       ref="coverPictureInputRef"
@@ -225,7 +218,6 @@ import ProfileListenCard from '../../../components/Profile/Page/ProfileListenCar
 import ProfileOwnerBanner from '../../../components/Profile/Page/ProfileOwnerBanner.vue'
 import ProfileStylesCard from '../../../components/Profile/Page/ProfileStylesCard.vue'
 import ProfileWall from '../../../components/Profile/Wall/ProfileWall.vue'
-import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
@@ -239,7 +231,6 @@ import { useUserBlockStore } from '../../../store/user/block.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
 import { listenPlaylist } from '../../../utils/profileListen.js'
 import { mediaAddTargets } from '../../../utils/profileOwner.js'
@@ -255,7 +246,6 @@ const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
 const userBlockStore = useUserBlockStore()
 const musicianProfileStore = useMusicianProfileStore()
-const teacherProfileStore = useTeacherProfileStore()
 
 const isLoading = ref(true)
 const notFound = ref(false)
@@ -268,7 +258,6 @@ const showEditSocialLinksModal = ref(false)
 const showCoverPictureModal = ref(false)
 const showProfilePictureEditModal = ref(false)
 const showCreateMusicianProfileModal = ref(false)
-const showCreateTeacherProfileModal = ref(false)
 const showMusicianBlockModal = ref(false)
 const musicianBlock = ref(null)
 // The owner looking at their own profile as a visitor would (#1317): no pencils, no composer.
@@ -353,9 +342,8 @@ const activitiesEvents = {
   'create-musician': () => {
     showCreateMusicianProfileModal.value = true
   },
-  'create-teacher': () => {
-    showCreateTeacherProfileModal.value = true
-  }
+  // Every service is added in « Mes services », where it starts as a draft (#1406).
+  'create-teacher': () => router.push({ name: 'app_user_services' })
 }
 const instrumentsProps = computed(() => ({
   instruments: profile.value.musician?.instruments ?? [],
@@ -589,17 +577,6 @@ function handleMusicianProfileCreated() {
     severity: 'success',
     summary: t('profile.public.profile_created'),
     detail: t('profile.public.musician_profile_created'),
-    life: 5000
-  })
-}
-
-function handleTeacherProfileCreated() {
-  refreshProfile()
-  teacherProfileStore.clear()
-  toast.add({
-    severity: 'success',
-    summary: t('profile.public.profile_created'),
-    detail: t('profile.public.teacher_profile_created'),
     life: 5000
   })
 }

@@ -10,6 +10,7 @@ use App\Entity\Service\ServiceOffer;
 use App\Entity\Service\ServicePlace;
 use App\Enum\Service\OfferUnit;
 use App\Enum\Service\ServicePlaceType;
+use App\Enum\Service\ServiceStatus;
 use App\Enum\Teacher\SessionDuration;
 use App\Locale\LocalizedPath;
 use App\Service\Bot\BotMetaDataGenerator;
@@ -404,6 +405,15 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'description' => 'Ce profil est privé.',
             'robots'      => 'noindex, follow',
         ], $this->botMetaDataGenerator->getMetaData('/u/prof_prive/teacher'));
+    }
+
+    /** A draft is its owner's only (#1406): a search engine never indexes it. */
+    public function test_get_metadata_for_a_draft_teacher_profile_is_noindex_and_nothing_else(): void
+    {
+        $user = UserFactory::new(['username' => 'prof_brouillon'])->create();
+        ServiceFactory::new()->teaching()->create(['user' => $user, 'status' => ServiceStatus::Draft, 'headline' => 'Cours de guitare']);
+
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/prof_brouillon/teacher'));
     }
 
     public function test_get_metadata_for_a_deleted_member_is_noindex_and_nothing_else(): void

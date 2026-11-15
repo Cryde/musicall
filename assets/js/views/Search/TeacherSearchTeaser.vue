@@ -206,7 +206,7 @@ onMounted(async () => {
 })
 
 // Nothing to keep, only a destination: signing in lands the visitor on the form (#1305).
-const TEACHER_PROFILE_FORM = 'app_user_settings_profile'
+const TEACHER_PROFILE_FORM = 'app_user_services'
 const teacherProfileFormPath = computed(
   () => router.resolve({ name: TEACHER_PROFILE_FORM }).fullPath
 )

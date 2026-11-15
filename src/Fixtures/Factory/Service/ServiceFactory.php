@@ -7,6 +7,7 @@ namespace App\Fixtures\Factory\Service;
 use App\Entity\Service\Service;
 use App\Entity\Service\TeachingDetails;
 use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServiceStatus;
 use App\Enum\Teacher\AgeGroup;
 use App\Enum\Teacher\StudentLevel;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
@@ -21,6 +22,7 @@ final class ServiceFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
+            'status' => ServiceStatus::Published,
             'creationDatetime' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
             'description' => self::faker()->paragraphs(2, true),
             'yearsOfExperience' => self::faker()->numberBetween(1, 30),

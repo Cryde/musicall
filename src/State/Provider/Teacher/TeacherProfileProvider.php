@@ -33,7 +33,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PublicTeacherProfile
     {
-        if (!($user = $this->userRepository->findOneBy(['username' => $uriVariables['username'] ?? ''])) instanceof \App\Entity\User) {
+        if (!($user = $this->userRepository->findOneBy(['username' => $uriVariables['username'] ?? ''])) instanceof User) {
             throw new NotFoundHttpException('profile.user_not_found');
         }
 
@@ -43,7 +43,8 @@ readonly class TeacherProfileProvider implements ProviderInterface
 
         $this->publicProfileGuard->assertVisible($user);
 
-        if (!($teacherProfile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching)) instanceof Service) {
+        $teacherProfile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching);
+        if (!$teacherProfile instanceof Service || (!$teacherProfile->isPublished() && !$this->publicProfileGuard->isViewedByOwner($user))) {
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 

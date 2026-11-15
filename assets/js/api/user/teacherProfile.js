@@ -40,9 +40,5 @@ export default {
       })
       .then((resp) => resp.data)
       .catch(handleApiError)
-  },
-
-  deleteTeacherProfile() {
-    return axios.delete(Routing.generate('api_teacher_profile_delete')).catch(handleApiError)
   }
 }

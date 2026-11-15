@@ -11,6 +11,7 @@ use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\Notification\NotificationType;
 use App\Enum\Report\ReportReason;
 use App\Enum\Report\ReportTargetType;
+use App\Enum\Service\ServiceStatus;
 use App\Repository\Notification\NotificationRepository;
 use App\Repository\Report\ReportRepository;
 use App\Service\Notification\NotificationCreator;
@@ -32,6 +33,8 @@ use App\Tests\Factory\Profile\ProfilePostFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Report\ReportFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceMediaFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -186,6 +189,19 @@ class ReportPostTest extends ApiTestCase
         $report = $this->onlyReport();
         $this->assertSame('Vidéo choquante https://www.youtube.com/watch?v=dQw4w9WgXcQ', $report->snapshotText);
         $this->assertSame(['profile' => 'musician', 'username' => 'guitariste', 'platform' => 'youtube'], $report->snapshotContext);
+    }
+
+    /** A draft's media is its owner's alone (#1406): nobody else sees it, so nobody reports it. */
+    public function test_a_media_of_a_draft_teacher_profile_is_not_found(): void
+    {
+        $reporter = $this->reporter();
+        $draft = ServiceFactory::new()->teaching()->create(['status' => ServiceStatus::Draft]);
+        $media = ServiceMediaFactory::new()->create(['service' => $draft]);
+
+        $this->report($reporter, 'profile_media', (string) $media->id, 'inappropriate');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals(self::NOT_FOUND);
     }
 
     public function test_reports_a_wall_post(): void

@@ -8,7 +8,7 @@ describe('userMenuEntries', () => {
 
     assert.deepEqual(
       entries.map(({ key }) => key),
-      ['profile', 'announces', 'publications', 'courses', 'photos', 'settings']
+      ['profile', 'services', 'announces', 'publications', 'courses', 'photos', 'settings']
     )
   })
 

@@ -101,6 +101,12 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_user_services',
+    path: '/user/services',
+    component: () => import('../views/User/Service/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     name: 'app_user_announces',
     path: '/user/announces',
     component: () => import('../views/User/Announce/Index.vue'),
@@ -184,10 +190,14 @@ export default [
         path: 'profile',
         component: () => import('../views/User/Settings/SettingsProfile.vue')
       },
-      // The former profile sub-tabs (#1317): their content is edited on the profile now.
+      // The former profile sub-tabs (#1317): their content is edited on the profile now, teaching in the services (#1406).
       {
-        path: 'profile/:tab(privacy|musician|teacher)',
+        path: 'profile/:tab(privacy|musician)',
         redirect: { name: 'app_user_settings_profile' }
+      },
+      {
+        path: ':tab(services|profile/teacher)',
+        redirect: { name: 'app_user_services' }
       }
     ]
   }

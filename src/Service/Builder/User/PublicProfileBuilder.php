@@ -90,7 +90,7 @@ readonly class PublicProfileBuilder
         $dto->musicianAnnounces = array_map($this->announceBuilder->build(...), $announces);
 
         $dto->hasMusicianProfile = $user->musicianProfile instanceof MusicianProfile;
-        $teaching = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching);
+        $teaching = $this->serviceRepository->findPublishedOneByUserAndKind($user, ServiceKind::Teaching);
         $dto->hasTeacherProfile = $teaching instanceof Service;
         $dto->musician = $user->musicianProfile instanceof MusicianProfile ? $this->musician($user->musicianProfile) : null;
         $dto->teacher = $teaching instanceof Service ? $this->teacher($teaching) : null;

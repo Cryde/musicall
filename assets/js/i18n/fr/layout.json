@@ -42,6 +42,7 @@
     "avatar_alt": "Photo de {username}",
     "open": "Menu utilisateur de {username}",
     "profile": "Mon profil",
+    "services": "Mes services",
     "announces": "Mes annonces",
     "publications": "Mes publications",
     "courses": "Mes cours",
