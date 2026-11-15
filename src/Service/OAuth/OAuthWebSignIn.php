@@ -7,6 +7,7 @@ namespace App\Service\OAuth;
 use App\Entity\User;
 use App\Http\ReturnUrl;
 use App\Mercure\MercureSubscriberCookie;
+use App\Security\JwtCookieMinter;
 use App\Security\SuspensionChecker;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
@@ -22,10 +23,12 @@ use Symfony\Component\HttpFoundation\Request;
  */
 readonly class OAuthWebSignIn
 {
-    private const int JWT_COOKIE_LIFETIME = 3600;
-
+    /**
+     * @param array{enabled: bool, same_site: ''|'lax'|'none'|'strict'|null, path: string, domain: ?string, secure: bool, http_only: bool, partitioned: bool, remove_token_from_body: bool} $refreshTokenCookie
+     */
     public function __construct(
         private JWTTokenManagerInterface $jwtManager,
+        private JwtCookieMinter $jwtCookieMinter,
         private RefreshTokenGeneratorInterface $refreshTokenGenerator,
         private RefreshTokenManagerInterface $refreshTokenManager,
         private MercureSubscriberCookie $mercureSubscriberCookie,
@@ -33,6 +36,10 @@ readonly class OAuthWebSignIn
         private string $frontendUrl,
         #[Autowire(param: 'gesdinet_jwt_refresh_token.ttl')]
         private int $refreshTokenTtl,
+        #[Autowire(param: 'gesdinet_jwt_refresh_token.token_parameter_name')]
+        private string $refreshTokenCookieName,
+        #[Autowire(param: 'gesdinet_jwt_refresh_token.cookie')]
+        private array $refreshTokenCookie,
     ) {
     }
 
@@ -52,8 +59,8 @@ readonly class OAuthWebSignIn
     }
 
     /**
-     * Signs the user in. The cookies are minted here by hand, so no user checker runs: a suspended
-     * account is refused explicitly instead.
+     * Signs the user in. The cookies are minted here rather than by a firewall, so no user checker
+     * runs: a suspended account is refused explicitly instead.
      */
     public function complete(User $user, string $redirectUrl, Request $request): RedirectResponse
     {
@@ -61,49 +68,26 @@ readonly class OAuthWebSignIn
             return $this->fail(SuspensionChecker::MESSAGE_KEY);
         }
 
-        $jwt = $this->jwtManager->create($user);
-
-        // Split JWT into header.payload and signature for security
-        $parts = explode('.', $jwt);
-        $headerPayload = $parts[0] . '.' . $parts[1];
-        $signature = $parts[2];
-
         $response = new RedirectResponse($redirectUrl);
+        $this->jwtCookieMinter->attachTo($response, $this->jwtManager->create($user));
 
-        // Set cookies matching the lexik_jwt configuration
-        $response->headers->setCookie(
-            Cookie::create('jwt_hp')
-                ->withValue($headerPayload)
-                ->withExpires(time() + self::JWT_COOKIE_LIFETIME)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(false)
-                ->withSameSite('strict')
-        );
-
-        $response->headers->setCookie(
-            Cookie::create('jwt_s')
-                ->withValue($signature)
-                ->withExpires(time() + self::JWT_COOKIE_LIFETIME)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('strict')
-        );
-
-        // Create and set refresh token
         $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, $this->refreshTokenTtl);
+        // Read before saving, as gesdinet does: a hashing manager leaves only the hash on the model
+        $refreshTokenString = $refreshToken->getRefreshToken();
         $this->refreshTokenManager->save($refreshToken);
-
-        $response->headers->setCookie(
-            Cookie::create('refresh_token')
-                ->withValue($refreshToken->getRefreshToken())
-                ->withExpires(time() + $this->refreshTokenTtl)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('lax')
-        );
+        // The cookie gesdinet sets on a password login, built from the same configuration
+        $response->headers->setCookie(new Cookie(
+            $this->refreshTokenCookieName,
+            $refreshTokenString,
+            $refreshToken->getValid()?->getTimestamp() ?? time() + $this->refreshTokenTtl,
+            $this->refreshTokenCookie['path'],
+            $this->refreshTokenCookie['domain'],
+            $this->refreshTokenCookie['secure'],
+            $this->refreshTokenCookie['http_only'],
+            false,
+            $this->refreshTokenCookie['same_site'],
+            $this->refreshTokenCookie['partitioned'],
+        ));
 
         // This path mints its own cookies and never reaches Lexik's success handler, so the listener
         // that renews the Mercure subscriber cookie on login and on refresh does not fire here.

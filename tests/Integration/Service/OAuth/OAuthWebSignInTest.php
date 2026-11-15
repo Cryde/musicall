@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Service\OAuth;
 
 use App\Service\OAuth\OAuthWebSignIn;
 use App\Tests\Factory\User\UserFactory;
+use App\Tests\SessionCookies;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -80,6 +81,12 @@ class OAuthWebSignInTest extends KernelTestCase
             'jwt_s' => [true, true, 'strict'],
             'refresh_token' => [true, true, 'lax'],
         ], $cookies);
+        // Exactly what a password login sets, see UserLoginTest (#1027).
+        $this->assertSame([
+            'jwt_hp' => ['expires' => 'now + token_ttl', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => false, 'sameSite' => 'strict', 'partitioned' => false],
+            'jwt_s' => ['expires' => 'session', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'strict', 'partitioned' => false],
+            'refresh_token' => ['expires' => 'now + refresh_ttl', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'lax', 'partitioned' => false],
+        ], SessionCookies::describe($response->headers->getCookies(), self::getContainer()));
     }
 
     /** These cookies are minted by hand, so no user checker runs: the suspension is checked here. */
