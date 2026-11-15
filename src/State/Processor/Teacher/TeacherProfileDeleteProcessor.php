@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Teacher\Private\TeacherProfileOutput;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -20,6 +22,7 @@ readonly class TeacherProfileDeleteProcessor implements ProcessorInterface
     public function __construct(
         private Security $security,
         private EntityManagerInterface $entityManager,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -27,13 +30,12 @@ readonly class TeacherProfileDeleteProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->teacherProfile;
+        $profile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching);
 
         if (!$profile) {
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 
-        $user->teacherProfile = null;
         $this->entityManager->remove($profile);
         $this->entityManager->flush();
 

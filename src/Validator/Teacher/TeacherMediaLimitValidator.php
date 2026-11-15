@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Validator\Teacher;
 
 use App\Entity\User;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceMediaRepository;
+use App\Repository\Service\ServiceRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -17,7 +19,8 @@ class TeacherMediaLimitValidator extends ConstraintValidator
 
     public function __construct(
         private readonly Security $security,
-        private readonly TeacherProfileMediaRepository $mediaRepository,
+        private readonly ServiceMediaRepository $mediaRepository,
+        private readonly ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -33,7 +36,7 @@ class TeacherMediaLimitValidator extends ConstraintValidator
             return;
         }
 
-        $profile = $currentUser->teacherProfile;
+        $profile = $this->serviceRepository->findOneByUserAndKind($currentUser, ServiceKind::Teaching);
         if ($profile === null) {
             return;
         }
@@ -43,7 +46,7 @@ class TeacherMediaLimitValidator extends ConstraintValidator
             return;
         }
 
-        $currentCount = $this->mediaRepository->countByTeacherProfile($profileId);
+        $currentCount = $this->mediaRepository->countByService($profileId);
         if ($currentCount >= TeacherMediaLimit::MAX_MEDIA_PER_PROFILE) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ limit }}', (string) TeacherMediaLimit::MAX_MEDIA_PER_PROFILE)

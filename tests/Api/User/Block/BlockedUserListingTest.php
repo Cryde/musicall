@@ -10,8 +10,8 @@ use App\Entity\User;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -64,8 +64,8 @@ class BlockedUserListingTest extends ApiTestCase
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $visible = UserFactory::new()->create(['username' => 'teacher_visible', 'email' => 'teacher.visible@example.com']);
         foreach ([$visible, $blockedByViewer, $blockingViewer] as $teacher) {
-            $profile = TeacherProfileFactory::new()->create(['user' => $teacher, 'offersTrial' => false]);
-            TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $profile, 'instrument' => $guitar]);
+            $profile = ServiceFactory::new()->teaching()->create(['user' => $teacher, 'offersTrial' => false]);
+            ServiceInstrumentFactory::new()->create(['service' => $profile, 'instrument' => $guitar]);
         }
 
         $this->client->loginUser($viewer);

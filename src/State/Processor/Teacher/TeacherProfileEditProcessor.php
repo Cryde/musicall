@@ -9,6 +9,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Teacher\Private\TeacherProfileInput;
 use App\ApiResource\Teacher\Private\TeacherProfileOutput;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Teacher\TeacherProfileWriter;
 use App\State\Provider\Teacher\TeacherProfileEditProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +27,7 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private TeacherProfileEditProvider $outputProvider,
         private TeacherProfileWriter $profileWriter,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -33,7 +36,7 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
         /** @var TeacherProfileInput $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->teacherProfile;
+        $profile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching);
 
         if (!$profile) {
             throw new NotFoundHttpException('profile.teacher.not_found');

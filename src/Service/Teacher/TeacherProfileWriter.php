@@ -12,13 +12,14 @@ use App\ApiResource\Teacher\Private\Input\SocialLink;
 use App\ApiResource\Teacher\Private\TeacherProfileInput;
 use App\Entity\Attribute\Instrument;
 use App\Entity\Attribute\Style;
-use App\Entity\Teacher\TeacherAvailability;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileInstrument;
-use App\Entity\Teacher\TeacherProfileLocation;
-use App\Entity\Teacher\TeacherProfilePackage;
-use App\Entity\Teacher\TeacherProfilePricing;
-use App\Entity\Teacher\TeacherSocialLink;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceAvailability;
+use App\Entity\Service\ServiceInstrument;
+use App\Entity\Service\ServiceLink;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Entity\Service\TeachingDetails;
+use App\Enum\Service\OfferUnit;
 use App\Enum\SocialPlatform;
 use App\Enum\Teacher\DayOfWeek;
 use App\Enum\Teacher\LocationType;
@@ -29,8 +30,8 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Writes a teacher profile from the create and the edit request. A field left out (null) is not written, so an edit
- * keeps what is stored (#1327) and a new profile keeps its empty default.
+ * Writes a teaching service from the teacher profile's create and edit request. A field left out (null) is not
+ * written, so an edit keeps what is stored (#1327) and a new profile keeps its empty default.
  */
 readonly class TeacherProfileWriter
 {
@@ -42,7 +43,7 @@ readonly class TeacherProfileWriter
     ) {
     }
 
-    public function write(TeacherProfile $profile, TeacherProfileInput $data): void
+    public function write(Service $profile, TeacherProfileInput $data): void
     {
         if ($data->description !== null) {
             $profile->description = $data->description;
@@ -50,18 +51,10 @@ readonly class TeacherProfileWriter
         if ($data->yearsOfExperience !== null) {
             $profile->yearsOfExperience = $data->yearsOfExperience;
         }
-        if ($data->studentLevels !== null) {
-            $profile->studentLevels = $data->studentLevels;
-        }
-        if ($data->ageGroups !== null) {
-            $profile->ageGroups = $data->ageGroups;
-        }
         if ($data->courseTitle !== null) {
-            $profile->courseTitle = $data->courseTitle;
+            $profile->headline = $data->courseTitle;
         }
-        $this->writeTrial($profile, $data);
-
-        $this->lessonContentWriter->write($profile, $data);
+        $this->writeDetails($profile, $data);
 
         if ($data->locations !== null) {
             $this->writeLocations($profile, $data->locations);
@@ -88,22 +81,36 @@ readonly class TeacherProfileWriter
         $profile->updateDatetime = new DateTimeImmutable();
     }
 
+    private function writeDetails(Service $profile, TeacherProfileInput $data): void
+    {
+        $details = TeachingDetails::of($profile);
+        if ($data->studentLevels !== null) {
+            $details->studentLevels = $data->studentLevels;
+        }
+        if ($data->ageGroups !== null) {
+            $details->ageGroups = $data->ageGroups;
+        }
+        $this->writeTrial($details, $data);
+        $this->lessonContentWriter->write($details, $data);
+        $profile->details = $details->toArray();
+    }
+
     /** The price only means something next to the switch, so a null price clears it only when the switch is sent. */
-    private function writeTrial(TeacherProfile $profile, TeacherProfileInput $data): void
+    private function writeTrial(TeachingDetails $details, TeacherProfileInput $data): void
     {
         if ($data->offersTrial !== null) {
-            $profile->offersTrial = $data->offersTrial;
-            $profile->trialPrice = $data->trialPrice;
+            $details->offersTrial = $data->offersTrial;
+            $details->trialPrice = $data->trialPrice;
         } elseif ($data->trialPrice !== null) {
-            $profile->trialPrice = $data->trialPrice;
+            $details->trialPrice = $data->trialPrice;
         }
     }
 
     /** @param Location[] $locations */
-    private function writeLocations(TeacherProfile $profile, array $locations): void
+    private function writeLocations(Service $profile, array $locations): void
     {
-        foreach ($profile->locations->toArray() as $location) {
-            $profile->removeLocation($location);
+        foreach ($profile->places->toArray() as $place) {
+            $profile->removePlace($place);
         }
 
         foreach ($locations as $locationInput) {
@@ -112,20 +119,20 @@ readonly class TeacherProfileWriter
                 continue;
             }
 
-            $location = new TeacherProfileLocation();
-            $location->type = $locationType;
-            $location->address = $locationInput->address;
-            $location->city = $locationInput->city;
-            $location->country = $locationInput->country;
-            $location->latitude = $locationInput->latitude !== null ? (string) $locationInput->latitude : null;
-            $location->longitude = $locationInput->longitude !== null ? (string) $locationInput->longitude : null;
-            $location->radius = $locationInput->radius;
-            $profile->addLocation($location);
+            $place = new ServicePlace();
+            $place->type = $locationType->placeType();
+            $place->address = $locationInput->address;
+            $place->city = $locationInput->city;
+            $place->country = $locationInput->country;
+            $place->latitude = $locationInput->latitude !== null ? (string) $locationInput->latitude : null;
+            $place->longitude = $locationInput->longitude !== null ? (string) $locationInput->longitude : null;
+            $place->radius = $locationInput->radius;
+            $profile->addPlace($place);
         }
     }
 
     /** @param string[] $instrumentIds */
-    private function writeInstruments(TeacherProfile $profile, array $instrumentIds): void
+    private function writeInstruments(Service $profile, array $instrumentIds): void
     {
         $this->flushRemovals($profile->instruments->toArray(), $profile->removeInstrument(...));
 
@@ -135,14 +142,14 @@ readonly class TeacherProfileWriter
                 continue;
             }
 
-            $profileInstrument = new TeacherProfileInstrument();
+            $profileInstrument = new ServiceInstrument();
             $profileInstrument->instrument = $instrument;
             $profile->addInstrument($profileInstrument);
         }
     }
 
     /** @param string[] $styleIds */
-    private function writeStyles(TeacherProfile $profile, array $styleIds): void
+    private function writeStyles(Service $profile, array $styleIds): void
     {
         foreach ($profile->styles->toArray() as $style) {
             $profile->removeStyle($style);
@@ -157,25 +164,31 @@ readonly class TeacherProfileWriter
     }
 
     /** @param Pricing[] $pricingInputs */
-    private function writePricing(TeacherProfile $profile, array $pricingInputs): void
+    private function writePricing(Service $profile, array $pricingInputs): void
     {
-        $this->flushRemovals($profile->pricing->toArray(), $profile->removePricing(...));
+        foreach ($profile->offersIn(OfferUnit::Lesson) as $offer) {
+            $profile->removeOffer($offer);
+        }
 
+        // One price per lesson length: the first one sent wins, as the unique key the pricing table had allowed one.
+        $priced = [];
         foreach ($pricingInputs as $pricingInput) {
             $duration = SessionDuration::tryFrom($pricingInput->duration ?? '');
-            if (!$duration || $pricingInput->price === null) {
+            if (!$duration || $pricingInput->price === null || isset($priced[$duration->value])) {
                 continue;
             }
+            $priced[$duration->value] = true;
 
-            $pricing = new TeacherProfilePricing();
-            $pricing->duration = $duration;
-            $pricing->price = $pricingInput->price;
-            $profile->addPricing($pricing);
+            $offer = new ServiceOffer();
+            $offer->unit = OfferUnit::Lesson;
+            $offer->quantity = $duration->getMinutes();
+            $offer->price = $pricingInput->price;
+            $profile->addOffer($offer);
         }
     }
 
     /** @param Availability[] $availabilityInputs */
-    private function writeAvailability(TeacherProfile $profile, array $availabilityInputs): void
+    private function writeAvailability(Service $profile, array $availabilityInputs): void
     {
         foreach ($profile->availability->toArray() as $availability) {
             $profile->removeAvailability($availability);
@@ -187,7 +200,7 @@ readonly class TeacherProfileWriter
                 continue;
             }
 
-            $availability = new TeacherAvailability();
+            $availability = new ServiceAvailability();
             $availability->dayOfWeek = $dayOfWeek;
             $availability->startTime = new DateTimeImmutable($availabilityInput->startTime);
             $availability->endTime = new DateTimeImmutable($availabilityInput->endTime);
@@ -196,10 +209,10 @@ readonly class TeacherProfileWriter
     }
 
     /** @param Package[] $packageInputs */
-    private function writePackages(TeacherProfile $profile, array $packageInputs): void
+    private function writePackages(Service $profile, array $packageInputs): void
     {
-        foreach ($profile->packages->toArray() as $package) {
-            $profile->removePackage($package);
+        foreach ($profile->offersIn(OfferUnit::Package) as $offer) {
+            $profile->removeOffer($offer);
         }
 
         foreach ($packageInputs as $packageInput) {
@@ -207,19 +220,20 @@ readonly class TeacherProfileWriter
                 continue;
             }
 
-            $package = new TeacherProfilePackage();
-            $package->title = $packageInput->title;
-            $package->description = $packageInput->description;
-            $package->sessionsCount = $packageInput->sessionsCount;
-            $package->price = $packageInput->price ?? 0;
-            $profile->addPackage($package);
+            $offer = new ServiceOffer();
+            $offer->unit = OfferUnit::Package;
+            $offer->title = $packageInput->title;
+            $offer->description = $packageInput->description;
+            $offer->quantity = $packageInput->sessionsCount;
+            $offer->price = $packageInput->price ?? 0;
+            $profile->addOffer($offer);
         }
     }
 
     /** @param SocialLink[] $socialLinkInputs */
-    private function writeSocialLinks(TeacherProfile $profile, array $socialLinkInputs): void
+    private function writeSocialLinks(Service $profile, array $socialLinkInputs): void
     {
-        $this->flushRemovals($profile->socialLinks->toArray(), $profile->removeSocialLink(...));
+        $this->flushRemovals($profile->links->toArray(), $profile->removeLink(...));
 
         foreach ($socialLinkInputs as $socialLinkInput) {
             $platform = SocialPlatform::tryFrom($socialLinkInput->platform ?? '');
@@ -227,16 +241,16 @@ readonly class TeacherProfileWriter
                 continue;
             }
 
-            $socialLink = new TeacherSocialLink();
-            $socialLink->platform = $platform;
-            $socialLink->url = $socialLinkInput->url;
-            $profile->addSocialLink($socialLink);
+            $link = new ServiceLink();
+            $link->platform = $platform;
+            $link->url = $socialLinkInput->url;
+            $profile->addLink($link);
         }
     }
 
     /**
-     * Deletes the stored rows before the new ones are inserted: re-adding the same instrument, duration or platform
-     * would otherwise hit the unique key.
+     * Deletes the stored rows before the new ones are inserted: re-adding the same instrument or platform would
+     * otherwise hit the unique key.
      *
      * @template T of object
      *

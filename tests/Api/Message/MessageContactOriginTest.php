@@ -9,8 +9,8 @@ use App\Entity\Message\Message;
 use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Message\MessageThread;
 use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\Service\Service;
 use App\Entity\User;
-use App\Entity\Teacher\TeacherProfile;
 use App\Enum\Message\ContactOriginType;
 use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
@@ -23,8 +23,8 @@ use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Validator\Message\ValidContactOriginValidator;
@@ -100,8 +100,8 @@ class MessageContactOriginTest extends ApiTestCase
     public function test_a_message_sent_from_a_teacher_profile_carries_it(): void
     {
         [$sender, $recipient] = $this->pair();
-        $profile = TeacherProfileFactory::new(['user' => $recipient])->create();
-        TeacherProfileInstrumentFactory::new(['teacherProfile' => $profile, 'instrument' => InstrumentFactory::new(['name' => 'Piano'])])->create();
+        $profile = ServiceFactory::new(['user' => $recipient])->teaching()->create();
+        ServiceInstrumentFactory::new(['service' => $profile, 'instrument' => InstrumentFactory::new(['name' => 'Piano'])])->create();
         self::getContainer()->get(EntityManagerInterface::class)->refresh($profile);
 
         $this->client->loginUser($sender);
@@ -709,7 +709,7 @@ class MessageContactOriginTest extends ApiTestCase
     {
         [$sender, $recipient] = $this->pair();
         $announce = $this->announce($recipient);
-        $profile = TeacherProfileFactory::new(['user' => $recipient])->create();
+        $profile = ServiceFactory::new(['user' => $recipient])->teaching()->create();
 
         $this->client->loginUser($sender);
         $this->client->jsonRequest('POST', '/api/messages/user', [
@@ -1173,11 +1173,11 @@ class MessageContactOriginTest extends ApiTestCase
     /**
      * @param list<InstrumentFactory> $instruments taught in this order
      */
-    private function teacher(User $user, array $instruments): TeacherProfile
+    private function teacher(User $user, array $instruments): Service
     {
-        $profile = TeacherProfileFactory::new(['user' => $user])->create();
+        $profile = ServiceFactory::new(['user' => $user])->teaching()->create();
         foreach ($instruments as $instrument) {
-            TeacherProfileInstrumentFactory::new(['teacherProfile' => $profile, 'instrument' => $instrument])->create();
+            ServiceInstrumentFactory::new(['service' => $profile, 'instrument' => $instrument])->create();
         }
         self::getContainer()->get(EntityManagerInterface::class)->refresh($profile);
 
@@ -1187,7 +1187,7 @@ class MessageContactOriginTest extends ApiTestCase
     /**
      * @param list<string> $instruments slugs, as the card snapshots them
      */
-    private function teacherOrigin(MessageThread $thread, User $author, TeacherProfile $profile, ?LessonRequest $lessonRequest, array $instruments): MessageContactOrigin
+    private function teacherOrigin(MessageThread $thread, User $author, Service $profile, ?LessonRequest $lessonRequest, array $instruments): MessageContactOrigin
     {
         $message = MessageFactory::new(['thread' => $thread, 'author' => $author, 'content' => 'Bonjour', 'creationDatetime' => new \DateTime('2026-09-01 10:00:00')])->create();
         $thread->lastMessage = $message;

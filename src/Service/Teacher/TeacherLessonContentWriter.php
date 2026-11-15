@@ -7,7 +7,7 @@ namespace App\Service\Teacher;
 use App\ApiResource\Teacher\Private\Input\LevelGoal;
 use App\ApiResource\Teacher\Private\Input\Song;
 use App\ApiResource\Teacher\Private\TeacherProfileInput;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\TeachingDetails;
 
 /**
  * Writes « Ce que tu vas apprendre » and « Morceaux travaillés » (#1312), for TeacherProfileWriter.
@@ -15,13 +15,13 @@ use App\Entity\Teacher\TeacherProfile;
  */
 readonly class TeacherLessonContentWriter
 {
-    public function write(TeacherProfile $profile, TeacherProfileInput $data): void
+    public function write(TeachingDetails $details, TeacherProfileInput $data): void
     {
         if (is_array($data->levelGoals)) {
-            $profile->levelGoals = $this->levelGoals($data->levelGoals);
+            $details->levelGoals = $this->levelGoals($data->levelGoals);
         }
         if (is_array($data->songs)) {
-            $profile->songs = $this->songs($data->songs);
+            $details->songs = $this->songs($data->songs);
         }
     }
 

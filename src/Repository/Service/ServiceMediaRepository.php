@@ -2,65 +2,68 @@
 
 declare(strict_types=1);
 
-namespace App\Repository\Teacher;
+namespace App\Repository\Service;
 
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileMedia;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceMedia;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
 use App\Service\Profile\Wall\WallCursor;
 use App\Service\Profile\Wall\WallItemKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<TeacherProfileMedia>
+ * @extends ServiceEntityRepository<ServiceMedia>
  */
-class TeacherProfileMediaRepository extends ServiceEntityRepository
+class ServiceMediaRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, TeacherProfileMedia::class);
+        parent::__construct($registry, ServiceMedia::class);
     }
 
-    public function getNextPosition(TeacherProfile $teacherProfile): int
+    public function getNextPosition(Service $service): int
     {
         $result = $this->createQueryBuilder('m')
             ->select('MAX(m.position)')
-            ->where('m.teacherProfile = :profile')
-            ->setParameter('profile', $teacherProfile)
+            ->where('m.service = :service')
+            ->setParameter('service', $service)
             ->getQuery()
             ->getSingleScalarResult();
 
         return $result !== null ? (int) $result + 1 : 0;
     }
 
-    public function countByTeacherProfile(string $teacherProfileId): int
+    public function countByService(string $serviceId): int
     {
         return (int) $this->createQueryBuilder('m')
             ->select('COUNT(m.id)')
-            ->where('m.teacherProfile = :profileId')
-            ->setParameter('profileId', $teacherProfileId)
+            ->where('m.service = :serviceId')
+            ->setParameter('serviceId', $serviceId)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
     /**
-     * The media a member added to their teacher profile, for their wall (#1316): newest first, past `$before`.
+     * The media a member added to their service of this kind, for their wall (#1316): newest first, past `$before`.
      *
-     * @return list<TeacherProfileMedia>
+     * @return list<ServiceMedia>
      */
-    public function findForWall(User $owner, ?WallCursor $before, int $limit): array
+    public function findForWall(User $owner, ServiceKind $kind, ?WallCursor $before, int $limit): array
     {
         $query = $this->createQueryBuilder('media')
-            ->innerJoin('media.teacherProfile', 'profile')
-            ->where('profile.user = :owner')
+            ->innerJoin('media.service', 'service')
+            ->where('service.user = :owner')
+            ->andWhere('service.kind = :kind')
             ->setParameter('owner', $owner)
+            ->setParameter('kind', $kind)
             ->orderBy('media.creationDatetime', 'DESC')
             ->addOrderBy('media.id', 'DESC')
             ->setMaxResults($limit);
         $before?->applyTo($query, WallItemKind::TeacherMedia, 'media.creationDatetime', 'media.id');
 
-        /** @var list<TeacherProfileMedia> $media */
+        /** @var list<ServiceMedia> $media */
         $media = $query->getQuery()->getResult();
 
         return $media;

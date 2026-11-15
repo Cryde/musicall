@@ -3,7 +3,7 @@
 namespace App\Entity\Message;
 
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherProfile;
+use App\Entity\Service\Service;
 use App\Enum\Message\ContactOriginType;
 use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
@@ -40,9 +40,10 @@ class MessageContactOrigin
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     public ?MusicianAnnounce $musicianAnnounce = null;
 
-    #[ORM\ManyToOne(targetEntity: TeacherProfile::class)]
+    /** The teaching service, still named after the teacher profile it was before #1318: same id, same column. */
+    #[ORM\ManyToOne(targetEntity: Service::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?TeacherProfile $teacherProfile = null;
+    public ?Service $teacherProfile = null;
 
     /** MusicianAnnounce::TYPE_MUSICIAN or TYPE_BAND, for an announce only. */
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]

@@ -12,9 +12,9 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
-use App\Tests\Factory\Teacher\TeacherSocialLinkFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
+use App\Tests\Factory\Service\ServiceLinkFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -32,7 +32,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'email' => 'teacher@test.com',
         ]);
 
-        TeacherProfileFactory::new()->create([
+        ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Professeur de guitare expérimenté',
             'yearsOfExperience' => 10,
@@ -83,15 +83,15 @@ class TeacherProfilePublicTest extends ApiTestCase
         $rock = StyleFactory::new()->asRock()->create();
         $pop = StyleFactory::new()->asPop()->create();
 
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare rock et pop',
             'studentLevels' => [StudentLevel::BEGINNER->value],
             'creationDatetime' => new \DateTimeImmutable('2024-02-01T14:00:00+00:00'),
         ]);
 
-        TeacherProfileInstrumentFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        ServiceInstrumentFactory::new()->create([
+            'service' => $teacherProfile,
             'instrument' => $guitar,
         ]);
 
@@ -154,7 +154,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'email' => 'minimal@test.com',
         ]);
 
-        TeacherProfileFactory::new()->create([
+        ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'creationDatetime' => new \DateTimeImmutable('2024-03-01T09:00:00+00:00'),
         ]);
@@ -196,17 +196,17 @@ class TeacherProfilePublicTest extends ApiTestCase
             'email' => 'social_teacher@test.com',
         ]);
 
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Professeur avec réseaux sociaux',
             'creationDatetime' => new \DateTimeImmutable('2024-04-01T10:00:00+00:00'),
         ]);
 
-        TeacherSocialLinkFactory::new()->asYoutube()->create([
-            'teacherProfile' => $teacherProfile,
+        ServiceLinkFactory::new()->asYoutube()->create([
+            'service' => $teacherProfile,
         ]);
-        TeacherSocialLinkFactory::new()->asInstagram()->create([
-            'teacherProfile' => $teacherProfile,
+        ServiceLinkFactory::new()->asInstagram()->create([
+            'service' => $teacherProfile,
         ]);
 
         $this->client->request('GET', '/api/user/profile/social_teacher/teacher');
@@ -276,7 +276,7 @@ class TeacherProfilePublicTest extends ApiTestCase
         ]);
         $user->musicianProfile = $musicianProfile;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::new()->create([
+        ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 12,
@@ -379,7 +379,7 @@ class TeacherProfilePublicTest extends ApiTestCase
         ]);
         $user->profile->isPublic = false;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->client->request('GET', '/api/user/profile/private_teacher/teacher');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -400,7 +400,7 @@ class TeacherProfilePublicTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'private_teacher', 'email' => 'private_teacher@test.com']);
         $user->profile->isPublic = false;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
         $viewer = UserFactory::new()->asBaseUser()->create(['username' => 'viewer', 'email' => 'viewer@test.com']);
 
         $this->client->loginUser($viewer);
@@ -427,7 +427,7 @@ class TeacherProfilePublicTest extends ApiTestCase
         ]);
         $user->profile->isPublic = false;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::new()->create([
+        ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),

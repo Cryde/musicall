@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Teacher;
 
-use App\Entity\Teacher\TeacherProfile;
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Entity\Service\Service;
+use App\Entity\Service\TeachingDetails;
+use App\Repository\Service\ServiceRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -73,8 +74,8 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             ],
         ]);
         // Left out of the body, the switch keeps the entity's default.
-        $this->assertFalse($profile->offersTrial);
-        $this->assertNull($profile->trialPrice);
+        $this->assertFalse(TeachingDetails::of($profile)->offersTrial);
+        $this->assertNull(TeachingDetails::of($profile)->trialPrice);
     }
 
     public function test_create_checks_goals_sent_without_levels_against_no_level(): void
@@ -110,7 +111,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'type' => '/validation_errors/music_all_6d1f8a52-7c3e-4b9a-9f0d-2e5b8c4a1f73',
             'description' => 'level_goals[0].level: Ce niveau ne fait pas partie des niveaux acceptés',
         ]);
-        $this->assertNull(self::getContainer()->get(TeacherProfileRepository::class)->findOneBy(['user' => $user->id]));
+        $this->assertNull(self::getContainer()->get(ServiceRepository::class)->findOneBy(['user' => $user->id]));
     }
 
     public function test_an_update_that_leaves_them_out_keeps_them(): void
@@ -241,7 +242,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             ],
         ]);
         // Ticking the level again brings its text back.
-        $this->assertArrayHasKey('advanced', $this->profileOf($user->id)->levelGoals);
+        $this->assertArrayHasKey('advanced', TeachingDetails::of($this->profileOf($user->id))->levelGoals);
     }
 
     public function test_a_goal_must_name_an_accepted_level_once(): void
@@ -458,7 +459,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'type' => '/validation_errors/0=d94b19cc-114f-4f44-9cc4-4138e80a87b9;1=d94b19cc-114f-4f44-9cc4-4138e80a87b9;2=d94b19cc-114f-4f44-9cc4-4138e80a87b9;3=d94b19cc-114f-4f44-9cc4-4138e80a87b9',
             'description' => "level_goals[0].title: Le titre fait au plus 80 caractères\nlevel_goals[0].points[0]: Un point fait au plus 80 caractères\nsongs[0].artist: L'artiste fait au plus 100 caractères\nsongs[0].title: Le titre fait au plus 100 caractères",
         ]);
-        $this->assertNull(self::getContainer()->get(TeacherProfileRepository::class)->findOneBy(['user' => $user->id]));
+        $this->assertNull(self::getContainer()->get(ServiceRepository::class)->findOneBy(['user' => $user->id]));
     }
 
     public function test_a_point_must_be_text(): void
@@ -540,18 +541,18 @@ class TeacherProfileLessonContentTest extends ApiTestCase
         ]);
     }
 
-    /** @return array{0: \App\Entity\User, 1: \App\Entity\Attribute\Instrument, 2: TeacherProfile} */
+    /** @return array{0: \App\Entity\User, 1: \App\Entity\Attribute\Instrument, 2: Service} */
     private function teacherWithContent(): array
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
-        $profile = TeacherProfileFactory::createOne([
+        $profile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
             'yearsOfExperience' => 12,
             'studentLevels' => ['beginner', 'advanced'],
             'ageGroups' => [],
-            'courseTitle' => null,
+            'headline' => null,
             'offersTrial' => false,
             'levelGoals' => [
                 'advanced' => ['title' => 'Trouver ton son', 'points' => []],
@@ -560,15 +561,15 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'songs' => [['artist' => 'Radiohead', 'title' => 'Weird Fishes']],
             'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
         ]);
-        TeacherProfileInstrumentFactory::createOne(['teacherProfile' => $profile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::createOne(['service' => $profile, 'instrument' => $guitar]);
 
         return [$user, $guitar, $profile];
     }
 
-    private function profileOf(string $userId): TeacherProfile
+    private function profileOf(string $userId): Service
     {
-        $profile = self::getContainer()->get(TeacherProfileRepository::class)->findOneBy(['user' => $userId]);
-        $this->assertInstanceOf(TeacherProfile::class, $profile);
+        $profile = self::getContainer()->get(ServiceRepository::class)->findOneBy(['user' => $userId]);
+        $this->assertInstanceOf(Service::class, $profile);
 
         return $profile;
     }

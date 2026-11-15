@@ -6,7 +6,7 @@ namespace App\Service\Builder\Profile;
 
 use App\ApiResource\Profile\ProfileWallMedia;
 use App\Entity\Musician\MusicianProfileMedia;
-use App\Entity\Teacher\TeacherProfileMedia;
+use App\Entity\Service\ServiceMedia;
 use App\Service\Builder\Musician\MusicianProfileMediaResourceBuilder;
 use App\Service\Builder\Teacher\TeacherProfileMediaResourceBuilder;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -21,7 +21,7 @@ readonly class ProfileWallMediaBuilder
     ) {
     }
 
-    public function build(MusicianProfileMedia|TeacherProfileMedia $entity): ProfileWallMedia
+    public function build(MusicianProfileMedia|ServiceMedia $entity): ProfileWallMedia
     {
         // The profile's own builders, for the thumbnail they already know how to find.
         $thumbnailUrl = $entity instanceof MusicianProfileMedia
@@ -42,7 +42,7 @@ readonly class ProfileWallMediaBuilder
     }
 
     /**
-     * @param iterable<MusicianProfileMedia|TeacherProfileMedia> $entities
+     * @param iterable<MusicianProfileMedia|ServiceMedia> $entities
      *
      * @return list<ProfileWallMedia>
      */

@@ -7,7 +7,8 @@ namespace App\State\Processor\Teacher;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Teacher\TeacherProfileMedia;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Entity\Service\ServiceMedia;
+use App\Repository\Service\ServiceMediaRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -17,7 +18,7 @@ readonly class TeacherProfileMediaDeleteProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private TeacherProfileMediaRepository $mediaRepository,
+        private ServiceMediaRepository $mediaRepository,
     ) {
     }
 
@@ -26,7 +27,7 @@ readonly class TeacherProfileMediaDeleteProcessor implements ProcessorInterface
         /** @var TeacherProfileMedia $data */
         $media = $this->mediaRepository->find($data->id);
 
-        if ($media instanceof \App\Entity\Teacher\TeacherProfileMedia) {
+        if ($media instanceof ServiceMedia) {
             $this->entityManager->remove($media);
             $this->entityManager->flush();
         }

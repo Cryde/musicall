@@ -10,7 +10,7 @@ use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
+use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -202,7 +202,7 @@ class HomeControllerTest extends WebTestCase
         $user->profile->displayName = 'Julien Roche';
         $user->profile->location = 'Bruxelles';
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::createOne(['user' => $user, 'courseTitle' => null, 'offersTrial' => false]);
+        ServiceFactory::new()->teaching()->create(['user' => $user, 'headline' => null, 'offersTrial' => false]);
 
         $client->request('GET', '/u/prof_shell/teacher?from=search', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
 
@@ -222,7 +222,7 @@ class HomeControllerTest extends WebTestCase
         $user = UserFactory::new(['username' => 'prof_en'])->create();
         $user->profile->location = null;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::createOne(['user' => $user, 'courseTitle' => null, 'offersTrial' => false]);
+        ServiceFactory::new()->teaching()->create(['user' => $user, 'headline' => null, 'offersTrial' => false]);
 
         $client->request('GET', '/en/u/prof_en/teacher', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
 

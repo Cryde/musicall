@@ -9,6 +9,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Teacher\Profile\Media;
 use App\ApiResource\Teacher\TeacherProfileMedia;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Builder\Teacher\TeacherProfileMediaResourceBuilder;
 use App\Service\Procedure\Teacher\TeacherProfileMediaCreateProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -23,6 +25,7 @@ readonly class TeacherProfileMediaCreateProcessor implements ProcessorInterface
         private Security $security,
         private TeacherProfileMediaCreateProcedure $mediaCreateProcedure,
         private TeacherProfileMediaResourceBuilder $teacherProfileMediaResourceBuilder,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -31,7 +34,7 @@ readonly class TeacherProfileMediaCreateProcessor implements ProcessorInterface
         /** @var Media $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        if (!$profile = $user->teacherProfile) {
+        if (!$profile = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching)) {
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 

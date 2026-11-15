@@ -30,4 +30,16 @@ enum SessionDuration: string
             self::TWO_HOURS => 120,
         };
     }
+
+    /** A lesson offer stores its length in minutes (#1318); the teacher API keeps these names. Like from(), throws on a length no case has. */
+    public static function fromMinutes(?int $minutes): self
+    {
+        foreach (self::cases() as $duration) {
+            if ($duration->getMinutes() === $minutes) {
+                return $duration;
+            }
+        }
+
+        throw new \ValueError(sprintf('No lesson lasts %s minutes', $minutes ?? 'null'));
+    }
 }

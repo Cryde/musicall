@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Api\Teacher;
 
 use App\Enum\Musician\MediaPlatform;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Repository\Service\ServiceMediaRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileMediaFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceMediaFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -23,11 +23,11 @@ class TeacherProfileMediaTest extends ApiTestCase
     public function test_get_media_collection(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user]);
+        $teacherProfile = ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         // Created in reverse, so the order can only come from the position: new ids sort by creation.
-        $media2 = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        $media2 = ServiceMediaFactory::new()->create([
+            'service' => $teacherProfile,
             'platform' => MediaPlatform::YOUTUBE,
             'url' => 'https://www.youtube.com/watch?v=def456',
             'embedId' => 'def456',
@@ -35,8 +35,8 @@ class TeacherProfileMediaTest extends ApiTestCase
             'position' => 1,
         ]);
 
-        $media1 = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        $media1 = ServiceMediaFactory::new()->create([
+            'service' => $teacherProfile,
             'platform' => MediaPlatform::YOUTUBE,
             'url' => 'https://www.youtube.com/watch?v=abc123',
             'embedId' => 'abc123',
@@ -83,7 +83,7 @@ class TeacherProfileMediaTest extends ApiTestCase
     public function test_get_media_collection_empty(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/teacher-profile/media');
@@ -121,12 +121,12 @@ class TeacherProfileMediaTest extends ApiTestCase
 
     public function test_delete_media(): void
     {
-        $mediaRepository = self::getContainer()->get(TeacherProfileMediaRepository::class);
+        $mediaRepository = self::getContainer()->get(ServiceMediaRepository::class);
         $user = UserFactory::new()->asBaseUser()->create();
-        $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user]);
+        $teacherProfile = ServiceFactory::new()->teaching()->create(['user' => $user]);
 
-        $media = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        $media = ServiceMediaFactory::new()->create([
+            'service' => $teacherProfile,
         ]);
 
         $mediaId = $media->id;
@@ -142,7 +142,7 @@ class TeacherProfileMediaTest extends ApiTestCase
     public function test_delete_media_not_found(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->client->loginUser($user);
         // Use a valid UUID format that doesn't exist
@@ -155,7 +155,7 @@ class TeacherProfileMediaTest extends ApiTestCase
     {
         // A guid column converts nothing, so a malformed id is not found rather than a 500.
         $user = UserFactory::new()->asBaseUser()->create();
-        TeacherProfileFactory::new()->create(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/teacher-profile/media/not-a-uuid');
@@ -184,11 +184,11 @@ class TeacherProfileMediaTest extends ApiTestCase
             'email' => 'teacher_other@test.com',
         ]);
 
-        $teacherProfile1 = TeacherProfileFactory::new()->create(['user' => $user1]);
-        TeacherProfileFactory::new()->create(['user' => $user2]);
+        $teacherProfile1 = ServiceFactory::new()->teaching()->create(['user' => $user1]);
+        ServiceFactory::new()->teaching()->create(['user' => $user2]);
 
-        $media = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile1,
+        $media = ServiceMediaFactory::new()->create([
+            'service' => $teacherProfile1,
         ]);
 
         $mediaId = $media->id;
@@ -206,10 +206,10 @@ class TeacherProfileMediaTest extends ApiTestCase
             'username' => 'media_owner',
             'email' => 'media_owner@test.com',
         ]);
-        $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user]);
+        $teacherProfile = ServiceFactory::new()->teaching()->create(['user' => $user]);
 
-        $media = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        $media = ServiceMediaFactory::new()->create([
+            'service' => $teacherProfile,
         ]);
 
         $mediaId = $media->id;

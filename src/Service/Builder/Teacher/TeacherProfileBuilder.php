@@ -14,13 +14,16 @@ use App\ApiResource\Teacher\Public\TeacherProfileSocialLink as PublicTeacherProf
 use App\ApiResource\Teacher\Public\TeacherProfileStyle as PublicTeacherProfileStyle;
 use App\Entity\Attribute\Style;
 use App\Entity\Musician\MusicianProfile;
-use App\Entity\Teacher\TeacherAvailability;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileInstrument;
-use App\Entity\Teacher\TeacherProfileLocation;
-use App\Entity\Teacher\TeacherProfilePackage;
-use App\Entity\Teacher\TeacherProfilePricing;
-use App\Entity\Teacher\TeacherSocialLink;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceAvailability;
+use App\Entity\Service\ServiceInstrument;
+use App\Entity\Service\ServiceLink;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Entity\Service\TeachingDetails;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Teacher\LocationType;
+use App\Enum\Teacher\SessionDuration;
 use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Translation\ReferenceNameTranslator;
@@ -39,7 +42,7 @@ readonly class TeacherProfileBuilder
     ) {
     }
 
-    public function build(TeacherProfile $profile): PublicTeacherProfile
+    public function build(Service $profile): PublicTeacherProfile
     {
         $user = $profile->user;
         $dto = new PublicTeacherProfile();
@@ -69,35 +72,36 @@ readonly class TeacherProfileBuilder
         $dto->description = $profile->description;
         $dto->yearsOfExperience = $profile->yearsOfExperience;
 
-        $dto->studentLevels = $profile->studentLevels;
-        $dto->ageGroups = $profile->ageGroups;
+        $details = TeachingDetails::of($profile);
+        $dto->studentLevels = $details->studentLevels;
+        $dto->ageGroups = $details->ageGroups;
 
-        $dto->courseTitle = $profile->courseTitle;
-        $dto->offersTrial = $profile->offersTrial;
-        $dto->trialPrice = $profile->trialPrice;
+        $dto->courseTitle = $profile->headline;
+        $dto->offersTrial = $details->offersTrial;
+        $dto->trialPrice = $details->trialPrice;
 
-        $dto->locations = $this->buildLocations($profile->locations->toArray());
+        $dto->locations = $this->buildLocations($profile->places->toArray());
 
         $dto->instruments = $this->buildInstruments($profile->instruments->toArray());
         $dto->styles = $this->buildStyles($profile->styles->toArray());
         $dto->media = $this->teacherProfileMediaResourceBuilder->buildList($profile->media->toArray());
-        $dto->pricing = $this->buildPricing($profile->pricing->toArray());
+        $dto->pricing = $this->buildPricing($profile->offersIn(OfferUnit::Lesson));
         $dto->availability = $this->buildAvailability($profile->availability->toArray());
-        $dto->packages = $this->buildPackages($profile->packages->toArray());
-        $dto->socialLinks = $this->buildSocialLinks($profile->socialLinks->toArray());
-        $dto->levelGoals = $profile->levelGoalList();
-        $dto->songs = $profile->songs;
+        $dto->packages = $this->buildPackages($profile->offersIn(OfferUnit::Package));
+        $dto->socialLinks = $this->buildSocialLinks($profile->links->toArray());
+        $dto->levelGoals = $details->levelGoalList();
+        $dto->songs = $details->songs;
 
         return $dto;
     }
 
     /**
-     * @param TeacherProfileInstrument[] $instruments
+     * @param ServiceInstrument[] $instruments
      * @return PublicTeacherProfileInstrument[]
      */
     public function buildInstruments(array $instruments): array
     {
-        return array_values(array_map(function (TeacherProfileInstrument $instrument): PublicTeacherProfileInstrument {
+        return array_values(array_map(function (ServiceInstrument $instrument): PublicTeacherProfileInstrument {
             $dto = new PublicTeacherProfileInstrument();
             $dto->instrumentId = (string) $instrument->instrument->id;
             $dto->instrumentName = $this->referenceNames->instrument($instrument->instrument);
@@ -122,14 +126,14 @@ readonly class TeacherProfileBuilder
     }
 
     /**
-     * @param TeacherProfileLocation[] $locations
+     * @param ServicePlace[] $locations
      * @return PublicTeacherProfileLocation[]
      */
     private function buildLocations(array $locations): array
     {
-        return array_values(array_map(function (TeacherProfileLocation $location): PublicTeacherProfileLocation {
+        return array_values(array_map(function (ServicePlace $location): PublicTeacherProfileLocation {
             $dto = new PublicTeacherProfileLocation();
-            $dto->type = $location->type->value;
+            $dto->type = LocationType::fromPlaceType($location->type)->value;
             $dto->address = $location->address;
             $dto->city = $location->city;
             $dto->country = $location->country;
@@ -142,14 +146,14 @@ readonly class TeacherProfileBuilder
     }
 
     /**
-     * @param TeacherProfilePricing[] $pricing
+     * @param ServiceOffer[] $pricing lesson offers
      * @return PublicTeacherProfilePricing[]
      */
     public function buildPricing(array $pricing): array
     {
-        return array_values(array_map(function (TeacherProfilePricing $p): PublicTeacherProfilePricing {
+        return array_values(array_map(function (ServiceOffer $p): PublicTeacherProfilePricing {
             $dto = new PublicTeacherProfilePricing();
-            $dto->duration = $p->duration->value;
+            $dto->duration = SessionDuration::fromMinutes($p->quantity)->value;
             $dto->price = $p->price;
 
             return $dto;
@@ -157,12 +161,12 @@ readonly class TeacherProfileBuilder
     }
 
     /**
-     * @param TeacherAvailability[] $availability
+     * @param ServiceAvailability[] $availability
      * @return PublicTeacherAvailability[]
      */
     public function buildAvailability(array $availability): array
     {
-        $result = array_values(array_map(function (TeacherAvailability $a): PublicTeacherAvailability {
+        $result = array_values(array_map(function (ServiceAvailability $a): PublicTeacherAvailability {
             $dto = new PublicTeacherAvailability();
             $dto->dayOfWeek = $a->dayOfWeek->value;
             $dto->dayOfWeekOrder = $a->dayOfWeek->getOrder();
@@ -185,17 +189,17 @@ readonly class TeacherProfileBuilder
     }
 
     /**
-     * @param TeacherProfilePackage[] $packages
+     * @param ServiceOffer[] $packages package offers
      * @return PublicTeacherProfilePackage[]
      */
     private function buildPackages(array $packages): array
     {
-        return array_values(array_map(function (TeacherProfilePackage $package): PublicTeacherProfilePackage {
+        return array_values(array_map(function (ServiceOffer $package): PublicTeacherProfilePackage {
             $dto = new PublicTeacherProfilePackage();
             $dto->id = (string) $package->id;
-            $dto->title = $package->title;
+            $dto->title = (string) $package->title;
             $dto->description = $package->description;
-            $dto->sessionsCount = $package->sessionsCount;
+            $dto->sessionsCount = $package->quantity;
             $dto->price = $package->price;
 
             return $dto;
@@ -203,12 +207,12 @@ readonly class TeacherProfileBuilder
     }
 
     /**
-     * @param TeacherSocialLink[] $socialLinks
+     * @param ServiceLink[] $socialLinks
      * @return PublicTeacherProfileSocialLink[]
      */
     private function buildSocialLinks(array $socialLinks): array
     {
-        return array_values(array_map(function (TeacherSocialLink $link): PublicTeacherProfileSocialLink {
+        return array_values(array_map(function (ServiceLink $link): PublicTeacherProfileSocialLink {
             $dto = new PublicTeacherProfileSocialLink();
             $dto->platform = $link->platform->value;
             $dto->url = $link->url;

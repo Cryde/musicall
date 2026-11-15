@@ -8,13 +8,14 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Musician\MusicianProfileMedia;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Publication;
-use App\Entity\Teacher\TeacherProfileMedia;
+use App\Entity\Service\ServiceMedia;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\Musician\MusicianProfileMediaRepository;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\PublicationRepository;
-use App\Repository\Teacher\TeacherProfileMediaRepository;
+use App\Repository\Service\ServiceMediaRepository;
 
 /**
  * A member's wall (#1316): their posts and what they did elsewhere on MusicAll, read live from each table and
@@ -27,7 +28,7 @@ readonly class ProfileWallFeed
         private MusicianAnnounceRepository $announceRepository,
         private PublicationRepository $publicationRepository,
         private MusicianProfileMediaRepository $musicianMediaRepository,
-        private TeacherProfileMediaRepository $teacherMediaRepository,
+        private ServiceMediaRepository $teacherMediaRepository,
     ) {
     }
 
@@ -60,8 +61,8 @@ readonly class ProfileWallFeed
                 $this->musicianMediaRepository->findForWall($owner, $before, $size),
             ),
             ...!$reads(WallItemKind::TeacherMedia) ? [] : array_map(
-                static fn (TeacherProfileMedia $media): WallEntry => new WallEntry(WallItemKind::TeacherMedia, $media->creationDatetime, $media),
-                $this->teacherMediaRepository->findForWall($owner, $before, $size),
+                static fn (ServiceMedia $media): WallEntry => new WallEntry(WallItemKind::TeacherMedia, $media->creationDatetime, $media),
+                $this->teacherMediaRepository->findForWall($owner, ServiceKind::Teaching, $before, $size),
             ),
         ];
         usort($entries, static fn (WallEntry $a, WallEntry $b): int => WallCursor::compare($a->cursor, $b->cursor));

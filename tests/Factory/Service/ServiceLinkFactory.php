@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Factory\Teacher;
+namespace App\Tests\Factory\Service;
 
-use App\Entity\Teacher\TeacherSocialLink;
+use App\Entity\Service\ServiceLink;
 use App\Enum\SocialPlatform;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentObjectFactory<TeacherSocialLink>
+ * @extends PersistentObjectFactory<ServiceLink>
  */
-final class TeacherSocialLinkFactory extends PersistentObjectFactory
+final class ServiceLinkFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
         return [
-            'teacherProfile' => TeacherProfileFactory::new(),
+            'service' => ServiceFactory::new()->teaching(),
             'platform' => self::faker()->randomElement(SocialPlatform::cases()),
             'url' => self::faker()->url(),
         ];
@@ -24,7 +24,7 @@ final class TeacherSocialLinkFactory extends PersistentObjectFactory
 
     public static function class(): string
     {
-        return TeacherSocialLink::class;
+        return ServiceLink::class;
     }
 
     public function asYoutube(): self
@@ -40,14 +40,6 @@ final class TeacherSocialLinkFactory extends PersistentObjectFactory
         return $this->with([
             'platform' => SocialPlatform::INSTAGRAM,
             'url' => 'https://www.instagram.com/teacher',
-        ]);
-    }
-
-    public function asWebsite(): self
-    {
-        return $this->with([
-            'platform' => SocialPlatform::WEBSITE,
-            'url' => 'https://www.teacher-music.com',
         ]);
     }
 }

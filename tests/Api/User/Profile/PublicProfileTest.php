@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Api\User\Profile;
 
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\Teacher\TeacherAvailability;
-use App\Entity\Teacher\TeacherProfilePricing;
+use App\Entity\Service\ServiceAvailability;
+use App\Entity\Service\ServiceOffer;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Enum\Musician\MediaPlatform;
 use App\Enum\Musician\SkillLevel;
+use App\Enum\Service\OfferUnit;
+use App\Enum\SocialPlatform;
 use App\Enum\Teacher\DayOfWeek;
 use App\Enum\Teacher\SessionDuration;
-use App\Enum\SocialPlatform;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
@@ -21,9 +22,9 @@ use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
 use App\Tests\Factory\Profile\ProfilePostFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
-use App\Tests\Factory\Teacher\TeacherProfileMediaFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
+use App\Tests\Factory\Service\ServiceMediaFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserSocialLinkFactory;
@@ -184,30 +185,30 @@ class PublicProfileTest extends ApiTestCase
         $demo = MusicianProfileMediaFactory::new()->asSoundCloud()->create(['musicianProfile' => $musicianProfile, 'title' => 'Les heures creuses', 'position' => 1]);
         $live = MusicianProfileMediaFactory::new()->asYouTube()->create(['musicianProfile' => $musicianProfile, 'title' => 'Live au Botanique', 'position' => 0]);
 
-        $teacherProfile = TeacherProfileFactory::new()->create(['user' => $user, 'offersTrial' => true, 'trialPrice' => 0]);
-        $lesson = TeacherProfileMediaFactory::new()->create([
-            'teacherProfile' => $teacherProfile,
+        $teacherProfile = ServiceFactory::new()->teaching()->create(['user' => $user, 'offersTrial' => true, 'trialPrice' => 0]);
+        $lesson = ServiceMediaFactory::new()->create([
+            'service' => $teacherProfile,
             'platform' => MediaPlatform::SPOTIFY,
             'url' => 'https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC',
             'embedId' => 'track/4uLU6hMCjMI75M1A2tKUQC',
             'title' => 'Les arpèges',
         ]);
-        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $teacherProfile, 'instrument' => $guitar]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
         // Added longest first: the page reads them shortest first.
         foreach ([[SessionDuration::ONE_HOUR, 4500], [SessionDuration::THIRTY_MINUTES, 2500]] as [$duration, $price]) {
-            $pricing = new TeacherProfilePricing();
-            $pricing->duration = $duration;
+            $pricing = new ServiceOffer();
+            $pricing->unit = OfferUnit::Lesson;
+            $pricing->quantity = $duration->getMinutes();
             $pricing->price = $price;
-            $teacherProfile->addPricing($pricing);
+            $teacherProfile->addOffer($pricing);
         }
-        $slot = new TeacherAvailability();
+        $slot = new ServiceAvailability();
         $slot->dayOfWeek = DayOfWeek::WEDNESDAY;
         $slot->startTime = new \DateTimeImmutable('14:00');
         $slot->endTime = new \DateTimeImmutable('18:00');
         $teacherProfile->addAvailability($slot);
         \Zenstruck\Foundry\Persistence\save($teacherProfile);
         $user->musicianProfile = $musicianProfile;
-        $user->teacherProfile = $teacherProfile;
         \Zenstruck\Foundry\Persistence\save($user);
         self::getContainer()->get(EntityManagerInterface::class)->clear();
 

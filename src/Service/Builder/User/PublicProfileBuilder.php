@@ -10,14 +10,18 @@ use App\ApiResource\User\Profile\PublicProfileSocialLink;
 use App\ApiResource\User\Profile\PublicProfileTeacher;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\Musician\MusicianProfileInstrument;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfilePricing;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\TeachingDetails;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Enum\Musician\AvailabilityStatus;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServiceKind;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\Profile\ProfilePostRepository;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Service\Builder\Musician\MusicianProfileBuilder;
@@ -41,6 +45,7 @@ readonly class PublicProfileBuilder
         private ProfileWallMediaBuilder $mediaBuilder,
         private MusicianBandResourceBuilder $bandBuilder,
         private ProfilePostRepository $profilePostRepository,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -85,9 +90,10 @@ readonly class PublicProfileBuilder
         $dto->musicianAnnounces = array_map($this->announceBuilder->build(...), $announces);
 
         $dto->hasMusicianProfile = $user->musicianProfile instanceof MusicianProfile;
-        $dto->hasTeacherProfile = $user->teacherProfile instanceof TeacherProfile;
+        $teaching = $this->serviceRepository->findOneByUserAndKind($user, ServiceKind::Teaching);
+        $dto->hasTeacherProfile = $teaching instanceof Service;
         $dto->musician = $user->musicianProfile instanceof MusicianProfile ? $this->musician($user->musicianProfile) : null;
-        $dto->teacher = $user->teacherProfile instanceof TeacherProfile ? $this->teacher($user->teacherProfile) : null;
+        $dto->teacher = $teaching instanceof Service ? $this->teacher($teaching) : null;
 
         return $dto;
     }
@@ -111,15 +117,16 @@ readonly class PublicProfileBuilder
         return $musician;
     }
 
-    private function teacher(TeacherProfile $profile): PublicProfileTeacher
+    private function teacher(Service $profile): PublicProfileTeacher
     {
+        $details = TeachingDetails::of($profile);
         $teacher = new PublicProfileTeacher();
         $teacher->instruments = $this->teacherProfileBuilder->buildInstruments($profile->instruments->toArray());
-        $teacher->offersTrial = $profile->offersTrial;
-        $teacher->trialPrice = $profile->trialPrice;
+        $teacher->offersTrial = $details->offersTrial;
+        $teacher->trialPrice = $details->trialPrice;
         // Shortest lesson first: the relation itself has no order.
-        $pricing = $profile->pricing->toArray();
-        usort($pricing, static fn (TeacherProfilePricing $a, TeacherProfilePricing $b): int => $a->duration->getMinutes() <=> $b->duration->getMinutes());
+        $pricing = $profile->offersIn(OfferUnit::Lesson);
+        usort($pricing, static fn (ServiceOffer $a, ServiceOffer $b): int => $a->quantity <=> $b->quantity);
         $teacher->pricing = $this->teacherProfileBuilder->buildPricing($pricing);
         $teacher->media = $this->mediaBuilder->buildList($profile->media);
         $teacher->availability = $this->teacherProfileBuilder->buildAvailability($profile->availability->toArray());

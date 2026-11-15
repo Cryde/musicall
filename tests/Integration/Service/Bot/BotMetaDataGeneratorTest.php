@@ -5,10 +5,11 @@ namespace App\Tests\Integration\Service\Bot;
 use App\Entity\Gallery;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileLocation;
-use App\Entity\Teacher\TeacherProfilePricing;
-use App\Enum\Teacher\LocationType;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServicePlaceType;
 use App\Enum\Teacher\SessionDuration;
 use App\Locale\LocalizedPath;
 use App\Service\Bot\BotMetaDataGenerator;
@@ -24,8 +25,8 @@ use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\Publication\PublicationCoverFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
-use App\Tests\Factory\Teacher\TeacherProfileFactory;
-use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserProfilePictureFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -396,7 +397,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $user = UserFactory::new(['username' => 'prof_prive'])->create();
         $user->profile->isPublic = false;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::createOne(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->assertSame([
             'title'       => 'Profil privé - MusicAll',
@@ -411,7 +412,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $user->deletionDatetime = new \DateTimeImmutable('2026-10-01T10:00:00+00:00');
         \Zenstruck\Foundry\Persistence\save($user);
         MusicianProfileFactory::createOne(['user' => $user]);
-        TeacherProfileFactory::createOne(['user' => $user]);
+        ServiceFactory::new()->teaching()->create(['user' => $user]);
 
         $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti'));
         $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/membre_parti/teacher'));
@@ -454,7 +455,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $user = UserFactory::new(['username' => 'prof_simple'])->create();
         $user->profile->location = null;
         \Zenstruck\Foundry\Persistence\save($user);
-        TeacherProfileFactory::createOne(['user' => $user, 'courseTitle' => null, 'offersTrial' => false]);
+        ServiceFactory::new()->teaching()->create(['user' => $user, 'headline' => null, 'offersTrial' => false]);
 
         $this->assertSame([
             'title'       => 'Cours de musique avec prof_simple : musique - MusicAll',
@@ -497,33 +498,34 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getPageMetaData('/u/nobody-here'));
     }
 
-    private function teacherWithPlacesAndPrices(string $username): TeacherProfile
+    private function teacherWithPlacesAndPrices(string $username): Service
     {
         $user = UserFactory::new(['username' => $username])->create();
         $user->profile->displayName = 'Julien Roche';
         $user->profile->location = 'Bruxelles';
         \Zenstruck\Foundry\Persistence\save($user);
 
-        $teacherProfile = TeacherProfileFactory::createOne([
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user'        => $user,
-            'courseTitle' => 'Joue les morceaux que tu aimes',
+            'headline' => 'Joue les morceaux que tu aimes',
             'offersTrial' => true,
             'trialPrice'  => null,
         ]);
-        TeacherProfileInstrumentFactory::createOne(['teacherProfile' => $teacherProfile, 'instrument' => InstrumentFactory::new()->asGuitar()->create()]);
-        TeacherProfileInstrumentFactory::createOne(['teacherProfile' => $teacherProfile, 'instrument' => InstrumentFactory::new()->asBass()->create()]);
+        ServiceInstrumentFactory::createOne(['service' => $teacherProfile, 'instrument' => InstrumentFactory::new()->asGuitar()->create()]);
+        ServiceInstrumentFactory::createOne(['service' => $teacherProfile, 'instrument' => InstrumentFactory::new()->asBass()->create()]);
 
-        foreach ([[LocationType::TEACHER_PLACE, 'Ixelles'], [LocationType::ONLINE, null]] as [$type, $city]) {
-            $place = new TeacherProfileLocation();
+        foreach ([[ServicePlaceType::AtMyPlace, 'Ixelles'], [ServicePlaceType::Remote, null]] as [$type, $city]) {
+            $place = new ServicePlace();
             $place->type = $type;
             $place->city = $city;
-            $teacherProfile->addLocation($place);
+            $teacherProfile->addPlace($place);
         }
         foreach ([[SessionDuration::ONE_HOUR, 4000], [SessionDuration::THIRTY_MINUTES, 2500]] as [$duration, $price]) {
-            $pricing = new TeacherProfilePricing();
-            $pricing->duration = $duration;
+            $pricing = new ServiceOffer();
+            $pricing->unit = OfferUnit::Lesson;
+            $pricing->quantity = $duration->getMinutes();
             $pricing->price = $price;
-            $teacherProfile->addPricing($pricing);
+            $teacherProfile->addOffer($pricing);
         }
         \Zenstruck\Foundry\Persistence\save($teacherProfile);
 

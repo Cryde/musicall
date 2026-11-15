@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Service\Procedure\Teacher;
 
 use App\ApiResource\Teacher\Profile\Media;
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileMedia;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceMedia;
 use App\Service\Builder\Teacher\TeacherProfileMediaBuilder;
 use App\Service\Musician\MediaMetadataFetcher;
 use App\Service\Musician\MediaUrlParser;
@@ -22,7 +22,7 @@ readonly class TeacherProfileMediaCreateProcedure
     ) {
     }
 
-    public function handle(Media $mediaDto, TeacherProfile $profile): TeacherProfileMedia
+    public function handle(Media $mediaDto, Service $profile): ServiceMedia
     {
         // URL is already validated by SupportedMediaUrl constraint
         $parsed = $this->mediaUrlParser->parse($mediaDto->url);

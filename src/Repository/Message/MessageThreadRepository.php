@@ -66,15 +66,13 @@ class MessageThreadRepository extends ServiceEntityRepository
             ->addSelect('participant')
             ->leftJoin('participant.participant', 'participant_user')
             ->addSelect('participant_user')
-            // The three that User cannot lazy load. Joining them here is not premature: without them
+            // The two that User cannot lazy load. Joining them here is not premature: without them
             // Doctrine issues one query per association per user, which is strictly worse than the
-            // per-participant load this method exists to remove. Delete these three when #730 does.
+            // per-participant load this method exists to remove. Delete these two when #730 does.
             ->leftJoin('participant_user.musicianProfile', 'musician_profile')
             ->addSelect('musician_profile')
             ->leftJoin('participant_user.notificationPreference', 'notification_preference')
             ->addSelect('notification_preference')
-            ->leftJoin('participant_user.teacherProfile', 'teacher_profile')
-            ->addSelect('teacher_profile')
             ->where('thread.id = :id')
             ->setParameter('id', $id)
             ->getQuery()

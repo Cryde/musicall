@@ -79,7 +79,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
      * Projects exactly the author fields the "last" listing needs, keyed by announce id.
      *
      * Everything is selected as scalars, so no User entity is hydrated and its inverse
-     * one-to-one profile tables (`notificationPreference` / `teacherProfile`) never load.
+     * one-to-one profile table (`notificationPreference`) never loads.
      * The profile picture is reduced to its `imageName` (enough to rebuild the asset URL)
      * and the `musicianProfile` to its id (existence flag).
      *

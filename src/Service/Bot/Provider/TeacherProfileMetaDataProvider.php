@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Bot\Provider;
 
-use App\Entity\Teacher\TeacherProfile;
-use App\Entity\Teacher\TeacherProfileLocation;
-use App\Entity\Teacher\TeacherProfilePricing;
-use App\Enum\Teacher\LocationType;
-use App\Repository\Teacher\TeacherProfileRepository;
+use App\Entity\Service\Service;
+use App\Entity\Service\ServiceOffer;
+use App\Entity\Service\ServicePlace;
+use App\Entity\Service\TeachingDetails;
+use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServicePlaceType;
+use App\Repository\Service\ServiceRepository;
 use App\Service\Bot\PageMetaDataProviderInterface;
 use App\Translation\ReferenceNameTranslator;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -19,7 +22,7 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
     private const string CURRENCY = 'EUR';
 
     public function __construct(
-        private TeacherProfileRepository $teacherProfileRepository,
+        private ServiceRepository $serviceRepository,
         private ProfileMeta $profileMeta,
         private TranslatorInterface $translator,
         private ReferenceNameTranslator $referenceNameTranslator,
@@ -37,8 +40,8 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
             return [];
         }
 
-        $teacherProfile = $this->teacherProfileRepository->findByUsername($matches[1]);
-        if (!$teacherProfile instanceof TeacherProfile) {
+        $teacherProfile = $this->serviceRepository->findOneByUsernameAndKind($matches[1], ServiceKind::Teaching);
+        if (!$teacherProfile instanceof Service) {
             return $this->profileMeta->missing();
         }
 
@@ -61,7 +64,7 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
     }
 
     /** @return list<string> */
-    private function instruments(TeacherProfile $teacherProfile): array
+    private function instruments(Service $teacherProfile): array
     {
         $names = [];
         foreach ($teacherProfile->instruments as $instrument) {
@@ -72,23 +75,23 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
     }
 
     /** Where the lessons are, for the title: the teacher's own place first, then any place, then the profile's city. */
-    private function city(TeacherProfile $teacherProfile): ?string
+    private function city(Service $teacherProfile): ?string
     {
-        $places = $teacherProfile->locations->filter(static fn (TeacherProfileLocation $place): bool => (bool) $place->city);
-        $own = $places->filter(static fn (TeacherProfileLocation $place): bool => $place->type === LocationType::TEACHER_PLACE)->first();
+        $places = $teacherProfile->places->filter(static fn (ServicePlace $place): bool => (bool) $place->city);
+        $own = $places->filter(static fn (ServicePlace $place): bool => $place->type === ServicePlaceType::AtMyPlace)->first();
         $any = $own ?: $places->first();
 
         return $any ? $any->city : ($teacherProfile->user->profile->location ?: null);
     }
 
     /** @param array<string, string|null> $parameters */
-    private function description(TeacherProfile $teacherProfile, array $parameters): string
+    private function description(Service $teacherProfile, array $parameters): string
     {
         $sentences = [$this->translator->trans('meta.teacher.description', $parameters)];
-        if (($cheapest = $this->cheapest($teacherProfile)) instanceof TeacherProfilePricing) {
+        if (($cheapest = $this->cheapest($teacherProfile)) instanceof ServiceOffer) {
             $sentences[] = $this->translator->trans('meta.teacher.price', [
                 'price' => $this->money($cheapest->price),
-                'minutes' => (string) $cheapest->duration->getMinutes(),
+                'minutes' => (string) $cheapest->quantity,
             ]);
         }
         if ($this->hasFreeTrial($teacherProfile)) {
@@ -103,11 +106,11 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
      *
      * @return array<string, mixed>
      */
-    private function service(TeacherProfile $teacherProfile, array $instruments): array
+    private function service(Service $teacherProfile, array $instruments): array
     {
         $areas = [];
-        foreach ($teacherProfile->locations as $place) {
-            if ($place->type === LocationType::ONLINE) {
+        foreach ($teacherProfile->places as $place) {
+            if ($place->type === ServicePlaceType::Remote) {
                 $areas[] = $this->translator->trans('meta.teacher.online');
             } elseif ($place->city) {
                 $areas[] = $place->city;
@@ -115,11 +118,12 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
         }
 
         $offers = [];
-        foreach ($teacherProfile->pricing as $pricing) {
-            $offers[] = $this->offer($pricing->price, $this->translator->trans('meta.teacher.duration', ['minutes' => (string) $pricing->duration->getMinutes()]));
+        foreach ($teacherProfile->offersIn(OfferUnit::Lesson) as $lesson) {
+            $offers[] = $this->offer($lesson->price, $this->translator->trans('meta.teacher.duration', ['minutes' => (string) $lesson->quantity]));
         }
-        if ($teacherProfile->offersTrial) {
-            $offers[] = $this->offer($teacherProfile->trialPrice ?? 0, $this->translator->trans('meta.teacher.trial'));
+        $details = TeachingDetails::of($teacherProfile);
+        if ($details->offersTrial) {
+            $offers[] = $this->offer($details->trialPrice ?? 0, $this->translator->trans('meta.teacher.trial'));
         }
 
         return array_filter([
@@ -127,7 +131,7 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
             '@type' => 'Service',
             'serviceType' => $this->translator->trans('meta.teacher.service', ['instruments' => implode(', ', $instruments)]),
             'url' => $this->profileMeta->url('/u/' . $teacherProfile->user->username . '/teacher'),
-            'description' => $teacherProfile->courseTitle ?: null,
+            'description' => $teacherProfile->headline ?: null,
             'provider' => $this->profileMeta->person($teacherProfile->user),
             'areaServed' => array_values(array_unique($areas)) ?: null,
             'offers' => $offers ?: null,
@@ -140,21 +144,24 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
         return ['@type' => 'Offer', 'name' => $name, 'price' => number_format($cents / 100, 2, '.', ''), 'priceCurrency' => self::CURRENCY];
     }
 
-    private function cheapest(TeacherProfile $teacherProfile): ?TeacherProfilePricing
+    /** The cheapest lesson, never a package: a package's price covers several lessons. */
+    private function cheapest(Service $teacherProfile): ?ServiceOffer
     {
         $cheapest = null;
-        foreach ($teacherProfile->pricing as $pricing) {
-            if (!$cheapest instanceof TeacherProfilePricing || $pricing->price < $cheapest->price) {
-                $cheapest = $pricing;
+        foreach ($teacherProfile->offersIn(OfferUnit::Lesson) as $lesson) {
+            if (!$cheapest instanceof ServiceOffer || $lesson->price < $cheapest->price) {
+                $cheapest = $lesson;
             }
         }
 
         return $cheapest;
     }
 
-    private function hasFreeTrial(TeacherProfile $teacherProfile): bool
+    private function hasFreeTrial(Service $teacherProfile): bool
     {
-        return $teacherProfile->offersTrial && ($teacherProfile->trialPrice ?? 0) === 0;
+        $details = TeachingDetails::of($teacherProfile);
+
+        return $details->offersTrial && ($details->trialPrice ?? 0) === 0;
     }
 
     /** « 25 € » rather than « 25,00 € » when the price is a whole number. */
