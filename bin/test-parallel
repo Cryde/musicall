@@ -1,6 +1,7 @@
 #!/bin/sh
 # Runs the suite on every core with paratest, and the `serial` group alongside in one process.
-# Run it inside the php-cli container: `composer test-parallel`.
+# Run it inside the php-cli container: `composer test-parallel`. CI runs it too.
+# COVERAGE_DIR, when set, collects coverage into $COVERAGE_DIR/clover.xml.
 set -eu
 
 workers="$(nproc)"
@@ -9,6 +10,10 @@ export APP_ENV=test APP_DEBUG=0
 
 rm -rf var/cache/test
 bin/console cache:warmup
+# The warmup builds every validation constraint outside coverage, and the tests would then only unserialize them,
+# so the constraint classes would count as uncovered. Drop just that cache: skipping all optional warmers costs 40%.
+rm -f var/cache/test/validation.php
+bin/console -q cache:pool:clear cache.validator
 
 # Worker N uses musicall_testN (doctrine's dbname_suffix reads TEST_TOKEN), the serial group musicall_test. The
 # databases are kept between runs, so updating them is close to free, where a rebuild is seconds of DDL each.
@@ -23,12 +28,29 @@ for token in '' $(seq 1 "$workers"); do
 done
 for pid in $pids; do wait "$pid"; done
 
+parallel_coverage=''
+serial_coverage=''
+if [ -n "${COVERAGE_DIR:-}" ]; then
+  mkdir -p "$COVERAGE_DIR"
+  parallel_coverage="--coverage-php=$COVERAGE_DIR/parallel.cov"
+  serial_coverage="--coverage-php=$COVERAGE_DIR/serial.cov"
+fi
+
 # The serial group has its own database, so it can share the machine with the paratest workers.
-bin/phpunit --group serial --do-not-record-test-run-history > var/test-serial.log 2>&1 &
+bin/phpunit --group serial --do-not-record-test-run-history $serial_coverage > var/test-serial.log 2>&1 &
 serial=$!
 
 status=0
-TEST_SCHEMA_READY=1 vendor/bin/paratest --processes="$workers" --exclude-group serial || status=$?
+TEST_SCHEMA_READY=1 vendor/bin/paratest --processes="$workers" --exclude-group serial $parallel_coverage || status=$?
 wait "$serial" || status=$?
 cat var/test-serial.log
+
+# php-code-coverage's own merge, not a union of two clover files: each pass reports the files it never loaded with
+# lines guessed by static analysis, and only this merge lets the lines measured by the other pass replace them.
+if [ -n "${COVERAGE_DIR:-}" ] && [ "$status" -eq 0 ]; then
+  php -r 'require "vendor/autoload.php";
+    $merged = (new SebastianBergmann\CodeCoverage\Serialization\Merger())->merge(array_slice($argv, 2));
+    SebastianBergmann\CodeCoverage\Report\Facade::fromSerializedData($merged)->renderClover($argv[1]);' \
+    -- "$COVERAGE_DIR/clover.xml" "$COVERAGE_DIR/parallel.cov" "$COVERAGE_DIR/serial.cov"
+fi
 exit "$status"
