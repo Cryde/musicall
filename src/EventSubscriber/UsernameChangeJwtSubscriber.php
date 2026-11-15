@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Entity\User;
+use App\Security\JwtCookieMinter;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -17,6 +17,7 @@ class UsernameChangeJwtSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly Security $security,
         private readonly JWTTokenManagerInterface $jwtManager,
+        private readonly JwtCookieMinter $jwtCookieMinter,
     ) {
     }
 
@@ -42,34 +43,8 @@ class UsernameChangeJwtSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // Generate new JWT with updated username
-        $jwt = $this->jwtManager->create($user);
-
-        // Split JWT into header.payload and signature
-        $parts = explode('.', $jwt);
-        $headerPayload = $parts[0] . '.' . $parts[1];
-        $signature = $parts[2];
-
-        // Set cookies matching the lexik_jwt configuration
-        $response->headers->setCookie(
-            Cookie::create('jwt_hp')
-                ->withValue($headerPayload)
-                ->withExpires(time() + 3600)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(false)
-                ->withSameSite('strict')
-        );
-
-        $response->headers->setCookie(
-            Cookie::create('jwt_s')
-                ->withValue($signature)
-                ->withExpires(time() + 3600)
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('strict')
-        );
+        // A new JWT, carrying the new username as display data
+        $this->jwtCookieMinter->attachTo($response, $this->jwtManager->create($user));
 
         // No new refresh token: ChangeUsernameProcessor moved the existing ones to the new username,
         // the one in this browser's cookie included (#1025).

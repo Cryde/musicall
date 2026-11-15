@@ -10,6 +10,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\JwtPayload;
+use App\Tests\SessionCookies;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -64,6 +65,11 @@ class UserChangeUsernameTest extends ApiTestCase
         $cookieNames = array_map(static fn ($cookie): string => $cookie->getName(), $this->client->getResponse()->headers->getCookies());
         sort($cookieNames);
         $this->assertSame(['jwt_hp', 'jwt_s'], $cookieNames);
+        // The pair a password login sets, see UserLoginTest (#1027).
+        $this->assertSame([
+            'jwt_hp' => ['expires' => 'now + token_ttl', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => false, 'sameSite' => 'strict', 'partitioned' => false],
+            'jwt_s' => ['expires' => 'session', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'strict', 'partitioned' => false],
+        ], SessionCookies::describe($this->client->getResponse()->headers->getCookies(), self::getContainer()));
     }
 
     /** A device that sends no cookie, the app, still refreshes after a rename made elsewhere. */

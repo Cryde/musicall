@@ -7,6 +7,7 @@ namespace App\Tests\Api\User;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
+use App\Tests\SessionCookies;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -28,6 +29,12 @@ class UserLoginTest extends ApiTestCase
         $this->assertResponseHasCookie('jwt_hp');
         $this->assertResponseHasCookie('jwt_s');
         $this->assertResponseHasCookie('refresh_token');
+        // The reference set: OAuthWebSignInTest and UserChangeUsernameTest expect the same (#1027).
+        $this->assertSame([
+            'jwt_hp' => ['expires' => 'now + token_ttl', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => false, 'sameSite' => 'strict', 'partitioned' => false],
+            'jwt_s' => ['expires' => 'session', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'strict', 'partitioned' => false],
+            'refresh_token' => ['expires' => 'now + refresh_ttl', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'lax', 'partitioned' => false],
+        ], SessionCookies::describe($this->client->getResponse()->headers->getCookies(), self::getContainer()));
     }
 
     public function test_login_unverified_user_with_bad_password_returns_generic_error(): void

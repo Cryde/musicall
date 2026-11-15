@@ -115,6 +115,8 @@ security:
             user_checker: App\Security\SuspensionChecker
             jwt:
                 provider: app_user_id_provider
+            # Never serves its check_path (api_token_refresh matches it first) but do not delete it: it
+            # registers gesdinet's LogoutEventListener on this firewall, which deletes the refresh token on logout.
             refresh_jwt:
                 check_path: /api/token/refresh
             logout:
