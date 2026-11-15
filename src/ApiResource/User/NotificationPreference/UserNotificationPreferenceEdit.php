@@ -43,6 +43,8 @@ class UserNotificationPreferenceEdit
 
     public bool $publicationComment = true;
 
+    public bool $publicationVote = true;
+
     public bool $forumReply = true;
 
     public bool $marketing = false;

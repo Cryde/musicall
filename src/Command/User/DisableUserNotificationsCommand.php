@@ -59,6 +59,7 @@ class DisableUserNotificationsCommand extends Command
         $preference->weeklyRecap = false;
         $preference->messageReceived = false;
         $preference->publicationComment = false;
+        $preference->publicationVote = false;
         $preference->forumReply = false;
         $preference->marketing = false;
         $preference->activityReminder = false;

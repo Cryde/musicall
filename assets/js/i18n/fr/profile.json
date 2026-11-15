@@ -158,6 +158,10 @@
           "label": "Commentaires sur mes publications",
           "description": "Reçois un email lorsqu'un utilisateur commente une de tes publications"
         },
+        "publication_vote": {
+          "label": "Votes sur mes publications",
+          "description": "Reçois une notification lorsque tes publications reçoivent des votes positifs"
+        },
         "forum_reply": {
           "label": "Réponses sur le forum",
           "description": "Reçois un email lorsqu'un utilisateur répond à un de tes sujets sur le forum"

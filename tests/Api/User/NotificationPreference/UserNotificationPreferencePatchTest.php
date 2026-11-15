@@ -41,6 +41,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'weekly_recap' => true,
             'message_received' => true,
             'publication_comment' => true,
+            'publication_vote' => true,
             'forum_reply' => true,
             'marketing' => true,
             'activity_reminder' => true,
@@ -96,6 +97,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'weekly_recap' => true,
             'message_received' => false,
             'publication_comment' => true,
+            'publication_vote' => true,
             'forum_reply' => false,
             'marketing' => false,
             'activity_reminder' => true,
@@ -123,6 +125,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $preference->weeklyRecap = false;
         $preference->messageReceived = false;
         $preference->publicationComment = false;
+        $preference->publicationVote = false;
         $preference->marketing = true;
         $preference->activityReminder = false;
         $preference->showOnlinePresence = false;
@@ -154,6 +157,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'weekly_recap' => false,
             'message_received' => false,
             'publication_comment' => false,
+            'publication_vote' => false,
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
@@ -175,6 +179,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             ->findOneBy(['user' => $user->id]);
         $this->assertInstanceOf(UserNotificationPreference::class, $stored);
         $this->assertFalse($stored->siteNews);
+        $this->assertFalse($stored->publicationVote);
         $this->assertTrue($stored->marketing);
         $this->assertFalse($stored->pushBandMembership);
     }
@@ -192,6 +197,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'weekly_recap' => false,
             'message_received' => false,
             'publication_comment' => false,
+            'publication_vote' => false,
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
@@ -218,6 +224,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'weekly_recap' => false,
             'message_received' => false,
             'publication_comment' => false,
+            'publication_vote' => false,
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,

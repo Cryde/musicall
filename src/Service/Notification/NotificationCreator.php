@@ -9,6 +9,7 @@ use App\Mercure\MercureTopic;
 use App\Service\Notification\Push\PushContent;
 use App\Service\Notification\Push\PushContentBuilder;
 use App\Service\Notification\Push\PushQueue;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
@@ -53,6 +54,24 @@ readonly class NotificationCreator
 
         $this->signal([$recipient->id]);
         $this->push([$recipient], $type, $payload);
+    }
+
+    /**
+     * Gives an existing notification a new payload and brings it back to the top of its recipient's feed,
+     * signalled like a new one: for a type that groups repeated events in one row instead of stacking a
+     * row each (#1081). Same best-effort contract as {@see create()}.
+     *
+     * @param array<string, mixed> $payload
+     */
+    public function resurface(Notification $notification, array $payload): void
+    {
+        $notification->payload = $payload;
+        $notification->creationDatetime = new DateTimeImmutable();
+        $this->entityManager->flush();
+
+        $recipient = $notification->recipient;
+        $this->signal([$recipient->id]);
+        $this->push([$recipient], $notification->type, $payload);
     }
 
     /**

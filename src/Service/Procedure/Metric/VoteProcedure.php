@@ -5,6 +5,7 @@ namespace App\Service\Procedure\Metric;
 use App\Contracts\Metric\VotableInterface;
 use App\Entity\Metric\VoteCache;
 use App\Entity\User;
+use App\Enum\Metric\VoteOutcome;
 use App\Repository\Metric\VoteRepository;
 use App\Service\Builder\Metric\VoteCacheDirector;
 use App\Service\Builder\Metric\VoteDirector;
@@ -23,7 +24,7 @@ class VoteProcedure
     ) {
     }
 
-    public function process(VotableInterface $votable, Request $request, int $value, ?User $user = null): void
+    public function process(VotableInterface $votable, Request $request, int $value, ?User $user = null): VoteOutcome
     {
         $voteCache = $votable->voteCache;
         if (!$voteCache instanceof \App\Entity\Metric\VoteCache) {
@@ -46,11 +47,13 @@ class VoteProcedure
                 // Toggle off — remove vote
                 $this->adjustCacheCount($voteCache, $vote->value, -1);
                 $this->entityManager->remove($vote);
+                $outcome = VoteOutcome::Withdrawn;
             } else {
                 // Change vote direction
                 $this->adjustCacheCount($voteCache, $vote->value, -1);
                 $vote->value = $value;
                 $this->adjustCacheCount($voteCache, $value, 1);
+                $outcome = VoteOutcome::Switched;
             }
         } else {
             // New vote
@@ -64,9 +67,12 @@ class VoteProcedure
             );
             $this->entityManager->persist($vote);
             $this->adjustCacheCount($voteCache, $value, 1);
+            $outcome = VoteOutcome::Cast;
         }
 
         $this->entityManager->flush();
+
+        return $outcome;
     }
 
     private function adjustCacheCount(VoteCache $voteCache, int $value, int $delta): void

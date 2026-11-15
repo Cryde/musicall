@@ -92,6 +92,15 @@ class PushContentBuilderTest extends KernelTestCase
         $this->assertSame(['type' => 'band_space_finance_split_assigned'], $content->data);
     }
 
+    /** Bell only (#1081): a push for it would be a programming error, so it fails loudly rather than send a blank. */
+    public function test_an_up_vote_is_never_pushed(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('An up vote notification is never pushed.');
+
+        $this->builder()->forNotification(NotificationType::PublicationVoted, ['vote_count' => 1], 'fr');
+    }
+
     public function test_an_invitation_names_its_inviter(): void
     {
         $content = $this->builder()->forNotification(NotificationType::BandSpaceInvitation, [

@@ -34,6 +34,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'weekly_recap' => true,
             'message_received' => true,
             'publication_comment' => true,
+            'publication_vote' => true,
             'forum_reply' => true,
             'marketing' => false,
             'activity_reminder' => true,
@@ -65,6 +66,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
         $preference->weeklyRecap = true;
         $preference->messageReceived = false;
         $preference->publicationComment = true;
+        $preference->publicationVote = false;
         $preference->forumReply = false;
         $preference->marketing = true;
         $preference->activityReminder = false;
@@ -82,6 +84,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'weekly_recap' => true,
             'message_received' => false,
             'publication_comment' => true,
+            'publication_vote' => false,
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
