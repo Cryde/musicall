@@ -37,6 +37,30 @@ export function isAuthEndpoint(url) {
 }
 
 /**
+ * Whether a 401 is worth renewing the token for (#1026). A problem document is the application's own
+ * answer, which a new token would not change. Anything else renews, as before: the firewall's
+ * `{code, message}` (its message varies and is translated), and a body that says nothing (a Blob
+ * download, a proxy page), where a missed renewal costs more than an extra one.
+ *
+ * @param {{status?: number, data?: unknown} | undefined} response the failed response
+ * @returns {boolean}
+ */
+export function isTokenRefusal(response) {
+  if (response?.status !== 401) {
+    return false
+  }
+
+  const body = response.data
+  const isProblemDocument =
+    body !== null &&
+    typeof body === 'object' &&
+    'status' in body &&
+    ('detail' in body || 'title' in body)
+
+  return !isProblemDocument
+}
+
+/**
  * @param {{exp?: number} | null} payload a decoded JWT
  * @param {number} nowSeconds the current time, in seconds since the epoch
  * @returns {number} seconds left, 0 when there is no usable expiry

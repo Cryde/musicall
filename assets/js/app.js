@@ -26,6 +26,7 @@ import {
   classifyRefreshFailure,
   hasLiveToken,
   isAuthEndpoint,
+  isTokenRefusal,
   REFRESH_FAILURE,
   refreshSession
 } from './utils/sessionRefresh.js'
@@ -59,12 +60,13 @@ try {
  * was perfectly willing to renew was thrown away. Worse, clearing that flag is what `checkAuthInfo()`
  * reads to decide whether to refresh at all, so even reloading the page could not get it back.
  *
- * So: renew once, send the request again, and only give up if the renewal itself fails.
+ * So: renew once, send the request again, and only give up if the renewal itself fails. Only a 401
+ * about the token, though: one the application answered itself is passed through (#1026).
  */
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status !== 401) {
+    if (!isTokenRefusal(error.response)) {
       return Promise.reject(error)
     }
 
