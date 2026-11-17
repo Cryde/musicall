@@ -7,7 +7,6 @@ export const useTeacherProfileStore = defineStore('teacherProfile', () => {
   const isLoading = ref(false)
   const isCreating = ref(false)
   const isUpdating = ref(false)
-  const isDeleting = ref(false)
 
   async function loadPublicProfile(username) {
     isLoading.value = true
@@ -47,16 +46,6 @@ export const useTeacherProfileStore = defineStore('teacherProfile', () => {
     }
   }
 
-  async function deleteProfile() {
-    isDeleting.value = true
-    try {
-      await teacherProfileApi.deleteTeacherProfile()
-      profile.value = null
-    } finally {
-      isDeleting.value = false
-    }
-  }
-
   function clear() {
     profile.value = null
   }
@@ -66,12 +55,10 @@ export const useTeacherProfileStore = defineStore('teacherProfile', () => {
     isLoading: readonly(isLoading),
     isCreating: readonly(isCreating),
     isUpdating: readonly(isUpdating),
-    isDeleting: readonly(isDeleting),
     loadPublicProfile,
     loadMyProfile,
     createProfile,
     updateProfile,
-    deleteProfile,
     clear
   }
 })

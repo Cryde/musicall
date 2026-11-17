@@ -11,6 +11,12 @@ export function userMenuEntries({ username, isAdmin }) {
       to: { name: 'app_user_public_profile', params: { username } }
     },
     {
+      key: 'services',
+      labelKey: 'user_menu.services',
+      icon: 'pi pi-briefcase',
+      to: { name: 'app_user_services' }
+    },
+    {
       key: 'announces',
       labelKey: 'user_menu.announces',
       icon: 'pi pi-megaphone',

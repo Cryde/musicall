@@ -7,6 +7,7 @@ namespace App\Tests\Factory\Service;
 use App\Entity\Service\Service;
 use App\Entity\Service\TeachingDetails;
 use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServiceStatus;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
@@ -19,6 +20,7 @@ final class ServiceFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
+            'status' => ServiceStatus::Published,
             'user' => UserFactory::new(),
             'creationDatetime' => new DateTimeImmutable('2024-01-15T10:00:00+00:00'),
         ];

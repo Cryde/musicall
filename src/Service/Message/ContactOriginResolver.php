@@ -29,9 +29,10 @@ readonly class ContactOriginResolver
         return $announce instanceof MusicianAnnounce && (string) $announce->author->id === (string) $recipient->id ? $announce : null;
     }
 
+    /** Only a published one: a draft is its owner's alone (#1406), so nobody writes from it. */
     public function teacherProfileOf(User $recipient): ?Service
     {
-        return $this->serviceRepository->findOneByUserAndKind($recipient, ServiceKind::Teaching);
+        return $this->serviceRepository->findPublishedOneByUserAndKind($recipient, ServiceKind::Teaching);
     }
 
     /** The instrument a lesson request is about (#1322), only one the teacher teaches. */

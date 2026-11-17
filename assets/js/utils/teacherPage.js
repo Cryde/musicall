@@ -122,30 +122,3 @@ export function lessonContentPayload(form, studentLevels) {
     .slice(0, MAX_SONGS)
   return { level_goals: levelGoals, songs }
 }
-
-const COMPLETENESS_PARTS = [
-  ['course_title', (profile) => Boolean(profile.course_title)],
-  ['description', (profile) => Boolean(profile.description)],
-  ['instruments', (profile) => profile.instruments?.length > 0],
-  ['student_levels', (profile) => profile.student_levels?.length > 0],
-  ['age_groups', (profile) => profile.age_groups?.length > 0],
-  ['level_goals', (profile) => profile.level_goals?.length > 0],
-  ['songs', (profile) => profile.songs?.length > 0],
-  ['locations', (profile) => profile.locations?.length > 0],
-  ['availability', (profile) => profile.availability?.length > 0],
-  ['pricing', (profile) => profile.pricing?.length > 0]
-]
-
-/** How much of the lessons page a teacher has filled, and what is missing, in the order the page reads. */
-export function teacherProfileCompleteness(profile) {
-  const missing = COMPLETENESS_PARTS.filter(([, isFilled]) => !isFilled(profile ?? {})).map(
-    ([part]) => part
-  )
-  const total = COMPLETENESS_PARTS.length
-  return {
-    done: total - missing.length,
-    total,
-    percent: Math.round(((total - missing.length) / total) * 100),
-    missing
-  }
-}

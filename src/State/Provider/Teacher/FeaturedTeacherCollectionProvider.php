@@ -31,7 +31,7 @@ readonly class FeaturedTeacherCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $viewer = $this->security->getUser();
-        $profiles = $this->serviceRepository->findAllWithInstrumentsByKind(ServiceKind::Teaching, $viewer instanceof User ? $viewer : null);
+        $profiles = $this->serviceRepository->findPublishedWithInstrumentsByKind(ServiceKind::Teaching, $viewer instanceof User ? $viewer : null);
 
         return $this->featuredTeacherBuilder->buildList($profiles);
     }

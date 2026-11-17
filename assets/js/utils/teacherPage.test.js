@@ -9,8 +9,7 @@ import {
   levelRange,
   orderedLevels,
   placesSummary,
-  pricingByDuration,
-  teacherProfileCompleteness
+  pricingByDuration
 } from './teacherPage.js'
 
 describe('cheapestPricing', () => {
@@ -174,34 +173,6 @@ describe('lessonContentPayload', () => {
       level_goals: [{ level: 'advanced', title: 'Trouver ton son', points: ['Effets'] }],
       songs: [{ artist: 'Radiohead', title: 'Weird Fishes' }]
     })
-  })
-})
-
-describe('teacherProfileCompleteness', () => {
-  it('counts the filled parts and lists the missing ones in reading order', () => {
-    const result = teacherProfileCompleteness({
-      course_title: 'Cours',
-      description: 'Texte',
-      instruments: [{}],
-      student_levels: ['beginner'],
-      age_groups: [],
-      level_goals: [{}],
-      songs: [],
-      locations: [{}],
-      availability: [],
-      pricing: [{}]
-    })
-    assert.deepEqual(result, {
-      done: 7,
-      total: 10,
-      percent: 70,
-      missing: ['age_groups', 'songs', 'availability']
-    })
-  })
-
-  it('has everything missing for an empty profile', () => {
-    assert.equal(teacherProfileCompleteness({}).done, 0)
-    assert.equal(teacherProfileCompleteness(null).missing.length, 10)
   })
 })
 

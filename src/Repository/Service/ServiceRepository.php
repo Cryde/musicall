@@ -7,6 +7,7 @@ namespace App\Repository\Service;
 use App\Entity\Service\Service;
 use App\Entity\User;
 use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServiceStatus;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -22,17 +23,40 @@ class ServiceRepository extends ServiceEntityRepository
         parent::__construct($registry, Service::class);
     }
 
+    /** The DQL twin of Service::isPublished(), for every query a visitor reads: a draft is its owner's only (#1406). */
+    public static function published(string $alias): string
+    {
+        return sprintf("%s.status = '%s'", $alias, ServiceStatus::Published->value);
+    }
+
     public function findOneByUserAndKind(User $user, ServiceKind $kind): ?Service
     {
         return $this->findOneBy(['user' => $user, 'kind' => $kind]);
     }
 
-    public function findOneByUsernameAndKind(string $username, ServiceKind $kind): ?Service
+    /** What a visitor may see: a draft is its owner's only (#1406). */
+    public function findPublishedOneByUserAndKind(User $user, ServiceKind $kind): ?Service
+    {
+        return $this->findOneBy(['user' => $user, 'kind' => $kind, 'status' => ServiceStatus::Published]);
+    }
+
+    /**
+     * The member's services, oldest first, for their « Mes services » page.
+     *
+     * @return list<Service>
+     */
+    public function findByUser(User $user): array
+    {
+        return $this->findBy(['user' => $user], ['creationDatetime' => 'ASC']);
+    }
+
+    public function findPublishedOneByUsernameAndKind(string $username, ServiceKind $kind): ?Service
     {
         return $this->createQueryBuilder('service')
             ->innerJoin('service.user', 'u')
             ->where('u.username = :username')
             ->andWhere('service.kind = :kind')
+            ->andWhere(self::published('service'))
             ->setParameter('username', $username)
             ->setParameter('kind', $kind)
             ->getQuery()
@@ -62,7 +86,7 @@ class ServiceRepository extends ServiceEntityRepository
     /**
      * @return list<Service>
      */
-    public function findAllWithInstrumentsByKind(ServiceKind $kind, ?User $viewer = null): array
+    public function findPublishedWithInstrumentsByKind(ServiceKind $kind, ?User $viewer = null): array
     {
         $queryBuilder = $this->createQueryBuilder('service')
             ->innerJoin('service.user', 'u')
@@ -72,6 +96,7 @@ class ServiceRepository extends ServiceEntityRepository
             ->leftJoin('i.instrument', 'instr')
             ->addSelect('instr')
             ->where('service.kind = :kind')
+            ->andWhere(self::published('service'))
             ->andWhere(UserRepository::publiclyVisible('u'))
             ->setParameter('kind', $kind)
             ->orderBy('service.creationDatetime', 'ASC');

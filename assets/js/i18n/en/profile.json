@@ -31,11 +31,10 @@
     },
     "profile": {
       "title": "Public profile",
-      "subtitle": "Who can see your profile, and your musician and teacher profiles",
+      "subtitle": "Who can see your profile, and your musician profile",
       "sections": {
         "profile": "Your profile",
-        "musician": "Musician profile",
-        "teacher": "Teacher profile"
+        "musician": "Musician profile"
       },
       "edit_on_profile": "Your name, bio, photos, instruments, links and media are edited right on your profile.",
       "open_profile": "View and edit my profile"
@@ -259,35 +258,6 @@
       "deleted": "Profile deleted",
       "deleted_detail": "Your musician profile has been deleted",
       "delete_error": "Could not delete the musician profile"
-    },
-    "teacher": {
-      "empty_help": "Share your skills, your experience and your rates so students can find you.",
-      "create": "Create my teacher profile",
-      "completeness": "Your lessons page is {percent}% complete",
-      "completeness_hint": "Still to fill in: {parts}",
-      "description": "About",
-      "course_title": "Lesson title",
-      "student_levels": "Levels taught",
-      "level_goals": "What you will learn",
-      "songs": "Songs worked on",
-      "age_groups": "Age groups",
-      "locations": "Teaching locations",
-      "instruments": "Instruments taught",
-      "pricing": "Rates",
-      "availability": "Availability",
-      "view_page": "View my page",
-      "delete_title": "Delete teacher profile",
-      "delete_confirm": "Are you sure you want to delete your teacher profile?",
-      "delete_media_notice": "Your media will also be removed from MusicAll.",
-      "delete_irreversible": "This action cannot be undone.",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "load_error": "Could not load the teacher profile",
-      "saved": "Profile updated",
-      "saved_detail": "Your teacher profile has been saved",
-      "deleted": "Profile deleted",
-      "deleted_detail": "Your teacher profile has been deleted",
-      "delete_error": "Could not delete the teacher profile"
     }
   },
   "teacher": {
@@ -509,6 +479,52 @@
       "error": "An error occurred"
     }
   },
+  "services": {
+    "title": "My services",
+    "page_title": "My services - MusicAll",
+    "subtitle": "Each service has its own page, and shows up in the search that matches it once it is online.",
+    "status": {
+      "published": "Online",
+      "draft": "Draft"
+    },
+    "completeness": "{percent}% complete",
+    "completeness_ready": "{percent}% complete, ready to be published",
+    "completeness_missing": "{percent}% complete, add {parts} to publish it",
+    "parts": {
+      "headline": "a title",
+      "description": "a description",
+      "places": "a place",
+      "offers": "some offers"
+    },
+    "publish": "Publish",
+    "view": "View",
+    "edit": "Edit",
+    "more": "More actions",
+    "unpublish": "Take offline",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "add_title": "Add a service",
+    "add": "Add",
+    "add_kind": "Add the {kind} service",
+    "kinds": {
+      "teaching": {
+        "label": "Teacher",
+        "description": "You give lessons, at your place, at the student's or online."
+      }
+    },
+    "load_error": "Could not load your services",
+    "add_error": "Could not add this service",
+    "form_error": "Could not open the form",
+    "saved": "Service saved",
+    "published": "Your service is online",
+    "publish_error": "Could not publish this service",
+    "unpublished": "Your service is offline, only you can see it",
+    "unpublish_error": "Could not take this service offline",
+    "delete_title": "Delete this service",
+    "delete_confirm": "Its page and the creations linked to it will be deleted from MusicAll. This cannot be undone.",
+    "deleted": "Service deleted",
+    "delete_error": "Could not delete this service"
+  },
   "musician": {
     "availability": {
       "looking_for_band": "Looking for a band",
@@ -698,7 +714,9 @@
     "page_title": "Music lessons with {name}: {instruments} - MusicAll",
     "page_title_default": "Music lessons - MusicAll",
     "share_title": "{username}'s lessons on MusicAll",
-    "share_title_default": "Music lessons on MusicAll"
+    "share_title_default": "Music lessons on MusicAll",
+    "draft_notice": "Draft: only you can see this page",
+    "draft_manage": "Manage my services"
   },
   "teacher_request": {
     "title_trial": "Ask {name} for a trial lesson",
@@ -792,7 +810,6 @@
     "page_title_default": "Profile - MusicAll",
     "profile_created": "Profile created",
     "musician_profile_created": "Your musician profile has been created",
-    "teacher_profile_created": "Your teacher profile has been created",
     "member_since": "Since {year}",
     "activities": {
       "title": "What I do",

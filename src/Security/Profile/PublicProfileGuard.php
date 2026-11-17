@@ -21,9 +21,16 @@ readonly class PublicProfileGuard
         if ($member->profile->isPublic) {
             return;
         }
-        $viewer = $this->security->getUser();
-        if (!$viewer instanceof User || $viewer->id !== $member->id) {
+        if (!$this->isViewedByOwner($member)) {
             throw new PrivateProfileException();
         }
+    }
+
+    /** Whether the member is the one looking: they also see their own drafts (#1406). */
+    public function isViewedByOwner(User $member): bool
+    {
+        $viewer = $this->security->getUser();
+
+        return $viewer instanceof User && $viewer->id === $member->id;
     }
 }

@@ -31,11 +31,10 @@
     },
     "profile": {
       "title": "Profil public",
-      "subtitle": "Qui peut voir ton profil, et tes profils musicien et professeur",
+      "subtitle": "Qui peut voir ton profil, et ton profil musicien",
       "sections": {
         "profile": "Ton profil",
-        "musician": "Profil musicien",
-        "teacher": "Profil professeur"
+        "musician": "Profil musicien"
       },
       "edit_on_profile": "Ton nom, ta bio, tes photos, tes instruments, tes liens et tes médias se modifient directement sur ton profil.",
       "open_profile": "Voir et modifier mon profil"
@@ -259,35 +258,6 @@
       "deleted": "Profil supprimé",
       "deleted_detail": "Ton profil musicien a été supprimé",
       "delete_error": "Impossible de supprimer le profil musicien"
-    },
-    "teacher": {
-      "empty_help": "Partage tes compétences, ton expérience et tes tarifs pour que des élèves puissent te trouver.",
-      "create": "Créer mon profil professeur",
-      "completeness": "Ta page de cours est complète à {percent} %",
-      "completeness_hint": "À compléter : {parts}",
-      "description": "Présentation",
-      "course_title": "Titre du cours",
-      "student_levels": "Niveaux acceptés",
-      "level_goals": "Ce que tu vas apprendre",
-      "songs": "Morceaux travaillés",
-      "age_groups": "Tranches d'âge",
-      "locations": "Lieux d'enseignement",
-      "instruments": "Instruments enseignés",
-      "pricing": "Tarifs",
-      "availability": "Disponibilités",
-      "view_page": "Voir ma page",
-      "delete_title": "Supprimer le profil professeur",
-      "delete_confirm": "Es-tu sûr de vouloir supprimer ton profil professeur ?",
-      "delete_media_notice": "Tes créations seront également supprimées de MusicAll.",
-      "delete_irreversible": "Cette action est irréversible.",
-      "cancel": "Annuler",
-      "delete": "Supprimer",
-      "load_error": "Impossible de charger le profil professeur",
-      "saved": "Profil mis à jour",
-      "saved_detail": "Ton profil professeur a été enregistré",
-      "deleted": "Profil supprimé",
-      "deleted_detail": "Ton profil professeur a été supprimé",
-      "delete_error": "Impossible de supprimer le profil professeur"
     }
   },
   "teacher": {
@@ -509,6 +479,52 @@
       "error": "Une erreur est survenue"
     }
   },
+  "services": {
+    "title": "Mes services",
+    "page_title": "Mes services - MusicAll",
+    "subtitle": "Chaque service a sa page, et apparaît dans la recherche qui lui correspond une fois en ligne.",
+    "status": {
+      "published": "En ligne",
+      "draft": "Brouillon"
+    },
+    "completeness": "Complète à {percent} %",
+    "completeness_ready": "Complète à {percent} %, prête à être publiée",
+    "completeness_missing": "Complète à {percent} %, ajoute {parts} pour la publier",
+    "parts": {
+      "headline": "un titre",
+      "description": "une présentation",
+      "places": "un lieu",
+      "offers": "des formules"
+    },
+    "publish": "Publier",
+    "view": "Voir",
+    "edit": "Modifier",
+    "more": "Plus d'actions",
+    "unpublish": "Mettre hors ligne",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "add_title": "Ajouter un service",
+    "add": "Ajouter",
+    "add_kind": "Ajouter le service {kind}",
+    "kinds": {
+      "teaching": {
+        "label": "Professeur",
+        "description": "Tu donnes des cours, chez toi, chez l'élève ou en ligne."
+      }
+    },
+    "load_error": "Impossible de charger tes services",
+    "add_error": "Impossible d'ajouter ce service",
+    "form_error": "Impossible d'ouvrir le formulaire",
+    "saved": "Service enregistré",
+    "published": "Ton service est en ligne",
+    "publish_error": "Impossible de publier ce service",
+    "unpublished": "Ton service est hors ligne, toi seul le vois",
+    "unpublish_error": "Impossible de mettre ce service hors ligne",
+    "delete_title": "Supprimer ce service",
+    "delete_confirm": "Sa page et tes créations qui y sont liées seront supprimées de MusicAll. Cette action est irréversible.",
+    "deleted": "Service supprimé",
+    "delete_error": "Impossible de supprimer ce service"
+  },
   "musician": {
     "availability": {
       "looking_for_band": "Cherche un groupe",
@@ -698,7 +714,9 @@
     "page_title": "Cours de musique avec {name} : {instruments} - MusicAll",
     "page_title_default": "Cours de musique - MusicAll",
     "share_title": "Les cours de {username} sur MusicAll",
-    "share_title_default": "Des cours de musique sur MusicAll"
+    "share_title_default": "Des cours de musique sur MusicAll",
+    "draft_notice": "Brouillon : cette page n'est visible que par toi",
+    "draft_manage": "Gérer mes services"
   },
   "teacher_request": {
     "title_trial": "Demander un cours d'essai à {name}",
@@ -792,7 +810,6 @@
     "page_title_default": "Profil - MusicAll",
     "profile_created": "Profil créé",
     "musician_profile_created": "Ton profil musicien a été créé avec succès",
-    "teacher_profile_created": "Ton profil professeur a été créé avec succès",
     "member_since": "Depuis {year}",
     "activities": {
       "title": "Ce que je fais",

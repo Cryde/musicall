@@ -107,6 +107,7 @@ const MIGRATED_PATHS = [
   'views/User/Publication/',
   'views/User/Register.vue',
   'views/User/ResetPassword.vue',
+  'views/User/Service/',
   'views/User/Settings/',
   'views/User/VerifyEmail.vue'
 ]

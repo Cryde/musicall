@@ -13,6 +13,7 @@ use App\Entity\Service\Service;
 use App\Entity\User;
 use App\Enum\Message\ContactOriginType;
 use App\Enum\Message\LessonRequest;
+use App\Enum\Service\ServiceStatus;
 use App\Repository\Message\MessageContactOriginRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -552,6 +553,23 @@ class MessageContactOriginTest extends ApiTestCase
             'fromTeacherProfile' => true,
             'teacherInstrumentId' => '0195f3a0-0000-7000-8000-000000000000',
             'lessonRequest' => 'trial',
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('fromTeacherProfile', 'Le destinataire n\'a pas de profil de professeur', ValidContactOriginValidator::ERROR_CODE_TEACHER_PROFILE));
+    }
+
+    /** A draft teacher profile is its owner's alone (#1406): nobody writes from it, as if there were none. */
+    public function test_a_message_from_a_draft_teacher_profile_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        ServiceFactory::new()->teaching()->create(['user' => $recipient, 'status' => ServiceStatus::Draft]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'fromTeacherProfile' => true,
         ], self::JSON);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

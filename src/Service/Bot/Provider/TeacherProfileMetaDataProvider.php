@@ -40,7 +40,7 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
             return [];
         }
 
-        $teacherProfile = $this->serviceRepository->findOneByUsernameAndKind($matches[1], ServiceKind::Teaching);
+        $teacherProfile = $this->serviceRepository->findPublishedOneByUsernameAndKind($matches[1], ServiceKind::Teaching);
         if (!$teacherProfile instanceof Service) {
             return $this->profileMeta->missing();
         }

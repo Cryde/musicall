@@ -64,7 +64,7 @@ const { entries, logout } = useUserMenu()
 const userMenu = ref(null)
 
 // The rules between the profile, the member's content, the settings and the administration.
-const SEPARATED_BEFORE = new Set(['announces', 'settings', 'admin'])
+const SEPARATED_BEFORE = new Set(['services', 'settings', 'admin'])
 
 const menuItems = computed(() => [
   {

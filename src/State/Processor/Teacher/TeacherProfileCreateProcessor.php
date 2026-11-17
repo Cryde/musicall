@@ -11,6 +11,7 @@ use App\ApiResource\Teacher\Private\TeacherProfileOutput;
 use App\Entity\Service\Service;
 use App\Entity\User;
 use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServiceStatus;
 use App\Repository\Service\ServiceRepository;
 use App\Service\Teacher\TeacherProfileWriter;
 use App\State\Provider\Teacher\TeacherProfileEditProvider;
@@ -49,6 +50,8 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         $profile = new Service();
         $profile->user = $user;
         $profile->kind = ServiceKind::Teaching;
+        // The app knows nothing of drafts: a teacher profile it creates goes online, as it always did (#1406).
+        $profile->status = ServiceStatus::Published;
 
         $this->profileWriter->write($profile, $data);
 
