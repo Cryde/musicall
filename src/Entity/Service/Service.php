@@ -8,7 +8,9 @@ use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Attribute\Style;
 use App\Entity\Metric\ViewCache;
 use App\Entity\User;
+use App\Enum\Service\BeforeAfterSide;
 use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServicePlaceType;
 use App\Enum\Service\ServiceKind;
 use App\Enum\Service\ServicePart;
 use App\Enum\Service\ServiceStatus;
@@ -117,6 +119,14 @@ class Service implements ViewableInterface
     #[ORM\OneToMany(targetEntity: ServiceLink::class, mappedBy: 'service', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $links;
 
+    /**
+     * « Avant, après » (#1410): one sound per side at most.
+     *
+     * @var Collection<int, ServiceAudio>
+     */
+    #[ORM\OneToMany(targetEntity: ServiceAudio::class, mappedBy: 'service', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    public Collection $audio;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $creationDatetime;
 
@@ -135,6 +145,7 @@ class Service implements ViewableInterface
         $this->availability = new ArrayCollection();
         $this->places = new ArrayCollection();
         $this->links = new ArrayCollection();
+        $this->audio = new ArrayCollection();
         $this->creationDatetime = new DateTimeImmutable();
     }
 
@@ -192,6 +203,21 @@ class Service implements ViewableInterface
     public function offersIn(OfferUnit $unit): array
     {
         return array_values($this->offers->filter(static fn (ServiceOffer $offer): bool => $offer->unit === $unit)->toArray());
+    }
+
+    /** @return list<ServiceOffer> the cheapest first, as « Formules » lists them (#1410) */
+    public function offersByPrice(): array
+    {
+        $offers = array_values($this->offers->toArray());
+        usort($offers, static fn (ServiceOffer $a, ServiceOffer $b): int => [$a->price, (string) $a->title] <=> [$b->price, (string) $b->title]);
+
+        return $offers;
+    }
+
+    /** The cheapest offer in the unit, or the cheapest of any unit without one: « 80 € le titre mixé » (#1410). */
+    public function headlineOffer(OfferUnit $unit): ?ServiceOffer
+    {
+        return $this->cheapestIn($unit) ?? $this->offersByPrice()[0] ?? null;
     }
 
     /** The cheapest offer in the unit, as entered: a package is never compared with a lesson. */
@@ -256,6 +282,21 @@ class Service implements ViewableInterface
         $this->links->removeElement($link);
 
         return $this;
+    }
+
+    public function audioOn(BeforeAfterSide $side): ?ServiceAudio
+    {
+        return $this->audio->findFirst(static fn (int $key, ServiceAudio $audio): bool => $audio->side === $side);
+    }
+
+    /** The city a page title names: the member's own place first, then any place, then the profile's city. */
+    public function mainCity(): ?string
+    {
+        $places = $this->places->filter(static fn (ServicePlace $place): bool => (bool) $place->city);
+        $own = $places->filter(static fn (ServicePlace $place): bool => $place->type === ServicePlaceType::AtMyPlace)->first();
+        $any = $own ?: $places->first();
+
+        return $any ? $any->city : ($this->user->profile->location ?: null);
     }
 
     public function isPublished(): bool

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Service\Builder\Service;
 
 use App\ApiResource\Service\Search\TeacherSearchInstrument;
-use App\ApiResource\Service\Search\TeacherSearchMedia;
 use App\ApiResource\Service\Search\TeacherSearchResult;
 use App\Entity\Attribute\Instrument;
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceInstrument;
-use App\Entity\Service\ServiceMedia;
 use App\Entity\Service\ServicePlace;
 use App\Entity\Service\TeachingDetails;
 use App\Enum\Service\OfferUnit;
@@ -26,6 +24,7 @@ readonly class TeacherSearchResultBuilder
         private UserProfilePictureUrlBuilder $pictureUrlBuilder,
         private TeacherProfileBuilder $teacherProfileBuilder,
         private ReferenceNameTranslator $referenceNames,
+        private ServiceViewBuilder $serviceViewBuilder,
     ) {
     }
 
@@ -51,7 +50,7 @@ readonly class TeacherSearchResultBuilder
         // In teaching order, whatever order the teacher ticked them in.
         $result->studentLevels = array_values(array_intersect(StudentLevel::values(), $details->studentLevels));
         $result->styles = $this->teacherProfileBuilder->buildStyles($service->styles->toArray());
-        $result->media = $this->firstMedia($service);
+        $result->media = $this->serviceViewBuilder->firstMedia($service);
 
         return $result;
     }
@@ -71,27 +70,6 @@ readonly class TeacherSearchResultBuilder
         $dto->id = (string) $instrument->id;
         $dto->name = $this->referenceNames->instrument($instrument);
         $dto->slug = $instrument->slug;
-
-        return $dto;
-    }
-
-    private function firstMedia(Service $service): ?TeacherSearchMedia
-    {
-        // Picked by position: the mapping's order is not applied to a collection already loaded.
-        $first = null;
-        foreach ($service->media as $media) {
-            if (!$first instanceof ServiceMedia || $media->position < $first->position) {
-                $first = $media;
-            }
-        }
-        if (!$first instanceof ServiceMedia) {
-            return null;
-        }
-
-        $dto = new TeacherSearchMedia();
-        $dto->platform = $first->platform->value;
-        $dto->embedId = $first->embedId;
-        $dto->title = $first->title;
 
         return $dto;
     }

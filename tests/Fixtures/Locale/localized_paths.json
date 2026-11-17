@@ -29,6 +29,7 @@
     { "path": "/supprimer-mon-compte", "locale": "en", "expected": "/en/delete-my-account" },
     { "path": "/rechercher-un-musicien", "locale": "en", "expected": "/en/find-a-musician" },
     { "path": "/rechercher-un-professeur", "locale": "en", "expected": "/en/find-a-teacher" },
+    { "path": "/rechercher-un-ingenieur-du-son", "locale": "en", "expected": "/en/find-a-sound-engineer" },
     { "path": "/rechercher-un-guitariste", "locale": "en", "expected": "/en/find-a-guitarist" },
     { "path": "/rechercher-un-batteur", "locale": "en", "expected": "/en/find-a-drummer" },
     { "path": "/rechercher-un-bassiste", "locale": "en", "expected": "/en/find-a-bassist" },
@@ -61,8 +62,10 @@
       "/rechercher-un-bassiste",
       "/rechercher-un-chanteur",
       "/rechercher-un-pianiste",
+      "/rechercher-un-ingenieur-du-son",
       "/u/jeanne",
-      "/u/jeanne/teacher"
+      "/u/jeanne/teacher",
+      "/u/jeanne/sound-engineer"
     ],
     "without_versions": [
       "/login",

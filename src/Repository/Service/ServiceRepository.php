@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository\Service;
 
 use App\Entity\Attribute\Instrument;
+use App\Entity\Attribute\Style;
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceInstrument;
 use App\Entity\Service\ServiceOffer;
@@ -12,12 +13,15 @@ use App\Entity\Service\ServicePlace;
 use App\Entity\User;
 use App\Enum\Service\OfferUnit;
 use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServicePart;
 use App\Enum\Service\ServicePlaceType;
 use App\Enum\Service\ServiceStatus;
+use App\Enum\Service\SoundEngineeringSpeciality;
 use App\Enum\Service\TeachingSearchOrder;
 use App\Enum\Teacher\AgeGroup;
 use App\Enum\Teacher\StudentLevel;
 use App\Model\Search\ServiceSearch;
+use App\Model\Search\SoundEngineeringSearch;
 use App\Model\Search\TeachingSearch;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
@@ -160,26 +164,38 @@ class ServiceRepository extends ServiceEntityRepository
      */
     public function findTeachingSearchPage(TeachingSearch $search, ?User $viewer): array
     {
-        $service = $search->service;
-        $queryBuilder = $this->teachingSearch($search, $viewer)
-            ->select('service.id AS id')
-            ->setFirstResult($service->offset())
-            ->setMaxResults($service->limit);
-        if ($service->hasPoint()) {
-            $queryBuilder->addSelect(sprintf('(SELECT MIN(%s) FROM %s nearest WHERE nearest.service = service AND %s) AS distance', sprintf(self::PLACE_DISTANCE, 'nearest'), ServicePlace::class, $this->measured('nearest', $service)))
-                ->setParameter('point', $service->point());
-        }
-        $this->orderTeachingSearch($queryBuilder, $search);
-
-        return array_values(array_map(static fn (array $row): array => [
-            'id' => (string) $row['id'],
-            'distance' => isset($row['distance']) ? (float) $row['distance'] : null,
-        ], $queryBuilder->getQuery()->getScalarResult()));
+        return $this->searchPage(
+            $this->teachingSearch($search, $viewer),
+            $search->service,
+            fn (QueryBuilder $queryBuilder) => $this->orderTeachingSearch($queryBuilder, $search),
+        );
     }
 
     public function countTeachingSearch(TeachingSearch $search, ?User $viewer): int
     {
         return (int) $this->teachingSearch($search, $viewer)
+            ->select('COUNT(service.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * One page of the sound engineer search (#1410), as findTeachingSearchPage() gives it.
+     *
+     * @return list<array{id: string, distance: float|null}>
+     */
+    public function findSoundEngineeringSearchPage(SoundEngineeringSearch $search, ?User $viewer): array
+    {
+        return $this->searchPage(
+            $this->soundEngineeringSearch($search, $viewer),
+            $search->service,
+            fn (QueryBuilder $queryBuilder) => $this->orderByDefault($queryBuilder, $search->service),
+        );
+    }
+
+    public function countSoundEngineeringSearch(SoundEngineeringSearch $search, ?User $viewer): int
+    {
+        return (int) $this->soundEngineeringSearch($search, $viewer)
             ->select('COUNT(service.id)')
             ->getQuery()
             ->getSingleScalarResult();
@@ -193,7 +209,7 @@ class ServiceRepository extends ServiceEntityRepository
      *
      * @return array<string, Service>
      */
-    public function findForSearchCards(array $ids): array
+    public function findForSearchCards(array $ids, ServiceKind $kind): array
     {
         if ($ids === []) {
             return [];
@@ -209,14 +225,16 @@ class ServiceRepository extends ServiceEntityRepository
             ->setParameter('ids', $ids)
             ->getQuery()
             ->getResult();
-        $this->createQueryBuilder('service')
-            ->addSelect('taught', 'instrument')
-            ->leftJoin('service.instruments', 'taught')
-            ->leftJoin('taught.instrument', 'instrument')
-            ->where('service.id IN (:ids)')
-            ->setParameter('ids', $ids)
-            ->getQuery()
-            ->getResult();
+        if (in_array(ServicePart::Instruments, $kind->parts(), true)) {
+            $this->createQueryBuilder('service')
+                ->addSelect('taught', 'instrument')
+                ->leftJoin('service.instruments', 'taught')
+                ->leftJoin('taught.instrument', 'instrument')
+                ->where('service.id IN (:ids)')
+                ->setParameter('ids', $ids)
+                ->getQuery()
+                ->getResult();
+        }
         foreach (['styles', 'offers', 'places', 'media'] as $collection) {
             $this->createQueryBuilder('service')
                 ->addSelect('item')
@@ -233,6 +251,48 @@ class ServiceRepository extends ServiceEntityRepository
         }
 
         return $byId;
+    }
+
+    /**
+     * One page of a kind's search: each service's id, and its distance in metres to the nearest place when there is a
+     * point.
+     *
+     * @param callable(QueryBuilder): void $order
+     *
+     * @return list<array{id: string, distance: float|null}>
+     */
+    private function searchPage(QueryBuilder $queryBuilder, ServiceSearch $service, callable $order): array
+    {
+        $queryBuilder->select('service.id AS id')
+            ->setFirstResult($service->offset())
+            ->setMaxResults($service->limit);
+        if ($service->hasPoint()) {
+            $queryBuilder->addSelect(sprintf('(SELECT MIN(%s) FROM %s nearest WHERE nearest.service = service AND %s) AS distance', sprintf(self::PLACE_DISTANCE, 'nearest'), ServicePlace::class, $this->measured('nearest', $service)))
+                ->setParameter('point', $service->point());
+        }
+        $order($queryBuilder);
+
+        return array_values(array_map(static fn (array $row): array => [
+            'id' => (string) $row['id'],
+            'distance' => isset($row['distance']) ? (float) $row['distance'] : null,
+        ], $queryBuilder->getQuery()->getScalarResult()));
+    }
+
+    /** The sound engineer search's filters: the shared ones of every kind, then the speciality and the style. */
+    private function soundEngineeringSearch(SoundEngineeringSearch $search, ?User $viewer): QueryBuilder
+    {
+        $queryBuilder = $this->serviceSearch(ServiceKind::SoundEngineering, $search->service, $viewer);
+
+        if ($search->speciality instanceof SoundEngineeringSpeciality) {
+            $queryBuilder->andWhere('JSON_CONTAINS(service.specialities, :speciality) = 1')
+                ->setParameter('speciality', json_encode([$search->speciality->value], JSON_THROW_ON_ERROR));
+        }
+        if ($search->style instanceof Style) {
+            $queryBuilder->andWhere(':style MEMBER OF service.styles')
+                ->setParameter('style', $search->style);
+        }
+
+        return $queryBuilder;
     }
 
     /**
@@ -262,10 +322,7 @@ class ServiceRepository extends ServiceEntityRepository
         return $queryBuilder;
     }
 
-    /**
-     * Its order, then the nearest first when there is a point, the newest otherwise, then the id so that two pages
-     * never share a teacher.
-     */
+    /** Its order, then the default one. */
     private function orderTeachingSearch(QueryBuilder $queryBuilder, TeachingSearch $search): void
     {
         $service = $search->service;
@@ -285,6 +342,12 @@ class ServiceRepository extends ServiceEntityRepository
                 ->addOrderBy('paid_trial', 'ASC');
         }
 
+        $this->orderByDefault($queryBuilder, $service);
+    }
+
+    /** The nearest first when there is a point, the newest otherwise, then the id so that two pages never share one. */
+    private function orderByDefault(QueryBuilder $queryBuilder, ServiceSearch $service): void
+    {
         if ($service->hasPoint()) {
             $this->orderByDistance($queryBuilder, $service);
         }

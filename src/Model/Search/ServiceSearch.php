@@ -30,4 +30,14 @@ class ServiceSearch
     {
         return ($this->page - 1) * $this->limit;
     }
+
+    /**
+     * A short page that is not past the end is the last one: it tells the total without counting.
+     *
+     * @param callable(): int $count
+     */
+    public function total(int $pageCount, callable $count): int
+    {
+        return $pageCount < $this->limit && ($pageCount > 0 || $this->page === 1) ? $this->offset() + $pageCount : $count();
+    }
 }

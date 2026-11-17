@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Procedure\Teacher;
 
-use App\ApiResource\Teacher\Profile\Media;
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceMedia;
 use App\Service\Builder\Teacher\TeacherProfileMediaBuilder;
@@ -22,17 +21,17 @@ readonly class TeacherProfileMediaCreateProcedure
     ) {
     }
 
-    public function handle(Media $mediaDto, Service $profile): ServiceMedia
+    /** @param string $url already validated by the SupportedMediaUrl constraint */
+    public function handle(string $url, ?string $title, Service $profile): ServiceMedia
     {
-        // URL is already validated by SupportedMediaUrl constraint
-        $parsed = $this->mediaUrlParser->parse($mediaDto->url);
+        $parsed = $this->mediaUrlParser->parse($url);
         if (!$parsed instanceof \App\Service\Musician\MediaUrlParser\ParsedMediaUrl) {
             throw new \RuntimeException('Invalid media URL');
         }
 
         // Fetch metadata from platform (title, thumbnail)
-        $metadata = $this->metadataFetcher->fetch($parsed->platform, $mediaDto->url, $parsed->embedId);
-        $media = $this->teacherProfileMediaBuilder->build($profile, $parsed, $mediaDto, $metadata);
+        $metadata = $this->metadataFetcher->fetch($parsed->platform, $url, $parsed->embedId);
+        $media = $this->teacherProfileMediaBuilder->build($profile, $parsed, $url, $title, $metadata);
 
         $this->entityManager->persist($media);
         $this->entityManager->flush();

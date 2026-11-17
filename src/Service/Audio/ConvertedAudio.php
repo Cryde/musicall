@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace App\Service\BandSpace\Chat;
+declare(strict_types=1);
+
+namespace App\Service\Audio;
 
 use Symfony\Component\HttpFoundation\File\File;
 
-final readonly class ConvertedVoiceNote
+final readonly class ConvertedAudio
 {
     public function __construct(
         // A temporary file, which the caller removes once it is stored.

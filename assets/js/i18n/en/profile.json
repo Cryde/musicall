@@ -494,7 +494,8 @@
       "headline": "a title",
       "description": "a description",
       "places": "a place",
-      "offers": "some offers"
+      "offers": "some offers",
+      "specialities": "specialities"
     },
     "publish": "Publish",
     "view": "View",
@@ -510,6 +511,10 @@
       "teaching": {
         "label": "Teacher",
         "description": "You give lessons, at your place, at the student's or online."
+      },
+      "sound_engineering": {
+        "label": "Sound engineer",
+        "description": "You mix, master or record, in your studio, at the band's place or remotely."
       }
     },
     "load_error": "Could not load your services",
@@ -963,5 +968,122 @@
       "delete_confirm": "Are you sure you want to delete your cover photo?",
       "delete_error": "Could not delete the cover photo"
     }
+  },
+  "sound_engineer": {
+    "specialities": {
+      "mixing": "Mixing",
+      "mastering": "Mastering",
+      "recording": "Recording",
+      "live_recording": "Live recording",
+      "live_sound": "Live sound",
+      "editing": "Editing and cleanup"
+    },
+    "formats": {
+      "wav": "WAV",
+      "stems": "stems",
+      "ddp": "DDP",
+      "mp3": "MP3"
+    },
+    "units": {
+      "track": "per track",
+      "hour": "per hour",
+      "day": "per day",
+      "flat": "flat fee"
+    },
+    "places": {
+      "at_my_place": "In the studio",
+      "at_client_place": "At your place",
+      "remote": "Remotely"
+    },
+    "form": {
+      "title": "My sound engineering service",
+      "section_service": "The service",
+      "headline": "Title",
+      "headline_placeholder": "Your demo mixed like a record",
+      "specialities": "Specialities",
+      "description": "Introduction",
+      "description_placeholder": "How you work, what bands send you, what they get back",
+      "years": "Years in the studio",
+      "styles": "Genres",
+      "section_places": "Where",
+      "place_studio": "In my studio",
+      "place_client": "I travel",
+      "place_remote": "Remotely, bands send me their tracks",
+      "city": "City",
+      "address": "Address",
+      "radius": "Maximum distance",
+      "section_offers": "Offers",
+      "offer_unit": "What the price covers",
+      "offer_title": "Offer name",
+      "offer_description": "Detail (optional)",
+      "offer_price": "Price",
+      "remove_offer": "Remove this offer",
+      "add_offer": "Add an offer",
+      "units": {
+        "track": "Per track",
+        "hour": "Per hour",
+        "day": "Per day",
+        "flat": "Flat fee"
+      },
+      "section_delivery": "Turnaround and delivery",
+      "turnaround": "Usual turnaround",
+      "days_suffix": "working days",
+      "revisions": "Revisions included",
+      "formats": "Delivered formats",
+      "gear": "Gear",
+      "gear_placeholder": "Reaper, UAD Apollo x8, Neumann U87",
+      "gear_help": "Separated by commas or one per line, {max} at most.",
+      "before_after_help": "A raw take, then your work on it: WAV, AIFF, FLAC, MP3 or M4A, up to 100 MB and 5 minutes. Each sound is sent as soon as you choose it.",
+      "remove_audio": "Remove this sound",
+      "audio_title": "Title (e.g. rehearsal take)",
+      "audio_credit": "Credit (e.g. Mona Lisa Overdrive, \"Satellites\")",
+      "audio_file": "Audio file, {side}",
+      "audio_converting": "Converting...",
+      "remove_media": "Remove {title}",
+      "media_url": "YouTube, SoundCloud or Spotify link",
+      "add_media": "Add",
+      "save": "Save"
+    }
+  },
+  "sound_engineer_page": {
+    "not_found_title": "Service not found",
+    "not_found_help": "This member offers no sound engineering.",
+    "kind": "Sound engineer",
+    "engineers": "Sound engineers",
+    "title_default": "{name}, sound engineer",
+    "with": "with {name}, {profile}",
+    "see_profile": "see their profile",
+    "studio_in": "Studio in {city}",
+    "remotely": "remotely",
+    "travels": "Travels",
+    "travels_up_to": "Up to {radius} km",
+    "remote_detail": "You send your tracks",
+    "years": "{count} year in the studio | {count} years in the studio",
+    "days": "{count} day | {count} days",
+    "usual_turnaround": "usual turnaround",
+    "revisions_included": "revision included | revisions included",
+    "edit": "Edit my service",
+    "share_title": "{name}, sound engineer on MusicAll",
+    "listen": "Hear {name}'s work",
+    "before_after": "Before, after",
+    "side": {
+      "before": "Before",
+      "after": "After"
+    },
+    "side_title": "{side}: {title}",
+    "play": "Play {title}",
+    "pause": "Pause {title}",
+    "position": "Position in {title}",
+    "audio_failed": "This sound cannot be played.",
+    "offers": "Offers",
+    "how": "How I work",
+    "gear": "Gear",
+    "media": "Media",
+    "turnaround": "Turnaround",
+    "working_days": "{count} working day | {count} working days",
+    "formats": "Formats",
+    "who": "Who is {name}?",
+    "page_title": "{name}, sound engineer - MusicAll",
+    "page_title_default": "Sound engineer - MusicAll"
   }
 }

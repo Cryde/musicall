@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Factory\Service;
 
 use App\Entity\Service\Service;
+use App\Entity\Service\SoundEngineeringDetails;
 use App\Entity\Service\TeachingDetails;
 use App\Enum\Service\ServiceKind;
 use App\Enum\Service\ServiceStatus;
@@ -35,6 +36,24 @@ final class ServiceFactory extends PersistentObjectFactory
         return $this->with(['kind' => ServiceKind::Teaching])
             ->beforeInstantiate(static function (array $attributes): array {
                 $details = new TeachingDetails();
+                foreach (array_keys(get_object_vars($details)) as $field) {
+                    if (array_key_exists($field, $attributes)) {
+                        $details->{$field} = $attributes[$field];
+                        unset($attributes[$field]);
+                    }
+                }
+                $attributes['details'] = $details->toArray();
+
+                return $attributes;
+            });
+    }
+
+    /** A sound engineering service (#1410), its details given as SoundEngineeringDetails' own fields, like teaching(). */
+    public function soundEngineering(): self
+    {
+        return $this->with(['kind' => ServiceKind::SoundEngineering])
+            ->beforeInstantiate(static function (array $attributes): array {
+                $details = new SoundEngineeringDetails();
                 foreach (array_keys(get_object_vars($details)) as $field) {
                     if (array_key_exists($field, $attributes)) {
                         $details->{$field} = $attributes[$field];

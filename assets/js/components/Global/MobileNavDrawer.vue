@@ -68,6 +68,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { CAN_CHOOSE_LOCALE } from '../../composables/useLocaleChoice.js'
 import { useUserMenu } from '../../composables/useUserMenu.js'
+import { SOUND_ENGINEER_SEARCH_TESTER_ONLY } from '../../constants/soundEngineering.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { signInRouteFrom } from '../../utils/unauthenticatedRedirect.js'
@@ -98,6 +99,10 @@ const isVisitor = computed(
   () => !userSecurityStore.isAuthenticatedLoading && !userSecurityStore.isAuthenticated
 )
 
+const showsSoundEngineerSearch = computed(
+  () => !SOUND_ENGINEER_SEARCH_TESTER_ONLY || userSecurityStore.isTester
+)
+
 const exploreLinks = computed(() => [
   { key: 'home', label: t('menu.home'), icon: 'pi pi-home', to: { name: 'app_home' } },
   // Only a visitor needs the tour of the site; nothing else on a phone leads to it.
@@ -123,6 +128,16 @@ const exploreLinks = computed(() => [
     icon: 'pi pi-graduation-cap',
     to: { name: 'app_search_teacher' }
   },
+  ...(showsSoundEngineerSearch.value
+    ? [
+        {
+          key: 'sound_engineers',
+          label: t('menu.search_sound_engineers'),
+          icon: 'pi pi-sliders-v',
+          to: { name: 'app_search_sound_engineer' }
+        }
+      ]
+    : []),
   {
     key: 'publications',
     label: t('menu.publications'),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Builder\Teacher;
 
-use App\ApiResource\Teacher\Profile\Media;
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceMedia;
 use App\Repository\Service\ServiceMediaRepository;
@@ -27,18 +26,19 @@ readonly class TeacherProfileMediaBuilder
     public function build(
         Service $profile,
         ParsedMediaUrl $parsed,
-        Media $mediaDto,
+        string $url,
+        ?string $title,
         MediaMetadata $metadata,
     ): ServiceMedia {
         $media = new ServiceMedia();
         $media->service = $profile;
         $media->platform = $parsed->platform;
-        $media->url = $mediaDto->url;
+        $media->url = $url;
         $media->embedId = $parsed->embedId;
         $media->position = $this->mediaRepository->getNextPosition($profile);
 
         // Use user-provided title, or fall back to fetched title
-        $media->title = $mediaDto->title ?: $metadata->title;
+        $media->title = $title ?: $metadata->title;
 
         // Download and store thumbnail locally
         if ($metadata->thumbnailUrl) {

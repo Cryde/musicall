@@ -2,6 +2,8 @@
 
 namespace App\Service\Bot\Provider;
 
+use App\Entity\Service\Service;
+use App\Enum\Service\ServicePlaceType;
 use App\Entity\User;
 use App\Locale\LocalizedPath;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -16,6 +18,7 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 readonly class ProfileMeta
 {
     private const string NOINDEX = 'noindex, follow';
+    private const string CURRENCY = 'EUR';
 
     public function __construct(
         private TranslatorInterface $translator,
@@ -108,5 +111,37 @@ readonly class ProfileMeta
         $text = trim(preg_replace('/[ \t\r\n\f\v]+/', ' ', $text) ?? $text);
 
         return mb_strlen($text) > 155 ? rtrim(mb_substr($text, 0, 152)) . '...' : $text;
+    }
+
+    /** @return list<string>|null a schema.org areaServed: each place's city, remote work under its own label */
+    public function areaServed(Service $service, string $remoteLabel): ?array
+    {
+        $areas = [];
+        foreach ($service->places as $place) {
+            if ($place->type === ServicePlaceType::Remote) {
+                $areas[] = $remoteLabel;
+            } elseif ($place->city) {
+                $areas[] = $place->city;
+            }
+        }
+
+        return array_values(array_unique($areas)) ?: null;
+    }
+
+    /** @return array<string, string> a schema.org Offer */
+    public function offer(int $cents, string $name): array
+    {
+        return ['@type' => 'Offer', 'name' => $name, 'price' => number_format($cents / 100, 2, '.', ''), 'priceCurrency' => self::CURRENCY];
+    }
+
+    /** « 25 € » rather than « 25,00 € » when the price is a whole number. */
+    public function money(int $cents): string
+    {
+        $formatter = new \NumberFormatter($this->translator->getLocale(), \NumberFormatter::CURRENCY);
+        if ($cents % 100 === 0) {
+            $formatter->setAttribute(\NumberFormatter::FRACTION_DIGITS, 0);
+        }
+
+        return (string) $formatter->formatCurrency($cents / 100, self::CURRENCY);
     }
 }

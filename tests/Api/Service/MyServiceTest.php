@@ -16,6 +16,8 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Service\ServiceFactory;
+use App\Tests\Factory\Service\ServiceOfferFactory;
+use App\Tests\Factory\Service\ServicePlaceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -235,6 +237,65 @@ class MyServiceTest extends ApiTestCase
             'missing_to_publish' => [],
         ]);
         $this->assertSame(ServiceStatus::Published, $this->reloadedStatus((string) $service->id));
+    }
+
+    /** A sound engineer needs specialities on top of what every kind needs; the rest only counts towards complete (#1410). */
+    public function test_add_a_sound_engineering_service_starts_an_empty_draft(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services', ['kind' => 'sound_engineering'], [
+            'CONTENT_TYPE' => 'application/ld+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $service = self::getContainer()->get(ServiceRepository::class)->findOneBy(['user' => $user]);
+        $this->assertInstanceOf(Service::class, $service);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyService',
+            '@id' => '/api/my_services/' . $service->id,
+            '@type' => 'MyService',
+            'id' => $service->id,
+            'kind' => 'sound_engineering',
+            'headline' => null,
+            'status' => 'draft',
+            'completeness' => 0,
+            'missing_to_publish' => ['headline', 'description', 'specialities', 'places', 'offers'],
+        ]);
+    }
+
+    public function test_publish_a_sound_engineering_draft_that_has_what_its_kind_needs(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->soundEngineering()->create([
+            'user' => $user,
+            'status' => ServiceStatus::Draft,
+            'headline' => 'Ta démo mixée',
+            'description' => 'Huit ans de studio.',
+            'specialities' => ['mixing'],
+            'turnaroundDays' => 5,
+        ]);
+        ServicePlaceFactory::new()->remote()->create(['service' => $service]);
+        ServiceOfferFactory::new()->create(['service' => $service, 'unit' => OfferUnit::Track, 'quantity' => null, 'price' => 8000, 'title' => "Mixage d'un titre"]);
+
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/services/' . $service->id . '/publish');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyService',
+            '@id' => '/api/my_services/' . $service->id,
+            '@type' => 'MyService',
+            'id' => $service->id,
+            'kind' => 'sound_engineering',
+            'headline' => 'Ta démo mixée',
+            'status' => 'published',
+            // 6 of 10: headline, description, specialities, offers, places, turnaround.
+            'completeness' => 60,
+            'missing_to_publish' => [],
+        ]);
     }
 
     public function test_publish_an_incomplete_draft_is_refused(): void

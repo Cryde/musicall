@@ -494,7 +494,8 @@
       "headline": "un titre",
       "description": "une présentation",
       "places": "un lieu",
-      "offers": "des formules"
+      "offers": "des formules",
+      "specialities": "des spécialités"
     },
     "publish": "Publier",
     "view": "Voir",
@@ -510,6 +511,10 @@
       "teaching": {
         "label": "Professeur",
         "description": "Tu donnes des cours, chez toi, chez l'élève ou en ligne."
+      },
+      "sound_engineering": {
+        "label": "Ingénieur du son",
+        "description": "Tu mixes, masterises ou enregistres, au studio, chez le groupe ou à distance."
       }
     },
     "load_error": "Impossible de charger tes services",
@@ -963,5 +968,122 @@
       "delete_confirm": "Es-tu sûr de vouloir supprimer ta photo de couverture ?",
       "delete_error": "Impossible de supprimer la photo de couverture"
     }
+  },
+  "sound_engineer": {
+    "specialities": {
+      "mixing": "Mixage",
+      "mastering": "Mastering",
+      "recording": "Enregistrement",
+      "live_recording": "Prise de son live",
+      "live_sound": "Son en concert",
+      "editing": "Édition et nettoyage"
+    },
+    "formats": {
+      "wav": "WAV",
+      "stems": "stems",
+      "ddp": "DDP",
+      "mp3": "MP3"
+    },
+    "units": {
+      "track": "le titre",
+      "hour": "l'heure",
+      "day": "la journée",
+      "flat": "forfait"
+    },
+    "places": {
+      "at_my_place": "Au studio",
+      "at_client_place": "Dans ton local",
+      "remote": "À distance"
+    },
+    "form": {
+      "title": "Mon service d'ingénieur du son",
+      "section_service": "Le service",
+      "headline": "Titre",
+      "headline_placeholder": "Ta démo mixée comme un disque",
+      "specialities": "Spécialités",
+      "description": "Présentation",
+      "description_placeholder": "Comment tu travailles, ce que les groupes t'envoient, ce qu'ils reçoivent",
+      "years": "Années de studio",
+      "styles": "Styles",
+      "section_places": "Où",
+      "place_studio": "Dans mon studio",
+      "place_client": "Je me déplace",
+      "place_remote": "À distance, les groupes m'envoient leurs pistes",
+      "city": "Ville",
+      "address": "Adresse",
+      "radius": "Distance maximale",
+      "section_offers": "Formules",
+      "offer_unit": "Ce que le prix comprend",
+      "offer_title": "Nom de la formule",
+      "offer_description": "Détail (facultatif)",
+      "offer_price": "Prix",
+      "remove_offer": "Retirer cette formule",
+      "add_offer": "Ajouter une formule",
+      "units": {
+        "track": "Par titre",
+        "hour": "À l'heure",
+        "day": "À la journée",
+        "flat": "Forfait"
+      },
+      "section_delivery": "Délai et livraison",
+      "turnaround": "Délai habituel",
+      "days_suffix": "jours ouvrés",
+      "revisions": "Retouches incluses",
+      "formats": "Formats livrés",
+      "gear": "Matériel",
+      "gear_placeholder": "Reaper, UAD Apollo x8, Neumann U87",
+      "gear_help": "Séparés par des virgules ou un par ligne, {max} au plus.",
+      "before_after_help": "Un son brut, puis ton travail dessus : WAV, AIFF, FLAC, MP3 ou M4A, 100 Mo et 5 minutes au plus. Chaque son est envoyé dès que tu le choisis.",
+      "remove_audio": "Retirer ce son",
+      "audio_title": "Titre (ex. : prise de répète)",
+      "audio_credit": "Crédit (ex. : Mona Lisa Overdrive, « Satellites »)",
+      "audio_file": "Fichier audio, {side}",
+      "audio_converting": "Conversion en cours...",
+      "remove_media": "Retirer {title}",
+      "media_url": "Lien YouTube, SoundCloud ou Spotify",
+      "add_media": "Ajouter",
+      "save": "Enregistrer"
+    }
+  },
+  "sound_engineer_page": {
+    "not_found_title": "Service introuvable",
+    "not_found_help": "Ce membre ne propose pas de service d'ingénieur du son.",
+    "kind": "Ingé son",
+    "engineers": "Ingés son",
+    "title_default": "{name}, ingénieur du son",
+    "with": "avec {name}, {profile}",
+    "see_profile": "voir son profil",
+    "studio_in": "Studio à {city}",
+    "remotely": "à distance",
+    "travels": "Se déplace",
+    "travels_up_to": "Jusqu'à {radius} km",
+    "remote_detail": "Tu envoies tes pistes",
+    "years": "{count} an de studio | {count} ans de studio",
+    "days": "{count} jour | {count} jours",
+    "usual_turnaround": "délai moyen",
+    "revisions_included": "retouche incluse | retouches incluses",
+    "edit": "Modifier mon service",
+    "share_title": "{name}, ingénieur du son sur MusicAll",
+    "listen": "Écoute le travail de {name}",
+    "before_after": "Avant, après",
+    "side": {
+      "before": "Avant",
+      "after": "Après"
+    },
+    "side_title": "{side} : {title}",
+    "play": "Écouter {title}",
+    "pause": "Mettre {title} en pause",
+    "position": "Position dans {title}",
+    "audio_failed": "Ce son ne peut pas être lu.",
+    "offers": "Formules",
+    "how": "Comment je travaille",
+    "gear": "Matériel",
+    "media": "Médias",
+    "turnaround": "Délai",
+    "working_days": "{count} jour ouvré | {count} jours ouvrés",
+    "formats": "Formats",
+    "who": "Qui est {name} ?",
+    "page_title": "{name}, ingénieur du son - MusicAll",
+    "page_title_default": "Ingénieur du son - MusicAll"
   }
 }

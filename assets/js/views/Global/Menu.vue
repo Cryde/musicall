@@ -105,6 +105,16 @@
                       <span class="font-medium">{{ t('menu.search_teachers') }}</span>
                     </RouterLink>
                   </li>
+                  <li v-if="showsSoundEngineerSearch">
+                    <RouterLink
+                      :to="{ name: 'app_search_sound_engineer' }"
+                      class="flex items-center gap-3 px-4 py-3 text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
+                      @click="searchDropdownVisible = false"
+                    >
+                      <i class="pi pi-sliders-v" aria-hidden="true" />
+                      <span class="font-medium">{{ t('menu.search_sound_engineers') }}</span>
+                    </RouterLink>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -122,6 +132,7 @@ import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
 import MobileNavDrawer from '../../components/Global/MobileNavDrawer.vue'
 import NavbarInbox from '../../components/Global/NavbarInbox.vue'
 import { useCompactMenu } from '../../composables/useCompactMenu.js'
+import { SOUND_ENGINEER_SEARCH_TESTER_ONLY } from '../../constants/soundEngineering.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const MENU_ID = 'mobile-menu'
@@ -129,6 +140,9 @@ const MENU_ID = 'mobile-menu'
 const { t } = useI18n()
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
+const showsSoundEngineerSearch = computed(
+  () => !SOUND_ENGINEER_SEARCH_TESTER_ONLY || userSecurityStore.isTester
+)
 
 // Below lg the links collapse into the drawer, as they always have.
 const menuButton = useTemplateRef('menuButton')
@@ -155,7 +169,11 @@ function toggleSearchDropdown() {
 
 const isSearchActive = computed(() => {
   const currentRoute = router.currentRoute.value.name
-  return currentRoute === 'app_search_musician' || currentRoute === 'app_search_teacher'
+  return (
+    currentRoute === 'app_search_musician' ||
+    currentRoute === 'app_search_teacher' ||
+    currentRoute === 'app_search_sound_engineer'
+  )
 })
 
 function handleClickOutside(event) {
