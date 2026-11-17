@@ -79,10 +79,12 @@ class HomeController extends AbstractController
 
         // Search engines get this page, not the bot one: BotDetector only knows the crawlers of share cards.
         $versions = $pageVersionsResolver->resolve($request);
-        // The page's own title, description and schema.org data, in the page's locale (the member pages for now).
+        // The page's own title, description and schema.org data, in the page's locale. With its query: the teacher
+        // search's names its instrument and city.
+        $query = $request->getQueryString();
         $pageMeta = static fn (string $locale): array => $localeSwitcher->runWithLocale(
             $locale,
-            static fn (): array => $botMetaDataGenerator->getPageMetaData($request->getPathInfo()),
+            static fn (): array => $botMetaDataGenerator->getPageMetaData($request->getPathInfo() . ($query !== null ? '?' . $query : '')),
         );
         // The others (a member's own, the sign-in flow) keep the locale the request resolved.
         if ($versions === null) {

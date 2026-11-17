@@ -32,22 +32,21 @@ import SkipLink from './SkipLink.vue'
 
 const route = useRoute()
 
-// Context zones: routes where specific components should remain cached
-const musicianSearchContext = [
-  'app_search_musician',
-  'app_search_guitarist',
-  'app_search_drummer',
-  'app_search_bassist',
-  'app_search_singer',
-  'app_search_pianist',
-  'app_user_public_profile'
-]
+// Each search page, kept on its routes and on the page its results open, so coming back restores it.
+const KEPT_ALIVE_ON = {
+  MusicianSearch: [
+    'app_search_musician',
+    'app_search_guitarist',
+    'app_search_drummer',
+    'app_search_bassist',
+    'app_search_singer',
+    'app_search_pianist',
+    'app_user_public_profile'
+  ],
+  TeacherSearch: ['app_search_teacher', 'app_user_teacher_profile']
+}
 
-// Dynamic include list based on current route context
-const keepAliveIncludes = computed(() => {
-  if (musicianSearchContext.includes(route.name)) {
-    return ['MusicianSearch']
-  }
-  return []
-})
+const keepAliveIncludes = computed(() =>
+  Object.keys(KEPT_ALIVE_ON).filter((name) => KEPT_ALIVE_ON[name].includes(route.name))
+)
 </script>

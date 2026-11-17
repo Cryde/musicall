@@ -17,7 +17,7 @@ export default [
   {
     path: '/rechercher-un-professeur',
     name: 'app_search_teacher',
-    component: () => import('../views/Search/TeacherSearchTeaser.vue'),
+    component: () => import('../views/Search/TeacherSearch.vue'),
     meta: { isAuthRequired: false }
   },
   {

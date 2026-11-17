@@ -501,6 +501,56 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame(['Ixelles', 'Online'], $result['json_ld']['areaServed']);
     }
 
+    public function test_the_teacher_search_names_its_instrument_and_city(): void
+    {
+        InstrumentFactory::new()->asBass()->create();
+
+        $this->assertSame([
+            'title' => 'Prof de basse à Bruxelles - MusicAll',
+            'description' => "Trouve un prof de basse à Bruxelles et autour, ou en ligne : compare les niveaux, les prix et les cours d'essai offerts sur MusicAll.",
+        ], $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur?instrument=basse&location=Bruxelles&lat=50.8503&lng=4.3517&radius=10&level=beginner'));
+    }
+
+    public function test_the_teacher_search_elides_before_a_vowel(): void
+    {
+        InstrumentFactory::new()->create(['name' => 'Orgue', 'musicianName' => 'Organiste', 'slug' => 'orgue']);
+
+        $this->assertSame([
+            'title' => "Prof d'orgue - MusicAll",
+            'description' => "Trouve un prof d'orgue près de chez toi, ou en ligne : compare les niveaux, les prix et les cours d'essai offerts sur MusicAll.",
+        ], $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur?instrument=orgue'));
+    }
+
+    public function test_the_teacher_search_names_only_a_known_instrument_and_a_located_plain_city(): void
+    {
+        $default = [
+            'title' => 'Trouver un prof de musique - MusicAll',
+            'description' => "Des musiciens qui donnent des cours près de chez toi, ou en ligne : compare les niveaux, les prix et les cours d'essai offerts sur MusicAll.",
+        ];
+
+        $this->assertSame($default, $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur'));
+        $this->assertSame($default, $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur?instrument=unknown'));
+        // A city without the point the search goes by is not a search anybody can run.
+        $this->assertSame($default, $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur?location=Bruxelles'));
+        $this->assertSame($default, $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur?location=' . rawurlencode('<b>Cheap</b> pills') . '&lat=50.85&lng=4.35'));
+        $this->assertSame('Prof de musique à Liège - MusicAll', $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-professeur?location=Li%C3%A8ge&lat=50.63&lng=5.57')['title']);
+    }
+
+    public function test_the_english_teacher_search_is_described_in_english(): void
+    {
+        InstrumentFactory::new()->asBass()->create();
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/find-a-teacher?instrument=basse&location=Brussels&lat=50.8503&lng=4.3517'),
+        );
+
+        $this->assertSame([
+            'title' => 'Bass teacher in Brussels - MusicAll',
+            'description' => 'Find bass teachers in and around Brussels, or online: compare levels, prices and free trial lessons on MusicAll.',
+        ], $result);
+    }
+
     public function test_page_metadata_only_asks_the_providers_ready_for_the_page(): void
     {
         $this->assertNotSame([], $this->botMetaDataGenerator->getMetaData('/cours'));

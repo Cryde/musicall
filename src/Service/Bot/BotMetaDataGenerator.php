@@ -28,13 +28,14 @@ readonly class BotMetaDataGenerator
     }
 
     /**
-     * For the page served to everyone: only the pages whose provider is ready for it (PageMetaDataProviderInterface).
+     * For the page served to everyone, from its path and query: only the pages whose provider is ready for it
+     * (PageMetaDataProviderInterface).
      *
      * @return array{title?: string, description?: string, cover?: string|null, robots?: string, json_ld?: array<string, mixed>}
      */
-    public function getPageMetaData(string $path): array
+    public function getPageMetaData(string $uri): array
     {
-        return $this->find($path, true);
+        return $this->find($uri, true);
     }
 
     /**

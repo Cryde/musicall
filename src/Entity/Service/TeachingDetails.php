@@ -50,6 +50,12 @@ final class TeachingDetails
         return $details;
     }
 
+    /** A trial lesson offered at no price, or none said. */
+    public function hasFreeTrial(): bool
+    {
+        return $this->offersTrial && ($this->trialPrice ?? 0) === 0;
+    }
+
     /** @return array<string, mixed> what Service::$details stores */
     public function toArray(): array
     {
