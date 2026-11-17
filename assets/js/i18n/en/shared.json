@@ -104,7 +104,8 @@
       "comment": "Comment",
       "publication": "Publication",
       "profile_post": "Post",
-      "profile_post_comment": "Post comment"
+      "profile_post_comment": "Post comment",
+      "service_work": "Work"
     },
     "live_state": {
       "unchanged": "Unchanged",
@@ -135,7 +136,9 @@
       "profile_post": "a post by {label}",
       "any_profile_post": "a post",
       "profile_post_comment": "a comment on a post by {label}",
-      "any_profile_post_comment": "a comment on a post"
+      "any_profile_post_comment": "a comment on a post",
+      "service_work": "a work by {label}",
+      "any_service_work": "a work"
     },
     "link": {
       "private_conversation": "Private conversation",

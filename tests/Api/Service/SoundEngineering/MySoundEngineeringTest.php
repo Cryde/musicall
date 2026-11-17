@@ -76,6 +76,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'gear' => ['Reaper'],
             'media' => [],
             'before_after' => [],
+            'works' => [],
         ]);
     }
 
@@ -136,6 +137,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'gear' => ['Reaper', 'UAD Apollo x8'],
             'media' => [],
             'before_after' => [],
+            'works' => [],
         ]);
     }
 
@@ -189,6 +191,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'gear' => ['Reaper'],
             'media' => [],
             'before_after' => [],
+            'works' => [],
         ]);
     }
 

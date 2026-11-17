@@ -57,6 +57,7 @@ readonly class SoundEngineerPageBuilder
 
         $page->media = $this->mediaResourceBuilder->buildList($service->media->toArray());
         $page->beforeAfter = $this->serviceViewBuilder->beforeAfter($service);
+        $page->works = $this->serviceViewBuilder->works($service);
 
         return $page;
     }

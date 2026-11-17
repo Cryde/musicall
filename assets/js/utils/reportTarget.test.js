@@ -18,6 +18,7 @@ describe('labels', () => {
     assert.equal(reportTargetTypeLabel('band_chat_message'), 'Discussion de groupe')
     assert.equal(reportTargetTypeLabel('forum_post'), 'Message du forum')
     assert.equal(reportTargetTypeLabel('profile_post_comment'), 'Commentaire de post')
+    assert.equal(reportTargetTypeLabel('service_work'), 'Réalisation')
   })
 
   it('falls back to the raw value for something it does not know', () => {
@@ -46,11 +47,13 @@ describe('reportSubject', () => {
       'un message de la discussion du groupe Les Cactus'
     )
     assert.equal(reportSubject('profile_post_comment', 'bob'), 'un commentaire sur un post de bob')
+    assert.equal(reportSubject('service_work', 'bob'), 'une réalisation de bob')
   })
 
   it('stays general without a label, and never names a private conversation', () => {
     assert.equal(reportSubject('comment', null), 'un commentaire')
     assert.equal(reportSubject('profile_post_comment', null), 'un commentaire sur un post')
+    assert.equal(reportSubject('service_work', null), 'une réalisation')
     assert.equal(reportSubject('message', 'ignored'), 'un message privé')
     assert.equal(reportSubject('new_type', 'x'), 'un contenu')
   })
@@ -101,6 +104,17 @@ describe('reportContentLink', () => {
     assert.deepEqual(
       reportContentLink(report('profile_post_comment', { username: 'bob' })).to,
       expected
+    )
+  })
+
+  it('points a work at the page of its kind', () => {
+    assert.deepEqual(
+      reportContentLink(report('service_work', { kind: 'sound_engineering', username: 'bob' })).to,
+      { name: 'app_user_sound_engineer', params: { username: 'bob' } }
+    )
+    assert.equal(
+      reportContentLink(report('service_work', { kind: 'unknown', username: 'bob' })).to,
+      null
     )
   })
 

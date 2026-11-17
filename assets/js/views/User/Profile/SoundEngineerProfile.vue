@@ -79,6 +79,16 @@
               </div>
             </section>
 
+            <ServiceWorksCredits
+              v-if="page.works.length"
+              :title="t('profile.sound_engineer_page.works', { name: page.display_name })"
+              :works="page.works"
+              :username="page.username"
+              :reportable="!isOwnPage"
+              icon="pi pi-headphones"
+              @play="openMedia"
+            />
+
             <section v-if="page.offers.length" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5 md:p-6">
               <h2 class="font-semibold text-surface-900 dark:text-surface-0 mb-1 flex items-center gap-2">
                 <i class="pi pi-wallet text-surface-400" aria-hidden="true" />{{ t('profile.sound_engineer_page.offers') }}
@@ -222,6 +232,7 @@ import ServicePageTopBar from '../../../components/Service/Page/ServicePageTopBa
 import ServicePhoneBar from '../../../components/Service/Page/ServicePhoneBar.vue'
 import ServicePlacesCard from '../../../components/Service/Page/ServicePlacesCard.vue'
 import EditSoundEngineeringDialog from '../../../components/Service/SoundEngineering/EditSoundEngineeringDialog.vue'
+import ServiceWorksCredits from '../../../components/Service/Works/ServiceWorksCredits.vue'
 import ShareButton from '../../../components/ShareButton.vue'
 import ProfileDraftBar from '../../../components/User/Profile/ProfileDraftBar.vue'
 import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'

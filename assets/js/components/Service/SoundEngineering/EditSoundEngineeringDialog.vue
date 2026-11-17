@@ -163,6 +163,8 @@
         </div>
       </section>
 
+      <ServiceWorksEditor v-model:works="form.works" :service-id="serviceId" :section-class="SECTION_CLASS" @changed="markChanged" />
+
       <!-- Media, added and removed at once -->
       <section class="flex flex-col gap-3">
         <h3 :class="SECTION_CLASS"><i class="pi pi-video text-primary-500" aria-hidden="true" />{{ t('profile.sound_engineer_page.media') }}</h3>
@@ -220,12 +222,13 @@ import {
   SPECIALITIES
 } from '../../../utils/soundEngineerPage.js'
 import CityAutoComplete from '../../Global/CityAutoComplete.vue'
+import ServiceWorksEditor from '../Works/ServiceWorksEditor.vue'
 
 /** A sound engineer's form (#1410), from « Mes services » or their page. */
 const props = defineProps({
   serviceId: { type: String, required: true }
 })
-/** `saved` once the form is saved; `changed` when a sound or a media is added or removed, each sent at once. */
+/** `saved` once the form is saved; `changed` when a sound, a media or a work is written, each sent at once. */
 const emit = defineEmits(['saved', 'changed'])
 const isVisible = defineModel('visible', { type: Boolean, default: false })
 
@@ -255,7 +258,7 @@ const gearText = ref('')
 const mediaUrl = ref('')
 /** The city fields' own values: the typed text until a city is picked, then `{ name, context, latitude, longitude }`. */
 const citySearch = reactive({ studio: null, client: null })
-/** A sound or a media sent while the dialog was open: the page refreshes once, as it closes. */
+/** A sound, a media or a work sent while the dialog was open: the page refreshes once, as it closes. */
 let hasChanges = false
 const uploads = reactive({ before: { title: '', credit: '' }, after: { title: '', credit: '' } })
 let offerKey = 0
@@ -357,6 +360,10 @@ async function save() {
   } finally {
     isSaving.value = false
   }
+}
+
+function markChanged() {
+  hasChanges = true
 }
 
 function handleHide() {

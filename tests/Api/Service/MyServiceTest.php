@@ -293,7 +293,7 @@ class MyServiceTest extends ApiTestCase
             'headline' => 'Ta démo mixée',
             'status' => 'published',
             // 6 of 10: headline, description, specialities, offers, places, turnaround.
-            'completeness' => 60,
+            'completeness' => 55,
             'missing_to_publish' => [],
         ]);
     }
