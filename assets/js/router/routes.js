@@ -16,6 +16,7 @@ const LOCALIZED_FORUM_AND_USER_PAGES = new Set([
   'app_user_public_profile',
   'app_user_musician_profile',
   'app_user_teacher_profile',
+  'app_user_sound_engineer',
   'app_contact',
   'app_privacy',
   'app_terms',

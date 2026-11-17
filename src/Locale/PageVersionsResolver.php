@@ -28,8 +28,8 @@ readonly class PageVersionsResolver
         '#^/(publications|cours)/category/[^/]+$#',
         '#^/publications/tag/[^/]+$#',
         '#^/photos/[^/]+$#',
-        '#^/rechercher-un-(musicien|guitariste|batteur|bassiste|chanteur|pianiste)$#',
-        '#^/u/[^/]+(/teacher)?$#',
+        '#^/rechercher-un-(musicien|guitariste|batteur|bassiste|chanteur|pianiste|ingenieur-du-son)$#',
+        '#^/u/[^/]+(/teacher|/sound-engineer)?$#',
     ];
     private const string TEACHER_SEARCH = '/rechercher-un-professeur';
     private const string PUBLICATION = '#^/(publications|cours)/([^/]+)$#';

@@ -6,6 +6,8 @@ namespace App\Security\Service;
 
 use App\Entity\Service\Service;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
+use App\Enum\Service\ServicePart;
 use App\Repository\Service\ServiceRepository;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -20,6 +22,28 @@ readonly class ServiceOwnerChecker
     {
         $service = $this->serviceRepository->find($serviceId);
         if (!$service instanceof Service || $service->user->id !== $user->id) {
+            throw new NotFoundHttpException('service.not_found');
+        }
+
+        return $service;
+    }
+
+    /** Their own service of that kind: a kind's form never edits another kind's service (#1410). */
+    public function checkOwnerOfKind(string $serviceId, User $user, ServiceKind $kind): Service
+    {
+        $service = $this->checkOwner($serviceId, $user);
+        if ($service->kind !== $kind) {
+            throw new NotFoundHttpException('service.not_found');
+        }
+
+        return $service;
+    }
+
+    /** Their own service of a kind that has the part, such as « Avant, après » (#1410). */
+    public function checkOwnerWithPart(string $serviceId, User $user, ServicePart $part): Service
+    {
+        $service = $this->checkOwner($serviceId, $user);
+        if (!in_array($part, $service->kind->parts(), true)) {
             throw new NotFoundHttpException('service.not_found');
         }
 

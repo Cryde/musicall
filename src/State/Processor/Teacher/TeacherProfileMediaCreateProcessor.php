@@ -38,7 +38,7 @@ readonly class TeacherProfileMediaCreateProcessor implements ProcessorInterface
             throw new NotFoundHttpException('profile.teacher.not_found');
         }
 
-        $media = $this->mediaCreateProcedure->handle($data, $profile);
+        $media = $this->mediaCreateProcedure->handle($data->url, $data->title, $profile);
 
         return $this->teacherProfileMediaResourceBuilder->buildFromEntity($media);
     }

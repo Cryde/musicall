@@ -11,7 +11,6 @@ use App\ApiResource\Teacher\Private\Input\Pricing;
 use App\ApiResource\Teacher\Private\Input\SocialLink;
 use App\ApiResource\Teacher\Private\TeacherProfileInput;
 use App\Entity\Attribute\Instrument;
-use App\Entity\Attribute\Style;
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceAvailability;
 use App\Entity\Service\ServiceInstrument;
@@ -25,7 +24,7 @@ use App\Enum\Teacher\DayOfWeek;
 use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Repository\Attribute\InstrumentRepository;
-use App\Repository\Attribute\StyleRepository;
+use App\Service\Service\ServiceWriter;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -38,8 +37,8 @@ readonly class TeacherProfileWriter
     public function __construct(
         private EntityManagerInterface $entityManager,
         private InstrumentRepository $instrumentRepository,
-        private StyleRepository $styleRepository,
         private TeacherLessonContentWriter $lessonContentWriter,
+        private ServiceWriter $serviceWriter,
     ) {
     }
 
@@ -63,7 +62,7 @@ readonly class TeacherProfileWriter
             $this->writeInstruments($profile, $data->instrumentIds);
         }
         if ($data->styleIds !== null) {
-            $this->writeStyles($profile, $data->styleIds);
+            $this->serviceWriter->writeStyles($profile, $data->styleIds);
         }
         if ($data->pricing !== null) {
             $this->writePricing($profile, $data->pricing);
@@ -145,21 +144,6 @@ readonly class TeacherProfileWriter
             $profileInstrument = new ServiceInstrument();
             $profileInstrument->instrument = $instrument;
             $profile->addInstrument($profileInstrument);
-        }
-    }
-
-    /** @param string[] $styleIds */
-    private function writeStyles(Service $profile, array $styleIds): void
-    {
-        foreach ($profile->styles->toArray() as $style) {
-            $profile->removeStyle($style);
-        }
-
-        foreach ($styleIds as $styleId) {
-            $style = $this->styleRepository->find($styleId);
-            if ($style instanceof Style) {
-                $profile->addStyle($style);
-            }
         }
     }
 

@@ -24,6 +24,7 @@ readonly class LocalizedPath
             'supprimer-mon-compte' => 'delete-my-account',
             'rechercher-un-musicien' => 'find-a-musician',
             'rechercher-un-professeur' => 'find-a-teacher',
+            'rechercher-un-ingenieur-du-son' => 'find-a-sound-engineer',
             'rechercher-un-guitariste' => 'find-a-guitarist',
             'rechercher-un-batteur' => 'find-a-drummer',
             'rechercher-un-bassiste' => 'find-a-bassist',

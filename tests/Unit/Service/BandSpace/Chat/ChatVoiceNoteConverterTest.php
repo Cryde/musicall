@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Service\BandSpace\Chat;
 
 use App\Exception\BandSpace\UnreadableVoiceNoteException;
+use App\Service\Audio\AudioTranscoder;
 use App\Service\BandSpace\Chat\ChatVoiceNoteConverter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +52,7 @@ class ChatVoiceNoteConverterTest extends TestCase
 
         $this->assertSame(2, $converted->durationSeconds);
         $this->assertSame(['codec_name=aac', 'channels=1'], $this->probeAudio($converted->file->getPathname()));
-        $this->assertCount(ChatVoiceNoteConverter::PEAK_COUNT, $converted->peaks);
+        $this->assertCount(AudioTranscoder::PEAK_COUNT, $converted->peaks);
     }
 
     /** Loud for its first half, silent for its second: the waveform has to say so. */
@@ -62,9 +63,9 @@ class ChatVoiceNoteConverterTest extends TestCase
         $converted = (new ChatVoiceNoteConverter())->convert(new File($path), 'video/webm');
         $this->temporaryFiles[] = $converted->file->getPathname();
 
-        $this->assertCount(ChatVoiceNoteConverter::PEAK_COUNT, $converted->peaks);
-        $this->assertSame(ChatVoiceNoteConverter::PEAK_MAX, max($converted->peaks), 'The loudest slice is the top of the scale');
-        [$firstHalf, $secondHalf] = array_chunk($converted->peaks, intdiv(ChatVoiceNoteConverter::PEAK_COUNT, 2));
+        $this->assertCount(AudioTranscoder::PEAK_COUNT, $converted->peaks);
+        $this->assertSame(AudioTranscoder::PEAK_MAX, max($converted->peaks), 'The loudest slice is the top of the scale');
+        [$firstHalf, $secondHalf] = array_chunk($converted->peaks, intdiv(AudioTranscoder::PEAK_COUNT, 2));
         // The edges of the tone are softened by the encoder, so the middle of each half is compared.
         $this->assertGreaterThan(200, min(array_slice($firstHalf, 2, -2)));
         $this->assertLessThan(5, max(array_slice($secondHalf, 2, -2)));
@@ -77,7 +78,7 @@ class ChatVoiceNoteConverterTest extends TestCase
         $converted = (new ChatVoiceNoteConverter())->convert(new File($path), 'video/webm');
         $this->temporaryFiles[] = $converted->file->getPathname();
 
-        $this->assertSame(array_fill(0, ChatVoiceNoteConverter::PEAK_COUNT, 0), $converted->peaks);
+        $this->assertSame(array_fill(0, AudioTranscoder::PEAK_COUNT, 0), $converted->peaks);
     }
 
     public function test_a_recording_longer_than_the_limit_is_cut_at_it(): void

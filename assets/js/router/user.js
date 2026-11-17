@@ -26,6 +26,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_user_sound_engineer',
+    path: '/u/:username/sound-engineer',
+    component: () => import('../views/User/Profile/SoundEngineerProfile.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_contact',
     path: '/contact',
     component: () => import('../views/Contact/Index.vue'),

@@ -14,6 +14,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 enum ServiceKind: string implements TranslatableInterface
 {
     case Teaching = 'teaching';
+    case SoundEngineering = 'sound_engineering';
 
     /** @return list<string> */
     public static function values(): array
@@ -26,6 +27,16 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => 'teacher_profile',
+            self::SoundEngineering => 'service',
+        };
+    }
+
+    /** @return list<OfferUnit> what its offers may be priced in */
+    public function offerUnits(): array
+    {
+        return match ($this) {
+            self::Teaching => [OfferUnit::Lesson, OfferUnit::Package],
+            self::SoundEngineering => [OfferUnit::Track, OfferUnit::Hour, OfferUnit::Day, OfferUnit::Flat],
         };
     }
 
@@ -49,6 +60,18 @@ enum ServiceKind: string implements TranslatableInterface
                 ServicePart::Availability,
                 ServicePart::Offers,
             ],
+            self::SoundEngineering => [
+                ServicePart::Headline,
+                ServicePart::Description,
+                ServicePart::Specialities,
+                ServicePart::BeforeAfter,
+                ServicePart::Offers,
+                ServicePart::Places,
+                ServicePart::Gear,
+                ServicePart::Styles,
+                ServicePart::Turnaround,
+                ServicePart::Formats,
+            ],
         };
     }
 
@@ -57,6 +80,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => [ServicePart::Headline, ServicePart::Description, ServicePart::Places, ServicePart::Offers],
+            self::SoundEngineering => [ServicePart::Headline, ServicePart::Description, ServicePart::Specialities, ServicePart::Places, ServicePart::Offers],
         };
     }
 
@@ -64,6 +88,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return $translator->trans(match ($this) {
             self::Teaching => 'service_kind.teaching',
+            self::SoundEngineering => 'service_kind.sound_engineering',
         }, [], 'reference', $locale);
     }
 }

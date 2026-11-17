@@ -9,6 +9,13 @@ export const SERVICE_KINDS = {
     labelKey: 'profile.services.kinds.teaching.label',
     descriptionKey: 'profile.services.kinds.teaching.description',
     page: (username) => ({ name: 'app_user_teacher_profile', params: { username } })
+  },
+  sound_engineering: {
+    icon: 'pi pi-sliders-v',
+    iconClass: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',
+    labelKey: 'profile.services.kinds.sound_engineering.label',
+    descriptionKey: 'profile.services.kinds.sound_engineering.description',
+    page: (username) => ({ name: 'app_user_sound_engineer', params: { username } })
   }
 }
 
@@ -16,6 +23,7 @@ export const SERVICE_KINDS = {
 export const SERVICE_PART_KEYS = {
   headline: 'profile.services.parts.headline',
   description: 'profile.services.parts.description',
+  specialities: 'profile.services.parts.specialities',
   places: 'profile.services.parts.places',
   offers: 'profile.services.parts.offers'
 }

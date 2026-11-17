@@ -94,7 +94,7 @@ class Message
     public ?int $voiceNoteDurationSeconds = null;
 
     /**
-     * The waveform the player draws: ChatVoiceNoteConverter::PEAK_COUNT loudness values, 0 to 255,
+     * The waveform the player draws: AudioTranscoder::PEAK_COUNT loudness values, 0 to 255,
      * measured once at upload so no reader has to download the audio to see its shape.
      *
      * @var list<int>|null

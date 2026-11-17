@@ -551,11 +551,134 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         ], $result);
     }
 
+    public function test_get_metadata_for_a_sound_engineer(): void
+    {
+        $this->soundEngineer('julien_son');
+
+        $this->assertSame([
+            'title'       => 'Julien Roche, ingénieur du son à Forest : mixage, enregistrement - MusicAll',
+            'description' => "Ta démo mixée comme un disque. À partir de 80\u{a0}€ le titre.",
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Ingénieur du son : mixage, enregistrement',
+                'url'         => 'http://localhost/u/julien_son/sound-engineer',
+                'description' => 'Ta démo mixée comme un disque',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'Julien Roche',
+                    'alternateName' => '@julien_son',
+                    'url'           => 'http://localhost/u/julien_son',
+                    'homeLocation'  => ['@type' => 'Place', 'name' => 'Bruxelles'],
+                ],
+                'areaServed'  => ['Forest', 'À distance'],
+                'offers'      => [
+                    ['@type' => 'Offer', 'name' => "Mixage d'un titre", 'price' => '80.00', 'priceCurrency' => 'EUR'],
+                    ['@type' => 'Offer', 'name' => 'EP de 5 titres', 'price' => '450.00', 'priceCurrency' => 'EUR'],
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/julien_son/sound-engineer'));
+    }
+
+    public function test_get_metadata_for_a_sound_engineer_with_nothing_filled_in(): void
+    {
+        $user = UserFactory::new(['username' => 'son_simple'])->create();
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        ServiceFactory::new()->soundEngineering()->create(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'son_simple, ingénieur du son : ingénieur du son - MusicAll',
+            'description' => "son_simple propose ses services d'ingénieur du son sur MusicAll : ingénieur du son.",
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Ingénieur du son : ingénieur du son',
+                'url'         => 'http://localhost/u/son_simple/sound-engineer',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'son_simple',
+                    'alternateName' => '@son_simple',
+                    'url'           => 'http://localhost/u/son_simple',
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/son_simple/sound-engineer'));
+    }
+
+    public function test_get_metadata_for_a_draft_sound_engineer_is_noindex_and_nothing_else(): void
+    {
+        $user = UserFactory::new(['username' => 'son_brouillon'])->create();
+        ServiceFactory::new()->soundEngineering()->create(['user' => $user, 'status' => ServiceStatus::Draft]);
+
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/son_brouillon/sound-engineer'));
+    }
+
+    public function test_the_english_sound_engineer_page_is_described_in_english(): void
+    {
+        $this->soundEngineer('julien_sound');
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/u/julien_sound/sound-engineer'),
+        );
+
+        $this->assertSame('Julien Roche, sound engineer in Forest: mixing, recording - MusicAll', $result['title']);
+        $this->assertSame('Ta démo mixée comme un disque. From €80 per track.', $result['description']);
+        $this->assertSame('http://localhost/en/u/julien_sound/sound-engineer', $result['json_ld']['url']);
+        $this->assertSame(['Forest', 'Remotely'], $result['json_ld']['areaServed']);
+    }
+
+    public function test_the_sound_engineer_search_is_described_in_both_locales(): void
+    {
+        $this->assertSame([
+            'title' => 'Trouver un ingénieur du son - MusicAll',
+            'description' => 'Mixage, mastering, enregistrement ou son en concert : trouve un ingénieur du son près de chez toi ou à distance, compare ses formules et écoute ses avant, après sur MusicAll.',
+        ], $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-ingenieur-du-son?speciality=mixing'));
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/find-a-sound-engineer'),
+        );
+        $this->assertSame('Find a sound engineer - MusicAll', $result['title']);
+    }
+
     public function test_page_metadata_only_asks_the_providers_ready_for_the_page(): void
     {
         $this->assertNotSame([], $this->botMetaDataGenerator->getMetaData('/cours'));
         $this->assertSame([], $this->botMetaDataGenerator->getPageMetaData('/cours'));
         $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getPageMetaData('/u/nobody-here'));
+    }
+
+    private function soundEngineer(string $username): Service
+    {
+        $user = UserFactory::new(['username' => $username])->create();
+        $user->profile->displayName = 'Julien Roche';
+        $user->profile->location = 'Bruxelles';
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $service = ServiceFactory::new()->soundEngineering()->create([
+            'user'         => $user,
+            'headline'     => 'Ta démo mixée comme un disque',
+            'specialities' => ['mixing', 'recording'],
+        ]);
+        foreach ([[ServicePlaceType::AtMyPlace, 'Forest'], [ServicePlaceType::Remote, null]] as [$type, $city]) {
+            $place = new ServicePlace();
+            $place->type = $type;
+            $place->city = $city;
+            $service->addPlace($place);
+        }
+        foreach ([[OfferUnit::Flat, 45000, 'EP de 5 titres'], [OfferUnit::Track, 8000, "Mixage d'un titre"]] as [$unit, $price, $title]) {
+            $offer = new ServiceOffer();
+            $offer->unit = $unit;
+            $offer->price = $price;
+            $offer->title = $title;
+            $service->addOffer($offer);
+        }
+        \Zenstruck\Foundry\Persistence\save($service);
+
+        return $service;
     }
 
     private function teacherWithPlacesAndPrices(string $username): Service

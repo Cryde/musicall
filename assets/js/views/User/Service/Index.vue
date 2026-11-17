@@ -67,8 +67,8 @@
             <Button
               :label="t('profile.services.edit')"
               icon="pi pi-pencil"
-              :loading="teacherProfileStore.isLoading"
-              @click="openTeachingForm"
+              :loading="service.kind === 'teaching' && teacherProfileStore.isLoading"
+              @click="openForm(service)"
             />
             <Button
               icon="pi pi-ellipsis-v"
@@ -116,7 +116,14 @@
     <EditTeacherProfileModal
       v-model:visible="showTeachingForm"
       :teacher-profile="teacherProfileStore.profile"
-      @saved="handleTeachingSaved"
+      @saved="handleSaved"
+    />
+    <EditSoundEngineeringDialog
+      v-if="soundEngineeringId"
+      v-model:visible="showSoundEngineeringForm"
+      :service-id="soundEngineeringId"
+      @saved="handleSaved"
+      @changed="loadServices"
     />
   </div>
 </template>
@@ -131,6 +138,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import servicesApi from '../../../api/user/services.js'
+import EditSoundEngineeringDialog from '../../../components/Service/SoundEngineering/EditSoundEngineeringDialog.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import { SERVICE_KINDS, SERVICE_PART_KEYS } from '../../../constants/serviceKinds.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -139,8 +147,8 @@ import { kindsToAdd, serviceStage } from '../../../utils/myServices.js'
 
 /**
  * « Mes services » (#1406): the services a member offers, how complete each one is and what it needs before it can
- * be published, and one card per kind they do not offer yet. Teaching is the only kind so far, edited in the teacher
- * form; each other kind brings its own form (#683).
+ * be published, and one card per kind they do not offer yet. Teaching is edited in the teacher form, each other kind
+ * in its own (#683, #1410).
  */
 const { t, locale } = useI18n()
 useTitle(() => t('profile.services.page_title'))
@@ -156,6 +164,8 @@ const isLoading = ref(true)
 const addingKind = ref(null)
 const busyServiceId = ref(null)
 const showTeachingForm = ref(false)
+const showSoundEngineeringForm = ref(false)
+const soundEngineeringId = ref(null)
 const menuRef = ref(null)
 const menuService = ref(null)
 
@@ -215,13 +225,23 @@ function showError(summaryKey, error) {
 async function add(kind) {
   addingKind.value = kind
   try {
-    services.value = [...services.value, await servicesApi.addService(kind)]
-    await openTeachingForm()
+    const added = await servicesApi.addService(kind)
+    services.value = [...services.value, added]
+    await openForm(added)
   } catch (error) {
     showError('profile.services.add_error', error)
   } finally {
     addingKind.value = null
   }
+}
+
+function openForm(service) {
+  if (service.kind === 'sound_engineering') {
+    soundEngineeringId.value = service.id
+    showSoundEngineeringForm.value = true
+    return
+  }
+  return openTeachingForm()
 }
 
 async function openTeachingForm() {
@@ -233,7 +253,7 @@ async function openTeachingForm() {
   }
 }
 
-function handleTeachingSaved() {
+function handleSaved() {
   loadServices()
   toast.add({ severity: 'success', summary: t('profile.services.saved'), life: 5000 })
 }

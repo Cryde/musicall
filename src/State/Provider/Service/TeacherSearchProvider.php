@@ -7,11 +7,11 @@ namespace App\State\Provider\Service;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Parameters;
 use ApiPlatform\State\Pagination\TraversablePaginator;
-use ApiPlatform\State\ParameterNotFound;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Service\Search\TeacherSearchResult;
 use App\Entity\Attribute\Instrument;
 use App\Entity\User;
+use App\Enum\Service\ServiceKind;
 use App\Enum\Service\TeachingSearchOrder;
 use App\Enum\Teacher\AgeGroup;
 use App\Enum\Teacher\StudentLevel;
@@ -42,7 +42,7 @@ readonly class TeacherSearchProvider implements ProviderInterface
         $search = $this->searchOf($operation->getParameters());
 
         $page = $this->serviceRepository->findTeachingSearchPage($search, $viewer);
-        $services = $this->serviceRepository->findForSearchCards(array_column($page, 'id'));
+        $services = $this->serviceRepository->findForSearchCards(array_column($page, 'id'), ServiceKind::Teaching);
         $results = [];
         foreach ($page as $row) {
             if (isset($services[$row['id']])) {
@@ -51,10 +51,7 @@ readonly class TeacherSearchProvider implements ProviderInterface
         }
 
         $service = $search->service;
-        // A short page that is not past the end is the last one: it tells the total without counting.
-        $total = count($page) < $service->limit && ($page !== [] || $service->page === 1)
-            ? $service->offset() + count($page)
-            : $this->serviceRepository->countTeachingSearch($search, $viewer);
+        $total = $service->total(count($page), fn (): int => $this->serviceRepository->countTeachingSearch($search, $viewer));
 
         return new TraversablePaginator(new \ArrayIterator($results), $service->page, $service->limit, $total);
     }
@@ -62,34 +59,16 @@ readonly class TeacherSearchProvider implements ProviderInterface
     /** The search its query parameters describe, already validated by their declarations. */
     private function searchOf(?Parameters $parameters): TeachingSearch
     {
-        $value = static function (string $key) use ($parameters): mixed {
-            $value = $parameters?->get($key)?->getValue();
-
-            return $value instanceof ParameterNotFound ? null : $value;
-        };
+        $query = ServiceSearchParameters::of($parameters);
 
         $search = new TeachingSearch();
-        $instrument = $value('instrument');
+        $instrument = $query->value('instrument');
         $search->instrument = $instrument instanceof Instrument ? $instrument : null;
-        $search->level = StudentLevel::tryFrom((string) $value('level'));
-        $search->ageGroup = AgeGroup::tryFrom((string) $value('age_group'));
-        $search->freeTrial = $value('free_trial') === '1';
-        $search->order = TeachingSearchOrder::tryFrom((string) $value('order'));
-
-        $service = $search->service;
-        $service->limit = TeacherSearchResult::PAGE_SIZE;
-        $latitude = $value('lat');
-        $longitude = $value('lng');
-        // A point needs both: one alone says nowhere.
-        if (is_numeric($latitude) && is_numeric($longitude)) {
-            $service->latitude = (float) $latitude;
-            $service->longitude = (float) $longitude;
-        }
-        $radius = $value('radius');
-        $service->radius = is_numeric($radius) ? (int) $radius : null;
-        $service->online = $value('online') === '1';
-        $page = $value('page');
-        $service->page = is_numeric($page) ? (int) $page : 1;
+        $search->level = StudentLevel::tryFrom((string) $query->value('level'));
+        $search->ageGroup = AgeGroup::tryFrom((string) $query->value('age_group'));
+        $search->freeTrial = $query->value('free_trial') === '1';
+        $search->order = TeachingSearchOrder::tryFrom((string) $query->value('order'));
+        $query->fill($search->service, TeacherSearchResult::PAGE_SIZE);
 
         return $search;
     }

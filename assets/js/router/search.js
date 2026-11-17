@@ -21,6 +21,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    path: '/rechercher-un-ingenieur-du-son',
+    name: 'app_search_sound_engineer',
+    component: () => import('../views/Search/SoundEngineerSearch.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     path: '/rechercher-un-guitariste',
     name: 'app_search_guitarist',
     component: () => import('../views/Search/Index.vue'),

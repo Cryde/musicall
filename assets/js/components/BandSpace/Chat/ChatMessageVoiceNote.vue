@@ -53,8 +53,9 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, useId } from 'vue'
+import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useBlobAudio } from '../../../composables/useBlobAudio.js'
 import { formatVoiceNoteDuration, voiceNoteEnvelopePath } from '../../../utils/chatVoiceNote.js'
 
 const ENVELOPE_WIDTH = 170
@@ -68,89 +69,15 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const isPlaying = ref(false)
-const isLoading = ref(false)
-const hasFailed = ref(false)
-const currentSeconds = ref(0)
+const { isPlaying, isLoading, hasFailed, currentSeconds, progress, togglePlayback, seek } =
+  useBlobAudio(
+    () => props.fetchBlob(props.voiceNote.file_id),
+    () => props.voiceNote.duration_seconds
+  )
 
 /** One per player: two notes on a page must not share the clip that shows how far each has played. */
 const clipId = `voice-note-clip-${useId()}`
 const envelope = computed(() =>
   voiceNoteEnvelopePath(props.voiceNote.peaks ?? [], ENVELOPE_WIDTH, ENVELOPE_HEIGHT)
 )
-const progress = computed(() =>
-  props.voiceNote.duration_seconds > 0
-    ? Math.min(1, currentSeconds.value / props.voiceNote.duration_seconds)
-    : 0
-)
-
-/** Created on the first play only, so a page of notes loads no audio until one is listened to. */
-let audio = null
-let objectUrl = null
-/** Shared by every caller while the note downloads, so seeking early cannot fetch it twice. */
-let loading = null
-
-async function togglePlayback() {
-  if (isPlaying.value) {
-    audio.pause()
-    return
-  }
-
-  if (!audio && !(await load())) {
-    return
-  }
-
-  try {
-    await audio.play()
-  } catch (e) {
-    console.error('Failed to play the voice note:', e)
-    hasFailed.value = true
-  }
-}
-
-function load() {
-  loading ??= fetchAudio().finally(() => {
-    loading = null
-  })
-
-  return loading
-}
-
-async function fetchAudio() {
-  isLoading.value = true
-  try {
-    const blob = await props.fetchBlob(props.voiceNote.file_id)
-    objectUrl = URL.createObjectURL(blob)
-    audio = new Audio(objectUrl)
-    audio.addEventListener('play', () => (isPlaying.value = true))
-    audio.addEventListener('pause', () => (isPlaying.value = false))
-    audio.addEventListener('timeupdate', () => (currentSeconds.value = audio.currentTime))
-    audio.addEventListener('ended', () => {
-      isPlaying.value = false
-      currentSeconds.value = 0
-    })
-    return true
-  } catch (e) {
-    console.error('Failed to load the voice note:', e)
-    hasFailed.value = true
-    return false
-  } finally {
-    isLoading.value = false
-  }
-}
-
-async function seek(seconds) {
-  currentSeconds.value = seconds
-  if (!audio && !(await load())) {
-    return
-  }
-  audio.currentTime = seconds
-}
-
-onBeforeUnmount(() => {
-  audio?.pause()
-  if (objectUrl) {
-    URL.revokeObjectURL(objectUrl)
-  }
-})
 </script>
