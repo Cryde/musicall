@@ -18,7 +18,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInterface
 {
-    private const string PATTERN = '#^/u/([^/]+)/teacher$#';
+    // Its query (`?from=search`) changes nothing.
+    private const string PATTERN = '#^/u/([^/?]+)/teacher(?:\?.*)?$#';
     private const string CURRENCY = 'EUR';
 
     public function __construct(
@@ -88,13 +89,13 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
     private function description(Service $teacherProfile, array $parameters): string
     {
         $sentences = [$this->translator->trans('meta.teacher.description', $parameters)];
-        if (($cheapest = $this->cheapest($teacherProfile)) instanceof ServiceOffer) {
+        if (($cheapest = $teacherProfile->cheapestIn(OfferUnit::Lesson)) instanceof ServiceOffer) {
             $sentences[] = $this->translator->trans('meta.teacher.price', [
                 'price' => $this->money($cheapest->price),
                 'minutes' => (string) $cheapest->quantity,
             ]);
         }
-        if ($this->hasFreeTrial($teacherProfile)) {
+        if (TeachingDetails::of($teacherProfile)->hasFreeTrial()) {
             $sentences[] = $this->translator->trans('meta.teacher.free_trial');
         }
 
@@ -142,26 +143,6 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
     private function offer(int $cents, string $name): array
     {
         return ['@type' => 'Offer', 'name' => $name, 'price' => number_format($cents / 100, 2, '.', ''), 'priceCurrency' => self::CURRENCY];
-    }
-
-    /** The cheapest lesson, never a package: a package's price covers several lessons. */
-    private function cheapest(Service $teacherProfile): ?ServiceOffer
-    {
-        $cheapest = null;
-        foreach ($teacherProfile->offersIn(OfferUnit::Lesson) as $lesson) {
-            if (!$cheapest instanceof ServiceOffer || $lesson->price < $cheapest->price) {
-                $cheapest = $lesson;
-            }
-        }
-
-        return $cheapest;
-    }
-
-    private function hasFreeTrial(Service $teacherProfile): bool
-    {
-        $details = TeachingDetails::of($teacherProfile);
-
-        return $details->offersTrial && ($details->trialPrice ?? 0) === 0;
     }
 
     /** « 25 € » rather than « 25,00 € » when the price is a whole number. */

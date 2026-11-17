@@ -194,6 +194,19 @@ class Service implements ViewableInterface
         return array_values($this->offers->filter(static fn (ServiceOffer $offer): bool => $offer->unit === $unit)->toArray());
     }
 
+    /** The cheapest offer in the unit, as entered: a package is never compared with a lesson. */
+    public function cheapestIn(OfferUnit $unit): ?ServiceOffer
+    {
+        $cheapest = null;
+        foreach ($this->offersIn($unit) as $offer) {
+            if (!$cheapest instanceof ServiceOffer || $offer->price < $cheapest->price) {
+                $cheapest = $offer;
+            }
+        }
+
+        return $cheapest;
+    }
+
     public function addAvailability(ServiceAvailability $availability): self
     {
         if (!$this->availability->contains($availability)) {

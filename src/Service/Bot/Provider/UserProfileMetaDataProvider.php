@@ -9,7 +9,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserProfileMetaDataProvider implements PageMetaDataProviderInterface
 {
-    private const string PATTERN = '#^/u/([^/]+)$#';
+    // Its query changes nothing.
+    private const string PATTERN = '#^/u/([^/?]+)(?:\?.*)?$#';
 
     public function __construct(
         private UserRepository $userRepository,

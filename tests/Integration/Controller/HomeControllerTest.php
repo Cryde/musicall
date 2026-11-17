@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Controller;
 
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
@@ -214,6 +215,33 @@ class HomeControllerTest extends WebTestCase
         // The query is how the visitor arrived, not another page.
         $this->assertStringContainsString('<link rel="canonical" href="http://localhost/u/prof_shell/teacher"/>', $html);
         $this->assertStringContainsString('<script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","serviceType":"Cours de musique : Musique","url":"http://localhost/u/prof_shell/teacher","provider":{"@type":"Person","name":"Julien Roche","alternateName":"@prof_shell","url":"http://localhost/u/prof_shell","homeLocation":{"@type":"Place","name":"Bruxelles"}}}</script>', $html);
+    }
+
+    public function test_a_teacher_search_shell_names_its_instrument_and_city_and_keeps_them_in_its_canonical(): void
+    {
+        $client = static::createClient();
+        InstrumentFactory::new()->asBass()->create();
+
+        $client->request('GET', '/rechercher-un-professeur?radius=10&level=beginner&instrument=basse&lng=4.3517&lat=50.8503&location=Bruxelles', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('<title>Prof de basse à Bruxelles - MusicAll</title>', $html);
+        // The instrument and the city name a page of their own; the other filters refine it.
+        $this->assertStringContainsString('<link rel="canonical" href="http://localhost/rechercher-un-professeur?instrument=basse&amp;location=Bruxelles&amp;lat=50.8503&amp;lng=4.3517"/>', $html);
+        $this->assertStringContainsString('<link rel="alternate" hreflang="en" href="http://localhost/en/find-a-teacher?instrument=basse&amp;location=Bruxelles&amp;lat=50.8503&amp;lng=4.3517"/>', $html);
+    }
+
+    public function test_a_teacher_search_shell_without_a_landing_keeps_its_plain_canonical(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/rechercher-un-professeur?level=beginner&location=Bruxelles', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        $this->assertResponseIsSuccessful();
+        $html = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('<title>Trouver un prof de musique - MusicAll</title>', $html);
+        $this->assertStringContainsString('<link rel="canonical" href="http://localhost/rechercher-un-professeur"/>', $html);
     }
 
     public function test_an_english_teacher_page_shell_is_described_in_english(): void

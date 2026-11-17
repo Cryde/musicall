@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Locale;
 
 use App\Entity\PublicationSubCategory;
+use App\Model\Search\TeacherSearchLanding;
 use App\Repository\Forum\ForumRepository;
 use App\Repository\Forum\ForumTopicRepository;
 use App\Repository\PublicationRepository;
@@ -27,9 +28,10 @@ readonly class PageVersionsResolver
         '#^/(publications|cours)/category/[^/]+$#',
         '#^/publications/tag/[^/]+$#',
         '#^/photos/[^/]+$#',
-        '#^/rechercher-un-(musicien|professeur|guitariste|batteur|bassiste|chanteur|pianiste)$#',
+        '#^/rechercher-un-(musicien|guitariste|batteur|bassiste|chanteur|pianiste)$#',
         '#^/u/[^/]+(/teacher)?$#',
     ];
+    private const string TEACHER_SEARCH = '/rechercher-un-professeur';
     private const string PUBLICATION = '#^/(publications|cours)/([^/]+)$#';
     private const string FORUM_TOPIC = '#^/forums/topic/([^/]+)(/\d+)?$#';
     private const string FORUM = '#^/forums/([^/]+)$#';
@@ -79,7 +81,13 @@ readonly class PageVersionsResolver
             // in memory, so a `?page=` there names page 1.
             $page = $this->pageNumber($request);
 
-            return $versions !== null && $page > 1 ? $versions->onPage($page) : $versions;
+            return $versions !== null && $page > 1 ? $versions->withQuery(['page' => (string) $page]) : $versions;
+        }
+
+        if ($defaultPath === self::TEACHER_SEARCH) {
+            // Its instrument and city name a page of its own (« Prof de basse à Bruxelles »); the other filters do not.
+            return $this->inEveryLocale($defaultPath, $this->localizedPath->localeOf($path))
+                ->withQuery(TeacherSearchLanding::fromQuery($request->query->all())->query());
         }
 
         if (preg_match(self::PUBLICATION, $defaultPath, $matches) === 1) {

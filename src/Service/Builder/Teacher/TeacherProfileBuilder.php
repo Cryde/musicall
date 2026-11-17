@@ -115,7 +115,7 @@ readonly class TeacherProfileBuilder
      * @param Style[] $styles
      * @return PublicTeacherProfileStyle[]
      */
-    private function buildStyles(array $styles): array
+    public function buildStyles(array $styles): array
     {
         return array_values(array_map(function (Style $style): PublicTeacherProfileStyle {
             $dto = new PublicTeacherProfileStyle();

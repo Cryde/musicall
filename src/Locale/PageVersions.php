@@ -26,12 +26,21 @@ final readonly class PageVersions
         return $this->paths[$this->locale];
     }
 
-    /** The same versions, on page $page of a listing that pages through its URL. */
-    public function onPage(int $page): self
+    /**
+     * The same versions with a query naming a page of their own: page N of a listing that pages through its URL, or a
+     * search's instrument and city.
+     *
+     * @param array<string, string> $query
+     */
+    public function withQuery(array $query): self
     {
+        if ($query === []) {
+            return $this;
+        }
+
         return new self(
             $this->locale,
-            array_map(static fn (string $path): string => $path . '?page=' . $page, $this->paths),
+            array_map(static fn (string $path): string => $path . '?' . http_build_query($query), $this->paths),
             $this->defaultLocale,
         );
     }
