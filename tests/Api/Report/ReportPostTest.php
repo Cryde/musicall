@@ -35,6 +35,8 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Report\ReportFactory;
 use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceMediaFactory;
+use App\Tests\Factory\Service\ServiceWorkFactory;
+use App\Tests\Factory\Service\ServiceWorkImageFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserBlockFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -235,6 +237,43 @@ class ReportPostTest extends ApiTestCase
         $this->assertJsonEquals(self::NOT_FOUND);
     }
 
+    public function test_reports_a_work_of_a_service(): void
+    {
+        $reporter = $this->reporter();
+        $owner = UserFactory::new()->create(['username' => 'julien', 'email' => 'julien@test.com']);
+        $work = ServiceWorkFactory::new()->create([
+            'service' => ServiceFactory::new()->soundEngineering()->create(['user' => $owner]),
+            'title' => 'Satellites',
+            'credit' => 'Mona Lisa Overdrive, EP',
+            'year' => 2024,
+            'linkUrl' => 'https://example.com/satellites',
+            'mediaUrl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        ]);
+        ServiceWorkImageFactory::new()->create(['work' => $work]);
+
+        $this->report($reporter, 'service_work', (string) $work->id, 'inappropriate');
+
+        $this->assertNoContent();
+        $report = $this->onlyReport();
+        $this->assertSame(ReportTargetType::ServiceWork, $report->targetType);
+        $this->assertSame('Satellites Mona Lisa Overdrive, EP 2024 https://example.com/satellites https://www.youtube.com/watch?v=dQw4w9WgXcQ', $report->snapshotText);
+        $this->assertSame(['username' => 'julien', 'kind' => 'sound_engineering', 'image_count' => 1], $report->snapshotContext);
+    }
+
+    /** A draft is its owner's alone (#1406): nobody else reads its works, so nobody reports them. */
+    public function test_a_work_of_a_draft_is_not_found(): void
+    {
+        $reporter = $this->reporter();
+        $work = ServiceWorkFactory::new()->create([
+            'service' => ServiceFactory::new()->soundEngineering()->create(['status' => ServiceStatus::Draft]),
+        ]);
+
+        $this->report($reporter, 'service_work', (string) $work->id, 'inappropriate');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals(self::NOT_FOUND);
+    }
+
     public function test_reports_a_comment_on_a_wall_post(): void
     {
         $reporter = $this->reporter();
@@ -348,7 +387,7 @@ class ReportPostTest extends ApiTestCase
      */
     public static function uuidTargetTypes(): iterable
     {
-        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post', 'profile_post', 'profile_post_comment'] as $type) {
+        foreach (['user', 'announce', 'message', 'band_chat_message', 'profile_media', 'forum_post', 'profile_post', 'profile_post_comment', 'service_work'] as $type) {
             yield $type => [$type];
         }
     }

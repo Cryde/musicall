@@ -104,7 +104,8 @@
       "comment": "Commentaire",
       "publication": "Publication",
       "profile_post": "Post",
-      "profile_post_comment": "Commentaire de post"
+      "profile_post_comment": "Commentaire de post",
+      "service_work": "Réalisation"
     },
     "live_state": {
       "unchanged": "Inchangé",
@@ -135,7 +136,9 @@
       "profile_post": "un post de {label}",
       "any_profile_post": "un post",
       "profile_post_comment": "un commentaire sur un post de {label}",
-      "any_profile_post_comment": "un commentaire sur un post"
+      "any_profile_post_comment": "un commentaire sur un post",
+      "service_work": "une réalisation de {label}",
+      "any_service_work": "une réalisation"
     },
     "link": {
       "private_conversation": "Conversation privée",

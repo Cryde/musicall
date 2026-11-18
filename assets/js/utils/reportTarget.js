@@ -4,6 +4,7 @@
  * The reason and type values mirror ReportReason and ReportTargetType on the server.
  */
 
+import { SERVICE_KINDS } from '../constants/serviceKinds.js'
 import { i18n } from '../i18n/index.js'
 
 // Labels are getters so they are translated when shown, in whatever language is active then.
@@ -36,7 +37,8 @@ const TARGET_TYPE_LABEL_KEYS = {
   comment: 'shared.report.target_type.comment',
   publication: 'shared.report.target_type.publication',
   profile_post: 'shared.report.target_type.profile_post',
-  profile_post_comment: 'shared.report.target_type.profile_post_comment'
+  profile_post_comment: 'shared.report.target_type.profile_post_comment',
+  service_work: 'shared.report.target_type.service_work'
 }
 
 const LIVE_STATES = {
@@ -111,6 +113,10 @@ export function reportSubject(type, label) {
       return label
         ? t('shared.report.subject.profile_post_comment', { label })
         : t('shared.report.subject.any_profile_post_comment')
+    case 'service_work':
+      return label
+        ? t('shared.report.subject.service_work', { label })
+        : t('shared.report.subject.any_service_work')
     case 'band_chat_message':
       return label
         ? t('shared.report.subject.band_chat_message', { label })
@@ -180,6 +186,11 @@ export function reportContentLink(report) {
               query: { voir: 'medias' }
             }
       )
+    case 'service_work': {
+      // The page of the kind the work belongs to, where its « Réalisations » are.
+      const page = SERVICE_KINDS[context.kind]?.page
+      return context.username && page ? linkTo(page(context.username)) : noLink()
+    }
     case 'forum_post':
       return context.topic_slug
         ? linkTo({

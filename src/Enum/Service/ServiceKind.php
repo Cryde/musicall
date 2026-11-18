@@ -65,6 +65,7 @@ enum ServiceKind: string implements TranslatableInterface
                 ServicePart::Description,
                 ServicePart::Specialities,
                 ServicePart::BeforeAfter,
+                ServicePart::Works,
                 ServicePart::Offers,
                 ServicePart::Places,
                 ServicePart::Gear,

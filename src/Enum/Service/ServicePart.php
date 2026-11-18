@@ -27,6 +27,7 @@ enum ServicePart: string
     case Styles = 'styles';
     case Turnaround = 'turnaround';
     case Formats = 'formats';
+    case Works = 'works';
 
     public function isFilledIn(Service $service): bool
     {
@@ -48,6 +49,7 @@ enum ServicePart: string
             self::Styles => !$service->styles->isEmpty(),
             self::Turnaround => SoundEngineeringDetails::of($service)->turnaroundDays !== null,
             self::Formats => SoundEngineeringDetails::of($service)->formats !== [],
+            self::Works => !$service->works->isEmpty(),
         };
     }
 }

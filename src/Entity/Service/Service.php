@@ -127,6 +127,15 @@ class Service implements ViewableInterface
     #[ORM\OneToMany(targetEntity: ServiceAudio::class, mappedBy: 'service', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $audio;
 
+    /**
+     * « Réalisations » (#1407), for a kind that has them.
+     *
+     * @var Collection<int, ServiceWork>
+     */
+    #[ORM\OneToMany(targetEntity: ServiceWork::class, mappedBy: 'service', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
+    public Collection $works;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $creationDatetime;
 
@@ -146,6 +155,7 @@ class Service implements ViewableInterface
         $this->places = new ArrayCollection();
         $this->links = new ArrayCollection();
         $this->audio = new ArrayCollection();
+        $this->works = new ArrayCollection();
         $this->creationDatetime = new DateTimeImmutable();
     }
 
@@ -287,6 +297,20 @@ class Service implements ViewableInterface
     public function audioOn(BeforeAfterSide $side): ?ServiceAudio
     {
         return $this->audio->findFirst(static fn (int $key, ServiceAudio $audio): bool => $audio->side === $side);
+    }
+
+    public function work(string $id): ?ServiceWork
+    {
+        return $this->works->findFirst(static fn (int $key, ServiceWork $work): bool => $work->id === $id);
+    }
+
+    /** @return list<ServiceWork> by position: the mapping's order is not applied to a collection already loaded */
+    public function orderedWorks(): array
+    {
+        $works = $this->works->toArray();
+        usort($works, static fn (ServiceWork $a, ServiceWork $b): int => $a->position <=> $b->position);
+
+        return $works;
     }
 
     /** The city a page title names: the member's own place first, then any place, then the profile's city. */

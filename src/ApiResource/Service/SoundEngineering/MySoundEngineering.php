@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Service\Edit\MyServiceOffer;
 use App\ApiResource\Service\Edit\MyServicePlace;
 use App\ApiResource\Service\View\ServiceAudioView;
+use App\ApiResource\Service\View\ServiceWorkView;
 use App\ApiResource\Teacher\Public\TeacherProfileStyle;
 use App\ApiResource\Teacher\TeacherProfileMedia;
 use App\Entity\Service\SoundEngineeringDetails;
@@ -113,6 +114,10 @@ class MySoundEngineering
     /** @var ServiceAudioView[] */
     #[ApiProperty(writable: false, genId: false)]
     public array $beforeAfter = [];
+
+    /** @var ServiceWorkView[] « Réalisations » (#1407), each written through its own endpoint */
+    #[ApiProperty(writable: false, genId: false)]
+    public array $works = [];
 
     #[Assert\Callback]
     public function validateOfferUnits(ExecutionContextInterface $context): void

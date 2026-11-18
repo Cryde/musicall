@@ -17,6 +17,7 @@ enum ReportTargetType: string
     case Publication = 'publication';
     case ProfilePost = 'profile_post';
     case ProfilePostComment = 'profile_post_comment';
+    case ServiceWork = 'service_work';
 
     /**
      * One spelling per target, so a repeat and a moderator's decision find every report on it:
@@ -54,7 +55,7 @@ enum ReportTargetType: string
     {
         return match ($this) {
             self::User, self::Announce, self::ProfileMedia, self::ProfilePost,
-            self::ProfilePostComment => 'username',
+            self::ProfilePostComment, self::ServiceWork => 'username',
             self::ForumPost => 'topic_title',
             self::Comment, self::Publication => 'publication_title',
             self::BandChatMessage => 'band_space_name',

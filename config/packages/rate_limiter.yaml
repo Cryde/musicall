@@ -152,6 +152,12 @@ framework:
             limit: 10
             interval: '10 minutes'
             cache_pool: "rate_limiter.cache"
+        # each image is decoded and re-encoded, 12 a work at most (#1407)
+        service_work_image_upload:
+            policy: sliding_window
+            limit: 60
+            interval: '10 minutes'
+            cache_pool: "rate_limiter.cache"
         # Keyed on the token, not on the caller's address: a calendar client polls from its vendor's
         # shared fetcher pool, so a per IP bucket would let one band's subscribers throttle another's.
         # 60 an hour against the most aggressive legitimate configuration there is, Apple Calendar at

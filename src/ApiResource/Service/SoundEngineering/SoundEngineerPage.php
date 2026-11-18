@@ -11,6 +11,7 @@ use App\ApiResource\Musician\PublicMusicianProfileInstrument;
 use App\ApiResource\Service\View\ServiceAudioView;
 use App\ApiResource\Service\View\ServiceOfferView;
 use App\ApiResource\Service\View\ServicePlaceView;
+use App\ApiResource\Service\View\ServiceWorkView;
 use App\ApiResource\Teacher\Public\TeacherProfileStyle;
 use App\ApiResource\Teacher\TeacherProfileMedia;
 use App\State\Provider\Service\SoundEngineerPageProvider;
@@ -100,4 +101,12 @@ class SoundEngineerPage
      */
     #[ApiProperty(genId: false)]
     public array $beforeAfter = [];
+
+    /**
+     * « Réalisations » (#1407), in the owner's order.
+     *
+     * @var ServiceWorkView[]
+     */
+    #[ApiProperty(genId: false)]
+    public array $works = [];
 }

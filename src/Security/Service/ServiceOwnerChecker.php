@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Service;
 
 use App\Entity\Service\Service;
+use App\Entity\Service\ServiceWork;
 use App\Entity\User;
 use App\Enum\Service\ServiceKind;
 use App\Enum\Service\ServicePart;
@@ -48,5 +49,17 @@ readonly class ServiceOwnerChecker
         }
 
         return $service;
+    }
+
+    /** A work of their own service (#1407): a work of another service is not found, even the same member's. */
+    public function checkOwnerOfWork(string $serviceId, string $workId, User $user): ServiceWork
+    {
+        $service = $this->checkOwnerWithPart($serviceId, $user, ServicePart::Works);
+        $work = $service->work($workId);
+        if (!$work instanceof ServiceWork) {
+            throw new NotFoundHttpException('service.work.not_found');
+        }
+
+        return $work;
     }
 }

@@ -47,6 +47,7 @@ readonly class MySoundEngineeringBuilder
 
         $resource->media = $this->mediaResourceBuilder->buildList($service->media->toArray());
         $resource->beforeAfter = $this->serviceViewBuilder->beforeAfter($service);
+        $resource->works = $this->serviceViewBuilder->works($service);
 
         return $resource;
     }

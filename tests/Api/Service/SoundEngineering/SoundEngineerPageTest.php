@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\Service\SoundEngineering;
 
 use App\Entity\Service\ServiceAudio;
+use App\Enum\Musician\MediaPlatform;
 use App\Enum\Service\BeforeAfterSide;
 use App\Enum\Service\OfferUnit;
 use App\Enum\Service\ServiceStatus;
@@ -15,6 +16,8 @@ use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceMediaFactory;
 use App\Tests\Factory\Service\ServiceOfferFactory;
 use App\Tests\Factory\Service\ServicePlaceFactory;
+use App\Tests\Factory\Service\ServiceWorkFactory;
+use App\Tests\Factory\Service\ServiceWorkImageFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -55,6 +58,21 @@ class SoundEngineerPageTest extends ApiTestCase
         $media = ServiceMediaFactory::new()->create(['service' => $service, 'title' => 'Jardin Public, live session']);
         $after = $this->storeAudio($service, BeforeAfterSide::After, 'Mixé et masterisé', 'Mona Lisa Overdrive, Satellites');
         $before = $this->storeAudio($service, BeforeAfterSide::Before, 'Prise de répète', null);
+        $live = ServiceWorkFactory::new()->create(['service' => $service, 'title' => 'Live au Botanique', 'position' => 1]);
+        $satellites = ServiceWorkFactory::new()->create([
+            'service' => $service,
+            'title' => 'Satellites',
+            'credit' => 'Mona Lisa Overdrive, EP',
+            'year' => 2024,
+            'linkUrl' => 'https://monalisaoverdrive.bandcamp.com/album/satellites',
+            'mediaPlatform' => MediaPlatform::YOUTUBE,
+            'mediaUrl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'mediaEmbedId' => 'dQw4w9WgXcQ',
+            'mediaTitle' => 'Satellites, the clip',
+            'position' => 0,
+        ]);
+        $back = ServiceWorkImageFactory::new()->create(['work' => $satellites, 'position' => 1]);
+        $cover = ServiceWorkImageFactory::new()->create(['work' => $satellites, 'position' => 0]);
 
         $this->client->request('GET', '/api/user/profile/julien/sound-engineer');
 
@@ -107,6 +125,29 @@ class SoundEngineerPageTest extends ApiTestCase
             'before_after' => [
                 ['@type' => 'ServiceAudioView', 'audio_id' => $before->id, 'side' => 'before', 'title' => 'Prise de répète', 'credit' => null, 'duration_seconds' => 42, 'peaks' => [0, 128, 255]],
                 ['@type' => 'ServiceAudioView', 'audio_id' => $after->id, 'side' => 'after', 'title' => 'Mixé et masterisé', 'credit' => 'Mona Lisa Overdrive, Satellites', 'duration_seconds' => 42, 'peaks' => [0, 128, 255]],
+            ],
+            // In the owner's order, each work's images too.
+            'works' => [
+                [
+                    '@type' => 'ServiceWorkView',
+                    'id' => $satellites->id,
+                    'title' => 'Satellites',
+                    'credit' => 'Mona Lisa Overdrive, EP',
+                    'year' => 2024,
+                    'link_url' => 'https://monalisaoverdrive.bandcamp.com/album/satellites',
+                    'media' => [
+                        '@type' => 'ServiceWorkMedia',
+                        'platform' => 'youtube',
+                        'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                        'embed_id' => 'dQw4w9WgXcQ',
+                        'title' => 'Satellites, the clip',
+                    ],
+                    'images' => [
+                        ['@type' => 'ServiceWorkImageView', 'id' => $cover->id, 'url' => '/api/services/' . $service->id . '/works/' . $satellites->id . '/images/' . $cover->id],
+                        ['@type' => 'ServiceWorkImageView', 'id' => $back->id, 'url' => '/api/services/' . $service->id . '/works/' . $satellites->id . '/images/' . $back->id],
+                    ],
+                ],
+                ['@type' => 'ServiceWorkView', 'id' => $live->id, 'title' => 'Live au Botanique', 'credit' => null, 'year' => null, 'link_url' => null, 'media' => null, 'images' => []],
             ],
         ]);
     }
@@ -169,6 +210,7 @@ class SoundEngineerPageTest extends ApiTestCase
             'gear' => [],
             'media' => [],
             'before_after' => [],
+            'works' => [],
         ]);
     }
 
