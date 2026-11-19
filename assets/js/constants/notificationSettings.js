@@ -8,6 +8,7 @@ export const NOTIFICATION_DEFAULTS = Object.freeze({
   forum_reply: true,
   marketing: false,
   activity_reminder: true,
+  band_agenda_reminder: true,
   show_online_presence: true,
   show_read_receipts: true,
   push_message_received: true,
@@ -71,6 +72,7 @@ export const NOTIFICATION_GROUPS = Object.freeze([
       {
         labelKey: 'profile.settings.notifications.rows.band_agenda_reminder.label',
         descriptionKey: 'profile.settings.notifications.rows.band_agenda_reminder.description',
+        email: 'band_agenda_reminder',
         push: 'push_band_agenda_reminder'
       },
       {

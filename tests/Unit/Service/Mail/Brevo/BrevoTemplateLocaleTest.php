@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Service\Mail\Brevo;
 
+use App\Service\Mail\Brevo\BandSpace\AgendaAvailabilityReminderEmail;
 use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationExistingUserEmail;
 use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationNewUserEmail;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
@@ -22,6 +23,7 @@ use Symfony\Component\Messenger\Envelope as MessengerEnvelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\RawMessage;
+use Symfony\Component\Translation\IdentityTranslator;
 
 /** The Brevo template each email picks for its recipient's locale: the ids are the ones in the Brevo account. */
 class BrevoTemplateLocaleTest extends TestCase
@@ -70,6 +72,11 @@ class BrevoTemplateLocaleTest extends TestCase
             static fn (MailerInterface $mailer, string $locale) => new BandSpaceInvitationExistingUserEmail($mailer)
                 ->send('to@example.com', 'jane', 'The Rockers', 'https://www.musicall.com/invitations', $locale),
             '13', '23',
+        ];
+        yield 'band space availability reminder' => [
+            static fn (MailerInterface $mailer, string $locale) => new AgendaAvailabilityReminderEmail($mailer, new IdentityTranslator())
+                ->send('to@example.com', 'jane', 'john', 'The Rockers', 'Gig', 'Tuesday, January 15, 2030', 'https://www.musicall.com/band/1/agenda', $locale),
+            '25', '26',
         ];
         yield 'welcome' => [
             static fn (MailerInterface $mailer, string $locale) => new WelcomeEmail($mailer)

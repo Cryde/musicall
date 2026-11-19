@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\AgendaAvailabilityReminderMailer;
 use App\Service\BandSpace\AgendaOccurrenceLocator;
 use App\Service\Builder\BandSpace\AgendaEntryAvailabilityBuilder;
 use App\Service\Notification\NotificationCreator;
@@ -24,7 +25,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
  * they can make one date. The notification is the action itself, so it is created here rather than
  * by a listener.
  *
- * The author and the admins only, once every twelve hours per date: it pushes to phones.
+ * The author and the admins only, once every twelve hours per date: it pushes to phones and emails.
  *
  * @implements ProcessorInterface<AgendaEntryAvailabilityReminder, void>
  */
@@ -35,6 +36,7 @@ readonly class AgendaEntryAvailabilityRemindProcessor implements ProcessorInterf
         private AgendaOccurrenceLocator $occurrenceLocator,
         private AgendaEntryAvailabilityBuilder $availabilityBuilder,
         private NotificationCreator $notificationCreator,
+        private AgendaAvailabilityReminderMailer $reminderMailer,
         private RateLimiterFactoryInterface $agendaAvailabilityReminderLimiter,
         private Security $security,
     ) {
@@ -89,5 +91,7 @@ readonly class AgendaEntryAvailabilityRemindProcessor implements ProcessorInterf
             'actor_id' => (string) $user->id,
             'actor_username' => $user->username,
         ]);
+
+        $this->reminderMailer->send($recipients, $user, $bandSpace, $entry, $occurrenceDate, $occurrenceStart);
     }
 }

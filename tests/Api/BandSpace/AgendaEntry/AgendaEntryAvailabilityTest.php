@@ -21,6 +21,7 @@ use App\Mercure\MercureTopic;
 use App\Messenger\SendPushNotification;
 use App\Messenger\SendPushNotificationHandler;
 use App\Service\Builder\BandSpace\AgendaEntryAvailabilityBuilder;
+use App\Service\Mail\Brevo\BandSpace\AgendaAvailabilityReminderEmail;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\RecordingFirebaseMessaging;
@@ -38,6 +39,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
+use Symfony\Component\Mime\Header\ParameterizedHeader;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -259,6 +261,97 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
             static fn (array $multicast): array => $multicast['tokens'],
             self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts,
         ));
+    }
+
+    /**
+     * The email (#1418) reaches the members the reminder targets, unless they turned its switch off,
+     * with the date written out in their own language.
+     */
+    public function test_the_reminder_emails_the_pending_members_who_keep_the_email_on(): void
+    {
+        [$space, $author, , $yes, $absent] = $this->band();
+        $muted = BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => UserFactory::new()->create(['username' => 'muet', 'email' => 'muet@example.com'])])->create();
+        $mutedPreference = new UserNotificationPreference();
+        $mutedPreference->bandAgendaReminder = false;
+        $muted->user->notificationPreference = $mutedPreference;
+        \Zenstruck\Foundry\Persistence\save($muted->user);
+        // A fixed date, so the written out date and its winter offset are known.
+        $entry = $this->entry($space, $author, '2030-01-15');
+        $this->answer($entry, '2030-01-15', $yes, AvailabilityAnswer::Yes);
+        MemberAbsenceFactory::new(['member' => $absent, 'startDate' => new DateTimeImmutable('2030-01-15'), 'endDate' => new DateTimeImmutable('2030-01-15')])->create();
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', $this->url($space, $entry) . '/remind', [], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertEmailCount(1);
+        $email = $this->getMailerMessage();
+        $this->assertEmailAddressContains($email, 'To', 'attente@example.com');
+        $this->assertEmailHeaderSame($email, 'templateId', '25');
+        $this->assertEmailTextBodyContains($email, 'auteur demande tes disponibilités pour Concert au Bota');
+        $params = $email->getHeaders()->get('params');
+        $this->assertInstanceOf(ParameterizedHeader::class, $params);
+        $this->assertSame([
+            'username' => 'attente',
+            'actor_username' => 'auteur',
+            'band_space_name' => 'Les Rockeurs',
+            'entry_title' => 'Concert au Bota',
+            'occurrence_label' => 'mardi 15 janvier 2030 à 21:00',
+            'agenda_url' => 'http://musicall.test/band/' . $space->id . '/agenda?entry=' . $entry->id . '&occurrence=2030-01-15',
+        ], $params->getParameters());
+    }
+
+    /** The date reminded, not the start of the series, in the member's language and summer time. */
+    public function test_the_reminder_email_of_a_series_names_the_occurrence(): void
+    {
+        $space = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        $author = UserFactory::new()->create(['username' => 'auteur', 'email' => 'auteur@example.com']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $author])->create();
+        $member = UserFactory::new()->create(['username' => 'jane', 'email' => 'jane@example.com', 'locale' => 'en']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $space,
+            'creator' => $author,
+            'title' => 'Rehearsal',
+            'eventDatetime' => new DateTimeImmutable('2030-07-02 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2030-08-31'),
+        ])->create();
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', $this->url($space, $entry) . '/remind', ['occurrence_date' => '2030-07-16'], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertEmailCount(1);
+        $email = $this->getMailerMessage();
+        $this->assertEmailAddressContains($email, 'To', 'jane@example.com');
+        $this->assertEmailHeaderSame($email, 'templateId', '26');
+        $this->assertEmailTextBodyContains($email, 'auteur is asking whether you are free for Rehearsal');
+        $params = $email->getHeaders()->get('params');
+        $this->assertInstanceOf(ParameterizedHeader::class, $params);
+        $this->assertSame([
+            'username' => 'jane',
+            'actor_username' => 'auteur',
+            'band_space_name' => 'The Rockers',
+            'entry_title' => 'Rehearsal',
+            'occurrence_label' => "Tuesday, July 16, 2030 at 8:00\u{202F}PM",
+            'agenda_url' => 'http://musicall.test/band/' . $space->id . '/agenda?entry=' . $entry->id . '&occurrence=2030-07-16',
+        ], $params->getParameters());
+    }
+
+    public function test_a_failing_email_does_not_fail_the_reminder(): void
+    {
+        [$space, $author] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $email = $this->createMock(AgendaAvailabilityReminderEmail::class);
+        // Each pending member is still tried after the first failure.
+        $email->expects($this->exactly(3))->method('send')->willThrowException(new \RuntimeException('Brevo is down'));
+        self::getContainer()->set(AgendaAvailabilityReminderEmail::class, $email);
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', $this->url($space, $entry) . '/remind', [], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
 
     public function test_a_member_who_is_neither_author_nor_admin_cannot_remind(): void

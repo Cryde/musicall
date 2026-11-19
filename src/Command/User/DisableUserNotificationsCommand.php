@@ -63,6 +63,7 @@ class DisableUserNotificationsCommand extends Command
         $preference->forumReply = false;
         $preference->marketing = false;
         $preference->activityReminder = false;
+        $preference->bandAgendaReminder = false;
 
         $this->entityManager->flush();
 

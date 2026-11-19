@@ -18,6 +18,7 @@ band_space.availability.already_reminded: "Members have already been reminded ab
 band_space.availability.date_past: "This date has passed, availability can no longer change"
 band_space.availability.not_requested: "Availability is not requested for this event"
 band_space.availability.remind_forbidden: "Only the author of the event or an admin can remind members"
+band_space.availability.reminder_email_text: "{actor} is asking whether you are free for {entry}"
 band_space.chat.attachment_limit_reached: "This message already references {max} items and cannot hold any more."
 band_space.chat.attachment_not_found: "Item not found"
 band_space.chat.delete_forbidden: "Only the author or an admin can delete this message"

@@ -63,6 +63,7 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
         $this->assertFalse($preference->forumReply);
         $this->assertFalse($preference->marketing);
         $this->assertFalse($preference->activityReminder);
+        $this->assertFalse($preference->bandAgendaReminder);
     }
 
     public function test_command_updates_existing_preference_to_all_disabled(): void
@@ -97,5 +98,6 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
         $this->assertFalse($preference->forumReply);
         $this->assertFalse($preference->marketing);
         $this->assertFalse($preference->activityReminder);
+        $this->assertFalse($preference->bandAgendaReminder);
     }
 }
