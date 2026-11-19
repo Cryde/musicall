@@ -11,26 +11,33 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Notification\Notification;
 use App\Entity\User;
+use App\Entity\User\UserNotificationPreference;
 use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\AvailabilityAnswer;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Mercure\MercureTopic;
+use App\Messenger\SendPushNotification;
+use App\Messenger\SendPushNotificationHandler;
 use App\Service\Builder\BandSpace\AgendaEntryAvailabilityBuilder;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Double\RecordingFirebaseMessaging;
 use App\Tests\Double\RecordingHub;
 use App\Tests\Factory\BandSpace\AgendaEntryAvailabilityFactory;
 use App\Tests\Factory\BandSpace\AgendaEntryFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\MemberAbsenceFactory;
+use App\Tests\Factory\User\DeviceTokenFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -219,6 +226,39 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
             'actor_id' => (string) $author->id,
             'actor_username' => 'auteur',
         ], $notifications[0]->payload);
+    }
+
+    /**
+     * A reminder sits behind its own push switch (#1419): turning it off silences the reminder, while
+     * turning off new dates does not.
+     */
+    public function test_a_reminder_push_follows_the_reminder_switch_not_the_agenda_one(): void
+    {
+        [$space, $author, , $reminderOff, , $agendaOff] = $this->band();
+        $entry = $this->entry($space, $author, self::day(10));
+        $reminderOffPreference = new UserNotificationPreference();
+        $reminderOffPreference->user = $reminderOff->user;
+        $reminderOffPreference->pushBandAgendaReminder = false;
+        \Zenstruck\Foundry\Persistence\save($reminderOffPreference);
+        $agendaOffPreference = new UserNotificationPreference();
+        $agendaOffPreference->user = $agendaOff->user;
+        $agendaOffPreference->pushBandAgenda = false;
+        \Zenstruck\Foundry\Persistence\save($agendaOffPreference);
+        DeviceTokenFactory::new()->create(['user' => $reminderOff->user]);
+        $agendaOffPhone = DeviceTokenFactory::new()->create(['user' => $agendaOff->user]);
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', $this->url($space, $entry) . '/remind', [], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $handler = self::getContainer()->get(SendPushNotificationHandler::class);
+        foreach ($this->queuedPushes() as $push) {
+            $handler($push);
+        }
+        $this->assertSame([[$agendaOffPhone->token]], array_map(
+            static fn (array $multicast): array => $multicast['tokens'],
+            self::getContainer()->get(RecordingFirebaseMessaging::class)->multicasts,
+        ));
     }
 
     public function test_a_member_who_is_neither_author_nor_admin_cannot_remind(): void
@@ -734,6 +774,15 @@ class AgendaEntryAvailabilityTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $left, 'status' => MembershipStatus::Left])->create();
 
         return [$space, $author, $authorMembership, ...$members];
+    }
+
+    /** @return list<SendPushNotification> */
+    private function queuedPushes(): array
+    {
+        $transport = self::getContainer()->get('messenger.transport.async');
+        \assert($transport instanceof InMemoryTransport);
+
+        return array_values(array_map(static fn (Envelope $envelope): object => $envelope->getMessage(), $transport->getSent()));
     }
 
     private function entry(BandSpace $space, User $author, string $day): AgendaEntry

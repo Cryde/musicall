@@ -82,6 +82,10 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $pushBandAgenda = true;
 
+    /** « Relancer » on a date (#1419): a direct ask, so its own switch, apart from new dates. */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $pushBandAgendaReminder = true;
+
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $pushBandFinance = true;
 

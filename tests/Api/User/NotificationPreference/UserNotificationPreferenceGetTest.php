@@ -48,6 +48,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'push_band_mention' => true,
             'push_band_tasks' => true,
             'push_band_agenda' => true,
+            'push_band_agenda_reminder' => true,
             'push_band_finance' => true,
             'push_band_membership' => true,
         ]);
@@ -70,6 +71,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
         $preference->forumReply = false;
         $preference->marketing = true;
         $preference->activityReminder = false;
+        $preference->pushBandAgendaReminder = false;
         $user->notificationPreference = $preference;
         \Zenstruck\Foundry\Persistence\save($user);
 
@@ -98,6 +100,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'push_band_mention' => true,
             'push_band_tasks' => true,
             'push_band_agenda' => true,
+            'push_band_agenda_reminder' => false,
             'push_band_finance' => true,
             'push_band_membership' => true,
         ]);

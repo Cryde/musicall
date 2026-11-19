@@ -72,6 +72,8 @@ class UserNotificationPreferenceEdit
 
     public bool $pushBandAgenda = true;
 
+    public bool $pushBandAgendaReminder = true;
+
     public bool $pushBandFinance = true;
 
     public bool $pushBandMembership = true;
