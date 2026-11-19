@@ -67,7 +67,6 @@ const MIGRATED_PATHS = [
   'components/Teacher/',
   'components/User/',
   'components/publication/',
-  'components/settings/',
   'views/BandSpace/Agenda.vue',
   'views/BandSpace/Chat.vue',
   'views/BandSpace/Files.vue',

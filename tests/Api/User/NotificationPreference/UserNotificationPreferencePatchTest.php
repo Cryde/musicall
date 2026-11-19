@@ -55,6 +55,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'push_band_mention' => true,
             'push_band_tasks' => true,
             'push_band_agenda' => true,
+            'push_band_agenda_reminder' => true,
             'push_band_finance' => true,
             'push_band_membership' => true,
         ]);
@@ -111,6 +112,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'push_band_mention' => true,
             'push_band_tasks' => true,
             'push_band_agenda' => true,
+            'push_band_agenda_reminder' => true,
             'push_band_finance' => true,
             'push_band_membership' => true,
         ]);
@@ -138,6 +140,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $preference->pushBandMention = false;
         $preference->pushBandTasks = false;
         $preference->pushBandAgenda = false;
+        $preference->pushBandAgendaReminder = false;
         $preference->pushBandFinance = false;
         $preference->pushBandMembership = false;
         $user->notificationPreference = $preference;
@@ -171,6 +174,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'push_band_mention' => false,
             'push_band_tasks' => false,
             'push_band_agenda' => false,
+            'push_band_agenda_reminder' => false,
             'push_band_finance' => false,
             'push_band_membership' => false,
         ]);
@@ -182,6 +186,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $this->assertFalse($stored->publicationVote);
         $this->assertTrue($stored->marketing);
         $this->assertFalse($stored->pushBandMembership);
+        $this->assertFalse($stored->pushBandAgendaReminder);
     }
 
     public function test_patch_notification_preferences_updates_all_fields(): void
@@ -211,6 +216,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'push_band_mention' => true,
             'push_band_tasks' => true,
             'push_band_agenda' => true,
+            'push_band_agenda_reminder' => false,
             'push_band_finance' => true,
             'push_band_membership' => true,
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -238,6 +244,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'push_band_mention' => true,
             'push_band_tasks' => true,
             'push_band_agenda' => true,
+            'push_band_agenda_reminder' => false,
             'push_band_finance' => true,
             'push_band_membership' => true,
         ]);
@@ -250,6 +257,8 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $this->assertFalse($stored->pushBandChat);
         $this->assertFalse($stored->pushModeration);
         $this->assertTrue($stored->pushBandMention);
+        $this->assertTrue($stored->pushBandAgenda);
+        $this->assertFalse($stored->pushBandAgendaReminder);
     }
 
     public function test_patch_notification_preferences_requires_authentication(): void

@@ -29,6 +29,7 @@ final class UserNotificationPreferenceMapper
         'pushBandMention',
         'pushBandTasks',
         'pushBandAgenda',
+        'pushBandAgendaReminder',
         'pushBandFinance',
         'pushBandMembership',
     ];

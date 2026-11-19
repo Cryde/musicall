@@ -18,6 +18,7 @@ enum PushCategory: string
     case BandMention = 'band_mention';
     case BandTasks = 'band_tasks';
     case BandAgenda = 'band_agenda';
+    case BandAgendaReminder = 'band_agenda_reminder';
     case BandFinance = 'band_finance';
     case BandMembership = 'band_membership';
     /** Behind no switch: a user cannot undo a band deletion they never heard about. */
@@ -34,6 +35,7 @@ enum PushCategory: string
             self::BandMention => $preference->pushBandMention,
             self::BandTasks => $preference->pushBandTasks,
             self::BandAgenda => $preference->pushBandAgenda,
+            self::BandAgendaReminder => $preference->pushBandAgendaReminder,
             self::BandFinance => $preference->pushBandFinance,
             self::BandMembership => $preference->pushBandMembership,
             self::Always => true,

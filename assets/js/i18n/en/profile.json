@@ -142,61 +142,26 @@
     },
     "notifications": {
       "title": "Notifications",
-      "section_communication": "Communication",
-      "section_updates": "Updates",
-      "section_reminders": "Reminders",
-      "section_chats": "Chats",
-      "section_push": "Mobile notifications",
-      "section_marketing": "Marketing",
-      "email": {
-        "message_received": {
-          "label": "Private messages",
-          "description": "Get an email when a user sends you a message"
-        },
-        "publication_comment": {
-          "label": "Comments on my publications",
-          "description": "Get an email when a user comments on one of your publications"
-        },
-        "publication_vote": {
-          "label": "Votes on my publications",
-          "description": "Get a notification when your publications receive up votes"
-        },
-        "forum_reply": {
-          "label": "Forum replies",
-          "description": "Get an email when a user replies to one of your forum topics"
-        },
-        "site_news": {
-          "label": "Site news",
-          "description": "Stay up to date with new features and important announcements"
-        },
-        "weekly_recap": {
-          "label": "Weekly summary",
-          "description": "Get a weekly summary of activity on the site"
-        },
-        "activity_reminder": {
-          "label": "Activity reminders",
-          "description": "Get reminders about your ads, your profile and your activity"
-        },
-        "show_online_presence": {
-          "label": "Show me as online",
-          "description": "Members of your bands and the people you message can see when you have your chat with them open"
-        },
-        "show_read_receipts": {
-          "label": "Read receipts",
-          "description": "The people you message see when you have read their messages. Turned off, you do not see theirs either."
-        },
-        "marketing": {
-          "label": "Offers and promotions",
-          "description": "Get information about special offers and promotions"
-        }
-      },
-      "push_help": "In the MusicAll app, once notifications are allowed on your phone. You are always told when a Band Space is scheduled for deletion.",
+      "column_email": "Email",
+      "column_push": "App",
+      "column_email_help": "Sent to your account's email address.",
+      "column_push_help": "A notification on your phone, in the MusicAll app, once notifications are allowed. You are always told when a Band Space is scheduled for deletion.",
+      "column_help_aria_label": "What does the {column} column mean?",
+      "bell": "Bell",
+      "push_get_app": "Don't have the app yet?",
+      "email_aria_label": "{label} by email",
       "push_aria_label": "{label} on your phone",
-      "push": {
-        "message_received": {
-          "label": "Private messages",
-          "description": "When a user sends you a message"
-        },
+      "bell_aria_label": "{label} in the bell",
+      "groups": {
+        "band_space": "Band Space",
+        "messages": "Private messages",
+        "publications": "Publications and profile",
+        "forum": "Forum",
+        "moderation": "Moderation",
+        "musicall": "MusicAll",
+        "privacy": "Privacy"
+      },
+      "rows": {
         "band_chat": {
           "label": "Band chat",
           "description": "Every new message in your bands' chat"
@@ -210,8 +175,12 @@
           "description": "A task assigned to you, a comment on a task you follow"
         },
         "band_agenda": {
-          "label": "Calendar",
+          "label": "Calendar: new dates",
           "description": "A new event in your bands' calendar"
+        },
+        "band_agenda_reminder": {
+          "label": "Calendar: availability reminder",
+          "description": "When your band asks again whether you are free on a date"
         },
         "band_finance": {
           "label": "Finances",
@@ -221,17 +190,49 @@
           "label": "Members and invitations",
           "description": "Invitations, members joining and leaving, role changes"
         },
+        "message_received": {
+          "label": "New message",
+          "description": "When a user sends you a message"
+        },
         "publication_comment": {
           "label": "Comments",
           "description": "A comment on your publications or your posts, a reply to your comments"
         },
+        "publication_vote": {
+          "label": "Votes",
+          "description": "In the bell only, when your publications receive up votes"
+        },
         "forum_reply": {
-          "label": "Forum",
+          "label": "Replies",
           "description": "A reply to a topic you follow"
         },
         "moderation": {
-          "label": "Moderation",
+          "label": "Articles and galleries",
           "description": "Your articles and galleries being published or rejected"
+        },
+        "site_news": {
+          "label": "Site news",
+          "description": "New features and important announcements"
+        },
+        "weekly_recap": {
+          "label": "Weekly summary",
+          "description": "A weekly summary of activity on the site"
+        },
+        "activity_reminder": {
+          "label": "Activity reminders",
+          "description": "Reminders about your ads, your profile and your activity"
+        },
+        "marketing": {
+          "label": "Offers and promotions",
+          "description": "Information about special offers and promotions"
+        },
+        "show_online_presence": {
+          "label": "Show me as online",
+          "description": "Members of your bands and the people you message can see when you have your chat with them open"
+        },
+        "show_read_receipts": {
+          "label": "Read receipts",
+          "description": "The people you message see when you have read their messages. Turned off, you do not see theirs either."
         }
       },
       "save": "Save",
@@ -239,8 +240,7 @@
       "load_error": "Could not load your notification preferences",
       "saved": "Preferences updated",
       "saved_detail": "Your notification preferences have been saved",
-      "save_error": "Could not update your preferences",
-      "push_get_app": "Don't have the app yet?"
+      "save_error": "Could not update your preferences"
     },
     "musician": {
       "empty_help": "Share your instruments, your level and your genres so other musicians can find you.",
