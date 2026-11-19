@@ -201,7 +201,7 @@ readonly class AgendaAggregator
      */
     public function civilDateOf(AgendaEntry $entry, DateTimeImmutable $occurrenceStart): string
     {
-        return $occurrenceStart->setTimezone($this->expansionTimezone($entry))->format('Y-m-d');
+        return $occurrenceStart->setTimezone(self::timezoneFor($entry->isAllDay))->format('Y-m-d');
     }
 
     /**
@@ -252,7 +252,7 @@ readonly class AgendaAggregator
             return [];
         }
 
-        $timezone = $this->expansionTimezone($entry);
+        $timezone = self::timezoneFor($entry->isAllDay);
         $anchor = $entry->eventDatetime->setTimezone($timezone);
 
         // The horizon is a calendar date, so the series runs to the end of that civil day and an
@@ -281,7 +281,7 @@ readonly class AgendaAggregator
     }
 
     /**
-     * The timezone a series is stepped in.
+     * The timezone an entry's dates are stepped and read in.
      *
      * A timed entry stores a real instant, so it is stepped in the civil timezone the band reads
      * its agenda in. An all-day entry stores no instant at all: it is a calendar date pinned at UTC
@@ -289,9 +289,9 @@ readonly class AgendaAggregator
      * back would land it on 23:00 the day before every winter, which is the off-by-one #819 fixed
      * on the front end, so an all-day series keeps being stepped in UTC.
      */
-    private function expansionTimezone(AgendaEntry $entry): DateTimeZone
+    public static function timezoneFor(bool $isAllDay): DateTimeZone
     {
-        return new DateTimeZone($entry->isAllDay ? 'UTC' : self::CIVIL_TIMEZONE);
+        return new DateTimeZone($isAllDay ? 'UTC' : self::CIVIL_TIMEZONE);
     }
 
     /**

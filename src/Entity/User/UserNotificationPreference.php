@@ -49,6 +49,10 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $activityReminder = true;
 
+    /** « Relancer » on a date (#1418), by email: reaches a member who has no app. */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $bandAgendaReminder = true;
+
     /** Seen « en ligne » by bandmates and the people one messages while their chat is open (#1040, #1246). */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $showOnlinePresence = true;

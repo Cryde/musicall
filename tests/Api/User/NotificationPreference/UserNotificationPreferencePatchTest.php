@@ -45,6 +45,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => true,
             'marketing' => true,
             'activity_reminder' => true,
+            'band_agenda_reminder' => true,
             'show_online_presence' => true,
             'show_read_receipts' => true,
             'push_message_received' => true,
@@ -102,6 +103,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => false,
             'activity_reminder' => true,
+            'band_agenda_reminder' => true,
             'show_online_presence' => true,
             'show_read_receipts' => true,
             'push_message_received' => true,
@@ -130,6 +132,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $preference->publicationVote = false;
         $preference->marketing = true;
         $preference->activityReminder = false;
+        $preference->bandAgendaReminder = false;
         $preference->showOnlinePresence = false;
         $preference->showReadReceipts = false;
         $preference->pushMessageReceived = false;
@@ -164,6 +167,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'band_agenda_reminder' => false,
             'show_online_presence' => false,
             'show_read_receipts' => false,
             'push_message_received' => false,
@@ -187,6 +191,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $this->assertTrue($stored->marketing);
         $this->assertFalse($stored->pushBandMembership);
         $this->assertFalse($stored->pushBandAgendaReminder);
+        $this->assertFalse($stored->bandAgendaReminder);
     }
 
     public function test_patch_notification_preferences_updates_all_fields(): void
@@ -206,6 +211,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'band_agenda_reminder' => false,
             'show_online_presence' => false,
             'show_read_receipts' => false,
             'push_message_received' => true,
@@ -234,6 +240,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'band_agenda_reminder' => false,
             'show_online_presence' => false,
             'show_read_receipts' => false,
             'push_message_received' => true,
@@ -259,6 +266,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $this->assertTrue($stored->pushBandMention);
         $this->assertTrue($stored->pushBandAgenda);
         $this->assertFalse($stored->pushBandAgendaReminder);
+        $this->assertFalse($stored->bandAgendaReminder);
     }
 
     public function test_patch_notification_preferences_requires_authentication(): void

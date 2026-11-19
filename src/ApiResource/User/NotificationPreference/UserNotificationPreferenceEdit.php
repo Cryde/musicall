@@ -51,6 +51,8 @@ class UserNotificationPreferenceEdit
 
     public bool $activityReminder = true;
 
+    public bool $bandAgendaReminder = true;
+
     public bool $showOnlinePresence = true;
 
     public bool $showReadReceipts = true;

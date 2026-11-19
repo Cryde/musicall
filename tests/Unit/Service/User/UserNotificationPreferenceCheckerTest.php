@@ -51,6 +51,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         yield 'publicationVote - no preference' => ['canReceivePublicationVoteNotification', null];
         yield 'forumReply - no preference' => ['canReceiveForumReplyNotification', null];
         yield 'activityReminder - no preference' => ['canReceiveActivityReminderNotification', null];
+        yield 'bandAgendaReminder - no preference' => ['canReceiveBandAgendaReminderNotification', null];
 
         // When preference exists with flag enabled
         yield 'siteNews - enabled' => ['canReceiveSiteNewsNotification', self::createPreference(siteNews: true)];
@@ -60,6 +61,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         yield 'publicationVote - enabled' => ['canReceivePublicationVoteNotification', self::createPreference(publicationVote: true)];
         yield 'forumReply - enabled' => ['canReceiveForumReplyNotification', self::createPreference(forumReply: true)];
         yield 'activityReminder - enabled' => ['canReceiveActivityReminderNotification', self::createPreference(activityReminder: true)];
+        yield 'bandAgendaReminder - enabled' => ['canReceiveBandAgendaReminderNotification', self::createPreference(bandAgendaReminder: true)];
         yield 'marketing - enabled' => ['canReceiveMarketingNotification', self::createPreference(marketing: true)];
     }
 
@@ -79,6 +81,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         yield 'publicationVote - disabled' => ['canReceivePublicationVoteNotification', self::createPreference(publicationVote: false)];
         yield 'forumReply - disabled' => ['canReceiveForumReplyNotification', self::createPreference(forumReply: false)];
         yield 'activityReminder - disabled' => ['canReceiveActivityReminderNotification', self::createPreference(activityReminder: false)];
+        yield 'bandAgendaReminder - disabled' => ['canReceiveBandAgendaReminderNotification', self::createPreference(bandAgendaReminder: false)];
         yield 'marketing - disabled' => ['canReceiveMarketingNotification', self::createPreference(marketing: false)];
     }
 
@@ -91,6 +94,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         bool $marketing = false,
         bool $activityReminder = true,
         bool $publicationVote = true,
+        bool $bandAgendaReminder = true,
     ): UserNotificationPreference {
         $preference = new UserNotificationPreference();
         $preference->siteNews = $siteNews;
@@ -101,6 +105,7 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         $preference->marketing = $marketing;
         $preference->activityReminder = $activityReminder;
         $preference->publicationVote = $publicationVote;
+        $preference->bandAgendaReminder = $bandAgendaReminder;
 
         return $preference;
     }

@@ -81,6 +81,13 @@ readonly class UserNotificationPreferenceChecker
         return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->activityReminder;
     }
 
+    public function canReceiveBandAgendaReminderNotification(User $user): bool
+    {
+        $preference = $user->notificationPreference;
+
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->bandAgendaReminder;
+    }
+
     /** Absent preferences mean the defaults, under which every category is on. */
     public function canReceivePush(User $user, PushCategory $category): bool
     {
