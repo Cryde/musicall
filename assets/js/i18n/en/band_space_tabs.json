@@ -110,5 +110,24 @@
     "download_failed": "The file could not be downloaded. Check your connection, then try again.",
     "retry": "Try again",
     "back": "Back to files"
+  },
+  "list": {
+    "add": "Add a tab",
+    "count": "{count} tab | {count} tabs",
+    "column_name": "Name",
+    "column_folder": "Folder",
+    "column_song": "Song",
+    "column_uploader": "Added by",
+    "column_updated": "Updated",
+    "empty_title": "No tabs yet",
+    "empty_intro": "A tab is a Guitar Pro file (.gp, .gp5, .gpx...) kept in the band's Files. It opens here to be read and played, track by track, with each instrument's own sound.",
+    "not_guitar_pro": "This is not a tab",
+    "not_guitar_pro_detail": "\"{name}\" is not a Guitar Pro file (.gp, .gp3, .gp4, .gp5 or .gpx)."
+  },
+  "same_name": {
+    "title": "This tab already exists",
+    "message": "\"{name}\" is already in Files ({folder}). Uploading it as a new version keeps its whole history in one file.",
+    "new_version": "Upload a new version",
+    "separate": "Create another file"
   }
 }

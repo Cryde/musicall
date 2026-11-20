@@ -35,6 +35,8 @@ final readonly class BandSpaceFileFilter
          * flat listing. Root is a place in the tree, no filter is the whole space.
          */
         public bool $rootOnly = false,
+        /** Guitar Pro files only, recognised by name since their mime type says nothing (#1430). */
+        public bool $guitarProOnly = false,
     ) {
     }
 }

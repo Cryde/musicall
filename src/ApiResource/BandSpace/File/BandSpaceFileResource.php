@@ -23,6 +23,7 @@ use App\State\Provider\BandSpace\File\BandSpaceFileCollectionProvider;
 use App\State\Provider\BandSpace\File\BandSpaceFileItemProvider;
 use App\State\Provider\BandSpace\File\BandSpaceFinanceEntryFileCollectionProvider;
 use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     shortName: 'BandSpaceFile',
@@ -51,6 +52,10 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
                 'query' => new QueryParameter(key: 'query'),
                 'mime' => new QueryParameter(key: 'mime'),
                 'uploader_id' => new QueryParameter(key: 'uploader_id'),
+                // A Guitar Pro file has no mime type of its own, so `mime` cannot ask for one (#1430).
+                'format' => new QueryParameter(key: 'format', constraints: [
+                    new Assert\Choice(choices: [BandSpaceFileCollectionProvider::FORMAT_GUITAR_PRO], message: 'band_space.file.format_invalid'),
+                ]),
                 'sort' => new QueryParameter(key: 'sort'),
                 'order' => new QueryParameter(key: 'order'),
                 // archived=true lists the trash instead of the live files. Same shape as the Tasks module.

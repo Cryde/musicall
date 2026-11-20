@@ -96,7 +96,7 @@
       v-model:visible="newVersionDialogVisible"
       :band-space-id="bandSpaceId"
       :file-id="fileId"
-      @uploaded="handleVersionUploaded"
+      @uploaded="announceVersion"
     />
   </Dialog>
 </template>
@@ -110,6 +110,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useFileUploadToasts } from '../../../composables/useFileUploadToasts.js'
 import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { intlLocale, noValue, separator } from '../../../i18n/formatLocale.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
@@ -132,6 +133,7 @@ const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const confirm = useConfirm()
 const toast = useToast()
+const { announceVersion } = useFileUploadToasts()
 
 const newVersionDialogVisible = ref(false)
 
@@ -196,22 +198,6 @@ function confirmRollback(version) {
       }
     }
   })
-}
-
-function handleVersionUploaded({ quotaApproaching }) {
-  toast.add({
-    severity: 'success',
-    summary: t('band_space_files.version_panel.uploaded'),
-    life: 3000
-  })
-  if (quotaApproaching) {
-    toast.add({
-      severity: 'warn',
-      summary: t('band_space_files.common.quota_approaching.summary'),
-      detail: t('band_space_files.common.quota_approaching.detail'),
-      life: 6000
-    })
-  }
 }
 
 function formatDate(iso) {
