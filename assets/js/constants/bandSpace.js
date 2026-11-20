@@ -14,7 +14,8 @@ export const BAND_SPACE_ROUTES = {
   FINANCE: 'app_band_finance',
   SETLIST: 'app_band_setlist',
   RIDER: 'app_band_rider',
-  PARAMETERS: 'app_band_parameters'
+  PARAMETERS: 'app_band_parameters',
+  TAB_READER: 'app_band_tab_reader'
 }
 
 /** Per band space, so each band comes back to the rider it was last looking at. */
@@ -36,6 +37,13 @@ export const TECH_RIDER_PREVIEW_KEY = 'techRiderPreview'
  * a tester (#942).
  */
 export const RIDER_TESTER_ONLY = true
+
+/**
+ * The Guitar Pro reader (#1429) is shown to testers only while it settles: its « Lire la tablature »
+ * button in the file drawer and its route both read this. RELEASING IT IS THIS ONE FLIP. Like the tech
+ * riders it is presentation only: the reader just downloads a file any member can already download.
+ */
+export const TABS_TESTER_ONLY = true
 
 /**
  * The modules a Band Space is described by, shared between the public presentation page and the
@@ -135,6 +143,10 @@ export const SECTION_NAMES = {
     return i18n.global.t('band_space.module_name.notes')
   },
   get [BAND_SPACE_ROUTES.FILES]() {
+    return i18n.global.t('band_space.module_name.files')
+  },
+  // The reader opens a file, so the tab title says Files, like the drawer it came from.
+  get [BAND_SPACE_ROUTES.TAB_READER]() {
     return i18n.global.t('band_space.module_name.files')
   },
   get [BAND_SPACE_ROUTES.TASKS]() {

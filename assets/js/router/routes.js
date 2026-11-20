@@ -1,4 +1,4 @@
-import { RIDER_TESTER_ONLY } from '../constants/bandSpace.js'
+import { RIDER_TESTER_ONLY, TABS_TESTER_ONLY } from '../constants/bandSpace.js'
 import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
@@ -115,6 +115,14 @@ export default [
         path: ':id/files',
         name: 'app_band_files',
         component: () => import('../views/BandSpace/Files.vue')
+      },
+      {
+        // A full page, a drawer is too narrow for a score. Under tabs/ so the Tablatures module (#1430)
+        // can list the files it opens without moving it.
+        path: ':id/tabs/:fileId',
+        name: 'app_band_tab_reader',
+        component: () => import('../views/BandSpace/TabReader.vue'),
+        meta: { testerOnly: TABS_TESTER_ONLY, fillViewport: true }
       },
       {
         path: ':id/taches',

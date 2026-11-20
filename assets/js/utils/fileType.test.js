@@ -48,3 +48,16 @@ describe('fileIconClass', () => {
     assert.equal(fileIconClass(null), 'pi pi-file')
   })
 })
+
+describe('a Guitar Pro file', () => {
+  it('is named and drawn as one, whatever MIME type it was stored with', () => {
+    assert.equal(fileTypeLabel('application/zip', 'New 45.gp'), 'Guitar Pro')
+    assert.equal(fileTypeLabel('application/octet-stream', 'riff.gp5'), 'Guitar Pro')
+    assert.equal(fileIconClass('application/zip', 'New 45.gp'), 'pi pi-align-justify')
+  })
+
+  it('leaves another zip a zip', () => {
+    assert.equal(fileTypeLabel('application/zip', 'photos.zip'), 'ZIP')
+    assert.equal(fileIconClass('application/zip', 'photos.zip'), 'pi pi-file')
+  })
+})

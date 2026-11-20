@@ -48,7 +48,7 @@
           @keydown="rememberModifiers"
           @update:model-value="() => toggleFromCheckbox(file)"
         />
-        <i :class="fileIconClass(file.mime_type)" class="text-lg text-surface-500 shrink-0" aria-hidden="true"></i>
+        <i :class="fileIconClass(file.mime_type, file.original_name)" class="text-lg text-surface-500 shrink-0" aria-hidden="true"></i>
 
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-surface-800 dark:text-surface-100 truncate">

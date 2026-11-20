@@ -1,4 +1,8 @@
 import { i18n } from '../i18n/index.js'
+import { isGuitarProName } from './guitarPro.js'
+
+// Guitar Pro is recognised by name: GP3 to GP5 and GPX are stored as octet-stream, a .gp as a zip.
+const GUITAR_PRO_LABEL = 'Guitar Pro'
 
 // A document type is named by what people call it, not by its MIME subtype.
 const DOCUMENT_LABELS = {
@@ -36,9 +40,11 @@ const SHORT_SUBTYPE = /^[a-z0-9]{1,5}$/
  * « application/pdf ». An unknown long type keeps its MIME, which still says more than nothing.
  *
  * @param {string|null|undefined} mime
+ * @param {string} [name] the file's name, which alone tells a Guitar Pro file apart
  * @returns {string|null}
  */
-export function fileTypeLabel(mime) {
+export function fileTypeLabel(mime, name) {
+  if (isGuitarProName(name)) return GUITAR_PRO_LABEL
   if (!mime) return null
 
   const type = mime.toLowerCase().split(';')[0].trim()
@@ -61,9 +67,12 @@ export function fileTypeLabel(mime) {
  * The PrimeIcons class drawn for a file of this type.
  *
  * @param {string|null|undefined} mime
+ * @param {string} [name] the file's name, which alone tells a Guitar Pro file apart
  * @returns {string}
  */
-export function fileIconClass(mime) {
+export function fileIconClass(mime, name) {
+  // The closest PrimeIcons has to a staff.
+  if (isGuitarProName(name)) return 'pi pi-align-justify'
   if (!mime) return 'pi pi-file'
   if (mime.startsWith('audio/')) return 'pi pi-volume-up'
   if (mime.startsWith('image/')) return 'pi pi-image'

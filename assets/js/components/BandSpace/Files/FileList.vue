@@ -136,7 +136,7 @@
           @update:model-value="() => toggleFromCheckbox(file)"
         />
         <div v-if="compact" class="flex items-center gap-2 flex-1 min-w-0">
-          <i :class="fileIconClass(file.mime_type)" class="text-lg text-surface-500 shrink-0 w-6 text-center" aria-hidden="true"></i>
+          <i :class="fileIconClass(file.mime_type, file.original_name)" class="text-lg text-surface-500 shrink-0 w-6 text-center" aria-hidden="true"></i>
           <div class="min-w-0 flex-1">
             <span class="block truncate font-medium">{{ file.original_name }}</span>
             <span class="block truncate text-xs text-surface-500 dark:text-surface-400 tabular-nums">
@@ -156,7 +156,7 @@
         </div>
         <div v-else class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
           <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
-            <i :class="fileIconClass(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
+            <i :class="fileIconClass(file.mime_type, file.original_name)" class="text-lg text-surface-500 shrink-0"></i>
             <div class="min-w-0">
               <span class="block truncate font-medium">{{ file.original_name }}</span>
               <!-- Where the file actually lives, for a listing that is not one place. A search result
@@ -448,7 +448,9 @@ const actionsSheetSubtitle = computed(() => {
   const file = contextMenuFile.value
   if (!file) return ''
 
-  return [fileTypeLabel(file.mime_type), formatBytes(file.size)].filter(Boolean).join(' · ')
+  return [fileTypeLabel(file.mime_type, file.original_name), formatBytes(file.size)]
+    .filter(Boolean)
+    .join(' · ')
 })
 
 /** The ⋮ button, or a right click or long press on the row: the menu on a computer, a sheet on a phone. */

@@ -17,11 +17,11 @@
     </template>
     <template v-else>
       <SkipLink />
-      <MenuBand @open-search="paletteVisible = true" />
+      <MenuBand v-if="!chromeHidden" @open-search="paletteVisible = true" />
       <CommandPalette v-model:visible="paletteVisible" />
       <div class="flex">
         <aside
-          v-if="!isOutsider"
+          v-if="!isOutsider && !chromeHidden"
           class="hidden lg:block w-[var(--band-sidebar-width)] shrink-0 sticky top-16 h-[calc(100dvh-4rem)] bg-surface-0 dark:bg-surface-900 border-r border-surface-200 dark:border-surface-700 self-start transition-[width] duration-150"
         >
           <BandSidebar
@@ -31,7 +31,7 @@
           />
         </aside>
         <main id="main-content" tabindex="-1" class="flex-1 min-w-0 bg-surface-200 dark:bg-surface-950">
-          <div class="px-6 py-8 md:px-12 lg:pl-8 lg:pr-20 flex flex-col gap-8">
+          <div :class="contentClass">
             <!-- Pending deletion is shown on every module, not only in the settings: the grace period is
                  the members' window to retrieve their files, so they have to see it wherever they are. -->
             <div
@@ -92,6 +92,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { useBandLayoutFocus } from '../composables/useBandLayoutFocus.js'
 import { useBandSpaceLiveRefresh } from '../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
 import { usePendingActionResumer } from '../composables/usePendingAction.js'
@@ -112,6 +113,15 @@ const { t } = useI18n()
 const { currentSpace, setLastSpaceId, handleRedirect } = useBandSpaceNavigation()
 
 const deletionScheduledFor = computed(() => currentSpace.value?.deletion_scheduled_datetime ?? null)
+
+// A page that fills the viewport (meta.fillViewport) gets the screen's height and scrolls inside itself;
+// when the header goes (useBandLayoutFocus says when), it gets the whole screen and no padding.
+const { fillsViewport, chromeHidden } = useBandLayoutFocus()
+const contentClass = computed(() => {
+  if (!fillsViewport.value) return 'px-6 py-8 md:px-12 lg:pl-8 lg:pr-20 flex flex-col gap-8'
+  if (chromeHidden.value) return 'h-dvh flex flex-col overflow-hidden'
+  return 'h-[calc(100dvh-4rem)] px-5 py-4 lg:px-7 lg:py-5 flex flex-col gap-3 overflow-hidden'
+})
 
 const isLoading = ref(true)
 const hasError = ref(false)
