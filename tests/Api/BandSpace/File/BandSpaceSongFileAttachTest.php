@@ -57,6 +57,56 @@ class BandSpaceSongFileAttachTest extends ApiTestCase
         $this->assertNotNull($attachment);
     }
 
+    public function test_attach_a_guitar_pro_5_file(): void
+    {
+        // The attach paths share the upload type check: a .gp5 is octet-stream, let through by its signature.
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'My song'])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/tab.gp5', 'tab.gp5', null, null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $song->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $file = self::getContainer()->get(BandSpaceFileRepository::class)->findOneBy(['bandSpace' => $bandSpace]);
+        $this->assertInstanceOf(BandSpaceFile::class, $file);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => 'tab.gp5',
+            'size' => 1463,
+            'mime_type' => 'application/octet-stream',
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [
+                ['source_type' => 'song', 'source_id' => $song->id, 'source_label' => 'My song'],
+            ],
+            'current_version_id' => $file->currentVersion?->id,
+            'current_version_number' => 1,
+            'version_count' => 1,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'guitariste',
+                'display_name' => 'guitariste',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => $file->creationDatetime->format('c'),
+        ]);
+    }
+
     public function test_attach_song_in_other_band_returns_404(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

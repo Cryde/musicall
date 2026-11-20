@@ -10,20 +10,18 @@ use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
-use App\Exception\TranslatableHttpException;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
+use App\Service\BandSpace\File\BandSpaceUploadTypeGuard;
 use App\Service\Builder\BandSpace\File\BandSpaceFileVersionBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -35,6 +33,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
 {
     public function __construct(
+        private BandSpaceUploadTypeGuard $uploadTypeGuard,
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFileRepository $fileRepository,
@@ -71,14 +70,7 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
             throw new BadRequestHttpException('band_space.file.not_provided');
         }
 
-        $mimeType = $upload->getMimeType() ?? 'application/octet-stream';
-        if (!BandSpaceFileMimeAllowlist::isAllowed($mimeType)) {
-            throw new TranslatableHttpException(
-                Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
-                'band_space.file.type_not_allowed',
-                ['type' => $mimeType],
-            );
-        }
+        $mimeType = $this->uploadTypeGuard->assertAllowed($upload);
 
         $size = $upload->getSize();
         if ($size === false) {

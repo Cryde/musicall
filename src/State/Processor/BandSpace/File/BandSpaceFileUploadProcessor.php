@@ -21,9 +21,9 @@ use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
+use App\Service\BandSpace\File\BandSpaceUploadTypeGuard;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -43,6 +43,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
 {
     public function __construct(
+        private BandSpaceUploadTypeGuard $uploadTypeGuard,
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
@@ -75,14 +76,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
             throw new BadRequestHttpException('band_space.file.not_provided');
         }
 
-        $mimeType = $upload->getMimeType() ?? 'application/octet-stream';
-        if (!BandSpaceFileMimeAllowlist::isAllowed($mimeType)) {
-            throw new TranslatableHttpException(
-                Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
-                'band_space.file.type_not_allowed',
-                ['type' => $mimeType],
-            );
-        }
+        $mimeType = $this->uploadTypeGuard->assertAllowed($upload);
 
         $size = $upload->getSize();
         if ($size === false) {
