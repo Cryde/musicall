@@ -13,6 +13,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
@@ -185,6 +186,96 @@ class BandSpaceFileUploadTest extends ApiTestCase
             'status' => 415,
             'type' => '/errors/415',
             'description' => 'Type de fichier non autorisé : text/x-shellscript',
+        ]);
+    }
+
+    /**
+     * @return iterable<string, array{string, string, int}>
+     */
+    public static function guitarProFiles(): iterable
+    {
+        yield 'Guitar Pro 3' => ['tab.gp3', 'application/octet-stream', 993];
+        yield 'Guitar Pro 4' => ['tab.gp4', 'application/octet-stream', 1036];
+        yield 'Guitar Pro 5' => ['tab.gp5', 'application/octet-stream', 1463];
+        yield 'Guitar Pro 6' => ['tab.gpx', 'application/octet-stream', 14323];
+        yield 'Guitar Pro 7' => ['tab.gp', 'application/zip', 8381];
+    }
+
+    #[DataProvider('guitarProFiles')]
+    public function test_upload_a_guitar_pro_file(string $fileName, string $mimeType, int $size): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/' . $fileName, $fileName, null, null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $file = self::getContainer()->get(BandSpaceFileRepository::class)->findOneBy(['bandSpace' => $bandSpace]);
+        $this->assertInstanceOf(BandSpaceFile::class, $file);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => $fileName,
+            'size' => $size,
+            'mime_type' => $mimeType,
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [],
+            'current_version_id' => $file->currentVersion?->id,
+            'current_version_number' => 1,
+            'version_count' => 1,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'guitariste',
+                'display_name' => 'guitariste',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => $file->creationDatetime->format('c'),
+        ]);
+    }
+
+    public function test_upload_a_gp5_without_its_signature_returns_415(): void
+    {
+        // A Guitar Pro 6 file renamed .gp5: still octet-stream, but not what a .gp5 starts with.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/tab.gpx', 'tab.gp5', null, null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/415',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Type de fichier non autorisé : application/octet-stream',
+            'status' => 415,
+            'type' => '/errors/415',
+            'description' => 'Type de fichier non autorisé : application/octet-stream',
         ]);
     }
 

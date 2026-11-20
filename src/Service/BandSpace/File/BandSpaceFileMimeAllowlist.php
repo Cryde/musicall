@@ -16,6 +16,7 @@ final class BandSpaceFileMimeAllowlist
     /**
      * MIME types accepted by the band-space Files module. Extend cautiously:
      * adding a type here exposes it to public download links.
+     * Uploads are checked by BandSpaceUploadTypeGuard, which also lets Guitar Pro files through.
      */
     public const array ALLOWED = [
         'application/pdf',
