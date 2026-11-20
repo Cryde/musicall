@@ -55,4 +55,16 @@ class MessageUser
     /** A lesson request from the teacher profile (#1322): `trial` or `first`, as LessonRequest. */
     #[Groups([MessageUser::POST])]
     public ?string $lessonRequest = null;
+
+    /** Sent from one of the recipient's service pages (#1408), any kind but teaching, which says fromTeacherProfile. */
+    #[Groups([MessageUser::POST])]
+    public ?string $serviceId = null;
+
+    /**
+     * « Demander un devis » from that service page (#1408): the answers its kind's quoteQuestions() takes.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[Groups([MessageUser::POST])]
+    public ?array $quote = null;
 }

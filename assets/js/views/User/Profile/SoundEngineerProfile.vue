@@ -59,7 +59,8 @@
             <div class="flex flex-wrap items-center gap-2 mt-6">
               <Button v-if="isOwnPage" :label="t('profile.sound_engineer_page.edit')" icon="pi pi-pencil" @click="showForm = true" />
               <template v-else>
-                <Button :label="t('profile.teacher_page.ask_question')" icon="pi pi-envelope" severity="info" size="large" class="max-md:hidden!" @click="openMessage('')" />
+                <Button :label="t('profile.sound_engineer_page.ask_quote')" icon="pi pi-send" severity="info" size="large" class="max-md:hidden!" @click="showQuoteDialog = true" />
+                <Button :label="t('profile.teacher_page.ask_question')" icon="pi pi-envelope" severity="secondary" outlined size="large" class="max-md:hidden!" @click="openMessage('')" />
                 <ShareButton :url="shareUrl" :title="t('profile.sound_engineer_page.share_title', { name: page.display_name })" />
               </template>
             </div>
@@ -146,7 +147,10 @@
                 <p class="font-semibold text-surface-900 dark:text-surface-0">{{ page.display_name }}</p>
               </div>
               <Button v-if="isOwnPage" :label="t('profile.sound_engineer_page.edit')" icon="pi pi-pencil" class="w-full" @click="showForm = true" />
-              <Button v-else :label="t('profile.teacher_page.ask_question')" icon="pi pi-envelope" severity="info" class="w-full" @click="openMessage('')" />
+              <div v-else class="flex flex-col gap-2.5">
+                <Button :label="t('profile.sound_engineer_page.ask_quote')" icon="pi pi-send" severity="info" class="w-full" @click="showQuoteDialog = true" />
+                <Button :label="t('profile.teacher_page.ask_question')" icon="pi pi-envelope" severity="secondary" outlined class="w-full" @click="openMessage('')" />
+              </div>
               <dl v-if="hasFacts" class="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-3 gap-y-3 text-sm border-t border-surface-200 dark:border-surface-700 pt-4">
                 <template v-if="page.styles.length">
                   <dt class="text-surface-500 dark:text-surface-400">{{ t('profile.teacher_page.styles') }}</dt>
@@ -193,7 +197,7 @@
             <span class="block font-extrabold text-surface-900 dark:text-surface-0">{{ formatLessonPrice(leadOffer.price) }}</span>
             <span class="block text-xs text-surface-500 dark:text-surface-400">{{ t(UNIT_KEYS[leadOffer.unit]) }}</span>
           </div>
-          <Button :label="t('profile.teacher_page.ask_question')" icon="pi pi-envelope" severity="info" class="flex-1" @click="openMessage('')" />
+          <Button :label="t('profile.sound_engineer_page.ask_quote')" icon="pi pi-send" severity="info" class="flex-1" @click="showQuoteDialog = true" />
         </ServicePhoneBar>
       </div>
     </ServicePageStates>
@@ -206,8 +210,10 @@
       v-model:visible="showMessageModal"
       :selected-recipient="contactRecipient"
       :initial-content="initialMessage"
+      :contact-origin="page ? { serviceId: page.id } : null"
       @sign-in-required="handleContactSignInRequired"
     />
+    <QuoteRequestDialog v-if="page && !isOwnPage" v-model:visible="showQuoteDialog" :page="page" :kind="SERVICE_KIND" />
     <AuthRequiredModal v-model:visible="showAuthModal" :message="authModalMessage" />
   </div>
 </template>
@@ -231,6 +237,7 @@ import ServicePageStates from '../../../components/Service/Page/ServicePageState
 import ServicePageTopBar from '../../../components/Service/Page/ServicePageTopBar.vue'
 import ServicePhoneBar from '../../../components/Service/Page/ServicePhoneBar.vue'
 import ServicePlacesCard from '../../../components/Service/Page/ServicePlacesCard.vue'
+import QuoteRequestDialog from '../../../components/Service/QuoteRequestDialog.vue'
 import EditSoundEngineeringDialog from '../../../components/Service/SoundEngineering/EditSoundEngineeringDialog.vue'
 import ServiceWorksCredits from '../../../components/Service/Works/ServiceWorksCredits.vue'
 import ShareButton from '../../../components/ShareButton.vue'
@@ -249,6 +256,8 @@ import {
 } from '../../../constants/soundEngineering.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
+import { quoteDraftKey } from '../../../utils/quoteRequest.js'
+import { hasRequestDraft, openRequestDraftStorage } from '../../../utils/requestDraft.js'
 import {
   DELIVERY_FORMATS,
   headlineOffer,
@@ -258,6 +267,7 @@ import {
 import { formatLessonPrice } from '../../../utils/teacherPage.js'
 
 /** A sound engineer's page (#1410), on the template the lessons page shares. */
+const SERVICE_KIND = 'sound_engineering'
 const route = useRoute()
 const { t, locale } = useI18n()
 const userSecurityStore = useUserSecurityStore()
@@ -272,6 +282,7 @@ const showForm = ref(false)
 const showPlayer = ref(false)
 const playingMedia = ref(null)
 const showMessageModal = ref(false)
+const showQuoteDialog = ref(false)
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 const contactRecipient = ref(null)
@@ -442,6 +453,24 @@ function handleContactSignInRequired({ content }) {
   authModalMessage.value = keepProfileContactDraft({ profile: page.value, content })
   showAuthModal.value = true
 }
+
+/**
+ * A quote request written before signing in comes back once the visitor is signed in (#1408). Watched rather than
+ * called after loading: on a full page load (an OAuth return) the page and the sign-in state arrive in either order.
+ */
+watch(
+  () => [page.value, userSecurityStore.isAuthenticated, userSecurityStore.userProfile],
+  () => {
+    if (!page.value || !userSecurityStore.userProfile || showQuoteDialog.value || isOwnPage.value)
+      return
+    if (
+      userSecurityStore.isAuthenticated &&
+      hasRequestDraft(openRequestDraftStorage(), quoteDraftKey(SERVICE_KIND, route.params.username))
+    ) {
+      showQuoteDialog.value = true
+    }
+  }
+)
 
 useProfileContactDraftResumer(
   { isLoading, loadedProfile: () => (notFound.value || isPrivate.value ? null : page.value) },

@@ -792,6 +792,40 @@
       }
     }
   },
+  "quote_request": {
+    "title": "Demander un devis à {name}",
+    "intro": "Quelques questions, et {name} peut chiffrer ton projet.",
+    "optional": "facultatif",
+    "question": {
+      "need": "Qu'est-ce qu'il te faut ?",
+      "tracks": "Combien de titres ?",
+      "link": "Un lien pour écouter",
+      "deadline": "Pour quand ?",
+      "budget": "Ton budget"
+    },
+    "link_hint": "SoundCloud, YouTube, un dossier partagé...",
+    "need": {
+      "mixing": "Mixage",
+      "mastering": "Mastering",
+      "recording": "Enregistrement",
+      "live": "Live"
+    },
+    "budget": {
+      "under_100": "Moins de 100 €",
+      "100_to_300": "100 à 300 €",
+      "300_to_1000": "300 à 1 000 €",
+      "over_1000": "Plus de 1 000 €"
+    },
+    "need_required": "Dis ce qu'il te faut pour envoyer la demande.",
+    "message": {
+      "greeting": "Bonjour {name}, je voudrais un devis.",
+      "need": "Prestation : {value}",
+      "tracks": "Nombre de titres : {value}",
+      "link": "À écouter : {value}",
+      "deadline": "Pour le : {value}",
+      "budget": "Budget : {value}"
+    }
+  },
   "public": {
     "not_found_title": "Profil non trouvé",
     "not_found_help": "Ce profil n'existe pas ou n'est pas accessible.",
@@ -1063,6 +1097,7 @@
     "usual_turnaround": "délai moyen",
     "revisions_included": "retouche incluse | retouches incluses",
     "edit": "Modifier mon service",
+    "ask_quote": "Demander un devis",
     "share_title": "{name}, ingénieur du son sur MusicAll",
     "listen": "Écoute le travail de {name}",
     "before_after": "Avant, après",

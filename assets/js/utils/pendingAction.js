@@ -23,7 +23,7 @@ export function openPendingActionStorage() {
 
 /**
  * Keeps what the visitor started. Refused for a signed in member, and logout clears it (see the store). The limit,
- * as in trialRequest.js: a visitor who walks away without signing in leaves it to whoever signs in on this browser
+ * as in requestDraft.js: a visitor who walks away without signing in leaves it to whoever signs in on this browser
  * within the lifetime, since both were signed out and nothing tells them apart.
  *
  * @param {{ kind: string, route: string, payload: unknown, stoppedOnSubmit: boolean }} action  `stoppedOnSubmit`:

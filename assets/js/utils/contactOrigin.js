@@ -6,8 +6,11 @@
  * being deleted, so nothing here may assume the announce still exists.
  */
 
+import { SERVICE_KINDS } from '../constants/serviceKinds.js'
 import { separator } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
+import { formatDateCompactWithYear } from './date.js'
+import { OPTION_LABELS } from './quoteRequest.js'
 
 const ANNOUNCE_LOOKING_FOR_MUSICIAN = 1
 
@@ -25,10 +28,11 @@ const LESSON_REQUEST_KEYS = {
 
 /**
  * « Annonce : recherche un batteur », « Annonce : Bassiste cherche un groupe », « Cours : Piano »,
- * « Demande de cours d'essai : basse ».
+ * « Demande de cours d'essai : basse », « Devis : mixage », « Question : ingénieur du son ».
  */
 export function contactOriginLabel(origin) {
   if (!origin) return null
+  if (origin.type === 'service') return serviceOriginLabel(origin)
 
   const instruments = origin.instruments ?? []
   const lessonRequestKeys = LESSON_REQUEST_KEYS[origin.lesson_request]
@@ -54,11 +58,46 @@ export function contactOriginLabel(origin) {
     : i18n.global.t('message.contact_origin.announce_looking_for_band', { instrument })
 }
 
+/**
+ * A service page's message (#1408): what a quote asks for, or the kind a question is about. A need or a kind added
+ * after this build still gets a line.
+ */
+function serviceOriginLabel(origin) {
+  const { t } = i18n.global
+  if (origin.quote) {
+    const need = OPTION_LABELS.need[origin.quote.need]
+    return need
+      ? t('message.contact_origin.quote_request_need', { need: t(need).toLowerCase() })
+      : t('message.contact_origin.quote_request')
+  }
+  const kind = SERVICE_KINDS[origin.service_kind]
+  return kind
+    ? t('message.contact_origin.service_question_kind', { kind: t(kind.labelKey).toLowerCase() })
+    : t('message.contact_origin.service_question')
+}
+
+/** « 5 titres · pour le 15 déc. 2026 · 100 à 300 € »: what a quote request says beyond its need. */
+function quoteDetails(quote) {
+  const { t } = i18n.global
+  const parts = []
+  if (quote.tracks) parts.push(t('message.contact_origin.quote_tracks', quote.tracks))
+  if (quote.deadline) {
+    parts.push(
+      t('message.contact_origin.quote_deadline', {
+        date: formatDateCompactWithYear(quote.deadline)
+      })
+    )
+  }
+  const budget = OPTION_LABELS.budget[quote.budget]
+  if (budget) parts.push(t(budget))
+  return parts
+}
+
 /** « Rock, Blues · Lyon », or null when the snapshot carries neither. */
 export function contactOriginDetails(origin) {
   if (!origin) return null
 
-  const parts = []
+  const parts = origin.quote ? quoteDetails(origin.quote) : []
   if (origin.styles?.length) parts.push(origin.styles.join(', '))
   if (origin.location_name) parts.push(origin.location_name)
 
@@ -66,5 +105,7 @@ export function contactOriginDetails(origin) {
 }
 
 export function contactOriginIcon(origin) {
+  if (origin?.type === 'service')
+    return SERVICE_KINDS[origin.service_kind]?.icon ?? 'pi pi-briefcase'
   return origin?.type === 'teacher_profile' ? 'pi pi-book' : 'pi pi-megaphone'
 }

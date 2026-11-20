@@ -54,7 +54,13 @@
     "trial_request": "Demande de cours d'essai",
     "trial_request_instrument": "Demande de cours d'essai : {instrument}",
     "first_lesson_request": "Demande de premier cours",
-    "first_lesson_request_instrument": "Demande de premier cours : {instrument}"
+    "first_lesson_request_instrument": "Demande de premier cours : {instrument}",
+    "quote_request": "Demande de devis",
+    "quote_request_need": "Devis : {need}",
+    "service_question": "Question",
+    "service_question_kind": "Question : {kind}",
+    "quote_tracks": "{count} titre | {count} titres",
+    "quote_deadline": "pour le {date}"
   },
   "music_link": {
     "title": {

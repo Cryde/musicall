@@ -13,6 +13,7 @@ use App\Enum\Message\LessonRequest;
 use App\Repository\Message\MessageContactOriginRepository;
 use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Message\ContactOriginResolver;
+use App\Service\Message\ServiceContact;
 use App\Service\Message\TeacherProfileContact;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use App\Service\User\Relation\UserContactPolicy;
@@ -67,10 +68,15 @@ class MessagePostToUserProcessor implements ProcessorInterface
     }
 
     /** ValidContactOrigin has already checked every id and value against the recipient. */
-    private function contactOrigin(MessageUser $data): MusicianAnnounce|TeacherProfileContact|null
+    private function contactOrigin(MessageUser $data): MusicianAnnounce|TeacherProfileContact|ServiceContact|null
     {
         if ($data->musicianAnnounceId !== null) {
             return $this->contactOriginResolver->musicianAnnounceOf($data->musicianAnnounceId, $data->recipient);
+        }
+        if ($data->serviceId !== null) {
+            $service = $this->contactOriginResolver->serviceOf($data->serviceId, $data->recipient);
+
+            return $service instanceof Service ? new ServiceContact($service, $data->quote) : null;
         }
         $profile = $data->fromTeacherProfile ? $this->contactOriginResolver->teacherProfileOf($data->recipient) : null;
         if (!$profile instanceof Service) {

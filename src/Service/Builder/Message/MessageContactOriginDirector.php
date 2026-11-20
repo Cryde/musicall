@@ -7,15 +7,25 @@ use App\Entity\Message\Message;
 use App\Entity\Message\MessageContactOrigin;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Enum\Message\ContactOriginType;
+use App\Service\Message\ServiceContact;
 use App\Service\Message\TeacherProfileContact;
 
 /** Instruments and styles are kept by slug (#1212), so each reader names them in their own language. */
 class MessageContactOriginDirector
 {
-    public function create(Message $message, MusicianAnnounce|TeacherProfileContact $source): MessageContactOrigin
+    public function create(Message $message, MusicianAnnounce|TeacherProfileContact|ServiceContact $source): MessageContactOrigin
     {
         $origin = new MessageContactOrigin();
         $origin->message = $message;
+
+        if ($source instanceof ServiceContact) {
+            $origin->type = $source->service->kind->contactOriginType();
+            $origin->service = $source->service;
+            $origin->serviceKind = $source->service->kind;
+            $origin->quote = $source->quote;
+
+            return $origin;
+        }
 
         if ($source instanceof MusicianAnnounce) {
             $origin->type = ContactOriginType::MusicianAnnounce;

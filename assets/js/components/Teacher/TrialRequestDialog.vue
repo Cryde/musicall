@@ -140,13 +140,15 @@ import { useSendMessage } from '../../composables/useSendMessage.js'
 import { getDayOfWeekLabel } from '../../constants/teacherProfile.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import {
-  buildRequestMessage,
   openRequestDraftStorage,
+  saveRequestDraft,
+  takeRequestDraft
+} from '../../utils/requestDraft.js'
+import {
+  buildRequestMessage,
   PART_OF_DAY_LABELS,
   requestContactOrigin,
   requestQuestions,
-  saveRequestDraft,
-  takeRequestDraft,
   WHEN_OPTION_LABEL
 } from '../../utils/trialRequest.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'

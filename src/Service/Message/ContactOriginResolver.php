@@ -6,13 +6,14 @@ use App\Entity\Attribute\Instrument;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Service\Service;
 use App\Entity\User;
+use App\Enum\Message\ContactOriginType;
 use App\Enum\Service\ServiceKind;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\Service\ServiceRepository;
 
 /**
- * The announce or teacher profile a direct message says it was sent from (#998), only the
- * recipient's own: a message cannot claim to be about somebody else's announce.
+ * The announce, teacher profile or service a direct message says it was sent from (#998, #1408), only
+ * the recipient's own: a message cannot claim to be about somebody else's announce.
  */
 readonly class ContactOriginResolver
 {
@@ -33,6 +34,17 @@ readonly class ContactOriginResolver
     public function teacherProfileOf(User $recipient): ?Service
     {
         return $this->serviceRepository->findPublishedOneByUserAndKind($recipient, ServiceKind::Teaching);
+    }
+
+    /** A published service of the recipient's (#1408), never teaching: a message from it says fromTeacherProfile. */
+    public function serviceOf(string $serviceId, User $recipient): ?Service
+    {
+        $service = $this->serviceRepository->find($serviceId);
+
+        return $service instanceof Service
+            && $service->isPublished()
+            && $service->kind->contactOriginType() === ContactOriginType::Service
+            && (string) $service->user->id === (string) $recipient->id ? $service : null;
     }
 
     /** The instrument a lesson request is about (#1322), only one the teacher teaches. */

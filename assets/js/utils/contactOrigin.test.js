@@ -105,6 +105,65 @@ describe('contactOriginLabel', () => {
   })
 })
 
+describe('a message from a service page (#1408)', () => {
+  const service = (fields) => ({
+    type: 'service',
+    service_id: 's1',
+    service_kind: 'sound_engineering',
+    instruments: [],
+    styles: [],
+    location_name: null,
+    quote: null,
+    ...fields
+  })
+
+  it('names what a quote asks for', () => {
+    assert.equal(contactOriginLabel(service({ quote: { need: 'mixing' } })), 'Devis : mixage')
+  })
+
+  it('names the kind a question is about', () => {
+    assert.equal(contactOriginLabel(service()), 'Question : ingénieur du son')
+  })
+
+  // An app or web build older than a new kind or need still says what it is.
+  it('still says something for a need or a kind it does not know', () => {
+    assert.equal(contactOriginLabel(service({ quote: { need: 'drone' } })), 'Demande de devis')
+    assert.equal(contactOriginLabel(service({ service_kind: 'photography' })), 'Question')
+  })
+
+  it('reads the same once the service is deleted', () => {
+    assert.equal(
+      contactOriginLabel(service({ service_id: null, quote: { need: 'live' } })),
+      'Devis : live'
+    )
+  })
+
+  it('sums up the answers of a quote, and nothing for a question', () => {
+    assert.equal(
+      contactOriginDetails(
+        service({
+          quote: {
+            need: 'mixing',
+            tracks: 5,
+            link: 'https://x.test',
+            deadline: '2026-12-15',
+            budget: '100_to_300'
+          }
+        })
+      ),
+      '5 titres · pour le 15 déc. 2026 · 100 à 300 €'
+    )
+    assert.equal(contactOriginDetails(service({ quote: { need: 'mixing', tracks: 1 } })), '1 titre')
+    assert.equal(contactOriginDetails(service({ quote: { need: 'mixing' } })), null)
+    assert.equal(contactOriginDetails(service()), null)
+  })
+
+  it('shows the icon of the kind', () => {
+    assert.equal(contactOriginIcon(service()), 'pi pi-sliders-v')
+    assert.equal(contactOriginIcon(service({ service_kind: 'photography' })), 'pi pi-briefcase')
+  })
+})
+
 describe('contactOriginDetails', () => {
   it('joins the styles and the place', () => {
     assert.equal(contactOriginDetails(announce()), 'Rock, Blues · Lyon')

@@ -11,8 +11,8 @@ use App\Translation\ReferenceSnapshotNames;
 /**
  * One line's worth of what a direct message was sent from (#998): « recherche un batteur · Rock,
  * Blues · Lyon ». A plain array rather than an object, so it serializes without a generated JSON-LD
- * id, like the agenda metadata. The ids go null once the announce or profile is deleted; the rest is
- * the snapshot taken at send time.
+ * id, like the agenda metadata. The ids go null once the announce, profile or service is deleted; the
+ * rest is the snapshot taken at send time.
  */
 readonly class ContactOriginBuilder
 {
@@ -21,7 +21,7 @@ readonly class ContactOriginBuilder
     }
 
     /**
-     * @return array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null}
+     * @return array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null, service_id: string|null, service_kind: string|null, quote: array<string, int|string>|null}
      */
     public function build(MessageContactOrigin $origin): array
     {
@@ -39,6 +39,9 @@ readonly class ContactOriginBuilder
             'styles' => array_map($this->referenceSnapshotNames->styleName(...), $origin->styles),
             'location_name' => $origin->locationName,
             'lesson_request' => $origin->lessonRequest?->value,
+            'service_id' => $origin->service instanceof Service ? (string) $origin->service->id : null,
+            'service_kind' => $origin->serviceKind?->value,
+            'quote' => $origin->quote,
         ];
     }
 }

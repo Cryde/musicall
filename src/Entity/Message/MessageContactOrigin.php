@@ -6,13 +6,14 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Service\Service;
 use App\Enum\Message\ContactOriginType;
 use App\Enum\Message\LessonRequest;
+use App\Enum\Service\ServiceKind;
 use App\Repository\Message\MessageContactOriginRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 /**
- * The announce or teacher profile a direct message was sent from (#998), so a conversation still
+ * The announce, teacher profile or service a direct message was sent from (#998, #1408), so a conversation still
  * says why it exists weeks later.
  *
  * The fields below the links are a snapshot taken at send time: an announce is deleted once its
@@ -63,4 +64,16 @@ class MessageContactOrigin
     /** A lesson request from a teacher profile (#1322); null for a plain question and for an announce. */
     #[ORM\Column(type: Types::STRING, length: 10, nullable: true, enumType: LessonRequest::class)]
     public ?LessonRequest $lessonRequest = null;
+
+    /** Any service but teaching (#1408), which keeps $teacherProfile. */
+    #[ORM\ManyToOne(targetEntity: Service::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?Service $service = null;
+
+    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: ServiceKind::class)]
+    public ?ServiceKind $serviceKind = null;
+
+    /** @var array<string, int|string>|null the answers of « Demander un devis » (#1408); null for a plain question */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    public ?array $quote = null;
 }

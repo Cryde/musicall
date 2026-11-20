@@ -377,6 +377,7 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { currentBandsSummary } from '../../../utils/musicianBands.js'
 import { isPrivateProfileError } from '../../../utils/profileError.js'
+import { hasRequestDraft, openRequestDraftStorage } from '../../../utils/requestDraft.js'
 import { skillSteps } from '../../../utils/skillLevel.js'
 import {
   availabilityByDay,
@@ -387,7 +388,6 @@ import {
   placesSummary,
   pricingByDuration
 } from '../../../utils/teacherPage.js'
-import { hasRequestDraft, openRequestDraftStorage } from '../../../utils/trialRequest.js'
 
 const route = useRoute()
 const teacherProfileStore = useTeacherProfileStore()

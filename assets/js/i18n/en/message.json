@@ -54,7 +54,13 @@
     "trial_request": "Trial lesson request",
     "trial_request_instrument": "Trial lesson request: {instrument}",
     "first_lesson_request": "First lesson request",
-    "first_lesson_request_instrument": "First lesson request: {instrument}"
+    "first_lesson_request_instrument": "First lesson request: {instrument}",
+    "quote_request": "Quote request",
+    "quote_request_need": "Quote: {need}",
+    "service_question": "Question",
+    "service_question_kind": "Question: {kind}",
+    "quote_tracks": "{count} track | {count} tracks",
+    "quote_deadline": "by {date}"
   },
   "music_link": {
     "title": {
