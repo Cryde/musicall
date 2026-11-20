@@ -1,0 +1,10 @@
+/* A section's colour from its letter (--hue, see sectionHue), the same in the structure list and in
+   the player's timeline, so both choruses of a song match wherever they are shown. */
+.tab-section-hue {
+  background: hsl(var(--hue) 60% 90%);
+  color: hsl(var(--hue) 50% 24%);
+}
+.dark-mode .tab-section-hue {
+  background: hsl(var(--hue) 30% 22%);
+  color: hsl(var(--hue) 70% 84%);
+}

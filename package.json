@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.6",
+    "@coderline/alphatab-vite": "1.9.0",
     "@primevue/auto-import-resolver": "^4.4.1",
     "@vue/devtools-api": "^8.1.5",
     "unplugin-vue-components": "^32.0.0",
@@ -18,6 +19,7 @@
     "vite-plugin-symfony": "^8.2.2"
   },
   "dependencies": {
+    "@coderline/alphatab": "1.9.0",
     "@fullcalendar/vue3": "^7.0.1",
     "@jaseeey/vue-umami-plugin": "^1.4.0",
     "@primeuix/themes": "^2.0.2",

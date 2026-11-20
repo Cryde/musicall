@@ -9,6 +9,7 @@ describe('resolveFeedbackModule', () => {
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.CHAT), FEEDBACK_MODULES.CHAT)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.NOTES), FEEDBACK_MODULES.NOTES)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.FILES), FEEDBACK_MODULES.FILE)
+    assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.TAB_READER), FEEDBACK_MODULES.FILE)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.TASKS), FEEDBACK_MODULES.TASK)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.FINANCE), FEEDBACK_MODULES.FINANCE)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.SETLIST), FEEDBACK_MODULES.SETLIST)

@@ -23,6 +23,9 @@ hosts.yml
 /public/band_space_files/
 /public/message_files/
 
+# alphaTab's music font and the GeneralUser SoundFont split per instrument, written by `vite build`
+/public/alphatab/
+
 ###> liip/imagine-bundle ###
 /public/media/cache/
 ###< liip/imagine-bundle ###

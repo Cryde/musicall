@@ -1,0 +1,114 @@
+{
+  "head": {
+    "files": "Files",
+    "back_to_files": "Back to files",
+    "kind": "Guitar Pro",
+    "meta": "Version {version} - updated {date}",
+    "phone_meta": "Guitar Pro - version {version}",
+    "view": "View",
+    "full_screen": "Full screen",
+    "full_screen_hint": "Hide the Band Space menu",
+    "leave_full_screen": "Exit full screen",
+    "leave_full_screen_hint": "Back to the Band Space page (Esc)",
+    "browser_full_screen": "Hide the browser bars too",
+    "zoom_in": "Larger score",
+    "zoom_out": "Smaller score",
+    "download": "Download"
+  },
+  "view": {
+    "default": "As in the file",
+    "tab": "Tab",
+    "score": "Score",
+    "score_tab": "Score and tab",
+    "tab_short": "Tab",
+    "both_short": "Both"
+  },
+  "panel": {
+    "label": "Right panel",
+    "structure": "Structure",
+    "tracks": "Tracks",
+    "toggle_structure": "Show or hide the structure",
+    "toggle_tracks": "Show or hide the tracks",
+    "hide": "Hide the panel",
+    "section_count": "{count} section | {count} sections",
+    "track_count": "{count} track in the file | {count} tracks in the file",
+    "structure_tip": "Click a section to go there, {icon} to loop it. The markers come from the Guitar Pro file.",
+    "tracks_tip": "The eye picks what is shown, M mutes a track so you play it yourself, S plays it alone."
+  },
+  "section": {
+    "start": "Start",
+    "bar": "bar {bar}",
+    "bars": "bars {start}-{end}",
+    "go": "Go to {name}",
+    "loop": "Loop {name}"
+  },
+  "track": {
+    "guitar": "Guitar - {strings} strings",
+    "bass": "Bass - {strings} strings",
+    "drums": "Drums",
+    "other": "Instrument",
+    "show": "Show {name}",
+    "mute": "Mute {name}",
+    "mute_short": "M",
+    "solo": "Play {name} alone",
+    "solo_short": "S",
+    "volume": "Volume of {name}",
+    "keep_one": "At least one track stays shown."
+  },
+  "speed": {
+    "label": "Playback speed",
+    "presets": "Usual speeds",
+    "trainer": "Speed up on each loop",
+    "trainer_hint": "Each pass of the loop adds 5%, up to 100%",
+    "trainer_step": "Next loop at {value}%"
+  },
+  "player": {
+    "timeline": "Song structure",
+    "restart": "Back to the start",
+    "play": "Play or pause (Space)",
+    "stop": "Stop",
+    "tempo": "Tempo",
+    "tempo_hint": "Tempo of the bar being played, speed included, and its time signature",
+    "written": "written {tempo}",
+    "sounds_loading": "Loading sounds... {percent}",
+    "sounds_failed": "The sounds could not be loaded.",
+    "loop": "Loop",
+    "loop_section": "Loop",
+    "metronome": "Metronome",
+    "count_in": "Count-in",
+    "loop_named": "Loop: {name}",
+    "loop_bar": "Loop: bar {bar}",
+    "loop_bars": "Loop: bars {start} to {end}",
+    "clear_loop": "Remove the loop",
+    "loop_hint": "The whole song loops. Double-click a section, or drag over the score, to loop a passage only.",
+    "sounds_retry": "Try again"
+  },
+  "options": {
+    "title": "Playback options",
+    "speed": "Speed",
+    "count_in": "Count-in before playing",
+    "download": "Download the file"
+  },
+  "page": {
+    "loading": "Loading the tab..."
+  },
+  "new_version": {
+    "title": "New version available.",
+    "body": "Version {version} was uploaded. This one stays on screen until you load it.",
+    "load": "Load version {version}",
+    "dismiss": "Dismiss",
+    "loaded": "Version {version} loaded. Shown tracks and speed kept.",
+    "failed": "Version {version} could not be loaded. This one stays on screen.",
+    "unreadable": "This new version could not be read. The previous one stays on screen."
+  },
+  "error": {
+    "unreadable_title": "This tab cannot be read",
+    "unreadable_body": "\"{name}\" could not be opened. It may be damaged, or it is not a Guitar Pro file.",
+    "formats": "The reader opens Guitar Pro 3 to 8: .gp3, .gp4, .gp5, .gpx and .gp.",
+    "unavailable_title": "Tab unavailable",
+    "not_found": "This file no longer exists, or you no longer have access to it.",
+    "download_failed": "The file could not be downloaded. Check your connection, then try again.",
+    "retry": "Try again",
+    "back": "Back to files"
+  }
+}

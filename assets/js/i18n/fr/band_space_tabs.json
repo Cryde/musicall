@@ -1,0 +1,114 @@
+{
+  "head": {
+    "files": "Fichiers",
+    "back_to_files": "Retour aux fichiers",
+    "kind": "Guitar Pro",
+    "meta": "Version {version} · mise à jour le {date}",
+    "phone_meta": "Guitar Pro · version {version}",
+    "view": "Affichage",
+    "full_screen": "Plein écran",
+    "full_screen_hint": "Masquer le menu du Band Space",
+    "leave_full_screen": "Réduire",
+    "leave_full_screen_hint": "Revenir à la page du Band Space (Échap)",
+    "browser_full_screen": "Masquer aussi les barres du navigateur",
+    "zoom_in": "Partition plus grande",
+    "zoom_out": "Partition plus petite",
+    "download": "Télécharger"
+  },
+  "view": {
+    "default": "Comme le fichier",
+    "tab": "Tablature",
+    "score": "Partition",
+    "score_tab": "Partition et tablature",
+    "tab_short": "Tab",
+    "both_short": "Les deux"
+  },
+  "panel": {
+    "label": "Panneau de droite",
+    "structure": "Structure",
+    "tracks": "Pistes",
+    "toggle_structure": "Afficher ou masquer la structure",
+    "toggle_tracks": "Afficher ou masquer les pistes",
+    "hide": "Masquer le panneau",
+    "section_count": "{count} section | {count} sections",
+    "track_count": "{count} piste dans le fichier | {count} pistes dans le fichier",
+    "structure_tip": "Cliquez une section pour y aller, {icon} pour la boucler. Les repères viennent du fichier Guitar Pro.",
+    "tracks_tip": "L'œil choisit ce qui s'affiche, M coupe une piste pour la jouer à sa place, S n'écoute qu'elle."
+  },
+  "section": {
+    "start": "Début",
+    "bar": "mes. {bar}",
+    "bars": "mes. {start}-{end}",
+    "go": "Aller à {name}",
+    "loop": "Boucler {name}"
+  },
+  "track": {
+    "guitar": "Guitare · {strings} cordes",
+    "bass": "Basse · {strings} cordes",
+    "drums": "Batterie",
+    "other": "Instrument",
+    "show": "Afficher {name}",
+    "mute": "Couper {name}",
+    "mute_short": "M",
+    "solo": "Écouter {name} seule",
+    "solo_short": "S",
+    "volume": "Volume de {name}",
+    "keep_one": "Au moins une piste reste affichée."
+  },
+  "speed": {
+    "label": "Vitesse de lecture",
+    "presets": "Vitesses courantes",
+    "trainer": "Accélérer à chaque boucle",
+    "trainer_hint": "Chaque passage de la boucle ajoute 5 %, jusqu'à 100 %",
+    "trainer_step": "Boucle suivante à {value} %"
+  },
+  "player": {
+    "timeline": "Structure du morceau",
+    "restart": "Revenir au début",
+    "play": "Lecture ou pause (Espace)",
+    "stop": "Stop",
+    "tempo": "Tempo",
+    "tempo_hint": "Tempo de la mesure jouée, vitesse comprise, et sa signature",
+    "written": "écrit {tempo}",
+    "sounds_loading": "Chargement des sons… {percent}",
+    "sounds_failed": "Les sons n'ont pas pu être chargés.",
+    "loop": "Boucle",
+    "loop_section": "Boucler",
+    "metronome": "Métronome",
+    "count_in": "Décompte",
+    "loop_named": "Boucle : {name}",
+    "loop_bar": "Boucle : mesure {bar}",
+    "loop_bars": "Boucle : mesures {start} à {end}",
+    "clear_loop": "Retirer la boucle",
+    "loop_hint": "Toute la chanson tourne en boucle. Double-cliquez une section, ou glissez sur la partition, pour ne boucler qu'un passage.",
+    "sounds_retry": "Réessayer"
+  },
+  "options": {
+    "title": "Options de lecture",
+    "speed": "Vitesse",
+    "count_in": "Décompte avant de jouer",
+    "download": "Télécharger le fichier"
+  },
+  "page": {
+    "loading": "Chargement de la tablature…"
+  },
+  "new_version": {
+    "title": "Nouvelle version disponible.",
+    "body": "La version {version} a été mise en ligne. Celle-ci reste à l'écran tant que vous ne la chargez pas.",
+    "load": "Charger la version {version}",
+    "dismiss": "Ignorer",
+    "loaded": "Version {version} chargée. Pistes affichées et vitesse gardées.",
+    "failed": "La version {version} n'a pas pu être chargée. Celle-ci reste à l'écran.",
+    "unreadable": "Cette nouvelle version n'a pas pu être lue. La précédente reste à l'écran."
+  },
+  "error": {
+    "unreadable_title": "Impossible de lire cette tablature",
+    "unreadable_body": "« {name} » n'a pas pu être ouvert. Il est peut-être abîmé, ou ce n'est pas un fichier Guitar Pro.",
+    "formats": "Le lecteur lit Guitar Pro 3 à 8 : .gp3, .gp4, .gp5, .gpx et .gp.",
+    "unavailable_title": "Tablature indisponible",
+    "not_found": "Ce fichier n'existe plus, ou vous n'y avez plus accès.",
+    "download_failed": "Le fichier n'a pas pu être téléchargé. Vérifiez votre connexion, puis réessayez.",
+    "retry": "Réessayer",
+    "back": "Retour aux fichiers"
+  }
+}

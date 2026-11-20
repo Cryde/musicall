@@ -30,7 +30,7 @@
         </template>
       </PhoneBackBar>
       <div v-else class="flex items-center gap-2 min-w-0 flex-1">
-        <i :class="fileIconClass(file?.mime_type)" class="text-xl text-surface-500"></i>
+        <i :class="fileIconClass(file?.mime_type, file?.original_name)" class="text-xl text-surface-500"></i>
         <FileNameHeading
           v-model:editing="isRenaming"
           :name="file?.original_name"
@@ -76,6 +76,24 @@
           v-else-if="previewComponent"
           class="block w-full bg-surface-50 dark:bg-surface-950"
         />
+        <!-- A Guitar Pro file opens in the tab reader (#1429), testers only while it settles. -->
+        <div
+          v-else-if="isGuitarPro"
+          class="flex flex-col items-center justify-center text-center px-6 py-7 gap-3 bg-surface-50 dark:bg-surface-950"
+        >
+          <TabStaffIcon class="text-surface-500" />
+          <p class="m-0 max-w-[34ch] text-sm text-surface-600 dark:text-surface-300">
+            <b class="block text-[0.95rem] text-surface-900 dark:text-surface-0">{{ t('band_space_files.detail.tab_title') }}</b>
+            {{ canReadTabs ? t('band_space_files.detail.tab_body') : t('band_space_files.detail.preview_unavailable') }}
+          </p>
+          <Button
+            v-if="canReadTabs"
+            as="router-link"
+            :to="{ name: BAND_SPACE_ROUTES.TAB_READER, params: { id: bandSpaceId, fileId: file.id } }"
+            :label="t('band_space_files.detail.read_tab')"
+            icon="pi pi-play"
+          />
+        </div>
         <div v-else class="flex flex-col items-center justify-center p-8 gap-3 bg-surface-50 dark:bg-surface-950">
           <i :class="fileIconClass(file.mime_type)" class="text-5xl! text-surface-400" aria-hidden="true"></i>
           <p class="text-sm text-surface-500 italic">
@@ -120,7 +138,7 @@
           <p class="text-xs text-surface-400 uppercase tracking-wide">
             {{ t('band_space_files.detail.type') }}
           </p>
-          <p class="mt-1 truncate" :title="file.mime_type">{{ fileTypeLabel(file.mime_type) ?? noValue() }}</p>
+          <p class="mt-1 truncate" :title="file.mime_type">{{ fileTypeLabel(file.mime_type, file.original_name) ?? noValue() }}</p>
         </div>
         <div>
           <p class="text-xs text-surface-400 uppercase tracking-wide">
@@ -257,6 +275,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useIsBelowMd } from '../../../composables/useIsPhone.js'
+import { BAND_SPACE_ROUTES, TABS_TESTER_ONLY } from '../../../constants/bandSpace.js'
 import {
   deleteBlockingAttachments,
   fileSourceAttachedMessage,
@@ -273,9 +292,11 @@ import { formatDateWithWeekday } from '../../../utils/date.js'
 import { rootDestinationRefusal } from '../../../utils/fileListing.js'
 import { fileIconClass, fileTypeLabel } from '../../../utils/fileType.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
+import { isGuitarProName } from '../../../utils/guitarPro.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
+import TabStaffIcon from '../../Tabs/TabStaffIcon.vue'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
@@ -297,6 +318,9 @@ const bandSpaceStore = useBandSpaceStore()
 const confirm = useConfirm()
 
 const file = computed(() => filesStore.activeFile)
+// Recognised by name: GP3 to GP5 and GPX are stored as octet-stream, a .gp as a zip (#1428).
+const isGuitarPro = computed(() => isGuitarProName(file.value?.original_name))
+const canReadTabs = computed(() => !TABS_TESTER_ONLY || userSecurityStore.isTester)
 const isAdmin = computed(() => bandSpaceStore.getById(props.bandSpaceId)?.role === 'admin')
 
 const isBelowMd = useIsBelowMd()

@@ -11,6 +11,7 @@ import bandSpaceFiles from './band_space_files.json' with { type: 'json' }
 import bandSpaceFinance from './band_space_finance.json' with { type: 'json' }
 import bandSpaceNotes from './band_space_notes.json' with { type: 'json' }
 import bandSpaceSetlist from './band_space_setlist.json' with { type: 'json' }
+import bandSpaceTabs from './band_space_tabs.json' with { type: 'json' }
 import bandSpaceTasks from './band_space_tasks.json' with { type: 'json' }
 import bandSpaceTechRider from './band_space_tech_rider.json' with { type: 'json' }
 import errors from './errors.json' with { type: 'json' }
@@ -36,6 +37,7 @@ export default {
   band_space_finance: bandSpaceFinance,
   band_space_notes: bandSpaceNotes,
   band_space_setlist: bandSpaceSetlist,
+  band_space_tabs: bandSpaceTabs,
   band_space_tasks: bandSpaceTasks,
   band_space_tech_rider: bandSpaceTechRider,
   errors,
