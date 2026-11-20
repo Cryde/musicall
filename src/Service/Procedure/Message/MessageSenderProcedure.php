@@ -18,6 +18,7 @@ use App\Service\Builder\Message\MessageDirector;
 use App\Service\Builder\Message\MessageParticipantDirector;
 use App\Service\Builder\Message\MessageThreadDirector;
 use App\Service\Builder\Message\MessageThreadMetaDirector;
+use App\Service\Message\ServiceContact;
 use App\Service\Message\TeacherProfileContact;
 use App\Service\Message\ThreadMemberResolver;
 use App\Service\User\UserNotificationPreferenceChecker;
@@ -46,12 +47,12 @@ class MessageSenderProcedure
     }
 
     /**
-     * @param MusicianAnnounce|TeacherProfileContact|null $contactOrigin what the sender wrote from (#998)
+     * @param MusicianAnnounce|TeacherProfileContact|ServiceContact|null $contactOrigin what the sender wrote from (#998)
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function process(User $sender, User $recipient, string $content, MusicianAnnounce|TeacherProfileContact|null $contactOrigin = null) : Message
+    public function process(User $sender, User $recipient, string $content, MusicianAnnounce|TeacherProfileContact|ServiceContact|null $contactOrigin = null) : Message
     {
         /** @var MessageSentEvent[] $eventsToDispatch */
         $eventsToDispatch = [];
@@ -173,11 +174,11 @@ class MessageSenderProcedure
     }
 
     /**
-     * Writing again from the announce or teacher profile the conversation is already about adds nothing: the
-     * card is only worth showing when the reason for talking changes. A lesson request is such a reason, unless
-     * the latest card already asks the same thing for the same instruments (#1322).
+     * Writing again from the announce, teacher profile or service the conversation is already about adds nothing:
+     * the card is only worth showing when the reason for talking changes. A lesson or quote request is such a
+     * reason, unless the latest card already asks the same thing (#1322, #1408).
      */
-    private function isLatestOrigin(MessageThread $thread, MusicianAnnounce|TeacherProfileContact $source): bool
+    private function isLatestOrigin(MessageThread $thread, MusicianAnnounce|TeacherProfileContact|ServiceContact $source): bool
     {
         if ($thread->id === null) {
             return false;
@@ -188,6 +189,13 @@ class MessageSenderProcedure
         }
         if ($source instanceof MusicianAnnounce) {
             return $latest->musicianAnnounce !== null && (string) $latest->musicianAnnounce->id === (string) $source->id;
+        }
+        if ($source instanceof ServiceContact) {
+            if ($latest->service === null || (string) $latest->service->id !== (string) $source->service->id) {
+                return false;
+            }
+
+            return $source->quote === null || $latest->quote === $source->quote;
         }
         if ($latest->teacherProfile === null || (string) $latest->teacherProfile->id !== (string) $source->profile->id) {
             return false;

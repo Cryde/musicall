@@ -90,6 +90,9 @@ class MessageContactOriginTest extends ApiTestCase
                 'styles' => ['Rock', 'Blues'],
                 'location_name' => 'Lyon',
                 'lesson_request' => null,
+                'service_id' => null,
+                'service_kind' => null,
+                'quote' => null,
             ],
         ]);
         // Kept by slug (#1212), named only when read.
@@ -146,6 +149,9 @@ class MessageContactOriginTest extends ApiTestCase
                 'styles' => [],
                 'location_name' => null,
                 'lesson_request' => null,
+                'service_id' => null,
+                'service_kind' => null,
+                'quote' => null,
             ],
         ]);
     }
@@ -200,6 +206,9 @@ class MessageContactOriginTest extends ApiTestCase
                 'styles' => [],
                 'location_name' => null,
                 'lesson_request' => 'trial',
+                'service_id' => null,
+                'service_kind' => null,
+                'quote' => null,
             ],
         ]);
     }
@@ -251,6 +260,9 @@ class MessageContactOriginTest extends ApiTestCase
                 'styles' => [],
                 'location_name' => null,
                 'lesson_request' => 'first',
+                'service_id' => null,
+                'service_kind' => null,
+                'quote' => null,
             ],
         ]);
     }
@@ -306,6 +318,9 @@ class MessageContactOriginTest extends ApiTestCase
                 'styles' => [],
                 'location_name' => null,
                 'lesson_request' => 'trial',
+                'service_id' => null,
+                'service_kind' => null,
+                'quote' => null,
             ],
         ]);
         $this->assertSame(2, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
@@ -432,6 +447,9 @@ class MessageContactOriginTest extends ApiTestCase
                             'styles' => [],
                             'location_name' => null,
                             'lesson_request' => 'trial',
+                            'service_id' => null,
+                            'service_kind' => null,
+                            'quote' => null,
                         ],
                         'can_send_media' => true,
                     ],
@@ -738,7 +756,7 @@ class MessageContactOriginTest extends ApiTestCase
         ], self::JSON);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertJsonEquals($this->violation('fromTeacherProfile', 'Un message part d\'une annonce ou d\'un profil de professeur, pas des deux', ValidContactOriginValidator::ERROR_CODE_BOTH));
+        $this->assertJsonEquals($this->violation('fromTeacherProfile', 'Un message part d\'une annonce, d\'un profil de professeur ou d\'un service, pas de plusieurs à la fois', ValidContactOriginValidator::ERROR_CODE_BOTH));
     }
 
     /** Writing again from the announce the conversation is already about adds no second card. */
@@ -835,6 +853,9 @@ class MessageContactOriginTest extends ApiTestCase
                 'styles' => ['Rock', 'Blues'],
                 'location_name' => 'Lyon',
                 'lesson_request' => null,
+                'service_id' => null,
+                'service_kind' => null,
+                'quote' => null,
             ],
         ]);
         $this->assertSame(2, self::getContainer()->get(EntityManagerInterface::class)->getRepository(MessageContactOrigin::class)->count([]));
@@ -928,6 +949,9 @@ class MessageContactOriginTest extends ApiTestCase
                             'styles' => $styles,
                             'location_name' => 'Lyon',
                             'lesson_request' => null,
+                            'service_id' => null,
+                            'service_kind' => null,
+                            'quote' => null,
                         ],
                         'can_send_media' => true,
                     ],
@@ -988,6 +1012,9 @@ class MessageContactOriginTest extends ApiTestCase
                         'styles' => ['Rock', 'Blues'],
                         'location_name' => 'Lyon',
                         'lesson_request' => null,
+                        'service_id' => null,
+                        'service_kind' => null,
+                        'quote' => null,
                     ],
                     'is_seen' => false,
                     'is_deleted' => false,
@@ -1069,6 +1096,9 @@ class MessageContactOriginTest extends ApiTestCase
                     'styles' => $announceStyles,
                     'location_name' => 'Lyon',
                     'lesson_request' => null,
+                    'service_id' => null,
+                    'service_kind' => null,
+                    'quote' => null,
                 ]),
                 $this->storedOriginMessage($fromTeacher, $sender, [
                     'type' => 'teacher_profile',
@@ -1079,6 +1109,9 @@ class MessageContactOriginTest extends ApiTestCase
                     'styles' => [],
                     'location_name' => null,
                     'lesson_request' => null,
+                    'service_id' => null,
+                    'service_kind' => null,
+                    'quote' => null,
                 ]),
             ],
             'totalItems' => 2,

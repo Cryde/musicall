@@ -5,10 +5,10 @@ import securityApi from '../../api/user/security.js'
 import { i18n } from '../../i18n/index.js'
 import router from '../../router/index.js'
 import { clearPendingAction, openPendingActionStorage } from '../../utils/pendingAction.js'
+import { clearRequestDrafts, openRequestDraftStorage } from '../../utils/requestDraft.js'
 import { isSafeReturnUrl } from '../../utils/returnUrl.js'
 import { grantsAdmin, grantsTester } from '../../utils/roles.js'
 import { createSessionKeeper } from '../../utils/sessionKeeper.js'
-import { clearRequestDrafts, openRequestDraftStorage } from '../../utils/trialRequest.js'
 import { routeReturningTo } from '../../utils/unauthenticatedRedirect.js'
 
 export const useUserSecurityStore = defineStore('userSecurity', () => {

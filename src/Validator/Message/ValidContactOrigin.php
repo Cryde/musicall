@@ -13,6 +13,8 @@ class ValidContactOrigin extends Constraint
     public string $lessonWithoutTeacherProfileMessage = 'message.contact_origin.lesson_without_teacher_profile';
     public string $teacherInstrumentMessage = 'message.contact_origin.teacher_instrument_invalid';
     public string $lessonRequestMessage = 'message.contact_origin.lesson_request_invalid';
+    public string $serviceMessage = 'message.contact_origin.service_invalid';
+    public string $quoteWithoutServiceMessage = 'message.contact_origin.quote_without_service';
 
     public function getTargets(): string
     {

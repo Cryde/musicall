@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enum\Service;
 
+use App\Enum\Message\ContactOriginType;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -15,6 +17,9 @@ enum ServiceKind: string implements TranslatableInterface
 {
     case Teaching = 'teaching';
     case SoundEngineering = 'sound_engineering';
+
+    /** The budget « Demander un devis » offers whatever the kind (#1408), in euros. */
+    private const array QUOTE_BUDGETS = ['under_100', '100_to_300', '300_to_1000', 'over_1000'];
 
     /** @return list<string> */
     public static function values(): array
@@ -28,6 +33,15 @@ enum ServiceKind: string implements TranslatableInterface
         return match ($this) {
             self::Teaching => 'teacher_profile',
             self::SoundEngineering => 'service',
+        };
+    }
+
+    /** What a message sent from its page records (#1408): teaching keeps the type installed app builds read. */
+    public function contactOriginType(): ContactOriginType
+    {
+        return match ($this) {
+            self::Teaching => ContactOriginType::TeacherProfile,
+            self::SoundEngineering => ContactOriginType::Service,
         };
     }
 
@@ -82,6 +96,24 @@ enum ServiceKind: string implements TranslatableInterface
         return match ($this) {
             self::Teaching => [ServicePart::Headline, ServicePart::Description, ServicePart::Places, ServicePart::Offers],
             self::SoundEngineering => [ServicePart::Headline, ServicePart::Description, ServicePart::Specialities, ServicePart::Places, ServicePart::Offers],
+        };
+    }
+
+    /**
+     * The answers « Demander un devis » takes (#1408), in asking order: only `need` is required. Null when the kind
+     * takes no quote request: teaching keeps its lesson request.
+     */
+    public function quoteQuestions(): ?Assert\Collection
+    {
+        return match ($this) {
+            self::Teaching => null,
+            self::SoundEngineering => new Assert\Collection(fields: [
+                'need' => new Assert\Required(new Assert\Sequentially([new Assert\NotBlank(), new Assert\Choice(choices: ['mixing', 'mastering', 'recording', 'live'])])),
+                'tracks' => new Assert\Optional([new Assert\Type('int'), new Assert\Range(min: 1, max: 100)]),
+                'link' => new Assert\Optional(new Assert\Sequentially([new Assert\Type('string'), new Assert\Url(requireTld: true), new Assert\Length(max: 255)])),
+                'deadline' => new Assert\Optional(new Assert\Sequentially([new Assert\Type('string'), new Assert\Date()])),
+                'budget' => new Assert\Optional([new Assert\Choice(choices: self::QUOTE_BUDGETS)]),
+            ]),
         };
     }
 

@@ -792,6 +792,40 @@
       }
     }
   },
+  "quote_request": {
+    "title": "Ask {name} for a quote",
+    "intro": "A few questions, and {name} can price your project.",
+    "optional": "optional",
+    "question": {
+      "need": "What do you need?",
+      "tracks": "How many tracks?",
+      "link": "A link to listen to",
+      "deadline": "By when?",
+      "budget": "Your budget"
+    },
+    "link_hint": "SoundCloud, YouTube, a shared folder...",
+    "need": {
+      "mixing": "Mixing",
+      "mastering": "Mastering",
+      "recording": "Recording",
+      "live": "Live"
+    },
+    "budget": {
+      "under_100": "Under €100",
+      "100_to_300": "€100 to €300",
+      "300_to_1000": "€300 to €1,000",
+      "over_1000": "Over €1,000"
+    },
+    "need_required": "Say what you need to send the request.",
+    "message": {
+      "greeting": "Hi {name}, I'd like a quote.",
+      "need": "Service: {value}",
+      "tracks": "Number of tracks: {value}",
+      "link": "To listen: {value}",
+      "deadline": "By: {value}",
+      "budget": "Budget: {value}"
+    }
+  },
   "public": {
     "not_found_title": "Profile not found",
     "not_found_help": "This profile doesn't exist or isn't available.",
@@ -1063,6 +1097,7 @@
     "usual_turnaround": "usual turnaround",
     "revisions_included": "revision included | revisions included",
     "edit": "Edit my service",
+    "ask_quote": "Ask for a quote",
     "share_title": "{name}, sound engineer on MusicAll",
     "listen": "Hear {name}'s work",
     "before_after": "Before, after",

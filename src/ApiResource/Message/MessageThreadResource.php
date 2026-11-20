@@ -63,9 +63,9 @@ class MessageThreadResource
     public ?string $channelName = null;
 
     /**
-     * The most recent announce or teacher profile a message of this thread was sent from (#998).
+     * The most recent announce, teacher profile or service a message of this thread was sent from (#998).
      *
-     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null}|null
+     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null, service_id: string|null, service_kind: string|null, quote: array<string, int|string>|null}|null
      */
     #[Groups([MessageThreadMetaResource::LIST])]
     public ?array $latestContactOrigin = null;

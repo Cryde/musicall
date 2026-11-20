@@ -100,9 +100,9 @@ class MessageResource
     public string $contentPreview; // plain text, never v-html
 
     /**
-     * The announce or teacher profile this message was sent from, shown as a card above it (#998).
+     * The announce, teacher profile or service this message was sent from, shown as a card above it (#998).
      *
-     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null}|null
+     * @var array{type: string, musician_announce_id: string|null, teacher_profile_id: string|null, announce_type: int|null, instruments: list<string>, styles: list<string>, location_name: string|null, lesson_request: string|null, service_id: string|null, service_kind: string|null, quote: array<string, int|string>|null}|null
      */
     #[Groups([MessageResource::LIST, MessageResource::ITEM])]
     public ?array $contactOrigin = null;

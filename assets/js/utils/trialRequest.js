@@ -7,9 +7,6 @@ import { DAYS_OF_WEEK } from './teacherPage.js'
 const LEVELS = ['beginner', 'intermediate', 'advanced']
 const PLACES = ['teacher_place', 'student_place', 'online']
 const PARTS_OF_DAY = ['morning', 'afternoon', 'evening']
-const DRAFT_PREFIX = 'trial-request:'
-// Long enough to sign in or sign up and come back, short enough not to greet the next person in a shared tab.
-export const DRAFT_LIFETIME_MS = 2 * 60 * 60 * 1000
 
 // Full literal keys, so the catalogue test sees every one of them (assets/js/i18n/fr.test.js).
 const QUESTION_LABELS = {
@@ -209,72 +206,4 @@ export function buildRequestMessage(answers, context, t) {
   if (when) lines.push(t(MESSAGE.when, { value: context.whenLabel(when.params) }))
 
   return lines.join('\n')
-}
-
-/** The answers a visitor gave before signing in, kept in this tab only. */
-export function saveRequestDraft(storage, username, draft, now = Date.now()) {
-  if (!storage || !username) return
-  try {
-    storage.setItem(
-      DRAFT_PREFIX + username.toLowerCase(),
-      JSON.stringify({ ...draft, savedAt: now })
-    )
-  } catch {
-    // Storage full or blocked: the visitor answers again.
-  }
-}
-
-/** Taken once, and only while it is fresh. */
-export function takeRequestDraft(storage, username, now = Date.now()) {
-  if (!storage || !username) return null
-  const key = DRAFT_PREFIX + username.toLowerCase()
-  try {
-    const raw = storage.getItem(key)
-    storage.removeItem(key)
-    if (!raw) return null
-    const draft = JSON.parse(raw)
-    if (typeof draft?.savedAt !== 'number' || now - draft.savedAt > DRAFT_LIFETIME_MS) return null
-    return {
-      answers: draft.answers ?? {},
-      message: typeof draft.message === 'string' ? draft.message : null
-    }
-  } catch {
-    return null
-  }
-}
-
-/** Whether a draft waits for this teacher, without taking it. */
-export function hasRequestDraft(storage, username, now = Date.now()) {
-  if (!storage || !username) return false
-  try {
-    const raw = storage.getItem(DRAFT_PREFIX + username.toLowerCase())
-    const draft = raw ? JSON.parse(raw) : null
-    return typeof draft?.savedAt === 'number' && now - draft.savedAt <= DRAFT_LIFETIME_MS
-  } catch {
-    return false
-  }
-}
-
-/** Every request draft in this tab, at logout: the next person to sign in here must not find them. */
-export function clearRequestDrafts(storage) {
-  if (!storage) return
-  try {
-    const keys = []
-    for (let index = 0; index < storage.length; index++) {
-      const key = storage.key(index)
-      if (key?.startsWith(DRAFT_PREFIX)) keys.push(key)
-    }
-    for (const key of keys) storage.removeItem(key)
-  } catch {
-    // Blocked storage holds no draft.
-  }
-}
-
-/** Reading the property itself throws when the browser blocks storage. */
-export function openRequestDraftStorage() {
-  try {
-    return globalThis.sessionStorage ?? null
-  } catch {
-    return null
-  }
 }
