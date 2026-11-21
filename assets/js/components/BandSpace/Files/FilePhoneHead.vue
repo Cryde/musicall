@@ -195,7 +195,7 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false },
   folders: { type: Array, default: () => [] },
   virtualFolders: { type: Array, default: () => [] },
-  /** The songs « Chansons » unfolds into, as the sidebar shows them on a computer. */
+  /** The songs « Titres » unfolds into, as the sidebar shows them on a computer. */
   songFolders: { type: Array, default: () => [] },
   activeFolderId: { type: String, default: null },
   archivedCount: { type: Number, default: 0 },

@@ -406,7 +406,7 @@ class ChatImageTest extends ApiTestCase
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
-                ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
+                ['id' => 'virtual:song', 'name' => 'Titres', 'source' => 'song', 'file_count' => 0],
                 ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
                 ['id' => 'virtual:message', 'name' => 'Chat', 'source' => 'message', 'file_count' => 1],
             ],

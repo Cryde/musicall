@@ -126,6 +126,20 @@ describe('finance activity sentences', () => {
 
 const setlist = (type, payload) => ({ module: 'setlist', type, payload })
 
+// A song is a « titre » everywhere in French, as the répertoire's counts already said (#1436).
+describe('song activity sentences', () => {
+  it('call a song a « titre »', () => {
+    assert.equal(
+      activitySentence(setlist('song_added', { title: 'Intro' })),
+      'a ajouté le titre « Intro » au répertoire'
+    )
+    assert.equal(
+      activitySentence(setlist('song_unarchived', { title: 'Intro' })),
+      'a réintégré le titre « Intro » au répertoire'
+    )
+  })
+})
+
 describe('lyrics activity sentences (#1260)', () => {
   it('name the song only when the lyrics were written for one', () => {
     assert.equal(
@@ -134,18 +148,18 @@ describe('lyrics activity sentences (#1260)', () => {
     )
     assert.equal(
       activitySentence(setlist('lyrics_added', { title: 'Idée', song_title: 'Enfin' })),
-      'a écrit les paroles « Idée » pour la chanson « Enfin »'
+      'a écrit les paroles « Idée » pour le titre « Enfin »'
     )
   })
 
   it('name both the lyrics and the song on a link and an unlink', () => {
     assert.equal(
       activitySentence(setlist('lyrics_linked', { title: 'Idée', song_title: 'Enfin' })),
-      'a lié les paroles « Idée » à la chanson « Enfin »'
+      'a lié les paroles « Idée » au titre « Enfin »'
     )
     assert.equal(
       activitySentence(setlist('lyrics_unlinked', { title: 'Idée', song_title: 'Enfin' })),
-      'a délié les paroles « Idée » de la chanson « Enfin »'
+      'a délié les paroles « Idée » du titre « Enfin »'
     )
   })
 
@@ -247,6 +261,22 @@ describe('file and folder activity sentences', () => {
     assert.equal(
       activitySentence(file('attached', { source_type: 'robot' })),
       'a attaché un fichier'
+    )
+  })
+
+  // « à » and « de » contract with « le »: « à le titre » and « de le titre » are not French (#1436).
+  it('contract « à » and « de » before a song', () => {
+    assert.equal(
+      activitySentence(file('attached', { source_type: 'song', source_label: 'Intro' })),
+      'a attaché un fichier au titre « Intro »'
+    )
+    assert.equal(
+      activitySentence(file('detached', { source_type: 'song' })),
+      'a détaché un fichier du titre'
+    )
+    assert.equal(
+      activitySentence(file('source_deleted', { source_type: 'song', source_label: 'Intro' })),
+      'a supprimé le titre « Intro », son fichier a été détaché'
     )
   })
 

@@ -60,7 +60,7 @@
           class="flex items-center rounded-md text-sm transition-colors duration-150"
           :class="virtualButtonClasses(virtual.id)"
         >
-          <!-- « Chansons » unfolds into the songs that have files (#1431), folded until asked for, so a
+          <!-- « Titres » unfolds into the songs that have files (#1431), folded until asked for, so a
                répertoire of forty songs does not push « Setlists » off the panel. -->
           <button
             v-if="hasSongNodes(virtual)"
@@ -156,7 +156,7 @@ import FolderTreeRail from './FolderTreeRail.vue'
 const props = defineProps({
   folders: { type: Array, default: () => [] },
   virtualFolders: { type: Array, default: () => [] },
-  /** The songs that have files, by title: the nodes « Chansons » unfolds into. */
+  /** The songs that have files, by title: the nodes « Titres » unfolds into. */
   songFolders: { type: Array, default: () => [] },
   activeFolderId: { type: String, default: null },
   bandSpaceId: { type: String, default: null },

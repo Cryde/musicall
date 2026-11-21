@@ -49,7 +49,7 @@ describe('groupResultsByType', () => {
   it('carries the label and icon the palette renders', () => {
     const [group] = groupResultsByType([result('song', '1')])
 
-    assert.equal(group.label, 'Morceaux')
+    assert.equal(group.label, 'Titres')
     assert.equal(group.icon, 'pi-play')
   })
 })
@@ -121,8 +121,13 @@ describe('routeForResult', () => {
 
 describe('searchTypeFor', () => {
   it('answers with the label and icon the palette renders', () => {
-    assert.equal(searchTypeFor('song').label, 'Morceaux')
+    assert.equal(searchTypeFor('song').label, 'Titres')
     assert.equal(searchTypeFor('song').icon, 'pi-play')
+  })
+
+  // The module holding them is « Répertoire » (#1436), but this group lists setlists only.
+  it('names the setlist group after setlists, not after their module', () => {
+    assert.equal(searchTypeFor('setlist').label, 'Setlists')
   })
 
   it('covers every declared type', () => {

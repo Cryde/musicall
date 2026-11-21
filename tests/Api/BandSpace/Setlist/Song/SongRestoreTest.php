@@ -154,10 +154,10 @@ class SongRestoreTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Cette chanson n'est pas dans la corbeille",
+            'detail' => "Ce titre n'est pas dans la corbeille",
             'status' => 409,
             'type' => '/errors/409',
-            'description' => "Cette chanson n'est pas dans la corbeille",
+            'description' => "Ce titre n'est pas dans la corbeille",
         ]);
     }
 
@@ -224,10 +224,10 @@ class SongRestoreTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Chanson introuvable',
+            'detail' => 'Titre introuvable',
             'status' => 404,
             'type' => '/errors/404',
-            'description' => 'Chanson introuvable',
+            'description' => 'Titre introuvable',
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();

@@ -54,6 +54,15 @@ describe('the Tech Riders curtain', () => {
   })
 })
 
+describe('the Répertoire sidebar entry (#1436)', () => {
+  // It opens on the songs, and a setlist is one thing a band does with them.
+  it('names the module after the songs it holds, not after its setlists', () => {
+    const repertoire = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.SETLIST)
+
+    assert.equal(repertoire.label, 'Répertoire')
+  })
+})
+
 describe('the Tablatures sidebar entry', () => {
   it("is gated on the reader's flag, so one flip releases the module and the reader together", () => {
     const tabs = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.TABS)
@@ -62,7 +71,7 @@ describe('the Tablatures sidebar entry', () => {
     assert.equal(tabs.testerOnly, TABS_TESTER_ONLY)
   })
 
-  it('sits right after Setlists, since songs and tabs go together', () => {
+  it('sits right after the Répertoire, since songs and tabs go together', () => {
     const routes = NAVIGATION_ITEMS.map((item) => item.route)
 
     assert.equal(

@@ -7,7 +7,7 @@
     "files": "Files",
     "tasks": "Tasks",
     "finance": "Finances",
-    "setlist": "Setlists",
+    "setlist": "Repertoire",
     "tabs": "Tabs",
     "rider": "Tech riders",
     "parameters": "Settings",
@@ -18,7 +18,7 @@
     "chat": "The band's thread, where you attach a date, a song or a file, and turn a message into a task.",
     "tasks": "Who books the rehearsal room, who chases the promoter, and where it all stands.",
     "notes": "Lyrics, arrangements and rehearsal notes, all in one place.",
-    "setlists": "Running order, transitions and durations, ready to print or to follow on stage.",
+    "setlists": "The band's songs with their files and lyrics, and setlists ready to print or to follow on stage.",
     "files": "Demos, sheet music, contracts and photos shared with the whole band.",
     "finances": "Expenses, fees and everyone's share, worked out instead of argued over."
   },
@@ -53,6 +53,7 @@
   },
   "search": {
     "type": {
+      "setlist": "Setlists",
       "song": "Songs"
     },
     "error": "Search failed",

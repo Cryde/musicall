@@ -1,4 +1,4 @@
-import { fileSourceDefiniteNoun } from '../../../constants/fileSources.js'
+import { fileActivitySourceNoun } from '../../../constants/fileSources.js'
 import { noValue } from '../../../i18n/formatLocale.js'
 import { i18n } from '../../../i18n/index.js'
 import { formatEurosFromCents } from '../../../utils/currency.js'
@@ -46,12 +46,12 @@ function fileName(activity) {
   return activity.payload?.original_name ?? noValue()
 }
 
-// The source a file hangs on, worded to read after « à » or « de » (fileSources.js), and its own label
-// when the payload carries one. `bare` is the sentence for a payload that names no source at all.
+// The source a file hangs on, in the form its sentence puts it (« au titre », « du titre », « le
+// titre », from fileSources.js), and its own label when the payload carries one. `bare` is the
+// sentence for a payload that names no source at all; without one, the fallback « la ressource
+// associée » stands in, which only reads right where the sentence takes a bare definite noun.
 function fileSourceSentence(activity, keys) {
-  const sourceType = activity.payload?.source_type
-  // A type this front does not know has no noun either.
-  const noun = sourceType ? fileSourceDefiniteNoun(sourceType) : null
+  const noun = fileActivitySourceNoun(activity.type, activity.payload?.source_type)
   if (!noun && keys.bare) return t(keys.bare)
 
   const source = noun ?? t('band_space_files.activity.associated_resource')

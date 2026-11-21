@@ -157,7 +157,7 @@ const props = defineProps({
   emptyHint: { type: String, default: null },
   /** A song's page draws its latest tab first, its first bars showing. */
   featureTab: { type: Boolean, default: false },
-  /** Files to send as the section opens, picked before it existed (« Nouveau morceau »). */
+  /** Files to send as the section opens, picked before it existed (« Nouveau titre »). */
   uploadOnMount: { type: Array, default: () => [] }
 })
 

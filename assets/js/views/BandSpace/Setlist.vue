@@ -87,7 +87,7 @@
           v-if="isBelowMd && (phoneScreen === 'lyrics' || phoneScreen === 'trash')"
           variant="page"
           class="mb-3"
-          :back-label="t('band_space_setlist.phone.back_to_setlists')"
+          :back-label="t('band_space_setlist.phone.back_to_repertoire')"
           :title="currentSelectionLabel"
           @back="goHome"
         />
@@ -188,7 +188,7 @@ const currentSelectionLabel = computed(() => {
   if (activeView.value === 'trash') return t('band_space_setlist.sidebar.trash')
   if (activeView.value === 'lyrics') return t('band_space_setlist.sidebar.lyrics')
   if (activeView.value === 'setlist' && activeSetlist.value) return activeSetlist.value.name
-  return t('band_space_setlist.common.repertoire')
+  return t('band_space_setlist.common.songs')
 })
 
 // A phone walks into a screen, so its back gesture returns to the one before; the desktop swaps

@@ -133,10 +133,10 @@ class BandSpaceSongFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Chanson introuvable',
+            'detail' => 'Titre introuvable',
             'status' => 404,
             'type' => '/errors/404',
-            'description' => 'Chanson introuvable',
+            'description' => 'Titre introuvable',
         ]);
     }
 
@@ -298,10 +298,10 @@ class BandSpaceSongFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Le fichier n'est pas attaché à cette chanson",
+            'detail' => "Le fichier n'est pas attaché à ce titre",
             'status' => 404,
             'type' => '/errors/404',
-            'description' => "Le fichier n'est pas attaché à cette chanson",
+            'description' => "Le fichier n'est pas attaché à ce titre",
         ]);
     }
 
@@ -372,10 +372,10 @@ class BandSpaceSongFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'detail' => 'Ce titre est archivé, les modifications sont désactivées',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'description' => 'Ce titre est archivé, les modifications sont désactivées',
         ]);
 
         $this->assertCount(

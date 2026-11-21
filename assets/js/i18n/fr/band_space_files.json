@@ -4,30 +4,40 @@
       "label": "Tâche",
       "indefinite": "une tâche",
       "definite": "la tâche",
+      "to": "à la tâche",
+      "from": "de la tâche",
       "quota": "Tâches"
     },
     "finance": {
       "label": "Entrée financière",
       "indefinite": "une entrée financière",
       "definite": "l'entrée financière",
+      "to": "à l'entrée financière",
+      "from": "de l'entrée financière",
       "quota": "Finances"
     },
     "note": {
       "label": "Note",
       "indefinite": "une note",
       "definite": "la note",
+      "to": "à la note",
+      "from": "de la note",
       "quota": "Notes"
     },
     "song": {
-      "label": "Chanson",
-      "indefinite": "une chanson",
-      "definite": "la chanson",
-      "quota": "Chansons"
+      "label": "Titre",
+      "indefinite": "un titre",
+      "definite": "le titre",
+      "to": "au titre",
+      "from": "du titre",
+      "quota": "Titres"
     },
     "setlist": {
       "label": "Setlist",
       "indefinite": "une setlist",
       "definite": "la setlist",
+      "to": "à la setlist",
+      "from": "de la setlist",
       "quota": "Setlists"
     },
     "message": {
@@ -149,11 +159,11 @@
     "share_revoked": "{actor} a révoqué un lien de partage",
     "public_accessed": "{actor} le lien public a été consulté",
     "attached": "{actor} a attaché le fichier",
-    "attached_to": "{actor} a attaché le fichier à {source}",
-    "attached_to_labelled": "{actor} a attaché le fichier à {source} « {label} »",
+    "attached_to": "{actor} a attaché le fichier {source}",
+    "attached_to_labelled": "{actor} a attaché le fichier {source} « {label} »",
     "detached": "{actor} a détaché le fichier",
-    "detached_from": "{actor} a détaché le fichier de {source}",
-    "detached_from_labelled": "{actor} a détaché le fichier de {source} « {label} »",
+    "detached_from": "{actor} a détaché le fichier {source}",
+    "detached_from_labelled": "{actor} a détaché le fichier {source} « {label} »",
     "source_deleted": "{actor} a supprimé {source}, le fichier a été détaché",
     "source_deleted_labelled": "{actor} a supprimé {source} « {label} », le fichier a été détaché",
     "associated_resource": "la ressource associée",
@@ -291,7 +301,7 @@
     "download": "Télécharger",
     "open_in_files": "Ouvrir dans Fichiers",
     "actions": "Actions pour {name}",
-    "detach_confirm_song": "Détacher « {name} » de cette chanson ?",
+    "detach_confirm_song": "Détacher « {name} » de ce titre ?",
     "detach_confirm_setlist": "Détacher « {name} » de cette setlist ?"
   },
   "detach_dialog": {
@@ -366,9 +376,9 @@
     "rename_move": "Renommer / déplacer"
   },
   "song_tree": {
-    "toggle": "Afficher chaque chanson",
+    "toggle": "Afficher chaque titre",
     "open_page": "Ouvrir la fiche",
-    "open_song": "Ouvrir la chanson {title}"
+    "open_song": "Ouvrir le titre {title}"
   },
   "file_list": {
     "empty": "Aucun fichier dans ce dossier, commence par en importer un.",
@@ -411,7 +421,7 @@
       "virtual_task": "Aucun fichier attaché à une tâche pour le moment.",
       "virtual_finance": "Aucun fichier attaché à une entrée financière pour le moment.",
       "virtual_note": "Aucune image attachée à une note pour le moment.",
-      "virtual_song": "Aucun fichier attaché à une chanson pour le moment.",
+      "virtual_song": "Aucun fichier attaché à un titre pour le moment.",
       "virtual_setlist": "Aucun fichier attaché à une setlist pour le moment.",
       "search": "Aucun fichier ne correspond à cette recherche.",
       "filters": "Aucun fichier ne correspond à ces filtres.",

@@ -7,7 +7,7 @@
     "files": "Fichiers",
     "tasks": "Tâches",
     "finance": "Finances",
-    "setlist": "Setlists",
+    "setlist": "Répertoire",
     "tabs": "Tablatures",
     "rider": "Tech riders",
     "parameters": "Paramètres",
@@ -15,10 +15,10 @@
   },
   "module_description": {
     "agenda": "Chaque date réunit horaires, lieu, disponibilités et setlist associée.",
-    "chat": "Le fil du groupe, où l'on joint une date, un morceau ou un fichier, et où un message devient une tâche.",
+    "chat": "Le fil du groupe, où l'on joint une date, un titre ou un fichier, et où un message devient une tâche.",
     "tasks": "Qui réserve la salle, qui relance le programmateur, et où ça en est.",
     "notes": "Les paroles, les arrangements et les comptes rendus de répét, au même endroit.",
-    "setlists": "L'ordre, les transitions et les durées, prêts à imprimer ou à suivre sur scène.",
+    "setlists": "Les titres du groupe avec leurs fichiers et leurs paroles, et les setlists prêtes à imprimer ou à suivre sur scène.",
     "files": "Maquettes, partitions, contrats et photos partagés avec tout le groupe.",
     "finances": "Dépenses, cachets et part de chacun, calculés au lieu d'être discutés."
   },
@@ -53,7 +53,8 @@
   },
   "search": {
     "type": {
-      "song": "Morceaux"
+      "setlist": "Setlists",
+      "song": "Titres"
     },
     "error": "Erreur pendant la recherche",
     "filter_by_type": "Filtrer par type",

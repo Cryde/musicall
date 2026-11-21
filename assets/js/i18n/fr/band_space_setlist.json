@@ -11,6 +11,7 @@
     "duration_of_song": "Durée de « {title} »",
     "remove": "Retirer",
     "repertoire": "Répertoire",
+    "songs": "Titres",
     "add_duration": "+ durée",
     "add_duration_aria": "Ajouter la durée de {title}",
     "lyrics_present": "Paroles et accords",
@@ -25,7 +26,7 @@
   },
   "page": {
     "retry": "Réessayer",
-    "mobile_nav_title": "Navigation Setlists"
+    "mobile_nav_title": "Navigation du répertoire"
   },
   "sidebar": {
     "setlists": "Setlists",
@@ -49,7 +50,7 @@
     "title_label": "Titre",
     "hint": "Tonalité, BPM, durée et paroles se renseignent ensuite, sur sa page.",
     "title_required": "Indique un titre.",
-    "title_from_file": "Sans titre, la chanson prend le nom du premier fichier.",
+    "title_from_file": "Laissé vide, le titre prend le nom du premier fichier.",
     "files_label": "Fichiers",
     "optional": "(facultatif)",
     "files_drop": "Glisse la tablature, une démo ou la grille ici, ou clique pour les choisir",
@@ -188,7 +189,7 @@
   "item_drawer": {
     "header_fallback": "Élément",
     "type": "Type : {type}",
-    "type_song": "Chanson",
+    "type_song": "Titre",
     "type_interlude": "Interlude",
     "type_break": "Pause",
     "type_talk": "MC",
@@ -404,7 +405,7 @@
   "phone": {
     "lyrics_count": "{count} texte | {count} textes",
     "live_aria": "Mode Live : {name}",
-    "back_to_setlists": "Retour aux setlists",
+    "back_to_repertoire": "Retour au répertoire",
     "select": "Sélectionner des titres",
     "read_lyrics_of": "Lire les paroles de {title}",
     "setlist_actions": "Actions de la setlist",
@@ -426,7 +427,7 @@
     "files_empty_title": "Rien à répéter pour l'instant",
     "files_empty_hint": "La tablature, une démo, la grille : glisse-les ici, ou :",
     "actions": "Actions sur « {title} »",
-    "tabs": "Parties du morceau",
+    "tabs": "Parties du titre",
     "tab_rehearse": "Répéter",
     "tab_rehearse_count": "Répéter · {count}",
     "tab_lyrics": "Paroles",

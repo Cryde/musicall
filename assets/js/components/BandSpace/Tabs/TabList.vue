@@ -64,7 +64,7 @@ import { tabLastChange, tabSongTitles } from '../../../utils/tabList.js'
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   tabs: { type: Array, required: true },
-  /** From the files store, so an unfiled attachment is placed in « Chansons » as Files places it. */
+  /** From the files store, so an unfiled attachment is placed in « Titres » as Files places it. */
   virtualFolders: { type: Array, default: () => [] },
   /** The phone's one line per tab. */
   compact: { type: Boolean, default: false }

@@ -273,7 +273,7 @@ class BandSpaceFileCollectionTest extends ApiTestCase
     }
 
     /**
-     * `source_id` narrows a `source=` listing to one source, here a song's node under « Chansons » in Files.
+     * `source_id` narrows a `source=` listing to one source, here a song's node under « Titres » in Files.
      * A file attached to two songs is listed under each, so it is here with both attachments.
      */
     public function test_list_filtered_by_source_id(): void

@@ -31,7 +31,7 @@ class BandSpaceFileAttachmentLabelsTest extends TestCase
         $this->assertSame('une tâche', $labels->describe(['task']));
         $this->assertSame('une entrée financière', $labels->describe(['finance']));
         $this->assertSame('une note', $labels->describe(['note']));
-        $this->assertSame('une chanson', $labels->describe(['song']));
+        $this->assertSame('un titre', $labels->describe(['song']));
         $this->assertSame('une setlist', $labels->describe(['setlist']));
     }
 
@@ -86,9 +86,9 @@ class BandSpaceFileAttachmentLabelsTest extends TestCase
         $french = $this->labels('fr');
         $english = $this->labels('en');
 
-        $this->assertSame('une note, une chanson et une tâche', $french->describe(['note', 'song', 'task']));
+        $this->assertSame('une note, un titre et une tâche', $french->describe(['note', 'song', 'task']));
         $this->assertSame(
-            'une note, une setlist, une chanson et une tâche',
+            'une note, une setlist, un titre et une tâche',
             $french->describe(['note', 'setlist', 'song', 'task']),
         );
         $this->assertSame('a note, a song, and a task', $english->describe(['note', 'song', 'task']));

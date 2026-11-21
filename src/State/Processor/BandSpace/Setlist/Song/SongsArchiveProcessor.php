@@ -65,7 +65,7 @@ readonly class SongsArchiveProcessor implements ProcessorInterface
             return;
         }
 
-        // One entry for the batch: fifty « a archivé la chanson » lines would bury the feed.
+        // One entry for the batch: fifty « a archivé le titre » lines would bury the feed.
         $this->activityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Setlist,
