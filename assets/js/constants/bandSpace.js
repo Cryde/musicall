@@ -13,6 +13,8 @@ export const BAND_SPACE_ROUTES = {
   TASKS: 'app_band_tasks',
   FINANCE: 'app_band_finance',
   SETLIST: 'app_band_setlist',
+  /** A song's page (#1431): its files, its tab, its lyrics. */
+  SONG: 'app_band_song',
   RIDER: 'app_band_rider',
   PARAMETERS: 'app_band_parameters',
   TABS: 'app_band_tabs',
@@ -161,6 +163,10 @@ export const SECTION_NAMES = {
     return i18n.global.t('band_space.module_name.finance')
   },
   get [BAND_SPACE_ROUTES.SETLIST]() {
+    return i18n.global.t('band_space.module_name.setlist')
+  },
+  // A song belongs to the Setlists module, whose répertoire it is opened from.
+  get [BAND_SPACE_ROUTES.SONG]() {
     return i18n.global.t('band_space.module_name.setlist')
   },
   get [BAND_SPACE_ROUTES.TABS]() {

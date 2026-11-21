@@ -1,7 +1,8 @@
 {
   "head": {
     "files": "Fichiers",
-    "back_to_files": "Retour aux fichiers",
+    "back_to": "Retour vers {name}",
+    "back_to_tabs_label": "Tablatures",
     "kind": "Guitar Pro",
     "meta": "Version {version} · mise à jour le {date}",
     "phone_meta": "Guitar Pro · version {version}",
@@ -108,8 +109,7 @@
     "unavailable_title": "Tablature indisponible",
     "not_found": "Ce fichier n'existe plus, ou vous n'y avez plus accès.",
     "download_failed": "Le fichier n'a pas pu être téléchargé. Vérifiez votre connexion, puis réessayez.",
-    "retry": "Réessayer",
-    "back": "Retour aux fichiers"
+    "retry": "Réessayer"
   },
   "list": {
     "add": "Ajouter une tablature",

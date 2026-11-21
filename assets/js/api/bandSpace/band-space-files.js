@@ -4,6 +4,26 @@ import axios from 'axios'
 import { assertUploadedFile } from '../../utils/fileUploadQueue.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
+/** The routes of each thing a file can be attached to, and the name its id takes in them. */
+const SOURCE_ROUTES = {
+  task: { param: 'taskId', prefix: 'api_band_space_task_files' },
+  finance: { param: 'entryId', prefix: 'api_band_space_finance_entry_files' },
+  song: { param: 'songId', prefix: 'api_band_space_song_files' },
+  setlist: { param: 'setlistId', prefix: 'api_band_space_setlist_files' }
+}
+
+const SOURCE_ACTIONS = { list: 'get_collection', attach: 'attach', detach: 'detach' }
+
+function sourceRoute(sourceType, action, bandSpaceId, sourceId, extra = {}) {
+  const source = SOURCE_ROUTES[sourceType]
+  if (!source) throw new Error(`No attached files for « ${sourceType} »`)
+  return Routing.generate(`${source.prefix}_${SOURCE_ACTIONS[action]}`, {
+    bandSpaceId,
+    [source.param]: sourceId,
+    ...extra
+  })
+}
+
 export default {
   getFiles(
     bandSpaceId,
@@ -13,6 +33,7 @@ export default {
       source,
       taskId,
       financeEntryId,
+      sourceId,
       query,
       mime,
       format,
@@ -30,6 +51,7 @@ export default {
     if (source) params.source = source
     if (taskId) params.task_id = taskId
     if (financeEntryId) params.finance_entry_id = financeEntryId
+    if (sourceId) params.source_id = sourceId
     if (query) params.query = query
     if (mime) params.mime = mime
     if (format) params.format = format
@@ -287,39 +309,21 @@ export default {
   },
 
   getAttachedFiles(bandSpaceId, sourceType, sourceId) {
-    const route =
-      sourceType === 'task'
-        ? Routing.generate('api_band_space_task_files_get_collection', {
-            bandSpaceId,
-            taskId: sourceId
-          })
-        : Routing.generate('api_band_space_finance_entry_files_get_collection', {
-            bandSpaceId,
-            entryId: sourceId
-          })
-
     return axios
-      .get(route)
-      .then((resp) => resp.data)
-      .then((resp) => resp.member)
+      .get(sourceRoute(sourceType, 'list', bandSpaceId, sourceId))
+      .then((resp) => resp.data.member ?? [])
       .catch(handleApiError)
   },
 
-  attachFileUpload(bandSpaceId, sourceType, sourceId, file, onProgress) {
+  // `signal`, as for uploadFile: a batch closed halfway drops the file still going up.
+  attachFileUpload(bandSpaceId, sourceType, sourceId, file, onProgress, signal) {
     const formData = new FormData()
     formData.append('uploadedFile', file)
 
-    const route =
-      sourceType === 'task'
-        ? Routing.generate('api_band_space_task_files_attach', { bandSpaceId, taskId: sourceId })
-        : Routing.generate('api_band_space_finance_entry_files_attach', {
-            bandSpaceId,
-            entryId: sourceId
-          })
-
     return axios
-      .post(route, formData, {
+      .post(sourceRoute(sourceType, 'attach', bandSpaceId, sourceId), formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        signal,
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
@@ -346,18 +350,7 @@ export default {
   },
 
   detachFromSource(bandSpaceId, sourceType, sourceId, fileId, { archive = false } = {}) {
-    const baseUrl =
-      sourceType === 'task'
-        ? Routing.generate('api_band_space_task_files_detach', {
-            bandSpaceId,
-            taskId: sourceId,
-            id: fileId
-          })
-        : Routing.generate('api_band_space_finance_entry_files_detach', {
-            bandSpaceId,
-            entryId: sourceId,
-            id: fileId
-          })
+    const baseUrl = sourceRoute(sourceType, 'detach', bandSpaceId, sourceId, { id: fileId })
     const url = archive ? `${baseUrl}?archive=true` : baseUrl
 
     return axios.delete(url).catch(handleApiError)

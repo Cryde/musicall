@@ -208,6 +208,7 @@
     "name_required": "The name is required"
   },
   "upload_dialog": {
+    "title_attach": "Add files to \"{name}\"",
     "title": "Upload files",
     "drop_zone": "Drag and drop one or more files or {browse}",
     "queue_label": "Files to upload",
@@ -258,26 +259,40 @@
     "copy_failed_detail": "Select the link and copy it manually."
   },
   "attach_dialog": {
-    "title": "Attach a file",
-    "tab_upload": "Upload",
-    "tab_existing": "Choose from existing files",
-    "drop_zone": "Drag and drop a file or {browse}",
+    "title": "Pick from Files",
     "search_placeholder": "Search for a file",
     "no_files": "No files available.",
     "manual_only": "Only standalone files (not attached to anything) can be attached.",
-    "submit": "Upload",
     "attached": "File attached"
   },
   "attached_section": {
     "title": "Attachments",
-    "attach": "Attach a file",
     "empty": "No attached files.",
     "detach": "Detach",
     "detach_confirm_task": "Detach \"{name}\" from this task?",
     "detach_confirm_finance": "Detach \"{name}\" from this entry?",
     "detach_confirm_header": "Confirm detach",
     "detached": "File detached",
-    "detach_failed": "Could not detach"
+    "detach_failed": "Could not detach",
+    "import": "Upload",
+    "choose": "Pick from Files",
+    "drop_hint": "Drop files here to add them.",
+    "drop_here": "Drop the files to add them",
+    "empty_title": "No files yet",
+    "empty_hint": "Drop files here, or:",
+    "read": "Read",
+    "read_tab": "Read the tab",
+    "read_tab_named": "Read the tab {name}",
+    "play": "Play {name}",
+    "pause": "Pause {name}",
+    "position": "Position in {name}",
+    "audio_failed": "Cannot play it. Download the file to listen to it.",
+    "view": "View",
+    "download": "Download",
+    "open_in_files": "Open in Files",
+    "actions": "Actions for {name}",
+    "detach_confirm_song": "Detach \"{name}\" from this song?",
+    "detach_confirm_setlist": "Detach \"{name}\" from this setlist?"
   },
   "detach_dialog": {
     "also_trash": "Also move it to the bin",
@@ -349,6 +364,11 @@
     "actions": "Folder actions",
     "open": "Open",
     "rename_move": "Rename / move"
+  },
+  "song_tree": {
+    "toggle": "Show each song",
+    "open_page": "Open the song page",
+    "open_song": "Open the song {title}"
   },
   "file_list": {
     "empty": "No files in this folder yet. Start by uploading one.",

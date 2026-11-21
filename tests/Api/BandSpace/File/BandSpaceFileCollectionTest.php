@@ -17,6 +17,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
+use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
@@ -269,6 +270,159 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $response = $this->getResponseAsArray();
         $this->assertSame(1, $response['totalItems']);
         $this->assertSame('matching.pdf', $response['member'][0]['original_name']);
+    }
+
+    /**
+     * `source_id` narrows a `source=` listing to one source, here a song's node under « Chansons » in Files.
+     * A file attached to two songs is listed under each, so it is here with both attachments.
+     */
+    public function test_list_filtered_by_source_id(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $new45 = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'New 45'])->create();
+        $emberRoad = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Ember Road'])->create();
+        $compo = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Compo'])->create();
+
+        $tab = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $compo, 'originalName' => 'New 45.gp', 'creationDatetime' => new \DateTime('2026-11-19 10:00:00')])->create();
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $tab, 'sourceType' => 'song', 'sourceId' => $new45->id, 'attachedBy' => $user, 'attachedDatetime' => new \DateTime('2026-11-19 10:00:00')]);
+
+        $chart = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'grille.pdf', 'creationDatetime' => new \DateTime('2026-11-10 10:00:00')])->create();
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $chart, 'sourceType' => 'song', 'sourceId' => $emberRoad->id, 'attachedBy' => $user, 'attachedDatetime' => new \DateTime('2026-11-10 10:00:00')]);
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $chart, 'sourceType' => 'song', 'sourceId' => $new45->id, 'attachedBy' => $user, 'attachedDatetime' => new \DateTime('2026-11-11 10:00:00')]);
+
+        $otherSong = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'Ember Road.gp', 'creationDatetime' => new \DateTime('2026-11-15 10:00:00')])->create();
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $otherSong, 'sourceType' => 'song', 'sourceId' => $emberRoad->id, 'attachedBy' => $user]);
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'rider.pdf', 'creationDatetime' => new \DateTime('2026-11-20 10:00:00')])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?source=song&source_id=' . $new45->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $createdBy = ['id' => $user->id, 'username' => 'alice', 'display_name' => 'alice', 'profile_picture_url' => null];
+        $filesUrl = '/api/band_spaces/' . $bandSpace->id . '/files/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => $filesUrl . $tab->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $tab->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'New 45.gp',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => $compo->id,
+                    'folder_path' => [['id' => $compo->id, 'name' => 'Compo']],
+                    'tags' => [],
+                    'attachments' => [
+                        ['source_type' => 'song', 'source_id' => $new45->id, 'source_label' => 'New 45'],
+                    ],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $tab->id . '/download',
+                    'creation_datetime' => '2026-11-19T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $chart->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $chart->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'grille.pdf',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [
+                        ['source_type' => 'song', 'source_id' => $emberRoad->id, 'source_label' => 'Ember Road'],
+                        ['source_type' => 'song', 'source_id' => $new45->id, 'source_label' => 'New 45'],
+                    ],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $chart->id . '/download',
+                    'creation_datetime' => '2026-11-10T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?source=song&source_id=' . $new45->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /**
+     * Without `source`, `source_id` names one source whatever its type, and it wins over the `task_id`
+     * an older app build sends.
+     */
+    public function test_source_id_alone_lists_that_source_over_task_id(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'New 45'])->create();
+        $taskId = '11111111-1111-1111-1111-111111111111';
+
+        $tab = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'New 45.gp', 'creationDatetime' => new \DateTime('2026-11-19 10:00:00')])->create();
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $tab, 'sourceType' => 'song', 'sourceId' => $song->id, 'attachedBy' => $user]);
+        $quote = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'devis.pdf'])->create();
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $quote, 'sourceType' => 'task', 'sourceId' => $taskId, 'attachedBy' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?source_id=' . $song->id . '&task_id=' . $taskId, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $filesUrl = '/api/band_spaces/' . $bandSpace->id . '/files/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => $filesUrl . $tab->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $tab->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'New 45.gp',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [
+                        ['source_type' => 'song', 'source_id' => $song->id, 'source_label' => 'New 45'],
+                    ],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => ['id' => $user->id, 'username' => 'alice', 'display_name' => 'alice', 'profile_picture_url' => null],
+                    'download_url' => $filesUrl . $tab->id . '/download',
+                    'creation_datetime' => '2026-11-19T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?source_id=' . $song->id . '&task_id=' . $taskId,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_list_filtered_by_source_manual_excludes_attached(): void

@@ -47,8 +47,13 @@
   "new_song_dialog": {
     "header": "New song",
     "title_label": "Title",
-    "hint": "You can add the key, BPM, duration and lyrics afterwards, in the song details.",
-    "title_required": "Enter a title."
+    "hint": "You can add the key, BPM, duration and lyrics afterwards, on its page.",
+    "title_required": "Enter a title.",
+    "title_from_file": "Without a title, the song takes the name of the first file.",
+    "files_label": "Files",
+    "optional": "(optional)",
+    "files_drop": "Drop the tab, a demo or the chart here, or click to pick them",
+    "remove_file": "Remove {name}"
   },
   "repertoire": {
     "filter_without_lyrics": "No lyrics ({count})",
@@ -76,7 +81,10 @@
     "clear_selection": "Deselect all",
     "songs_added": "{count} song added to \"{name}\" | {count} songs added to \"{name}\"",
     "archive_selection_confirm_message": "Archive {count} song? It will be removed from the active repertoire and can still be restored from the bin. | Archive {count} songs? They will be removed from the active repertoire and can still be restored from the bin.",
-    "songs_archived": "Song archived | Songs archived"
+    "songs_archived": "Song archived | Songs archived",
+    "cell_label": "{field} of \"{title}\"",
+    "add_tonality": "+ key",
+    "add_tempo": "+ BPM"
   },
   "editor": {
     "no_selection": "Select a setlist in the sidebar.",
@@ -224,16 +232,9 @@
   },
   "file_drawer": {
     "header": "Setlist files",
-    "intro": "Upload the files that go with this setlist (timing sheet, stage notes, etc.). They will appear in the \"Setlists\" virtual folder of the Files module.",
-    "detach_confirm_message": "Detach the file \"{name}\" from this setlist?"
+    "intro": "Upload the files that go with this setlist (timing sheet, stage notes, etc.). They will appear in the \"Setlists\" virtual folder of the Files module."
   },
   "attached_files": {
-    "detach": "Detach",
-    "detach_tooltip": "Detach this file",
-    "empty": "No files yet.",
-    "upload": "Upload a file",
-    "uploaded": "File uploaded",
-    "detached": "File detached",
     "title": "Attached files"
   },
   "trash": {
@@ -262,8 +263,7 @@
     "tempo": "BPM",
     "duration": "Duration",
     "notes": "Notes",
-    "notes_placeholder": "Add a note...",
-    "detach_confirm_message": "Detach the file \"{name}\" from this song?"
+    "notes_placeholder": "Add a note..."
   },
   "inline_field": {
     "edit_aria": "{label}: {value}. Edit",
@@ -415,10 +415,22 @@
     "rename": "Rename",
     "export_pdf": "Export as PDF",
     "edit_item": "Edit: duration, transition, note",
-    "song_actions": "Song actions",
-    "read_lyrics": "Read the lyrics",
     "no_lyrics": "No lyrics for this song.",
     "next_up": "Next: {title}",
     "next_song": "Next song"
+  },
+  "song_page": {
+    "back": "Back to the repertoire",
+    "back_to": "Back to {name}",
+    "rehearse": "To rehearse",
+    "files_empty_title": "Nothing to rehearse yet",
+    "files_empty_hint": "The tab, a demo, the chart: drop them here, or:",
+    "actions": "Actions on \"{title}\"",
+    "tabs": "Parts of the song",
+    "tab_rehearse": "Rehearse",
+    "tab_rehearse_count": "Rehearse ({count})",
+    "tab_lyrics": "Lyrics",
+    "tab_infos": "Info",
+    "add_value": "+ {label}"
   }
 }

@@ -1,5 +1,7 @@
 <template>
-  <div>
+  <!-- No scroll anchoring here: the browser anchors on the module, not on the list, and carried the scroll
+       the répertoire's restoreScroll() puts back a row or two away. -->
+  <div class="[overflow-anchor:none]">
     <div v-if="loadError" class="flex flex-col items-center justify-center min-h-[400px] p-8 gap-4">
       <Message severity="error" :closable="false">
         {{ loadError }}
@@ -92,7 +94,6 @@
         <RepertoireView
           v-if="activeView === 'repertoire'"
           :band-space-id="bandSpaceId"
-          :focus-song-id="focusSongId"
           @back="goHome"
         />
         <LyricsView
@@ -168,12 +169,6 @@ const activeSetlist = computed(() =>
     : null
 )
 
-/**
- * Set by the command palette, which links to a song rather than to the repertoire as a whole. No
- * branch is needed in syncFromQuery(): a query carrying only ?song= already falls through to the
- * repertoire, which is the view holding the songs.
- */
-const focusSongId = computed(() => (typeof route.query.song === 'string' ? route.query.song : null))
 const focusLyricsId = computed(() =>
   typeof route.query.lyrics === 'string' ? route.query.lyrics : null
 )
@@ -216,13 +211,12 @@ const selectTrash = () => selectView('trash', { view: 'trash' })
 
 /**
  * The phone's screen: the same query as the desktop's views, read for the screen to show. An empty
- * query is the home there, where the desktop shows the repertoire; a palette link to a song (?song=)
- * still lands in the repertoire, which opens it.
+ * query is the home there, where the desktop shows the repertoire.
  */
 const phoneScreen = computed(() => {
   if (activeView.value === 'setlist') return 'setlist'
   if (activeView.value === 'lyrics' || activeView.value === 'trash') return activeView.value
-  if (route.query.view === 'repertoire' || focusSongId.value) return 'repertoire'
+  if (route.query.view === 'repertoire') return 'repertoire'
   return 'home'
 })
 
@@ -262,12 +256,12 @@ function loadAll() {
   // next to the live lists. Both collections are unpaginated and hold a handful of rows.
   songsStore.fetchArchivedSongs(bandSpaceId.value)
   setlistsStore.fetchArchivedSetlists(bandSpaceId.value)
-  // Loaded with the rest even when « Paroles » is closed: a song's drawer finds its lyrics in it.
+  // Loaded with the rest even when « Paroles » is closed: the lyrics drawer and the editor read it.
   lyricsStore.fetchLyrics(bandSpaceId.value)
   lyricsStore.fetchArchivedLyrics(bandSpaceId.value)
 }
 
-// The song, lyrics and item drawers keep the copy they were opened with, and the editor does not rebuild
+// The lyrics and item drawers keep the copy they were opened with, and the editor does not rebuild
 // its list while an item is being dragged, so a refetch never moves anything under the member.
 useBandSpaceLiveRefresh({
   bandSpaceId,

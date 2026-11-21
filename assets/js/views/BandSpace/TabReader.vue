@@ -2,6 +2,7 @@
   <div class="flex-1 min-h-0 flex flex-col gap-3 max-md:gap-0">
     <TabReaderHead
       :title="title"
+      :back-label="backLabel"
       :version="file?.current_version_number ?? null"
       :meta="meta"
       :player="player"
@@ -119,7 +120,7 @@
                 outlined
                 @click="loadFile"
               />
-              <Button :label="t('band_space_tabs.error.back')" icon="pi pi-arrow-left" @click="goBack" />
+              <Button :label="t('band_space_tabs.head.back_to', { name: backLabel })" icon="pi pi-arrow-left" @click="goBack" />
             </div>
           </div>
         </div>
@@ -176,8 +177,10 @@ import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import { useTabPlayer } from '../../composables/useTabPlayer.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { formatDateCompactWithYear } from '../../utils/date.js'
+import { withVersion } from '../../utils/fileVersionUrl.js'
 import { guitarProTitle, isGuitarProName } from '../../utils/guitarPro.js'
 import { toggleIndex } from '../../utils/tabPlayback.js'
+import { tabReaderBackLabel } from '../../utils/tabReaderBack.js'
 import {
   openTabReaderStorage,
   readPanel,
@@ -291,11 +294,6 @@ const scale = computed(() => {
 
 // ---------------------------------------------------------------- the file
 
-function withVersion(url, versionId) {
-  if (!versionId) return url
-  return `${url}${url.includes('?') ? '&' : '?'}v=${versionId}`
-}
-
 let loadRequest = 0
 
 /**
@@ -399,6 +397,17 @@ useBandSpaceLiveRefresh({
 function download() {
   if (file.value?.download_url) window.open(file.value.download_url, '_blank', 'noopener')
 }
+
+// The page that opened the reader, read once: the history entry it came from does not change.
+const backLabel = tabReaderBackLabel(
+  {
+    backLabel: window.history.state?.backLabel,
+    previousRouteName: window.history.state?.back
+      ? (router.resolve(window.history.state.back).name ?? null)
+      : null
+  },
+  t
+)
 
 function goBack() {
   if (window.history.state?.back) {

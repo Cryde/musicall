@@ -1,7 +1,8 @@
 {
   "head": {
     "files": "Files",
-    "back_to_files": "Back to files",
+    "back_to": "Back to {name}",
+    "back_to_tabs_label": "Tabs",
     "kind": "Guitar Pro",
     "meta": "Version {version} - updated {date}",
     "phone_meta": "Guitar Pro - version {version}",
@@ -108,8 +109,7 @@
     "unavailable_title": "Tab unavailable",
     "not_found": "This file no longer exists, or you no longer have access to it.",
     "download_failed": "The file could not be downloaded. Check your connection, then try again.",
-    "retry": "Try again",
-    "back": "Back to files"
+    "retry": "Try again"
   },
   "list": {
     "add": "Add a tab",

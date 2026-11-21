@@ -67,43 +67,5 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
-  },
-
-  getAttachedFiles(bandSpaceId, songId) {
-    return axios
-      .get(Routing.generate('api_band_space_song_files_get_collection', { bandSpaceId, songId }))
-      .then((resp) => resp.data.member ?? [])
-      .catch(handleApiError)
-  },
-
-  uploadFile(bandSpaceId, songId, file, onProgress) {
-    const formData = new FormData()
-    formData.append('uploadedFile', file)
-    return axios
-      .post(
-        Routing.generate('api_band_space_song_files_attach', { bandSpaceId, songId }),
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
-              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-              onProgress(percent)
-            }
-          }
-        }
-      )
-      .then((resp) => resp.data)
-      .catch(handleApiError)
-  },
-
-  detachFile(bandSpaceId, songId, fileId, { archive = false } = {}) {
-    const baseUrl = Routing.generate('api_band_space_song_files_detach', {
-      bandSpaceId,
-      songId,
-      id: fileId
-    })
-    const url = archive ? `${baseUrl}?archive=true` : baseUrl
-    return axios.delete(url).catch(handleApiError)
   }
 }

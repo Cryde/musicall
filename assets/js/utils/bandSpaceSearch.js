@@ -61,8 +61,8 @@ export const SEARCH_TYPES = Object.freeze([
       return i18n.global.t('band_space.search.type.song')
     },
     icon: 'pi-play',
-    route: BAND_SPACE_ROUTES.SETLIST,
-    param: 'song'
+    route: BAND_SPACE_ROUTES.SONG,
+    pathParam: 'songId'
   },
   {
     type: 'finance',
@@ -152,12 +152,16 @@ export function searchTypeFor(type) {
  *
  * @param {{type: string, resource_id: string}} result
  * @param {string} bandSpaceId
- * @returns {{name: string, params: {id: string}, query: Record<string, string>}|null}
+ * @returns {{name: string, params: {id: string}, query?: Record<string, string>}|null}
  */
 export function routeForResult(result, bandSpaceId) {
   const entry = TYPE_BY_KEY.get(result?.type)
   if (!entry) {
     return null
+  }
+  // A song has a page of its own, named in its path.
+  if (entry.pathParam) {
+    return { name: entry.route, params: { id: bandSpaceId, [entry.pathParam]: result.resource_id } }
   }
 
   return {

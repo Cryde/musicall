@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { NO_FOLDER_LISTED, ROOT_FOLDER_ID, TRASH_FOLDER_ID } from '../constants/folderSelection.js'
+import {
+  NO_FOLDER_LISTED,
+  ROOT_FOLDER_ID,
+  songFolderId,
+  TRASH_FOLDER_ID
+} from '../constants/folderSelection.js'
 import { i18n } from '../i18n/index.js'
 import {
   activeLocationLabel,
@@ -17,7 +22,8 @@ import {
   listedFolderOfRows,
   rootDestinationRefusal,
   treeHoldsFolder,
-  uploadBelongsInListing
+  uploadBelongsInListing,
+  virtualFolderName
 } from './fileListing.js'
 
 /**
@@ -30,6 +36,7 @@ import {
  */
 
 const FOLDER_ID = '0198c0de-dead-beef-cafe-000000000001'
+const SONG_ID = '0198c0de-dead-beef-cafe-000000000045'
 
 const filters = (overrides = {}) => ({
   query: '',
@@ -105,6 +112,28 @@ describe('fileListingParams', () => {
     for (const source of ['task', 'finance', 'note', 'song', 'setlist']) {
       assert.equal(fileListingParams(`virtual:${source}`, filters(), 1).source, source)
     }
+  })
+
+  it('narrows « Chansons » to one song for the node of that song', () => {
+    assert.deepEqual(fileListingParams(songFolderId(SONG_ID), filters(), 2), {
+      page: 2,
+      itemsPerPage: 50,
+      sort: 'date',
+      order: 'desc',
+      source: 'song',
+      sourceId: SONG_ID
+    })
+  })
+
+  it('keeps the node of a song to that song while searching, like any virtual folder', () => {
+    const params = fileListingParams(songFolderId(SONG_ID), filters({ query: 'grille' }), 1)
+    assert.equal(params.source, 'song')
+    assert.equal(params.sourceId, SONG_ID)
+    assert.equal(params.query, 'grille')
+  })
+
+  it('names no song for « Chansons » itself, which lists every song', () => {
+    assert.equal('sourceId' in fileListingParams('virtual:song', filters(), 1), false)
   })
 
   it('carries the tag and type filters alongside the folder', () => {
@@ -204,14 +233,19 @@ describe('fileLocation', () => {
         { id: '2026', name: '2026' }
       ]
     }
-    assert.deepEqual(fileLocation(file, virtualFolders), { label: 'Live / 2026', folderId: '2026' })
+    assert.deepEqual(fileLocation(file, virtualFolders), {
+      label: 'Live / 2026',
+      folderId: '2026',
+      songs: []
+    })
   })
 
   it('sends an unfiled attachment to its virtual folder, not to the root that excludes it', () => {
     const file = { folder_path: [], attachments: [{ source_type: 'note', source_id: 'n1' }] }
     assert.deepEqual(fileLocation(file, virtualFolders), {
       label: 'Notes',
-      folderId: 'virtual:note'
+      folderId: 'virtual:note',
+      songs: []
     })
   })
 
@@ -223,8 +257,51 @@ describe('fileLocation', () => {
   it('is the root only for a file that is in no folder and attached to nothing', () => {
     assert.deepEqual(fileLocation({ folder_path: [], attachments: [] }, virtualFolders), {
       label: 'Racine',
-      folderId: 'root'
+      folderId: 'root',
+      songs: []
     })
+  })
+
+  it('names the song after the folder, « Compo · New 45 »', () => {
+    const file = {
+      folder_path: [{ id: 'compo', name: 'Compo' }],
+      attachments: [{ source_type: 'song', source_id: SONG_ID, source_label: 'New 45' }]
+    }
+    assert.deepEqual(fileLocation(file, virtualFolders), {
+      label: 'Compo',
+      folderId: 'compo',
+      songs: [{ id: SONG_ID, title: 'New 45' }]
+    })
+  })
+
+  it('keeps « Chansons » for a file of a song in no folder, then names the song', () => {
+    const file = {
+      folder_path: [],
+      attachments: [{ source_type: 'song', source_id: SONG_ID, source_label: 'New 45' }]
+    }
+    assert.deepEqual(
+      fileLocation(file, [{ id: 'virtual:song', source: 'song', name: 'Chansons' }]),
+      {
+        label: 'Chansons',
+        folderId: 'virtual:song',
+        songs: [{ id: SONG_ID, title: 'New 45' }]
+      }
+    )
+  })
+
+  it('names every song a file belongs to, and only songs', () => {
+    const file = {
+      folder_path: [{ id: 'compo', name: 'Compo' }],
+      attachments: [
+        { source_type: 'song', source_id: 'ember', source_label: 'Ember Road' },
+        { source_type: 'task', source_id: 't1', source_label: 'Envoyer la grille' },
+        { source_type: 'song', source_id: SONG_ID, source_label: 'New 45' }
+      ]
+    }
+    assert.deepEqual(fileLocation(file, virtualFolders).songs, [
+      { id: 'ember', title: 'Ember Road' },
+      { id: SONG_ID, title: 'New 45' }
+    ])
   })
 })
 
@@ -253,6 +330,7 @@ describe('uploadBelongsInListing', () => {
 
   it('holds nothing in a virtual folder, which lists attachments rather than uploads', () => {
     assert.equal(uploadBelongsInListing('virtual:note', filters(), null), false)
+    assert.equal(uploadBelongsInListing(songFolderId(SONG_ID), filters(), null), false)
     assert.equal(uploadBelongsInListing(TRASH_FOLDER_ID, filters(), null), false)
   })
 })
@@ -286,6 +364,17 @@ describe('fileVirtualFolders', () => {
     assert.deepEqual(fileVirtualFolders({ attachments: [{ source_type: 'setlist' }] }, []), [
       { label: 'Setlist', folderId: 'virtual:setlist' }
     ])
+  })
+})
+
+describe('virtualFolderName', () => {
+  it('names a source the way the sidebar does', () => {
+    const virtualFolders = [{ id: 'virtual:song', source: 'song', name: 'Chansons' }]
+    assert.equal(virtualFolderName('song', virtualFolders), 'Chansons')
+  })
+
+  it('falls back to the source label when the tree has not loaded yet', () => {
+    assert.equal(virtualFolderName('song', []), 'Chanson')
   })
 })
 
@@ -385,6 +474,21 @@ describe('activeLocationLabel', () => {
 
   it('falls back to the root for a folder the tree no longer holds', () => {
     assert.equal(activeLocationLabel('gone', tree), 'Racine')
+  })
+
+  it('names a song under « Chansons » after the source', () => {
+    const sources = [{ source: 'song', name: 'Chansons', file_count: 4 }]
+    const songs = [{ id: SONG_ID, title: 'New 45', fileCount: 3 }]
+    assert.equal(
+      activeLocationLabel(songFolderId(SONG_ID), tree, sources, songs),
+      'Chansons › New 45'
+    )
+    assert.equal(activeLocationLabel('virtual:song', tree, sources, songs), 'Chansons')
+  })
+
+  it('names only the source for a song that has no node any more', () => {
+    const sources = [{ source: 'song', name: 'Chansons', file_count: 0 }]
+    assert.equal(activeLocationLabel(songFolderId(SONG_ID), tree, sources, []), 'Chansons')
   })
 })
 

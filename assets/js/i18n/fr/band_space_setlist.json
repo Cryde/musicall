@@ -47,8 +47,13 @@
   "new_song_dialog": {
     "header": "Nouveau titre",
     "title_label": "Titre",
-    "hint": "Tonalité, BPM, durée et paroles se renseignent ensuite, dans sa fiche.",
-    "title_required": "Indique un titre."
+    "hint": "Tonalité, BPM, durée et paroles se renseignent ensuite, sur sa page.",
+    "title_required": "Indique un titre.",
+    "title_from_file": "Sans titre, la chanson prend le nom du premier fichier.",
+    "files_label": "Fichiers",
+    "optional": "(facultatif)",
+    "files_drop": "Glisse la tablature, une démo ou la grille ici, ou clique pour les choisir",
+    "remove_file": "Retirer {name}"
   },
   "repertoire": {
     "filter_without_lyrics": "Sans paroles · {count}",
@@ -76,7 +81,10 @@
     "clear_selection": "Tout désélectionner",
     "songs_added": "{count} titre ajouté à « {name} » | {count} titres ajoutés à « {name} »",
     "archive_selection_confirm_message": "Archiver {count} titre ? Il sera retiré du répertoire actif et reste restaurable depuis la corbeille. | Archiver {count} titres ? Ils seront retirés du répertoire actif et restent restaurables depuis la corbeille.",
-    "songs_archived": "Titre archivé | Titres archivés"
+    "songs_archived": "Titre archivé | Titres archivés",
+    "cell_label": "{field} de « {title} »",
+    "add_tonality": "+ tonalité",
+    "add_tempo": "+ BPM"
   },
   "editor": {
     "no_selection": "Sélectionne une setlist dans la barre latérale.",
@@ -224,16 +232,9 @@
   },
   "file_drawer": {
     "header": "Fichiers de la setlist",
-    "intro": "Importe les fichiers liés à cette setlist (timing sheet, notes scéniques, etc.). Ils apparaitront dans le dossier virtuel « Setlists » du module Fichiers.",
-    "detach_confirm_message": "Détacher le fichier « {name} » de cette setlist ?"
+    "intro": "Importe les fichiers liés à cette setlist (timing sheet, notes scéniques, etc.). Ils apparaitront dans le dossier virtuel « Setlists » du module Fichiers."
   },
   "attached_files": {
-    "detach": "Détacher",
-    "detach_tooltip": "Détacher ce fichier",
-    "empty": "Aucun fichier pour le moment.",
-    "upload": "Importer un fichier",
-    "uploaded": "Fichier téléversé",
-    "detached": "Fichier détaché",
     "title": "Fichiers attachés"
   },
   "trash": {
@@ -262,8 +263,7 @@
     "tempo": "BPM",
     "duration": "Durée",
     "notes": "Notes",
-    "notes_placeholder": "Ajouter une note…",
-    "detach_confirm_message": "Détacher le fichier « {name} » de cette chanson ?"
+    "notes_placeholder": "Ajouter une note…"
   },
   "inline_field": {
     "edit_aria": "{label} : {value}. Modifier",
@@ -415,10 +415,22 @@
     "rename": "Renommer",
     "export_pdf": "Exporter en PDF",
     "edit_item": "Modifier : durée, transition, note",
-    "song_actions": "Actions du titre",
-    "read_lyrics": "Lire les paroles",
     "no_lyrics": "Pas de paroles pour ce titre.",
     "next_up": "Ensuite : {title}",
     "next_song": "Titre suivant"
+  },
+  "song_page": {
+    "back": "Retour au répertoire",
+    "back_to": "Retour vers {name}",
+    "rehearse": "Pour répéter",
+    "files_empty_title": "Rien à répéter pour l'instant",
+    "files_empty_hint": "La tablature, une démo, la grille : glisse-les ici, ou :",
+    "actions": "Actions sur « {title} »",
+    "tabs": "Parties du morceau",
+    "tab_rehearse": "Répéter",
+    "tab_rehearse_count": "Répéter · {count}",
+    "tab_lyrics": "Paroles",
+    "tab_infos": "Infos",
+    "add_value": "+ {label}"
   }
 }

@@ -96,7 +96,8 @@ describe('moveActiveIndex', () => {
 
 describe('routeForResult', () => {
   it('builds a location for every declared type', () => {
-    for (const { type, route, param } of SEARCH_TYPES) {
+    // A song, opened on its own page, is pinned by the test below.
+    for (const { type, route, param } of SEARCH_TYPES.filter((entry) => !entry.pathParam)) {
       assert.deepEqual(routeForResult(result(type, 'abc'), 'space-1'), {
         name: route,
         params: { id: 'space-1' },
@@ -105,12 +106,11 @@ describe('routeForResult', () => {
     }
   })
 
-  it('sends a song to the setlist module, not to a module of its own', () => {
-    const song = routeForResult(result('song', 'abc'), 'space-1')
-    const setlist = routeForResult(result('setlist', 'def'), 'space-1')
-
-    assert.equal(song.name, setlist.name)
-    assert.deepEqual(song.query, { song: 'abc' })
+  it('sends a song to its page', () => {
+    assert.deepEqual(routeForResult(result('song', 'abc'), 'space-1'), {
+      name: 'app_band_song',
+      params: { id: 'space-1', songId: 'abc' }
+    })
   })
 
   it('returns null for a type the palette does not know', () => {

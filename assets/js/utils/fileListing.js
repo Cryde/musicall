@@ -6,11 +6,13 @@ import {
   ROOT_FOLDER_ID,
   TRASH_FOLDER_ID,
   virtualFolderId,
+  virtualFolderSongId,
   virtualFolderSource
 } from '../constants/folderSelection.js'
 import { intlLocale, treeIndent } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 import { FILES_PAGE_SIZE } from './filePagination.js'
+import { fileSongs } from './songFileCounts.js'
 
 /**
  * What the Files panel asks the collection for, and what the rows it gets back have in common.
@@ -79,8 +81,10 @@ export function fileListingParams(activeFolderId, filters, page) {
   if (virtualSource !== null) {
     // A virtual folder keeps its source even while searching: there the member is looking through one
     // set of attachments rather than through the folder tree, so the source is the subject of the
-    // search and not a place to escape from.
+    // search and not a place to escape from. A song's node under « Chansons » narrows it to that song.
     params.source = virtualSource
+    const songId = virtualFolderSongId(activeFolderId)
+    if (songId !== null) params.sourceId = songId
   } else if (activeFolderId && !isSearchActive(filters)) {
     // ROOT_FOLDER_ID rides along as a folder id, since the collection reads that reserved value as the
     // root of the tree. No folder_id at all is the whole space, which is what a search wants and what
@@ -107,32 +111,41 @@ export function folderFileCountLabel(fileCount) {
   return i18n.global.t('band_space_files.count.files', fileCount)
 }
 
+/** Between the steps of a location written on one line. */
+const LOCATION_SEPARATOR = ' › '
+
 /**
  * Where the panel stands, in one line, for the phone's location button: « Racine », « Racine › Concert
- * Petit Bain », a source's name, « Tous les fichiers » or « Corbeille ». The sidebar says the same thing
- * on a computer by highlighting the entry.
+ * Petit Bain », a source's name, « Chansons › New 45 », « Tous les fichiers » or « Corbeille ». The
+ * sidebar says the same thing on a computer by highlighting the entry.
  *
  * @param {string|null} activeFolderId
  * @param {Array} tree
  * @param {Array<{source: string, name: string}>} virtualFolders
+ * @param {Array<{id: string, title: string}>} songFolders the songs « Chansons » unfolds into
  * @returns {string}
  */
-export function activeLocationLabel(activeFolderId, tree, virtualFolders = []) {
+export function activeLocationLabel(activeFolderId, tree, virtualFolders = [], songFolders = []) {
   const t = i18n.global.t
   if (activeFolderId === null) return t('band_space_files.page.all_files')
   if (activeFolderId === TRASH_FOLDER_ID) return t('band_space_files.page.trash')
 
   const source = virtualFolderSource(activeFolderId)
   if (source !== null) {
-    return (
-      virtualFolders.find((folder) => folder.source === source)?.name ?? fileSourceLabel(source)
-    )
+    const sourceName = virtualFolderName(source, virtualFolders)
+    const songId = virtualFolderSongId(activeFolderId)
+    // A song whose last file went while the panel stood in it is no longer a node: the source says it.
+    const song = songFolders.find((node) => node.id === songId)
+
+    return song ? [sourceName, song.title].join(LOCATION_SEPARATOR) : sourceName
   }
 
   const folderId = listedFolderId(activeFolderId)
   const path = folderId === NO_FOLDER_LISTED ? [] : folderPathOf(tree, folderId)
 
-  return [t('band_space_files.folder.root'), ...path.map((segment) => segment.name)].join(' › ')
+  return [t('band_space_files.folder.root'), ...path.map((segment) => segment.name)].join(
+    LOCATION_SEPARATOR
+  )
 }
 
 /**
@@ -217,11 +230,21 @@ export function fileVirtualFolders(file, virtualFolders = []) {
   const sourceTypes = [...new Set((file?.attachments ?? []).map((att) => att.source_type))]
 
   return sourceTypes.map((sourceType) => ({
-    label:
-      virtualFolders.find((folder) => folder.source === sourceType)?.name ??
-      fileSourceLabel(sourceType),
+    label: virtualFolderName(sourceType, virtualFolders),
     folderId: virtualFolderId(sourceType)
   }))
+}
+
+/**
+ * What a source's virtual folder is called in the sidebar, or the source's own label before the tree
+ * has loaded.
+ *
+ * @param {string} source
+ * @param {Array<{source: string, name: string}>} virtualFolders
+ * @returns {string}
+ */
+export function virtualFolderName(source, virtualFolders = []) {
+  return virtualFolders.find((folder) => folder.source === source)?.name ?? fileSourceLabel(source)
 }
 
 /**
@@ -257,7 +280,8 @@ export function rootDestinationRefusal(file, virtualFolders = []) {
 }
 
 /**
- * Where a file row says it lives, and where clicking that says takes the member.
+ * Where a file row says it lives, where clicking that says takes the member, and the songs it belongs
+ * to, which the row names after its place (« Compo · New 45 ») as links to their pages (#1431).
  *
  * A file in a folder names its path. A file in no folder is only at the root if nothing is attached to
  * it: the root excludes attachments, so sending an attached file's reader there would land them in a
@@ -265,9 +289,14 @@ export function rootDestinationRefusal(file, virtualFolders = []) {
  *
  * @param {object} file
  * @param {Array<{source: string, name: string}>} virtualFolders
- * @returns {{label: string, folderId: string}}
+ * @returns {{label: string, folderId: string, songs: Array<{id: string, title: string}>}}
  */
 export function fileLocation(file, virtualFolders = []) {
+  return { ...filePlace(file, virtualFolders), songs: fileSongs(file) }
+}
+
+/** @returns {{label: string, folderId: string}} */
+function filePlace(file, virtualFolders) {
   const path = file.folder_path ?? []
   if (path.length > 0) {
     return {

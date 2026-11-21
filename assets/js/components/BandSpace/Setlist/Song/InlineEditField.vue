@@ -4,9 +4,10 @@
       <button
         type="button"
         :class="[
-          'group w-full text-left rounded-md -mx-1 px-1 py-0.5 hover:bg-surface-100 dark:hover:bg-surface-800 disabled:hover:bg-transparent disabled:cursor-default',
+          'group text-left rounded-md hover:bg-surface-100 dark:hover:bg-surface-800 disabled:hover:bg-transparent disabled:cursor-default',
+          inline ? 'w-fit' : 'w-full -mx-1 px-1 py-0.5',
           multiline ? 'whitespace-pre-line' : 'truncate',
-          isEmpty && 'italic text-surface-600 dark:text-surface-300'
+          isEmpty && !inline && 'italic text-surface-600 dark:text-surface-300'
         ]"
         :disabled="readonly"
         :aria-label="
@@ -18,9 +19,9 @@
         "
         @click="startEditing"
       >
-        <slot :value="modelValue">{{ isEmpty ? (readonly ? noValue() : (placeholder ?? t('band_space_setlist.inline_field.placeholder'))) : display }}</slot>
+        <slot :value="modelValue" :display="display" :is-empty="isEmpty">{{ isEmpty ? (readonly ? noValue() : (placeholder ?? t('band_space_setlist.inline_field.placeholder'))) : display }}</slot>
         <i
-          v-if="!readonly"
+          v-if="!readonly && !inline"
           class="pi pi-pencil text-xs ml-1.5 opacity-0 group-hover:opacity-60 group-focus:opacity-60"
           aria-hidden="true"
         />
@@ -86,6 +87,8 @@ const props = defineProps({
   /** Defaults to « Ajouter… ». */
   placeholder: { type: String, default: null },
   inputClass: { type: String, default: '' },
+  /** Sized to what the slot draws, a table cell or a chip: no full width, no pencil (#1431). */
+  inline: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
   /** (value) => Promise; rejects with the error handleApiError builds. */
   save: { type: Function, required: true }

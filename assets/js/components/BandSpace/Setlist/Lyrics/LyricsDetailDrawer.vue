@@ -107,6 +107,7 @@ import bandSpaceLyricsApi from '../../../../api/bandSpace/band-space-lyrics.js'
 import { useBandLyricsStore } from '../../../../store/bandSpace/bandSpaceLyrics.js'
 import { useBandSongsStore } from '../../../../store/bandSpace/bandSpaceSongs.js'
 import { isLyricsReadOnly, linkableSongs } from '../../../../utils/lyricsList.js'
+import { songPageRoute } from '../../../../utils/songPage.js'
 import InlineEditField from '../Song/InlineEditField.vue'
 import LyricsPanel from './LyricsPanel.vue'
 
@@ -214,8 +215,11 @@ async function unlink() {
   }
 }
 
+// The song opens as a page (#1431); back returns to these lyrics.
 function openSong() {
-  router.replace({ query: { song: item.value.song.id } })
+  router.push(
+    songPageRoute(props.bandSpaceId, item.value.song.id, t('band_space_setlist.sidebar.lyrics'))
+  )
 }
 
 function confirmArchive() {

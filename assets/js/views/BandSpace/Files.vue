@@ -30,6 +30,7 @@
         <FolderTree
           :folders="filesStore.folders"
           :virtual-folders="filesStore.virtualFolders"
+          :song-folders="songFolders"
           :active-folder-id="filesStore.activeFolderId"
           :band-space-id="bandSpaceId"
           :is-admin="isAdmin"
@@ -61,6 +62,7 @@
           :is-admin="isAdmin"
           :folders="filesStore.folders"
           :virtual-folders="filesStore.virtualFolders"
+          :song-folders="songFolders"
           :active-folder-id="filesStore.activeFolderId"
           :archived-count="filesStore.archivedCount"
           :filters="filesStore.filters"
@@ -79,6 +81,19 @@
           <FolderBreadcrumb
             :folders="filesStore.folders"
             :active-folder-id="filesStore.activeFolderId"
+            @select="handleFolderSelect"
+          />
+        </div>
+
+        <div
+          v-if="activeSongId && !isBelowMd"
+          class="bg-surface-0 dark:bg-surface-900 rounded-2xl px-4 py-2 border border-surface-200 dark:border-surface-700"
+        >
+          <SongFolderBreadcrumb
+            :band-space-id="bandSpaceId"
+            :song-id="activeSongId"
+            :title="activeSong?.title ?? null"
+            :source-name="songSourceName"
             @select="handleFolderSelect"
           />
         </div>
@@ -108,12 +123,8 @@
                 :label="t('band_space_files.page.upload')"
                 icon="pi pi-cloud-upload"
                 size="small"
-                :disabled="isVirtualFolderActive"
-                v-tooltip.top="
-                  isVirtualFolderActive
-                    ? t('band_space_files.common.virtual_folder_hint')
-                    : null
-                "
+                :disabled="!canUpload"
+                v-tooltip.top="!canUpload ? t('band_space_files.common.virtual_folder_hint') : null"
                 @click="uploadDialogVisible = true"
               />
             </div>
@@ -235,6 +246,7 @@
       v-if="bandSpaceId"
       v-model:visible="uploadDialogVisible"
       :band-space-id="bandSpaceId"
+      :attach-to="uploadAttachTo"
       @saved="handleUploadSaved"
     />
 
@@ -295,20 +307,23 @@ import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.
 import FolderBreadcrumb from '../../components/BandSpace/Files/FolderBreadcrumb.vue'
 import FolderEditDialog from '../../components/BandSpace/Files/FolderEditDialog.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
+import SongFolderBreadcrumb from '../../components/BandSpace/Files/SongFolderBreadcrumb.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { useFileUploadToasts } from '../../composables/useFileUploadToasts.js'
 import { directChildren } from '../../composables/useFolderDragDrop.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
+import { useSongFileCounts } from '../../composables/useSongFileCounts.js'
 import {
   isVirtualFolderId,
   listedFolderId,
   NO_FOLDER_LISTED,
   TRASH_FOLDER_ID,
+  virtualFolderSongId,
   virtualFolderSource
 } from '../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
-import { listedFolderOfRows } from '../../utils/fileListing.js'
+import { listedFolderOfRows, virtualFolderName } from '../../utils/fileListing.js'
 import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
 
 const route = useRoute()
@@ -393,8 +408,36 @@ const inlineFolders = computed(() =>
 
 const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
 
-/** Where the toolbar's « Importer » is enabled: a source is filled by attachments, the trash by deletes. */
-const canUpload = computed(() => !isVirtualFolderActive.value && !isTrashActive.value)
+/**
+ * The songs « Chansons » unfolds into (#1431), read from the listing of the files attached to songs, as
+ * the répertoire reads its counts.
+ */
+const { songs: songFolders, load: loadSongFolders } = useSongFileCounts(() => bandSpaceId.value)
+
+/** The song whose node the panel stands in, or null anywhere else. */
+const activeSongId = computed(() => virtualFolderSongId(filesStore.activeFolderId))
+const activeSong = computed(
+  () => songFolders.value.find((song) => song.id === activeSongId.value) ?? null
+)
+const songSourceName = computed(() => virtualFolderName('song', filesStore.virtualFolders))
+
+/**
+ * Where the toolbar's « Importer » is enabled: a source is filled by attachments, the trash by deletes.
+ * A song's node is the exception, since a file uploaded there is attached to the song.
+ */
+const canUpload = computed(
+  () => !isTrashActive.value && (!isVirtualFolderActive.value || activeSongId.value !== null)
+)
+
+const uploadAttachTo = computed(() =>
+  activeSongId.value === null
+    ? null
+    : {
+        type: 'song',
+        id: activeSongId.value,
+        label: activeSong.value?.title ?? songSourceName.value
+      }
+)
 
 // The trash lists its own checkboxes, always on.
 watch(isTrashActive, (inTrash) => {
@@ -466,12 +509,16 @@ onUnmounted(() => {
 useBandSpaceLiveRefresh({
   bandSpaceId,
   modules: ['file'],
-  refresh: () => filesStore.refreshFromLiveSignal(bandSpaceId.value)
+  refresh: () => {
+    filesStore.refreshFromLiveSignal(bandSpaceId.value)
+    loadSongFolders()
+  }
 })
 
 function loadAll() {
   if (!bandSpaceId.value) return
   filesStore.fetchFolders(bandSpaceId.value)
+  loadSongFolders()
   filesStore.fetchTags(bandSpaceId.value)
   filesStore.fetchQuota(bandSpaceId.value)
   filesStore.fetchArchivedCount(bandSpaceId.value)
@@ -578,10 +625,17 @@ watch(
 
 function handleUploadSaved(result) {
   announceUpload(result)
-  // A batch stopped in the middle may have left an upload the server took after the browser gave up
-  // on it, so the only honest listing is the one read back from the server.
-  if (result.interrupted) {
+  // A file uploaded into a song's node is attached to the song without passing through the store, so
+  // the listing, the quota it took and the song's count are read back. A batch stopped in the middle
+  // may have left an upload the server took after the browser gave up on it, so the only honest
+  // listing is the one read back from the server.
+  const attachedToSong = activeSongId.value !== null
+  if (result.interrupted || attachedToSong) {
     filesStore.fetchFiles(bandSpaceId.value)
+  }
+  if (attachedToSong) {
+    filesStore.fetchQuota(bandSpaceId.value)
+    loadSongFolders()
   }
   filesStore.fetchFolders(bandSpaceId.value)
 }

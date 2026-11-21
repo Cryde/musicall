@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    :header="t('band_space_files.upload_dialog.title')"
+    :header="attachTo ? t('band_space_files.upload_dialog.title_attach', { name: attachTo.label }) : t('band_space_files.upload_dialog.title')"
     v-bind="sheetDialog"
     :close-on-escape="!isUploading"
     @hide="handleHide"
@@ -83,7 +83,8 @@
         </li>
       </ul>
 
-      <div class="flex flex-col gap-1">
+      <!-- A file attached to a song or a task goes to no folder and takes no tag: it lives in its source. -->
+      <div v-if="!attachTo" class="flex flex-col gap-1">
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ t('band_space_files.upload_dialog.folder') }}</label>
         <Select
           v-model="form.folderId"
@@ -100,7 +101,7 @@
         </small>
       </div>
 
-      <div class="flex flex-col gap-1">
+      <div v-if="!attachTo" class="flex flex-col gap-1">
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ t('band_space_files.upload_dialog.tags') }}</label>
         <MultiSelect
           v-model="form.tagIds"
@@ -203,6 +204,7 @@ import ProgressBar from 'primevue/progressbar'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import {
   isVirtualFolderId,
@@ -234,8 +236,12 @@ const sheetDialog = useSheetDialog('36rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  /** A file the caller already picked (Tablatures), queued as the dialog opens. */
-  initialFile: { type: Object, default: null },
+  /** Files the caller already has (Tablatures, a drop on a song), queued as the dialog opens. */
+  initialFiles: { type: Array, default: () => [] },
+  /** { type, id, label }: each file is uploaded as an attachment of that source, in no folder (#1431). */
+  attachTo: { type: Object, default: null },
+  /** Sends `initialFiles` as soon as the dialog opens: they were picked before a song existed to take them. */
+  autoStart: { type: Boolean, default: false },
   /** The folder to propose instead of the one on screen, null for the root. Left out, Files' rule applies. */
   initialFolderId: { type: String, default: undefined }
 })
@@ -333,7 +339,8 @@ watch(visible, (open) => {
     const listedFolder = listedFolderId(activeFolderId.value)
     form.folderId = listedFolder === NO_FOLDER_LISTED ? null : listedFolder
   }
-  if (props.initialFile) addFiles([props.initialFile])
+  if (props.initialFiles.length > 0) addFiles(props.initialFiles)
+  if (props.autoStart) handleUpload()
 })
 
 // Open while a batch runs too: the loop reads the queue back on every turn, so files dropped in
@@ -484,13 +491,24 @@ async function runBatch() {
 
 /** @returns {Promise<{file: Object, quotaApproaching: boolean}>} */
 function uploadOne(item, batch) {
+  const onProgress = (percent) => {
+    if (batch !== runningBatch) return
+    queue.value = withQueueItem(queue.value, item.id, { progress: percent })
+  }
+  if (props.attachTo) {
+    return bandSpaceFilesApi.attachFileUpload(
+      props.bandSpaceId,
+      props.attachTo.type,
+      props.attachTo.id,
+      item.file,
+      onProgress,
+      abortController?.signal
+    )
+  }
   return filesStore.uploadFile(
     props.bandSpaceId,
     { file: item.file, folderId: form.folderId, tagIds: form.tagIds },
-    (percent) => {
-      if (batch !== runningBatch) return
-      queue.value = withQueueItem(queue.value, item.id, { progress: percent })
-    },
+    onProgress,
     abortController?.signal
   )
 }

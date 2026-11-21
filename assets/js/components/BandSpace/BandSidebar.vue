@@ -13,10 +13,10 @@
       >
         <a
           :href="href"
-          :aria-current="isExactActive ? 'page' : undefined"
+          :aria-current="isCurrent(item, isExactActive) ? 'page' : undefined"
           :aria-label="ariaLabelFor(item)"
           @click="(e) => handleClick(e, navigate)"
-          :class="linkClasses(isExactActive)"
+          :class="linkClasses(isCurrent(item, isExactActive))"
           v-tooltip.right="tooltipFor(item.label)"
         >
           <i :class="['pi', item.icon, iconClass]" aria-hidden="true"></i>
@@ -93,6 +93,7 @@
 import Badge from 'primevue/badge'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
 import { useFeedbackStore } from '../../store/feedback.js'
@@ -166,6 +167,13 @@ const settingsItem = computed(
 const iconClass = computed(() =>
   props.inDrawer ? 'w-5 shrink-0 text-center text-base' : 'text-base shrink-0'
 )
+
+// A page inside a module (a song inside Setlists) names that module in its route's meta.menuRoute.
+const route = useRoute()
+
+function isCurrent(item, isExactActive) {
+  return isExactActive || route.meta.menuRoute === item.route
+}
 
 function linkClasses(isActive) {
   return [
