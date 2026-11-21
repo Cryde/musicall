@@ -18,6 +18,12 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BandSpaceFileRepository extends ServiceEntityRepository
 {
+    /**
+     * Guitar Pro 3 to 8, recognised by name: GP3 to GPX are stored as application/octet-stream and a .gp
+     * as application/zip (#1428). Mirrors GUITAR_PRO_EXTENSIONS in assets/js/utils/guitarPro.js.
+     */
+    private const array GUITAR_PRO_EXTENSIONS = ['gp', 'gp3', 'gp4', 'gp5', 'gpx'];
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BandSpaceFile::class);
@@ -338,7 +344,22 @@ class BandSpaceFileRepository extends ServiceEntityRepository
                 ->setParameter('uploaderId', $filter->uploaderId);
         }
 
+        if ($filter->guitarProOnly) {
+            $this->restrictToGuitarProNames($qb);
+        }
+
         return $qb;
+    }
+
+    private function restrictToGuitarProNames(QueryBuilder $qb): void
+    {
+        $nameEndsWith = [];
+        foreach (self::GUITAR_PRO_EXTENSIONS as $index => $extension) {
+            $nameEndsWith[] = 'LOWER(bsf.originalName) LIKE :guitarProName' . $index;
+            $qb->setParameter('guitarProName' . $index, '%.' . $extension);
+        }
+
+        $qb->andWhere($qb->expr()->orX(...$nameEndsWith));
     }
 
     private function applySort(QueryBuilder $qb, BandSpaceFileFilter $filter): void
@@ -348,6 +369,10 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         match ($filter->sort) {
             'name' => $qb->orderBy('bsf.originalName', $direction),
             'size' => $qb->orderBy('cv.size', $direction),
+            // A new version, a rename or a move dates the file, so the tab a member just reworked rises
+            // to the top. A file never touched since its upload has no update date yet.
+            'updated' => $qb->addSelect('COALESCE(bsf.updateDatetime, bsf.creationDatetime) AS HIDDEN lastChangeDatetime')
+                ->orderBy('lastChangeDatetime', $direction),
             default => $qb->orderBy('bsf.creationDatetime', $direction),
         };
 

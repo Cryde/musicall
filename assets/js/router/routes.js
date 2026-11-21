@@ -117,8 +117,14 @@ export default [
         component: () => import('../views/BandSpace/Files.vue')
       },
       {
-        // A full page, a drawer is too narrow for a score. Under tabs/ so the Tablatures module (#1430)
-        // can list the files it opens without moving it.
+        // Every Guitar Pro file of the space, a view over Files (#1430).
+        path: ':id/tabs',
+        name: 'app_band_tabs',
+        component: () => import('../views/BandSpace/Tabs.vue'),
+        meta: { testerOnly: TABS_TESTER_ONLY }
+      },
+      {
+        // A full page, a drawer is too narrow for a score.
         path: ':id/tabs/:fileId',
         name: 'app_band_tab_reader',
         component: () => import('../views/BandSpace/TabReader.vue'),

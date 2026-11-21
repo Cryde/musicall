@@ -9,6 +9,7 @@ import {
   RIDER_TESTER_ONLY,
   resolveSettingsSection,
   SECTION_NAMES,
+  TABS_TESTER_ONLY,
   visibleSettingsSections
 } from './bandSpace.js'
 
@@ -43,13 +44,36 @@ describe('the Tech Riders curtain', () => {
     assert.equal(rider.testerOnly, RIDER_TESTER_ONLY)
   })
 
-  it('gates nothing beyond the tech riders, so the flip takes only its own module', () => {
+  it('gates nothing beyond the tech riders and the tabs, so each flip takes only its own module', () => {
     const gated = NAVIGATION_ITEMS.filter((item) => item.testerOnly !== undefined)
 
     assert.deepEqual(
       gated.map((item) => item.route),
-      [BAND_SPACE_ROUTES.RIDER]
+      [BAND_SPACE_ROUTES.TABS, BAND_SPACE_ROUTES.RIDER]
     )
+  })
+})
+
+describe('the Tablatures sidebar entry', () => {
+  it("is gated on the reader's flag, so one flip releases the module and the reader together", () => {
+    const tabs = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.TABS)
+
+    assert.ok(tabs)
+    assert.equal(tabs.testerOnly, TABS_TESTER_ONLY)
+  })
+
+  it('sits right after Setlists, since songs and tabs go together', () => {
+    const routes = NAVIGATION_ITEMS.map((item) => item.route)
+
+    assert.equal(
+      routes.indexOf(BAND_SPACE_ROUTES.TABS),
+      routes.indexOf(BAND_SPACE_ROUTES.SETLIST) + 1
+    )
+  })
+
+  // Releasing the module adds it to the pitch, and this test goes with the flag.
+  it('is not pitched to visitors yet', () => {
+    assert.ok(!BAND_SPACE_MODULES.some((module) => module.key === 'tabs'))
   })
 })
 

@@ -90,7 +90,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSheetDialog } from '../../../composables/useSheetDialog.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
@@ -101,7 +101,9 @@ const sheetDialog = useSheetDialog('32rem')
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  fileId: { type: String, default: null }
+  fileId: { type: String, default: null },
+  /** A file the caller already picked (Tablatures), selected as the dialog opens. */
+  initialFile: { type: Object, default: null }
 })
 
 const emit = defineEmits(['uploaded'])
@@ -148,6 +150,12 @@ function selectFile(file) {
   selectedFile.value = file
   fieldErrors.uploadedFile = null
 }
+
+watch(visible, (open) => {
+  if (open && props.initialFile) {
+    selectFile(props.initialFile)
+  }
+})
 
 function handleFileChange(event) {
   const file = event.target.files?.[0]

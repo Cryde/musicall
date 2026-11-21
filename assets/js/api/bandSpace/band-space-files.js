@@ -15,6 +15,7 @@ export default {
       financeEntryId,
       query,
       mime,
+      format,
       uploaderId,
       sort,
       order,
@@ -31,6 +32,7 @@ export default {
     if (financeEntryId) params.finance_entry_id = financeEntryId
     if (query) params.query = query
     if (mime) params.mime = mime
+    if (format) params.format = format
     if (uploaderId) params.uploader_id = uploaderId
     if (sort) params.sort = sort
     if (order) params.order = order

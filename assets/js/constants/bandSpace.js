@@ -15,6 +15,7 @@ export const BAND_SPACE_ROUTES = {
   SETLIST: 'app_band_setlist',
   RIDER: 'app_band_rider',
   PARAMETERS: 'app_band_parameters',
+  TABS: 'app_band_tabs',
   TAB_READER: 'app_band_tab_reader'
 }
 
@@ -23,6 +24,9 @@ export const LAST_TECH_RIDER_KEY = 'lastTechRiderId'
 
 /** Whether the tech rider PDF preview stays docked open on a wide screen. */
 export const TECH_RIDER_PREVIEW_KEY = 'techRiderPreview'
+
+/** Per band space, the folder « Ajouter une tablature » proposes. See utils/tabUploadFolder.js. */
+export const LAST_TAB_FOLDER_KEY = 'lastTabFolderId'
 
 /**
  * Tech riders are merged but not yet announced, so the module is hidden from everyone except
@@ -39,9 +43,10 @@ export const TECH_RIDER_PREVIEW_KEY = 'techRiderPreview'
 export const RIDER_TESTER_ONLY = true
 
 /**
- * The Guitar Pro reader (#1429) is shown to testers only while it settles: its « Lire la tablature »
- * button in the file drawer and its route both read this. RELEASING IT IS THIS ONE FLIP. Like the tech
- * riders it is presentation only: the reader just downloads a file any member can already download.
+ * The Guitar Pro reader (#1429) and the Tablatures module (#1430) are shown to testers only while they
+ * settle: the « Lire la tablature » button in the file drawer, the « Tablatures » menu entry and both
+ * routes read this. RELEASING THEM IS THIS ONE FLIP, and adding the module to BAND_SPACE_MODULES. Like
+ * the tech riders it is presentation only: both list and download files any member can already reach.
  */
 export const TABS_TESTER_ONLY = true
 
@@ -157,6 +162,9 @@ export const SECTION_NAMES = {
   },
   get [BAND_SPACE_ROUTES.SETLIST]() {
     return i18n.global.t('band_space.module_name.setlist')
+  },
+  get [BAND_SPACE_ROUTES.TABS]() {
+    return i18n.global.t('band_space.module_name.tabs')
   },
   get [BAND_SPACE_ROUTES.RIDER]() {
     return i18n.global.t('band_space.module_name.rider')
@@ -301,6 +309,14 @@ export const NAVIGATION_ITEMS = Object.freeze([
     },
     route: BAND_SPACE_ROUTES.SETLIST,
     icon: 'pi-list'
+  },
+  {
+    get label() {
+      return i18n.global.t('band_space.module_name.tabs')
+    },
+    route: BAND_SPACE_ROUTES.TABS,
+    icon: 'pi-align-justify',
+    testerOnly: TABS_TESTER_ONLY
   },
   {
     get label() {

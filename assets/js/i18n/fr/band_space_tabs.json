@@ -110,5 +110,24 @@
     "download_failed": "Le fichier n'a pas pu être téléchargé. Vérifiez votre connexion, puis réessayez.",
     "retry": "Réessayer",
     "back": "Retour aux fichiers"
+  },
+  "list": {
+    "add": "Ajouter une tablature",
+    "count": "{count} tablature | {count} tablatures",
+    "column_name": "Nom",
+    "column_folder": "Dossier",
+    "column_song": "Chanson",
+    "column_uploader": "Ajoutée par",
+    "column_updated": "Modifiée le",
+    "empty_title": "Aucune tablature pour le moment",
+    "empty_intro": "Une tablature est un fichier Guitar Pro (.gp, .gp5, .gpx…) rangé dans les Fichiers du groupe. Elle s'ouvre ici pour être lue et jouée, piste par piste, avec le son de chaque instrument.",
+    "not_guitar_pro": "Ce n'est pas une tablature",
+    "not_guitar_pro_detail": "« {name} » n'est pas un fichier Guitar Pro (.gp, .gp3, .gp4, .gp5 ou .gpx)."
+  },
+  "same_name": {
+    "title": "Cette tablature existe déjà",
+    "message": "« {name} » est déjà dans les fichiers ({folder}). L'importer comme nouvelle version garde tout son historique dans un seul fichier.",
+    "new_version": "Importer une nouvelle version",
+    "separate": "Créer un autre fichier"
   }
 }

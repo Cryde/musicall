@@ -278,7 +278,6 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
-import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -298,6 +297,7 @@ import FolderEditDialog from '../../components/BandSpace/Files/FolderEditDialog.
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
+import { useFileUploadToasts } from '../../composables/useFileUploadToasts.js'
 import { directChildren } from '../../composables/useFolderDragDrop.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import {
@@ -313,10 +313,10 @@ import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const { t } = useI18n()
 const filesStore = useBandFilesStore()
 const { currentSpace } = useBandSpaceNavigation()
+const { announceUpload } = useFileUploadToasts()
 // Wipe any previous space's folders/files/tags synchronously before first
 // render. The :key on <router-view> remounts this view on space switch but
 // Pinia keeps A's data until cleared.
@@ -576,28 +576,11 @@ watch(
   { immediate: true }
 )
 
-function handleUploadSaved({ uploadedCount, total, label, quotaApproaching, interrupted }) {
-  if (uploadedCount > 0) {
-    toast.add({
-      severity: 'success',
-      summary: t('band_space_files.page.upload_toast.summary', uploadedCount),
-      // One file keeps the sentence it has always been given: a bare count reads as a fragment when
-      // there was never a batch to count. The tally is only worth quoting for a real batch.
-      detail: total === 1 ? t('band_space_files.page.upload_toast.single_detail') : label,
-      life: 3000
-    })
-  }
-  if (quotaApproaching) {
-    toast.add({
-      severity: 'warn',
-      summary: t('band_space_files.common.quota_approaching.summary'),
-      detail: t('band_space_files.common.quota_approaching.detail'),
-      life: 6000
-    })
-  }
+function handleUploadSaved(result) {
+  announceUpload(result)
   // A batch stopped in the middle may have left an upload the server took after the browser gave up
   // on it, so the only honest listing is the one read back from the server.
-  if (interrupted) {
+  if (result.interrupted) {
     filesStore.fetchFiles(bandSpaceId.value)
   }
   filesStore.fetchFolders(bandSpaceId.value)

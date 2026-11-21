@@ -36,6 +36,7 @@ band_space.chat.voice_note_type_invalid: "Format de note vocale non pris en char
 band_space.file.bulk_delete_too_many: "Au maximum {{ limit }} fichiers peuvent être supprimés en une fois"
 band_space.file.bulk_patch_too_many: "Au maximum {{ limit }} fichiers peuvent être modifiés en une fois"
 band_space.file.bulk_restore_too_many: "Au maximum {{ limit }} fichiers peuvent être restaurés en une fois"
+band_space.file.format_invalid: "Format de fichier inconnu"
 band_space.file.selection_empty: "Au moins un fichier doit être sélectionné"
 band_space.file.share.expiry_required: "La date d'expiration est obligatoire"
 band_space.file.share.password_too_short: "Le mot de passe doit contenir au moins {{ limit }} caractères"

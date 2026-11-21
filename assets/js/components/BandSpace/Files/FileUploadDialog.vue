@@ -233,7 +233,11 @@ import { formatBytes } from '../../../utils/formatBytes.js'
 const sheetDialog = useSheetDialog('36rem')
 
 const props = defineProps({
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  /** A file the caller already picked (Tablatures), queued as the dialog opens. */
+  initialFile: { type: Object, default: null },
+  /** The folder to propose instead of the one on screen, null for the root. Left out, Files' rule applies. */
+  initialFolderId: { type: String, default: undefined }
 })
 
 const emit = defineEmits(['saved'])
@@ -282,7 +286,11 @@ let abortController = null
  * What the running batch has achieved so far. Kept out of runBatch's own scope because closing the
  * dialog has to be able to report it too, and that happens outside the loop.
  */
-let tally = { uploadedCount: 0, quotaApproaching: false, interrupted: false }
+let tally = emptyTally()
+
+function emptyTally() {
+  return { uploadedFiles: [], quotaApproaching: false, interrupted: false }
+}
 
 const tags = computed(() => filesStore.tags)
 
@@ -317,10 +325,15 @@ const hasUnsent = computed(() => hasUnsentItems(queue.value))
 // The folder on screen, so the member sees where the file is about to land and can still change it.
 // The root and the selections that are not folders leave the field on its « Racine » placeholder.
 watch(visible, (open) => {
-  if (open) {
+  if (!open) return
+
+  if (props.initialFolderId !== undefined) {
+    form.folderId = props.initialFolderId
+  } else {
     const listedFolder = listedFolderId(activeFolderId.value)
     form.folderId = listedFolder === NO_FOLDER_LISTED ? null : listedFolder
   }
+  if (props.initialFile) addFiles([props.initialFile])
 })
 
 // Open while a batch runs too: the loop reads the queue back on every turn, so files dropped in
@@ -392,7 +405,7 @@ async function runBatch() {
   const batch = ++runningBatch
   abortController = new AbortController()
   isUploading.value = true
-  tally = { uploadedCount: 0, quotaApproaching: false, interrupted: false }
+  tally = emptyTally()
 
   try {
     let item = nextQueuedItem(queue.value)
@@ -423,7 +436,7 @@ async function runBatch() {
           status: UPLOAD_STATUS.Uploaded,
           progress: 100
         })
-        tally.uploadedCount += 1
+        tally.uploadedFiles.push(result.file)
         tally.quotaApproaching = tally.quotaApproaching || result.quotaApproaching
       } catch (e) {
         if (batch !== runningBatch) return
@@ -506,19 +519,26 @@ function applyCancellation() {
 }
 
 /**
- * Tells Files.vue what the batch did, once, so the toast and the reread happen whether the batch
+ * Tells the page what the batch did, once, so the toast and the reread happen whether the batch
  * ran to its end or the member walked out on it.
  *
  * `total` goes with the label because a batch of one still deserves the sentence the single file
- * dialog has always shown, rather than a bare count.
+ * dialog has always shown, rather than a bare count. Tablatures opens the reader on one of the
+ * `uploadedFiles` and remembers the `folderId` chosen.
  *
  * @param {{label: string, total: number}} summarized
  */
 function reportBatch(summarized) {
-  if (tally.uploadedCount === 0 && !tally.interrupted) return
+  if (tally.uploadedFiles.length === 0 && !tally.interrupted) return
 
-  emit('saved', { ...tally, label: summarized.label, total: summarized.total })
-  tally = { uploadedCount: 0, quotaApproaching: false, interrupted: false }
+  emit('saved', {
+    ...tally,
+    uploadedCount: tally.uploadedFiles.length,
+    label: summarized.label,
+    total: summarized.total,
+    folderId: form.folderId
+  })
+  tally = emptyTally()
 }
 
 function handleHide() {

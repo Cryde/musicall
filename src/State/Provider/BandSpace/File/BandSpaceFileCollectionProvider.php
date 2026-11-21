@@ -24,6 +24,9 @@ readonly class BandSpaceFileCollectionProvider implements ProviderInterface
     /** Reserved `folder_id` value asking for the root of the tree rather than the whole space. */
     public const string ROOT_FOLDER_ID = 'root';
 
+    /** The one `format` value: Guitar Pro files, for the Tablatures module. */
+    public const string FORMAT_GUITAR_PRO = 'guitar_pro';
+
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFileRepository $fileRepository,
@@ -86,6 +89,7 @@ readonly class BandSpaceFileCollectionProvider implements ProviderInterface
             offset: $offset,
             archivedOnly: $query?->getBoolean('archived') ?? false,
             rootOnly: $isRoot,
+            guitarProOnly: $query?->getString('format') === self::FORMAT_GUITAR_PRO,
         );
     }
 }

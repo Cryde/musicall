@@ -18,8 +18,10 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints\Choice;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -525,6 +527,381 @@ class BandSpaceFileCollectionTest extends ApiTestCase
 
         $this->client->loginUser($other);
         $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Tu n'es pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Tu n'es pas membre de ce Band Space",
+        ]);
+    }
+
+    /**
+     * The Tablatures module (#1430). A Guitar Pro file is recognised by its name: GP3 to GPX are stored
+     * as application/octet-stream and a .gp as application/zip, so the zip below differs only by name.
+     */
+    public function test_format_guitar_pro_lists_every_guitar_pro_format_across_folders(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $songs = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Morceaux'])->create();
+        $year = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => '2026', 'parent' => $songs])->create();
+
+        $gp3 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'intro.gp3', 'creationDatetime' => new \DateTime('2026-01-01 10:00:00')])->create();
+        $gp4 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $songs, 'originalName' => 'Solo.GP4', 'creationDatetime' => new \DateTime('2026-01-02 10:00:00')])->create();
+        $gp5 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $year, 'originalName' => 'riff.gp5', 'creationDatetime' => new \DateTime('2026-01-03 10:00:00')])->create();
+        $gpx = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'ballade.gpx', 'creationDatetime' => new \DateTime('2026-01-04 10:00:00')])->create();
+        $gp = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $songs, 'originalName' => 'nouvelle.gp', 'creationDatetime' => new \DateTime('2026-01-05 10:00:00')])->create();
+        $gpVersion = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $gp, 'createdBy' => $user, 'mimeType' => 'application/zip', 'size' => 2048])->create();
+        $gp->currentVersion = $gpVersion;
+        \Zenstruck\Foundry\Persistence\save($gp);
+
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'rider.pdf', 'creationDatetime' => new \DateTime('2026-01-06 10:00:00')])->create();
+        $zip = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $songs, 'originalName' => 'stems.zip', 'creationDatetime' => new \DateTime('2026-01-07 10:00:00')])->create();
+        $zipVersion = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $zip, 'createdBy' => $user, 'mimeType' => 'application/zip', 'size' => 4096])->create();
+        $zip->currentVersion = $zipVersion;
+        \Zenstruck\Foundry\Persistence\save($zip);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $createdBy = ['id' => $user->id, 'username' => 'alice', 'display_name' => 'alice', 'profile_picture_url' => null];
+        $filesUrl = '/api/band_spaces/' . $bandSpace->id . '/files/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files',
+            '@type' => 'Collection',
+            'totalItems' => 5,
+            'member' => [
+                [
+                    '@id' => $filesUrl . $gp->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $gp->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'nouvelle.gp',
+                    'size' => 2048,
+                    'mime_type' => 'application/zip',
+                    'folder_id' => $songs->id,
+                    'folder_path' => [['id' => $songs->id, 'name' => 'Morceaux']],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => $gpVersion->id,
+                    'current_version_number' => 1,
+                    'version_count' => 1,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $gp->id . '/download',
+                    'creation_datetime' => '2026-01-05T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $gpx->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $gpx->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'ballade.gpx',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $gpx->id . '/download',
+                    'creation_datetime' => '2026-01-04T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $gp5->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $gp5->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'riff.gp5',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => $year->id,
+                    'folder_path' => [['id' => $songs->id, 'name' => 'Morceaux'], ['id' => $year->id, 'name' => '2026']],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $gp5->id . '/download',
+                    'creation_datetime' => '2026-01-03T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $gp4->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $gp4->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'Solo.GP4',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => $songs->id,
+                    'folder_path' => [['id' => $songs->id, 'name' => 'Morceaux']],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $gp4->id . '/download',
+                    'creation_datetime' => '2026-01-02T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $gp3->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $gp3->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'intro.gp3',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $gp3->id . '/download',
+                    'creation_datetime' => '2026-01-01T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_format_guitar_pro_leaves_out_the_trash_and_other_spaces(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $otherSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $otherSpace, 'user' => $user])->create();
+
+        $live = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'live.gp5', 'creationDatetime' => new \DateTime('2026-01-01 10:00:00')])->create();
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'trashed.gp5',
+            'creationDatetime' => new \DateTime('2026-01-02 10:00:00'),
+            'archiveDatetime' => new \DateTimeImmutable('-1 day'),
+        ])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $otherSpace, 'createdBy' => $user, 'originalName' => 'elsewhere.gp5', 'creationDatetime' => new \DateTime('2026-01-03 10:00:00')])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $live->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $live->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'live.gp5',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => ['id' => $user->id, 'username' => 'alice', 'display_name' => 'alice', 'profile_picture_url' => null],
+                    'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $live->id . '/download',
+                    'creation_datetime' => '2026-01-01T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /** The Tablatures list puts the latest change on top: a file's update date wins over its upload date. */
+    public function test_sort_updated_puts_the_latest_change_first(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'live'])->create();
+
+        $reworked = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'reworked.gp',
+            'creationDatetime' => new \DateTime('2026-01-01 10:00:00'),
+            'updateDatetime' => new \DateTime('2026-03-01 10:00:00'),
+            'tags' => new ArrayCollection([$tag]),
+        ])->create();
+        $untouched = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'untouched.gp5', 'creationDatetime' => new \DateTime('2026-02-01 10:00:00')])->create();
+        $older = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'older.gpx',
+            'creationDatetime' => new \DateTime('2026-01-10 10:00:00'),
+            'updateDatetime' => new \DateTime('2026-01-20 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro&sort=updated', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $createdBy = ['id' => $user->id, 'username' => 'alice', 'display_name' => 'alice', 'profile_picture_url' => null];
+        $filesUrl = '/api/band_spaces/' . $bandSpace->id . '/files/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files',
+            '@type' => 'Collection',
+            'totalItems' => 3,
+            'member' => [
+                [
+                    '@id' => $filesUrl . $reworked->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $reworked->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'reworked.gp',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [['id' => $tag->id, 'name' => 'live', 'color_hex' => null]],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $reworked->id . '/download',
+                    'creation_datetime' => '2026-01-01T10:00:00+00:00',
+                    'update_datetime' => '2026-03-01T10:00:00+00:00',
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $untouched->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $untouched->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'untouched.gp5',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $untouched->id . '/download',
+                    'creation_datetime' => '2026-02-01T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+                [
+                    '@id' => $filesUrl . $older->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $older->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'older.gpx',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => $createdBy,
+                    'download_url' => $filesUrl . $older->id . '/download',
+                    'creation_datetime' => '2026-01-10T10:00:00+00:00',
+                    'update_datetime' => '2026-01-20T10:00:00+00:00',
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro&sort=updated',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_format_refuses_an_unknown_value(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?format=pdf', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'format', 'message' => 'Format de fichier inconnu', 'code' => Choice::NO_SUCH_CHOICE_ERROR],
+            ],
+            'detail' => 'format: Format de fichier inconnu',
+            'description' => 'format: Format de fichier inconnu',
+            'type' => '/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            'title' => 'An error occurred',
+        ]);
+    }
+
+    public function test_format_guitar_pro_not_member_returns_403(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'member', 'email' => 'member@test.com']);
+        $other = UserFactory::new()->asBaseUser()->create(['username' => 'other', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member, 'originalName' => 'song.gp'])->create();
+
+        $this->client->loginUser($other);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?format=guitar_pro', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
