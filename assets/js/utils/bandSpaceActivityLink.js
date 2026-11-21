@@ -10,7 +10,10 @@
  * `resourceKind()`, and tests/Fixtures/BandSpaceActivity/links.json holds the two sides together.
  */
 
-/** Each module's screen, the query key it opens an item by, and which types name such an item. */
+/**
+ * Each module's screen, the query key it opens an item by (or `param`, the path param of an item with
+ * a page of its own), and which types name such an item.
+ */
 const LINKS = {
   task: [
     {
@@ -91,8 +94,8 @@ const LINKS = {
       }
     },
     {
-      route: 'app_band_setlist',
-      key: 'song',
+      route: 'app_band_song',
+      param: 'songId',
       types: {
         only: [
           'song_added',
@@ -152,6 +155,9 @@ export function activityLink(activity, bandSpaceId) {
     namesItem(candidate.types, activity.type)
   )
   if (!link) return null
+  if (link.param) {
+    return { name: link.route, params: { id: bandSpaceId, [link.param]: activity.resource_id } }
+  }
 
   return {
     name: link.route,

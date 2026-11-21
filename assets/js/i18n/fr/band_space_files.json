@@ -208,6 +208,7 @@
     "name_required": "Le nom est requis"
   },
   "upload_dialog": {
+    "title_attach": "Ajouter des fichiers à « {name} »",
     "title": "Importer des fichiers",
     "drop_zone": "Glisse-dépose un ou plusieurs fichiers ou {browse}",
     "queue_label": "Fichiers à importer",
@@ -258,26 +259,40 @@
     "copy_failed_detail": "Sélectionne le lien et copie-le manuellement."
   },
   "attach_dialog": {
-    "title": "Joindre un fichier",
-    "tab_upload": "Importer",
-    "tab_existing": "Choisir parmi les fichiers existants",
-    "drop_zone": "Glisse-dépose un fichier ou {browse}",
+    "title": "Choisir dans Fichiers",
     "search_placeholder": "Rechercher un fichier",
     "no_files": "Aucun fichier disponible.",
     "manual_only": "Seuls les fichiers manuels (non attachés) peuvent être joints.",
-    "submit": "Importer",
     "attached": "Fichier joint"
   },
   "attached_section": {
     "title": "Pièces jointes",
-    "attach": "Joindre un fichier",
     "empty": "Aucun fichier attaché.",
     "detach": "Détacher",
     "detach_confirm_task": "Détacher « {name} » de cette tâche ?",
     "detach_confirm_finance": "Détacher « {name} » de cette entrée ?",
     "detach_confirm_header": "Confirmer le détachement",
     "detached": "Fichier détaché",
-    "detach_failed": "Détachement impossible"
+    "detach_failed": "Détachement impossible",
+    "import": "Importer",
+    "choose": "Choisir dans Fichiers",
+    "drop_hint": "Glisse des fichiers ici pour les ajouter.",
+    "drop_here": "Dépose les fichiers pour les ajouter",
+    "empty_title": "Aucun fichier pour l'instant",
+    "empty_hint": "Glisse des fichiers ici, ou :",
+    "read": "Lire",
+    "read_tab": "Lire la tablature",
+    "read_tab_named": "Lire la tablature {name}",
+    "play": "Écouter {name}",
+    "pause": "Mettre {name} en pause",
+    "position": "Position dans {name}",
+    "audio_failed": "Lecture impossible. Télécharge le fichier pour l'écouter.",
+    "view": "Voir",
+    "download": "Télécharger",
+    "open_in_files": "Ouvrir dans Fichiers",
+    "actions": "Actions pour {name}",
+    "detach_confirm_song": "Détacher « {name} » de cette chanson ?",
+    "detach_confirm_setlist": "Détacher « {name} » de cette setlist ?"
   },
   "detach_dialog": {
     "also_trash": "Déplacer aussi vers la corbeille",
@@ -349,6 +364,11 @@
     "actions": "Actions du dossier",
     "open": "Ouvrir",
     "rename_move": "Renommer / déplacer"
+  },
+  "song_tree": {
+    "toggle": "Afficher chaque chanson",
+    "open_page": "Ouvrir la fiche",
+    "open_song": "Ouvrir la chanson {title}"
   },
   "file_list": {
     "empty": "Aucun fichier dans ce dossier, commence par en importer un.",

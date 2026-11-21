@@ -1,5 +1,8 @@
 <template>
-  <div ref="scrollEl" class="tab-score relative overflow-y-auto overflow-x-hidden bg-surface-0 dark:bg-surface-900">
+  <div
+    ref="scrollEl"
+    :class="['tab-score relative bg-surface-0 dark:bg-surface-900', preview ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden']"
+  >
     <div ref="scoreEl" class="min-h-full" />
   </div>
 </template>
@@ -42,7 +45,10 @@ const props = defineProps({
   /** alphaTab's StaveProfile name: Default (as saved in the file), Tab, Score or ScoreTab. */
   profile: { type: String, default: 'Default' },
   scale: { type: Number, default: 1 },
-  dark: { type: Boolean, default: false }
+  dark: { type: Boolean, default: false },
+  /** A song page's glimpse (#1431): the first `barCount` bars, no player, no sounds downloaded. */
+  preview: { type: Boolean, default: false },
+  barCount: { type: Number, default: 4 }
 })
 
 const emit = defineEmits([
@@ -97,20 +103,45 @@ function ink() {
 
 const isPercussion = (track) => track.staves.some((staff) => staff.isPercussion)
 
+// What a score draws above its first bars. A preview is a few lines high: without these, it shows the
+// file's tuning and chord diagrams rather than the tab.
+const HEADER_ELEMENTS = [
+  'ScoreTitle',
+  'ScoreSubTitle',
+  'ScoreArtist',
+  'ScoreAlbum',
+  'ScoreWords',
+  'ScoreMusic',
+  'ScoreWordsAndMusic',
+  'ScoreCopyright',
+  'GuitarTuning',
+  'TrackNames',
+  'ChordDiagrams'
+]
+
+function hideScoreHeader(instance) {
+  for (const name of HEADER_ELEMENTS) {
+    instance.settings.notation.elements.set(alphaTab.NotationElement[name], false)
+  }
+  instance.updateSettings()
+}
+
 async function create() {
   // Asked for now, so the sounds can start as soon as the score is parsed.
-  soundFonts.manifest().catch(() => {})
+  if (!props.preview) soundFonts.manifest().catch(() => {})
   alphaTab = await import('@coderline/alphatab')
   if (destroyed) return
   const instance = new alphaTab.AlphaTabApi(scoreEl.value, {
-    core: { fontDirectory: ALPHATAB_FONT_URL, logLevel: alphaTab.LogLevel.Error },
+    // A preview draws a few bars: not worth a worker loading alphaTab a second time.
+    core: { fontDirectory: ALPHATAB_FONT_URL, logLevel: alphaTab.LogLevel.Error, useWorkers: !props.preview },
     display: {
       layoutMode: alphaTab.LayoutMode.Page,
       scale: props.scale,
       staveProfile: alphaTab.StaveProfile[props.profile],
-      resources: ink()
+      resources: ink(),
+      ...(props.preview ? { barCount: props.barCount } : {})
     },
-    player: {
+    player: props.preview ? { playerMode: alphaTab.PlayerMode.Disabled } : {
       playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
       soundFont: null,
       scrollElement: scrollEl.value,
@@ -123,6 +154,7 @@ async function create() {
       enablePlaybackRangeSelection: true
     }
   })
+  if (props.preview) hideScoreHeader(instance)
   listen(instance)
   api.value = instance
   // An iPhone on silent plays no Web Audio unless the page asks for media playback.
@@ -205,7 +237,7 @@ function load(bytes) {
   renderedTracks = tracks.length ? tracks : [0]
   instance.renderScore(loaded, renderedTracks)
   emit('loaded', loaded, renderedTracks)
-  loadSounds(loaded)
+  if (!props.preview) loadSounds(loaded)
 }
 
 /**

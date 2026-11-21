@@ -1,14 +1,15 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import bandSpaceFilesApi from '../api/bandSpace/band-space-files.js'
-import { songFileCounts } from '../utils/songFileCounts.js'
+import { songsWithFiles } from '../utils/songFileCounts.js'
 
 /**
- * The paperclip next to a song, for a whole list at once. itemsPerPage is the backend's
- * paginationMaximumItemsPerPage (200), so songs whose files fall past the first page still show it.
- * Silent on failure: the count is informational.
+ * The paperclip next to a song, for a whole list at once, and the songs « Chansons » unfolds into in
+ * Files. itemsPerPage is the backend's paginationMaximumItemsPerPage (200), so songs whose files fall
+ * past the first page still show it. Silent on failure: the count is informational.
  */
 export function useSongFileCounts(bandSpaceId) {
-  const counts = ref(new Map())
+  const songs = ref([])
+  const counts = computed(() => new Map(songs.value.map((song) => [song.id, song.fileCount])))
 
   async function load() {
     try {
@@ -16,11 +17,11 @@ export function useSongFileCounts(bandSpaceId) {
         source: 'song',
         itemsPerPage: 200
       })
-      counts.value = songFileCounts(data.member ?? [])
+      songs.value = songsWithFiles(data.member ?? [])
     } catch {
       // The indicator is not worth an error.
     }
   }
 
-  return { counts, load }
+  return { counts, songs, load }
 }

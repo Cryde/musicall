@@ -50,6 +50,20 @@
       />
     </div>
 
+    <!-- In a song's node, the way to its page. On its own line, so the button above keeps room for the
+         song's title. -->
+    <Button
+      v-if="songPage"
+      as="router-link"
+      :to="songPage"
+      :label="t('band_space_files.song_tree.open_page')"
+      icon="pi pi-arrow-right"
+      icon-pos="right"
+      text
+      size="small"
+      class="-my-2 self-end"
+    />
+
     <template v-if="withFilters">
       <IconField>
         <InputIcon class="pi pi-search" />
@@ -83,6 +97,7 @@
         <FolderTree
           :folders="folders"
           :virtual-folders="virtualFolders"
+          :song-folders="songFolders"
           :active-folder-id="activeFolderId"
           :band-space-id="bandSpaceId"
           :is-admin="isAdmin"
@@ -152,6 +167,7 @@ import {
   listedFolderId,
   NO_FOLDER_LISTED,
   TRASH_FOLDER_ID,
+  virtualFolderSongId,
   virtualFolderSource
 } from '../../../constants/folderSelection.js'
 import { PHONE_CHIP, PHONE_CHIP_OFF, PHONE_CHIP_ON } from '../../../constants/phoneControls.js'
@@ -161,6 +177,7 @@ import {
   fileSortValue
 } from '../../../utils/fileFilters.js'
 import { activeLocationLabel, canHoldSubfolder, findFolder } from '../../../utils/fileListing.js'
+import { songPageRoute } from '../../../utils/songPage.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import SheetAction from '../../Global/SheetAction.vue'
 import FileFilterSheet from './FileFilterSheet.vue'
@@ -178,6 +195,8 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false },
   folders: { type: Array, default: () => [] },
   virtualFolders: { type: Array, default: () => [] },
+  /** The songs « Chansons » unfolds into, as the sidebar shows them on a computer. */
+  songFolders: { type: Array, default: () => [] },
   activeFolderId: { type: String, default: null },
   archivedCount: { type: Number, default: 0 },
   filters: { type: Object, required: true },
@@ -201,8 +220,14 @@ const folderEdit = ref(null)
 const folderToDelete = ref(null)
 
 const locationLabel = computed(() =>
-  activeLocationLabel(props.activeFolderId, props.folders, props.virtualFolders)
+  activeLocationLabel(props.activeFolderId, props.folders, props.virtualFolders, props.songFolders)
 )
+
+const songPage = computed(() => {
+  const songId = virtualFolderSongId(props.activeFolderId)
+
+  return songId === null ? null : songPageRoute(props.bandSpaceId, songId)
+})
 
 const locationIcon = computed(() => {
   if (props.activeFolderId === null) return 'pi pi-list'

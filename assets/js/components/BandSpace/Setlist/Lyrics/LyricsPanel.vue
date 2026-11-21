@@ -141,7 +141,7 @@ import LyricsEditorDialog from './LyricsEditorDialog.vue'
 import LyricsSheet from './LyricsSheet.vue'
 import './lyrics.css'
 
-/** One set of lyrics to read, transpose, print and edit: in a song's drawer and in « Paroles ». */
+/** One set of lyrics to read, transpose, print and edit: on a song's page and in « Paroles ». */
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   /** The lyrics item: { id, title, content, version, singers, song }. */

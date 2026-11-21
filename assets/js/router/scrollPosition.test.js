@@ -4,6 +4,7 @@ import {
   elementScrollTarget,
   keepsScrollPosition,
   lastNavigationRestoredScroll,
+  lastRestoredScrollPosition,
   rememberScrollRestore
 } from './scrollPosition.js'
 
@@ -93,5 +94,20 @@ describe('elementScrollTarget', () => {
 
   it('does not offset when the margin is not a length', () => {
     assert.deepEqual(elementScrollTarget('#x', withMargin('')), { el: '#x', top: 0 })
+  })
+})
+
+describe('lastRestoredScrollPosition', () => {
+  it('gives the position Back or Forward restored, for a page whose list loads afterwards', () => {
+    rememberScrollRestore({ left: 0, top: 1200 })
+
+    assert.deepEqual(lastRestoredScrollPosition(), { left: 0, top: 1200 })
+  })
+
+  it('gives nothing after a fresh navigation', () => {
+    rememberScrollRestore({ left: 0, top: 1200 })
+    rememberScrollRestore(null)
+
+    assert.equal(lastRestoredScrollPosition(), null)
   })
 })

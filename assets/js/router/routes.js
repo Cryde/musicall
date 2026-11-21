@@ -1,4 +1,5 @@
 import { RIDER_TESTER_ONLY, TABS_TESTER_ONLY } from '../constants/bandSpace.js'
+import { songPageRedirect } from '../utils/songPage.js'
 import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
@@ -143,7 +144,17 @@ export default [
       {
         path: ':id/setlists',
         name: 'app_band_setlist',
-        component: () => import('../views/BandSpace/Setlist.vue')
+        component: () => import('../views/BandSpace/Setlist.vue'),
+        // A song opened in a drawer here before it had a page (#1431): ?song= links, in an older message
+        // or a bookmark, land on the page. beforeEnter only runs on entering the route, and nothing in
+        // the module builds a ?song= link any more.
+        beforeEnter: (to) => songPageRedirect(to) ?? true
+      },
+      {
+        path: ':id/setlists/chansons/:songId',
+        name: 'app_band_song',
+        component: () => import('../views/BandSpace/Song.vue'),
+        meta: { menuRoute: 'app_band_setlist' }
       },
       {
         // One route for the whole module: the rider on screen is a query param, like

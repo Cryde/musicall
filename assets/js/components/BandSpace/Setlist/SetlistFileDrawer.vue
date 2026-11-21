@@ -9,70 +9,30 @@
       <p class="text-xs text-surface-400 italic">
         {{ t('band_space_setlist.file_drawer.intro') }}
       </p>
-
-      <div v-if="isLoadingFiles && files.length === 0" class="flex flex-col gap-2">
-        <Skeleton v-for="i in 2" :key="i" height="2.25rem" borderRadius="0.5rem" />
-      </div>
-
-      <ul v-else-if="files.length > 0" class="list-none p-0 m-0 flex flex-col gap-1">
-        <li
-          v-for="file in files"
-          :key="file.id"
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-surface-50 dark:bg-surface-800 text-sm"
-        >
-          <i class="pi pi-file text-surface-500 shrink-0" aria-hidden="true"></i>
-          <div class="flex-1 min-w-0">
-            <div class="truncate">{{ file.original_name }}</div>
-            <div v-if="file.size" class="text-xs text-surface-500 tabular-nums">
-              {{ formatBytes(file.size) }}
-            </div>
-          </div>
-          <Button
-            icon="pi pi-times"
-            severity="secondary"
-            text
-            rounded
-            size="small"
-            :aria-label="t('band_space_setlist.attached_files.detach')"
-            v-tooltip.left="t('band_space_setlist.attached_files.detach_tooltip')"
-            @click="confirmDetach(file)"
-          />
-        </li>
-      </ul>
-
-      <p v-else class="text-xs text-surface-400 italic">{{ t('band_space_setlist.attached_files.empty') }}</p>
-
       <!-- Import only: detaching stays available on an archived setlist, the same way the API keeps
            it open, because it frees a file rather than adding to a list nobody can see. -->
-      <template v-if="!readonly">
-        <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
-        <Button
-          :label="t('band_space_setlist.attached_files.upload')"
-          icon="pi pi-cloud-upload"
-          severity="secondary"
-          :loading="isUploading"
-          @click="fileInput?.click()"
-        />
-      </template>
-      <FileDetachConfirmDialog ref="detachDialog" :band-space-id="bandSpaceId" />
+      <AttachedFilesSection
+        v-if="visible"
+        :band-space-id="bandSpaceId"
+        source-type="setlist"
+        :source-id="setlistId"
+        :source-label="setlistName"
+        :can-attach="!readonly"
+        can-detach
+      />
     </div>
   </Drawer>
 </template>
 
 <script setup>
-import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
-import Skeleton from 'primevue/skeleton'
-import { useToast } from 'primevue/usetoast'
-import { ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
-import { formatBytes } from '../../../utils/formatBytes.js'
-import FileDetachConfirmDialog from '../Files/FileDetachConfirmDialog.vue'
+import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 
-const props = defineProps({
+defineProps({
   bandSpaceId: { type: String, required: true },
   setlistId: { type: String, required: true },
+  setlistName: { type: String, default: '' },
   /** An archived setlist accepts no new attachment, so the import button goes away. */
   readonly: { type: Boolean, default: false }
 })
@@ -80,100 +40,4 @@ const props = defineProps({
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const { t } = useI18n()
-const toast = useToast()
-const detachDialog = useTemplateRef('detachDialog')
-const fileInput = ref(null)
-const isUploading = ref(false)
-const files = ref([])
-const isLoadingFiles = ref(false)
-
-async function loadFiles() {
-  if (!props.setlistId) return
-  isLoadingFiles.value = true
-  try {
-    files.value = await bandSpaceSetlistsApi.getAttachedFiles(props.bandSpaceId, props.setlistId)
-  } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.common.error'),
-      detail: e.message,
-      life: 5000
-    })
-  } finally {
-    isLoadingFiles.value = false
-  }
-}
-
-watch(
-  visible,
-  (isOpen) => {
-    if (isOpen) {
-      loadFiles()
-    } else {
-      files.value = []
-    }
-  },
-  { immediate: true }
-)
-
-async function handleFileSelected(event) {
-  const file = event.target.files?.[0]
-  if (!file) return
-  isUploading.value = true
-  try {
-    await bandSpaceSetlistsApi.uploadFile(props.bandSpaceId, props.setlistId, file)
-    toast.add({
-      severity: 'success',
-      summary: t('band_space_setlist.attached_files.uploaded'),
-      life: 3000
-    })
-    await loadFiles()
-  } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: t('band_space_setlist.common.error'),
-      detail: e.message,
-      life: 5000
-    })
-  } finally {
-    isUploading.value = false
-    if (fileInput.value) fileInput.value.value = ''
-  }
-}
-
-function confirmDetach(file) {
-  detachDialog.value.open({
-    file,
-    source: { type: 'setlist', id: props.setlistId },
-    message: t('band_space_setlist.file_drawer.detach_confirm_message', {
-      name: file.original_name
-    }),
-    header: t('band_space_setlist.common.confirm'),
-    icon: 'pi pi-exclamation-triangle',
-    acceptLabel: t('band_space_setlist.attached_files.detach'),
-    rejectLabel: t('band_space_setlist.common.cancel'),
-    onDetach: async (archive) => {
-      try {
-        await bandSpaceSetlistsApi.detachFile(props.bandSpaceId, props.setlistId, file.id, {
-          archive
-        })
-        toast.add({
-          severity: 'success',
-          summary: archive
-            ? t('band_space_files.detach_dialog.trashed')
-            : t('band_space_setlist.attached_files.detached'),
-          life: 3000
-        })
-        await loadFiles()
-      } catch (e) {
-        toast.add({
-          severity: 'error',
-          summary: t('band_space_setlist.common.error'),
-          detail: e.message,
-          life: 5000
-        })
-      }
-    }
-  })
-}
 </script>

@@ -144,46 +144,6 @@ export default {
       .catch(handleApiError)
   },
 
-  getAttachedFiles(bandSpaceId, setlistId) {
-    return axios
-      .get(
-        Routing.generate('api_band_space_setlist_files_get_collection', { bandSpaceId, setlistId })
-      )
-      .then((resp) => resp.data.member ?? [])
-      .catch(handleApiError)
-  },
-
-  uploadFile(bandSpaceId, setlistId, file, onProgress) {
-    const formData = new FormData()
-    formData.append('uploadedFile', file)
-    return axios
-      .post(
-        Routing.generate('api_band_space_setlist_files_attach', { bandSpaceId, setlistId }),
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
-              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-              onProgress(percent)
-            }
-          }
-        }
-      )
-      .then((resp) => resp.data)
-      .catch(handleApiError)
-  },
-
-  detachFile(bandSpaceId, setlistId, fileId, { archive = false } = {}) {
-    const baseUrl = Routing.generate('api_band_space_setlist_files_detach', {
-      bandSpaceId,
-      setlistId,
-      id: fileId
-    })
-    const url = archive ? `${baseUrl}?archive=true` : baseUrl
-    return axios.delete(url).catch(handleApiError)
-  },
-
   buildPdfUrl(bandSpaceId, setlistId, options = {}) {
     const baseUrl = Routing.generate('api_band_space_setlists_pdf_export', {
       bandSpaceId,

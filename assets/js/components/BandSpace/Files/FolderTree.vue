@@ -55,18 +55,64 @@
       <p class="px-3 text-xs uppercase tracking-wide text-surface-400 mb-1">
         {{ t('band_space_files.folder_tree.sources') }}
       </p>
-      <button
-        v-for="virtual in virtualFolders"
-        :key="virtual.id"
-        type="button"
-        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
-        :class="virtualButtonClasses(virtual.id)"
-        @click="emit('select', virtual.id)"
-      >
-        <i :class="fileSourceIcon(virtual.source)"></i>
-        <span class="flex-1 truncate">{{ virtual.name }}</span>
-        <span class="text-xs text-surface-500 tabular-nums">{{ virtual.file_count }}</span>
-      </button>
+      <template v-for="virtual in virtualFolders" :key="virtual.id">
+        <div
+          class="flex items-center rounded-md text-sm transition-colors duration-150"
+          :class="virtualButtonClasses(virtual.id)"
+        >
+          <!-- « Chansons » unfolds into the songs that have files (#1431), folded until asked for, so a
+               répertoire of forty songs does not push « Setlists » off the panel. -->
+          <button
+            v-if="hasSongNodes(virtual)"
+            type="button"
+            class="ml-1 flex h-8 w-6 shrink-0 items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
+            :aria-label="t('band_space_files.song_tree.toggle')"
+            :aria-expanded="areSongsUnfolded ? 'true' : 'false'"
+            :aria-controls="songListId"
+            @click="areSongsUnfolded = !areSongsUnfolded"
+          >
+            <i
+              class="pi text-[10px]"
+              :class="areSongsUnfolded ? 'pi-chevron-down' : 'pi-chevron-right'"
+              aria-hidden="true"
+            ></i>
+          </button>
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 items-center gap-2 py-2 pr-3 text-left"
+            :class="hasSongNodes(virtual) ? 'pl-1' : 'pl-3'"
+            @click="emit('select', virtual.id)"
+          >
+            <i :class="fileSourceIcon(virtual.source)"></i>
+            <span class="flex-1 truncate">{{ virtual.name }}</span>
+            <span class="text-xs text-surface-500 tabular-nums">{{ virtual.file_count }}</span>
+          </button>
+        </div>
+
+        <!-- Hung off the same rail as subfolders, under the caret that unfolds them. -->
+        <ul
+          v-if="hasSongNodes(virtual)"
+          v-show="areSongsUnfolded"
+          :id="songListId"
+          class="flex flex-col pl-2"
+        >
+          <li v-for="(song, index) in songFolders" :key="song.id" class="flex">
+            <FolderTreeRail :is-last="index === songFolders.length - 1" />
+            <div class="min-w-0 flex-1 pt-1">
+              <button
+                type="button"
+                class="flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-sm transition-colors duration-150"
+                :class="virtualButtonClasses(songFolderId(song.id))"
+                :aria-current="activeFolderId === songFolderId(song.id) ? 'true' : null"
+                @click="emit('select', songFolderId(song.id))"
+              >
+                <span class="flex-1 truncate">{{ song.title }}</span>
+                <span class="shrink-0 text-xs text-surface-500 tabular-nums">{{ song.fileCount }}</span>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </template>
     </div>
 
     <FolderEditDialog
@@ -91,12 +137,16 @@
 <script setup>
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { applyMove, canDrop } from '../../../composables/useFolderDragDrop.js'
 import { fileSourceIcon } from '../../../constants/fileSources.js'
-import { ROOT_FOLDER_ID } from '../../../constants/folderSelection.js'
+import {
+  ROOT_FOLDER_ID,
+  songFolderId,
+  virtualFolderSongId
+} from '../../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import FolderDeleteDialog from './FolderDeleteDialog.vue'
 import FolderEditDialog from './FolderEditDialog.vue'
@@ -106,6 +156,8 @@ import FolderTreeRail from './FolderTreeRail.vue'
 const props = defineProps({
   folders: { type: Array, default: () => [] },
   virtualFolders: { type: Array, default: () => [] },
+  /** The songs that have files, by title: the nodes « Chansons » unfolds into. */
+  songFolders: { type: Array, default: () => [] },
   activeFolderId: { type: String, default: null },
   bandSpaceId: { type: String, default: null },
   isAdmin: { type: Boolean, default: false }
@@ -113,6 +165,15 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 const { t } = useI18n()
+
+const songListId = useId()
+// Folded by default, unless the panel already stands in one of the songs: the phone's sheet builds the
+// tree afresh every time it opens, and the selected song has to be in sight there.
+const areSongsUnfolded = ref(virtualFolderSongId(props.activeFolderId) !== null)
+
+function hasSongNodes(virtual) {
+  return virtual.source === 'song' && props.songFolders.length > 0
+}
 
 const filesStore = useBandFilesStore()
 const toast = useToast()

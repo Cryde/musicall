@@ -25,7 +25,7 @@
       </li>
     </ul>
   </BottomSheet>
-  <Menu v-else ref="menu" :model="menuItems" :pt="menuPt" popup @show="isOpen = true" @hide="isOpen = false" />
+  <Menu v-else ref="menu" :model="menuItems" :pt="DANGER_MENU_PT" popup @show="isOpen = true" @hide="isOpen = false" />
 
   <ReportDialog v-model:visible="isReportVisible" target-type="user" :target-id="participant.id" />
 </template>
@@ -38,6 +38,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useBlockUser } from '../../composables/useBlockUser.js'
 import { useIsPhone } from '../../composables/useIsPhone.js'
+import { DANGER_MENU_PT } from '../../constants/dangerMenu.js'
 import BottomSheet from '../Global/BottomSheet.vue'
 import SheetAction from '../Global/SheetAction.vue'
 import ReportDialog from '../Report/ReportDialog.vue'
@@ -96,13 +97,6 @@ function openReport() {
 
 function block() {
   toggleBlock({ onBlocked: () => emit('blocked') })
-}
-
-// PrimeVue colours an item's text and icon itself, unlayered, so only an important class turns them red.
-const DANGER_TEXT = '!text-red-700 dark:!text-red-400'
-const menuPt = {
-  itemContent: ({ context }) => ({ class: context.item.danger ? DANGER_TEXT : undefined }),
-  itemIcon: ({ context }) => ({ class: context.item.danger ? DANGER_TEXT : undefined })
 }
 
 const menuItems = computed(() => [

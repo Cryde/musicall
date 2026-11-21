@@ -9,7 +9,7 @@ const LINKS = JSON.parse(
   readFileSync(new URL('../../../tests/Fixtures/BandSpaceActivity/links.json', import.meta.url))
 )
 
-// The screen and the query key each kind of item is opened by.
+// The screen and the query key (or path param) each kind of item is opened by.
 const OPENED_BY = {
   task: ['app_band_tasks', 'task'],
   note: ['app_band_notes', 'note'],
@@ -17,7 +17,7 @@ const OPENED_BY = {
   finance_entry: ['app_band_finance', 'entry'],
   file: ['app_band_files', 'file'],
   setlist: ['app_band_setlist', 'setlist'],
-  song: ['app_band_setlist', 'song'],
+  song: ['app_band_song', 'songId'],
   lyrics: ['app_band_setlist', 'lyrics'],
   rider: ['app_band_rider', 'rider']
 }
@@ -49,7 +49,10 @@ describe('activityLink', () => {
       link('setlist', 'setlist_renamed'),
       to('app_band_setlist', { setlist: 'item-1' })
     )
-    assert.deepEqual(link('setlist', 'song_updated'), to('app_band_setlist', { song: 'item-1' }))
+    assert.deepEqual(link('setlist', 'song_updated'), {
+      name: 'app_band_song',
+      params: { id: 'space-1', songId: 'item-1' }
+    })
     for (const type of ['lyrics_added', 'lyrics_updated', 'lyrics_linked', 'lyrics_unlinked']) {
       assert.deepEqual(
         link('setlist', type),
@@ -106,7 +109,11 @@ describe('activityLink', () => {
         } else {
           const [route, key] = OPENED_BY[kind]
           assert.equal(location?.name, route, `${module}.${type}`)
-          assert.equal(location?.query[key], 'item-1', `${module}.${type}`)
+          assert.equal(
+            location?.query?.[key] ?? location?.params[key],
+            'item-1',
+            `${module}.${type}`
+          )
         }
       }
     }

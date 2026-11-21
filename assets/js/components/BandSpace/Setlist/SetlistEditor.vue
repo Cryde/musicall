@@ -374,15 +374,6 @@
 
     <NewSongDialog v-model:visible="songDialogOpen" :band-space-id="bandSpaceId" @created="addNewSong" />
 
-    <SongDetailDrawer
-      v-model:visible="songDrawerOpen"
-      :band-space-id="bandSpaceId"
-      :song="drawerSong"
-      @updated="handleSongUpdated"
-      @archived="songDrawerOpen = false"
-      @read-lyrics="readLyricsOfSong"
-    />
-
     <template v-if="isBelowMd">
       <SetlistAddSongsSheet
         v-model:visible="isAddSheetOpen"
@@ -453,6 +444,7 @@
       v-model:visible="filesDrawerOpen"
       :band-space-id="bandSpaceId"
       :setlist-id="setlistId"
+      :setlist-name="setlist?.name ?? ''"
       :readonly="isArchived"
     />
   </div>
@@ -489,6 +481,7 @@ import {
   targetProgress,
   writeColumns
 } from '../../../utils/setlistProgramme.js'
+import { songPageRoute } from '../../../utils/songPage.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import PhoneBackBar from '../../Global/PhoneBackBar.vue'
 import SheetAction from '../../Global/SheetAction.vue'
@@ -506,7 +499,6 @@ import NewSongDialog from './NewSongDialog.vue'
 import PdfExportPopover from './PdfExportPopover.vue'
 import SetlistFileDrawer from './SetlistFileDrawer.vue'
 import SetlistItemEditDrawer from './SetlistItemEditDrawer.vue'
-import SongDetailDrawer from './SongDetailDrawer.vue'
 
 /**
  * A setlist's running order beside the repertoire (#1061): songs and intermèdes with their running
@@ -918,27 +910,17 @@ async function moveItem(item, delta) {
 const pdfPopover = ref(null)
 const filesDrawerOpen = ref(false)
 const songDialogOpen = ref(false)
-const songDrawerOpen = ref(false)
-const drawerSong = ref(null)
-
-/** Added to the set where songs are going, then opened so its key, BPM and duration come next (#1067). */
+/**
+ * Added to the set where songs are going, then its page opens, where its key, BPM and duration come next
+ * (#1067, #1431); back returns to the set.
+ */
 async function addNewSong(song) {
-  // A song the set refused stays in the repertoire, one click away once the error is dealt with.
-  if (!(await addSong(song))) return
-  drawerSong.value = song
-  songDrawerOpen.value = true
+  // The song exists even when the set refuses it (the error says why), so its page opens either way: it
+  // uploads the files picked with the song.
+  await addSong(song)
+  router.push(songPageRoute(props.bandSpaceId, song.id, setlist.value?.name))
 }
 
-function handleSongUpdated(song) {
-  drawerSong.value = song
-  setlistsStore.applySongChange(song.id, {
-    title: song.title,
-    tonality: song.tonality,
-    tempo: song.tempo,
-    reference_duration: song.reference_duration,
-    notes: song.notes
-  })
-}
 const setlistMenu = ref(null)
 
 function openLiveMode() {
@@ -1054,12 +1036,10 @@ const itemSheetFacts = computed(() => {
     .join(' · ')
 })
 
-/** A row's song, as the repertoire knows it: its drawer edits the song itself. */
+/** A row's song opens its page, where the song itself is edited (#1431). */
 function openSongScreen(item) {
-  const song = songsStore.songs.find((candidate) => candidate.id === item.song?.id)
-  if (!song) return
-  drawerSong.value = song
-  songDrawerOpen.value = true
+  if (item.song?.id)
+    router.push(songPageRoute(props.bandSpaceId, item.song.id, setlist.value?.name))
 }
 
 // The reader turns through the set's songs in their running order.
@@ -1069,14 +1049,10 @@ const readerSongs = computed(() =>
   rows.value.filter((row) => row.isSong && row.item.song).map((row) => row.item.song)
 )
 
-function readLyricsOfSong(song) {
-  const at = readerSongs.value.findIndex((candidate) => candidate.id === song.id)
+function readLyricsFrom(item) {
+  const at = readerSongs.value.findIndex((candidate) => candidate.id === item.song.id)
   readerStart.value = Math.max(at, 0)
   isReaderOpen.value = true
-}
-
-function readLyricsFrom(item) {
-  readLyricsOfSong(item.song)
 }
 
 watch(isBelowMd, () => {

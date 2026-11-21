@@ -7,11 +7,11 @@ export function keepsScrollPosition(to, from) {
   return to.path === from.path && to.hash === from.hash && to.query.page === from.query.page
 }
 
-// Set by scrollBehavior on every navigation: whether it put the visitor back where they had scrolled.
-let restoredSavedPosition = false
+// Set by scrollBehavior on every navigation: where it put the visitor back, when it did.
+let restoredSavedPosition = null
 
 export function rememberScrollRestore(savedPosition) {
-  restoredSavedPosition = savedPosition != null
+  restoredSavedPosition = savedPosition ?? null
 }
 
 /**
@@ -19,6 +19,16 @@ export function rememberScrollRestore(savedPosition) {
  * page that scrolls itself once its data has loaded checks this first, or it would undo the restore.
  */
 export function lastNavigationRestoredScroll() {
+  return restoredSavedPosition !== null
+}
+
+/**
+ * Where Back or Forward put the visitor, or null after any other navigation, for a page that scrolls
+ * there itself once its list is drawn.
+ *
+ * @returns {{left?: number, top?: number}|null}
+ */
+export function lastRestoredScrollPosition() {
   return restoredSavedPosition
 }
 

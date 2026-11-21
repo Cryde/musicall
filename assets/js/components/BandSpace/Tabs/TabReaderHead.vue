@@ -35,7 +35,7 @@
     v-if="isBelowMd"
     class="flex items-center gap-0.5 h-14 px-1 shrink-0 border-b border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900"
   >
-    <Button icon="pi pi-arrow-left" text rounded severity="secondary" :aria-label="t('band_space_tabs.head.back_to_files')" @click="emit('back')" />
+    <Button icon="pi pi-arrow-left" text rounded severity="secondary" :aria-label="t('band_space_tabs.head.back_to', { name: backLabel })" @click="emit('back')" />
     <div class="flex-1 min-w-0 flex flex-col leading-tight pl-0.5">
       <b class="truncate text-base">{{ title }}</b>
       <small class="text-xs text-surface-500 dark:text-surface-400">{{ t('band_space_tabs.head.phone_meta', { version }) }}</small>
@@ -102,7 +102,7 @@
       class="self-start inline-flex items-center gap-1.5 border-0 bg-transparent p-0 pr-1.5 text-sm font-medium text-surface-600 dark:text-surface-300 hover:underline cursor-pointer"
       @click="emit('back')"
     >
-      <i class="pi pi-arrow-left text-xs" aria-hidden="true" />{{ t('band_space_tabs.head.files') }}
+      <i class="pi pi-arrow-left text-xs" aria-hidden="true" />{{ backLabel }}
     </button>
     <div class="flex items-center justify-between gap-3 flex-wrap">
       <div class="flex items-center gap-3 flex-wrap min-w-0">
@@ -156,6 +156,8 @@ import QuarterNote from '../../Tabs/QuarterNote.vue'
  */
 const props = defineProps({
   title: { type: String, required: true },
+  /** Where « back » goes: the song, « Tablatures » or « Fichiers » (#1431). */
+  backLabel: { type: String, required: true },
   version: { type: Number, default: null },
   meta: { type: String, default: '' },
   player: { type: Object, required: true },

@@ -142,16 +142,12 @@
             <span class="block truncate text-xs text-surface-500 dark:text-surface-400 tabular-nums">
               {{ formatBytes(file.size) }} · {{ formatRowDate(file.creation_datetime) }}
             </span>
-            <button
+            <FileLocationLine
               v-if="showLocation"
-              type="button"
-              class="flex items-center gap-1 max-w-full text-xs text-surface-500 dark:text-surface-400 hover:underline"
-              :aria-label="t('band_space_files.file_list.open_location', { location: locationOf(file).label })"
-              @click.stop="emit('open-location', locationOf(file).folderId)"
-            >
-              <i class="pi pi-folder text-[10px] shrink-0" aria-hidden="true"></i>
-              <span class="truncate">{{ locationOf(file).label }}</span>
-            </button>
+              :band-space-id="bandSpaceId"
+              :location="locationOf(file)"
+              @open="(folderId) => emit('open-location', folderId)"
+            />
           </div>
         </div>
         <div v-else class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
@@ -161,16 +157,12 @@
               <span class="block truncate font-medium">{{ file.original_name }}</span>
               <!-- Where the file actually lives, for a listing that is not one place. A search result
                    nobody can locate is half an answer, so the folder is a link back to it. -->
-              <button
+              <FileLocationLine
                 v-if="showLocation"
-                type="button"
-                class="flex items-center gap-1 max-w-full text-xs text-surface-500 dark:text-surface-400 hover:underline"
-                :aria-label="t('band_space_files.file_list.open_location', { location: locationOf(file).label })"
-                @click.stop="emit('open-location', locationOf(file).folderId)"
-              >
-                <i class="pi pi-folder text-[10px] shrink-0" aria-hidden="true"></i>
-                <span class="truncate">{{ locationOf(file).label }}</span>
-              </button>
+                :band-space-id="bandSpaceId"
+                :location="locationOf(file)"
+                @open="(folderId) => emit('open-location', folderId)"
+              />
             </div>
           </div>
 
@@ -266,6 +258,7 @@ import { fileIconClass, fileTypeLabel } from '../../../utils/fileType.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
 import SheetAction from '../../Global/SheetAction.vue'
+import FileLocationLine from './FileLocationLine.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

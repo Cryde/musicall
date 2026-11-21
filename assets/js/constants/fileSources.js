@@ -27,6 +27,7 @@ import { i18n } from '../i18n/index.js'
  * @property {string} color Segment colour in the storage breakdown.
  * @property {string} routeName Band space route showing this kind of source.
  * @property {?string} routeQueryKey Query param that opens the source itself, when the view reads one.
+ * @property {string} [routeParamKey] Path param naming the source, when it has a page of its own.
  */
 
 /** @type {readonly FileSource[]} */
@@ -104,9 +105,8 @@ const FILE_SOURCES = Object.freeze([
       return i18n.global.t('band_space_files.source.song.quota')
     },
     color: '#10b981',
-    // Songs live in the Répertoire, which opens the song's drawer from `?song=`.
-    routeName: 'app_band_setlist',
-    routeQueryKey: 'song'
+    routeName: 'app_band_song',
+    routeParamKey: 'songId'
   }),
   Object.freeze({
     type: 'setlist',
@@ -316,7 +316,10 @@ export function fileSourceRoute(sourceType, bandSpaceId, sourceId) {
   if (!source || !bandSpaceId) return null
 
   const target = { name: source.routeName, params: { id: bandSpaceId } }
-  if (source.routeQueryKey && sourceId) {
+  if (source.routeParamKey) {
+    if (!sourceId) return null
+    target.params[source.routeParamKey] = sourceId
+  } else if (source.routeQueryKey && sourceId) {
     target.query = { [source.routeQueryKey]: sourceId }
   }
 

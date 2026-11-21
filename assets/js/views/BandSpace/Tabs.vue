@@ -103,7 +103,7 @@
       v-if="bandSpaceId"
       v-model:visible="uploadDialogVisible"
       :band-space-id="bandSpaceId"
-      :initial-file="pickedFile"
+      :initial-files="pickedFile ? [pickedFile] : []"
       :initial-folder-id="proposedFolderId"
       @saved="handleUploadSaved"
       @after-hide="openUploadedTab"

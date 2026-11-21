@@ -16,7 +16,10 @@ const TASK = '3f2504e0-4f89-41d3-9a0c-0305e82c3301'
 
 const ROUTES = {
   '/band/': (rest, query) => {
-    const [id, section] = rest.split('/')
+    const [id, section, page, songId] = rest.split('/')
+    if (section === 'setlists' && page === 'chansons') {
+      return { name: BAND_SPACE_ROUTES.SONG, params: { id, songId }, query }
+    }
     const name = {
       taches: BAND_SPACE_ROUTES.TASKS,
       finances: BAND_SPACE_ROUTES.FINANCE,
@@ -59,7 +62,14 @@ describe('attachmentIdentifierForUrl', () => {
     )
   })
 
-  it('tells a song from a setlist on the same page', () => {
+  it('turns a song page into the song', () => {
+    assert.equal(
+      attachmentIdentifierForUrl(`${ORIGIN}/band/${SPACE}/setlists/chansons/${TASK}`, context),
+      `song-${TASK}`
+    )
+  })
+
+  it('still reads a song link from before the song page, and tells it from a setlist', () => {
     assert.equal(
       attachmentIdentifierForUrl(`${ORIGIN}/band/${SPACE}/setlists?song=${TASK}`, context),
       `song-${TASK}`

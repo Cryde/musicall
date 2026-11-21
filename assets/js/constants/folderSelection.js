@@ -2,8 +2,8 @@
  * What the Files sidebar can have selected, and which folder each selection means.
  *
  * A real folder is selected by its uuid. The other rows are not folders, so they carry reserved ids
- * instead: the root of the tree, the trash, and the virtual source folders. No selection at all is the
- * flat listing of the whole space, which is a view rather than a place.
+ * instead: the root of the tree, the trash, the virtual source folders and the songs under « Chansons ».
+ * No selection at all is the flat listing of the whole space, which is a view rather than a place.
  */
 
 /**
@@ -17,6 +17,11 @@ export const ROOT_FOLDER_ID = 'root'
 export const TRASH_FOLDER_ID = 'trash'
 
 const VIRTUAL_PREFIX = 'virtual:'
+
+/** Between a virtual folder's source and the one source of that kind a node under it lists. */
+const SOURCE_ID_SEPARATOR = ':'
+
+const SONG_SOURCE = 'song'
 
 /** What listedFolderId returns when the selection is not a place in the tree. */
 export const NO_FOLDER_LISTED = Symbol('no folder listed')
@@ -59,12 +64,16 @@ export function isVirtualFolderId(folderId) {
  *
  * BandSpaceFolderVirtualFoldersListener builds the ids as `virtual:{source}` from the same source names
  * the collection's `source` filter accepts, which is what makes the suffix usable as the filter value.
+ * A song's node under « Chansons » is `virtual:song:{songId}`, so it answers `song` too: it lists a
+ * part of that source.
  *
  * @param {string|null} folderId
  * @returns {string|null}
  */
 export function virtualFolderSource(folderId) {
-  return isVirtualFolderId(folderId) ? folderId.slice(VIRTUAL_PREFIX.length) : null
+  return isVirtualFolderId(folderId)
+    ? folderId.slice(VIRTUAL_PREFIX.length).split(SOURCE_ID_SEPARATOR, 1)[0]
+    : null
 }
 
 /**
@@ -77,4 +86,29 @@ export function virtualFolderSource(folderId) {
  */
 export function virtualFolderId(source) {
   return `${VIRTUAL_PREFIX}${source}`
+}
+
+/**
+ * The selection that opens one song's node under « Chansons » (#1431). Still a virtual folder: it holds
+ * attachments, so nothing can be created in it and its rows come from anywhere in the tree.
+ *
+ * @param {string} songId
+ * @returns {string}
+ */
+export function songFolderId(songId) {
+  return `${virtualFolderId(SONG_SOURCE)}${SOURCE_ID_SEPARATOR}${songId}`
+}
+
+/**
+ * The song a song's node lists, or null for any other selection, « Chansons » itself included. The
+ * inverse of songFolderId().
+ *
+ * @param {string|null} folderId
+ * @returns {string|null}
+ */
+export function virtualFolderSongId(folderId) {
+  const prefix = songFolderId('')
+  if (typeof folderId !== 'string' || !folderId.startsWith(prefix)) return null
+
+  return folderId.slice(prefix.length) || null
 }

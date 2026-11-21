@@ -291,6 +291,7 @@ import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js
 import { formatDateWithWeekday } from '../../../utils/date.js'
 import { rootDestinationRefusal } from '../../../utils/fileListing.js'
 import { fileIconClass, fileTypeLabel } from '../../../utils/fileType.js'
+import { withVersion } from '../../../utils/fileVersionUrl.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 import { isGuitarProName } from '../../../utils/guitarPro.js'
 import BottomSheet from '../../Global/BottomSheet.vue'
@@ -397,9 +398,7 @@ const folderOptions = computed(() => {
 const previewUrl = computed(() => {
   const f = file.value
   if (!f?.download_url) return null
-  const sep = f.download_url.includes('?') ? '&' : '?'
-
-  return f.current_version_id ? `${f.download_url}${sep}v=${f.current_version_id}` : f.download_url
+  return withVersion(f.download_url, f.current_version_id)
 })
 
 const previewComponent = computed(() => {

@@ -15,6 +15,7 @@
           {{ hint }}
         </small>
       </div>
+      <slot />
       <div class="flex justify-end gap-2">
         <Button :label="t('band_space_setlist.common.cancel')" severity="secondary" text type="button" @click="visible = false" />
         <Button :label="t('band_space_setlist.common.create')" type="submit" :loading="isSubmitting" />
@@ -39,6 +40,8 @@ const props = defineProps({
   label: { type: String, required: true },
   hint: { type: String, required: true },
   requiredMessage: { type: String, required: true },
+  /** () => the title to use when none is typed: a new song takes its first file's name (#1431). */
+  fallbackTitle: { type: Function, default: null },
   /** (title) => Promise of the created item; a refusal shows its message under the field. */
   create: { type: Function, required: true }
 })
@@ -58,7 +61,7 @@ function reset() {
 }
 
 async function submit() {
-  const trimmed = title.value.trim()
+  const trimmed = title.value.trim() || (props.fallbackTitle?.() ?? '')
   if (!trimmed) {
     error.value = props.requiredMessage
     return

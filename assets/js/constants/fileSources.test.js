@@ -176,7 +176,7 @@ describe('fileSourceRoute', () => {
       const target = fileSourceRoute(sourceType, 'space-1', 'source-1')
 
       assert.notEqual(target, null, `${sourceType} has no destination`)
-      assert.deepEqual(target.params, { id: 'space-1' })
+      assert.equal(target.params.id, 'space-1')
       assert.match(target.name, /^app_band_/)
     }
   })
@@ -203,9 +203,8 @@ describe('fileSourceRoute', () => {
       query: { note: 'note-1' }
     })
     assert.deepEqual(fileSourceRoute('song', 'space-1', 'song-1'), {
-      name: 'app_band_setlist',
-      params: { id: 'space-1' },
-      query: { song: 'song-1' }
+      name: 'app_band_song',
+      params: { id: 'space-1', songId: 'song-1' }
     })
   })
 
@@ -217,6 +216,8 @@ describe('fileSourceRoute', () => {
   })
 
   it('is null when there is nowhere sensible to go', () => {
+    // A song's page is named by the song: without it there is no page.
+    assert.equal(fileSourceRoute('song', 'space-1', null), null)
     assert.equal(fileSourceRoute('gigposter', 'space-1', 'x'), null)
     assert.equal(fileSourceRoute(undefined, 'space-1', 'x'), null)
     assert.equal(fileSourceRoute('task', null, 'task-1'), null)

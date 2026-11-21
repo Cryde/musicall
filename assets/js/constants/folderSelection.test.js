@@ -5,8 +5,10 @@ import {
   listedFolderId,
   NO_FOLDER_LISTED,
   ROOT_FOLDER_ID,
+  songFolderId,
   TRASH_FOLDER_ID,
   virtualFolderId,
+  virtualFolderSongId,
   virtualFolderSource
 } from './folderSelection.js'
 
@@ -18,6 +20,8 @@ import {
  *
  * Run with `npm test`.
  */
+
+const SONG_ID = '0198c0de-dead-beef-cafe-000000000045'
 
 describe('listedFolderId', () => {
   it('reads the root as no folder, the way a file at the root spells its own', () => {
@@ -42,11 +46,19 @@ describe('listedFolderId', () => {
   it('has no folder for the trash, which keeps a file whatever folder it was in', () => {
     assert.equal(listedFolderId(TRASH_FOLDER_ID), NO_FOLDER_LISTED)
   })
+
+  it('has no folder for a song under « Chansons », whose files sit in any folder', () => {
+    assert.equal(listedFolderId(songFolderId(SONG_ID)), NO_FOLDER_LISTED)
+  })
 })
 
 describe('isVirtualFolderId', () => {
   it('recognises a virtual source folder', () => {
     assert.equal(isVirtualFolderId('virtual:setlist'), true)
+  })
+
+  it('recognises a song under « Chansons », where nothing can be created either', () => {
+    assert.equal(isVirtualFolderId(songFolderId(SONG_ID)), true)
   })
 
   it('leaves the real selections alone', () => {
@@ -67,6 +79,10 @@ describe('virtualFolderSource', () => {
     }
   })
 
+  it('answers song for a song under « Chansons », which lists part of that source', () => {
+    assert.equal(virtualFolderSource(songFolderId(SONG_ID)), 'song')
+  })
+
   it('returns null for anything that is not a virtual folder', () => {
     assert.equal(virtualFolderSource(ROOT_FOLDER_ID), null)
     assert.equal(virtualFolderSource(TRASH_FOLDER_ID), null)
@@ -84,5 +100,31 @@ describe('virtualFolderId', () => {
 
   it('builds the id the folder collection publishes', () => {
     assert.equal(virtualFolderId('note'), 'virtual:note')
+  })
+})
+
+describe('songFolderId', () => {
+  it('builds the node of one song under the « Chansons » virtual folder', () => {
+    assert.equal(songFolderId(SONG_ID), `virtual:song:${SONG_ID}`)
+  })
+})
+
+describe('virtualFolderSongId', () => {
+  it('round trips with songFolderId', () => {
+    assert.equal(virtualFolderSongId(songFolderId(SONG_ID)), SONG_ID)
+  })
+
+  it('has no song for « Chansons » itself, which lists every song at once', () => {
+    assert.equal(virtualFolderSongId(virtualFolderId('song')), null)
+    assert.equal(virtualFolderSongId('virtual:song:'), null)
+  })
+
+  it('has no song for any other selection', () => {
+    assert.equal(virtualFolderSongId('virtual:task'), null)
+    assert.equal(virtualFolderSongId(`virtual:task:${SONG_ID}`), null)
+    assert.equal(virtualFolderSongId(ROOT_FOLDER_ID), null)
+    assert.equal(virtualFolderSongId(TRASH_FOLDER_ID), null)
+    assert.equal(virtualFolderSongId(SONG_ID), null)
+    assert.equal(virtualFolderSongId(null), null)
   })
 })

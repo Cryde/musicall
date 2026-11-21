@@ -49,6 +49,8 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'source' => new QueryParameter(key: 'source'),
                 'task_id' => new QueryParameter(key: 'task_id'),
                 'finance_entry_id' => new QueryParameter(key: 'finance_entry_id'),
+                // The one source a `source=` listing is narrowed to; task_id and finance_entry_id stay for app builds.
+                'source_id' => new QueryParameter(key: 'source_id'),
                 'query' => new QueryParameter(key: 'query'),
                 'mime' => new QueryParameter(key: 'mime'),
                 'uploader_id' => new QueryParameter(key: 'uploader_id'),

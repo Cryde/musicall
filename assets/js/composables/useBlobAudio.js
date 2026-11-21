@@ -6,16 +6,20 @@ import { computed, onBeforeUnmount, ref, toValue } from 'vue'
  * one is listened to. Voice notes (#974) and « Avant, après » (#1410).
  *
  * @param {() => Promise<Blob>} fetchBlob
- * @param {import('vue').MaybeRefOrGetter<number>} durationSeconds the measured length, for the progress before loading
+ * @param {import('vue').MaybeRefOrGetter<number>} durationSeconds the measured length, for the progress before loading;
+ *   0 or null when nothing measured it, as for a Band Space file (#1431): the sound's own length counts once loaded
  */
 export function useBlobAudio(fetchBlob, durationSeconds) {
   const isPlaying = ref(false)
   const isLoading = ref(false)
   const hasFailed = ref(false)
   const currentSeconds = ref(0)
+  /** The sound's own length, read once it has loaded. */
+  const loadedSeconds = ref(0)
+  const totalSeconds = computed(() => toValue(durationSeconds) || loadedSeconds.value)
 
   const progress = computed(() => {
-    const duration = toValue(durationSeconds)
+    const duration = totalSeconds.value
     return duration > 0 ? Math.min(1, currentSeconds.value / duration) : 0
   })
 
@@ -62,6 +66,9 @@ export function useBlobAudio(fetchBlob, durationSeconds) {
       audio.addEventListener('play', () => (isPlaying.value = true))
       audio.addEventListener('pause', () => (isPlaying.value = false))
       audio.addEventListener('timeupdate', () => (currentSeconds.value = audio.currentTime))
+      audio.addEventListener('loadedmetadata', () => {
+        if (Number.isFinite(audio.duration)) loadedSeconds.value = audio.duration
+      })
       audio.addEventListener('ended', () => {
         isPlaying.value = false
         currentSeconds.value = 0
@@ -92,5 +99,14 @@ export function useBlobAudio(fetchBlob, durationSeconds) {
     }
   })
 
-  return { isPlaying, isLoading, hasFailed, currentSeconds, progress, togglePlayback, seek }
+  return {
+    isPlaying,
+    isLoading,
+    hasFailed,
+    currentSeconds,
+    totalSeconds,
+    progress,
+    togglePlayback,
+    seek
+  }
 }
