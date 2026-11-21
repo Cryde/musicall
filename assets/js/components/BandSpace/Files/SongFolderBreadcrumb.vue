@@ -1,5 +1,5 @@
 <template>
-  <!-- Where the panel stands in a song's node (#1431), « Chansons › New 45 », and the way to the song's
+  <!-- Where the panel stands in a song's node (#1431), « Titres › New 45 », and the way to the song's
        own page, which holds its tab, its demos and its lyrics. -->
   <nav class="flex items-center gap-2 text-sm" :aria-label="t('band_space_files.breadcrumb.aria_label')">
     <i :class="fileSourceIcon('song')" aria-hidden="true"></i>
@@ -40,7 +40,7 @@ defineProps({
   songId: { type: String, required: true },
   /** Null once the song has no file left, and so no node to take its title from. */
   title: { type: String, default: null },
-  /** The « Chansons » virtual folder's name. */
+  /** The « Titres » virtual folder's name. */
   sourceName: { type: String, required: true }
 })
 

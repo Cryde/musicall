@@ -289,10 +289,10 @@ class SetlistItemCreateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "La chanson référencée n'appartient pas à ce Band Space",
+            'detail' => "Le titre référencé n'appartient pas à ce Band Space",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "La chanson référencée n'appartient pas à ce Band Space",
+            'description' => "Le titre référencé n'appartient pas à ce Band Space",
         ]);
     }
 
@@ -392,10 +392,10 @@ class SetlistItemCreateTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'detail' => 'Ce titre est archivé, les modifications sont désactivées',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'description' => 'Ce titre est archivé, les modifications sont désactivées',
         ]);
 
         $this->assertCount(

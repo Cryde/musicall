@@ -165,7 +165,7 @@ export const SECTION_NAMES = {
   get [BAND_SPACE_ROUTES.SETLIST]() {
     return i18n.global.t('band_space.module_name.setlist')
   },
-  // A song belongs to the Setlists module, whose répertoire it is opened from.
+  // A song belongs to the Répertoire module, whose list of titles it is opened from.
   get [BAND_SPACE_ROUTES.SONG]() {
     return i18n.global.t('band_space.module_name.setlist')
   },

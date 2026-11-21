@@ -22,7 +22,7 @@
           v-if="isBelowMd"
           variant="screen"
           sticky
-          :back-label="t('band_space_setlist.phone.back_to_setlists')"
+          :back-label="t('band_space_setlist.phone.back_to_repertoire')"
           :title="setlist.name"
           @back="emit('back')"
         >

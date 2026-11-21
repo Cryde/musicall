@@ -34,7 +34,7 @@
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
 import { useI18n } from 'vue-i18n'
-import { fileSourceDefiniteNoun } from '../../../constants/fileSources.js'
+import { fileActivitySourceNoun } from '../../../constants/fileSources.js'
 import { dateFnsLocale } from '../../../i18n/formatLocale.js'
 import Avatar from '../../User/Avatar.vue'
 import UserName from '../../User/UserName.vue'
@@ -45,10 +45,9 @@ defineProps({
 
 const { t } = useI18n()
 
-// The shared nouns are worded so they read correctly after « à » or « de » without contracting,
-// which lets the attach, detach and source_deleted sentences share one list.
+// The source in the form the activity's sentence puts it: « au titre », « du titre », « le titre ».
 function sourceNoun(activity) {
-  return fileSourceDefiniteNoun(activity.payload?.source_type)
+  return fileActivitySourceNoun(activity.type, activity.payload?.source_type)
 }
 
 // Each sentence is a catalogue message with the actor as its {actor} slot; the variant depends on

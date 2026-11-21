@@ -48,8 +48,9 @@ export const SEARCH_TYPES = Object.freeze([
   },
   {
     type: 'setlist',
+    // Not the module name: the module is « Répertoire », and this group lists its setlists only.
     get label() {
-      return i18n.global.t('band_space.module_name.setlist')
+      return i18n.global.t('band_space.search.type.setlist')
     },
     icon: 'pi-list',
     route: BAND_SPACE_ROUTES.SETLIST,

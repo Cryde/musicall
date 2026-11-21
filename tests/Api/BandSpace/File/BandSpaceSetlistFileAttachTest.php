@@ -213,10 +213,10 @@ class BandSpaceSetlistFileAttachTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce fichier est attaché à une chanson. Détache-le d'abord depuis la ressource concernée.",
+            'detail' => "Ce fichier est attaché à un titre. Détache-le d'abord depuis la ressource concernée.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce fichier est attaché à une chanson. Détache-le d'abord depuis la ressource concernée.",
+            'description' => "Ce fichier est attaché à un titre. Détache-le d'abord depuis la ressource concernée.",
         ]);
 
         $fileId = (string) $file->id;

@@ -87,10 +87,10 @@ class LyricsLinkTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette chanson a déjà des paroles, délie-les d\'abord',
+            'detail' => 'Ce titre a déjà des paroles, délie-les d\'abord',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Cette chanson a déjà des paroles, délie-les d\'abord',
+            'description' => 'Ce titre a déjà des paroles, délie-les d\'abord',
         ]);
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $this->assertSame('Les anciennes', self::getContainer()->get(LyricsRepository::class)->findOneBy(['song' => (string) $song->id])?->content);
@@ -114,10 +114,10 @@ class LyricsLinkTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Ces paroles sont déjà liées à une autre chanson, délie-les d\'abord',
+            'detail' => 'Ces paroles sont déjà liées à un autre titre, délie-les d\'abord',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Ces paroles sont déjà liées à une autre chanson, délie-les d\'abord',
+            'description' => 'Ces paroles sont déjà liées à un autre titre, délie-les d\'abord',
         ]);
     }
 
@@ -138,10 +138,10 @@ class LyricsLinkTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Chanson introuvable',
+            'detail' => 'Titre introuvable',
             'status' => 404,
             'type' => '/errors/404',
-            'description' => 'Chanson introuvable',
+            'description' => 'Titre introuvable',
         ]);
     }
 
@@ -162,10 +162,10 @@ class LyricsLinkTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'detail' => 'Ce titre est archivé, les modifications sont désactivées',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'description' => 'Ce titre est archivé, les modifications sont désactivées',
         ]);
     }
 
@@ -212,10 +212,10 @@ class LyricsLinkTest extends ApiTestCase
             '@id' => '/api/errors/409',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'detail' => 'Ce titre est archivé, les modifications sont désactivées',
             'status' => 409,
             'type' => '/errors/409',
-            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'description' => 'Ce titre est archivé, les modifications sont désactivées',
         ]);
     }
 
@@ -284,14 +284,14 @@ class LyricsLinkTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'song_id',
-                    'message' => 'Choisis la chanson à lier',
+                    'message' => 'Choisis le titre à lier',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
-            'detail' => 'song_id: Choisis la chanson à lier',
+            'detail' => 'song_id: Choisis le titre à lier',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'title' => 'An error occurred',
-            'description' => 'song_id: Choisis la chanson à lier',
+            'description' => 'song_id: Choisis le titre à lier',
         ]);
     }
 }

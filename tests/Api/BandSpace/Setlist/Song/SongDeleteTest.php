@@ -110,10 +110,10 @@ class SongDeleteTest extends ApiTestCase
             '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Chanson introuvable',
+            'detail' => 'Titre introuvable',
             'status' => 404,
             'type' => '/errors/404',
-            'description' => 'Chanson introuvable',
+            'description' => 'Titre introuvable',
         ]);
     }
 

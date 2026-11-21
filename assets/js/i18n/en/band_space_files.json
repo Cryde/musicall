@@ -4,30 +4,40 @@
       "label": "Task",
       "indefinite": "a task",
       "definite": "the task",
+      "to": "to the task",
+      "from": "from the task",
       "quota": "Tasks"
     },
     "finance": {
       "label": "Finance entry",
       "indefinite": "a finance entry",
       "definite": "the finance entry",
+      "to": "to the finance entry",
+      "from": "from the finance entry",
       "quota": "Finances"
     },
     "note": {
       "label": "Note",
       "indefinite": "a note",
       "definite": "the note",
+      "to": "to the note",
+      "from": "from the note",
       "quota": "Notes"
     },
     "song": {
       "label": "Song",
       "indefinite": "a song",
       "definite": "the song",
+      "to": "to the song",
+      "from": "from the song",
       "quota": "Songs"
     },
     "setlist": {
       "label": "Setlist",
       "indefinite": "a setlist",
       "definite": "the setlist",
+      "to": "to the setlist",
+      "from": "from the setlist",
       "quota": "Setlists"
     },
     "message": {
@@ -149,11 +159,11 @@
     "share_revoked": "{actor} revoked a share link",
     "public_accessed": "{actor}: the public link was opened",
     "attached": "{actor} attached the file",
-    "attached_to": "{actor} attached the file to {source}",
-    "attached_to_labelled": "{actor} attached the file to {source} \"{label}\"",
+    "attached_to": "{actor} attached the file {source}",
+    "attached_to_labelled": "{actor} attached the file {source} \"{label}\"",
     "detached": "{actor} detached the file",
-    "detached_from": "{actor} detached the file from {source}",
-    "detached_from_labelled": "{actor} detached the file from {source} \"{label}\"",
+    "detached_from": "{actor} detached the file {source}",
+    "detached_from_labelled": "{actor} detached the file {source} \"{label}\"",
     "source_deleted": "{actor} deleted {source}, so the file was detached",
     "source_deleted_labelled": "{actor} deleted {source} \"{label}\", so the file was detached",
     "associated_resource": "the linked resource",

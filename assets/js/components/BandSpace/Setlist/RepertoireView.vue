@@ -5,8 +5,8 @@
       <PhoneBackBar
         variant="page"
         class="mb-2"
-        :back-label="t('band_space_setlist.phone.back_to_setlists')"
-        :title="t('band_space_setlist.common.repertoire')"
+        :back-label="t('band_space_setlist.phone.back_to_repertoire')"
+        :title="t('band_space_setlist.common.songs')"
         @back="emit('back')"
       >
         <template #actions>

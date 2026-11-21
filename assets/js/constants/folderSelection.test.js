@@ -47,7 +47,7 @@ describe('listedFolderId', () => {
     assert.equal(listedFolderId(TRASH_FOLDER_ID), NO_FOLDER_LISTED)
   })
 
-  it('has no folder for a song under « Chansons », whose files sit in any folder', () => {
+  it('has no folder for a song under « Titres », whose files sit in any folder', () => {
     assert.equal(listedFolderId(songFolderId(SONG_ID)), NO_FOLDER_LISTED)
   })
 })
@@ -57,7 +57,7 @@ describe('isVirtualFolderId', () => {
     assert.equal(isVirtualFolderId('virtual:setlist'), true)
   })
 
-  it('recognises a song under « Chansons », where nothing can be created either', () => {
+  it('recognises a song under « Titres », where nothing can be created either', () => {
     assert.equal(isVirtualFolderId(songFolderId(SONG_ID)), true)
   })
 
@@ -79,7 +79,7 @@ describe('virtualFolderSource', () => {
     }
   })
 
-  it('answers song for a song under « Chansons », which lists part of that source', () => {
+  it('answers song for a song under « Titres », which lists part of that source', () => {
     assert.equal(virtualFolderSource(songFolderId(SONG_ID)), 'song')
   })
 
@@ -104,7 +104,7 @@ describe('virtualFolderId', () => {
 })
 
 describe('songFolderId', () => {
-  it('builds the node of one song under the « Chansons » virtual folder', () => {
+  it('builds the node of one song under the « Titres » virtual folder', () => {
     assert.equal(songFolderId(SONG_ID), `virtual:song:${SONG_ID}`)
   })
 })
@@ -114,7 +114,7 @@ describe('virtualFolderSongId', () => {
     assert.equal(virtualFolderSongId(songFolderId(SONG_ID)), SONG_ID)
   })
 
-  it('has no song for « Chansons » itself, which lists every song at once', () => {
+  it('has no song for « Titres » itself, which lists every song at once', () => {
     assert.equal(virtualFolderSongId(virtualFolderId('song')), null)
     assert.equal(virtualFolderSongId('virtual:song:'), null)
   })

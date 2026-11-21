@@ -21,7 +21,9 @@ import { i18n } from '../i18n/index.js'
  * @property {string} type The `source_type` the API emits.
  * @property {string} label Heading above the source name, in the file drawer.
  * @property {string} indefiniteNoun Reads after « attaché à ».
- * @property {string} definiteNoun Reads after « depuis » or « à ».
+ * @property {string} definiteNoun Reads after « depuis », or as the object of « a supprimé ».
+ * @property {string} toPhrase The definite noun after « à », contracted: « au titre », « à la tâche ».
+ * @property {string} fromPhrase The definite noun after « de », contracted: « du titre », « de la tâche ».
  * @property {string} icon PrimeIcons classes, colour included.
  * @property {string} quotaLabel Legend entry in the storage breakdown, always plural.
  * @property {string} color Segment colour in the storage breakdown.
@@ -43,6 +45,12 @@ const FILE_SOURCES = Object.freeze([
     get definiteNoun() {
       return i18n.global.t('band_space_files.source.task.definite')
     },
+    get toPhrase() {
+      return i18n.global.t('band_space_files.source.task.to')
+    },
+    get fromPhrase() {
+      return i18n.global.t('band_space_files.source.task.from')
+    },
     icon: 'pi pi-check-square text-blue-500',
     get quotaLabel() {
       return i18n.global.t('band_space_files.source.task.quota')
@@ -61,6 +69,12 @@ const FILE_SOURCES = Object.freeze([
     },
     get definiteNoun() {
       return i18n.global.t('band_space_files.source.finance.definite')
+    },
+    get toPhrase() {
+      return i18n.global.t('band_space_files.source.finance.to')
+    },
+    get fromPhrase() {
+      return i18n.global.t('band_space_files.source.finance.from')
     },
     icon: 'pi pi-euro text-amber-600',
     get quotaLabel() {
@@ -81,6 +95,12 @@ const FILE_SOURCES = Object.freeze([
     get definiteNoun() {
       return i18n.global.t('band_space_files.source.note.definite')
     },
+    get toPhrase() {
+      return i18n.global.t('band_space_files.source.note.to')
+    },
+    get fromPhrase() {
+      return i18n.global.t('band_space_files.source.note.from')
+    },
     icon: 'pi pi-file-edit text-purple-500',
     get quotaLabel() {
       return i18n.global.t('band_space_files.source.note.quota')
@@ -100,6 +120,12 @@ const FILE_SOURCES = Object.freeze([
     get definiteNoun() {
       return i18n.global.t('band_space_files.source.song.definite')
     },
+    get toPhrase() {
+      return i18n.global.t('band_space_files.source.song.to')
+    },
+    get fromPhrase() {
+      return i18n.global.t('band_space_files.source.song.from')
+    },
     icon: 'pi pi-headphones text-emerald-600',
     get quotaLabel() {
       return i18n.global.t('band_space_files.source.song.quota')
@@ -118,6 +144,12 @@ const FILE_SOURCES = Object.freeze([
     },
     get definiteNoun() {
       return i18n.global.t('band_space_files.source.setlist.definite')
+    },
+    get toPhrase() {
+      return i18n.global.t('band_space_files.source.setlist.to')
+    },
+    get fromPhrase() {
+      return i18n.global.t('band_space_files.source.setlist.from')
     },
     icon: 'pi pi-list text-rose-600',
     get quotaLabel() {
@@ -141,6 +173,8 @@ const UNKNOWN_SOURCE = Object.freeze({
     return i18n.global.t('band_space_files.source.unknown.indefinite')
   },
   definiteNoun: null,
+  toPhrase: null,
+  fromPhrase: null,
   icon: 'pi pi-link text-surface-500'
 })
 
@@ -163,6 +197,8 @@ const CHAT_MESSAGE_SOURCE = Object.freeze({
   get definiteNoun() {
     return i18n.global.t('band_space_files.source.message.definite')
   },
+  toPhrase: null,
+  fromPhrase: null,
   icon: 'pi pi-comments text-sky-600',
   get quotaLabel() {
     return i18n.global.t('band_space_files.source.message.quota')
@@ -270,6 +306,28 @@ export function fileSourceIcon(sourceType) {
  */
 export function fileSourceDefiniteNoun(sourceType) {
   return sourceFor(sourceType).definiteNoun
+}
+
+/**
+ * « à » and « de » contract with « le » (« au titre », « du titre »), so a file activity cannot put
+ * its preposition in front of the definite noun: each one takes the form of the source it needs.
+ * Both activity feeds read this, which keeps the pairing in one place.
+ */
+const SOURCE_FORM_BY_FILE_ACTIVITY = Object.freeze({
+  attached: 'toPhrase',
+  detached: 'fromPhrase',
+  source_deleted: 'definiteNoun'
+})
+
+/**
+ * @param {string} activityType
+ * @param {?string} sourceType
+ * @returns {?string} « au titre », « du titre », « le titre », ... or null for a source type we do
+ *                    not know or an activity that names no source.
+ */
+export function fileActivitySourceNoun(activityType, sourceType) {
+  const form = SOURCE_FORM_BY_FILE_ACTIVITY[activityType]
+  return form ? sourceFor(sourceType)[form] : null
 }
 
 /**

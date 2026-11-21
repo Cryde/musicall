@@ -8,7 +8,7 @@
       @click="emit('select-repertoire')"
     >
       <i class="pi pi-book text-emerald-600"></i>
-      <span class="flex-1 truncate font-medium">{{ t('band_space_setlist.common.repertoire') }}</span>
+      <span class="flex-1 truncate font-medium">{{ t('band_space_setlist.common.songs') }}</span>
       <Badge :value="songsCount" severity="secondary" />
     </button>
     <button

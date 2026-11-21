@@ -409,7 +409,7 @@ const inlineFolders = computed(() =>
 const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
 
 /**
- * The songs « Chansons » unfolds into (#1431), read from the listing of the files attached to songs, as
+ * The songs « Titres » unfolds into (#1431), read from the listing of the files attached to songs, as
  * the répertoire reads its counts.
  */
 const { songs: songFolders, load: loadSongFolders } = useSongFileCounts(() => bandSpaceId.value)

@@ -2,7 +2,7 @@
  * What the Files sidebar can have selected, and which folder each selection means.
  *
  * A real folder is selected by its uuid. The other rows are not folders, so they carry reserved ids
- * instead: the root of the tree, the trash, the virtual source folders and the songs under « Chansons ».
+ * instead: the root of the tree, the trash, the virtual source folders and the songs under « Titres ».
  * No selection at all is the flat listing of the whole space, which is a view rather than a place.
  */
 
@@ -64,7 +64,7 @@ export function isVirtualFolderId(folderId) {
  *
  * BandSpaceFolderVirtualFoldersListener builds the ids as `virtual:{source}` from the same source names
  * the collection's `source` filter accepts, which is what makes the suffix usable as the filter value.
- * A song's node under « Chansons » is `virtual:song:{songId}`, so it answers `song` too: it lists a
+ * A song's node under « Titres » is `virtual:song:{songId}`, so it answers `song` too: it lists a
  * part of that source.
  *
  * @param {string|null} folderId
@@ -89,7 +89,7 @@ export function virtualFolderId(source) {
 }
 
 /**
- * The selection that opens one song's node under « Chansons » (#1431). Still a virtual folder: it holds
+ * The selection that opens one song's node under « Titres » (#1431). Still a virtual folder: it holds
  * attachments, so nothing can be created in it and its rows come from anywhere in the tree.
  *
  * @param {string} songId
@@ -100,7 +100,7 @@ export function songFolderId(songId) {
 }
 
 /**
- * The song a song's node lists, or null for any other selection, « Chansons » itself included. The
+ * The song a song's node lists, or null for any other selection, « Titres » itself included. The
  * inverse of songFolderId().
  *
  * @param {string|null} folderId

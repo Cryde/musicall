@@ -1,12 +1,12 @@
 <template>
   <div class="-mx-2 pb-24">
-    <h1 class="mb-3 px-2 text-2xl font-semibold">{{ t('band_space_setlist.sidebar.setlists') }}</h1>
+    <h1 class="mb-3 px-2 text-2xl font-semibold">{{ t('band_space.module_name.setlist') }}</h1>
 
     <div class="grid grid-cols-2 gap-2.5">
       <button type="button" :class="TILE" @click="emit('select-repertoire')">
         <i class="pi pi-book text-lg text-primary" aria-hidden="true" />
         <span class="min-w-0">
-          <span class="block text-[0.9375rem] font-semibold">{{ t('band_space_setlist.common.repertoire') }}</span>
+          <span class="block text-[0.9375rem] font-semibold">{{ t('band_space_setlist.common.songs') }}</span>
           <span class="text-[0.8125rem] text-surface-600 dark:text-surface-300">{{ t('band_space_setlist.sidebar.song_count', songsCount) }}</span>
         </span>
       </button>

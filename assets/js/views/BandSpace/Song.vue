@@ -290,7 +290,7 @@ const songId = computed(() => route.params.songId)
 const song = ref(null)
 const loadError = ref(null)
 const fileCount = ref(0)
-/** Files picked in « Nouveau morceau », which the files section sends as it opens. */
+/** Files picked in « Nouveau titre », which the files section sends as it opens. */
 const heldFiles = ref([])
 /** The section's featured Guitar Pro file, which the page offers to read from its head too. */
 const tab = ref(null)
@@ -311,7 +311,7 @@ const shownFacts = computed(() =>
 
 /** Where « back » leads, read from the history entry when the page opens: see songPageWayBack. */
 const wayBack = ref({ returns: false, label: '' })
-const backName = computed(() => wayBack.value.label || t('band_space_setlist.common.repertoire'))
+const backName = computed(() => wayBack.value.label || t('band_space_setlist.common.songs'))
 const backAria = computed(() =>
   wayBack.value.label
     ? t('band_space_setlist.song_page.back_to', { name: wayBack.value.label })

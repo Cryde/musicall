@@ -81,7 +81,7 @@ export function fileListingParams(activeFolderId, filters, page) {
   if (virtualSource !== null) {
     // A virtual folder keeps its source even while searching: there the member is looking through one
     // set of attachments rather than through the folder tree, so the source is the subject of the
-    // search and not a place to escape from. A song's node under « Chansons » narrows it to that song.
+    // search and not a place to escape from. A song's node under « Titres » narrows it to that song.
     params.source = virtualSource
     const songId = virtualFolderSongId(activeFolderId)
     if (songId !== null) params.sourceId = songId
@@ -116,13 +116,13 @@ const LOCATION_SEPARATOR = ' › '
 
 /**
  * Where the panel stands, in one line, for the phone's location button: « Racine », « Racine › Concert
- * Petit Bain », a source's name, « Chansons › New 45 », « Tous les fichiers » or « Corbeille ». The
+ * Petit Bain », a source's name, « Titres › New 45 », « Tous les fichiers » or « Corbeille ». The
  * sidebar says the same thing on a computer by highlighting the entry.
  *
  * @param {string|null} activeFolderId
  * @param {Array} tree
  * @param {Array<{source: string, name: string}>} virtualFolders
- * @param {Array<{id: string, title: string}>} songFolders the songs « Chansons » unfolds into
+ * @param {Array<{id: string, title: string}>} songFolders the songs « Titres » unfolds into
  * @returns {string}
  */
 export function activeLocationLabel(activeFolderId, tree, virtualFolders = [], songFolders = []) {

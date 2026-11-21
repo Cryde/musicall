@@ -28,7 +28,7 @@ export function songFileCounts(files) {
 }
 
 /**
- * The songs that have files, from the same listing: the nodes « Chansons » unfolds into in Files
+ * The songs that have files, from the same listing: the nodes « Titres » unfolds into in Files
  * (#1431). Sorted by title the way the répertoire sorts, so a song is found in the same place in both.
  *
  * @param {ReadonlyArray<{attachments?: ReadonlyArray<{source_type: string, source_id: string, source_label: string}>}>} files

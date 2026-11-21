@@ -1,5 +1,5 @@
 /**
- * Files picked in « Nouveau morceau », held until the new song's page opens and uploads them through the
+ * Files picked in « Nouveau titre », held until the new song's page opens and uploads them through the
  * import dialog (#1431): the dialog that picked them closes as the page opens, and an upload needs a
  * screen that stays to show its progress and what was refused.
  */

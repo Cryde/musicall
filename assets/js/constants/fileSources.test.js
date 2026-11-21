@@ -4,6 +4,7 @@ import {
   CHAT_MESSAGE_SOURCE_TYPE,
   deleteBlockingAttachments,
   FILE_SOURCE_TYPES,
+  fileActivitySourceNoun,
   fileSourceAttachedMessage,
   fileSourceDefiniteNoun,
   fileSourceDetachHint,
@@ -43,7 +44,7 @@ describe('fileSourceNouns', () => {
       'une tâche',
       'une entrée financière',
       'une note',
-      'une chanson',
+      'un titre',
       'une setlist'
     ])
   })
@@ -53,7 +54,7 @@ describe('fileSourceListLabel', () => {
   it('lists every source, the last one after « ou »', () => {
     assert.equal(
       fileSourceListLabel(),
-      'une tâche, une entrée financière, une note, une chanson ou une setlist'
+      'une tâche, une entrée financière, une note, un titre ou une setlist'
     )
   })
 
@@ -67,7 +68,7 @@ describe('fileSourceLabel', () => {
     assert.equal(fileSourceLabel('task'), 'Tâche')
     assert.equal(fileSourceLabel('finance'), 'Entrée financière')
     assert.equal(fileSourceLabel('note'), 'Note')
-    assert.equal(fileSourceLabel('song'), 'Chanson')
+    assert.equal(fileSourceLabel('song'), 'Titre')
     assert.equal(fileSourceLabel('setlist'), 'Setlist')
   })
 
@@ -116,7 +117,7 @@ describe('fileSourceDefiniteNoun', () => {
     assert.equal(fileSourceDefiniteNoun('task'), 'la tâche')
     assert.equal(fileSourceDefiniteNoun('finance'), "l'entrée financière")
     assert.equal(fileSourceDefiniteNoun('note'), 'la note')
-    assert.equal(fileSourceDefiniteNoun('song'), 'la chanson')
+    assert.equal(fileSourceDefiniteNoun('song'), 'le titre')
     assert.equal(fileSourceDefiniteNoun('setlist'), 'la setlist')
   })
 
@@ -126,10 +127,40 @@ describe('fileSourceDefiniteNoun', () => {
   })
 })
 
+// « à » and « de » contract with « le », so a file activity cannot put its preposition in front of
+// the definite noun: « à le titre » is not French (#1436).
+describe('fileActivitySourceNoun', () => {
+  it('contracts « à » and « de » with a masculine noun', () => {
+    assert.equal(fileActivitySourceNoun('attached', 'song'), 'au titre')
+    assert.equal(fileActivitySourceNoun('detached', 'song'), 'du titre')
+    assert.equal(fileActivitySourceNoun('source_deleted', 'song'), 'le titre')
+  })
+
+  it('keeps the article of a feminine or elided noun', () => {
+    assert.equal(fileActivitySourceNoun('attached', 'task'), 'à la tâche')
+    assert.equal(fileActivitySourceNoun('detached', 'task'), 'de la tâche')
+    assert.equal(fileActivitySourceNoun('attached', 'finance'), "à l'entrée financière")
+    assert.equal(fileActivitySourceNoun('detached', 'finance'), "de l'entrée financière")
+  })
+
+  it('covers every source type the API can emit', () => {
+    for (const sourceType of BACKEND_SOURCE_TYPES) {
+      assert.ok(fileActivitySourceNoun('attached', sourceType), `${sourceType} has no « à » form`)
+      assert.ok(fileActivitySourceNoun('detached', sourceType), `${sourceType} has no « de » form`)
+    }
+  })
+
+  it('is null for an unknown source, or an activity naming none, so its sentence can be dropped', () => {
+    assert.equal(fileActivitySourceNoun('attached', 'gigposter'), null)
+    assert.equal(fileActivitySourceNoun('detached', undefined), null)
+    assert.equal(fileActivitySourceNoun('uploaded', 'song'), null)
+  })
+})
+
 describe('fileSourceDetachHint', () => {
   it('names the source to detach from', () => {
     assert.equal(fileSourceDetachHint('setlist'), "Détache-le d'abord depuis la setlist")
-    assert.equal(fileSourceDetachHint('song'), "Détache-le d'abord depuis la chanson")
+    assert.equal(fileSourceDetachHint('song'), "Détache-le d'abord depuis le titre")
   })
 
   it('never names the generic resource for a type the API can emit', () => {
@@ -154,7 +185,7 @@ describe('fileSourceAttachedMessage', () => {
   it('says what the file hangs on and how to free it', () => {
     assert.equal(
       fileSourceAttachedMessage('song'),
-      "Ce fichier est attaché à une chanson. Détache-le d'abord depuis la chanson."
+      "Ce fichier est attaché à un titre. Détache-le d'abord depuis le titre."
     )
     assert.equal(
       fileSourceAttachedMessage('task'),
@@ -235,7 +266,7 @@ describe('QUOTA_BREAKDOWN_SOURCES', () => {
   it('labels every bucket in the plural', () => {
     assert.deepEqual(
       QUOTA_BREAKDOWN_SOURCES.map((source) => source.label),
-      ['Manuels', 'Tâches', 'Finances', 'Notes', 'Chansons', 'Setlists', 'Chat']
+      ['Manuels', 'Tâches', 'Finances', 'Notes', 'Titres', 'Setlists', 'Chat']
     )
   })
 
