@@ -34,6 +34,10 @@
 
 	{$CADDY_SERVER_EXTRA_DIRECTIVES}
 
+	# The iOS universal links file has no extension, so file_server sends no Content-Type, and Apple
+	# requires application/json. Production's Caddyfile needs the same line.
+	header /.well-known/apple-app-site-association Content-Type application/json
+
 	# The Mercure hub is part of the FrankenPHP binary, so realtime needs no extra container, unit
 	# or deploy target. The directive orders itself (after `encode`) and hands every path that is
 	# not under /.well-known/mercure straight on to php_server, so nothing else is affected.
