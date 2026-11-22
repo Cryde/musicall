@@ -32,6 +32,20 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_user_photographer',
+    path: '/u/:username/photographer',
+    component: () => import('../views/User/Profile/VisualServiceProfile.vue'),
+    props: { kind: 'photography' },
+    meta: { isAuthRequired: false }
+  },
+  {
+    name: 'app_user_videographer',
+    path: '/u/:username/videographer',
+    component: () => import('../views/User/Profile/VisualServiceProfile.vue'),
+    props: { kind: 'video' },
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_contact',
     path: '/contact',
     component: () => import('../views/Contact/Index.vue'),

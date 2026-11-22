@@ -19,7 +19,8 @@ export function searchResultsPosition({ teachers, totalItems, hasMore }, usernam
 /** A teacher's lessons page as the search opens it, on the searched instrument when there is one. */
 export function teacherPageLocation(username, instrumentSlug) {
   return {
-    ...SERVICE_KINDS.teaching.page(username),
+    name: SERVICE_KINDS.teaching.pageRoute,
+    params: { username },
     query: { ...(instrumentSlug ? { instrument: instrumentSlug } : {}), from: 'search' }
   }
 }

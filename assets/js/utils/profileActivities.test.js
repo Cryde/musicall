@@ -139,6 +139,13 @@ describe('priceUnitLabel', () => {
     })
   })
 
+  it("says what a photographer's or videographer's event price buys", () => {
+    assert.deepEqual(priceUnitLabel({ priceUnit: 'event', priceQuantity: null }), {
+      key: 'profile.visual_service.units.event',
+      params: {}
+    })
+  })
+
   it('says nothing it cannot say', () => {
     assert.equal(priceUnitLabel({ priceUnit: 'lesson', priceQuantity: null }), null)
     assert.equal(priceUnitLabel({ priceUnit: null, priceQuantity: null }), null)

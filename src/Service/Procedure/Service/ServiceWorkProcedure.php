@@ -10,10 +10,9 @@ use App\Entity\Service\ServiceWork;
 use App\Entity\Service\ServiceWorkImage;
 use App\Service\Message\ChatMediaPreparer;
 use App\Service\Musician\MediaMetadataFetcher;
-use App\Service\Musician\MediaUrlParser;
-use App\Service\Musician\MediaUrlParser\ParsedMediaUrl;
 use App\Service\Service\PositionOrder;
 use App\Service\Service\ServiceWriter;
+use App\Validator\Service\ServiceMediaUrlChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Handler\UploadHandlerInterface;
@@ -23,7 +22,7 @@ readonly class ServiceWorkProcedure
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private MediaUrlParser $mediaUrlParser,
+        private ServiceMediaUrlChecker $mediaUrlChecker,
         private MediaMetadataFetcher $metadataFetcher,
         private ChatMediaPreparer $mediaPreparer,
         private UploadHandlerInterface $uploadHandler,
@@ -114,14 +113,16 @@ readonly class ServiceWorkProcedure
         $this->writeMedia($work, ServiceWriter::blankToNull($input->mediaUrl));
     }
 
-    /** The platform is asked for the title only when the link changed. */
+    /**
+     * The platform is asked for the title only when the link changed. A link the service's kind does not take is a 422
+     * on `mediaUrl`, before anything is stored.
+     */
     private function writeMedia(ServiceWork $work, ?string $url): void
     {
         if ($url === $work->mediaUrl) {
             return;
         }
-        $parsed = $url === null ? null : $this->mediaUrlParser->parse($url);
-        if (!$parsed instanceof ParsedMediaUrl) {
+        if ($url === null) {
             $work->mediaPlatform = null;
             $work->mediaUrl = null;
             $work->mediaEmbedId = null;
@@ -129,6 +130,7 @@ readonly class ServiceWorkProcedure
 
             return;
         }
+        $parsed = $this->mediaUrlChecker->check($work->service, $url, 'mediaUrl');
         $work->mediaPlatform = $parsed->platform;
         $work->mediaUrl = $url;
         $work->mediaEmbedId = $parsed->embedId;

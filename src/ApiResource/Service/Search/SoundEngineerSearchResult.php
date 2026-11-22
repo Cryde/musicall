@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\ApiResource\Service\Search;
 
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\NotExposed;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Geocoding\CityLookup;
-use App\ApiResource\Teacher\Public\TeacherProfileStyle;
 use App\Entity\Attribute\Style;
 use App\Enum\Service\SoundEngineeringSpeciality;
 use App\State\ParameterProvider\UuidLinkParameterProvider;
@@ -94,47 +92,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     uriTemplate: '/sound_engineer_search_results/{username}',
     requirements: ['username' => '[^/]+'],
 )]
-class SoundEngineerSearchResult
+class SoundEngineerSearchResult extends SpecialitySearchResult
 {
-    public const int PAGE_SIZE = 12;
-    private const int MAX_PAGE = 1000;
-
-    #[ApiProperty(identifier: true)]
-    public string $username;
-
-    /** What the site calls the member: their display name, or their username. */
-    public string $name;
-
-    public ?string $profilePictureUrl = null;
-
-    public ?string $headline = null;
-
-    /**
-     * SoundEngineeringSpeciality values, the searched one first.
-     *
-     * @var list<string>
-     */
-    public array $specialities = [];
-
-    /** In km to the nearest place in reach; null without a point, or for a member found remotely only. */
-    public ?float $distance = null;
-
     /** Whether the member works remotely. */
     public bool $online = false;
 
-    /** The cheapest offer per track, in cents, or the cheapest of any unit without one: « dès 80 € le titre ». */
-    public ?int $price = null;
-
-    /** The OfferUnit value of that price. */
-    public ?string $priceUnit = null;
-
     public ?int $turnaroundDays = null;
-
-    /** @var array<TeacherProfileStyle> */
-    #[ApiProperty(genId: false)]
-    public array $styles = [];
-
-    /** The first media, which « Écouter » plays without leaving the list. */
-    #[ApiProperty(genId: false)]
-    public ?TeacherSearchMedia $media = null;
 }

@@ -1,13 +1,15 @@
 /**
  * The platforms' own players for a profile media (#1317): the dialog and « Écouter » embed them the same way.
- * `embed_id` is what the server parsed: a YouTube id, `kind/id` for Spotify, `user/track` for SoundCloud.
+ * `embed_id` is what the server parsed: a YouTube id, `kind/id` for Spotify, `user/track` for SoundCloud, and for Vimeo
+ * the video id, then `/hash` for an unlisted one (#1411, photography and video services only).
  */
 
 // PrimeIcons has no Spotify icon.
 const PLATFORM_ICONS = {
   youtube: 'pi pi-youtube',
   spotify: 'pi pi-headphones',
-  soundcloud: 'pi pi-cloud'
+  soundcloud: 'pi pi-cloud',
+  vimeo: 'pi pi-vimeo'
 }
 
 /** The icon standing in for a media without a stored thumbnail. */
@@ -18,7 +20,8 @@ export function mediaPlatformIcon(platform) {
 const PLATFORM_SEVERITIES = {
   youtube: 'danger',
   soundcloud: 'warn',
-  spotify: 'success'
+  spotify: 'success',
+  vimeo: 'info'
 }
 
 /** The colour of a platform's tag. */
@@ -26,20 +29,29 @@ export function mediaPlatformSeverity(platform) {
   return PLATFORM_SEVERITIES[platform] ?? 'info'
 }
 
-/** The platform a pasted link looks like it comes from, before the server parses it. */
-export function detectMediaPlatform(url) {
+/**
+ * Mirrors MediaPlatform::READ_BY_APP: what a link may embed unless the place takes more. Vimeo is a photography and
+ * video service's only (#1411), so the musician and teacher media never offer it.
+ */
+export const PLATFORMS_READ_BY_APP = ['youtube', 'soundcloud', 'spotify']
+
+/** The platform a pasted link looks like it comes from, among those the place takes, before the server parses it. */
+export function detectMediaPlatform(url, platforms = PLATFORMS_READ_BY_APP) {
   const lowered = url?.toLowerCase() ?? ''
-  if (lowered.includes('youtube') || lowered.includes('youtu.be')) return 'youtube'
-  if (lowered.includes('soundcloud')) return 'soundcloud'
-  if (lowered.includes('spotify')) return 'spotify'
-  return null
+  let detected = null
+  if (lowered.includes('youtube') || lowered.includes('youtu.be')) detected = 'youtube'
+  else if (lowered.includes('soundcloud')) detected = 'soundcloud'
+  else if (lowered.includes('spotify')) detected = 'spotify'
+  else if (lowered.includes('vimeo')) detected = 'vimeo'
+  return platforms.includes(detected) ? detected : null
 }
 
 const EMBED_ALLOW = {
   youtube:
     'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
   spotify: 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture',
-  soundcloud: 'autoplay'
+  soundcloud: 'autoplay',
+  vimeo: 'autoplay; fullscreen; picture-in-picture; clipboard-write'
 }
 
 // Spotify's compact player fits a single track or episode; an album, a playlist, a show or an artist needs its list.
@@ -61,6 +73,14 @@ export function mediaEmbedUrl(media, { autoplay = false, compact = false } = {})
     case 'soundcloud': {
       const track = encodeURIComponent(`https://soundcloud.com/${media.embed_id}`)
       return `https://w.soundcloud.com/player/?url=${track}&color=%23ff5500&auto_play=${autoplay}&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=${!compact}`
+    }
+    case 'vimeo': {
+      const [id, hash] = String(media.embed_id).split('/')
+      const query = new URLSearchParams({
+        ...(hash ? { h: hash } : {}),
+        ...(autoplay ? { autoplay: '1' } : {})
+      })
+      return `https://player.vimeo.com/video/${encodeURIComponent(id)}${query.size ? `?${query}` : ''}`
     }
     default:
       return null

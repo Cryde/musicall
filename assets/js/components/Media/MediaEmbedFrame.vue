@@ -4,7 +4,7 @@
     :src="src"
     :title="frameTitle"
     :allow="mediaEmbedAllow(media)"
-    :allowfullscreen="media.platform === 'youtube'"
+    :allowfullscreen="media.platform === 'youtube' || media.platform === 'vimeo'"
     :scrolling="media.platform === 'soundcloud' ? 'no' : undefined"
     class="w-full h-full border-0"
   />
@@ -15,7 +15,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { mediaEmbedAllow, mediaEmbedUrl } from '../../utils/mediaEmbed.js'
 
-/** One profile media in its platform's own player (YouTube, Spotify, SoundCloud). Sized by its parent. */
+/** One profile media in its platform's own player (YouTube, Spotify, SoundCloud, Vimeo). Sized by its parent. */
 const props = defineProps({
   media: { type: Object, required: true },
   autoplay: { type: Boolean, default: false },
@@ -27,7 +27,8 @@ const { t } = useI18n()
 const FRAME_TITLE_KEYS = {
   youtube: 'profile.media.youtube_video',
   spotify: 'profile.media.spotify_player',
-  soundcloud: 'profile.media.soundcloud_player'
+  soundcloud: 'profile.media.soundcloud_player',
+  vimeo: 'profile.media.vimeo_video'
 }
 
 const src = computed(() =>

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Validator\Musician;
 
+use App\Enum\Musician\MediaPlatform;
 use App\Service\Musician\MediaUrlParser;
+use App\Service\Musician\MediaUrlParser\ParsedMediaUrl;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SupportedMediaUrlValidator extends ConstraintValidator
 {
@@ -15,6 +18,7 @@ class SupportedMediaUrlValidator extends ConstraintValidator
 
     public function __construct(
         private readonly MediaUrlParser $mediaUrlParser,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -28,8 +32,12 @@ class SupportedMediaUrlValidator extends ConstraintValidator
             return;
         }
 
-        if (!$this->mediaUrlParser->parse($value) instanceof \App\Service\Musician\MediaUrlParser\ParsedMediaUrl) {
+        if (!$this->mediaUrlParser->parse($value, $constraint->platforms) instanceof ParsedMediaUrl) {
+            $names = array_map(fn (MediaPlatform $platform): string => $platform->trans($this->translator), $constraint->platforms);
+            $last = array_pop($names);
             $this->context->buildViolation($constraint->message)
+                ->setParameter('{{ platforms }}', implode(', ', $names))
+                ->setParameter('{{ last }}', (string) $last)
                 ->setCode(self::ERROR_CODE)
                 ->addViolation();
         }

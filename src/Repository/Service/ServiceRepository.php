@@ -16,12 +16,11 @@ use App\Enum\Service\ServiceKind;
 use App\Enum\Service\ServicePart;
 use App\Enum\Service\ServicePlaceType;
 use App\Enum\Service\ServiceStatus;
-use App\Enum\Service\SoundEngineeringSpeciality;
 use App\Enum\Service\TeachingSearchOrder;
 use App\Enum\Teacher\AgeGroup;
 use App\Enum\Teacher\StudentLevel;
 use App\Model\Search\ServiceSearch;
-use App\Model\Search\SoundEngineeringSearch;
+use App\Model\Search\SpecialitySearch;
 use App\Model\Search\TeachingSearch;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
@@ -246,22 +245,22 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * One page of the sound engineer search (#1410), as findTeachingSearchPage() gives it.
+     * One page of a kind's search by speciality (#1410, #1411), as findTeachingSearchPage() gives it.
      *
      * @return list<array{id: string, distance: float|null}>
      */
-    public function findSoundEngineeringSearchPage(SoundEngineeringSearch $search, ?User $viewer): array
+    public function findSpecialitySearchPage(SpecialitySearch $search, ?User $viewer): array
     {
         return $this->searchPage(
-            $this->soundEngineeringSearch($search, $viewer),
+            $this->specialitySearch($search, $viewer),
             $search->service,
             fn (QueryBuilder $queryBuilder) => $this->orderByDefault($queryBuilder, $search->service),
         );
     }
 
-    public function countSoundEngineeringSearch(SoundEngineeringSearch $search, ?User $viewer): int
+    public function countSpecialitySearch(SpecialitySearch $search, ?User $viewer): int
     {
-        return (int) $this->soundEngineeringSearch($search, $viewer)
+        return (int) $this->specialitySearch($search, $viewer)
             ->select('COUNT(service.id)')
             ->getQuery()
             ->getSingleScalarResult();
@@ -301,7 +300,12 @@ class ServiceRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
-        foreach (['styles', 'offers', 'places', 'media'] as $collection) {
+        $collections = ['styles', 'offers', 'media'];
+        // Only a kind given remotely says so on its card, from its places.
+        if ($kind->worksRemotely()) {
+            $collections[] = 'places';
+        }
+        foreach ($collections as $collection) {
             $this->createQueryBuilder('service')
                 ->addSelect('item')
                 ->leftJoin('service.' . $collection, 'item')
@@ -344,14 +348,13 @@ class ServiceRepository extends ServiceEntityRepository
         ], $queryBuilder->getQuery()->getScalarResult()));
     }
 
-    /** The sound engineer search's filters: the shared ones of every kind, then the speciality and the style. */
-    private function soundEngineeringSearch(SoundEngineeringSearch $search, ?User $viewer): QueryBuilder
+    /** A search by speciality's filters: the shared ones of every kind, then the speciality and the style. */
+    private function specialitySearch(SpecialitySearch $search, ?User $viewer): QueryBuilder
     {
-        $queryBuilder = $this->serviceSearch(ServiceKind::SoundEngineering, $search->service, $viewer);
-
-        if ($search->speciality instanceof SoundEngineeringSpeciality) {
+        $queryBuilder = $this->serviceSearch($search->kind, $search->service, $viewer);
+        if ($search->speciality !== null) {
             $queryBuilder->andWhere('JSON_CONTAINS(service.specialities, :speciality) = 1')
-                ->setParameter('speciality', json_encode([$search->speciality->value], JSON_THROW_ON_ERROR));
+                ->setParameter('speciality', json_encode([$search->speciality], JSON_THROW_ON_ERROR));
         }
         if ($search->style instanceof Style) {
             $queryBuilder->andWhere(':style MEMBER OF service.styles')

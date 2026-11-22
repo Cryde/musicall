@@ -188,8 +188,10 @@ export function reportContentLink(report) {
       )
     case 'service_work': {
       // The page of the kind the work belongs to, where its « Réalisations » are.
-      const page = SERVICE_KINDS[context.kind]?.page
-      return context.username && page ? linkTo(page(context.username)) : noLink()
+      const pageRoute = SERVICE_KINDS[context.kind]?.pageRoute
+      return context.username && pageRoute
+        ? linkTo({ name: pageRoute, params: { username: context.username } })
+        : noLink()
     }
     case 'forum_post':
       return context.topic_slug

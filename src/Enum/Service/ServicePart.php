@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enum\Service;
 
+use App\Entity\Service\DeliveryDetails;
 use App\Entity\Service\Service;
 use App\Entity\Service\SoundEngineeringDetails;
 use App\Entity\Service\TeachingDetails;
@@ -28,6 +29,7 @@ enum ServicePart: string
     case Turnaround = 'turnaround';
     case Formats = 'formats';
     case Works = 'works';
+    case Delivery = 'delivery';
 
     public function isFilledIn(Service $service): bool
     {
@@ -50,6 +52,7 @@ enum ServicePart: string
             self::Turnaround => SoundEngineeringDetails::of($service)->turnaroundDays !== null,
             self::Formats => SoundEngineeringDetails::of($service)->formats !== [],
             self::Works => !$service->works->isEmpty(),
+            self::Delivery => DeliveryDetails::of($service)->isFilledIn(),
         };
     }
 }

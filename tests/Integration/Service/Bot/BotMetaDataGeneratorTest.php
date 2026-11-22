@@ -644,6 +644,105 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame('Find a sound engineer - MusicAll', $result['title']);
     }
 
+    public function test_get_metadata_for_a_photographer(): void
+    {
+        $user = UserFactory::new(['username' => 'lea_photo'])->create();
+        $user->profile->displayName = 'Léa Martin';
+        $user->profile->location = 'Lyon';
+        \Zenstruck\Foundry\Persistence\save($user);
+        $service = ServiceFactory::new()->photography()->create([
+            'user'         => $user,
+            'headline'     => 'Tes concerts en images',
+            'specialities' => ['concert', 'cover'],
+        ]);
+        $place = new ServicePlace();
+        $place->type = ServicePlaceType::AtMyPlace;
+        $place->city = 'Villeurbanne';
+        $service->addPlace($place);
+        foreach ([[OfferUnit::Flat, 60000, 'Séance pochette'], [OfferUnit::Event, 25000, 'Un concert']] as [$unit, $price, $title]) {
+            $offer = new ServiceOffer();
+            $offer->unit = $unit;
+            $offer->price = $price;
+            $offer->title = $title;
+            $service->addOffer($offer);
+        }
+        \Zenstruck\Foundry\Persistence\save($service);
+
+        $this->assertSame([
+            'title'       => 'Léa Martin, photographe à Villeurbanne : concert, pochette - MusicAll',
+            'description' => "Tes concerts en images. À partir de 250\u{a0}€ l'événement.",
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Photographe : concert, pochette',
+                'url'         => 'http://localhost/u/lea_photo/photographer',
+                'description' => 'Tes concerts en images',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'Léa Martin',
+                    'alternateName' => '@lea_photo',
+                    'url'           => 'http://localhost/u/lea_photo',
+                    'homeLocation'  => ['@type' => 'Place', 'name' => 'Lyon'],
+                ],
+                'areaServed'  => ['Villeurbanne'],
+                'offers'      => [
+                    ['@type' => 'Offer', 'name' => 'Un concert', 'price' => '250.00', 'priceCurrency' => 'EUR'],
+                    ['@type' => 'Offer', 'name' => 'Séance pochette', 'price' => '600.00', 'priceCurrency' => 'EUR'],
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/lea_photo/photographer'));
+    }
+
+    public function test_get_metadata_for_a_videographer_with_nothing_filled_in(): void
+    {
+        $user = UserFactory::new(['username' => 'video_simple'])->create();
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        ServiceFactory::new()->video()->create(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'video_simple, vidéaste : vidéaste - MusicAll',
+            'description' => 'video_simple propose ses services de vidéaste sur MusicAll : vidéaste.',
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Vidéaste : vidéaste',
+                'url'         => 'http://localhost/u/video_simple/videographer',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'video_simple',
+                    'alternateName' => '@video_simple',
+                    'url'           => 'http://localhost/u/video_simple',
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/video_simple/videographer'));
+    }
+
+    /** The kind is part of the address: a photographer has no videographer page to describe. */
+    public function test_get_metadata_for_another_kind_is_noindex_and_nothing_else(): void
+    {
+        ServiceFactory::new()->photography()->create(['user' => UserFactory::new(['username' => 'lea_only_photo'])->create()]);
+
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/lea_only_photo/videographer'));
+    }
+
+    public function test_the_photographer_and_videographer_searches_are_described_in_both_locales(): void
+    {
+        $this->assertSame([
+            'title' => 'Trouver un photographe - MusicAll',
+            'description' => 'Concert, photo promo, pochette ou studio : trouve un photographe près de chez toi, compare ses formules et regarde ses réalisations sur MusicAll.',
+        ], $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-photographe?speciality=concert'));
+        $this->assertSame('Trouver un vidéaste - MusicAll', $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-videaste')['title'] ?? null);
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/find-a-videographer'),
+        );
+        $this->assertSame('Find a videographer - MusicAll', $result['title'] ?? null);
+    }
+
     public function test_page_metadata_only_asks_the_providers_ready_for_the_page(): void
     {
         $this->assertNotSame([], $this->botMetaDataGenerator->getMetaData('/cours'));

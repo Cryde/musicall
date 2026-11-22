@@ -16,28 +16,9 @@
         <span v-else class="size-16 shrink-0 rounded-lg bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
           <i :class="icon" class="text-xl text-surface-400" aria-hidden="true" />
         </span>
-        <div class="min-w-0 flex-1">
-          <p class="font-semibold text-surface-900 dark:text-surface-0">{{ work.title }}</p>
-          <p v-if="work.byline" class="text-sm text-surface-600 dark:text-surface-400">{{ work.byline }}</p>
-          <div v-if="work.media || work.domain || work.images.length > 1" class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm">
-            <button
-              v-if="work.media"
-              type="button"
-              class="inline-flex items-center gap-1.5 font-medium text-primary-600 dark:text-primary-400 hover:underline"
-              @click="emit('play', work.media)"
-            >
-              <i class="pi pi-play-circle" aria-hidden="true" />{{ t('profile.service_works.play') }}
-            </button>
-            <a
-              v-if="work.domain"
-              :href="work.link_url"
-              target="_blank"
-              rel="nofollow ugc noopener"
-              class="inline-flex items-center gap-1.5 text-surface-600 dark:text-surface-300 hover:underline"
-            >
-              <i class="pi pi-external-link text-xs" aria-hidden="true" />{{ work.domain }}
-            </a>
-            <span v-if="work.images.length > 1" class="flex gap-1.5">
+        <ServiceWorkCaption :work="work" :play-label="playLabel || t('profile.service_works.play')" @play="emit('play', $event)">
+          <template v-if="work.images.length > 1" #default>
+            <span class="flex gap-1.5">
               <Image
                 v-for="(image, index) in work.images.slice(1)"
                 :key="image.id"
@@ -47,8 +28,8 @@
                 :pt="{ image: { class: 'size-8 rounded object-cover', loading: 'lazy' } }"
               />
             </span>
-          </div>
-        </div>
+          </template>
+        </ServiceWorkCaption>
         <ReportButton
           v-if="reportable"
           target-type="service_work"
@@ -66,12 +47,13 @@
 import Image from 'primevue/image'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { workByline, workLinkDomain } from '../../../utils/serviceWorks.js'
+import { workRows } from '../../../utils/serviceWorks.js'
 import ReportButton from '../../Report/ReportButton.vue'
+import ServiceWorkCaption from './ServiceWorkCaption.vue'
 
 /**
  * « Réalisations » as credits (#1407): who the work was for and when, with its embed when there is one. The kinds
- * whose works are records or films show them this way; galleries and sites come with the kinds that need them.
+ * whose works are records or films show them this way; galleries are ServiceWorksGallery, sites come with #1412.
  */
 const props = defineProps({
   title: { type: String, required: true },
@@ -80,18 +62,14 @@ const props = defineProps({
   username: { type: String, required: true },
   reportable: { type: Boolean, default: false },
   /** Stands in for a work without an image. */
-  icon: { type: String, default: 'pi pi-star' }
+  icon: { type: String, default: 'pi pi-star' },
+  /** What plays an embed: « Écouter » unless the kind's works are films (#1411). */
+  playLabel: { type: String, default: null }
 })
 /** `play` with a work's embed, which the page plays in its own player. */
 const emit = defineEmits(['play'])
 
 const { t } = useI18n()
 
-const rows = computed(() =>
-  props.works.map((work) => ({
-    ...work,
-    byline: workByline(work),
-    domain: workLinkDomain(work.link_url)
-  }))
-)
+const rows = computed(() => workRows(props.works))
 </script>

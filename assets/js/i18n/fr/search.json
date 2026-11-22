@@ -185,7 +185,33 @@
     "heading": "Trouver un ingé son",
     "intro": "Mixage, mastering, enregistrement ou son en concert, près de chez toi ou à distance.",
     "engineer_cta": "Tu es ingénieur du son ?",
-    "engineer_cta_link": "Crée ta page",
+    "online": "À distance aussi",
+    "count": "Aucun ingé son | {count} ingé son | {count} ingés son",
+    "load_more": "Voir plus d'ingés son",
+    "empty_title": "Aucun ingé son ne correspond à ta recherche",
+    "empty_text": "Élargis la distance, ajoute ceux qui travaillent à distance ou retire un filtre.",
+    "title": "Trouver un ingénieur du son - MusicAll"
+  },
+  "photographer": {
+    "heading": "Trouver un photographe",
+    "intro": "Concert, photo promo, pochette ou studio, près de chez toi.",
+    "cta": "Tu es photographe ?",
+    "count": "Aucun photographe | {count} photographe | {count} photographes",
+    "load_more": "Voir plus de photographes",
+    "empty_title": "Aucun photographe ne correspond à ta recherche",
+    "title": "Trouver un photographe - MusicAll"
+  },
+  "videographer": {
+    "heading": "Trouver un vidéaste",
+    "intro": "Clip, live session, captation de concert ou montage, près de chez toi.",
+    "cta": "Tu es vidéaste ?",
+    "count": "Aucun vidéaste | {count} vidéaste | {count} vidéastes",
+    "load_more": "Voir plus de vidéastes",
+    "empty_title": "Aucun vidéaste ne correspond à ta recherche",
+    "title": "Trouver un vidéaste - MusicAll"
+  },
+  "service": {
+    "cta_link": "Crée ta page",
     "filters_label": "Filtres de la recherche",
     "speciality": "Spécialité",
     "style": "Style",
@@ -196,16 +222,11 @@
     "radius": "Distance",
     "radius_option": "{radius} km",
     "clear_city": "Partout",
-    "online": "À distance aussi",
-    "count": "Aucun ingé son | {count} ingé son | {count} ingés son",
     "error": "La recherche n'a pas abouti. Réessaie dans un instant.",
-    "load_more": "Voir plus d'ingés son",
-    "empty_title": "Aucun ingé son ne correspond à ta recherche",
-    "empty_text": "Élargis la distance, ajoute ceux qui travaillent à distance ou retire un filtre.",
     "clear_filters": "Effacer les filtres",
     "price_from": "dès {price}",
     "remote_place": "À distance",
-    "turnaround": "{count} jour de délai | {count} jours de délai",
-    "title": "Trouver un ingénieur du son - MusicAll"
+    "days": "{count} jour de délai | {count} jours de délai",
+    "empty_text": "Élargis la distance ou retire un filtre."
   }
 }

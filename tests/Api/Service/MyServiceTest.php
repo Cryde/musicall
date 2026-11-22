@@ -498,6 +498,66 @@ class MyServiceTest extends ApiTestCase
         ]);
     }
 
+    /** A photographer needs what a sound engineer needs (#1411). */
+    public function test_add_a_photography_service_starts_an_empty_draft(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services', ['kind' => 'photography'], [
+            'CONTENT_TYPE' => 'application/ld+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $service = self::getContainer()->get(ServiceRepository::class)->findOneBy(['user' => $user]);
+        $this->assertInstanceOf(Service::class, $service);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyService',
+            '@id' => '/api/my_services/' . $service->id,
+            '@type' => 'MyService',
+            'id' => $service->id,
+            'kind' => 'photography',
+            'headline' => null,
+            'status' => 'draft',
+            'completeness' => 0,
+            'missing_to_publish' => ['headline', 'description', 'specialities', 'places', 'offers'],
+        ]);
+    }
+
+    /** What it delivers counts towards complete, not towards publishing (#1411). */
+    public function test_publish_a_video_draft_that_has_what_its_kind_needs(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->video()->create([
+            'user' => $user,
+            'status' => ServiceStatus::Draft,
+            'headline' => 'Ton clip',
+            'description' => 'Six ans de clips.',
+            'specialities' => ['clip'],
+            'deliveryDays' => 15,
+        ]);
+        ServicePlaceFactory::new()->atClientPlace(['city' => 'Lyon', 'latitude' => '45.764', 'longitude' => '4.8357'], 100)->create(['service' => $service]);
+        ServiceOfferFactory::new()->create(['service' => $service, 'unit' => OfferUnit::Event, 'quantity' => null, 'price' => 40000, 'title' => "Captation d'un concert"]);
+
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/services/' . $service->id . '/publish');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyService',
+            '@id' => '/api/my_services/' . $service->id,
+            '@type' => 'MyService',
+            'id' => $service->id,
+            'kind' => 'video',
+            'headline' => 'Ton clip',
+            'status' => 'published',
+            // 6 of 8: headline, description, specialities, offers, places, delivery.
+            'completeness' => 75,
+            'missing_to_publish' => [],
+        ]);
+    }
+
     public function test_publish_an_incomplete_draft_is_refused(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

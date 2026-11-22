@@ -15,6 +15,8 @@ enum OfferUnit: string
     case Track = 'track';
     case Hour = 'hour';
     case Day = 'day';
+    /** One concert, shoot or session, as « Captation d'un concert » (#1411). */
+    case Event = 'event';
     /** A price for the whole job, as « EP de 5 titres ». */
     case Flat = 'flat';
 }

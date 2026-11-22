@@ -151,4 +151,95 @@ class MyServiceMediaTest extends ApiTestCase
         ]);
         $this->assertNotNull(self::getContainer()->get(ServiceMediaRepository::class)->find($other->id));
     }
+
+    /** Photographers and videographers host on Vimeo (#1411). */
+    public function test_a_photography_service_takes_a_vimeo_embed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->photography()->create(['user' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services/' . $service->id . '/media', [
+            'url' => 'https://vimeo.com/76979871/8272103f6e',
+            'title' => 'Showreel',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $media = self::getContainer()->get(ServiceMediaRepository::class)->findOneBy(['service' => $service->id]);
+        $this->assertInstanceOf(ServiceMedia::class, $media);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileMedia',
+            '@id' => '/api/teacher_profile_media/' . $media->id,
+            '@type' => 'TeacherProfileMedia',
+            'id' => $media->id,
+            'platform' => 'vimeo',
+            'url' => 'https://vimeo.com/76979871/8272103f6e',
+            'embed_id' => '76979871/8272103f6e',
+            'title' => 'Showreel',
+            'position' => 0,
+        ]);
+    }
+
+    /** Vimeo for photography and video only (#1411): a sound engineer keeps the platforms every reader knows. */
+    public function test_a_sound_engineering_service_refuses_a_vimeo_embed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->soundEngineering()->create(['user' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services/' . $service->id . '/media', [
+            'url' => 'https://vimeo.com/76979871',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'url',
+                    'message' => 'URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+                    'code' => 'music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+                ],
+            ],
+            'detail' => 'url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'description' => 'url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'type' => '/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            'title' => 'An error occurred',
+        ]);
+        $this->assertSame(0, self::getContainer()->get(ServiceMediaRepository::class)->count(['service' => $service->id]));
+    }
+
+    /** Where Vimeo is taken, the refusal names it. */
+    public function test_a_video_service_refuses_a_link_no_platform_reads(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->video()->create(['user' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services/' . $service->id . '/media', [
+            'url' => 'https://example.com/clip',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'url',
+                    'message' => 'URL non reconnue. Seuls YouTube, SoundCloud, Spotify et Vimeo sont supportés.',
+                    'code' => 'music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+                ],
+            ],
+            'detail' => 'url: URL non reconnue. Seuls YouTube, SoundCloud, Spotify et Vimeo sont supportés.',
+            'description' => 'url: URL non reconnue. Seuls YouTube, SoundCloud, Spotify et Vimeo sont supportés.',
+            'type' => '/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            'title' => 'An error occurred',
+        ]);
+    }
 }

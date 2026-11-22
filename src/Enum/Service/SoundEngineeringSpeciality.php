@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Enum\Service;
 
-use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /** What a sound engineer does (#1410), the kind's search filter. */
-enum SoundEngineeringSpeciality: string implements TranslatableInterface
+enum SoundEngineeringSpeciality: string implements ServiceSpeciality
 {
     case Mixing = 'mixing';
     case Mastering = 'mastering';

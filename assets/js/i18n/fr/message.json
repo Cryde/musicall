@@ -60,7 +60,8 @@
     "service_question": "Question",
     "service_question_kind": "Question : {kind}",
     "quote_tracks": "{count} titre | {count} titres",
-    "quote_deadline": "pour le {date}"
+    "quote_deadline": "pour le {date}",
+    "quote_date": "le {date}"
   },
   "music_link": {
     "title": {

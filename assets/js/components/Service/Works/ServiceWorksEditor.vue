@@ -1,13 +1,13 @@
 <template>
-  <section class="flex flex-col gap-3">
-    <h3 :class="sectionClass"><i class="pi pi-star text-primary-500" aria-hidden="true" />{{ t('profile.service_works.section') }}</h3>
-    <p class="text-sm text-surface-600 dark:text-surface-400">{{ t('profile.service_works.help', { max: MAX_WORKS }) }}</p>
+  <ServiceFormSection icon="pi pi-star" :title="t('profile.service_works.section')" class="gap-3">
+    <p class="text-sm text-surface-600 dark:text-surface-400">{{ t(helpKey, { max: MAX_WORKS }) }}</p>
 
     <ul v-if="works.length" class="flex flex-col gap-2">
       <li v-for="(work, index) in works" :key="work.id" class="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
         <ServiceWorkForm
           v-if="editingId === work.id"
           :service-id="serviceId"
+          :media-label-key="mediaLabelKey"
           :work="work"
           @saved="saved"
           @changed="replace"
@@ -33,7 +33,7 @@
     </ul>
 
     <div v-if="editingId === NEW" class="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
-      <ServiceWorkForm :service-id="serviceId" @saved="added" @cancel="editingId = null" />
+      <ServiceWorkForm :service-id="serviceId" :media-label-key="mediaLabelKey" @saved="added" @cancel="editingId = null" />
     </div>
     <Button
       v-else-if="works.length < MAX_WORKS"
@@ -46,7 +46,7 @@
       @click="editingId = NEW"
     />
     <p v-else class="text-sm text-surface-500 dark:text-surface-400">{{ t('profile.service_works.limit_reached', { max: MAX_WORKS }) }}</p>
-  </section>
+  </ServiceFormSection>
 </template>
 
 <script setup>
@@ -58,12 +58,16 @@ import { useI18n } from 'vue-i18n'
 import serviceWorkApi from '../../../api/service/serviceWork.js'
 import { movedIds, orderedBy } from '../../../utils/listOrder.js'
 import { MAX_WORKS, workByline } from '../../../utils/serviceWorks.js'
+import ServiceFormSection from '../Form/ServiceFormSection.vue'
 import ServiceWorkForm from './ServiceWorkForm.vue'
 
 /** « Réalisations » in a service's form (#1407): every change is sent at once, as « Avant, après » is. */
 const props = defineProps({
   serviceId: { type: String, required: true },
-  sectionClass: { type: String, required: true }
+  /** What the kind's works are, with `{max}`: records and projects unless said otherwise (#1411). */
+  helpKey: { type: String, default: 'profile.service_works.help' },
+  /** The platforms a work's embed takes, as the kind names them. */
+  mediaLabelKey: { type: String, default: 'profile.service_works.media_url' }
 })
 /** `changed` whenever a work or an image was written, for the page to refresh once the form closes. */
 const emit = defineEmits(['changed'])

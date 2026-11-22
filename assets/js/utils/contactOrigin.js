@@ -76,7 +76,10 @@ function serviceOriginLabel(origin) {
     : t('message.contact_origin.service_question')
 }
 
-/** « 5 titres · pour le 15 déc. 2026 · 100 à 300 € »: what a quote request says beyond its need. */
+/**
+ * « 5 titres · pour le 15 déc. 2026 · 100 à 300 € », « le 12 déc. 2026 · Lyon »: what a quote request says beyond its
+ * need.
+ */
 function quoteDetails(quote) {
   const { t } = i18n.global
   const parts = []
@@ -88,6 +91,12 @@ function quoteDetails(quote) {
       })
     )
   }
+  if (quote.date) {
+    parts.push(
+      t('message.contact_origin.quote_date', { date: formatDateCompactWithYear(quote.date) })
+    )
+  }
+  if (quote.city) parts.push(quote.city)
   const budget = OPTION_LABELS.budget[quote.budget]
   if (budget) parts.push(t(budget))
   return parts

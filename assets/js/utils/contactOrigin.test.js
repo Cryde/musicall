@@ -128,7 +128,7 @@ describe('a message from a service page (#1408)', () => {
   // An app or web build older than a new kind or need still says what it is.
   it('still says something for a need or a kind it does not know', () => {
     assert.equal(contactOriginLabel(service({ quote: { need: 'drone' } })), 'Demande de devis')
-    assert.equal(contactOriginLabel(service({ service_kind: 'photography' })), 'Question')
+    assert.equal(contactOriginLabel(service({ service_kind: 'production' })), 'Question')
   })
 
   it('reads the same once the service is deleted', () => {
@@ -160,7 +160,23 @@ describe('a message from a service page (#1408)', () => {
 
   it('shows the icon of the kind', () => {
     assert.equal(contactOriginIcon(service()), 'pi pi-sliders-v')
-    assert.equal(contactOriginIcon(service({ service_kind: 'photography' })), 'pi pi-briefcase')
+    assert.equal(contactOriginIcon(service({ service_kind: 'video' })), 'pi pi-video')
+    assert.equal(contactOriginIcon(service({ service_kind: 'production' })), 'pi pi-briefcase')
+  })
+
+  it('names what a photographer is asked, when and where (#1411)', () => {
+    const photography = (quote) => service({ service_kind: 'photography', quote })
+    assert.equal(contactOriginLabel(photography({ need: 'promo' })), 'Devis : photo promo')
+    assert.equal(
+      contactOriginLabel(service({ service_kind: 'photography' })),
+      'Question : photographe'
+    )
+    assert.equal(
+      contactOriginDetails(
+        photography({ need: 'concert', date: '2026-12-12', city: 'Lyon', budget: 'under_100' })
+      ),
+      'le 12 déc. 2026 · Lyon · Moins de 100 €'
+    )
   })
 })
 

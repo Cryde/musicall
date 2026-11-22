@@ -56,7 +56,7 @@
       <!-- One card per service, teaching included, in the member's order (#1415). -->
       <li v-for="service in services" :key="service.id" class="flex items-center gap-2">
         <router-link
-          :to="{ ...SERVICE_KINDS[service.kind].page(username), query: { from: 'profile' } }"
+          :to="{ name: SERVICE_KINDS[service.kind].pageRoute, params: { username }, query: { from: 'profile' } }"
           class="flex-1 min-w-0 flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
         >
           <span

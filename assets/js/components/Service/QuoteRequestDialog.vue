@@ -92,13 +92,22 @@
           </template>
           <DatePicker
             v-else-if="question.type === 'date'"
-            v-model="deadline"
+            :model-value="dateOf(question)"
             :input-id="fieldId(question)"
             :min-date="today"
             date-format="dd/mm/yy"
             show-icon
             show-button-bar
             class="w-full sm:w-56"
+            @update:model-value="(value) => setDate(question, value)"
+          />
+          <InputText
+            v-else-if="question.type === 'text'"
+            :id="fieldId(question)"
+            v-model="answers[question.key]"
+            :maxlength="question.maxLength"
+            class="sm:max-w-80"
+            fluid
           />
         </div>
       </template>
@@ -197,7 +206,7 @@ import MemberAvatar from './Page/MemberAvatar.vue'
 /** The API refuses longer messages (MessageCreation). */
 const MESSAGE_MAX_LENGTH = 5000
 
-/** « Demander un devis » (#1408): a few questions that depend on the kind, then a message carrying the answers. */
+/** « Demander un devis » (#1408, #1411): a few questions that depend on the kind, then a message carrying the answers. */
 const props = defineProps({
   /** The public service page: `id`, `user_id`, `username`, `display_name`, `profile_picture_url`. */
   page: { type: Object, required: true },
@@ -236,12 +245,13 @@ const isStepAnswered = computed(() =>
 )
 
 // The picker works on a Date, the API on the calendar day: local getters, so the day picked is the day sent.
-const deadline = computed({
-  get: () => (answers.deadline ? parseISO(answers.deadline) : null),
-  set: (value) => {
-    answers.deadline = value ? format(value, 'yyyy-MM-dd') : undefined
-  }
-})
+function dateOf(question) {
+  return answers[question.key] ? parseISO(answers[question.key]) : null
+}
+
+function setDate(question, value) {
+  answers[question.key] = value ? format(value, 'yyyy-MM-dd') : undefined
+}
 
 const dialogStyle = computed(() =>
   isBelowMd.value ? { width: '100vw', height: '100dvh', maxHeight: '100dvh' } : { width: '36rem' }
@@ -264,7 +274,7 @@ function questionLabel(question) {
 function generatedMessage() {
   return buildQuoteMessage(
     answers,
-    { name: props.page.display_name, questions: questions.value, formatDeadline: formatDateLong },
+    { name: props.page.display_name, questions: questions.value, formatDate: formatDateLong },
     (key, params) => t(key, params ?? {})
   )
 }

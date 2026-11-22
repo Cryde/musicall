@@ -3,35 +3,35 @@
     <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-surface-900 dark:text-surface-0">
-          {{ t('search.sound_engineer.heading') }}
+          {{ t(config.text.heading) }}
         </h1>
-        <p class="mt-1 text-surface-600 dark:text-surface-400">{{ t('search.sound_engineer.intro') }}</p>
+        <p class="mt-1 text-surface-600 dark:text-surface-400">{{ t(config.text.intro) }}</p>
       </div>
       <p class="text-sm text-surface-600 dark:text-surface-400">
-        {{ t('search.sound_engineer.engineer_cta') }}
+        {{ t(config.text.cta) }}
         <router-link :to="{ name: 'app_user_services' }" class="text-primary-700 dark:text-primary-300 font-medium hover:underline">
-          {{ t('search.sound_engineer.engineer_cta_link') }}
+          {{ t('search.service.cta_link') }}
         </router-link>
       </p>
     </div>
 
     <!-- The filters search on their own as they change. -->
     <section
-      :aria-label="t('search.sound_engineer.filters_label')"
+      :aria-label="t('search.service.filters_label')"
       class="bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-4 sm:p-5 flex flex-wrap items-center gap-3"
     >
       <div class="grid grid-cols-2 lg:flex lg:flex-wrap gap-2.5 w-full lg:w-auto">
         <FloatLabel variant="in" class="col-span-2 sm:col-span-1">
           <Select
             v-model="filters.speciality"
-            input-id="sound-engineer-search-speciality"
+            :input-id="`${idPrefix}-speciality`"
             :options="specialityOptions"
             option-label="label"
             option-value="value"
             show-clear
-            class="w-full lg:w-48"
+            class="w-full lg:w-52"
           />
-          <label for="sound-engineer-search-speciality">{{ t('search.sound_engineer.speciality') }}</label>
+          <label :for="`${idPrefix}-speciality`">{{ t('search.service.speciality') }}</label>
         </FloatLabel>
 
         <div class="col-span-2 sm:col-span-1">
@@ -43,34 +43,34 @@
             @click="(event) => cityPanel.toggle(event)"
           >
             <span class="flex flex-col min-w-0">
-              <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('search.sound_engineer.where') }}</span>
+              <span class="text-xs text-surface-500 dark:text-surface-400">{{ t('search.service.where') }}</span>
               <span class="truncate text-surface-900 dark:text-surface-0">{{ whereLabel }}</span>
             </span>
             <i class="pi pi-chevron-down text-surface-500 text-sm" aria-hidden="true" />
           </button>
           <Popover ref="cityPanel" @show="isCityPanelOpen = true" @hide="handleCityPanelHide">
             <div class="flex flex-col gap-3 w-72">
-              <label for="sound-engineer-search-city" class="text-sm font-medium">{{ t('search.sound_engineer.where') }}</label>
+              <label :for="`${idPrefix}-city`" class="text-sm font-medium">{{ t('search.service.where') }}</label>
               <CityAutoComplete
                 ref="cityField"
                 v-model="cityDraft"
-                input-id="sound-engineer-search-city"
-                :placeholder="t('search.sound_engineer.city_placeholder')"
+                :input-id="`${idPrefix}-city`"
+                :placeholder="t('search.service.city_placeholder')"
                 @blur="cityField?.pickFirstSuggestion()"
               />
-              <span id="sound-engineer-search-radius" class="text-sm font-medium">{{ t('search.sound_engineer.radius') }}</span>
+              <span :id="`${idPrefix}-radius`" class="text-sm font-medium">{{ t('search.service.radius') }}</span>
               <SelectButton
                 v-model="filters.radius"
                 :options="radiusOptions"
                 option-label="label"
                 option-value="value"
                 :allow-empty="false"
-                aria-labelledby="sound-engineer-search-radius"
+                :aria-labelledby="`${idPrefix}-radius`"
                 class="w-full [&_.p-togglebutton]:flex-1"
               />
               <Button
                 v-if="filters.city"
-                :label="t('search.sound_engineer.clear_city')"
+                :label="t('search.service.clear_city')"
                 icon="pi pi-times"
                 severity="secondary"
                 text
@@ -85,7 +85,7 @@
         <FloatLabel variant="in" class="col-span-2 sm:col-span-1">
           <Select
             v-model="filters.style"
-            input-id="sound-engineer-search-style"
+            :input-id="`${idPrefix}-style`"
             :options="styleStore.styles || []"
             option-label="name"
             data-key="id"
@@ -93,33 +93,41 @@
             show-clear
             class="w-full lg:w-44"
           />
-          <label for="sound-engineer-search-style">{{ t('search.sound_engineer.style') }}</label>
+          <label :for="`${idPrefix}-style`">{{ t('search.service.style') }}</label>
         </FloatLabel>
       </div>
 
-      <!-- Widens a search around a city; without one every sound engineer is already found. -->
-      <label class="inline-flex items-center gap-2 text-sm cursor-pointer lg:ml-2">
+      <!-- Widens a search around a city; without one every member is already found. -->
+      <label v-if="config.hasOnline" class="inline-flex items-center gap-2 text-sm cursor-pointer lg:ml-2">
         <ToggleSwitch v-model="filters.online" />
-        {{ t('search.sound_engineer.online') }}
+        {{ t(config.text.online) }}
       </label>
     </section>
 
     <h2 class="font-semibold text-surface-900 dark:text-surface-0" aria-live="polite">
-      {{ t('search.sound_engineer.count', { count: store.totalItems }, store.totalItems) }}
+      {{ t(config.text.count, { count: totalItems }, totalItems) }}
     </h2>
 
-    <Message v-if="hasError" severity="error" :closable="false">{{ t('search.sound_engineer.error') }}</Message>
+    <Message v-if="hasError" severity="error" :closable="false">{{ t('search.service.error') }}</Message>
 
     <div v-if="isLoading" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <Skeleton v-for="n in 4" :key="n" height="11rem" border-radius="1rem" />
     </div>
 
-    <template v-else-if="store.engineers.length">
+    <template v-else-if="results.length">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 transition-opacity" :class="{ 'opacity-60': isRefreshing }" :aria-busy="isRefreshing">
-        <SoundEngineerSearchCard v-for="engineer in store.engineers" :key="engineer.username" :engineer="engineer" />
+        <SpecialitySearchCard
+          v-for="result in results"
+          :key="result.username"
+          :result="result"
+          :page-route="SERVICE_KINDS[kind].pageRoute"
+          :speciality-keys="config.specialityKeys"
+          :unit-keys="config.unitKeys"
+          :days="result[config.daysField] ?? null"
+        />
       </div>
-      <div v-if="store.hasMore" class="flex justify-center">
-        <Button :label="t('search.sound_engineer.load_more')" :loading="isLoadingMore" severity="secondary" outlined @click="loadMore" />
+      <div v-if="hasMore" class="flex justify-center">
+        <Button :label="t(config.text.loadMore)" :loading="isLoadingMore" severity="secondary" outlined @click="loadMore" />
       </div>
     </template>
 
@@ -128,11 +136,11 @@
       class="bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-8 text-center flex flex-col items-center gap-3"
     >
       <i class="pi pi-search text-3xl text-surface-400" aria-hidden="true" />
-      <p class="font-semibold text-surface-900 dark:text-surface-0">{{ t('search.sound_engineer.empty_title') }}</p>
-      <p class="text-surface-600 dark:text-surface-400">{{ t('search.sound_engineer.empty_text') }}</p>
+      <p class="font-semibold text-surface-900 dark:text-surface-0">{{ t(config.text.emptyTitle) }}</p>
+      <p class="text-surface-600 dark:text-surface-400">{{ t(config.text.emptyText) }}</p>
       <Button
         v-if="hasFilters"
-        :label="t('search.sound_engineer.clear_filters')"
+        :label="t('search.service.clear_filters')"
         severity="secondary"
         outlined
         size="small"
@@ -143,8 +151,6 @@
 </template>
 
 <script setup>
-defineOptions({ name: 'SoundEngineerSearch' })
-
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import FloatLabel from 'primevue/floatlabel'
@@ -154,81 +160,105 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import Skeleton from 'primevue/skeleton'
 import ToggleSwitch from 'primevue/toggleswitch'
-import { computed, onActivated, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import serviceSearchApi from '../../api/service/serviceSearch.js'
 import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
-import { SPECIALITY_KEYS } from '../../constants/soundEngineering.js'
+import { SERVICE_KINDS } from '../../constants/serviceKinds.js'
+import { SPECIALITY_SEARCHES } from '../../constants/specialitySearches.js'
 import { useStyleStore } from '../../store/attribute/style.js'
-import { useSoundEngineerSearchStore } from '../../store/search/soundEngineer.js'
 import { createSearchAutoRun } from '../../utils/searchAutoRun.js'
-import { SPECIALITIES } from '../../utils/soundEngineerPage.js'
 import {
-  emptySoundEngineerFilters,
-  SOUND_ENGINEER_RADII,
-  soundEngineerFiltersFromUrlQuery,
-  soundEngineerSearchParams,
-  soundEngineerSearchUrlQuery
-} from '../../utils/soundEngineerSearch.js'
-import SoundEngineerSearchCard from './SoundEngineerSearchCard.vue'
+  emptySpecialityFilters,
+  SPECIALITY_SEARCH_RADII,
+  specialityFiltersFromUrlQuery,
+  specialitySearchParams,
+  specialitySearchUrlQuery
+} from '../../utils/specialitySearch.js'
+import SpecialitySearchCard from './SpecialitySearchCard.vue'
 
-/** The sound engineer search (#1410), on the teacher search's model. */
+/** The searches by speciality (#1410, #1411): sound engineers, photographers and videographers, on the teacher search's model. */
+const props = defineProps({
+  /** A ServiceKind value of SPECIALITY_SEARCHES, from the route. */
+  kind: { type: String, required: true }
+})
+
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const store = useSoundEngineerSearchStore()
 const styleStore = useStyleStore()
 
-const filters = reactive(emptySoundEngineerFilters())
+const config = computed(() => SPECIALITY_SEARCHES[props.kind])
+const specialities = computed(() => Object.keys(config.value.specialityKeys))
+const idPrefix = computed(() => `${props.kind}-search`)
+
+const filters = reactive(emptySpecialityFilters())
 // The city field's own value: the typed text until a city is picked.
 const cityDraft = ref(null)
 const cityField = ref(null)
 const cityPanel = ref(null)
 const isCityPanelOpen = ref(false)
 
+const results = ref([])
+const totalItems = ref(0)
+const currentPage = ref(1)
+const hasMore = computed(() => results.value.length < totalItems.value)
 const isLoading = ref(true)
 const isRefreshing = ref(false)
 const isLoadingMore = ref(false)
 const hasError = ref(false)
 
 const specialityOptions = computed(() =>
-  SPECIALITIES.map((speciality) => ({ value: speciality, label: t(SPECIALITY_KEYS[speciality]) }))
+  specialities.value.map((speciality) => ({
+    value: speciality,
+    label: t(config.value.specialityKeys[speciality])
+  }))
 )
 const radiusOptions = computed(() =>
-  SOUND_ENGINEER_RADII.map((radius) => ({
+  SPECIALITY_SEARCH_RADII.map((radius) => ({
     value: radius,
-    label: t('search.sound_engineer.radius_option', { radius })
+    label: t('search.service.radius_option', { radius })
   }))
 )
 const whereLabel = computed(() =>
   filters.city
-    ? t('search.sound_engineer.where_value', { city: filters.city.name, radius: filters.radius })
-    : t('search.sound_engineer.anywhere')
+    ? t('search.service.where_value', { city: filters.city.name, radius: filters.radius })
+    : t('search.service.anywhere')
 )
 
-// Not put back on unmount: the cached page unmounts after the next page has set its own title.
-const documentTitle = useTitle(() => t('search.sound_engineer.title'), { restoreOnUnmount: false })
+useTitle(() => t(config.value.text.title), { restoreOnUnmount: false })
 
 const autoRun = createSearchAutoRun({ refresh: refreshResults, record: () => {} })
-const filtersKey = computed(() => JSON.stringify(soundEngineerSearchParams(filters)))
+const filtersKey = computed(() => JSON.stringify(specialitySearchParams(filters)))
 const hasFilters = computed(() => filtersKey.value !== '{}')
 // What the list on screen was searched with: filling the filters from the address searches right after.
 let searchedKey = null
 // Only the latest refresh lifts the dimming, as only its answer shows.
 let refreshToken = 0
-// Kept alive while a visitor opens a page: a hidden search must not search, nor write onto another address.
-const isActive = ref(true)
+// The filters search as they change, so two answers can cross: only the latest one shows.
+let latestRequest = 0
+// A search answering after the visitor left must not write onto another address.
+let isActive = true
 
-onActivated(() => {
-  isActive.value = true
-  documentTitle.value = t('search.sound_engineer.title')
-})
-onDeactivated(() => {
-  isActive.value = false
+/** `params` from specialitySearchParams(); a page past the first is added to the list. Whether its answer shows. */
+async function search(params) {
+  const request = ++latestRequest
+  const data = await serviceSearchApi.search(config.value.apiRoute, params)
+  if (request !== latestRequest) return false
+
+  const page = params.page ?? 1
+  results.value = page > 1 ? [...results.value, ...data.member] : data.member
+  totalItems.value = data.totalItems
+  currentPage.value = page
+  return true
+}
+
+/** The filters the address holds, then the search: on the way in, and when the menu switches kind. */
+async function start() {
+  isLoading.value = true
+  hasError.value = false
   autoRun.cancel()
-})
-
-onMounted(async () => {
   const stylesLoaded = (
     styleStore.styles?.length ? Promise.resolve() : styleStore.loadStyles()
   ).catch(() => {
@@ -236,15 +266,27 @@ onMounted(async () => {
   })
   // Only a style in the address needs the list before searching: its slug becomes an id.
   if (route.query.style) await stylesLoaded
-  Object.assign(filters, soundEngineerFiltersFromUrlQuery(route.query, styleStore.styles || []))
+  Object.assign(
+    filters,
+    specialityFiltersFromUrlQuery(route.query, styleStore.styles || [], specialities.value)
+  )
+  // Only a kind given remotely is searched that way.
+  if (!config.value.hasOnline) filters.online = false
   cityDraft.value = filters.city
   searchedKey = filtersKey.value
   try {
-    await store.search(soundEngineerSearchParams(filters))
+    await search(specialitySearchParams(filters))
   } catch {
     hasError.value = true
   }
   isLoading.value = false
+}
+
+onMounted(start)
+watch(() => props.kind, start)
+onBeforeUnmount(() => {
+  isActive = false
+  autoRun.cancel()
 })
 
 async function refreshResults() {
@@ -254,19 +296,19 @@ async function refreshResults() {
   hasError.value = false
   let applied = false
   try {
-    applied = await store.search(soundEngineerSearchParams(filters))
+    applied = await search(specialitySearchParams(filters))
   } catch (error) {
     if (token === refreshToken) hasError.value = true
     throw error
   } finally {
     if (token === refreshToken) isRefreshing.value = false
   }
-  if (!applied || !isActive.value) return
-  router.replace({ query: soundEngineerSearchUrlQuery(filters) })
+  if (!applied || !isActive) return
+  router.replace({ query: specialitySearchUrlQuery(filters) })
 }
 
 watch(filtersKey, (key) => {
-  if (!isActive.value || isLoading.value || key === searchedKey) return
+  if (isLoading.value || key === searchedKey) return
   autoRun.changed()
 })
 
@@ -275,7 +317,7 @@ async function loadMore() {
   await autoRun.settleNow()
   isLoadingMore.value = true
   try {
-    await store.search(soundEngineerSearchParams(filters, store.currentPage + 1))
+    await search(specialitySearchParams(filters, currentPage.value + 1))
   } catch {
     hasError.value = true
   } finally {
@@ -284,7 +326,7 @@ async function loadMore() {
 }
 
 function clearFilters() {
-  Object.assign(filters, emptySoundEngineerFilters())
+  Object.assign(filters, emptySpecialityFilters())
   cityDraft.value = null
 }
 
