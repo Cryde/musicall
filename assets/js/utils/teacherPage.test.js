@@ -7,9 +7,11 @@ import {
   lessonContentForm,
   lessonContentPayload,
   levelRange,
+  listAfterFirst,
   orderedLevels,
   placesSummary,
-  pricingByDuration
+  pricingByDuration,
+  withInstrumentFirst
 } from './teacherPage.js'
 
 describe('cheapestPricing', () => {
@@ -179,5 +181,45 @@ describe('lessonContentPayload', () => {
 describe('formatLessonPrice', () => {
   it('writes whole euros with the sign glued on, as the profile always has in French', () => {
     assert.equal(formatLessonPrice(2500), '25€')
+  })
+})
+
+describe('listAfterFirst', () => {
+  it('writes the rest of the list after a first item, the way the locale joins it', () => {
+    assert.equal(
+      listAfterFirst(['chez toi', 'en ligne'], 'fr', 'disjunction'),
+      ', chez toi ou en ligne'
+    )
+    assert.equal(listAfterFirst(['en ligne'], 'fr', 'disjunction'), ' ou en ligne')
+    assert.equal(
+      listAfterFirst(['at your place', 'online'], 'en-GB', 'disjunction'),
+      ', at your place or online'
+    )
+  })
+
+  it('is nothing when the first item is alone', () => {
+    assert.equal(listAfterFirst([], 'fr', 'disjunction'), '')
+  })
+})
+
+describe('withInstrumentFirst', () => {
+  const guitar = { instrument_id: 'guitar-id', instrument_name: 'Guitare' }
+  const bass = { instrument_id: 'bass-id', instrument_name: 'Basse' }
+  const piano = { instrument_id: 'piano-id', instrument_name: 'Piano' }
+
+  it('puts the searched instrument first and keeps the others in their order', () => {
+    assert.deepEqual(withInstrumentFirst([guitar, piano, bass], 'bass-id'), [bass, guitar, piano])
+  })
+
+  it('keeps the order when the instrument is not taught, or none is searched', () => {
+    assert.deepEqual(withInstrumentFirst([guitar, bass], 'drums-id'), [guitar, bass])
+    assert.deepEqual(withInstrumentFirst([guitar, bass], null), [guitar, bass])
+    assert.deepEqual(withInstrumentFirst(undefined, 'bass-id'), [])
+  })
+
+  it('leaves the given list as it was', () => {
+    const instruments = [guitar, bass]
+    withInstrumentFirst(instruments, 'bass-id')
+    assert.deepEqual(instruments, [guitar, bass])
   })
 })

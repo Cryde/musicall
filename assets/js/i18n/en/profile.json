@@ -678,6 +678,7 @@
     "teachers": "Teachers",
     "teacher_of": "Teacher",
     "hero_title": "Lessons with {name}",
+    "hero_title_instrument": "{instrument} lessons with {name}",
     "at_teacher": "at {name}'s",
     "at_student": "at your place",
     "online": "online",
@@ -727,6 +728,7 @@
     "title_trial": "Ask {name} for a trial lesson",
     "title_first": "Ask {name} for a first lesson",
     "intro": "A few questions, and {name} knows where to start.",
+    "intro_from_search": "Taken from your search where possible.",
     "question": {
       "instrument": "Instrument",
       "level": "Where are you at?",
@@ -791,6 +793,17 @@
         "online": "online"
       }
     }
+  },
+  "teacher_results": {
+    "label": "Search results",
+    "back": "Results",
+    "position": "Teacher {position} of {total}",
+    "previous": "Previous teacher",
+    "next": "Next teacher",
+    "next_named": "Next teacher: {name}",
+    "match": "Matches your search:",
+    "match_distance": "{place}",
+    "distance_from": "{distance} from {city}"
   },
   "quote_request": {
     "title": "Ask {name} for a quote",

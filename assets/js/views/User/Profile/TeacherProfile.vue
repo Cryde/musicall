@@ -1,5 +1,17 @@
 <template>
-  <div class="py-6 md:py-10" :class="{ 'max-md:pb-28': profile && !isOwnProfile }">
+  <div :class="[resultsPosition ? 'pb-6 md:pb-10' : 'py-6 md:py-10', { 'max-md:pb-28': profile && !isOwnProfile }]">
+    <!-- Edge to edge under the header: it undoes the padding of AppBaseLayout's <main>. Outside the page's
+         states, so it stays put while previous or next loads the other teacher. -->
+    <TeacherSearchResultsBar
+      v-if="resultsPosition"
+      :chips="searchChips"
+      :position="resultsPosition"
+      :is-loading-next="isLoadingNext"
+      class="-mx-6 -mt-8 px-6 md:-mx-12 md:px-12 lg:-mx-20 lg:px-20 mb-6 md:mb-8"
+      @back="backToResults"
+      @previous="goPrevious"
+      @next="goNext"
+    />
     <ServicePageStates
       :is-loading="isLoading"
       :is-private="isPrivate"
@@ -13,6 +25,7 @@
         <ProfilePrivateBar v-if="isOwnProfile && !profile.is_public" @made-public="refreshProfile" />
         <ProfileDraftBar v-if="isOwnProfile && profile.status === 'draft'" />
         <ServicePageTopBar
+          v-if="!resultsPosition"
           :username="profile.username"
           :came-from-profile="cameFromProfile"
           :back-to-profile-label="t('profile.teacher_page.back_to_profile', { name: profile.display_name })"
@@ -27,24 +40,26 @@
           :class="{ 'md:grid-cols-[minmax(0,1fr)_minmax(0,380px)]': heroMedia }"
         >
           <div class="min-w-0">
+            <TeacherSearchMatch v-if="searchMatches.length" :matches="searchMatches" class="mb-3" />
             <div class="flex flex-wrap items-center gap-2 mb-3">
               <span class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full border border-surface-200 dark:border-surface-700 text-sm font-semibold text-surface-700 dark:text-surface-200">
                 <i class="pi pi-graduation-cap text-amber-500" aria-hidden="true" />{{ t('profile.teacher_page.teacher_of') }}
               </span>
-              <Tag v-for="instrument in profile.instruments" :key="instrument.instrument_id" :value="instrument.instrument_name" severity="info" />
+              <Tag v-for="instrument in instruments" :key="instrument.instrument_id" :value="instrument.instrument_name" severity="info" />
             </div>
-            <h1 class="text-[26px] md:text-3xl font-extrabold leading-tight text-surface-900 dark:text-surface-0">
-              {{ t('profile.teacher_page.hero_title', { name: profile.display_name }) }}
+            <h1 class="text-[26px] md:text-3xl font-extrabold leading-tight text-surface-900 dark:text-surface-0 first-letter:uppercase">
+              {{ heroTitle }}
             </h1>
             <p v-if="profile.course_title" class="mt-2 text-surface-600 dark:text-surface-400 md:text-lg">
               {{ profile.course_title }}
             </p>
             <div
-              v-if="placesLine || ageGroupsLine"
+              v-if="hasPlaces || ageGroupsLine"
               class="flex flex-wrap gap-x-5 gap-y-1 mt-3 text-sm text-surface-600 dark:text-surface-400"
             >
-              <span v-if="placesLine" class="inline-flex items-center gap-1.5">
-                <i class="pi pi-map-marker text-xs text-surface-400" aria-hidden="true" />{{ placesLine }}
+              <span v-if="hasPlaces" class="inline-flex items-center gap-1.5 [&_strong]:text-surface-900 dark:[&_strong]:text-surface-0">
+                <i class="pi pi-map-marker text-xs text-surface-400" aria-hidden="true" />
+                <span><DistanceFromCity v-if="searchDistance" v-bind="searchDistance" />{{ placesLine.first }}{{ placesLine.rest }}</span>
               </span>
               <span v-if="ageGroupsLine" class="inline-flex items-center gap-1.5">
                 <i class="pi pi-users text-xs text-surface-400" aria-hidden="true" />{{ ageGroupsLine }}
@@ -91,9 +106,9 @@
                   {{ musicianFacts }}
                 </p>
               </div>
-              <ul v-if="profile.musician_instruments?.length" class="flex flex-wrap gap-2" :aria-label="t('profile.teacher_page.musician_instruments')">
+              <ul v-if="musicianInstruments.length" class="flex flex-wrap gap-2" :aria-label="t('profile.teacher_page.musician_instruments')">
                 <li
-                  v-for="instrument in profile.musician_instruments"
+                  v-for="instrument in musicianInstruments"
                   :key="instrument.instrument_id"
                   class="inline-flex items-center gap-2 h-8 px-3 rounded-lg bg-surface-0 dark:bg-surface-900 text-sm font-medium text-surface-700 dark:text-surface-200"
                 >
@@ -125,10 +140,16 @@
                 <i class="pi pi-compass text-surface-400" aria-hidden="true" />{{ t('profile.teacher_page.what_you_learn') }}
               </h2>
               <ol
-                class="grid rounded-lg border border-surface-200 dark:border-surface-700 divide-y md:divide-y-0 md:divide-x divide-surface-200 dark:divide-surface-700"
+                class="grid overflow-hidden rounded-lg border border-surface-200 dark:border-surface-700 divide-y md:divide-y-0 md:divide-x divide-surface-200 dark:divide-surface-700"
                 :class="GOAL_COLUMNS[levelGoals.length]"
               >
-                <li v-for="goal in levelGoals" :key="goal.level" class="p-4 flex flex-col gap-2">
+                <li
+                  v-for="goal in levelGoals"
+                  :key="goal.level"
+                  class="p-4 flex flex-col gap-2"
+                  :class="{ 'bg-primary-50 dark:bg-primary-400/10': goal.level === searchedLevel }"
+                >
+                  <span v-if="goal.level === searchedLevel" class="sr-only">{{ t('profile.teacher_results.match') }}</span>
                   <Tag :value="getStudentLevelLabel(goal.level)" :severity="LEVEL_SEVERITY[goal.level]" class="self-start" />
                   <h3 v-if="goal.title" class="font-semibold text-surface-900 dark:text-surface-0">{{ goal.title }}</h3>
                   <ul v-if="goal.points.length" class="list-disc pl-5 text-sm text-surface-600 dark:text-surface-400 flex flex-col gap-1">
@@ -283,10 +304,10 @@
                   <Tag v-for="ageGroup in profile.age_groups" :key="ageGroup" :value="getAgeGroupLabel(ageGroup)" severity="secondary" />
                 </dd>
               </template>
-              <template v-if="profile.instruments?.length">
+              <template v-if="instruments.length">
                 <dt class="text-surface-500 dark:text-surface-400">{{ t('profile.teacher_page.instruments') }}</dt>
                 <dd class="flex flex-wrap gap-1.5">
-                  <Tag v-for="instrument in profile.instruments" :key="instrument.instrument_id" :value="instrument.instrument_name" severity="info" />
+                  <Tag v-for="instrument in instruments" :key="instrument.instrument_id" :value="instrument.instrument_name" severity="info" />
                 </dd>
               </template>
               <template v-if="profile.styles?.length">
@@ -318,7 +339,13 @@
       @saved="handleProfileSaved"
     />
 
-    <TrialRequestDialog v-if="profile && !isOwnProfile" v-model:visible="showRequestDialog" :profile="profile" />
+    <TrialRequestDialog
+      v-if="profile && !isOwnProfile"
+      v-model:visible="showRequestDialog"
+      :profile="profile"
+      :initial-answers="requestAnswers"
+      :prefill-note="t('profile.teacher_request.intro_from_search')"
+    />
 
     <!-- Contact modals -->
     <SendMessageModal
@@ -355,8 +382,11 @@ import ServicePageTopBar from '../../../components/Service/Page/ServicePageTopBa
 import ServicePhoneBar from '../../../components/Service/Page/ServicePhoneBar.vue'
 import ServicePlacesCard from '../../../components/Service/Page/ServicePlacesCard.vue'
 import ShareButton from '../../../components/ShareButton.vue'
+import DistanceFromCity from '../../../components/Teacher/DistanceFromCity.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
+import TeacherSearchMatch from '../../../components/Teacher/TeacherSearchMatch.vue'
+import TeacherSearchResultsBar from '../../../components/Teacher/TeacherSearchResultsBar.vue'
 import TrialRequestDialog from '../../../components/Teacher/TrialRequestDialog.vue'
 import ProfileDraftBar from '../../../components/User/Profile/ProfileDraftBar.vue'
 import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
@@ -365,6 +395,7 @@ import {
   useProfileContactDraftResumer
 } from '../../../composables/useContactDraft.js'
 import { useServicePageBack } from '../../../composables/useServicePageBack.js'
+import { useTeacherSearchResults } from '../../../composables/useTeacherSearchResults.js'
 import {
   getAgeGroupLabel,
   getDayOfWeekLabel,
@@ -384,10 +415,12 @@ import {
   cheapestPricing,
   formatLessonPrice,
   levelRange,
+  listAfterFirst,
   orderedLevels,
   placesSummary,
   pricingByDuration
 } from '../../../utils/teacherPage.js'
+import { shareableUrl } from '../../../utils/teacherResults.js'
 
 const route = useRoute()
 const teacherProfileStore = useTeacherProfileStore()
@@ -420,6 +453,22 @@ const courses = ref([])
 const coursesTotal = ref(0)
 
 const profile = computed(() => teacherProfileStore.profile)
+// Opened from the teacher search, or with `?instrument=` (#1315): only the page's edges change.
+const {
+  position: resultsPosition,
+  chips: searchChips,
+  matches: searchMatches,
+  searchDistance,
+  searchedLevel,
+  requestAnswers,
+  instruments,
+  musicianInstruments,
+  searchedTitle,
+  isLoadingNext,
+  goPrevious,
+  goNext,
+  backToResults
+} = useTeacherSearchResults(profile)
 const cameFromProfile = computed(() => route.query.from === 'profile')
 
 const isOwnProfile = computed(() => {
@@ -427,6 +476,7 @@ const isOwnProfile = computed(() => {
   return userSecurityStore.userProfile.id === profile.value.user_id
 })
 
+// The tab and the breadcrumb keep the teacher's own order: `?instrument=` only reorders what the page shows.
 const instrumentNames = computed(
   () => profile.value?.instruments?.map((instrument) => instrument.instrument_name) ?? []
 )
@@ -463,16 +513,23 @@ function joinList(items, type) {
   return new Intl.ListFormat(locale.value, { type }).format(items)
 }
 
-/** « Ixelles, chez toi ou en ligne »: the teacher's city (or their place), the student's place, online. */
+/**
+ * « Ixelles, chez toi ou en ligne »: the teacher's city (or their place), the student's place, online. From the
+ * search, the distance from the searched city comes first instead of the teacher's city (#1315).
+ */
 const placesLine = computed(() => {
-  const parts = []
-  if (places.value.city) parts.push(places.value.city)
-  else if (places.value.atTeacher)
-    parts.push(t('profile.teacher_page.at_teacher', { name: profile.value.display_name }))
-  if (places.value.atStudent) parts.push(t('profile.teacher_page.at_student'))
-  if (places.value.online) parts.push(t('profile.teacher_page.online'))
-  return parts.length ? joinList(parts, 'disjunction') : ''
+  const others = []
+  if (places.value.atStudent) others.push(t('profile.teacher_page.at_student'))
+  if (places.value.online) others.push(t('profile.teacher_page.online'))
+  const own =
+    places.value.city ??
+    (places.value.atTeacher
+      ? t('profile.teacher_page.at_teacher', { name: profile.value.display_name })
+      : null)
+  const first = searchDistance.value ? null : (own ?? others.shift() ?? null)
+  return { first, rest: listAfterFirst(others, locale.value, 'disjunction') }
 })
+const hasPlaces = computed(() => !!(searchDistance.value || placesLine.value.first))
 
 const ageGroupsLine = computed(() => {
   const groups = profile.value?.age_groups ?? []
@@ -536,6 +593,12 @@ const keyNumbers = computed(() => {
   return items
 })
 
+const heroTitle = computed(
+  () =>
+    searchedTitle.value ??
+    t('profile.teacher_page.hero_title', { name: profile.value.display_name })
+)
+
 const mainActionLabel = computed(() =>
   profile.value?.offers_trial
     ? t('profile.teacher_page.ask_trial')
@@ -568,7 +631,8 @@ const pageTitle = computed(() => {
   })
 })
 
-const shareUrl = computed(() => window.location.href)
+// From the route, so previous and next, which keep the page mounted, share the teacher on screen.
+const shareUrl = computed(() => shareableUrl(route.fullPath, window.location.origin))
 
 const shareTitle = computed(() => {
   if (profile.value) {

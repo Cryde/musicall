@@ -106,12 +106,15 @@ import { intlLocale } from '../../i18n/formatLocale.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { mediaEmbedHeight } from '../../utils/mediaEmbed.js'
 import { formatLessonPrice } from '../../utils/teacherPage.js'
+import { teacherPageLocation } from '../../utils/teacherResults.js'
 import { formatDistance, instrumentsOf } from '../../utils/teacherSearch.js'
 
 /** One teacher of the teacher search (#1314). « Écouter » plays their first media in the card, one card at a time. */
 const props = defineProps({
   teacher: { type: Object, required: true },
-  isPlaying: { type: Boolean, default: false }
+  isPlaying: { type: Boolean, default: false },
+  /** The instrument the list was searched with, which the teacher page opens on (#1315). */
+  instrumentSlug: { type: String, default: null }
 })
 
 const emit = defineEmits(['toggle-listen'])
@@ -139,13 +142,7 @@ const placeLabel = computed(() => {
   return props.teacher.online ? t('search.teacher.online_place') : null
 })
 
-const teacherRoute = computed(() => {
-  // The searched instrument comes first: the teacher page opens on it.
-  const slug = props.teacher.instruments[0]?.slug
-  return {
-    name: 'app_user_teacher_profile',
-    params: { username: props.teacher.username },
-    query: { ...(slug ? { instrument: slug } : {}), from: 'search' }
-  }
-})
+const teacherRoute = computed(() =>
+  teacherPageLocation(props.teacher.username, props.instrumentSlug)
+)
 </script>

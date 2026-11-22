@@ -21,7 +21,10 @@
     </template>
 
     <div class="flex flex-col gap-5">
-      <p class="m-0 text-sm text-surface-600 dark:text-surface-400">{{ t('profile.teacher_request.intro', { name: profile.display_name }) }}</p>
+      <p class="m-0 text-sm text-surface-600 dark:text-surface-400">
+        {{ t('profile.teacher_request.intro', { name: profile.display_name }) }}
+        <template v-if="prefillNote && Object.keys(prefilled).length">{{ prefillNote }}</template>
+      </p>
 
       <!-- Phone: one question at a time -->
       <div v-if="isBelowMd && questions.length" class="flex flex-col gap-2">
@@ -160,7 +163,9 @@ const props = defineProps({
   /** The public teacher profile, as the teacher page loads it. */
   profile: { type: Object, required: true },
   /** Answers known before the visitor opens the dialog, e.g. from the teacher search (#1315). */
-  initialAnswers: { type: Object, default: () => ({}) }
+  initialAnswers: { type: Object, default: () => ({}) },
+  /** Said after the intro when one of `initialAnswers` was applied: where they come from. */
+  prefillNote: { type: String, default: '' }
 })
 
 const visible = defineModel('visible', { type: Boolean, default: false })
