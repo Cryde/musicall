@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["6R99H2Q9DG.com.musicall.app"],
+        "components": [
+          {"/": "/band/invitation/*"},
+          {"/": "/lost-password/*"}
+        ]
+      }
+    ]
+  }
+}
