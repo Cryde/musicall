@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  cityOf,
   effectiveOrder,
   emptyTeacherFilters,
   formatDistance,
   instrumentOf,
+  instrumentOfSlug,
   instrumentsOf,
   teacherFiltersFromUrlQuery,
   teacherSearchParams,
@@ -167,6 +169,34 @@ describe('instrumentOf and instrumentsOf', () => {
       "de basse, d'orgue et de piano"
     )
     assert.equal(instrumentsOf(['Bass', 'Guitar'], 'en-GB'), 'bass and guitar')
+  })
+})
+
+describe('instrumentOfSlug', () => {
+  it('finds the instrument the slug names', () => {
+    assert.equal(instrumentOfSlug('guitare', [BASS, GUITAR]), GUITAR)
+  })
+
+  it('is none for an unknown slug, none at all or one given twice', () => {
+    assert.equal(instrumentOfSlug('orgue', [BASS, GUITAR]), null)
+    assert.equal(instrumentOfSlug(undefined, [BASS]), null)
+    assert.equal(instrumentOfSlug(['basse', 'guitare'], [BASS]), null)
+  })
+})
+
+describe('cityOf', () => {
+  it('elides « de » before a vowel in French, a capital or accented one included', () => {
+    assert.equal(cityOf('Bruxelles', 'fr-FR'), 'de Bruxelles')
+    assert.equal(cityOf('Anvers', 'fr-FR'), "d'Anvers")
+    assert.equal(cityOf('Évere', 'fr-FR'), "d'Évere")
+  })
+
+  it('leaves an h alone, and the city as it is written', () => {
+    assert.equal(cityOf('Huy', 'fr-FR'), 'de Huy')
+  })
+
+  it('names the city alone in English', () => {
+    assert.equal(cityOf('Antwerp', 'en-GB'), 'Antwerp')
   })
 })
 

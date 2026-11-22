@@ -69,6 +69,23 @@ export function placesSummary(locations) {
   }
 }
 
+/** What follows a first item written apart (a bold distance): « , chez toi ou en ligne ». */
+export function listAfterFirst(rest, locale, type) {
+  if (rest.length === 0) return ''
+  return new Intl.ListFormat(locale, { type })
+    .formatToParts(['-', ...rest])
+    .slice(1)
+    .map((part) => part.value)
+    .join('')
+}
+
+/** The searched instrument first (#1315), the others in their order. */
+export function withInstrumentFirst(instruments, instrumentId) {
+  const list = Array.isArray(instruments) ? instruments : []
+  const searched = list.find((instrument) => instrument.instrument_id === instrumentId)
+  return searched ? [searched, ...list.filter((instrument) => instrument !== searched)] : [...list]
+}
+
 /** The week from Monday, each day with its slots in time order, for the 7-day grid. */
 export function availabilityByDay(slots) {
   const list = Array.isArray(slots) ? slots : []

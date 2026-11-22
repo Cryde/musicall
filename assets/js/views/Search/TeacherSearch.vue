@@ -159,6 +159,7 @@
           v-for="teacher in teacherSearchStore.teachers"
           :key="teacher.username"
           :teacher="teacher"
+          :instrument-slug="searchedInstrumentSlug"
           :is-playing="playingUsername === teacher.username"
           @toggle-listen="toggleListen(teacher.username)"
         />
@@ -214,6 +215,7 @@ import { getAgeGroupLabel, getStudentLevelLabel } from '../../constants/teacherP
 import { intlLocale } from '../../i18n/formatLocale.js'
 import { useTeacherSearchStore } from '../../store/search/teacher.js'
 import { createSearchAutoRun } from '../../utils/searchAutoRun.js'
+import { loadNextResultsPage } from '../../utils/teacherResultsNavigation.js'
 import {
   effectiveOrder,
   emptyTeacherFilters,
@@ -284,6 +286,8 @@ const orderOptions = computed(() =>
     label: t(ORDER_LABEL_KEYS[order])
   }))
 )
+// What the list on screen was searched with, not the filters being changed.
+const searchedInstrumentSlug = computed(() => teacherSearchStore.filters?.instrument?.slug ?? null)
 // No city and no order asked: the newest first, which no button names.
 const shownOrder = computed(() => effectiveOrder(filters.order, !!filters.city))
 
@@ -353,7 +357,7 @@ onMounted(async () => {
   cityDraft.value = filters.city
   searchedKey = filtersKey.value
   try {
-    await teacherSearchStore.search(teacherSearchParams(filters))
+    await teacherSearchStore.search(filters)
   } catch {
     hasError.value = true
   }
@@ -367,7 +371,7 @@ async function refreshResults() {
   hasError.value = false
   let applied = false
   try {
-    applied = await teacherSearchStore.search(teacherSearchParams(filters))
+    applied = await teacherSearchStore.search(filters)
   } catch (error) {
     if (token === refreshToken) hasError.value = true
     throw error
@@ -397,9 +401,7 @@ async function loadMore() {
   await autoRun.settleNow()
   isLoadingMore.value = true
   try {
-    await teacherSearchStore.search(
-      teacherSearchParams(filters, teacherSearchStore.currentPage + 1)
-    )
+    await loadNextResultsPage(teacherSearchStore)
   } catch {
     hasError.value = true
   } finally {

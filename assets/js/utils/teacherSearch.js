@@ -63,11 +63,15 @@ export function teacherSearchUrlQuery(filters) {
 
 const firstOf = (value) => (Array.isArray(value) ? value[0] : value)
 
+/** The instrument of the list an address's `instrument` slug names, or null. */
+export function instrumentOfSlug(slug, instruments) {
+  return instruments.find((instrument) => instrument.slug === slug) ?? null
+}
+
 /** The filters an address holds, against the instrument list; a value the search does not know is left out. */
 export function teacherFiltersFromUrlQuery(query, instruments) {
   const filters = emptyTeacherFilters()
-  const slug = firstOf(query.instrument)
-  filters.instrument = instruments.find((instrument) => instrument.slug === slug) ?? null
+  filters.instrument = instrumentOfSlug(firstOf(query.instrument), instruments)
 
   const latitude = Number.parseFloat(firstOf(query.lat))
   const longitude = Number.parseFloat(firstOf(query.lng))
@@ -93,11 +97,19 @@ export function teacherFiltersFromUrlQuery(query, instruments) {
 // starting with one aspirate it (« de harpe », « de hautbois »).
 const ELIDED = /^[aeiouyàâäéèêëîïôöùûü]/i
 
+function afterDe(word, locale) {
+  if (!locale.startsWith('fr')) return word
+  return ELIDED.test(word) ? `d'${word}` : `de ${word}`
+}
+
 /** One instrument as a sentence names it: « de basse », « d'orgue » in French, « bass » in English. */
 export function instrumentOf(name, locale) {
-  const lower = name.toLocaleLowerCase(locale)
-  if (!locale.startsWith('fr')) return lower
-  return ELIDED.test(lower) ? `d'${lower}` : `de ${lower}`
+  return afterDe(name.toLocaleLowerCase(locale), locale)
+}
+
+/** A city a distance is measured from: « de Bruxelles », « d'Anvers » in French, « Brussels » in English. */
+export function cityOf(name, locale) {
+  return afterDe(name, locale)
 }
 
 /** « de basse et de guitare », « bass and guitar ». */

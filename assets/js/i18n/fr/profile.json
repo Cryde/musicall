@@ -678,6 +678,7 @@
     "teachers": "Professeurs",
     "teacher_of": "Prof",
     "hero_title": "Les cours de {name}",
+    "hero_title_instrument": "Cours {instrument} avec {name}",
     "at_teacher": "chez {name}",
     "at_student": "chez toi",
     "online": "en ligne",
@@ -727,6 +728,7 @@
     "title_trial": "Demander un cours d'essai à {name}",
     "title_first": "Demander un premier cours à {name}",
     "intro": "Quelques questions, et {name} sait par où commencer.",
+    "intro_from_search": "Repris de ta recherche quand c'est possible.",
     "question": {
       "instrument": "Instrument",
       "level": "Tu en es où ?",
@@ -791,6 +793,17 @@
         "online": "en ligne"
       }
     }
+  },
+  "teacher_results": {
+    "label": "Résultats de la recherche",
+    "back": "Résultats",
+    "position": "Prof {position} sur {total}",
+    "previous": "Prof précédent",
+    "next": "Prof suivant",
+    "next_named": "Prof suivant : {name}",
+    "match": "Correspond à ta recherche :",
+    "match_distance": "à {place}",
+    "distance_from": "{distance} {city}"
   },
   "quote_request": {
     "title": "Demander un devis à {name}",
