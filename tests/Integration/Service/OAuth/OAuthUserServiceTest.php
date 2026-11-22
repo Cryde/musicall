@@ -35,7 +35,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
     public function test_find_or_create_user_returns_existing_user_when_social_account_exists(): void
     {
-        $existingUser = UserFactory::new()->asBaseUser()->create();
+        $existingUser = UserFactory::new()->asBaseUser()->create(['lastLoginDatetime' => new \DateTime('2026-08-01 10:00:00')]);
         SocialAccountFactory::new()->create([
             'user' => $existingUser,
             'provider' => SocialAccount::PROVIDER_GOOGLE,
@@ -61,6 +61,9 @@ class OAuthUserServiceTest extends KernelTestCase
         $this->assertFalse($result->isNew);
         $this->assertSame(1, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
+        // A social sign-in is a login, so it advances the last login a token refresh leaves alone (#1024)
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertGreaterThan(new \DateTime('-1 minute'), $this->getUserRepository()->find($existingUser->id)?->lastLoginDatetime);
     }
 
     public function test_find_or_create_user_links_social_account_to_logged_in_user(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\Native;
 
 use App\Entity\RefreshToken;
+use App\Entity\User;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
@@ -134,6 +135,66 @@ class NativeTokenRefreshTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_METHOD_NOT_ALLOWED);
         $this->assertNotNull($this->findRefreshToken('a-refresh-token'));
+    }
+
+    /**
+     * A refresh is not a login (#1024), and stamping one wrote fos_user inside the transaction that rotates the
+     * token, holding the member's row lock for no reason. Both refresh firewalls, the web's and the app's.
+     */
+    public function test_a_web_refresh_leaves_the_last_login_and_the_user_row_alone(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['lastLoginDatetime' => new \DateTime('2026-08-01 10:00:00')]);
+        $this->seedRefreshToken('a-refresh-token', $user);
+
+        $this->client->getCookieJar()->set(
+            new BrowserKitCookie('refresh_token', 'a-refresh-token', null, '/', self::HTTP_HOST)
+        );
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->request('POST', '/api/token/refresh');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+        $this->assertSame([], $this->writesToTheUserTable());
+        $this->assertSame('2026-08-01 10:00:00', $this->lastLoginOf($user));
+    }
+
+    public function test_a_native_refresh_leaves_the_last_login_and_the_user_row_alone(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['lastLoginDatetime' => new \DateTime('2026-08-01 10:00:00')]);
+        $this->seedRefreshToken('a-refresh-token', $user);
+
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->jsonRequest('POST', '/api/native/token/refresh', [
+            'refresh_token' => 'a-refresh-token',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame([], $this->writesToTheUserTable());
+        $this->assertSame('2026-08-01 10:00:00', $this->lastLoginOf($user));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function writesToTheUserTable(): array
+    {
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile, 'The profiler must be enabled to inspect the queries.');
+
+        $statements = array_column(array_merge(...array_values($profile->getCollector('db')->getQueries())), 'sql');
+
+        return array_values(array_filter(
+            $statements,
+            static fn (string $sql): bool => preg_match('/^(UPDATE|INSERT INTO|DELETE FROM) fos_user\b/', $sql) === 1,
+        ));
+    }
+
+    private function lastLoginOf(User $user): ?string
+    {
+        $this->entityManager()->clear();
+
+        return $this->entityManager()->find(User::class, $user->id)?->lastLoginDatetime?->format('Y-m-d H:i:s');
     }
 
     private function seedRefreshToken(string $value, object $user): void

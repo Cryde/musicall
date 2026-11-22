@@ -90,14 +90,14 @@ class SendInactivityReminderCommand extends Command
                 continue;
             }
 
-            $lastLoginDate = $user->lastLoginDatetime?->format('d/m/Y') ?? 'N/A';
+            $lastSeenDate = $user->lastSeenDatetime()?->format('d/m/Y') ?? 'N/A';
 
             if ($dryRun) {
                 $output->writeln(sprintf(
-                    '  [DRY-RUN] Would send to: %s (%s) - last login: %s',
+                    '  [DRY-RUN] Would send to: %s (%s) - last seen: %s',
                     $user->username,
                     $user->email,
-                    $lastLoginDate
+                    $lastSeenDate
                 ));
                 $sentCount++;
                 continue;
@@ -107,7 +107,7 @@ class SendInactivityReminderCommand extends Command
                 $this->inactivityReminderEmail->send(
                     $user->email,
                     $user->username,
-                    $lastLoginDate,
+                    $lastSeenDate,
                     $user->locale,
                 );
                 $this->userEmailLogService->log($user, UserEmailType::INACTIVITY_REMINDER);

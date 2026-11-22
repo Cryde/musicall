@@ -31,11 +31,11 @@ readonly class GeneralDashboardMetricsProvider implements ProviderInterface
         $thirtyDaysAgo = new \DateTimeImmutable('-30 days midnight');
 
         // Engagement Metrics - DAU/MAU ratio
-        $dau = $this->userRepository->countLoginsSince($todayMidnight);
+        $dau = $this->userRepository->countUsersSeenSince($todayMidnight);
         if ($dau === 0) {
-            $dau = $this->userRepository->countLoginsSince(new \DateTimeImmutable('-1 day'));
+            $dau = $this->userRepository->countUsersSeenSince(new \DateTimeImmutable('-1 day'));
         }
-        $mau = $this->userRepository->countLoginsSince($thirtyDaysAgo);
+        $mau = $this->userRepository->countUsersSeenSince($thirtyDaysAgo);
         $metrics->dauMauRatio = $mau > 0 ? round(($dau / $mau) * 100, 1) : null;
 
         // Retention Metrics
