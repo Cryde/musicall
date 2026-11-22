@@ -528,7 +528,12 @@
     "delete_title": "Delete this service",
     "delete_confirm": "Its page and the creations linked to it will be deleted from MusicAll. This cannot be undone.",
     "deleted": "Service deleted",
-    "delete_error": "Could not delete this service"
+    "delete_error": "Could not delete this service",
+    "reorder_hint": "Drag a service to change the order your profile shows them in.",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "moved": "{name} is now in position {position}",
+    "reorder_error": "Could not reorder your services"
   },
   "musician": {
     "availability": {
@@ -850,7 +855,6 @@
     "edit_profile": "Edit profile",
     "report": "Report {username}'s profile",
     "create_musician_profile": "Create my musician profile",
-    "create_teacher_profile": "Create my teacher profile",
     "social_links": "Social links",
     "edit_social_links": "Edit social links",
     "visit": "Visit {platform}",
@@ -870,7 +874,11 @@
       "teacher_fallback": "Music teacher",
       "from_price": "from {price}",
       "trial_free": "free trial",
-      "trial_paid": "trial at {price}"
+      "trial_paid": "trial at {price}",
+      "units": {
+        "lesson": "for {minutes} min",
+        "package": "per package"
+      }
     },
     "listen": {
       "title": "Listen to {name}",
@@ -880,7 +888,8 @@
       "stop": "Stop playing",
       "mini_player": "Now playing",
       "stop_short": "Stop"
-    }
+    },
+    "add_service": "Add a service"
   },
   "wall": {
     "title": "Posts",
@@ -955,7 +964,8 @@
       "media": "added a video or a track",
       "see_announce": "See the ad",
       "publication_label": "Publication",
-      "course_label": "Lesson"
+      "course_label": "Lesson",
+      "service": "published a service: {name}"
     },
     "filter": {
       "label": "Filter the wall",
@@ -963,14 +973,16 @@
       "posts": "Posts",
       "media": "Media",
       "announces": "Ads",
-      "courses": "Lessons"
+      "courses": "Lessons",
+      "services": "Services"
     },
     "empty": {
       "posts": "No posts yet.",
       "media": "No media yet.",
       "announces": "No ads yet.",
       "courses": "No lessons yet.",
-      "visitor": "{name} hasn't posted anything yet."
+      "visitor": "{name} hasn't posted anything yet.",
+      "services": "No services yet."
     }
   },
   "owner": {
@@ -980,11 +992,11 @@
     "back_to_owner": "Back to my profile",
     "edit": {
       "availability": "Edit your availability",
-      "teacher": "Edit your lessons page",
       "instruments": "Edit your instruments",
       "styles": "Edit your styles",
       "bands": "Edit your bands",
-      "media": "Manage your media"
+      "media": "Manage your media",
+      "services": "Manage your services"
     },
     "hint": {
       "instruments": "Add your instruments and your level.",

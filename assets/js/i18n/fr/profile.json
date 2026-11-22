@@ -528,7 +528,12 @@
     "delete_title": "Supprimer ce service",
     "delete_confirm": "Sa page et tes créations qui y sont liées seront supprimées de MusicAll. Cette action est irréversible.",
     "deleted": "Service supprimé",
-    "delete_error": "Impossible de supprimer ce service"
+    "delete_error": "Impossible de supprimer ce service",
+    "reorder_hint": "Glisse un service pour changer l'ordre dans lequel ton profil les montre.",
+    "move_up": "Monter",
+    "move_down": "Descendre",
+    "moved": "{name} est maintenant en position {position}",
+    "reorder_error": "Impossible de changer l'ordre de tes services"
   },
   "musician": {
     "availability": {
@@ -850,7 +855,6 @@
     "edit_profile": "Modifier le profil",
     "report": "Signaler le profil de {username}",
     "create_musician_profile": "Créer mon profil musicien",
-    "create_teacher_profile": "Créer mon profil professeur",
     "social_links": "Liens sociaux",
     "edit_social_links": "Modifier les liens sociaux",
     "visit": "Visiter {platform}",
@@ -870,7 +874,11 @@
       "teacher_fallback": "Prof de musique",
       "from_price": "dès {price}",
       "trial_free": "essai offert",
-      "trial_paid": "essai à {price}"
+      "trial_paid": "essai à {price}",
+      "units": {
+        "lesson": "les {minutes} min",
+        "package": "le forfait"
+      }
     },
     "listen": {
       "title": "Écouter {name}",
@@ -880,7 +888,8 @@
       "stop": "Arrêter la lecture",
       "mini_player": "Lecture en cours",
       "stop_short": "Arrêter"
-    }
+    },
+    "add_service": "Ajouter un service"
   },
   "wall": {
     "title": "Posts",
@@ -955,7 +964,8 @@
       "media": "a ajouté un média",
       "see_announce": "Voir l'annonce",
       "publication_label": "Publication",
-      "course_label": "Cours"
+      "course_label": "Cours",
+      "service": "a publié un service: {name}"
     },
     "filter": {
       "label": "Filtrer le mur",
@@ -963,14 +973,16 @@
       "posts": "Posts",
       "media": "Médias",
       "announces": "Annonces",
-      "courses": "Cours"
+      "courses": "Cours",
+      "services": "Services"
     },
     "empty": {
       "posts": "Aucun post pour l'instant.",
       "media": "Aucun média pour l'instant.",
       "announces": "Aucune annonce pour l'instant.",
       "courses": "Aucun cours pour l'instant.",
-      "visitor": "{name} n'a encore rien publié."
+      "visitor": "{name} n'a encore rien publié.",
+      "services": "Aucun service pour l'instant."
     }
   },
   "owner": {
@@ -980,11 +992,11 @@
     "back_to_owner": "Revenir à mon profil",
     "edit": {
       "availability": "Modifier ta disponibilité",
-      "teacher": "Modifier ta page de cours",
       "instruments": "Modifier tes instruments",
       "styles": "Modifier tes styles",
       "bands": "Modifier tes groupes",
-      "media": "Gérer tes médias"
+      "media": "Gérer tes médias",
+      "services": "Gérer tes services"
     },
     "hint": {
       "instruments": "Ajoute tes instruments et ton niveau.",

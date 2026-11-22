@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
-  aggregateSaveStatus,
-  movedIds,
-  neighbourAfterRemoval,
-  selectableItemId
-} from './riderWorkspace.js'
+import { aggregateSaveStatus, neighbourAfterRemoval, selectableItemId } from './riderWorkspace.js'
 
 /**
  * The tech rider workspace shows one section at a time and one status for the whole rider (#1091).
@@ -30,22 +25,6 @@ describe('aggregateSaveStatus', () => {
 
   it('reads as saved once every section is', () => {
     assert.equal(aggregateSaveStatus(['saved', 'saved']), 'saved')
-  })
-})
-
-describe('movedIds', () => {
-  it('moves a section one step', () => {
-    assert.deepEqual(movedIds(['a', 'b', 'c'], 'b', -1), ['b', 'a', 'c'])
-    assert.deepEqual(movedIds(['a', 'b', 'c'], 'b', 1), ['a', 'c', 'b'])
-  })
-
-  it('refuses a move off either end', () => {
-    assert.equal(movedIds(['a', 'b'], 'a', -1), null)
-    assert.equal(movedIds(['a', 'b'], 'b', 1), null)
-  })
-
-  it('refuses a section that is not in the list', () => {
-    assert.equal(movedIds(['a', 'b'], 'z', 1), null)
   })
 })
 

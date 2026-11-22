@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  activitySentence,
   activitySentenceKey,
   afterLike,
   appendLikersPage,
@@ -131,7 +132,35 @@ describe('wallItemKey and activitySentenceKey', () => {
     assert.equal(wallItemKey({ type: 'publication', publication: { id: 42 } }), 'publication-42')
     assert.equal(wallItemKey({ type: 'post', post: { id: 'p1' } }), 'post-p1')
     assert.equal(activitySentenceKey({ type: 'course' }), 'profile.wall.activity.course')
+    assert.equal(wallItemKey({ type: 'service', service: { id: 's1' } }), 'service-s1')
+    assert.equal(activitySentenceKey({ type: 'service' }), 'profile.wall.activity.service')
     assert.equal(activitySentenceKey({ type: 'post' }), null)
+  })
+})
+
+describe('activitySentence', () => {
+  // Writes the key and its parameters back, so the test reads which message is asked for.
+  const t = (key, params = {}) => `${key}${JSON.stringify(params)}`
+
+  it('names the service a service line is about: its headline, else its kind', () => {
+    assert.equal(
+      activitySentence(
+        {
+          type: 'service',
+          service: { kind: 'sound_engineering', headline: 'Mixage et prise de son' }
+        },
+        t
+      ),
+      'profile.wall.activity.service{"name":"Mixage et prise de son"}'
+    )
+    assert.equal(
+      activitySentence({ type: 'service', service: { kind: 'teaching', headline: null } }, t),
+      'profile.wall.activity.service{"name":"profile.services.kinds.teaching.label{}"}'
+    )
+  })
+
+  it('leaves the other sentences as they were', () => {
+    assert.equal(activitySentence({ type: 'course' }, t), 'profile.wall.activity.course{}')
   })
 })
 
@@ -500,6 +529,7 @@ describe('wallFilterFromQuery', () => {
   it('reads the filter a link asks for', () => {
     assert.equal(wallFilterFromQuery('medias').type, 'media')
     assert.equal(wallFilterFromQuery('cours').type, 'course')
+    assert.equal(wallFilterFromQuery('services').type, 'service')
   })
 
   it('falls back to « Tout » for nothing or anything it does not know', () => {

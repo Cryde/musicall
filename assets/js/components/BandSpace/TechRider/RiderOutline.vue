@@ -110,7 +110,7 @@ import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
 import { riderSectionTypeIcon } from '../../../constants/techRider.js'
-import { movedIds } from '../../../utils/riderWorkspace.js'
+import { movedIds } from '../../../utils/listOrder.js'
 import RiderAddSectionButton from './RiderAddSectionButton.vue'
 
 /**

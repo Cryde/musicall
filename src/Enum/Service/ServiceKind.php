@@ -54,6 +54,27 @@ enum ServiceKind: string implements TranslatableInterface
         };
     }
 
+    /** The unit its lowest price is quoted in: « dès 25 € les 30 min », « dès 80 € le titre » (#1415). */
+    public function headlineUnit(): OfferUnit
+    {
+        return match ($this) {
+            self::Teaching => OfferUnit::Lesson,
+            self::SoundEngineering => OfferUnit::Track,
+        };
+    }
+
+    /**
+     * Its page on the site, in the default locale: `/u/{username}/teacher`. PageVersionsResolver matches the same
+     * segments.
+     */
+    public function pagePath(string $username): string
+    {
+        return sprintf('/u/%s/%s', rawurlencode($username), match ($this) {
+            self::Teaching => 'teacher',
+            self::SoundEngineering => 'sound-engineer',
+        });
+    }
+
     /**
      * What its page shows, in the order the page reads: its completeness is the share of them filled in.
      *

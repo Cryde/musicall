@@ -9,9 +9,11 @@ use App\ApiResource\Profile\ProfileWallItem;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Publication;
+use App\Entity\Service\Service;
 use App\Entity\User;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
 use App\Service\Builder\User\PublicProfileAnnounceBuilder;
+use App\Service\Builder\User\PublicProfileServiceBuilder;
 use App\Service\Profile\Wall\WallEntry;
 
 /** The lines of a wall page, each built the way the page that owns its content builds it. */
@@ -22,6 +24,7 @@ readonly class ProfileWallItemBuilder
         private PublicProfileAnnounceBuilder $announceBuilder,
         private PublicationListItemBuilder $publicationBuilder,
         private ProfileWallMediaBuilder $mediaBuilder,
+        private PublicProfileServiceBuilder $serviceBuilder,
     ) {
     }
 
@@ -62,6 +65,9 @@ readonly class ProfileWallItemBuilder
         } elseif ($row instanceof Publication) {
             $item->type = $row->subCategory->getIsCourse() ? ProfileWallItem::TYPE_COURSE : ProfileWallItem::TYPE_PUBLICATION;
             $item->publication = $this->publicationBuilder->buildItem($row);
+        } elseif ($row instanceof Service) {
+            $item->type = ProfileWallItem::TYPE_SERVICE;
+            $item->service = $this->serviceBuilder->build($row);
         } else {
             $item->type = ProfileWallItem::TYPE_MEDIA;
             $item->media = $this->mediaBuilder->build($row);

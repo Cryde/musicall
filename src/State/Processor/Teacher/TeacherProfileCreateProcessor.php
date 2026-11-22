@@ -11,11 +11,11 @@ use App\ApiResource\Teacher\Private\TeacherProfileOutput;
 use App\Entity\Service\Service;
 use App\Entity\User;
 use App\Enum\Service\ServiceKind;
-use App\Enum\Service\ServiceStatus;
 use App\Repository\Service\ServiceRepository;
 use App\Service\Teacher\TeacherProfileWriter;
 use App\State\Provider\Teacher\TeacherProfileEditProvider;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -31,6 +31,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         private TeacherProfileEditProvider $outputProvider,
         private TeacherProfileWriter $profileWriter,
         private ServiceRepository $serviceRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -50,8 +51,9 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
         $profile = new Service();
         $profile->user = $user;
         $profile->kind = ServiceKind::Teaching;
+        $profile->position = $this->serviceRepository->nextPositionFor($user);
         // The app knows nothing of drafts: a teacher profile it creates goes online, as it always did (#1406).
-        $profile->status = ServiceStatus::Published;
+        $profile->publish($this->clock->now());
 
         $this->profileWriter->write($profile, $data);
 

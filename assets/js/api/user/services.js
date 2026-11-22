@@ -3,6 +3,8 @@
 import axios from 'axios'
 import { handleApiError } from '../utils/handleApiError.js'
 
+const JSON_LD = { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+
 /** The member's own services, for « Mes services » (#1406). */
 export default {
   getMyServices() {
@@ -11,11 +13,7 @@ export default {
 
   addService(kind) {
     return axios
-      .post(
-        Routing.generate('api_user_services_create'),
-        { kind },
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_user_services_create'), { kind }, { headers: JSON_LD })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -35,6 +33,13 @@ export default {
     return axios
       .post(Routing.generate('api_user_services_unpublish', { id }))
       .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  /** Every service id, in the order the profile shows them (#1415). */
+  reorderServices(ids) {
+    return axios
+      .post(Routing.generate('api_user_services_reorder'), { ids }, { headers: JSON_LD })
       .catch(handleApiError)
   }
 }

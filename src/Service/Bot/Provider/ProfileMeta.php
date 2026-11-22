@@ -5,9 +5,8 @@ namespace App\Service\Bot\Provider;
 use App\Entity\Service\Service;
 use App\Enum\Service\ServicePlaceType;
 use App\Entity\User;
-use App\Locale\LocalizedPath;
+use App\Locale\SiteUrl;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -22,11 +21,9 @@ readonly class ProfileMeta
 
     public function __construct(
         private TranslatorInterface $translator,
-        private LocalizedPath $localizedPath,
+        private SiteUrl $siteUrl,
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
-        #[Autowire('%env(DEFAULT_URI)%')]
-        private string $siteOrigin,
     ) {
     }
 
@@ -71,7 +68,7 @@ readonly class ProfileMeta
     /** The absolute address of a member page, in the current locale. */
     public function url(string $defaultLocalePath): string
     {
-        return $this->siteOrigin . $this->localizedPath->inLocale($defaultLocalePath, $this->translator->getLocale());
+        return $this->siteUrl->of($defaultLocalePath);
     }
 
     public function picture(User $user): ?string

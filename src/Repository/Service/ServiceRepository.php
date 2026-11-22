@@ -25,6 +25,8 @@ use App\Model\Search\SoundEngineeringSearch;
 use App\Model\Search\TeachingSearch;
 use App\Repository\User\Relation\UserBlockRepository;
 use App\Repository\UserRepository;
+use App\Service\Profile\Wall\WallCursor;
+use App\Service\Profile\Wall\WallItemKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -39,6 +41,9 @@ class ServiceRepository extends ServiceEntityRepository
 
     /** A teacher's lesson compared at 30 minutes, whatever its length (#1314). */
     private const int TEACHING_PRICE_MINUTES = 30;
+
+    /** The member's own order (#1415), the oldest first among equal positions. */
+    private const array MEMBER_ORDER = ['position' => 'ASC', 'creationDatetime' => 'ASC'];
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -63,13 +68,74 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * The member's services, oldest first, for their « Mes services » page.
+     * The member's services in their own order (#1415), for their « Mes services » page.
      *
      * @return list<Service>
      */
     public function findByUser(User $user): array
     {
-        return $this->findBy(['user' => $user], ['creationDatetime' => 'ASC']);
+        return $this->findBy(['user' => $user], self::MEMBER_ORDER);
+    }
+
+    /**
+     * The services a profile shows, in its member's order (#1415): the published ones, and the drafts too for its
+     * owner. Their offers come along, for the lowest price each one shows.
+     *
+     * @return list<Service>
+     */
+    public function findForProfile(User $user, bool $withDrafts): array
+    {
+        $query = $this->withOffers()
+            ->where('service.user = :user')
+            ->setParameter('user', $user);
+        if (!$withDrafts) {
+            $query->andWhere(self::published('service'));
+        }
+        foreach (self::MEMBER_ORDER as $field => $direction) {
+            $query->addOrderBy('service.' . $field, $direction);
+        }
+
+        /** @var list<Service> $services */
+        $services = $query->getQuery()->getResult();
+
+        return $services;
+    }
+
+    /** A new service goes after the member's others. */
+    public function nextPositionFor(User $user): int
+    {
+        $last = $this->createQueryBuilder('service')
+            ->select('MAX(service.position)')
+            ->where('service.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $last !== null ? (int) $last + 1 : 0;
+    }
+
+    /**
+     * The member's services online, for their wall (#1415): dated by their first publication, newest first, past
+     * `$before`. One taken offline leaves the wall until it is back, at its first date. Every one past the cursor
+     * rather than a page: a member has one per kind, and a limit would cut the offers fetched with them.
+     *
+     * @return list<Service>
+     */
+    public function findForWall(User $owner, ?WallCursor $before): array
+    {
+        $query = $this->withOffers()
+            ->where('service.user = :owner')
+            ->andWhere(self::published('service'))
+            ->andWhere('service.firstPublicationDatetime IS NOT NULL')
+            ->setParameter('owner', $owner)
+            ->orderBy('service.firstPublicationDatetime', 'DESC')
+            ->addOrderBy('service.id', 'DESC');
+        $before?->applyTo($query, WallItemKind::Service, 'service.firstPublicationDatetime', 'service.id');
+
+        /** @var list<Service> $services */
+        $services = $query->getQuery()->getResult();
+
+        return $services;
     }
 
     public function findPublishedOneByUsernameAndKind(string $username, ServiceKind $kind): ?Service
@@ -399,6 +465,14 @@ class ServiceRepository extends ServiceEntityRepository
         }
 
         return $queryBuilder;
+    }
+
+    /** Its offers fetched with each service: every one, for the lowest price. */
+    private function withOffers(): QueryBuilder
+    {
+        return $this->createQueryBuilder('service')
+            ->addSelect('offer')
+            ->leftJoin('service.offers', 'offer');
     }
 
     /**

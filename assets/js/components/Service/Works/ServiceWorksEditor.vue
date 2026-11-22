@@ -56,8 +56,8 @@ import { useToast } from 'primevue/usetoast'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import serviceWorkApi from '../../../api/service/serviceWork.js'
-import { movedIds } from '../../../utils/riderWorkspace.js'
-import { MAX_WORKS, orderedBy, workByline } from '../../../utils/serviceWorks.js'
+import { movedIds, orderedBy } from '../../../utils/listOrder.js'
+import { MAX_WORKS, workByline } from '../../../utils/serviceWorks.js'
 import ServiceWorkForm from './ServiceWorkForm.vue'
 
 /** « Réalisations » in a service's form (#1407): every change is sent at once, as « Avant, après » is. */

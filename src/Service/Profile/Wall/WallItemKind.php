@@ -15,6 +15,7 @@ enum WallItemKind: string
     case Publication = 'publication';
     case MusicianMedia = 'musician_media';
     case TeacherMedia = 'teacher_media';
+    case Service = 'service';
 
     public function rank(): int
     {
@@ -24,6 +25,7 @@ enum WallItemKind: string
             self::Publication => 3,
             self::MusicianMedia => 2,
             self::TeacherMedia => 1,
+            self::Service => 0,
         };
     }
 }

@@ -50,6 +50,14 @@ class Service implements ViewableInterface
     #[ORM\Column(type: Types::STRING, length: 20, enumType: ServiceStatus::class)]
     public ServiceStatus $status = ServiceStatus::Draft;
 
+    /** Set once, by publish(): the date its wall line carries, so going offline and back never repeats it (#1415). */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $firstPublicationDatetime = null;
+
+    /** Its place among its member's services, which they set in « Mes services » and their profile follows (#1415). */
+    #[ORM\Column(type: Types::SMALLINT)]
+    public int $position = 0;
+
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     public ?string $headline = null;
 
@@ -326,6 +334,18 @@ class Service implements ViewableInterface
     public function isPublished(): bool
     {
         return $this->status === ServiceStatus::Published;
+    }
+
+    public function publish(DateTimeImmutable $now): void
+    {
+        $this->status = ServiceStatus::Published;
+        $this->firstPublicationDatetime ??= $now;
+    }
+
+    /** The offer its price is quoted from where one price stands for it, on the profile and the wall (#1415). */
+    public function lowestOffer(): ?ServiceOffer
+    {
+        return $this->headlineOffer($this->kind->headlineUnit());
     }
 
     /** @return list<ServicePart> what its kind needs before it can be published and it does not have yet */

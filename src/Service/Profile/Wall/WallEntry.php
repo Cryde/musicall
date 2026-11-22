@@ -8,6 +8,7 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Musician\MusicianProfileMedia;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Publication;
+use App\Entity\Service\Service;
 use App\Entity\Service\ServiceMedia;
 
 /** One row of a wall, whatever table it comes from, with its place in the merged order. */
@@ -18,7 +19,7 @@ final readonly class WallEntry
     public function __construct(
         public WallItemKind $kind,
         public \DateTimeInterface $date,
-        public ProfilePost|MusicianAnnounce|Publication|MusicianProfileMedia|ServiceMedia $row,
+        public ProfilePost|MusicianAnnounce|Publication|MusicianProfileMedia|ServiceMedia|Service $row,
     ) {
         $this->cursor = WallCursor::at($kind, $date, (string) $row->id);
     }

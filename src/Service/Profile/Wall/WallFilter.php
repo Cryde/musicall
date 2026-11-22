@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Profile\Wall;
 
-/** One of the wall's filters (#1317): « Posts », « Médias », « Annonces » or « Cours ». Without one, the wall is « Tout ». */
+/** One of the wall's filters (#1317), each reading only its own sources; without one, the wall is « Tout ». */
 enum WallFilter: string
 {
     case Post = 'post';
     case Media = 'media';
     case Announce = 'announce';
     case Course = 'course';
+    case Service = 'service';
 
     /** @return list<string> */
     public static function values(): array
@@ -26,6 +27,7 @@ enum WallFilter: string
             self::Media => $kind === WallItemKind::MusicianMedia || $kind === WallItemKind::TeacherMedia,
             self::Announce => $kind === WallItemKind::Announce,
             self::Course => $kind === WallItemKind::Publication,
+            self::Service => $kind === WallItemKind::Service,
         };
     }
 }

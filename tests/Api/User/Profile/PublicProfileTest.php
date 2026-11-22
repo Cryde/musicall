@@ -66,6 +66,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 
@@ -108,6 +109,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 
@@ -157,6 +159,7 @@ class PublicProfileTest extends ApiTestCase
             ],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 
@@ -313,6 +316,19 @@ class PublicProfileTest extends ApiTestCase
                     ['@type' => 'TeacherProfileAvailability', 'day_of_week' => 'wednesday', 'day_of_week_order' => 3, 'start_time' => '14:00', 'end_time' => '18:00'],
                 ],
             ],
+            // The same teaching, as one of their services (#1415): its shortest lesson is its cheapest.
+            'services' => [
+                [
+                    '@type' => 'PublicProfileService',
+                    'id' => $teacherProfile->id,
+                    'kind' => 'teaching',
+                    'status' => 'published',
+                    'url' => 'http://localhost/u/julien/teacher',
+                    'price' => 2500,
+                    'price_unit' => 'lesson',
+                    'price_quantity' => 30,
+                ],
+            ],
         ]);
     }
 
@@ -404,6 +420,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 
@@ -429,6 +446,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 
@@ -458,6 +476,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 }

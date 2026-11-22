@@ -21,9 +21,13 @@ final class ServiceFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
+        $created = \DateTimeImmutable::createFromMutable(self::faker()->dateTime());
+
         return [
             'status' => ServiceStatus::Published,
-            'creationDatetime' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+            'creationDatetime' => $created,
+            // Published as it was created, as the migration dates the services already online (#1415).
+            'firstPublicationDatetime' => $created,
             'description' => self::faker()->paragraphs(2, true),
             'yearsOfExperience' => self::faker()->numberBetween(1, 30),
         ];

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { orderedBy, workByline, workForm, workLinkDomain, workPayload } from './serviceWorks.js'
+import { workByline, workForm, workLinkDomain, workPayload } from './serviceWorks.js'
 
 describe('workForm', () => {
   it('starts empty for a new work', () => {
@@ -78,12 +78,5 @@ describe('workLinkDomain', () => {
     assert.equal(workLinkDomain('javascript:alert(1)'), null)
     assert.equal(workLinkDomain('not a link'), null)
     assert.equal(workLinkDomain(null), null)
-  })
-})
-
-describe('orderedBy', () => {
-  it('follows the order sent', () => {
-    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
-    assert.deepEqual(orderedBy(items, ['c', 'a', 'b']), [{ id: 'c' }, { id: 'a' }, { id: 'b' }])
   })
 })

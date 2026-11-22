@@ -8,6 +8,7 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\Musician\MusicianProfileMedia;
 use App\Entity\Profile\ProfilePost;
 use App\Entity\Publication;
+use App\Entity\Service\Service;
 use App\Entity\Service\ServiceMedia;
 use App\Entity\User;
 use App\Enum\Service\ServiceKind;
@@ -16,6 +17,7 @@ use App\Repository\Musician\MusicianProfileMediaRepository;
 use App\Repository\Profile\ProfilePostRepository;
 use App\Repository\PublicationRepository;
 use App\Repository\Service\ServiceMediaRepository;
+use App\Repository\Service\ServiceRepository;
 
 /**
  * A member's wall (#1316): their posts and what they did elsewhere on MusicAll, read live from each table and
@@ -29,6 +31,7 @@ readonly class ProfileWallFeed
         private PublicationRepository $publicationRepository,
         private MusicianProfileMediaRepository $musicianMediaRepository,
         private ServiceMediaRepository $teacherMediaRepository,
+        private ServiceRepository $serviceRepository,
     ) {
     }
 
@@ -63,6 +66,14 @@ readonly class ProfileWallFeed
             ...!$reads(WallItemKind::TeacherMedia) ? [] : array_map(
                 static fn (ServiceMedia $media): WallEntry => new WallEntry(WallItemKind::TeacherMedia, $media->creationDatetime, $media),
                 $this->teacherMediaRepository->findForWall($owner, ServiceKind::Teaching, $before, $size),
+            ),
+            ...!$reads(WallItemKind::Service) ? [] : array_map(
+                static fn (Service $service): WallEntry => new WallEntry(
+                    WallItemKind::Service,
+                    $service->firstPublicationDatetime ?? throw new \LogicException('The wall reads services published once only.'),
+                    $service,
+                ),
+                $this->serviceRepository->findForWall($owner, $before),
             ),
         ];
         usort($entries, static fn (WallEntry $a, WallEntry $b): int => WallCursor::compare($a->cursor, $b->cursor));

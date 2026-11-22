@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { kindsToAdd, serviceStage } from './myServices.js'
+import { kindsToAdd, serviceName, serviceStage } from './myServices.js'
 
 describe('serviceStage', () => {
   it('says a published service is online, even when it misses a part', () => {
@@ -33,5 +33,25 @@ describe('kindsToAdd', () => {
 
   it('lists nothing once every kind is offered', () => {
     assert.deepEqual(kindsToAdd(['teaching'], [{ kind: 'teaching' }]), [])
+  })
+})
+
+describe('serviceName', () => {
+  // Writes the key back, so the test reads which label is asked for.
+  const t = (key) => key
+
+  it('is its headline, else the name of its kind', () => {
+    assert.equal(
+      serviceName({ kind: 'sound_engineering', headline: 'Mixage et prise de son' }, t),
+      'Mixage et prise de son'
+    )
+    assert.equal(
+      serviceName({ kind: 'teaching', headline: null }, t),
+      'profile.services.kinds.teaching.label'
+    )
+    assert.equal(
+      serviceName({ kind: 'teaching', headline: '' }, t),
+      'profile.services.kinds.teaching.label'
+    )
   })
 })
