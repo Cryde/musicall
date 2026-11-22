@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\User;
 
+use App\Entity\User;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\SessionCookies;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -35,6 +37,22 @@ class UserLoginTest extends ApiTestCase
             'jwt_s' => ['expires' => 'session', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'strict', 'partitioned' => false],
             'refresh_token' => ['expires' => 'now + refresh_ttl', 'path' => '/', 'domain' => null, 'secure' => true, 'httpOnly' => true, 'sameSite' => 'lax', 'partitioned' => false],
         ], SessionCookies::describe($this->client->getResponse()->headers->getCookies(), self::getContainer()));
+    }
+
+    /** A real login still advances it, unlike a token refresh (#1024, NativeTokenRefreshTest). */
+    public function test_a_login_stamps_the_last_login(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['lastLoginDatetime' => new \DateTime('2026-08-01 10:00:00')]);
+
+        $this->client->jsonRequest('POST', '/api/login_check', [
+            'username' => $user1->username,
+            'password' => 'password',
+        ]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $this->assertGreaterThan(new \DateTime('-1 minute'), $entityManager->find(User::class, $user1->id)->lastLoginDatetime);
     }
 
     public function test_login_unverified_user_with_bad_password_returns_generic_error(): void

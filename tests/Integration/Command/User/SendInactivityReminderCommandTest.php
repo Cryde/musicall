@@ -160,6 +160,37 @@ class SendInactivityReminderCommandTest extends KernelTestCase
         $this->assertStringContainsString('Found 0 inactive users', $output);
     }
 
+    /** A refresh token renews itself for months without a login: activity is what says a member is gone (#1024). */
+    public function test_command_skips_a_member_active_long_after_their_last_login(): void
+    {
+        UserFactory::new()->create([
+            'confirmationDatetime' => new \DateTime('-1 year'),
+            'lastLoginDatetime' => new \DateTime('-200 days'),
+            'lastActivityDatetime' => new DateTimeImmutable('-2 days'),
+        ]);
+
+        $this->commandTester->execute(['--dry-run' => true]);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('Found 0 inactive users', $output);
+    }
+
+    public function test_command_tells_an_inactive_member_when_they_were_last_seen(): void
+    {
+        $lastSeen = new DateTimeImmutable('-90 days');
+        $user = UserFactory::new()->create([
+            'confirmationDatetime' => new \DateTime('-1 year'),
+            'lastLoginDatetime' => new \DateTime('-200 days'),
+            'lastActivityDatetime' => $lastSeen,
+        ]);
+
+        $this->commandTester->execute(['--dry-run' => true]);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('Found 1 inactive users', $output);
+        $this->assertStringContainsString(sprintf('[DRY-RUN] Would send to: %s (%s) - last seen: %s', $user->username, $user->email, $lastSeen->format('d/m/Y')), $output);
+    }
+
     public function test_command_skips_users_who_disabled_activity_reminder(): void
     {
         $user = $this->createInactiveUser(90);

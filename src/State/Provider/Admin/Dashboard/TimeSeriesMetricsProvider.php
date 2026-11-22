@@ -48,7 +48,7 @@ readonly class TimeSeriesMetricsProvider implements ProviderInterface
             'registrations_by_method' => $this->userRepository->countRegistrationsByDateAndMethod($from, $to),
             'registrations_by_locale' => $this->userRepository->countRegistrationsByDateAndLocale($from, $to),
             'registrations_by_source' => $this->userRepository->countRegistrationsByDateAndSource($from, $to),
-            'logins' => $this->userRepository->countLoginsByDate($from, $to),
+            'logins' => $this->userRepository->countUsersLastSeenByDate($from, $to),
             'messages' => $this->messageRepository->countMessagesByDate($from, $to),
             'publications' => $this->publicationRepository->countPublicationsByDate($from, $to),
             'comments' => $this->commentRepository->countCommentsByDate($from, $to),

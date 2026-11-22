@@ -19,6 +19,12 @@ use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
  */
 class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
+    /**
+     * When a member was last seen. A refresh token renews itself for months without a login, so the last login alone
+     * would call an active member inactive (#1024); it stands in only for an account whose activity was never recorded.
+     */
+    private const string LAST_SEEN = 'COALESCE(user.lastActivityDatetime, user.lastLoginDatetime)';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
@@ -165,11 +171,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function findInactiveUsersSince(\DateTimeImmutable $cutoffDate, int $limit = 0): array
     {
         $qb = $this->createQueryBuilder('user')
+            ->addSelect(self::LAST_SEEN . ' AS HIDDEN lastSeen')
             ->where('user.confirmationDatetime IS NOT NULL')
-            ->andWhere('user.lastLoginDatetime IS NOT NULL')
-            ->andWhere('user.lastLoginDatetime < :cutoff')
+            ->andWhere(self::LAST_SEEN . ' < :cutoff')
             ->setParameter('cutoff', $cutoffDate)
-            ->orderBy('user.lastLoginDatetime', 'ASC');
+            ->orderBy('lastSeen', 'ASC');
 
         if ($limit > 0) {
             $qb->setMaxResults($limit);
@@ -213,13 +219,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Count unique logins within a date range.
+     * Count the members seen since a date.
      */
-    public function countLoginsSince(\DateTimeImmutable $since): int
+    public function countUsersSeenSince(\DateTimeImmutable $since): int
     {
         return (int) $this->createQueryBuilder('user')
             ->select('COUNT(user.id)')
-            ->where('user.lastLoginDatetime >= :since')
+            ->where(self::LAST_SEEN . ' >= :since')
             ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
@@ -252,7 +258,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     /**
      * Calculate retention rate for users registered N days ago.
-     * Returns the percentage of users who logged in after their registration day.
+     * Returns the percentage of users seen again after they registered.
      */
     public function calculateRetentionRate(int $daysAgo): ?float
     {
@@ -274,13 +280,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             return null;
         }
 
-        // Count users who logged in after their registration day
+        // Count users seen again after they registered
         $retained = (int) $this->createQueryBuilder('user')
             ->select('COUNT(user.id)')
             ->where('user.creationDatetime >= :start')
             ->andWhere('user.creationDatetime < :end')
             ->andWhere('user.confirmationDatetime IS NOT NULL')
-            ->andWhere('user.lastLoginDatetime > user.creationDatetime')
+            ->andWhere(self::LAST_SEEN . ' > user.creationDatetime')
             ->setParameter('start', $registrationStart)
             ->setParameter('end', $registrationEnd)
             ->getQuery()
@@ -524,19 +530,19 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Count logins grouped by date within a range.
+     * Count the members last seen on each date within a range, by self::LAST_SEEN.
      *
      * @return array<int, array{date_label: string, count: int}>
      */
-    public function countLoginsByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    public function countUsersLastSeenByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
         $result = $conn->executeQuery(
-            'SELECT DATE(last_login_datetime) AS date_label, COUNT(id) AS count
-             FROM fos_user
-             WHERE last_login_datetime >= :from AND last_login_datetime < :to
-             GROUP BY DATE(last_login_datetime)
+            'SELECT DATE(last_seen) AS date_label, COUNT(id) AS count
+             FROM (SELECT id, COALESCE(last_activity_datetime, last_login_datetime) AS last_seen FROM fos_user) AS seen
+             WHERE last_seen >= :from AND last_seen < :to
+             GROUP BY DATE(last_seen)
              ORDER BY date_label ASC',
             ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
         );

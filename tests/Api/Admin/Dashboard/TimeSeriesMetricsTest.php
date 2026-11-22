@@ -203,6 +203,48 @@ class TimeSeriesMetricsTest extends ApiTestCase
         ]);
     }
 
+    /** Each member counts once, on the day they were last seen: their activity, or their last login when none was recorded (#1024). */
+    public function test_get_time_series_logins_counts_members_on_the_day_they_were_last_seen(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        UserFactory::new()->create([
+            'lastLoginDatetime' => new \DateTime('2026-05-01 09:00:00'),
+            'lastActivityDatetime' => new \DateTimeImmutable('2026-08-02 10:00:00'),
+        ]);
+        UserFactory::new()->create([
+            'lastLoginDatetime' => new \DateTime('2026-08-01 09:00:00'),
+            'lastActivityDatetime' => null,
+        ]);
+        // Signed in within the range, last seen after it
+        UserFactory::new()->create([
+            'lastLoginDatetime' => new \DateTime('2026-08-03 09:00:00'),
+            'lastActivityDatetime' => new \DateTimeImmutable('2026-11-01 09:00:00'),
+        ]);
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=logins&from=2026-08-01&to=2026-08-03');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'logins',
+            'from' => '2026-08-01',
+            'to' => '2026-08-03',
+            'data_points' => [
+                [
+                    'date_label' => '2026-08-01',
+                    'count' => 1,
+                ],
+                [
+                    'date_label' => '2026-08-02',
+                    'count' => 1,
+                ],
+            ],
+            'total' => 2,
+        ]);
+    }
+
     public function test_get_time_series_comments(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create();

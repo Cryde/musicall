@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Native;
 
+use App\Entity\User;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\JwtPayload;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -64,6 +66,22 @@ class NativeLoginTest extends ApiTestCase
         // The point of the endpoint. Anything here would be a credential the client never asked for
         // and a jar it would have to keep.
         $this->assertSame([], $this->client->getResponse()->headers->getCookies());
+    }
+
+    /** A real login still advances it, unlike a token refresh (#1024, NativeTokenRefreshTest). */
+    public function test_a_login_stamps_the_last_login(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['lastLoginDatetime' => new \DateTime('2026-08-01 10:00:00')]);
+
+        $this->client->jsonRequest('POST', '/api/native/login_check', [
+            'username' => $user->username,
+            'password' => 'password',
+        ]);
+        $this->assertResponseIsSuccessful();
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $this->assertGreaterThan(new \DateTime('-1 minute'), $entityManager->find(User::class, $user->id)->lastLoginDatetime);
     }
 
     /**

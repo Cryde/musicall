@@ -327,6 +327,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return !$this->isDeleted() && !$this->isSuspended();
     }
 
+    /** The last login stands in for an account whose activity was never recorded (#1024): UserRepository::LAST_SEEN. */
+    public function lastSeenDatetime(): ?DateTimeInterface
+    {
+        return $this->lastActivityDatetime ?? $this->lastLoginDatetime;
+    }
+
     /**
      * Serialized as `display_name` wherever a payload embeds the User itself rather than a DTO. In French
      * here: DisplayNameNormalizer swaps in the reader's locale.

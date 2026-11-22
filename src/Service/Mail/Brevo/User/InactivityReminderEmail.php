@@ -17,7 +17,7 @@ class InactivityReminderEmail
     {
     }
 
-    public function send(string $recipientEmail, string $username, string $lastLoginDate, string $locale): void
+    public function send(string $recipientEmail, string $username, string $lastSeenDate, string $locale): void
     {
         $email = new Email()
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
@@ -27,7 +27,7 @@ class InactivityReminderEmail
             ->addTextHeader('templateId', BrevoTemplateId::forLocale(self::TEMPLATE_IDS, $locale))
             ->addParameterizedHeader('params', 'params', [
                 'username' => $username,
-                'last_login_date' => $lastLoginDate,
+                'last_login_date' => $lastSeenDate,
             ]);
         $this->mailer->send($email);
     }
