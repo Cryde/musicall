@@ -9,6 +9,7 @@
         <p class="m-0 text-base leading-[1.55] md:text-lg md:leading-relaxed text-surface-600 dark:text-surface-300">
           {{ t('home.band_space_presentation.intro') }}
         </p>
+        <HowToVideoLink name="band_space_overview" placement="presentation" class="self-start -ml-2.5" />
       </div>
 
       <!-- Below lg the demo comes straight after the questions, so each answer shows under the thumb, and the
@@ -118,6 +119,7 @@ import { useRoute } from 'vue-router'
 import BandSpaceCreateCall from '../../components/BandSpace/Presentation/BandSpaceCreateCall.vue'
 import BandSpaceDemoPreview from '../../components/BandSpace/Presentation/BandSpaceDemoPreview.vue'
 import BandSpaceMobileApp from '../../components/BandSpace/Presentation/BandSpaceMobileApp.vue'
+import HowToVideoLink from '../../components/HowTo/HowToVideoLink.vue'
 import { useStartBandSpaceCreate } from '../../composables/useStartBandSpaceCreate.js'
 import { ctaLabel, DEMO_PAINS, DEMO_SIZES, sizeLabel } from '../../utils/bandSpaceDemo.js'
 
