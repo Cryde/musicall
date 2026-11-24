@@ -45,6 +45,7 @@ const MIGRATED_PATHS = [
   'components/Forum/',
   'components/Global/',
   'components/Home/',
+  'components/HowTo/',
   'components/Icons/',
   'components/Message/',
   'components/Notification/',

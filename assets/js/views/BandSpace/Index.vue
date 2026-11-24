@@ -1,13 +1,16 @@
 <template>
   <BandHome v-if="isCompact && bandSpaceId" :band-space-id="bandSpaceId" />
   <div v-else>
-    <div class="mb-6 lg:mb-8">
-      <h1 class="text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
-        {{ t('band_space.dashboard.title') }}
-      </h1>
-      <p v-if="currentSpace?.name" class="text-surface-600 dark:text-surface-400 mt-1">
-        {{ currentSpace.name }}
-      </p>
+    <div class="mb-6 lg:mb-8 flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
+          {{ t('band_space.dashboard.title') }}
+        </h1>
+        <p v-if="currentSpace?.name" class="text-surface-600 dark:text-surface-400 mt-1">
+          {{ currentSpace.name }}
+        </p>
+      </div>
+      <HowToVideoLink name="band_space_overview" placement="dashboard" class="-mr-2.5" />
     </div>
 
     <div v-if="bandSpaceId" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -39,6 +42,7 @@ import InvitationsWidget from '../../components/BandSpace/Dashboard/InvitationsW
 import MobileAppWidget from '../../components/BandSpace/Dashboard/MobileAppWidget.vue'
 import StorageWidget from '../../components/BandSpace/Dashboard/StorageWidget.vue'
 import TasksWidget from '../../components/BandSpace/Dashboard/TasksWidget.vue'
+import HowToVideoLink from '../../components/HowTo/HowToVideoLink.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { COMPACT_NAV_MEDIA_QUERY } from '../../composables/useCompactMenu.js'
 

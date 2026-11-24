@@ -28,6 +28,7 @@
             size="large"
             @click="bandSpaceStore.openCreateModal()"
           />
+          <HowToVideoLink name="band_space_overview" placement="no_space" />
         </div>
 
         <div class="flex items-start gap-3 p-4 bg-surface-100 dark:bg-surface-800 rounded-lg max-w-lg">
@@ -45,6 +46,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import HowToVideoLink from '../../components/HowTo/HowToVideoLink.vue'
 import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 

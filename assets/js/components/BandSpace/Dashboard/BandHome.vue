@@ -1,6 +1,7 @@
 <template>
   <div class="flex flex-col gap-4">
     <BandHomeHeader :member-count="members.data?.length ?? 0" />
+    <HowToVideoLink name="band_space_overview" placement="band_home" class="self-start -ml-2.5" />
 
     <BandHomeNextDate
       :band-space-id="bandSpaceId"
@@ -53,6 +54,7 @@ import {
   techRiderStatus,
   upcomingDates
 } from '../../../utils/bandHomeStatus.js'
+import HowToVideoLink from '../../HowTo/HowToVideoLink.vue'
 import ActivityWidget from './ActivityWidget.vue'
 import BandHomeChatRow from './BandHomeChatRow.vue'
 import BandHomeHeader from './BandHomeHeader.vue'
