@@ -153,9 +153,9 @@ import {
   SPECIALITY_KEYS,
   UNIT_KEYS
 } from '../../../constants/soundEngineering.js'
-import { orderedSpecialities } from '../../../utils/servicePage.js'
+import { headlineOffer, orderedSpecialities } from '../../../utils/servicePage.js'
 import { placeLines, placesSummary } from '../../../utils/servicePlaces.js'
-import { DELIVERY_FORMATS, headlineOffer, SPECIALITIES } from '../../../utils/soundEngineerPage.js'
+import { DELIVERY_FORMATS, SPECIALITIES } from '../../../utils/soundEngineerPage.js'
 import { formatLessonPrice } from '../../../utils/teacherPage.js'
 
 /** A sound engineer's page (#1410), on the template the lessons page shares. */

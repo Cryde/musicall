@@ -85,6 +85,20 @@ describe('placesForm and placesPayload', () => {
     ])
   })
 
+  it('opens a service with no place yet with remote work ticked when its kind works remotely by default (#1413)', () => {
+    assert.equal(placesForm([], { remoteByDefault: true }).remote, true)
+    assert.deepEqual(placesPayload(placesForm(null, { remoteByDefault: true })), [
+      { type: 'remote' }
+    ])
+    assert.equal(placesForm([]).remote, false)
+  })
+
+  it('keeps what is stored over the default, remote work left out included', () => {
+    const studioOnly = stored.filter((place) => place.type !== 'remote')
+    assert.equal(placesForm(studioOnly, { remoteByDefault: true }).remote, false)
+    assert.equal(placesForm(stored, { remoteByDefault: true }).remote, true)
+  })
+
   it('sends a travel radius only for the travel to the client, and nothing unticked', () => {
     const form = placesForm([])
     form.client = {

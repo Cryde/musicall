@@ -531,6 +531,10 @@
       "web": {
         "label": "Webmaster",
         "description": "Tu crées et tiens à jour les sites des groupes et des artistes, à distance."
+      },
+      "production": {
+        "label": "Producteur",
+        "description": "Tu composes, arranges ou réalises, de l'instru au disque, le plus souvent à distance."
       }
     },
     "load_error": "Impossible de charger tes services",
@@ -860,7 +864,12 @@
       "band_site": "Site de groupe ou d'artiste",
       "epk": "Dossier de presse en ligne",
       "online_store": "Boutique en ligne",
-      "redesign_maintenance": "Refonte ou maintenance"
+      "redesign_maintenance": "Refonte ou maintenance",
+      "beatmaking": "Beatmaking",
+      "arrangement": "Arrangement",
+      "record_production": "Réalisation artistique",
+      "composition": "Composition",
+      "topline": "Topline"
     },
     "budget": {
       "under_100": "Moins de 100 €",
@@ -1225,6 +1234,36 @@
       "online_store": "Boutique en ligne",
       "redesign_maintenance": "Refonte et maintenance"
     }
+  },
+  "producer": {
+    "specialities": {
+      "beatmaking": "Beatmaking",
+      "arrangement": "Arrangement",
+      "record_production": "Réalisation artistique",
+      "composition": "Composition",
+      "topline": "Topline"
+    },
+    "form": {
+      "title": "Mon service de producteur",
+      "headline_placeholder": "Ton son, de la maquette au master",
+      "description_placeholder": "Comment tu travailles, ce que les artistes t'envoient, ce qu'ils reçoivent",
+      "years": "Années d'expérience",
+      "place_remote": "À distance, tout se passe en ligne",
+      "media_url": "Lien YouTube, SoundCloud ou Spotify"
+    }
+  },
+  "producer_page": {
+    "not_found_help": "Ce membre ne propose pas de service de producteur.",
+    "plural": "Producteurs",
+    "title_default": "{name}, producteur",
+    "share_title": "{name}, producteur sur MusicAll",
+    "page_title": "{name}, producteur - MusicAll",
+    "page_title_default": "Producteur - MusicAll",
+    "listen": "Écoute le travail de {name}",
+    "works": "Ils ont travaillé avec {name}",
+    "years": "{count} an d'expérience | {count} ans d'expérience",
+    "remotely": "à distance",
+    "remote_detail": "Les fichiers s'échangent en ligne"
   },
   "visual_service": {
     "units": {

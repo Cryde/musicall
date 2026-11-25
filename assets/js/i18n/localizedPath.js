@@ -31,6 +31,7 @@ const TRANSLATED_SEGMENTS = {
     'rechercher-un-videaste': 'find-a-videographer',
     'rechercher-un-graphiste': 'find-a-graphic-designer',
     'rechercher-un-webmaster': 'find-a-webmaster',
+    'rechercher-un-producteur': 'find-a-producer',
     'rechercher-un-guitariste': 'find-a-guitarist',
     'rechercher-un-batteur': 'find-a-drummer',
     'rechercher-un-bassiste': 'find-a-bassist',

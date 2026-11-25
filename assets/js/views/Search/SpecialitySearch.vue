@@ -123,7 +123,7 @@
           :page-route="SERVICE_KINDS[kind].pageRoute"
           :speciality-keys="config.specialityKeys"
           :unit-keys="config.unitKeys"
-          :days="result[config.daysField] ?? null"
+          :days="config.daysField ? result[config.daysField] : null"
         />
       </div>
       <div v-if="hasMore" class="flex justify-center">

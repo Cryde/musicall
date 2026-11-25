@@ -128,7 +128,7 @@ describe('a message from a service page (#1408)', () => {
   // An app or web build older than a new kind or need still says what it is.
   it('still says something for a need or a kind it does not know', () => {
     assert.equal(contactOriginLabel(service({ quote: { need: 'drone' } })), 'Demande de devis')
-    assert.equal(contactOriginLabel(service({ service_kind: 'production' })), 'Question')
+    assert.equal(contactOriginLabel(service({ service_kind: 'luthier' })), 'Question')
   })
 
   it('reads the same once the service is deleted', () => {
@@ -163,7 +163,7 @@ describe('a message from a service page (#1408)', () => {
     assert.equal(contactOriginIcon(service({ service_kind: 'video' })), 'pi pi-video')
     assert.equal(contactOriginIcon(service({ service_kind: 'graphic_design' })), 'pi pi-palette')
     assert.equal(contactOriginIcon(service({ service_kind: 'web' })), 'pi pi-desktop')
-    assert.equal(contactOriginIcon(service({ service_kind: 'production' })), 'pi pi-briefcase')
+    assert.equal(contactOriginIcon(service({ service_kind: 'luthier' })), 'pi pi-briefcase')
   })
 
   it('names what a graphic designer or a webmaster is asked, and when (#1412)', () => {
@@ -203,6 +203,16 @@ describe('a message from a service page (#1408)', () => {
       ),
       'le 12 déc. 2026 · Lyon · Moins de 100 €'
     )
+  })
+
+  it('names what a producer is asked (#1413)', () => {
+    const production = (quote) => service({ service_kind: 'production', quote })
+    assert.equal(
+      contactOriginLabel(production({ need: 'record_production' })),
+      'Devis : réalisation artistique'
+    )
+    assert.equal(contactOriginLabel(production(null)), 'Question : producteur')
+    assert.equal(contactOriginIcon(production(null)), 'pi pi-wave-pulse')
   })
 })
 

@@ -226,6 +226,15 @@
     "empty_title": "Aucun webmaster ne correspond à ta recherche",
     "title": "Trouver un webmaster - MusicAll"
   },
+  "producer": {
+    "heading": "Trouver un producteur",
+    "intro": "Beatmaking, arrangement, réalisation artistique ou topline, près de chez toi ou à distance.",
+    "cta": "Tu es producteur ?",
+    "count": "Aucun producteur | {count} producteur | {count} producteurs",
+    "load_more": "Voir plus de producteurs",
+    "empty_title": "Aucun producteur ne correspond à ta recherche",
+    "title": "Trouver un producteur - MusicAll"
+  },
   "service": {
     "cta_link": "Crée ta page",
     "filters_label": "Filtres de la recherche",

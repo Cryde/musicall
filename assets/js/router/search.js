@@ -56,6 +56,13 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    path: '/rechercher-un-producteur',
+    name: 'app_search_producer',
+    component: () => import('../views/Search/SpecialitySearch.vue'),
+    props: { kind: 'production' },
+    meta: { isAuthRequired: false }
+  },
+  {
     path: '/rechercher-un-guitariste',
     name: 'app_search_guitarist',
     component: () => import('../views/Search/Index.vue'),

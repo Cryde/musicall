@@ -35,6 +35,7 @@
     { "path": "/rechercher-un-graphiste", "locale": "en", "expected": "/en/find-a-graphic-designer" },
     { "path": "/rechercher-un-webmaster", "locale": "en", "expected": "/en/find-a-webmaster" },
     { "path": "/en/find-a-webmaster", "locale": "fr", "expected": "/rechercher-un-webmaster" },
+    { "path": "/rechercher-un-producteur", "locale": "en", "expected": "/en/find-a-producer" },
     { "path": "/rechercher-un-guitariste", "locale": "en", "expected": "/en/find-a-guitarist" },
     { "path": "/rechercher-un-batteur", "locale": "en", "expected": "/en/find-a-drummer" },
     { "path": "/rechercher-un-bassiste", "locale": "en", "expected": "/en/find-a-bassist" },
@@ -72,13 +73,15 @@
       "/rechercher-un-videaste",
       "/rechercher-un-graphiste",
       "/rechercher-un-webmaster",
+      "/rechercher-un-producteur",
       "/u/jeanne",
       "/u/jeanne/teacher",
       "/u/jeanne/sound-engineer",
       "/u/jeanne/photographer",
       "/u/jeanne/videographer",
       "/u/jeanne/graphic-designer",
-      "/u/jeanne/webmaster"
+      "/u/jeanne/webmaster",
+      "/u/jeanne/producer"
     ],
     "without_versions": [
       "/login",

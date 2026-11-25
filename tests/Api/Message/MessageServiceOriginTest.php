@@ -256,6 +256,56 @@ class MessageServiceOriginTest extends ApiTestCase
         $this->assertNoMessage();
     }
 
+    /** A producer is asked what a sound engineer is, about any of what they do (#1413). */
+    public function test_a_production_quote_request_carries_its_answers(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $service = ServiceFactory::new(['user' => $recipient])->production()->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour, une topline sur notre instru ?',
+            'serviceId' => $service->id,
+            'quote' => [
+                'budget' => '100_to_300',
+                'deadline' => '2026-12-15',
+                'link' => 'https://soundcloud.com/groupe/instru',
+                'tracks' => 1,
+                'need' => 'topline',
+            ],
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = $this->onlyMessage();
+        $this->assertJsonEquals($this->sentMessage($message, $sender, 'Bonjour, une topline sur notre instru ?', $this->serviceOrigin($service, [
+            'need' => 'topline',
+            'tracks' => 1,
+            'link' => 'https://soundcloud.com/groupe/instru',
+            'deadline' => '2026-12-15',
+            'budget' => '100_to_300',
+        ])));
+    }
+
+    /** Mixing stays a sound engineer's (#1413): a producer is not asked for it. */
+    public function test_a_sound_engineers_need_asked_of_a_producer_is_refused(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $service = ServiceFactory::new(['user' => $recipient])->production()->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'serviceId' => $service->id,
+            'quote' => ['need' => 'mixing'],
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation('quote[need]', 'Cette valeur doit être l\'un des choix proposés.', '8e179f1b-97aa-4560-a02f-2a8b42e49df7'));
+        $this->assertNoMessage();
+    }
+
     public function test_a_quote_without_a_service_is_refused(): void
     {
         [$sender, $recipient] = $this->pair();

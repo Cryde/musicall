@@ -22,6 +22,7 @@ enum ServiceKind: string implements TranslatableInterface
     case Video = 'video';
     case GraphicDesign = 'graphic_design';
     case Web = 'web';
+    case Production = 'production';
 
     /** The budget « Demander un devis » offers whatever the kind (#1408), in euros. */
     private const array QUOTE_BUDGETS = ['under_100', '100_to_300', '300_to_1000', 'over_1000'];
@@ -37,7 +38,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => 'teacher_profile',
-            self::SoundEngineering, self::Photography, self::Video, self::GraphicDesign, self::Web => 'service',
+            self::SoundEngineering, self::Photography, self::Video, self::GraphicDesign, self::Web, self::Production => 'service',
         };
     }
 
@@ -46,7 +47,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => ContactOriginType::TeacherProfile,
-            self::SoundEngineering, self::Photography, self::Video, self::GraphicDesign, self::Web => ContactOriginType::Service,
+            self::SoundEngineering, self::Photography, self::Video, self::GraphicDesign, self::Web, self::Production => ContactOriginType::Service,
         };
     }
 
@@ -60,6 +61,7 @@ enum ServiceKind: string implements TranslatableInterface
             self::Video => VideoSpeciality::cases(),
             self::GraphicDesign => GraphicDesignSpeciality::cases(),
             self::Web => WebSpeciality::cases(),
+            self::Production => ProductionSpeciality::cases(),
         };
     }
 
@@ -71,12 +73,12 @@ enum ServiceKind: string implements TranslatableInterface
     /**
      * Whether it may be given remotely: its form offers it and its search card says so. A photographer or a
      * videographer comes to the client or works in their studio (#1411); a graphic designer or a webmaster mostly
-     * works remotely (#1412).
+     * works remotely (#1412), a producer works remotely first (#1413).
      */
     public function worksRemotely(): bool
     {
         return match ($this) {
-            self::Teaching, self::SoundEngineering, self::GraphicDesign, self::Web => true,
+            self::Teaching, self::SoundEngineering, self::GraphicDesign, self::Web, self::Production => true,
             self::Photography, self::Video => false,
         };
     }
@@ -89,7 +91,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => OfferUnit::Lesson,
-            self::SoundEngineering => OfferUnit::Track,
+            self::SoundEngineering, self::Production => OfferUnit::Track,
             self::Photography, self::Video, self::GraphicDesign, self::Web => null,
         };
     }
@@ -99,7 +101,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => [OfferUnit::Lesson, OfferUnit::Package],
-            self::SoundEngineering => [OfferUnit::Track, OfferUnit::Hour, OfferUnit::Day, OfferUnit::Flat],
+            self::SoundEngineering, self::Production => [OfferUnit::Track, OfferUnit::Hour, OfferUnit::Day, OfferUnit::Flat],
             // No price per photo (#1411).
             self::Photography, self::Video => [OfferUnit::Hour, OfferUnit::Day, OfferUnit::Event, OfferUnit::Flat],
             // Priced by the project, or by the time it takes (#1412).
@@ -120,6 +122,7 @@ enum ServiceKind: string implements TranslatableInterface
             self::Video => 'videographer',
             self::GraphicDesign => 'graphic-designer',
             self::Web => 'webmaster',
+            self::Production => 'producer',
         });
     }
 
@@ -167,6 +170,16 @@ enum ServiceKind: string implements TranslatableInterface
                 ServicePart::Styles,
                 ServicePart::Delivery,
             ],
+            // The styles up front (#1413): a beatmaker is chosen by their sound first.
+            self::Production => [
+                ServicePart::Headline,
+                ServicePart::Description,
+                ServicePart::Specialities,
+                ServicePart::Styles,
+                ServicePart::Works,
+                ServicePart::Offers,
+                ServicePart::Places,
+            ],
         };
     }
 
@@ -175,7 +188,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => [ServicePart::Headline, ServicePart::Description, ServicePart::Places, ServicePart::Offers],
-            self::SoundEngineering, self::Photography, self::Video, self::GraphicDesign, self::Web => [ServicePart::Headline, ServicePart::Description, ServicePart::Specialities, ServicePart::Places, ServicePart::Offers],
+            self::SoundEngineering, self::Photography, self::Video, self::GraphicDesign, self::Web, self::Production => [ServicePart::Headline, ServicePart::Description, ServicePart::Specialities, ServicePart::Places, ServicePart::Offers],
         };
     }
 
@@ -187,18 +200,14 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => null,
-            self::SoundEngineering => new Assert\Collection(fields: [
-                'need' => self::needQuestion(['mixing', 'mastering', 'recording', 'live']),
-                'tracks' => new Assert\Optional([new Assert\Type('int'), new Assert\Range(min: 1, max: 100)]),
-                'link' => self::linkQuestion(),
-                'deadline' => self::dateQuestion(),
-                'budget' => self::budgetQuestion(),
-            ]),
+            self::SoundEngineering => self::trackQuote(['mixing', 'mastering', 'recording', 'live']),
             // What (#1408), a date and a city.
             self::Photography => self::eventQuote([PhotographySpeciality::Concert, PhotographySpeciality::Promo, PhotographySpeciality::Cover]),
             self::Video => self::eventQuote([VideoSpeciality::Clip, VideoSpeciality::LiveSession, VideoSpeciality::ConcertFilm]),
             self::GraphicDesign => self::projectQuote(GraphicDesignSpeciality::cases()),
             self::Web => self::projectQuote(WebSpeciality::cases()),
+            // Any of what they do (#1413): offers and a quote request only, MusicAll sells no beat.
+            self::Production => self::trackQuote(ProductionSpeciality::values()),
         };
     }
 
@@ -210,7 +219,7 @@ enum ServiceKind: string implements TranslatableInterface
     public function mediaPlatforms(): array
     {
         return match ($this) {
-            self::Teaching, self::SoundEngineering => MediaPlatform::READ_BY_APP,
+            self::Teaching, self::SoundEngineering, self::Production => MediaPlatform::READ_BY_APP,
             self::Photography, self::Video, self::GraphicDesign, self::Web => [...MediaPlatform::READ_BY_APP, MediaPlatform::VIMEO],
         };
     }
@@ -224,7 +233,24 @@ enum ServiceKind: string implements TranslatableInterface
             self::Video => 'service_kind.video',
             self::GraphicDesign => 'service_kind.graphic_design',
             self::Web => 'service_kind.web',
+            self::Production => 'service_kind.production',
         }, [], 'reference', $locale);
+    }
+
+    /**
+     * What, how many tracks, something to listen to and when: work on a record (#1408, #1413).
+     *
+     * @param list<string> $needs
+     */
+    private static function trackQuote(array $needs): Assert\Collection
+    {
+        return new Assert\Collection(fields: [
+            'need' => self::needQuestion($needs),
+            'tracks' => new Assert\Optional([new Assert\Type('int'), new Assert\Range(min: 1, max: 100)]),
+            'link' => self::linkQuestion(),
+            'deadline' => self::dateQuestion(),
+            'budget' => self::budgetQuestion(),
+        ]);
     }
 
     /** @param list<ServiceSpeciality> $needs */

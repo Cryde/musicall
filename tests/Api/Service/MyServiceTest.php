@@ -585,6 +585,38 @@ class MyServiceTest extends ApiTestCase
         ]);
     }
 
+    /** Working remotely is a place (#1413); the styles and the works count towards complete, not towards publishing. */
+    public function test_publish_a_production_draft_that_works_remotely_only(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->production()->create([
+            'user' => $user,
+            'status' => ServiceStatus::Draft,
+            'headline' => 'Tes instrus sur mesure',
+            'description' => 'Dix ans de prods.',
+            'specialities' => ['beatmaking'],
+        ]);
+        ServicePlaceFactory::new()->remote()->create(['service' => $service]);
+        ServiceOfferFactory::new()->create(['service' => $service, 'unit' => OfferUnit::Track, 'quantity' => null, 'price' => 30000, 'title' => 'Une instru']);
+
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/services/' . $service->id . '/publish');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyService',
+            '@id' => '/api/my_services/' . $service->id,
+            '@type' => 'MyService',
+            'id' => $service->id,
+            'kind' => 'production',
+            'headline' => 'Tes instrus sur mesure',
+            'status' => 'published',
+            // 5 of 7: headline, description, specialities, offers, places.
+            'completeness' => 71,
+            'missing_to_publish' => [],
+        ]);
+    }
+
     public function test_publish_an_incomplete_draft_is_refused(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

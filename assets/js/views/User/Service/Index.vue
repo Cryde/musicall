@@ -148,6 +148,13 @@
       @saved="handleSaved"
       @changed="loadServices"
     />
+    <EditProductionDialog
+      v-if="editing?.kind === 'production'"
+      v-model:visible="showKindForm"
+      :service-id="editing.id"
+      @saved="handleSaved"
+      @changed="loadServices"
+    />
     <EditVisualServiceDialog
       v-if="editing && VISUAL_SERVICE_KINDS[editing.kind]"
       :key="editing.kind"
@@ -171,6 +178,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
 import servicesApi from '../../../api/user/services.js'
+import EditProductionDialog from '../../../components/Service/Production/EditProductionDialog.vue'
 import EditSoundEngineeringDialog from '../../../components/Service/SoundEngineering/EditSoundEngineeringDialog.vue'
 import EditVisualServiceDialog from '../../../components/Service/Visual/EditVisualServiceDialog.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'

@@ -3,6 +3,7 @@
  * answers the API takes and the message they open with. Kept out of the component so they are tested.
  */
 
+import { PRODUCTION_SPECIALITY_KEYS } from '../constants/production.js'
 import { kindSpecialities } from './visualServicePage.js'
 
 /** Mirrors the Range on `tracks` in ServiceKind::quoteQuestions(). */
@@ -42,7 +43,12 @@ export const OPTION_LABELS = {
     band_site: 'profile.quote_request.need.band_site',
     epk: 'profile.quote_request.need.epk',
     online_store: 'profile.quote_request.need.online_store',
-    redesign_maintenance: 'profile.quote_request.need.redesign_maintenance'
+    redesign_maintenance: 'profile.quote_request.need.redesign_maintenance',
+    beatmaking: 'profile.quote_request.need.beatmaking',
+    arrangement: 'profile.quote_request.need.arrangement',
+    record_production: 'profile.quote_request.need.record_production',
+    composition: 'profile.quote_request.need.composition',
+    topline: 'profile.quote_request.need.topline'
   },
   budget: {
     under_100: 'profile.quote_request.budget.under_100',
@@ -64,6 +70,14 @@ const MESSAGE = {
 
 const BUDGET = { key: 'budget', type: 'choice', options: Object.keys(OPTION_LABELS.budget) }
 const need = (options) => ({ key: 'need', type: 'choice', required: true, options })
+/** Work on a record, a sound engineer's or a producer's (#1413): what, how many tracks, a link to listen to, when. */
+const trackQuestions = (needs) => [
+  need(needs),
+  { key: 'tracks', type: 'number' },
+  { key: 'link', type: 'link' },
+  { key: 'deadline', type: 'date' },
+  BUDGET
+]
 /** A photographer or a videographer (#1411): what, then when and where it happens. */
 const eventQuestions = (needs) => [
   need(needs),
@@ -81,17 +95,13 @@ const projectQuestions = (needs) => [
 
 /** By kind, in asking order; only `need` is required. The budget is asked of every kind. */
 const QUESTIONS = {
-  sound_engineering: [
-    need(['mixing', 'mastering', 'recording', 'live']),
-    { key: 'tracks', type: 'number' },
-    { key: 'link', type: 'link' },
-    { key: 'deadline', type: 'date' },
-    BUDGET
-  ],
+  sound_engineering: trackQuestions(['mixing', 'mastering', 'recording', 'live']),
   photography: eventQuestions(['concert', 'promo', 'cover']),
   video: eventQuestions(['clip', 'live_session', 'concert_film']),
   graphic_design: projectQuestions(kindSpecialities('graphic_design')),
-  web: projectQuestions(kindSpecialities('web'))
+  web: projectQuestions(kindSpecialities('web')),
+  // Any of what a producer does: offers and a quote request only, MusicAll sells no beat.
+  production: trackQuestions(Object.keys(PRODUCTION_SPECIALITY_KEYS))
 }
 
 /** The questions a kind asks, none for a kind that takes no quote request (teaching asks for a lesson instead). */

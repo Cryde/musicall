@@ -67,6 +67,12 @@ final class ServiceFactory extends PersistentObjectFactory
         return $this->ofKind(ServiceKind::Web);
     }
 
+    /** A production service (#1413): what every kind has, no details of its own. */
+    public function production(): self
+    {
+        return $this->ofKind(ServiceKind::Production);
+    }
+
     public function withTrial(int $priceInCents): self
     {
         return $this->with([
@@ -84,7 +90,11 @@ final class ServiceFactory extends PersistentObjectFactory
                     ServiceKind::Teaching => new TeachingDetails(),
                     ServiceKind::SoundEngineering => new SoundEngineeringDetails(),
                     ServiceKind::Photography, ServiceKind::Video, ServiceKind::GraphicDesign, ServiceKind::Web => new DeliveryDetails(),
+                    ServiceKind::Production => null,
                 };
+                if ($details === null) {
+                    return $attributes;
+                }
                 foreach (array_keys(get_object_vars($details)) as $field) {
                     if (array_key_exists($field, $attributes)) {
                         $details->{$field} = $attributes[$field];

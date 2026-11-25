@@ -531,6 +531,10 @@
       "web": {
         "label": "Webmaster",
         "description": "You build and look after band and artist websites, remotely."
+      },
+      "production": {
+        "label": "Producer",
+        "description": "You make beats, arrange or produce records, mostly remotely."
       }
     },
     "load_error": "Could not load your services",
@@ -860,7 +864,12 @@
       "band_site": "Band or artist website",
       "epk": "Online press kit",
       "online_store": "Online store",
-      "redesign_maintenance": "Redesign or maintenance"
+      "redesign_maintenance": "Redesign or maintenance",
+      "beatmaking": "Beatmaking",
+      "arrangement": "Arrangement",
+      "record_production": "Record production",
+      "composition": "Composition",
+      "topline": "Topline"
     },
     "budget": {
       "under_100": "Under €100",
@@ -1225,6 +1234,36 @@
       "online_store": "Online store",
       "redesign_maintenance": "Redesign and maintenance"
     }
+  },
+  "producer": {
+    "specialities": {
+      "beatmaking": "Beatmaking",
+      "arrangement": "Arrangement",
+      "record_production": "Record production",
+      "composition": "Composition",
+      "topline": "Topline"
+    },
+    "form": {
+      "title": "My production service",
+      "headline_placeholder": "Your sound, from the demo to the master",
+      "description_placeholder": "How you work, what artists send you, what they get back",
+      "years": "Years of experience",
+      "place_remote": "Remotely, everything happens online",
+      "media_url": "YouTube, SoundCloud or Spotify link"
+    }
+  },
+  "producer_page": {
+    "not_found_help": "This member offers no music production.",
+    "plural": "Producers",
+    "title_default": "{name}, producer",
+    "share_title": "{name}, producer on MusicAll",
+    "page_title": "{name}, producer - MusicAll",
+    "page_title_default": "Producer - MusicAll",
+    "listen": "Hear {name}'s work",
+    "works": "They worked with {name}",
+    "years": "{count} year of experience | {count} years of experience",
+    "remotely": "remotely",
+    "remote_detail": "Files are exchanged online"
   },
   "visual_service": {
     "units": {
