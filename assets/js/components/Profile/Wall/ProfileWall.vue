@@ -83,7 +83,7 @@
           @updated="handleUpdated"
           @deleted="handleDeleted"
         />
-        <ProfileWallActivity v-else :item="item" :display-name="displayName" />
+        <ProfileWallActivity v-else :item="item" :display-name="displayName" :username="username" />
       </li>
     </ol>
 

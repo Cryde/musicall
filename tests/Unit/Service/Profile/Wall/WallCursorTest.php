@@ -18,6 +18,10 @@ class WallCursorTest extends TestCase
         $this->assertSame('announce_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0', $cursor->toString());
         $this->assertEquals($cursor, WallCursor::parse($cursor->toString()));
         $this->assertEquals(WallCursor::at(WallItemKind::Publication, new \DateTimeImmutable('@1791194400'), '42'), WallCursor::parse('publication_1791194400_42'));
+        $this->assertEquals(
+            WallCursor::at(WallItemKind::Service, new \DateTimeImmutable('@1791194400'), '01a1b220-df08-7910-9e2a-d78c147e10d0'),
+            WallCursor::parse('service_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'),
+        );
     }
 
     #[DataProvider('notACursor')]
@@ -36,6 +40,7 @@ class WallCursorTest extends TestCase
         yield 'a date instead of a timestamp' => ['post_2026-10-05_42'];
         yield 'a publication with a uuid' => ['publication_1791194400_01a1b220-df08-7910-9e2a-d78c147e10d0'];
         yield 'a post with an int id' => ['post_1791194400_42'];
+        yield 'a service with an int id' => ['service_1791194400_42'];
         yield 'an overlong timestamp' => ['post_179119440012_01a1b220-df08-7910-9e2a-d78c147e10d0'];
     }
 

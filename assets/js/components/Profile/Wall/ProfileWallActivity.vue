@@ -9,7 +9,7 @@
     <div class="flex-1 min-w-0 flex flex-col gap-2">
       <p class="text-sm text-surface-600 dark:text-surface-300 m-0">
         <span class="font-semibold text-surface-900 dark:text-surface-0">{{ displayName }}</span>
-        {{ t(activitySentenceKey(item)) }} ·
+        {{ activitySentence(item, t) }} ·
         <time :datetime="item.date">{{ formatDateCompactWithYear(item.date) }}</time>
       </p>
 
@@ -59,6 +59,26 @@
         </span>
       </RouterLink>
 
+      <RouterLink
+        v-else-if="service"
+        :to="{ ...SERVICE_KINDS[service.kind].page(username), query: { from: 'profile' } }"
+        class="flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700"
+      >
+        <span
+          class="w-12 h-12 shrink-0 rounded-md flex items-center justify-center"
+          :class="SERVICE_KINDS[service.kind].iconClass"
+          aria-hidden="true"
+        >
+          <i :class="[SERVICE_KINDS[service.kind].icon, 'text-lg']" />
+        </span>
+        <span class="min-w-0">
+          <span class="block font-semibold text-surface-900 dark:text-surface-0 truncate">
+            {{ serviceName(service, t) }}
+          </span>
+          <span v-if="serviceLine" class="block text-sm text-surface-500 dark:text-surface-400">{{ serviceLine }}</span>
+        </span>
+      </RouterLink>
+
       <template v-else-if="item.media">
         <button
           type="button"
@@ -90,15 +110,20 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { SERVICE_KINDS } from '../../../constants/serviceKinds.js'
 import { TYPES_ANNOUNCE_BAND } from '../../../constants/types.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
-import { activitySentenceKey, youtubeThumbnailUrl } from '../../../utils/profileWall.js'
+import { serviceName } from '../../../utils/myServices.js'
+import { serviceCard, servicePriceText } from '../../../utils/profileActivities.js'
+import { activitySentence, youtubeThumbnailUrl } from '../../../utils/profileWall.js'
 import MediaPlayerDialog from '../../Media/MediaPlayerDialog.vue'
 
 const props = defineProps({
-  /** An activity line of the wall: an announce, a publication, a course or a media. */
+  /** An activity line of the wall: an announce, a publication, a course, a media or a service. */
   item: { type: Object, required: true },
-  displayName: { type: String, required: true }
+  displayName: { type: String, required: true },
+  /** The wall's owner, whose service pages a service line opens. */
+  username: { type: String, required: true }
 })
 
 const { t } = useI18n()
@@ -108,9 +133,18 @@ const ICONS = {
   announce: 'pi pi-megaphone',
   publication: 'pi pi-file-edit',
   course: 'pi pi-book',
-  media: 'pi pi-video'
+  media: 'pi pi-video',
+  service: 'pi pi-briefcase'
 }
 const icon = computed(() => ICONS[props.item.type])
+
+const service = computed(() => (props.item.service ? serviceCard(props.item.service) : null))
+// The kind, unless the title already is the kind, then its lowest price.
+const serviceLine = computed(() => {
+  if (!service.value) return ''
+  const kind = service.value.headline ? t(SERVICE_KINDS[service.value.kind].labelKey) : null
+  return [kind, servicePriceText(service.value, t)].filter(Boolean).join(', ')
+})
 
 // A YouTube video without a stored thumbnail still has its still.
 const thumbnailUrl = computed(() => {

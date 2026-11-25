@@ -120,6 +120,7 @@ class ServiceDraftVisibilityTest extends ApiTestCase
             'musician_announces' => [],
             'has_musician_profile' => false,
             'has_teacher_profile' => false,
+            'services' => [],
         ]);
     }
 

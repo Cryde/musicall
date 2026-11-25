@@ -1,6 +1,6 @@
 <template>
   <section
-    v-if="musician || teacher || isOwner"
+    v-if="musician || services.length || isOwner"
     class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-5"
     :class="{ [OWNER_CARD_CLASS]: isOwner }"
     aria-labelledby="profile-activities-title"
@@ -53,41 +53,51 @@
         />
       </li>
 
-      <li v-if="teacher" class="flex items-center gap-2">
+      <!-- One card per service, teaching included, in the member's order (#1415). -->
+      <li v-for="service in services" :key="service.id" class="flex items-center gap-2">
         <router-link
-          :to="{ name: 'app_user_teacher_profile', params: { username }, query: { from: 'profile' } }"
+          :to="{ ...SERVICE_KINDS[service.kind].page(username), query: { from: 'profile' } }"
           class="flex-1 min-w-0 flex items-center gap-3 p-2 rounded-lg bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
         >
-          <span class="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-amber-500/15 text-amber-600 dark:text-amber-400" aria-hidden="true">
-            <i class="pi pi-graduation-cap" />
+          <span
+            class="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center"
+            :class="SERVICE_KINDS[service.kind].iconClass"
+            aria-hidden="true"
+          >
+            <i :class="SERVICE_KINDS[service.kind].icon" />
           </span>
           <span class="min-w-0 flex-1">
-            <span class="block text-sm font-semibold text-surface-900 dark:text-surface-0">{{ teacherTitle }}</span>
-            <span v-if="teacherDetails" class="block text-xs text-surface-500 dark:text-surface-400">{{ teacherDetails }}</span>
+            <span class="flex items-center gap-2 min-w-0">
+              <span class="text-sm font-semibold text-surface-900 dark:text-surface-0 truncate">{{ service.title }}</span>
+              <Tag v-if="service.isDraft" :value="t('profile.services.status.draft')" severity="warn" class="shrink-0" />
+            </span>
+            <span v-if="service.details" class="block text-xs text-surface-500 dark:text-surface-400">
+              {{ service.details }}
+            </span>
           </span>
           <i class="pi pi-chevron-right text-xs text-surface-400" aria-hidden="true" />
         </router-link>
-        <!-- The lessons page is where its owner edits it. -->
+        <!-- Every service is edited, published and ordered in « Mes services ». -->
         <Button
           v-if="isOwner"
           as="router-link"
-          :to="{ name: 'app_user_teacher_profile', params: { username } }"
+          :to="{ name: 'app_user_services' }"
           icon="pi pi-pencil"
           rounded
           size="small"
-          :aria-label="t('profile.owner.edit.teacher')"
-          :title="t('profile.owner.edit.teacher')"
+          :aria-label="t('profile.owner.edit.services')"
+          :title="t('profile.owner.edit.services')"
         />
       </li>
-      <li v-else-if="isOwner">
+      <li v-if="isOwner && hasKindsToAdd">
         <Button
-          :label="t('profile.public.create_teacher_profile')"
-          icon="pi pi-graduation-cap"
+          :label="t('profile.public.add_service')"
+          icon="pi pi-plus"
           severity="secondary"
           outlined
           size="small"
           class="w-full"
-          @click="emit('create-teacher')"
+          @click="emit('add-service')"
         />
       </li>
     </ul>
@@ -96,9 +106,17 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Tag from 'primevue/tag'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { musicianActivity, teacherActivity } from '../../../utils/profileActivities.js'
+import { SERVICE_KINDS } from '../../../constants/serviceKinds.js'
+import { kindsToAdd, serviceName } from '../../../utils/myServices.js'
+import {
+  musicianActivity,
+  serviceCards,
+  servicePriceText,
+  teacherActivity
+} from '../../../utils/profileActivities.js'
 import { OWNER_CARD_CLASS } from '../../../utils/profileOwner.js'
 import { formatLessonPrice } from '../../../utils/teacherPage.js'
 
@@ -108,12 +126,23 @@ const props = defineProps({
   isOwner: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['create-musician', 'create-teacher', 'edit-musician'])
+const emit = defineEmits(['create-musician', 'add-service', 'edit-musician'])
 const { t, locale } = useI18n()
 
 const username = computed(() => props.profile.username)
 const musician = computed(() => musicianActivity(props.profile.musician))
+// Only a teaching service online has these: what is taught, and the trial.
 const teacher = computed(() => teacherActivity(props.profile.teacher))
+const services = computed(() =>
+  serviceCards(props.profile.services, props.isOwner).map((card) => ({
+    ...card,
+    title: serviceTitle(card),
+    details: serviceDetails(card)
+  }))
+)
+const hasKindsToAdd = computed(
+  () => kindsToAdd(Object.keys(SERVICE_KINDS), props.profile.services ?? []).length > 0
+)
 
 const teacherTitle = computed(() => {
   const names = teacher.value.instrumentNames.map((name) => name.toLocaleLowerCase(locale.value))
@@ -124,14 +153,20 @@ const teacherTitle = computed(() => {
   return title.charAt(0).toLocaleUpperCase(locale.value) + title.slice(1)
 })
 
-const teacherDetails = computed(() => {
-  const { fromPrice, trial, trialPrice } = teacher.value
-  const parts = []
-  if (fromPrice !== null)
-    parts.push(t('profile.public.activities.from_price', { price: formatLessonPrice(fromPrice) }))
+/** Its own headline first; teaching online still reads « Prof de guitare » without one. */
+function serviceTitle(card) {
+  if (!card.headline && card.kind === 'teaching' && teacher.value) return teacherTitle.value
+  return serviceName(card, t)
+}
+
+// `teacher` is only there for the teaching service online, the one card it adds its trial to.
+function serviceDetails(card) {
+  const parts = [servicePriceText(card, t)].filter(Boolean)
+  if (card.kind !== 'teaching' || !teacher.value) return parts.join(', ')
+  const { trial, trialPrice } = teacher.value
   if (trial === 'free') parts.push(t('profile.public.activities.trial_free'))
   if (trial === 'paid')
     parts.push(t('profile.public.activities.trial_paid', { price: formatLessonPrice(trialPrice) }))
   return parts.join(', ')
-})
+}
 </script>

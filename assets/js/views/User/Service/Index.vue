@@ -14,20 +14,42 @@
     </div>
 
     <template v-else>
-      <ul v-if="services.length" class="m-0 p-0 list-none flex flex-col gap-4">
+      <!-- The order is the one the profile shows them in (#1415). -->
+      <p v-if="canReorder" class="m-0 -mb-2 text-sm text-surface-600 dark:text-surface-400">
+        {{ t('profile.services.reorder_hint') }}
+      </p>
+      <VueDraggable
+        v-if="services.length"
+        v-model="services"
+        tag="ul"
+        handle=".service-drag-handle"
+        :animation="150"
+        :disabled="!canReorder || isReordering"
+        ghost-class="opacity-30"
+        class="m-0 p-0 list-none flex flex-col gap-4"
+        @end="handleDragEnd"
+      >
         <li
           v-for="service in services"
           :key="service.id"
           class="flex flex-col md:flex-row md:items-center gap-4 rounded-xl bg-surface-0 dark:bg-surface-900 shadow-sm p-4 md:p-6"
         >
           <div class="flex items-start gap-4 flex-1 min-w-0">
+            <!-- Drag is not an accessible reorder: the « Plus d'actions » menu moves a service too. -->
+            <span
+              v-if="canReorder"
+              class="service-drag-handle self-center cursor-grab -ml-1 px-1 text-surface-500 dark:text-surface-400"
+              aria-hidden="true"
+            >
+              <i class="pi pi-bars" />
+            </span>
             <span :class="[ICON_CLASS, SERVICE_KINDS[service.kind].iconClass]">
               <i :class="[SERVICE_KINDS[service.kind].icon, 'text-lg']" aria-hidden="true" />
             </span>
             <div class="flex-1 min-w-0 flex flex-col gap-2">
               <div class="flex flex-wrap items-center gap-2">
                 <h2 class="m-0 text-base font-semibold text-surface-900 dark:text-surface-0 break-words">
-                  {{ service.headline || t(SERVICE_KINDS[service.kind].labelKey) }}
+                  {{ serviceName(service, t) }}
                 </h2>
                 <Tag
                   :value="service.status === 'published' ? t('profile.services.status.published') : t('profile.services.status.draft')"
@@ -81,7 +103,8 @@
             />
           </div>
         </li>
-      </ul>
+      </VueDraggable>
+      <p class="sr-only" aria-live="polite">{{ announcement }}</p>
       <Menu ref="menuRef" :model="menuItems" popup />
 
       <section v-if="addableKinds.length" class="flex flex-col gap-4" aria-labelledby="services-add-title">
@@ -136,6 +159,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
 import servicesApi from '../../../api/user/services.js'
 import EditSoundEngineeringDialog from '../../../components/Service/SoundEngineering/EditSoundEngineeringDialog.vue'
@@ -143,12 +167,13 @@ import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProf
 import { SERVICE_KINDS, SERVICE_PART_KEYS } from '../../../constants/serviceKinds.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
-import { kindsToAdd, serviceStage } from '../../../utils/myServices.js'
+import { movedIds, orderedBy } from '../../../utils/listOrder.js'
+import { kindsToAdd, serviceName, serviceStage } from '../../../utils/myServices.js'
 
 /**
- * « Mes services » (#1406): the services a member offers, how complete each one is and what it needs before it can
- * be published, and one card per kind they do not offer yet. Teaching is edited in the teacher form, each other kind
- * in its own (#683, #1410).
+ * « Mes services » (#1406): the services a member offers, in the order their profile shows them (#1415), how complete
+ * each one is and what it needs before it can be published, and one card per kind they do not offer yet. Teaching is
+ * edited in the teacher form, each other kind in its own (#683, #1410).
  */
 const { t, locale } = useI18n()
 useTitle(() => t('profile.services.page_title'))
@@ -168,13 +193,36 @@ const showSoundEngineeringForm = ref(false)
 const soundEngineeringId = ref(null)
 const menuRef = ref(null)
 const menuService = ref(null)
+const isReordering = ref(false)
+const announcement = ref('')
+/** The order the server holds, which a drag is compared with and a refused order goes back to. */
+const savedIds = ref([])
 
 const username = computed(() => userSecurityStore.user?.username)
 const addableKinds = computed(() => kindsToAdd(Object.keys(SERVICE_KINDS), services.value))
+const serviceIds = computed(() => services.value.map((item) => item.id))
+const canReorder = computed(() => services.value.length > 1)
 const menuItems = computed(() => {
   const service = menuService.value
   if (!service) return []
+  const ids = serviceIds.value
   return [
+    ...(canReorder.value
+      ? [
+          {
+            label: t('profile.services.move_up'),
+            icon: 'pi pi-arrow-up',
+            disabled: isReordering.value || !movedIds(ids, service.id, -1),
+            command: () => move(service, -1)
+          },
+          {
+            label: t('profile.services.move_down'),
+            icon: 'pi pi-arrow-down',
+            disabled: isReordering.value || !movedIds(ids, service.id, 1),
+            command: () => move(service, 1)
+          }
+        ]
+      : []),
     ...(service.status === 'published'
       ? [
           {
@@ -212,6 +260,7 @@ function cardHint(service) {
 async function loadServices() {
   try {
     services.value = await servicesApi.getMyServices()
+    savedIds.value = serviceIds.value
   } catch {
     toast.add({ severity: 'error', summary: t('profile.services.load_error'), life: 5000 })
   }
@@ -226,7 +275,9 @@ async function add(kind) {
   addingKind.value = kind
   try {
     const added = await servicesApi.addService(kind)
+    // Last on the server too.
     services.value = [...services.value, added]
+    savedIds.value = serviceIds.value
     await openForm(added)
   } catch (error) {
     showError('profile.services.add_error', error)
@@ -289,6 +340,35 @@ function unpublish(service) {
   )
 }
 
+/** The new order is shown at once, and put back when the server refuses it. */
+async function saveOrder(ids) {
+  isReordering.value = true
+  try {
+    await servicesApi.reorderServices(ids)
+    savedIds.value = ids
+  } catch (error) {
+    services.value = orderedBy(services.value, savedIds.value)
+    showError('profile.services.reorder_error', error)
+  } finally {
+    isReordering.value = false
+  }
+}
+
+function handleDragEnd() {
+  if (serviceIds.value.join() !== savedIds.value.join()) saveOrder(serviceIds.value)
+}
+
+function move(service, step) {
+  const ids = movedIds(serviceIds.value, service.id, step)
+  if (!ids) return
+  services.value = orderedBy(services.value, ids)
+  announcement.value = t('profile.services.moved', {
+    name: serviceName(service, t),
+    position: ids.indexOf(service.id) + 1
+  })
+  return saveOrder(ids)
+}
+
 function openMenu(event, service) {
   menuService.value = service
   menuRef.value.toggle(event)
@@ -313,6 +393,7 @@ async function deleteService(service) {
   try {
     await servicesApi.deleteService(service.id)
     services.value = services.value.filter((item) => item.id !== service.id)
+    savedIds.value = serviceIds.value
     teacherProfileStore.clear()
     toast.add({ severity: 'success', summary: t('profile.services.deleted'), life: 5000 })
   } catch (error) {

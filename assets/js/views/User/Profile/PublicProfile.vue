@@ -343,7 +343,7 @@ const activitiesEvents = {
     showCreateMusicianProfileModal.value = true
   },
   // Every service is added in « Mes services », where it starts as a draft (#1406).
-  'create-teacher': () => router.push({ name: 'app_user_services' })
+  'add-service': () => router.push({ name: 'app_user_services' })
 }
 const instrumentsProps = computed(() => ({
   instruments: profile.value.musician?.instruments ?? [],

@@ -12,10 +12,10 @@ use App\Service\Message\ChatMediaPreparer;
 use App\Service\Musician\MediaMetadataFetcher;
 use App\Service\Musician\MediaUrlParser;
 use App\Service\Musician\MediaUrlParser\ParsedMediaUrl;
+use App\Service\Service\PositionOrder;
 use App\Service\Service\ServiceWriter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Vich\UploaderBundle\Handler\UploadHandlerInterface;
 
 /** Writes a service's « Réalisations » and their images (#1407). VichUploader deletes a stored image with its row. */
@@ -59,7 +59,7 @@ readonly class ServiceWorkProcedure
     /** @param list<string> $ids */
     public function reorder(Service $service, array $ids): void
     {
-        $this->applyOrder($service->works->toArray(), $ids);
+        PositionOrder::apply($service->works->toArray(), $ids);
         $this->entityManager->flush();
     }
 
@@ -101,7 +101,7 @@ readonly class ServiceWorkProcedure
     /** @param list<string> $ids */
     public function reorderImages(ServiceWork $work, array $ids): void
     {
-        $this->applyOrder($work->images->toArray(), $ids);
+        PositionOrder::apply($work->images->toArray(), $ids);
         $this->entityManager->flush();
     }
 
@@ -139,29 +139,5 @@ readonly class ServiceWorkProcedure
     private function nextPosition(array $items): int
     {
         return $items === [] ? 0 : max(array_map(static fn (ServiceWork|ServiceWorkImage $item): int => $item->position, $items)) + 1;
-    }
-
-    /**
-     * Every id, each once: an order missing one, or naming one twice, would leave positions nobody chose.
-     *
-     * @param array<ServiceWork|ServiceWorkImage> $items
-     * @param list<string>                        $ids
-     */
-    private function applyOrder(array $items, array $ids): void
-    {
-        $byId = [];
-        foreach ($items as $item) {
-            $byId[(string) $item->id] = $item;
-        }
-        $sorted = $ids;
-        sort($sorted);
-        $known = array_map(strval(...), array_keys($byId));
-        sort($known);
-        if ($sorted !== $known) {
-            throw new UnprocessableEntityHttpException('service.work.order_invalid');
-        }
-        foreach ($ids as $position => $id) {
-            $byId[$id]->position = $position;
-        }
     }
 }

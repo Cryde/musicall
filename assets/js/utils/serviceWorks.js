@@ -50,9 +50,3 @@ export function workLinkDomain(url) {
     return null
   }
 }
-
-/** The items reordered as `ids` says, for the screen to follow the order it just sent. */
-export function orderedBy(items, ids) {
-  const byId = new Map(items.map((item) => [item.id, item]))
-  return ids.map((id) => byId.get(id)).filter(Boolean)
-}

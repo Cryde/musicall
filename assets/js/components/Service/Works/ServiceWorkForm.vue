@@ -63,10 +63,9 @@ import { useToast } from 'primevue/usetoast'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import serviceWorkApi from '../../../api/service/serviceWork.js'
-import { movedIds } from '../../../utils/riderWorkspace.js'
+import { movedIds, orderedBy } from '../../../utils/listOrder.js'
 import {
   MAX_WORK_IMAGES,
-  orderedBy,
   WORK_IMAGE_ACCEPT,
   workForm,
   workPayload

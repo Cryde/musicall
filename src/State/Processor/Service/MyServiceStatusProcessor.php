@@ -12,6 +12,7 @@ use App\Enum\Service\ServiceStatus;
 use App\Security\Service\ServiceOwnerChecker;
 use App\Service\Builder\Service\MyServiceBuilder;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -31,6 +32,7 @@ readonly class MyServiceStatusProcessor implements ProcessorInterface
         private ServiceOwnerChecker $ownerChecker,
         private EntityManagerInterface $entityManager,
         private MyServiceBuilder $builder,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -47,7 +49,11 @@ readonly class MyServiceStatusProcessor implements ProcessorInterface
         if ($target === ServiceStatus::Published && !$service->isPublished() && $service->missingToPublish() !== []) {
             throw new UnprocessableEntityHttpException('service.publish.incomplete');
         }
-        $service->status = $target;
+        if ($target === ServiceStatus::Published) {
+            $service->publish($this->clock->now());
+        } else {
+            $service->status = $target;
+        }
         $this->entityManager->flush();
 
         return $this->builder->build($service);

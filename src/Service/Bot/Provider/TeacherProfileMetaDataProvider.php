@@ -109,7 +109,7 @@ readonly class TeacherProfileMetaDataProvider implements PageMetaDataProviderInt
             '@context' => 'https://schema.org',
             '@type' => 'Service',
             'serviceType' => $this->translator->trans('meta.teacher.service', ['instruments' => implode(', ', $instruments)]),
-            'url' => $this->profileMeta->url('/u/' . $teacherProfile->user->username . '/teacher'),
+            'url' => $this->profileMeta->url($teacherProfile->kind->pagePath($teacherProfile->user->username)),
             'description' => $teacherProfile->headline ?: null,
             'provider' => $this->profileMeta->person($teacherProfile->user),
             'areaServed' => $this->profileMeta->areaServed($teacherProfile, $this->translator->trans('meta.teacher.online')),

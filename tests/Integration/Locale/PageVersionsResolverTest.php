@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Locale;
 
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Enum\Service\ServiceKind;
 use App\Locale\LocalizedPath;
 use App\Locale\PageVersions;
 use App\Locale\PageVersionsResolver;
@@ -92,6 +93,15 @@ class PageVersionsResolverTest extends KernelTestCase
     public function test_a_page_without_content_language_has_a_version_in_every_locale(string $path, string $locale, array $paths): void
     {
         $this->assertVersions($locale, $paths, $this->resolve($path));
+    }
+
+    /** ServiceKind::pagePath() and the resolver's pattern name the same segments (#1415). */
+    public function test_every_service_page_has_a_version_in_every_locale(): void
+    {
+        foreach (ServiceKind::cases() as $kind) {
+            $path = $kind->pagePath('jeanne');
+            $this->assertVersions('fr', ['fr' => $path, 'en' => '/en' . $path], $this->resolve($path));
+        }
     }
 
     public function test_an_english_path_to_a_page_without_prefix_has_no_versions(): void

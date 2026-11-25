@@ -102,7 +102,7 @@ readonly class SoundEngineerMetaDataProvider implements PageMetaDataProviderInte
             '@context' => 'https://schema.org',
             '@type' => 'Service',
             'serviceType' => $this->translator->trans('meta.sound_engineer.service', ['specialities' => $specialities]),
-            'url' => $this->profileMeta->url('/u/' . $service->user->username . '/' . 'sound-engineer'),
+            'url' => $this->profileMeta->url($service->kind->pagePath($service->user->username)),
             'description' => $service->headline ?: null,
             'provider' => $this->profileMeta->person($service->user),
             'areaServed' => $this->profileMeta->areaServed($service, $this->translator->trans('meta.sound_engineer.remote')),

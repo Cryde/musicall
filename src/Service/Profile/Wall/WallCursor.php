@@ -17,7 +17,7 @@ final readonly class WallCursor
      * A publication carries an int id, every other kind a uuid. Anchored with \z: `$` would also take a trailing
      * newline.
      */
-    public const string PATTERN = '/^(?:publication_\d{1,11}_\d{1,18}|(?:post|announce|musician_media|teacher_media)_\d{1,11}_[0-9a-f-]{36})\z/';
+    public const string PATTERN = '/^(?:publication_\d{1,11}_\d{1,18}|(?:post|announce|musician_media|teacher_media|service)_\d{1,11}_[0-9a-f-]{36})\z/';
 
     private function __construct(
         public WallItemKind $kind,

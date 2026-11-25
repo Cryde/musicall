@@ -46,6 +46,7 @@ readonly class PublicProfileBuilder
         private MusicianBandResourceBuilder $bandBuilder,
         private ProfilePostRepository $profilePostRepository,
         private ServiceRepository $serviceRepository,
+        private PublicProfileServiceBuilder $serviceBuilder,
     ) {
     }
 
@@ -90,10 +91,12 @@ readonly class PublicProfileBuilder
         $dto->musicianAnnounces = array_map($this->announceBuilder->build(...), $announces);
 
         $dto->hasMusicianProfile = $user->musicianProfile instanceof MusicianProfile;
-        $teaching = $this->serviceRepository->findPublishedOneByUserAndKind($user, ServiceKind::Teaching);
+        $services = $this->serviceRepository->findForProfile($user, withDrafts: $forOwner);
+        $teaching = array_find($services, static fn (Service $service): bool => $service->kind === ServiceKind::Teaching && $service->isPublished());
         $dto->hasTeacherProfile = $teaching instanceof Service;
         $dto->musician = $user->musicianProfile instanceof MusicianProfile ? $this->musician($user->musicianProfile) : null;
         $dto->teacher = $teaching instanceof Service ? $this->teacher($teaching) : null;
+        $dto->services = array_map($this->serviceBuilder->build(...), $services);
 
         return $dto;
     }

@@ -1,3 +1,5 @@
+import { serviceName } from './myServices.js'
+
 /** Mirrors ProfilePostCreate on the server (#1316). */
 export const MAX_POST_PHOTOS = 4
 export const MAX_POST_LENGTH = 2000
@@ -36,9 +38,9 @@ export function postPayload(draft) {
   return form
 }
 
-/** The payload a wall line carries: its post, announce, publication or media. */
+/** The payload a wall line carries: its post, announce, publication, media or service. */
 function payloadOf(item) {
-  return item.post ?? item.announce ?? item.publication ?? item.media
+  return item.post ?? item.announce ?? item.publication ?? item.media ?? item.service
 }
 
 /** A key unique across the wall: ids only stay unique within one kind of line. */
@@ -80,6 +82,12 @@ export const WALL_FILTERS = [
     type: 'course',
     labelKey: 'profile.wall.filter.courses',
     emptyKey: 'profile.wall.empty.courses'
+  },
+  {
+    query: 'services',
+    type: 'service',
+    labelKey: 'profile.wall.filter.services',
+    emptyKey: 'profile.wall.empty.services'
   }
 ]
 
@@ -123,12 +131,19 @@ const ACTIVITY_SENTENCE_KEYS = {
   announce: 'profile.wall.activity.announce',
   publication: 'profile.wall.activity.publication',
   course: 'profile.wall.activity.course',
-  media: 'profile.wall.activity.media'
+  media: 'profile.wall.activity.media',
+  service: 'profile.wall.activity.service'
 }
 
 /** The sentence an activity line opens with, as a full i18n key. */
 export function activitySentenceKey(item) {
   return ACTIVITY_SENTENCE_KEYS[item.type] ?? null
+}
+
+/** That sentence, in words: a service line names its service (#1415). `t` is the page's. */
+export function activitySentence(item, t) {
+  const key = activitySentenceKey(item)
+  return item.type === 'service' ? t(key, { name: serviceName(item.service, t) }) : t(key)
 }
 
 const PHOTO_GRIDS = {

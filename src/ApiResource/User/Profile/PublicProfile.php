@@ -60,4 +60,12 @@ class PublicProfile
 
     #[ApiProperty(genId: false)]
     public ?PublicProfileTeacher $teacher = null;
+
+    /**
+     * Every service online, teaching included, in the member's order (#1415). Its owner also gets their drafts.
+     *
+     * @var PublicProfileService[]
+     */
+    #[ApiProperty(genId: false)]
+    public array $services = [];
 }
