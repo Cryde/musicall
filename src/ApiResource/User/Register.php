@@ -40,4 +40,14 @@ class Register
     public mixed $utmMedium = null;
     public mixed $utmCampaign = null;
     public mixed $referrerHost = null;
+
+    // The emails chosen in the web sign-up box (#1445). One left out keeps its default, and the app sends none.
+    public ?bool $marketing = null;
+    public ?bool $siteNews = null;
+    public ?bool $activityReminder = null;
+    public ?bool $weeklyRecap = null;
+    public ?bool $messageReceived = null;
+    public ?bool $publicationComment = null;
+    public ?bool $forumReply = null;
+    public ?bool $bandAgendaReminder = null;
 }
