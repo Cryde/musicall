@@ -233,9 +233,15 @@ class Service implements ViewableInterface
     }
 
     /** The cheapest offer in the unit, or the cheapest of any unit without one: « 80 € le titre mixé » (#1410). */
-    public function headlineOffer(OfferUnit $unit): ?ServiceOffer
+    public function headlineOffer(?OfferUnit $unit): ?ServiceOffer
     {
-        return $this->cheapestIn($unit) ?? $this->offersByPrice()[0] ?? null;
+        return ($unit instanceof OfferUnit ? $this->cheapestIn($unit) : null) ?? $this->offersByPrice()[0] ?? null;
+    }
+
+    /** The price its page and card lead with, in the unit its kind leads with. */
+    public function leadOffer(): ?ServiceOffer
+    {
+        return $this->headlineOffer($this->kind->leadOfferUnit());
     }
 
     /** The cheapest offer in the unit, as entered: a package is never compared with a lesson. */
@@ -340,12 +346,6 @@ class Service implements ViewableInterface
     {
         $this->status = ServiceStatus::Published;
         $this->firstPublicationDatetime ??= $now;
-    }
-
-    /** The offer its price is quoted from where one price stands for it, on the profile and the wall (#1415). */
-    public function lowestOffer(): ?ServiceOffer
-    {
-        return $this->headlineOffer($this->kind->headlineUnit());
     }
 
     /** @return list<ServicePart> what its kind needs before it can be published and it does not have yet */

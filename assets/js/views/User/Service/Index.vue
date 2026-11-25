@@ -80,7 +80,7 @@
             />
             <Button
               as="router-link"
-              :to="SERVICE_KINDS[service.kind].page(username)"
+              :to="{ name: SERVICE_KINDS[service.kind].pageRoute, params: { username } }"
               :label="t('profile.services.view')"
               icon="pi pi-external-link"
               severity="secondary"
@@ -142,9 +142,18 @@
       @saved="handleSaved"
     />
     <EditSoundEngineeringDialog
-      v-if="soundEngineeringId"
-      v-model:visible="showSoundEngineeringForm"
-      :service-id="soundEngineeringId"
+      v-if="editing?.kind === 'sound_engineering'"
+      v-model:visible="showKindForm"
+      :service-id="editing.id"
+      @saved="handleSaved"
+      @changed="loadServices"
+    />
+    <EditVisualServiceDialog
+      v-if="editing && VISUAL_SERVICE_KINDS[editing.kind]"
+      :key="editing.kind"
+      v-model:visible="showKindForm"
+      :kind="editing.kind"
+      :service-id="editing.id"
       @saved="handleSaved"
       @changed="loadServices"
     />
@@ -163,8 +172,10 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { useI18n } from 'vue-i18n'
 import servicesApi from '../../../api/user/services.js'
 import EditSoundEngineeringDialog from '../../../components/Service/SoundEngineering/EditSoundEngineeringDialog.vue'
+import EditVisualServiceDialog from '../../../components/Service/Visual/EditVisualServiceDialog.vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import { SERVICE_KINDS, SERVICE_PART_KEYS } from '../../../constants/serviceKinds.js'
+import { VISUAL_SERVICE_KINDS } from '../../../constants/visualServices.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { movedIds, orderedBy } from '../../../utils/listOrder.js'
@@ -189,8 +200,9 @@ const isLoading = ref(true)
 const addingKind = ref(null)
 const busyServiceId = ref(null)
 const showTeachingForm = ref(false)
-const showSoundEngineeringForm = ref(false)
-const soundEngineeringId = ref(null)
+/** The service whose kind has a form of its own (every kind but teaching), and whether that form is open. */
+const editing = ref(null)
+const showKindForm = ref(false)
 const menuRef = ref(null)
 const menuService = ref(null)
 const isReordering = ref(false)
@@ -287,12 +299,9 @@ async function add(kind) {
 }
 
 function openForm(service) {
-  if (service.kind === 'sound_engineering') {
-    soundEngineeringId.value = service.id
-    showSoundEngineeringForm.value = true
-    return
-  }
-  return openTeachingForm()
+  if (service.kind === 'teaching') return openTeachingForm()
+  editing.value = { id: service.id, kind: service.kind }
+  showKindForm.value = true
 }
 
 async function openTeachingForm() {

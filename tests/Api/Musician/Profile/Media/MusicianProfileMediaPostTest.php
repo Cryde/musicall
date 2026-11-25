@@ -296,6 +296,47 @@ class MusicianProfileMediaPostTest extends ApiTestCase
         ]);
     }
 
+    /** Installed app builds read a musician's media and do not know Vimeo (#1411). */
+    public function test_create_media_refuses_vimeo(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'vimeouser',
+            'email' => 'vimeouser@test.com',
+        ]);
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+        ]);
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/user/musician-profile/media',
+            ['url' => 'https://vimeo.com/76979871'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'url',
+                    'message' => 'URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+                    'code' => 'music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+                ],
+            ],
+            'detail' => 'url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'description' => 'url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'type' => '/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            'title' => 'An error occurred',
+        ]);
+    }
+
     public function test_create_media_max_limit_reached(): void
     {
         $user = UserFactory::new()->asBaseUser()->create([

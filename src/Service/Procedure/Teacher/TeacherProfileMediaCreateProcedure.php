@@ -8,26 +8,23 @@ use App\Entity\Service\Service;
 use App\Entity\Service\ServiceMedia;
 use App\Service\Builder\Teacher\TeacherProfileMediaBuilder;
 use App\Service\Musician\MediaMetadataFetcher;
-use App\Service\Musician\MediaUrlParser;
+use App\Validator\Service\ServiceMediaUrlChecker;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class TeacherProfileMediaCreateProcedure
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private MediaUrlParser $mediaUrlParser,
+        private ServiceMediaUrlChecker $mediaUrlChecker,
         private TeacherProfileMediaBuilder $teacherProfileMediaBuilder,
         private MediaMetadataFetcher $metadataFetcher,
     ) {
     }
 
-    /** @param string $url already validated by the SupportedMediaUrl constraint */
+    /** A link its kind does not take is a 422 on `url`. */
     public function handle(string $url, ?string $title, Service $profile): ServiceMedia
     {
-        $parsed = $this->mediaUrlParser->parse($url);
-        if (!$parsed instanceof \App\Service\Musician\MediaUrlParser\ParsedMediaUrl) {
-            throw new \RuntimeException('Invalid media URL');
-        }
+        $parsed = $this->mediaUrlChecker->check($profile, $url, 'url');
 
         // Fetch metadata from platform (title, thumbnail)
         $metadata = $this->metadataFetcher->fetch($parsed->platform, $url, $parsed->embedId);

@@ -113,4 +113,17 @@ class MediaUrlParserTest extends TestCase
 
         $this->assertSame($expectedParsedUrl, $result);
     }
+
+    /** A platform added later is taken only where it is asked for (#1411): installed app builds know the first three. */
+    public function test_parse_returns_null_for_a_platform_not_asked_for(): void
+    {
+        $vimeo = new ParsedMediaUrl(MediaPlatform::VIMEO, '76979871');
+        $vimeoParser = $this->createStub(MediaUrlParserInterface::class);
+        $vimeoParser->method('supports')->willReturn(true);
+        $vimeoParser->method('parse')->willReturn($vimeo);
+        $parser = new MediaUrlParser([$vimeoParser]);
+
+        $this->assertNull($parser->parse('https://vimeo.com/76979871'));
+        $this->assertSame($vimeo, $parser->parse('https://vimeo.com/76979871', [...MediaPlatform::READ_BY_APP, MediaPlatform::VIMEO]));
+    }
 }

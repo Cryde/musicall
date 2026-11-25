@@ -148,6 +148,61 @@ class MessageServiceOriginTest extends ApiTestCase
         $this->assertNoMessage();
     }
 
+    /** A photographer is asked what, when and where (#1411). */
+    public function test_a_photography_quote_request_carries_a_date_and_a_city(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $service = ServiceFactory::new(['user' => $recipient])->photography()->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour, vous êtes libre pour notre concert ?',
+            'serviceId' => $service->id,
+            'quote' => ['budget' => '100_to_300', 'city' => 'Lyon', 'date' => '2026-12-12', 'need' => 'concert'],
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = $this->onlyMessage();
+        $this->assertJsonEquals($this->sentMessage($message, $sender, 'Bonjour, vous êtes libre pour notre concert ?', $this->serviceOrigin($service, [
+            'need' => 'concert',
+            'date' => '2026-12-12',
+            'city' => 'Lyon',
+            'budget' => '100_to_300',
+        ])));
+    }
+
+    /** @return iterable<string, array{ServiceKind, array<mixed>, string, string, string}> */
+    public static function invalidEventQuoteProvider(): iterable
+    {
+        yield 'a videographer\'s need asked of a photographer' => [ServiceKind::Photography, ['need' => 'clip'], 'quote[need]', 'Cette valeur doit être l\'un des choix proposés.', '8e179f1b-97aa-4560-a02f-2a8b42e49df7'];
+        yield 'a photographer\'s need asked of a videographer' => [ServiceKind::Video, ['need' => 'promo'], 'quote[need]', 'Cette valeur doit être l\'un des choix proposés.', '8e179f1b-97aa-4560-a02f-2a8b42e49df7'];
+        yield 'a sound engineer\'s question' => [ServiceKind::Video, ['need' => 'clip', 'tracks' => 3], 'quote[tracks]', 'Ce champ n\'a pas été prévu.', '7703c766-b5d5-4cef-ace7-ae0dd82304e9'];
+        yield 'a day that does not exist' => [ServiceKind::Video, ['need' => 'clip', 'date' => '2026-02-31'], 'quote[date]', 'Cette valeur n\'est pas une date valide.', '3c184ce5-b31d-4de7-8b76-326da7b2be93'];
+        yield 'a city of spaces' => [ServiceKind::Photography, ['need' => 'concert', 'city' => '   '], 'quote[city]', 'Cette valeur ne doit pas être vide.', 'c1051bb4-d103-4f74-8988-acbcafc7fdc3'];
+        yield 'a city too long' => [ServiceKind::Photography, ['need' => 'concert', 'city' => str_repeat('a', 101)], 'quote[city]', 'Cette chaîne est trop longue. Elle doit contenir au maximum 100 caractères.', 'd94b19cc-114f-4f44-9cc4-4138e80a87b9'];
+    }
+
+    /** @param array<mixed> $quote */
+    #[DataProvider('invalidEventQuoteProvider')]
+    public function test_an_invalid_photography_or_video_answer_is_refused(ServiceKind $kind, array $quote, string $path, string $message, string $code): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $service = ServiceFactory::new(['user' => $recipient])->ofKind($kind)->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'serviceId' => $service->id,
+            'quote' => $quote,
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation($path, $message, $code));
+        $this->assertNoMessage();
+    }
+
     public function test_a_quote_without_a_service_is_refused(): void
     {
         [$sender, $recipient] = $this->pair();
@@ -460,7 +515,7 @@ class MessageServiceOriginTest extends ApiTestCase
             'location_name' => null,
             'lesson_request' => null,
             'service_id' => (string) $service->id,
-            'service_kind' => 'sound_engineering',
+            'service_kind' => $service->kind->value,
             'quote' => $quote,
         ];
     }

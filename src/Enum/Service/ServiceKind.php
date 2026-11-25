@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Enum\Service;
 
 use App\Enum\Message\ContactOriginType;
+use App\Enum\Musician\MediaPlatform;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -17,6 +18,8 @@ enum ServiceKind: string implements TranslatableInterface
 {
     case Teaching = 'teaching';
     case SoundEngineering = 'sound_engineering';
+    case Photography = 'photography';
+    case Video = 'video';
 
     /** The budget « Demander un devis » offers whatever the kind (#1408), in euros. */
     private const array QUOTE_BUDGETS = ['under_100', '100_to_300', '300_to_1000', 'over_1000'];
@@ -32,7 +35,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => 'teacher_profile',
-            self::SoundEngineering => 'service',
+            self::SoundEngineering, self::Photography, self::Video => 'service',
         };
     }
 
@@ -41,7 +44,48 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => ContactOriginType::TeacherProfile,
-            self::SoundEngineering => ContactOriginType::Service,
+            self::SoundEngineering, self::Photography, self::Video => ContactOriginType::Service,
+        };
+    }
+
+    /** @return list<ServiceSpeciality> its specialities, its main search filter */
+    public function specialities(): array
+    {
+        return match ($this) {
+            self::Teaching => [],
+            self::SoundEngineering => SoundEngineeringSpeciality::cases(),
+            self::Photography => PhotographySpeciality::cases(),
+            self::Video => VideoSpeciality::cases(),
+        };
+    }
+
+    public function speciality(string $value): ?ServiceSpeciality
+    {
+        return array_find($this->specialities(), static fn (ServiceSpeciality $speciality): bool => $speciality->value === $value);
+    }
+
+    /**
+     * Whether it may be given remotely: its form offers it and its search card says so. A photographer or a
+     * videographer comes to the client or works in their studio (#1411).
+     */
+    public function worksRemotely(): bool
+    {
+        return match ($this) {
+            self::Teaching, self::SoundEngineering => true,
+            self::Photography, self::Video => false,
+        };
+    }
+
+    /**
+     * The unit the price its page and card lead with is read in: the cheapest offer in it, or the cheapest of any unit
+     * without one (Service::headlineOffer()). Null where no unit says it better than another.
+     */
+    public function leadOfferUnit(): ?OfferUnit
+    {
+        return match ($this) {
+            self::Teaching => OfferUnit::Lesson,
+            self::SoundEngineering => OfferUnit::Track,
+            self::Photography, self::Video => null,
         };
     }
 
@@ -51,15 +95,8 @@ enum ServiceKind: string implements TranslatableInterface
         return match ($this) {
             self::Teaching => [OfferUnit::Lesson, OfferUnit::Package],
             self::SoundEngineering => [OfferUnit::Track, OfferUnit::Hour, OfferUnit::Day, OfferUnit::Flat],
-        };
-    }
-
-    /** The unit its lowest price is quoted in: « dès 25 € les 30 min », « dès 80 € le titre » (#1415). */
-    public function headlineUnit(): OfferUnit
-    {
-        return match ($this) {
-            self::Teaching => OfferUnit::Lesson,
-            self::SoundEngineering => OfferUnit::Track,
+            // No price per photo (#1411).
+            self::Photography, self::Video => [OfferUnit::Hour, OfferUnit::Day, OfferUnit::Event, OfferUnit::Flat],
         };
     }
 
@@ -72,6 +109,8 @@ enum ServiceKind: string implements TranslatableInterface
         return sprintf('/u/%s/%s', rawurlencode($username), match ($this) {
             self::Teaching => 'teacher',
             self::SoundEngineering => 'sound-engineer',
+            self::Photography => 'photographer',
+            self::Video => 'videographer',
         });
     }
 
@@ -108,6 +147,17 @@ enum ServiceKind: string implements TranslatableInterface
                 ServicePart::Turnaround,
                 ServicePart::Formats,
             ],
+            // Built around their pictures (#1411): « Réalisations » first.
+            self::Photography, self::Video => [
+                ServicePart::Headline,
+                ServicePart::Description,
+                ServicePart::Specialities,
+                ServicePart::Works,
+                ServicePart::Offers,
+                ServicePart::Places,
+                ServicePart::Styles,
+                ServicePart::Delivery,
+            ],
         };
     }
 
@@ -116,7 +166,7 @@ enum ServiceKind: string implements TranslatableInterface
     {
         return match ($this) {
             self::Teaching => [ServicePart::Headline, ServicePart::Description, ServicePart::Places, ServicePart::Offers],
-            self::SoundEngineering => [ServicePart::Headline, ServicePart::Description, ServicePart::Specialities, ServicePart::Places, ServicePart::Offers],
+            self::SoundEngineering, self::Photography, self::Video => [ServicePart::Headline, ServicePart::Description, ServicePart::Specialities, ServicePart::Places, ServicePart::Offers],
         };
     }
 
@@ -135,6 +185,22 @@ enum ServiceKind: string implements TranslatableInterface
                 'deadline' => new Assert\Optional(new Assert\Sequentially([new Assert\Type('string'), new Assert\Date()])),
                 'budget' => new Assert\Optional([new Assert\Choice(choices: self::QUOTE_BUDGETS)]),
             ]),
+            // What (#1408), a date and a city.
+            self::Photography => self::eventQuote([PhotographySpeciality::Concert, PhotographySpeciality::Promo, PhotographySpeciality::Cover]),
+            self::Video => self::eventQuote([VideoSpeciality::Clip, VideoSpeciality::LiveSession, VideoSpeciality::ConcertFilm]),
+        };
+    }
+
+    /**
+     * What a link on its page may embed: Vimeo only where no installed app build reads it (#1411).
+     *
+     * @return list<MediaPlatform>
+     */
+    public function mediaPlatforms(): array
+    {
+        return match ($this) {
+            self::Teaching, self::SoundEngineering => MediaPlatform::READ_BY_APP,
+            self::Photography, self::Video => [...MediaPlatform::READ_BY_APP, MediaPlatform::VIMEO],
         };
     }
 
@@ -143,6 +209,21 @@ enum ServiceKind: string implements TranslatableInterface
         return $translator->trans(match ($this) {
             self::Teaching => 'service_kind.teaching',
             self::SoundEngineering => 'service_kind.sound_engineering',
+            self::Photography => 'service_kind.photography',
+            self::Video => 'service_kind.video',
         }, [], 'reference', $locale);
+    }
+
+    /** @param list<ServiceSpeciality> $needs */
+    private static function eventQuote(array $needs): Assert\Collection
+    {
+        $choices = array_map(static fn (ServiceSpeciality $need): string|int => $need->value, $needs);
+
+        return new Assert\Collection(fields: [
+            'need' => new Assert\Required(new Assert\Sequentially([new Assert\NotBlank(), new Assert\Choice(choices: $choices)])),
+            'date' => new Assert\Optional(new Assert\Sequentially([new Assert\Type('string'), new Assert\Date()])),
+            'city' => new Assert\Optional(new Assert\Sequentially([new Assert\Type('string'), new Assert\NotBlank(normalizer: 'trim'), new Assert\Length(max: 100)])),
+            'budget' => new Assert\Optional([new Assert\Choice(choices: self::QUOTE_BUDGETS)]),
+        ]);
     }
 }

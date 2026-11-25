@@ -1,6 +1,7 @@
 /** « Ce que je fais » on a member's profile (#1317), kept out of the component so it is tested. */
 
 import { UNIT_KEYS } from '../constants/soundEngineering.js'
+import { VISUAL_UNIT_KEYS } from '../constants/visualServices.js'
 import { formatLessonPrice } from './teacherPage.js'
 
 const AVAILABLE_STATUSES = ['looking_for_band', 'available_for_sessions', 'open_to_collaborations']
@@ -49,9 +50,10 @@ export function serviceCards(services, isOwner) {
     .map(serviceCard)
 }
 
-// What a teaching price buys; the other units say it as the sound engineer page does.
+// What a teaching price buys; the other units say it as the sound engineer and visual pages do.
 const PRICE_UNIT_KEYS = {
   ...UNIT_KEYS,
+  event: VISUAL_UNIT_KEYS.event,
   lesson: 'profile.public.activities.units.lesson',
   package: 'profile.public.activities.units.package'
 }

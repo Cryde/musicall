@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Service;
 
+use App\ApiResource\Service\Edit\MyServiceForm;
 use App\ApiResource\Service\Edit\MyServiceOffer;
 use App\ApiResource\Service\Edit\MyServicePlace;
 use App\Entity\Service\Service;
@@ -12,6 +13,7 @@ use App\Entity\Service\ServicePlace;
 use App\Enum\Service\OfferUnit;
 use App\Enum\Service\ServicePlaceType;
 use App\Repository\Attribute\StyleRepository;
+use DateTimeImmutable;
 
 /** Writes the lists every kind shares, each replaced whole by what the form sent. */
 readonly class ServiceWriter
@@ -26,6 +28,19 @@ readonly class ServiceWriter
         $value = $value !== null ? trim($value) : null;
 
         return $value === '' ? null : $value;
+    }
+
+    /** What every kind's form writes (#1410, #1411), as merged by its PATCH: each kind's writer adds its details. */
+    public function writeForm(Service $service, MyServiceForm $form): void
+    {
+        $service->headline = self::blankToNull($form->headline);
+        $service->description = self::blankToNull($form->description);
+        $service->yearsOfExperience = $form->yearsOfExperience;
+        $service->specialities = array_values($form->specialities);
+        $this->writeStyles($service, $form->styleIds);
+        $this->writePlaces($service, $form->places);
+        $this->writeOffers($service, $form->offers);
+        $service->updateDatetime = new DateTimeImmutable();
     }
 
     /** @param string[] $styleIds an unknown id is skipped */

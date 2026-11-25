@@ -227,6 +227,36 @@ class ProfilePostCreateTest extends ApiTestCase
         ]);
     }
 
+    /** Installed app builds read the wall and do not know Vimeo (#1411). */
+    public function test_a_vimeo_link_is_refused(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', '/api/user/profile-posts', [
+            'media_url' => 'https://vimeo.com/76979871',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'media_url',
+                    'message' => 'URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+                    'code' => 'music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+                ],
+            ],
+            'detail' => 'media_url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'type' => '/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            'title' => 'An error occurred',
+            'description' => 'media_url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+        ]);
+    }
+
     public function test_photos_and_a_link_together_are_refused(): void
     {
         $author = UserFactory::new()->asBaseUser()->create();

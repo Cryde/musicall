@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Factory\Service;
 
+use App\Entity\Service\DeliveryDetails;
 use App\Entity\Service\Service;
 use App\Entity\Service\SoundEngineeringDetails;
 use App\Entity\Service\TeachingDetails;
@@ -33,37 +34,25 @@ final class ServiceFactory extends PersistentObjectFactory
      */
     public function teaching(): self
     {
-        return $this->with(['kind' => ServiceKind::Teaching])
-            ->beforeInstantiate(static function (array $attributes): array {
-                $details = new TeachingDetails();
-                foreach (array_keys(get_object_vars($details)) as $field) {
-                    if (array_key_exists($field, $attributes)) {
-                        $details->{$field} = $attributes[$field];
-                        unset($attributes[$field]);
-                    }
-                }
-                $attributes['details'] = $details->toArray();
-
-                return $attributes;
-            });
+        return $this->ofKind(ServiceKind::Teaching);
     }
 
     /** A sound engineering service (#1410), its details given as SoundEngineeringDetails' own fields, like teaching(). */
     public function soundEngineering(): self
     {
-        return $this->with(['kind' => ServiceKind::SoundEngineering])
-            ->beforeInstantiate(static function (array $attributes): array {
-                $details = new SoundEngineeringDetails();
-                foreach (array_keys(get_object_vars($details)) as $field) {
-                    if (array_key_exists($field, $attributes)) {
-                        $details->{$field} = $attributes[$field];
-                        unset($attributes[$field]);
-                    }
-                }
-                $attributes['details'] = $details->toArray();
+        return $this->ofKind(ServiceKind::SoundEngineering);
+    }
 
-                return $attributes;
-            });
+    /** A photography service (#1411), its details given as DeliveryDetails' own fields, like teaching(). */
+    public function photography(): self
+    {
+        return $this->ofKind(ServiceKind::Photography);
+    }
+
+    /** A video service (#1411), its details given as DeliveryDetails' own fields, like teaching(). */
+    public function video(): self
+    {
+        return $this->ofKind(ServiceKind::Video);
     }
 
     public function withTrial(int $priceInCents): self
@@ -72,6 +61,28 @@ final class ServiceFactory extends PersistentObjectFactory
             'offersTrial' => true,
             'trialPrice' => $priceInCents,
         ]);
+    }
+
+    /** A service of the kind, its details given as its details class's own fields, like teaching(). */
+    public function ofKind(ServiceKind $kind): self
+    {
+        return $this->with(['kind' => $kind])
+            ->beforeInstantiate(static function (array $attributes) use ($kind): array {
+                $details = match ($kind) {
+                    ServiceKind::Teaching => new TeachingDetails(),
+                    ServiceKind::SoundEngineering => new SoundEngineeringDetails(),
+                    ServiceKind::Photography, ServiceKind::Video => new DeliveryDetails(),
+                };
+                foreach (array_keys(get_object_vars($details)) as $field) {
+                    if (array_key_exists($field, $attributes)) {
+                        $details->{$field} = $attributes[$field];
+                        unset($attributes[$field]);
+                    }
+                }
+                $attributes['details'] = $details->toArray();
+
+                return $attributes;
+            });
     }
 
     public static function class(): string

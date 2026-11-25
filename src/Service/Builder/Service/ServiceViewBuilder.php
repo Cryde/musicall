@@ -22,7 +22,7 @@ use App\Enum\Musician\MediaPlatform;
 use App\Enum\Service\BeforeAfterSide;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-/** The parts every kind's page shows the same way (#1410). */
+/** The views of a service every kind shows the same way (#1410): places, offers, sounds, works and the first media. */
 readonly class ServiceViewBuilder
 {
     public function __construct(private UrlGeneratorInterface $urlGenerator)

@@ -515,6 +515,14 @@
       "sound_engineering": {
         "label": "Ingénieur du son",
         "description": "Tu mixes, masterises ou enregistres, au studio, chez le groupe ou à distance."
+      },
+      "photography": {
+        "label": "Photographe",
+        "description": "Tu photographies les concerts, les groupes et les pochettes, au studio ou sur place."
+      },
+      "video": {
+        "label": "Vidéaste",
+        "description": "Tu filmes des clips, des live sessions et des concerts, et tu montes."
       }
     },
     "load_error": "Impossible de charger tes services",
@@ -637,6 +645,7 @@
     "youtube_video": "Vidéo YouTube",
     "spotify_player": "Lecteur Spotify",
     "soundcloud_player": "Lecteur SoundCloud",
+    "vimeo_video": "Vidéo Vimeo",
     "url_label": "Lien vers ta création",
     "url_placeholder": "https://youtube.com/watch?v=... ou soundcloud.com/...",
     "supported_platforms": "Plateformes supportées : YouTube, SoundCloud, Spotify",
@@ -819,6 +828,8 @@
       "tracks": "Combien de titres ?",
       "link": "Un lien pour écouter",
       "deadline": "Pour quand ?",
+      "date": "Pour quelle date ?",
+      "city": "Où ?",
       "budget": "Ton budget"
     },
     "link_hint": "SoundCloud, YouTube, un dossier partagé...",
@@ -826,7 +837,13 @@
       "mixing": "Mixage",
       "mastering": "Mastering",
       "recording": "Enregistrement",
-      "live": "Live"
+      "live": "Live",
+      "concert": "Concert",
+      "promo": "Photo promo",
+      "cover": "Pochette",
+      "clip": "Clip",
+      "live_session": "Live session",
+      "concert_film": "Captation de concert"
     },
     "budget": {
       "under_100": "Moins de 100 €",
@@ -841,6 +858,8 @@
       "tracks": "Nombre de titres : {value}",
       "link": "À écouter : {value}",
       "deadline": "Pour le : {value}",
+      "date": "Date : {value}",
+      "city": "Lieu : {value}",
       "budget": "Budget : {value}"
     }
   },
@@ -1056,28 +1075,10 @@
     },
     "form": {
       "title": "Mon service d'ingénieur du son",
-      "section_service": "Le service",
-      "headline": "Titre",
       "headline_placeholder": "Ta démo mixée comme un disque",
-      "specialities": "Spécialités",
-      "description": "Présentation",
       "description_placeholder": "Comment tu travailles, ce que les groupes t'envoient, ce qu'ils reçoivent",
       "years": "Années de studio",
-      "styles": "Styles",
-      "section_places": "Où",
-      "place_studio": "Dans mon studio",
-      "place_client": "Je me déplace",
       "place_remote": "À distance, les groupes m'envoient leurs pistes",
-      "city": "Ville",
-      "address": "Adresse",
-      "radius": "Distance maximale",
-      "section_offers": "Formules",
-      "offer_unit": "Ce que le prix comprend",
-      "offer_title": "Nom de la formule",
-      "offer_description": "Détail (facultatif)",
-      "offer_price": "Prix",
-      "remove_offer": "Retirer cette formule",
-      "add_offer": "Ajouter une formule",
       "units": {
         "track": "Par titre",
         "hour": "À l'heure",
@@ -1098,31 +1099,19 @@
       "audio_credit": "Crédit (ex. : Mona Lisa Overdrive, « Satellites »)",
       "audio_file": "Fichier audio, {side}",
       "audio_converting": "Conversion en cours...",
-      "remove_media": "Retirer {title}",
-      "media_url": "Lien YouTube, SoundCloud ou Spotify",
-      "add_media": "Ajouter",
-      "save": "Enregistrer"
+      "media_url": "Lien YouTube, SoundCloud ou Spotify"
     }
   },
   "sound_engineer_page": {
-    "not_found_title": "Service introuvable",
     "not_found_help": "Ce membre ne propose pas de service d'ingénieur du son.",
     "kind": "Ingé son",
     "engineers": "Ingés son",
     "title_default": "{name}, ingénieur du son",
-    "with": "avec {name}, {profile}",
-    "see_profile": "voir son profil",
-    "studio_in": "Studio à {city}",
     "remotely": "à distance",
-    "travels": "Se déplace",
-    "travels_up_to": "Jusqu'à {radius} km",
     "remote_detail": "Tu envoies tes pistes",
     "years": "{count} an de studio | {count} ans de studio",
-    "days": "{count} jour | {count} jours",
     "usual_turnaround": "délai moyen",
     "revisions_included": "retouche incluse | retouches incluses",
-    "edit": "Modifier mon service",
-    "ask_quote": "Demander un devis",
     "share_title": "{name}, ingénieur du son sur MusicAll",
     "listen": "Écoute le travail de {name}",
     "before_after": "Avant, après",
@@ -1135,17 +1124,89 @@
     "pause": "Mettre {title} en pause",
     "position": "Position dans {title}",
     "audio_failed": "Ce son ne peut pas être lu.",
-    "offers": "Formules",
-    "how": "Comment je travaille",
     "gear": "Matériel",
-    "media": "Médias",
     "turnaround": "Délai",
     "working_days": "{count} jour ouvré | {count} jours ouvrés",
     "formats": "Formats",
-    "who": "Qui est {name} ?",
     "page_title": "{name}, ingénieur du son - MusicAll",
     "page_title_default": "Ingénieur du son - MusicAll",
     "works": "Ils ont travaillé avec {name}"
+  },
+  "photographer": {
+    "plural": "Photographes",
+    "not_found_help": "Ce membre ne propose pas de service de photographe.",
+    "title_default": "{name}, photographe",
+    "share_title": "{name}, photographe sur MusicAll",
+    "page_title": "{name}, photographe - MusicAll",
+    "page_title_default": "Photographe - MusicAll",
+    "form_title": "Mon service de photographe",
+    "headline_placeholder": "Tes concerts en images",
+    "deliverable_placeholder": "40 photos retouchées",
+    "works_help": "Tes séries et tes projets, {max} au plus : pour qui, quand, avec tes images, un lien et une vidéo si tu veux.",
+    "specialities": {
+      "concert": "Concert",
+      "promo": "Photo promo",
+      "cover": "Pochette",
+      "studio": "Studio",
+      "backstage_tour": "Backstage et tournée"
+    }
+  },
+  "videographer": {
+    "plural": "Vidéastes",
+    "not_found_help": "Ce membre ne propose pas de service de vidéaste.",
+    "title_default": "{name}, vidéaste",
+    "share_title": "{name}, vidéaste sur MusicAll",
+    "page_title": "{name}, vidéaste - MusicAll",
+    "page_title_default": "Vidéaste - MusicAll",
+    "form_title": "Mon service de vidéaste",
+    "headline_placeholder": "Ton clip, de l'idée au montage",
+    "deliverable_placeholder": "Un clip monté de 3 minutes",
+    "works_help": "Tes clips et tes captations, {max} au plus : pour qui, quand, avec la vidéo, un lien et des images si tu veux.",
+    "specialities": {
+      "clip": "Clip",
+      "live_session": "Live session",
+      "concert_film": "Captation de concert",
+      "teaser": "Teaser et réseaux sociaux",
+      "editing": "Montage seul"
+    }
+  },
+  "visual_service": {
+    "units": {
+      "event": "l'événement",
+      "hour": "l'heure",
+      "day": "la journée",
+      "flat": "forfait"
+    },
+    "places": {
+      "at_my_place": "Au studio",
+      "at_client_place": "Se déplace"
+    },
+    "form": {
+      "description_placeholder": "Comment tu travailles, ce que tu livres et à qui",
+      "years": "Années d'expérience",
+      "section_delivery": "Livraison",
+      "deliverable": "Ce que tu livres",
+      "delivery_days": "Délai de livraison",
+      "days_suffix": "jours",
+      "media_url": "Lien YouTube ou Vimeo",
+      "works_media_url": "Vidéo YouTube ou Vimeo",
+      "units": {
+        "event": "À l'événement",
+        "hour": "À l'heure",
+        "day": "À la journée",
+        "flat": "Forfait"
+      }
+    }
+  },
+  "visual_service_page": {
+    "years": "{count} an d'expérience | {count} ans d'expérience",
+    "delivery_time": "délai de livraison",
+    "watch": "Regarde le travail de {name}",
+    "works_gallery": "Réalisations",
+    "works_credits": "Ils ont travaillé avec {name}",
+    "delivery": "Livraison",
+    "delivery_within": "{what} sous {count} jour | {what} sous {count} jours",
+    "delivery_days_only": "Sous {count} jour | Sous {count} jours"
   },
   "service_works": {
     "section": "Réalisations",
@@ -1178,6 +1239,48 @@
     "move_image_after": "Déplacer l'image {number} après",
     "image_alt": "Image {number} de « {title} »",
     "play": "Écouter",
-    "report": "Signaler « {title} »"
+    "report": "Signaler « {title} »",
+    "open_gallery": "Voir l'image de « {title} » | Voir les {count} images de « {title} »",
+    "watch": "Regarder",
+    "position": "{current} sur {total}"
+  },
+  "service_form": {
+    "section_service": "Le service",
+    "headline": "Titre",
+    "specialities": "Spécialités",
+    "description": "Présentation",
+    "styles": "Styles",
+    "section_places": "Où",
+    "place_studio": "Dans mon studio",
+    "place_client": "Je me déplace",
+    "city": "Ville",
+    "address": "Adresse",
+    "radius": "Distance maximale",
+    "section_offers": "Formules",
+    "offer_unit": "Ce que le prix comprend",
+    "offer_title": "Nom de la formule",
+    "offer_description": "Détail (facultatif)",
+    "offer_price": "Prix",
+    "remove_offer": "Retirer cette formule",
+    "add_offer": "Ajouter une formule",
+    "remove_media": "Retirer {title}",
+    "add_media": "Ajouter",
+    "save": "Enregistrer",
+    "media": "Médias"
+  },
+  "service_page": {
+    "offers": "Formules",
+    "who": "Qui est {name} ?",
+    "not_found_title": "Service introuvable",
+    "with": "avec {name}, {profile}",
+    "see_profile": "voir son profil",
+    "studio_in": "Studio à {city}",
+    "travels": "Se déplace",
+    "travels_up_to": "Jusqu'à {radius} km",
+    "days": "{count} jour | {count} jours",
+    "edit": "Modifier mon service",
+    "ask_quote": "Demander un devis",
+    "how": "Comment je travaille",
+    "media": "Médias"
   }
 }

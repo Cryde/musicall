@@ -17,7 +17,6 @@ use App\State\Processor\Service\Work\MyServiceWorkCreateProcessor;
 use App\State\Processor\Service\Work\MyServiceWorkDeleteProcessor;
 use App\State\Processor\Service\Work\MyServiceWorkUpdateProcessor;
 use App\State\Provider\Service\Work\MyServiceWorkProvider;
-use App\Validator\Musician\SupportedMediaUrl;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -80,9 +79,8 @@ class MyServiceWork extends ServiceWorkView
     #[Assert\Url(message: 'service.work.link_invalid', protocols: ['http', 'https'], requireTld: true)]
     public ?string $linkUrl = null;
 
-    /** Read back as `media`. */
+    /** Read back as `media`, checked against the platforms of the service's kind by the processor (ServiceMediaUrlChecker). */
     #[ApiProperty(readable: false)]
     #[Assert\Length(max: 500)]
-    #[SupportedMediaUrl]
     public ?string $mediaUrl = null;
 }

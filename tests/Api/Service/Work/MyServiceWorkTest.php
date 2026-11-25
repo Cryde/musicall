@@ -72,6 +72,77 @@ class MyServiceWorkTest extends ApiTestCase
         ]);
     }
 
+    /** A videographer's works are videos, often on Vimeo (#1411). */
+    public function test_a_video_work_takes_a_vimeo_link(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->video()->create(['user' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services/' . $service->id . '/works', [
+            'title' => 'Satellites',
+            'media_url' => 'https://vimeo.com/76979871/8272103f6e',
+        ], self::JSON_LD);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $work = $this->workTitled('Satellites');
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyServiceWork',
+            '@id' => '/api/user/services/' . $service->id . '/works/' . $work->id,
+            '@type' => 'MyServiceWork',
+            'id' => $work->id,
+            'title' => 'Satellites',
+            'credit' => null,
+            'year' => null,
+            'link_url' => null,
+            'media' => [
+                '@type' => 'ServiceWorkMedia',
+                'platform' => 'vimeo',
+                'url' => 'https://vimeo.com/76979871/8272103f6e',
+                'embed_id' => '76979871/8272103f6e',
+                'title' => null,
+            ],
+            'images' => [],
+        ]);
+    }
+
+    /** Vimeo for photography and video only (#1411), on a work changed later too. */
+    public function test_a_sound_engineering_work_refuses_a_vimeo_link(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $work = ServiceWorkFactory::new()->create([
+            'service' => ServiceFactory::new()->soundEngineering()->create(['user' => $user]),
+            'mediaPlatform' => MediaPlatform::YOUTUBE,
+            'mediaUrl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'mediaEmbedId' => 'dQw4w9WgXcQ',
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/services/' . $work->service->id . '/works/' . $work->id, [
+            'media_url' => 'https://vimeo.com/76979871',
+        ], self::MERGE_PATCH);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'media_url',
+                    'message' => 'URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+                    'code' => 'music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+                ],
+            ],
+            'detail' => 'media_url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'description' => 'media_url: URL non reconnue. Seuls YouTube, SoundCloud et Spotify sont supportés.',
+            'type' => '/validation_errors/music_all_2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d',
+            'title' => 'An error occurred',
+        ]);
+        $this->assertSame('dQw4w9WgXcQ', $this->workTitled('Satellites')->mediaEmbedId);
+    }
+
     public function test_a_work_needs_a_title_a_web_link_and_a_real_year(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

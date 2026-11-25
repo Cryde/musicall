@@ -5,6 +5,8 @@
 
 /** Mirrors the Range on `tracks` in ServiceKind::quoteQuestions(). */
 export const MAX_TRACKS = 100
+/** Mirrors the Length on `city` in ServiceKind::quoteQuestions(). */
+export const MAX_CITY_LENGTH = 100
 const CALENDAR_DAY = /^\d{4}-\d{2}-\d{2}$/
 
 // Full literal keys, so the catalogue test sees every one of them (assets/js/i18n/fr.test.js).
@@ -13,14 +15,23 @@ export const QUESTION_LABELS = {
   tracks: 'profile.quote_request.question.tracks',
   link: 'profile.quote_request.question.link',
   deadline: 'profile.quote_request.question.deadline',
+  date: 'profile.quote_request.question.date',
+  city: 'profile.quote_request.question.city',
   budget: 'profile.quote_request.question.budget'
 }
+/** Every kind's needs in one map: a value means the same wherever it is asked, so none is shared by two kinds. */
 export const OPTION_LABELS = {
   need: {
     mixing: 'profile.quote_request.need.mixing',
     mastering: 'profile.quote_request.need.mastering',
     recording: 'profile.quote_request.need.recording',
-    live: 'profile.quote_request.need.live'
+    live: 'profile.quote_request.need.live',
+    concert: 'profile.quote_request.need.concert',
+    promo: 'profile.quote_request.need.promo',
+    cover: 'profile.quote_request.need.cover',
+    clip: 'profile.quote_request.need.clip',
+    live_session: 'profile.quote_request.need.live_session',
+    concert_film: 'profile.quote_request.need.concert_film'
   },
   budget: {
     under_100: 'profile.quote_request.budget.under_100',
@@ -35,20 +46,32 @@ const MESSAGE = {
   tracks: 'profile.quote_request.message.tracks',
   link: 'profile.quote_request.message.link',
   deadline: 'profile.quote_request.message.deadline',
+  date: 'profile.quote_request.message.date',
+  city: 'profile.quote_request.message.city',
   budget: 'profile.quote_request.message.budget'
 }
 
 const BUDGET = { key: 'budget', type: 'choice', options: Object.keys(OPTION_LABELS.budget) }
+const need = (options) => ({ key: 'need', type: 'choice', required: true, options })
+/** A photographer or a videographer (#1411): what, then when and where it happens. */
+const eventQuestions = (needs) => [
+  need(needs),
+  { key: 'date', type: 'date' },
+  { key: 'city', type: 'text', maxLength: MAX_CITY_LENGTH },
+  BUDGET
+]
 
 /** By kind, in asking order; only `need` is required. The budget is asked of every kind. */
 const QUESTIONS = {
   sound_engineering: [
-    { key: 'need', type: 'choice', required: true, options: Object.keys(OPTION_LABELS.need) },
+    need(['mixing', 'mastering', 'recording', 'live']),
     { key: 'tracks', type: 'number' },
     { key: 'link', type: 'link' },
     { key: 'deadline', type: 'date' },
     BUDGET
-  ]
+  ],
+  photography: eventQuestions(['concert', 'promo', 'cover']),
+  video: eventQuestions(['clip', 'live_session', 'concert_film'])
 }
 
 /** The questions a kind asks, none for a kind that takes no quote request (teaching asks for a lesson instead). */
@@ -71,7 +94,11 @@ function isAnswer(question, value) {
     case 'date':
       return typeof value === 'string' && CALENDAR_DAY.test(value)
     default:
-      return typeof value === 'string' && value.trim() !== ''
+      return (
+        typeof value === 'string' &&
+        value.trim() !== '' &&
+        value.trim().length <= (question.maxLength ?? Number.POSITIVE_INFINITY)
+      )
   }
 }
 
@@ -101,19 +128,22 @@ export function quoteContactOrigin(serviceId, answers, questions) {
 }
 
 /**
- * The message's opening lines: a greeting, then one labelled line per answer, as the engineer reads them at a glance.
+ * The message's opening lines: a greeting, then one labelled line per answer, as the member reads them at a glance.
  *
  * @param {object} answers   question key to answer
- * @param {object} context   { name, questions, formatDeadline }: formatDeadline('2026-12-15') names the day
+ * @param {object} context   { name, questions, formatDate }: formatDate('2026-12-15') names a day
  * @param {(key: string, params?: object) => string} t  vue-i18n's t
  */
 export function buildQuoteMessage(answers, context, t) {
   const lines = [t(MESSAGE.greeting, { name: context.name })]
+  const types = Object.fromEntries(
+    context.questions.map((question) => [question.key, question.type])
+  )
   for (const [key, value] of Object.entries(quoteAnswers(answers, context.questions))) {
     if (OPTION_LABELS[key]) {
       lines.push(t(MESSAGE[key], { value: t(OPTION_LABELS[key][value]) }))
-    } else if (key === 'deadline') {
-      lines.push(t(MESSAGE.deadline, { value: context.formatDeadline(value) }))
+    } else if (types[key] === 'date') {
+      lines.push(t(MESSAGE[key], { value: context.formatDate(value) }))
     } else {
       lines.push(t(MESSAGE[key], { value }))
     }

@@ -1,10 +1,4 @@
 /**
- * The sound engineer search is merged but not yet announced: its menu entries show to ROLE_TESTER
- * accounts only. Announcing it is setting this to false.
- */
-export const SOUND_ENGINEER_SEARCH_TESTER_ONLY = true
-
-/**
  * The sound engineer kind's values (#1410), each with the full key of its label, so the i18n check finds them. The
  * order is the one the form offers them in.
  */
@@ -44,12 +38,6 @@ export const PLACE_KEYS = {
   at_my_place: 'profile.sound_engineer.places.at_my_place',
   at_client_place: 'profile.sound_engineer.places.at_client_place',
   remote: 'profile.sound_engineer.places.remote'
-}
-
-/** The form's two located places, by their key in placesForm(). */
-export const FORM_PLACE_KEYS = {
-  studio: 'profile.sound_engineer.form.place_studio',
-  client: 'profile.sound_engineer.form.place_client'
 }
 
 export const SIDE_KEYS = {

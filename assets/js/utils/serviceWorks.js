@@ -50,3 +50,12 @@ export function workLinkDomain(url) {
     return null
   }
 }
+
+/** The works as every layout shows them: each with its byline and the domain of its link. */
+export function workRows(works) {
+  return works.map((work) => ({
+    ...work,
+    byline: workByline(work),
+    domain: workLinkDomain(work.link_url)
+  }))
+}

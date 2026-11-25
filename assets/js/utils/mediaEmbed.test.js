@@ -6,13 +6,16 @@ import {
   mediaEmbedHeight,
   mediaEmbedUrl,
   mediaPlatformIcon,
-  mediaPlatformSeverity
+  mediaPlatformSeverity,
+  PLATFORMS_READ_BY_APP
 } from './mediaEmbed.js'
 
 const youtube = { platform: 'youtube', embed_id: 'dQw4w9WgXcQ' }
 const spotifyTrack = { platform: 'spotify', embed_id: 'track/4uLU6hMCjMI75M1A2tKUQC' }
 const spotifyAlbum = { platform: 'spotify', embed_id: 'album/1DFixLWuPkv3KT3TnV35m3' }
 const soundcloud = { platform: 'soundcloud', embed_id: 'julien/les-heures-creuses' }
+const vimeo = { platform: 'vimeo', embed_id: '76979871' }
+const unlistedVimeo = { platform: 'vimeo', embed_id: '76979871/8272103f6e' }
 
 describe('mediaEmbedUrl', () => {
   it('starts a YouTube video only when asked', () => {
@@ -95,5 +98,42 @@ describe('detectMediaPlatform', () => {
     assert.equal(detectMediaPlatform('https://example.com'), null)
     assert.equal(detectMediaPlatform(''), null)
     assert.equal(detectMediaPlatform(null), null)
+  })
+})
+
+describe('a Vimeo video (#1411)', () => {
+  it('plays in the Vimeo player, starting only when asked', () => {
+    assert.equal(mediaEmbedUrl(vimeo), 'https://player.vimeo.com/video/76979871')
+    assert.equal(
+      mediaEmbedUrl(vimeo, { autoplay: true }),
+      'https://player.vimeo.com/video/76979871?autoplay=1'
+    )
+  })
+
+  it('passes the hash an unlisted video only plays with', () => {
+    assert.equal(
+      mediaEmbedUrl(unlistedVimeo, { autoplay: true }),
+      'https://player.vimeo.com/video/76979871?h=8272103f6e&autoplay=1'
+    )
+  })
+
+  it('is recognised, allowed full screen, and has its icon and colour', () => {
+    assert.equal(
+      detectMediaPlatform('https://vimeo.com/76979871', [...PLATFORMS_READ_BY_APP, 'vimeo']),
+      'vimeo'
+    )
+    assert.ok(mediaEmbedAllow(vimeo).includes('fullscreen'))
+    assert.equal(mediaPlatformIcon('vimeo'), 'pi pi-vimeo')
+    assert.equal(mediaPlatformSeverity('vimeo'), 'info')
+    assert.equal(mediaEmbedHeight(vimeo), 200)
+  })
+})
+
+describe('detectMediaPlatform', () => {
+  // The musician and teacher media dialog asks with the default: installed app builds read those media.
+  it('never detects Vimeo where only the platforms every reader knows are taken', () => {
+    assert.equal(detectMediaPlatform('https://vimeo.com/76979871'), null)
+    assert.equal(detectMediaPlatform('https://youtu.be/dQw4w9WgXcQ'), 'youtube')
+    assert.equal(detectMediaPlatform('https://soundcloud.com/a/b'), 'soundcloud')
   })
 })

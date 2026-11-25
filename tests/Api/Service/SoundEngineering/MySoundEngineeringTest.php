@@ -227,25 +227,26 @@ class MySoundEngineeringTest extends ApiTestCase
         ], self::PATCH_HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $detail = "offers[0].unit: Cette unité n'existe pas pour ce service\nspecialities[0]: Cette spécialité n'existe pas\nplaces[0].type: Ce lieu n'existe pas\nplaces[0].radius: La distance doit être comprise entre 1 et 500 km\noffers[1].title: Donne un nom à cette formule\noffers[1].price: Le prix doit être compris entre 0 et 100 000 €\nturnaround_days: Le délai doit être compris entre 1 et 365 jours\nformats[0]: Ce format n'existe pas\ngear: Tu peux indiquer 30 éléments de matériel au plus";
+        // The kind's values first, then its own details, then what every kind's form has (MyServiceForm).
+        $detail = "specialities[0]: Cette spécialité n'existe pas\noffers[0].unit: Cette unité n'existe pas pour ce service\nturnaround_days: Le délai doit être compris entre 1 et 365 jours\nformats[0]: Ce format n'existe pas\ngear: Tu peux indiquer 30 éléments de matériel au plus\nplaces[0].type: Ce lieu n'existe pas\nplaces[0].radius: La distance doit être comprise entre 1 et 500 km\noffers[1].title: Donne un nom à cette formule\noffers[1].price: Le prix doit être compris entre 0 et 100 000 €";
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ConstraintViolation',
-            '@id' => '/api/validation_errors/0=music_all_eb832ebf-bf8b-4899-be88-eb5b80608707;1=8e179f1b-97aa-4560-a02f-2a8b42e49df7;2=8e179f1b-97aa-4560-a02f-2a8b42e49df7;3=04b91c99-a946-4221-afc5-e65ebac401eb;4=c1051bb4-d103-4f74-8988-acbcafc7fdc3;5=04b91c99-a946-4221-afc5-e65ebac401eb;6=04b91c99-a946-4221-afc5-e65ebac401eb;7=8e179f1b-97aa-4560-a02f-2a8b42e49df7;8=756b1212-697c-468d-a9ad-50dd783bb169',
+            '@id' => '/api/validation_errors/0=8e179f1b-97aa-4560-a02f-2a8b42e49df7;1=music_all_eb832ebf-bf8b-4899-be88-eb5b80608707;2=04b91c99-a946-4221-afc5-e65ebac401eb;3=8e179f1b-97aa-4560-a02f-2a8b42e49df7;4=756b1212-697c-468d-a9ad-50dd783bb169;5=8e179f1b-97aa-4560-a02f-2a8b42e49df7;6=04b91c99-a946-4221-afc5-e65ebac401eb;7=c1051bb4-d103-4f74-8988-acbcafc7fdc3;8=04b91c99-a946-4221-afc5-e65ebac401eb',
             '@type' => 'ConstraintViolation',
             'status' => 422,
             'violations' => [
-                ['propertyPath' => 'offers[0].unit', 'message' => "Cette unité n'existe pas pour ce service", 'code' => 'music_all_eb832ebf-bf8b-4899-be88-eb5b80608707'],
                 ['propertyPath' => 'specialities[0]', 'message' => "Cette spécialité n'existe pas", 'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7'],
+                ['propertyPath' => 'offers[0].unit', 'message' => "Cette unité n'existe pas pour ce service", 'code' => 'music_all_eb832ebf-bf8b-4899-be88-eb5b80608707'],
+                ['propertyPath' => 'turnaround_days', 'message' => 'Le délai doit être compris entre 1 et 365 jours', 'code' => '04b91c99-a946-4221-afc5-e65ebac401eb'],
+                ['propertyPath' => 'formats[0]', 'message' => "Ce format n'existe pas", 'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7'],
+                ['propertyPath' => 'gear', 'message' => 'Tu peux indiquer 30 éléments de matériel au plus', 'code' => '756b1212-697c-468d-a9ad-50dd783bb169'],
                 ['propertyPath' => 'places[0].type', 'message' => "Ce lieu n'existe pas", 'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7'],
                 ['propertyPath' => 'places[0].radius', 'message' => 'La distance doit être comprise entre 1 et 500 km', 'code' => '04b91c99-a946-4221-afc5-e65ebac401eb'],
                 ['propertyPath' => 'offers[1].title', 'message' => 'Donne un nom à cette formule', 'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3'],
                 ['propertyPath' => 'offers[1].price', 'message' => 'Le prix doit être compris entre 0 et 100 000 €', 'code' => '04b91c99-a946-4221-afc5-e65ebac401eb'],
-                ['propertyPath' => 'turnaround_days', 'message' => 'Le délai doit être compris entre 1 et 365 jours', 'code' => '04b91c99-a946-4221-afc5-e65ebac401eb'],
-                ['propertyPath' => 'formats[0]', 'message' => "Ce format n'existe pas", 'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7'],
-                ['propertyPath' => 'gear', 'message' => 'Tu peux indiquer 30 éléments de matériel au plus', 'code' => '756b1212-697c-468d-a9ad-50dd783bb169'],
             ],
             'detail' => $detail,
-            'type' => '/validation_errors/0=music_all_eb832ebf-bf8b-4899-be88-eb5b80608707;1=8e179f1b-97aa-4560-a02f-2a8b42e49df7;2=8e179f1b-97aa-4560-a02f-2a8b42e49df7;3=04b91c99-a946-4221-afc5-e65ebac401eb;4=c1051bb4-d103-4f74-8988-acbcafc7fdc3;5=04b91c99-a946-4221-afc5-e65ebac401eb;6=04b91c99-a946-4221-afc5-e65ebac401eb;7=8e179f1b-97aa-4560-a02f-2a8b42e49df7;8=756b1212-697c-468d-a9ad-50dd783bb169',
+            'type' => '/validation_errors/0=8e179f1b-97aa-4560-a02f-2a8b42e49df7;1=music_all_eb832ebf-bf8b-4899-be88-eb5b80608707;2=04b91c99-a946-4221-afc5-e65ebac401eb;3=8e179f1b-97aa-4560-a02f-2a8b42e49df7;4=756b1212-697c-468d-a9ad-50dd783bb169;5=8e179f1b-97aa-4560-a02f-2a8b42e49df7;6=04b91c99-a946-4221-afc5-e65ebac401eb;7=c1051bb4-d103-4f74-8988-acbcafc7fdc3;8=04b91c99-a946-4221-afc5-e65ebac401eb',
             'title' => 'An error occurred',
             'description' => $detail,
         ]);

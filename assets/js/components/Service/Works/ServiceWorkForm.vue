@@ -20,7 +20,7 @@
       </div>
     </div>
     <div class="flex flex-col gap-2">
-      <label :for="`${idPrefix}-media`" :class="LABEL_CLASS">{{ t('profile.service_works.media_url') }}</label>
+      <label :for="`${idPrefix}-media`" :class="LABEL_CLASS">{{ t(mediaLabelKey) }}</label>
       <InputText :id="`${idPrefix}-media`" v-model="form.media_url" type="url" :maxlength="500" placeholder="https://" :disabled="isSaving" />
     </div>
 
@@ -75,7 +75,9 @@ import {
 const props = defineProps({
   serviceId: { type: String, required: true },
   /** Null for a new work. */
-  work: { type: Object, default: null }
+  work: { type: Object, default: null },
+  /** The platforms the embed takes, as the kind names them (ServiceWorksEditor's default). */
+  mediaLabelKey: { type: String, required: true }
 })
 /** `saved` with the work as stored, `changed` with it once an image was added, moved or removed. */
 const emit = defineEmits(['saved', 'changed', 'cancel'])

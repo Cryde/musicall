@@ -185,7 +185,33 @@
     "heading": "Find a sound engineer",
     "intro": "Mixing, mastering, recording or live sound, near you or remotely.",
     "engineer_cta": "Are you a sound engineer?",
-    "engineer_cta_link": "Create your page",
+    "online": "Remote too",
+    "count": "No sound engineer | {count} sound engineer | {count} sound engineers",
+    "load_more": "More sound engineers",
+    "empty_title": "No sound engineer matches your search",
+    "empty_text": "Widen the distance, add those who work remotely or remove a filter.",
+    "title": "Find a sound engineer - MusicAll"
+  },
+  "photographer": {
+    "heading": "Find a photographer",
+    "intro": "Concerts, promo shoots, record covers or studio work, near you.",
+    "cta": "Are you a photographer?",
+    "count": "No photographer | {count} photographer | {count} photographers",
+    "load_more": "More photographers",
+    "empty_title": "No photographer matches your search",
+    "title": "Find a photographer - MusicAll"
+  },
+  "videographer": {
+    "heading": "Find a videographer",
+    "intro": "Music videos, live sessions, concert films or editing, near you.",
+    "cta": "Are you a videographer?",
+    "count": "No videographer | {count} videographer | {count} videographers",
+    "load_more": "More videographers",
+    "empty_title": "No videographer matches your search",
+    "title": "Find a videographer - MusicAll"
+  },
+  "service": {
+    "cta_link": "Create your page",
     "filters_label": "Search filters",
     "speciality": "Speciality",
     "style": "Genre",
@@ -196,16 +222,11 @@
     "radius": "Distance",
     "radius_option": "{radius} km",
     "clear_city": "Anywhere",
-    "online": "Remote too",
-    "count": "No sound engineer | {count} sound engineer | {count} sound engineers",
     "error": "The search did not go through. Try again in a moment.",
-    "load_more": "More sound engineers",
-    "empty_title": "No sound engineer matches your search",
-    "empty_text": "Widen the distance, add those who work remotely or remove a filter.",
     "clear_filters": "Clear the filters",
     "price_from": "from {price}",
     "remote_place": "Remotely",
-    "turnaround": "{count}-day turnaround | {count}-day turnaround",
-    "title": "Find a sound engineer - MusicAll"
+    "days": "{count}-day turnaround | {count}-day turnaround",
+    "empty_text": "Widen the distance or remove a filter."
   }
 }

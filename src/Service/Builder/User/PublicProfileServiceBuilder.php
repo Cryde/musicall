@@ -22,7 +22,7 @@ readonly class PublicProfileServiceBuilder
         $dto->status = $service->status->value;
         $dto->headline = $service->headline;
         $dto->url = $this->siteUrl->of($service->kind->pagePath($service->user->username));
-        $offer = $service->lowestOffer();
+        $offer = $service->leadOffer();
         $dto->price = $offer?->price;
         $dto->priceUnit = $offer?->unit->value;
         $dto->priceQuantity = $offer?->quantity;

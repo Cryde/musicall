@@ -1,23 +1,24 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { SPECIALITIES } from './soundEngineerPage.js'
 import {
-  emptySoundEngineerFilters,
-  soundEngineerFiltersFromUrlQuery,
-  soundEngineerSearchParams,
-  soundEngineerSearchUrlQuery
-} from './soundEngineerSearch.js'
+  emptySpecialityFilters,
+  specialityFiltersFromUrlQuery,
+  specialitySearchParams,
+  specialitySearchUrlQuery
+} from './specialitySearch.js'
 
 const ROCK = { id: 'style-rock', slug: 'rock', name: 'Rock' }
 const BRUSSELS = { name: 'Bruxelles', latitude: 50.85, longitude: 4.35 }
 
-describe('soundEngineerSearchParams', () => {
+describe('specialitySearchParams', () => {
   it('asks nothing for no filter', () => {
-    assert.deepEqual(soundEngineerSearchParams(emptySoundEngineerFilters()), {})
+    assert.deepEqual(specialitySearchParams(emptySpecialityFilters()), {})
   })
 
   it('asks the speciality, the style by id, the city with its radius and remote work, and the page', () => {
     const filters = { speciality: 'mixing', style: ROCK, city: BRUSSELS, radius: 25, online: true }
-    assert.deepEqual(soundEngineerSearchParams(filters, 2), {
+    assert.deepEqual(specialitySearchParams(filters, 2), {
       speciality: 'mixing',
       style: 'style-rock',
       lat: 50.85,
@@ -29,10 +30,7 @@ describe('soundEngineerSearchParams', () => {
   })
 
   it('asks remote work only around a city', () => {
-    assert.deepEqual(
-      soundEngineerSearchParams({ ...emptySoundEngineerFilters(), online: true }),
-      {}
-    )
+    assert.deepEqual(specialitySearchParams({ ...emptySpecialityFilters(), online: true }), {})
   })
 })
 
@@ -45,7 +43,7 @@ describe('the address of a search', () => {
       radius: 50,
       online: false
     }
-    const query = soundEngineerSearchUrlQuery(filters)
+    const query = specialitySearchUrlQuery(filters)
     assert.deepEqual(query, {
       speciality: 'mastering',
       style: 'rock',
@@ -54,16 +52,31 @@ describe('the address of a search', () => {
       radius: '50',
       location: 'Bruxelles'
     })
-    assert.deepEqual(soundEngineerFiltersFromUrlQuery(query, [ROCK]), filters)
+    assert.deepEqual(specialityFiltersFromUrlQuery(query, [ROCK], SPECIALITIES), filters)
   })
 
   it('leaves out what the search does not know', () => {
     assert.deepEqual(
-      soundEngineerFiltersFromUrlQuery(
+      specialityFiltersFromUrlQuery(
         { speciality: 'teaching', style: 'polka', location: 'Bruxelles', radius: '7' },
-        [ROCK]
+        [ROCK],
+        SPECIALITIES
       ),
-      emptySoundEngineerFilters()
+      emptySpecialityFilters()
+    )
+  })
+})
+
+describe('the specialities of another kind', () => {
+  it('reads a speciality of the kind searched, never one of another kind', () => {
+    const photographer = ['concert', 'promo', 'cover', 'studio', 'backstage_tour']
+    assert.equal(
+      specialityFiltersFromUrlQuery({ speciality: 'cover' }, [], photographer).speciality,
+      'cover'
+    )
+    assert.equal(
+      specialityFiltersFromUrlQuery({ speciality: 'mixing' }, [], photographer).speciality,
+      null
     )
   })
 })

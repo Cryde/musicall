@@ -34,6 +34,21 @@ describe('quoteQuestions', () => {
     assert.deepEqual(questions[4].options, ['under_100', '100_to_300', '300_to_1000', 'over_1000'])
   })
 
+  it('asks a photographer and a videographer what, when, where and the budget (#1411)', () => {
+    for (const [kind, needs] of [
+      ['photography', ['concert', 'promo', 'cover']],
+      ['video', ['clip', 'live_session', 'concert_film']]
+    ]) {
+      const asked = quoteQuestions(kind)
+      assert.deepEqual(
+        asked.map((question) => question.key),
+        ['need', 'date', 'city', 'budget'],
+        kind
+      )
+      assert.deepEqual(asked[0].options, needs, kind)
+    }
+  })
+
   it('asks nothing of a kind that takes no quote request', () => {
     assert.deepEqual(quoteQuestions('teaching'), [])
     assert.deepEqual(quoteQuestions('unknown'), [])
@@ -104,7 +119,7 @@ describe('quoteDraftKey', () => {
 })
 
 describe('buildQuoteMessage', () => {
-  const formatDeadline = (day) => `day(${day})`
+  const formatDate = (day) => `day(${day})`
 
   it('writes one line per answer, in asking order', () => {
     const message = buildQuoteMessage(
@@ -115,7 +130,7 @@ describe('buildQuoteMessage', () => {
         tracks: 5,
         need: 'mixing'
       },
-      { name: 'Julien', questions, formatDeadline },
+      { name: 'Julien', questions, formatDate },
       t
     )
     assert.equal(
@@ -133,8 +148,38 @@ describe('buildQuoteMessage', () => {
 
   it('greets alone before any answer, and skips an option it does not know', () => {
     assert.equal(
-      buildQuoteMessage({ need: 'cooking' }, { name: 'Julien', questions, formatDeadline }, t),
+      buildQuoteMessage({ need: 'cooking' }, { name: 'Julien', questions, formatDate }, t),
       'message.greeting(name=Julien)'
+    )
+  })
+})
+
+describe('the quote of a photographer (#1411)', () => {
+  const photography = quoteQuestions('photography')
+
+  it('keeps a calendar day and a city, trimmed, and drops a city too long', () => {
+    assert.deepEqual(
+      quoteAnswers({ need: 'concert', date: '2026-12-12', city: ' Lyon ', tracks: 3 }, photography),
+      { need: 'concert', date: '2026-12-12', city: 'Lyon' }
+    )
+    assert.deepEqual(quoteAnswers({ need: 'cover', city: 'a'.repeat(101) }, photography), {
+      need: 'cover'
+    })
+  })
+
+  it('names the day and the place in its message', () => {
+    assert.equal(
+      buildQuoteMessage(
+        { need: 'promo', city: 'Lyon', date: '2026-12-12' },
+        { name: 'Léa', questions: photography, formatDate: (day) => `day(${day})` },
+        t
+      ),
+      [
+        'message.greeting(name=Léa)',
+        'message.need(value=need.promo)',
+        'message.date(value=day(2026-12-12))',
+        'message.city(value=Lyon)'
+      ].join('\n')
     )
   })
 })

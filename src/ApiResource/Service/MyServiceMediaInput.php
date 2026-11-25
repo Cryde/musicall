@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\ApiResource\Service;
 
-use App\Validator\Musician\SupportedMediaUrl;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class MyServiceMediaInput
 {
+    /** Checked against the platforms of the service's kind by the processor (ServiceMediaUrlChecker). */
     #[Assert\NotBlank]
-    #[SupportedMediaUrl]
     public ?string $url = null;
 
     #[Assert\Length(max: 255)]

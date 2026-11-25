@@ -30,6 +30,8 @@
     { "path": "/rechercher-un-musicien", "locale": "en", "expected": "/en/find-a-musician" },
     { "path": "/rechercher-un-professeur", "locale": "en", "expected": "/en/find-a-teacher" },
     { "path": "/rechercher-un-ingenieur-du-son", "locale": "en", "expected": "/en/find-a-sound-engineer" },
+    { "path": "/rechercher-un-photographe", "locale": "en", "expected": "/en/find-a-photographer" },
+    { "path": "/rechercher-un-videaste", "locale": "en", "expected": "/en/find-a-videographer" },
     { "path": "/rechercher-un-guitariste", "locale": "en", "expected": "/en/find-a-guitarist" },
     { "path": "/rechercher-un-batteur", "locale": "en", "expected": "/en/find-a-drummer" },
     { "path": "/rechercher-un-bassiste", "locale": "en", "expected": "/en/find-a-bassist" },
@@ -63,9 +65,13 @@
       "/rechercher-un-chanteur",
       "/rechercher-un-pianiste",
       "/rechercher-un-ingenieur-du-son",
+      "/rechercher-un-photographe",
+      "/rechercher-un-videaste",
       "/u/jeanne",
       "/u/jeanne/teacher",
-      "/u/jeanne/sound-engineer"
+      "/u/jeanne/sound-engineer",
+      "/u/jeanne/photographer",
+      "/u/jeanne/videographer"
     ],
     "without_versions": [
       "/login",

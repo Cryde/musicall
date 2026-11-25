@@ -5,59 +5,28 @@ declare(strict_types=1);
 namespace App\Service\Builder\Service;
 
 use App\ApiResource\Service\SoundEngineering\SoundEngineerPage;
-use App\Entity\Musician\MusicianProfile;
 use App\Entity\Service\Service;
 use App\Entity\Service\SoundEngineeringDetails;
-use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
-use App\Service\Builder\Teacher\TeacherProfileBuilder;
-use App\Service\Builder\Teacher\TeacherProfileMediaResourceBuilder;
-use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class SoundEngineerPageBuilder
 {
     public function __construct(
+        private ServicePageBuilder $pageBuilder,
         private ServiceViewBuilder $serviceViewBuilder,
-        private UserProfilePictureUrlBuilder $pictureUrlBuilder,
-        private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
-        private TeacherProfileBuilder $teacherProfileBuilder,
-        private TeacherProfileMediaResourceBuilder $mediaResourceBuilder,
     ) {
     }
 
     public function build(Service $service): SoundEngineerPage
     {
-        $user = $service->user;
         $page = new SoundEngineerPage();
-        $page->username = $user->username;
-        $page->id = (string) $service->id;
-        $page->userId = (string) $user->id;
-        $page->displayName = $user->getDisplayName();
-        $page->memberSince = $user->creationDatetime;
-        $page->isPublic = $user->profile->isPublic;
-        $page->status = $service->status->value;
-        $page->profilePictureUrl = $this->pictureUrlBuilder->build($user);
-        $page->bio = $user->profile->bio;
-        $page->musicianInstruments = $user->musicianProfile instanceof MusicianProfile
-            ? $this->musicianInstrumentResourceBuilder->buildList($user->musicianProfile->instruments)
-            : [];
-
-        $page->headline = $service->headline;
-        $page->description = $service->description;
-        $page->yearsOfExperience = $service->yearsOfExperience;
-        $page->specialities = $service->specialities;
-        $page->styles = $this->teacherProfileBuilder->buildStyles($service->styles->toArray());
-        $page->places = $this->serviceViewBuilder->places($service);
-        $page->offers = $this->serviceViewBuilder->offers($service);
+        $this->pageBuilder->fill($page, $service);
 
         $details = SoundEngineeringDetails::of($service);
         $page->turnaroundDays = $details->turnaroundDays;
         $page->revisionsIncluded = $details->revisionsIncluded;
         $page->formats = $details->formats;
         $page->gear = $details->gear;
-
-        $page->media = $this->mediaResourceBuilder->buildList($service->media->toArray());
         $page->beforeAfter = $this->serviceViewBuilder->beforeAfter($service);
-        $page->works = $this->serviceViewBuilder->works($service);
 
         return $page;
     }

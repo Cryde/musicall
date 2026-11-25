@@ -23,7 +23,22 @@ export default [
   {
     path: '/rechercher-un-ingenieur-du-son',
     name: 'app_search_sound_engineer',
-    component: () => import('../views/Search/SoundEngineerSearch.vue'),
+    component: () => import('../views/Search/SpecialitySearch.vue'),
+    props: { kind: 'sound_engineering' },
+    meta: { isAuthRequired: false }
+  },
+  {
+    path: '/rechercher-un-photographe',
+    name: 'app_search_photographer',
+    component: () => import('../views/Search/SpecialitySearch.vue'),
+    props: { kind: 'photography' },
+    meta: { isAuthRequired: false }
+  },
+  {
+    path: '/rechercher-un-videaste',
+    name: 'app_search_videographer',
+    component: () => import('../views/Search/SpecialitySearch.vue'),
+    props: { kind: 'video' },
     meta: { isAuthRequired: false }
   },
   {

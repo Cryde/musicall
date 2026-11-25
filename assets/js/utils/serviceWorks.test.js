@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { workByline, workForm, workLinkDomain, workPayload } from './serviceWorks.js'
+import { workByline, workForm, workLinkDomain, workPayload, workRows } from './serviceWorks.js'
 
 describe('workForm', () => {
   it('starts empty for a new work', () => {
@@ -78,5 +78,32 @@ describe('workLinkDomain', () => {
     assert.equal(workLinkDomain('javascript:alert(1)'), null)
     assert.equal(workLinkDomain('not a link'), null)
     assert.equal(workLinkDomain(null), null)
+  })
+})
+
+describe('workRows', () => {
+  it('gives each work its byline and the domain of its link', () => {
+    assert.deepEqual(
+      workRows([
+        {
+          id: 'a',
+          title: 'Satellites',
+          credit: 'Mona Lisa Overdrive, EP',
+          year: 2024,
+          link_url: 'https://www.bandcamp.com/x'
+        }
+      ]),
+      [
+        {
+          id: 'a',
+          title: 'Satellites',
+          credit: 'Mona Lisa Overdrive, EP',
+          year: 2024,
+          link_url: 'https://www.bandcamp.com/x',
+          byline: 'Mona Lisa Overdrive, EP · 2024',
+          domain: 'bandcamp.com'
+        }
+      ]
+    )
   })
 })
