@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * A link a service embeds, against what its kind takes (#1411). Checked once the service is known, which a body
- * alone does not say: only a photography or video service takes Vimeo.
+ * alone does not say: only a photography, video, graphic design or web service takes Vimeo.
  */
 readonly class ServiceMediaUrlChecker
 {

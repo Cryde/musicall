@@ -22,7 +22,10 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 use function Zenstruck\Foundry\Persistence\save;
 
-/** A photographer's page, `/u/{username}/photographer`, and a videographer's, `/u/{username}/videographer` (#1411). */
+/**
+ * A photographer's page, `/u/{username}/photographer`, and a videographer's, `/u/{username}/videographer` (#1411); a
+ * graphic designer's, `/u/{username}/graphic-designer`, and a webmaster's, `/u/{username}/webmaster` (#1412).
+ */
 #[ResetDatabase]
 class VisualServicePageTest extends ApiTestCase
 {
@@ -191,6 +194,184 @@ class VisualServicePageTest extends ApiTestCase
                 ],
                 'images' => [],
             ]],
+        ]);
+    }
+
+    /** A graphic designer's works are a gallery too, and remote work is one of their places (#1412). */
+    public function test_a_visitor_reads_a_graphic_designer_page_with_remote_work(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'nina']);
+        $service = ServiceFactory::new()->graphicDesign()->create([
+            'user' => $user,
+            'headline' => 'Ta pochette, du croquis au fichier imprimeur',
+            'yearsOfExperience' => 8,
+            'specialities' => ['cover', 'logo'],
+            'deliveryDays' => 10,
+            'deliverable' => '3 propositions, fichiers HD',
+        ]);
+        ServicePlaceFactory::new()->remote()->create(['service' => $service]);
+        ServicePlaceFactory::new()->atMyPlace(self::LYON)->create(['service' => $service]);
+        $flat = ServiceOfferFactory::new()->create(['service' => $service, 'unit' => OfferUnit::Flat, 'quantity' => null, 'price' => 35000, 'title' => 'Une pochette']);
+        $hour = ServiceOfferFactory::new()->create(['service' => $service, 'unit' => OfferUnit::Hour, 'quantity' => null, 'price' => 4500, 'title' => 'Retouches']);
+        $cover = ServiceWorkFactory::new()->create([
+            'service' => $service,
+            'title' => 'Satellites',
+            'credit' => 'Mona Lisa Overdrive, EP',
+            'year' => 2024,
+            'position' => 0,
+        ]);
+        $image = ServiceWorkImageFactory::new()->create(['work' => $cover, 'position' => 0]);
+
+        $this->client->request('GET', '/api/user/profile/nina/graphic-designer');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/GraphicDesignerPage',
+            '@id' => '/api/user/profile/nina/graphic-designer',
+            '@type' => 'GraphicDesignerPage',
+            'username' => 'nina',
+            'id' => $service->id,
+            'user_id' => $user->id,
+            'display_name' => 'nina',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
+            'status' => 'published',
+            'profile_picture_url' => null,
+            'bio' => null,
+            'musician_instruments' => [],
+            'headline' => 'Ta pochette, du croquis au fichier imprimeur',
+            'description' => null,
+            'years_of_experience' => 8,
+            'specialities' => ['cover', 'logo'],
+            'styles' => [],
+            'places' => [
+                ['@type' => 'ServicePlaceView', 'type' => 'remote', 'city' => null, 'radius' => null],
+                ['@type' => 'ServicePlaceView', 'type' => 'at_my_place', 'city' => 'Lyon', 'radius' => null],
+            ],
+            'offers' => [
+                ['@type' => 'ServiceOfferView', 'id' => $hour->id, 'unit' => 'hour', 'title' => 'Retouches', 'description' => null, 'price' => 4500],
+                ['@type' => 'ServiceOfferView', 'id' => $flat->id, 'unit' => 'flat', 'title' => 'Une pochette', 'description' => null, 'price' => 35000],
+            ],
+            'delivery_days' => 10,
+            'deliverable' => '3 propositions, fichiers HD',
+            'media' => [],
+            'works' => [[
+                '@type' => 'ServiceWorkView',
+                'id' => $cover->id,
+                'title' => 'Satellites',
+                'credit' => 'Mona Lisa Overdrive, EP',
+                'year' => 2024,
+                'link_url' => null,
+                'media' => null,
+                'images' => [
+                    ['@type' => 'ServiceWorkImageView', 'id' => $image->id, 'url' => '/api/services/' . $service->id . '/works/' . $cover->id . '/images/' . $image->id],
+                ],
+            ]],
+        ]);
+    }
+
+    /** A webmaster's works are the sites they made, each its address and its screenshots, in the owner's order (#1412). */
+    public function test_a_visitor_reads_a_webmaster_page_with_its_sites(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'marc']);
+        $service = ServiceFactory::new()->web()->create([
+            'user' => $user,
+            'headline' => 'Le site de ton groupe, prêt pour la tournée',
+            'specialities' => ['band_site', 'epk'],
+            'deliveryDays' => 30,
+        ]);
+        ServicePlaceFactory::new()->remote()->create(['service' => $service]);
+        $site = ServiceWorkFactory::new()->create([
+            'service' => $service,
+            'title' => 'Site de Mona Lisa Overdrive',
+            'credit' => 'Mona Lisa Overdrive',
+            'year' => 2025,
+            'linkUrl' => 'https://monalisaoverdrive.example',
+            'position' => 0,
+        ]);
+        $tour = ServiceWorkImageFactory::new()->create(['work' => $site, 'position' => 1]);
+        $home = ServiceWorkImageFactory::new()->create(['work' => $site, 'position' => 0]);
+        $epk = ServiceWorkFactory::new()->create([
+            'service' => $service,
+            'title' => 'Dossier de presse des Satellites',
+            'linkUrl' => 'https://satellites.example/presse',
+            'position' => 1,
+        ]);
+
+        $this->client->request('GET', '/api/user/profile/marc/webmaster');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/WebmasterPage',
+            '@id' => '/api/user/profile/marc/webmaster',
+            '@type' => 'WebmasterPage',
+            'username' => 'marc',
+            'id' => $service->id,
+            'user_id' => $user->id,
+            'display_name' => 'marc',
+            'member_since' => '1990-01-02T02:03:04+00:00',
+            'is_public' => true,
+            'status' => 'published',
+            'profile_picture_url' => null,
+            'bio' => null,
+            'musician_instruments' => [],
+            'headline' => 'Le site de ton groupe, prêt pour la tournée',
+            'description' => null,
+            'years_of_experience' => null,
+            'specialities' => ['band_site', 'epk'],
+            'styles' => [],
+            'places' => [
+                ['@type' => 'ServicePlaceView', 'type' => 'remote', 'city' => null, 'radius' => null],
+            ],
+            'offers' => [],
+            'delivery_days' => 30,
+            'deliverable' => null,
+            'media' => [],
+            'works' => [
+                [
+                    '@type' => 'ServiceWorkView',
+                    'id' => $site->id,
+                    'title' => 'Site de Mona Lisa Overdrive',
+                    'credit' => 'Mona Lisa Overdrive',
+                    'year' => 2025,
+                    'link_url' => 'https://monalisaoverdrive.example',
+                    'media' => null,
+                    'images' => [
+                        ['@type' => 'ServiceWorkImageView', 'id' => $home->id, 'url' => '/api/services/' . $service->id . '/works/' . $site->id . '/images/' . $home->id],
+                        ['@type' => 'ServiceWorkImageView', 'id' => $tour->id, 'url' => '/api/services/' . $service->id . '/works/' . $site->id . '/images/' . $tour->id],
+                    ],
+                ],
+                [
+                    '@type' => 'ServiceWorkView',
+                    'id' => $epk->id,
+                    'title' => 'Dossier de presse des Satellites',
+                    'credit' => null,
+                    'year' => null,
+                    'link_url' => 'https://satellites.example/presse',
+                    'media' => null,
+                    'images' => [],
+                ],
+            ],
+        ]);
+    }
+
+    /** The kind is part of the address: a graphic designer has no webmaster page. */
+    public function test_another_kind_is_not_a_webmaster_page(): void
+    {
+        ServiceFactory::new()->graphicDesign()->create(['user' => UserFactory::new()->asBaseUser()->create(['username' => 'nina'])]);
+
+        $this->client->request('GET', '/api/user/profile/nina/webmaster');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'status' => 404,
+            'type' => '/errors/404',
+            'detail' => 'Service introuvable',
+            'description' => 'Service introuvable',
         ]);
     }
 

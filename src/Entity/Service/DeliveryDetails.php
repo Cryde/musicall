@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\Service;
 
 /**
- * What a photography or video service says it delivers and when (#1411), « 40 photos retouchées sous 7 jours »,
+ * What a kind shown by its works says it delivers and when (#1411, #1412), « 40 photos retouchées sous 7 jours »,
  * stored in Service::$details. Reading tolerates a missing key, like SoundEngineeringDetails.
  */
 final class DeliveryDetails

@@ -3,6 +3,8 @@
  * answers the API takes and the message they open with. Kept out of the component so they are tested.
  */
 
+import { kindSpecialities } from './visualServicePage.js'
+
 /** Mirrors the Range on `tracks` in ServiceKind::quoteQuestions(). */
 export const MAX_TRACKS = 100
 /** Mirrors the Length on `city` in ServiceKind::quoteQuestions(). */
@@ -19,7 +21,7 @@ export const QUESTION_LABELS = {
   city: 'profile.quote_request.question.city',
   budget: 'profile.quote_request.question.budget'
 }
-/** Every kind's needs in one map: a value means the same wherever it is asked, so none is shared by two kinds. */
+/** Every kind's needs in one map: a value means the same wherever it is asked. */
 export const OPTION_LABELS = {
   need: {
     mixing: 'profile.quote_request.need.mixing',
@@ -31,7 +33,16 @@ export const OPTION_LABELS = {
     cover: 'profile.quote_request.need.cover',
     clip: 'profile.quote_request.need.clip',
     live_session: 'profile.quote_request.need.live_session',
-    concert_film: 'profile.quote_request.need.concert_film'
+    concert_film: 'profile.quote_request.need.concert_film',
+    logo: 'profile.quote_request.need.logo',
+    poster: 'profile.quote_request.need.poster',
+    merch: 'profile.quote_request.need.merch',
+    visual_identity: 'profile.quote_request.need.visual_identity',
+    social_media: 'profile.quote_request.need.social_media',
+    band_site: 'profile.quote_request.need.band_site',
+    epk: 'profile.quote_request.need.epk',
+    online_store: 'profile.quote_request.need.online_store',
+    redesign_maintenance: 'profile.quote_request.need.redesign_maintenance'
   },
   budget: {
     under_100: 'profile.quote_request.budget.under_100',
@@ -60,6 +71,13 @@ const eventQuestions = (needs) => [
   { key: 'city', type: 'text', maxLength: MAX_CITY_LENGTH },
   BUDGET
 ]
+/** A graphic designer or a webmaster (#1412): what, a link to the music it is for, and when; never where. */
+const projectQuestions = (needs) => [
+  need(needs),
+  { key: 'link', type: 'link' },
+  { key: 'deadline', type: 'date' },
+  BUDGET
+]
 
 /** By kind, in asking order; only `need` is required. The budget is asked of every kind. */
 const QUESTIONS = {
@@ -71,7 +89,9 @@ const QUESTIONS = {
     BUDGET
   ],
   photography: eventQuestions(['concert', 'promo', 'cover']),
-  video: eventQuestions(['clip', 'live_session', 'concert_film'])
+  video: eventQuestions(['clip', 'live_session', 'concert_film']),
+  graphic_design: projectQuestions(kindSpecialities('graphic_design')),
+  web: projectQuestions(kindSpecialities('web'))
 }
 
 /** The questions a kind asks, none for a kind that takes no quote request (teaching asks for a lesson instead). */

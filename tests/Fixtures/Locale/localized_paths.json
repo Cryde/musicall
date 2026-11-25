@@ -32,6 +32,9 @@
     { "path": "/rechercher-un-ingenieur-du-son", "locale": "en", "expected": "/en/find-a-sound-engineer" },
     { "path": "/rechercher-un-photographe", "locale": "en", "expected": "/en/find-a-photographer" },
     { "path": "/rechercher-un-videaste", "locale": "en", "expected": "/en/find-a-videographer" },
+    { "path": "/rechercher-un-graphiste", "locale": "en", "expected": "/en/find-a-graphic-designer" },
+    { "path": "/rechercher-un-webmaster", "locale": "en", "expected": "/en/find-a-webmaster" },
+    { "path": "/en/find-a-webmaster", "locale": "fr", "expected": "/rechercher-un-webmaster" },
     { "path": "/rechercher-un-guitariste", "locale": "en", "expected": "/en/find-a-guitarist" },
     { "path": "/rechercher-un-batteur", "locale": "en", "expected": "/en/find-a-drummer" },
     { "path": "/rechercher-un-bassiste", "locale": "en", "expected": "/en/find-a-bassist" },
@@ -67,11 +70,15 @@
       "/rechercher-un-ingenieur-du-son",
       "/rechercher-un-photographe",
       "/rechercher-un-videaste",
+      "/rechercher-un-graphiste",
+      "/rechercher-un-webmaster",
       "/u/jeanne",
       "/u/jeanne/teacher",
       "/u/jeanne/sound-engineer",
       "/u/jeanne/photographer",
-      "/u/jeanne/videographer"
+      "/u/jeanne/videographer",
+      "/u/jeanne/graphic-designer",
+      "/u/jeanne/webmaster"
     ],
     "without_versions": [
       "/login",

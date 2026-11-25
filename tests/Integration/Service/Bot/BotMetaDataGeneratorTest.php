@@ -743,6 +743,128 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame('Find a videographer - MusicAll', $result['title'] ?? null);
     }
 
+    /** Remote work only: no city in its title, « À distance » where it serves (#1412). */
+    public function test_get_metadata_for_a_graphic_designer_working_remotely(): void
+    {
+        $user = UserFactory::new(['username' => 'nina_graphiste'])->create();
+        $user->profile->displayName = 'Nina Roy';
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        $service = ServiceFactory::new()->graphicDesign()->create([
+            'user'         => $user,
+            'headline'     => 'Ta pochette, du croquis au fichier imprimeur',
+            'specialities' => ['cover', 'visual_identity'],
+        ]);
+        $place = new ServicePlace();
+        $place->type = ServicePlaceType::Remote;
+        $service->addPlace($place);
+        $offer = new ServiceOffer();
+        $offer->unit = OfferUnit::Flat;
+        $offer->price = 35000;
+        $offer->title = 'Une pochette';
+        $service->addOffer($offer);
+        \Zenstruck\Foundry\Persistence\save($service);
+
+        $this->assertSame([
+            'title'       => 'Nina Roy, graphiste : pochette, identité visuelle - MusicAll',
+            'description' => "Ta pochette, du croquis au fichier imprimeur. À partir de 350\u{a0}€.",
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Graphiste : pochette, identité visuelle',
+                'url'         => 'http://localhost/u/nina_graphiste/graphic-designer',
+                'description' => 'Ta pochette, du croquis au fichier imprimeur',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'Nina Roy',
+                    'alternateName' => '@nina_graphiste',
+                    'url'           => 'http://localhost/u/nina_graphiste',
+                ],
+                'areaServed'  => ['À distance'],
+                'offers'      => [
+                    ['@type' => 'Offer', 'name' => 'Une pochette', 'price' => '350.00', 'priceCurrency' => 'EUR'],
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/nina_graphiste/graphic-designer'));
+    }
+
+    public function test_get_metadata_for_a_webmaster_with_nothing_filled_in(): void
+    {
+        $user = UserFactory::new(['username' => 'web_simple'])->create();
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        ServiceFactory::new()->web()->create(['user' => $user]);
+
+        $this->assertSame([
+            'title'       => 'web_simple, webmaster : webmaster - MusicAll',
+            'description' => 'web_simple propose ses services de webmaster sur MusicAll : webmaster.',
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Webmaster : webmaster',
+                'url'         => 'http://localhost/u/web_simple/webmaster',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'web_simple',
+                    'alternateName' => '@web_simple',
+                    'url'           => 'http://localhost/u/web_simple',
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/web_simple/webmaster'));
+    }
+
+    public function test_get_metadata_for_a_webmaster_names_their_specialities(): void
+    {
+        $user = UserFactory::new(['username' => 'tom_web'])->create();
+        $user->profile->displayName = 'Tom Petit';
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        ServiceFactory::new()->web()->create([
+            'user'         => $user,
+            'headline'     => 'Le site de ton groupe, prêt pour ta sortie',
+            'specialities' => ['band_site', 'online_store'],
+        ]);
+
+        $this->assertSame([
+            'title'       => "Tom Petit, webmaster : site de groupe ou d'artiste, boutique en ligne - MusicAll",
+            'description' => 'Le site de ton groupe, prêt pour ta sortie.',
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => "Webmaster : site de groupe ou d'artiste, boutique en ligne",
+                'url'         => 'http://localhost/u/tom_web/webmaster',
+                'description' => 'Le site de ton groupe, prêt pour ta sortie',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'Tom Petit',
+                    'alternateName' => '@tom_web',
+                    'url'           => 'http://localhost/u/tom_web',
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/tom_web/webmaster'));
+    }
+
+    public function test_the_graphic_designer_and_webmaster_searches_are_described_in_both_locales(): void
+    {
+        $this->assertSame([
+            'title' => 'Trouver un graphiste - MusicAll',
+            'description' => 'Pochette, logo, affiche ou merch : trouve un graphiste près de chez toi ou à distance, compare ses formules et regarde ses réalisations sur MusicAll.',
+        ], $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-graphiste?speciality=cover'));
+        $this->assertSame('Trouver un webmaster - MusicAll', $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-webmaster')['title'] ?? null);
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => [
+                $this->botMetaDataGenerator->getPageMetaData('/en/find-a-graphic-designer')['title'] ?? null,
+                $this->botMetaDataGenerator->getPageMetaData('/en/find-a-webmaster')['title'] ?? null,
+            ],
+        );
+        $this->assertSame(['Find a graphic designer - MusicAll', 'Find a webmaster - MusicAll'], $result);
+    }
+
     public function test_page_metadata_only_asks_the_providers_ready_for_the_page(): void
     {
         $this->assertNotSame([], $this->botMetaDataGenerator->getMetaData('/cours'));

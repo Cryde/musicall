@@ -27,10 +27,16 @@
         :service-id="serviceId"
         :help-key="config.text.worksHelp"
         :media-label-key="VISUAL_WORKS_MEDIA_LABEL_KEY"
+        :link-label-key="config.text.worksLink"
         @changed="markChanged"
       />
 
-      <ServicePlacesEditor v-model:places="places" :id-prefix="idPrefix" :disabled="isSaving" />
+      <ServicePlacesEditor v-model:places="places" :id-prefix="idPrefix" :disabled="isSaving">
+        <label v-if="config.worksRemotely" class="inline-flex items-center gap-2 p-3 bg-surface-50 dark:bg-surface-800 rounded-lg font-medium text-surface-900 dark:text-surface-0">
+          <Checkbox v-model="places.remote" binary :disabled="isSaving" />
+          {{ t('profile.visual_service.form.place_remote') }}
+        </label>
+      </ServicePlacesEditor>
 
       <ServiceOffersEditor v-model:offers="offers" :unit-options="unitOptions" :disabled="isSaving" />
 
@@ -54,6 +60,7 @@
 </template>
 
 <script setup>
+import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
@@ -79,11 +86,11 @@ import ServicePlacesEditor from '../Form/ServicePlacesEditor.vue'
 import ServiceWorksEditor from '../Works/ServiceWorksEditor.vue'
 
 /**
- * A photographer's or a videographer's form (#1411), from « Mes services » or their page: « Réalisations » first, then
- * where, the offers, what is delivered and when, and the media.
+ * The form of a kind shown by its works (#1411, #1412), from « Mes services » or its page: « Réalisations » first, then
+ * where, remote work included for a kind given that way, the offers, what is delivered and when, and the media.
  */
 const props = defineProps({
-  /** `photography` or `video`. */
+  /** A ServiceKind value of VISUAL_SERVICE_KINDS. */
   kind: { type: String, required: true },
   serviceId: { type: String, required: true }
 })
@@ -114,7 +121,7 @@ const specialityOptions = computed(() =>
   }))
 )
 const unitOptions = computed(() =>
-  Object.entries(VISUAL_FORM_UNIT_KEYS).map(([unit, key]) => ({ value: unit, label: t(key) }))
+  config.value.offerUnits.map((unit) => ({ value: unit, label: t(VISUAL_FORM_UNIT_KEYS[unit]) }))
 )
 
 async function load() {

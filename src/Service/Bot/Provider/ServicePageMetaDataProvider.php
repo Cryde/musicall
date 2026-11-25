@@ -13,13 +13,14 @@ use App\Service\Bot\PageMetaDataProviderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * « Julien Roche, ingénieur du son à Bruxelles » (#1410), « Léa Martin, photographe à Lyon » (#1411): a service page
- * with its schema.org Service. The teacher page has its own (TeacherProfileMetaDataProvider).
+ * « Julien Roche, ingénieur du son à Bruxelles » (#1410), « Léa Martin, photographe à Lyon » (#1411), « Nina Roy,
+ * graphiste » (#1412): a service page with its schema.org Service. The teacher page has its own
+ * (TeacherProfileMetaDataProvider).
  */
 readonly class ServicePageMetaDataProvider implements PageMetaDataProviderInterface
 {
     // Its query (`?from=search`) changes nothing.
-    private const string PATTERN = '#^/u/([^/?]+)/(sound-engineer|photographer|videographer)(?:\?.*)?$#';
+    private const string PATTERN = '#^/u/([^/?]+)/(sound-engineer|photographer|videographer|graphic-designer|webmaster)(?:\?.*)?$#';
 
     /** Each kind's page, by the last segment of its path, and its words. */
     private const array PAGES = [
@@ -43,6 +44,20 @@ readonly class ServicePageMetaDataProvider implements PageMetaDataProviderInterf
             'title_city' => 'meta.videographer.title_city',
             'description' => 'meta.videographer.description',
             'service' => 'meta.videographer.service',
+        ],
+        'graphic-designer' => [
+            'kind' => ServiceKind::GraphicDesign,
+            'title' => 'meta.graphic_designer.title',
+            'title_city' => 'meta.graphic_designer.title_city',
+            'description' => 'meta.graphic_designer.description',
+            'service' => 'meta.graphic_designer.service',
+        ],
+        'webmaster' => [
+            'kind' => ServiceKind::Web,
+            'title' => 'meta.webmaster.title',
+            'title_city' => 'meta.webmaster.title_city',
+            'description' => 'meta.webmaster.description',
+            'service' => 'meta.webmaster.service',
         ],
     ];
 

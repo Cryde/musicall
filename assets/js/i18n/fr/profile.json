@@ -523,6 +523,14 @@
       "video": {
         "label": "Vidéaste",
         "description": "Tu filmes des clips, des live sessions et des concerts, et tu montes."
+      },
+      "graphic_design": {
+        "label": "Graphiste",
+        "description": "Tu crées des pochettes, des logos, des affiches et du merch, le plus souvent à distance."
+      },
+      "web": {
+        "label": "Webmaster",
+        "description": "Tu crées et tiens à jour les sites des groupes et des artistes, à distance."
       }
     },
     "load_error": "Impossible de charger tes services",
@@ -843,7 +851,16 @@
       "cover": "Pochette",
       "clip": "Clip",
       "live_session": "Live session",
-      "concert_film": "Captation de concert"
+      "concert_film": "Captation de concert",
+      "logo": "Logo",
+      "poster": "Affiche ou flyer",
+      "merch": "Merch",
+      "visual_identity": "Identité visuelle",
+      "social_media": "Visuels pour les réseaux",
+      "band_site": "Site de groupe ou d'artiste",
+      "epk": "Dossier de presse en ligne",
+      "online_store": "Boutique en ligne",
+      "redesign_maintenance": "Refonte ou maintenance"
     },
     "budget": {
       "under_100": "Moins de 100 €",
@@ -1170,6 +1187,45 @@
       "editing": "Montage seul"
     }
   },
+  "graphic_designer": {
+    "plural": "Graphistes",
+    "not_found_help": "Ce membre ne propose pas de service de graphiste.",
+    "title_default": "{name}, graphiste",
+    "share_title": "{name}, graphiste sur MusicAll",
+    "page_title": "{name}, graphiste - MusicAll",
+    "page_title_default": "Graphiste - MusicAll",
+    "form_title": "Mon service de graphiste",
+    "headline_placeholder": "Ta pochette, du croquis au fichier imprimeur",
+    "deliverable_placeholder": "3 propositions, fichiers HD",
+    "works_help": "Tes pochettes, tes logos et tes affiches, {max} au plus : pour qui, quand, avec tes images et un lien si tu veux.",
+    "specialities": {
+      "cover": "Pochette",
+      "logo": "Logo",
+      "poster": "Affiche et flyer",
+      "merch": "Merch",
+      "visual_identity": "Identité visuelle",
+      "social_media": "Visuels pour les réseaux"
+    }
+  },
+  "webmaster": {
+    "plural": "Webmasters",
+    "not_found_help": "Ce membre ne propose pas de service de webmaster.",
+    "title_default": "{name}, webmaster",
+    "share_title": "{name}, webmaster sur MusicAll",
+    "page_title": "{name}, webmaster - MusicAll",
+    "page_title_default": "Webmaster - MusicAll",
+    "form_title": "Mon service de webmaster",
+    "headline_placeholder": "Le site de ton groupe, prêt pour la tournée",
+    "deliverable_placeholder": "Un site en ligne, simple à mettre à jour",
+    "works_help": "Les sites que tu as créés, {max} au plus : pour qui, quand, l'adresse du site et des captures d'écran.",
+    "works_link": "Adresse du site",
+    "specialities": {
+      "band_site": "Site de groupe ou d'artiste",
+      "epk": "Dossier de presse en ligne (EPK)",
+      "online_store": "Boutique en ligne",
+      "redesign_maintenance": "Refonte et maintenance"
+    }
+  },
   "visual_service": {
     "units": {
       "event": "l'événement",
@@ -1179,7 +1235,8 @@
     },
     "places": {
       "at_my_place": "Au studio",
-      "at_client_place": "Se déplace"
+      "at_client_place": "Se déplace",
+      "remote": "À distance"
     },
     "form": {
       "description_placeholder": "Comment tu travailles, ce que tu livres et à qui",
@@ -1188,6 +1245,7 @@
       "deliverable": "Ce que tu livres",
       "delivery_days": "Délai de livraison",
       "days_suffix": "jours",
+      "place_remote": "À distance, pour des groupes de partout",
       "media_url": "Lien YouTube ou Vimeo",
       "works_media_url": "Vidéo YouTube ou Vimeo",
       "units": {
@@ -1204,6 +1262,7 @@
     "watch": "Regarde le travail de {name}",
     "works_gallery": "Réalisations",
     "works_credits": "Ils ont travaillé avec {name}",
+    "works_sites": "Sites réalisés",
     "delivery": "Livraison",
     "delivery_within": "{what} sous {count} jour | {what} sous {count} jours",
     "delivery_days_only": "Sous {count} jour | Sous {count} jours"
@@ -1241,6 +1300,7 @@
     "play": "Écouter",
     "report": "Signaler « {title} »",
     "open_gallery": "Voir l'image de « {title} » | Voir les {count} images de « {title} »",
+    "open_screenshots": "Voir la capture d'écran de « {title} » | Voir les {count} captures d'écran de « {title} »",
     "watch": "Regarder",
     "position": "{current} sur {total}"
   },

@@ -523,6 +523,14 @@
       "video": {
         "label": "Videographer",
         "description": "You film music videos, live sessions and concerts, and you edit."
+      },
+      "graphic_design": {
+        "label": "Graphic designer",
+        "description": "You design record covers, logos, posters and merch, mostly remotely."
+      },
+      "web": {
+        "label": "Webmaster",
+        "description": "You build and look after band and artist websites, remotely."
       }
     },
     "load_error": "Could not load your services",
@@ -843,7 +851,16 @@
       "cover": "Record cover",
       "clip": "Music video",
       "live_session": "Live session",
-      "concert_film": "Concert film"
+      "concert_film": "Concert film",
+      "logo": "Logo",
+      "poster": "Poster or flyer",
+      "merch": "Merch",
+      "visual_identity": "Visual identity",
+      "social_media": "Social media visuals",
+      "band_site": "Band or artist website",
+      "epk": "Online press kit",
+      "online_store": "Online store",
+      "redesign_maintenance": "Redesign or maintenance"
     },
     "budget": {
       "under_100": "Under €100",
@@ -1170,6 +1187,45 @@
       "editing": "Editing only"
     }
   },
+  "graphic_designer": {
+    "plural": "Graphic designers",
+    "not_found_help": "This member does not offer graphic design.",
+    "title_default": "{name}, graphic designer",
+    "share_title": "{name}, graphic designer on MusicAll",
+    "page_title": "{name}, graphic designer - MusicAll",
+    "page_title_default": "Graphic designer - MusicAll",
+    "form_title": "My graphic design service",
+    "headline_placeholder": "Your record cover, from sketch to print-ready file",
+    "deliverable_placeholder": "3 proposals, HD files",
+    "works_help": "Your covers, logos and posters, {max} at most: who for, when, with your images and a link if you like.",
+    "specialities": {
+      "cover": "Record cover",
+      "logo": "Logo",
+      "poster": "Posters and flyers",
+      "merch": "Merch",
+      "visual_identity": "Visual identity",
+      "social_media": "Social media visuals"
+    }
+  },
+  "webmaster": {
+    "plural": "Webmasters",
+    "not_found_help": "This member does not offer web design.",
+    "title_default": "{name}, webmaster",
+    "share_title": "{name}, webmaster on MusicAll",
+    "page_title": "{name}, webmaster - MusicAll",
+    "page_title_default": "Webmaster - MusicAll",
+    "form_title": "My webmaster service",
+    "headline_placeholder": "Your band's website, ready for the tour",
+    "deliverable_placeholder": "A live website, easy to update",
+    "works_help": "The websites you built, {max} at most: who for, when, the site's address and screenshots.",
+    "works_link": "Site address",
+    "specialities": {
+      "band_site": "Band or artist website",
+      "epk": "Electronic press kit (EPK)",
+      "online_store": "Online store",
+      "redesign_maintenance": "Redesign and maintenance"
+    }
+  },
   "visual_service": {
     "units": {
       "event": "per event",
@@ -1179,7 +1235,8 @@
     },
     "places": {
       "at_my_place": "In the studio",
-      "at_client_place": "Travels"
+      "at_client_place": "Travels",
+      "remote": "Remotely"
     },
     "form": {
       "description_placeholder": "How you work, what you deliver and who for",
@@ -1188,6 +1245,7 @@
       "deliverable": "What you deliver",
       "delivery_days": "Delivery time",
       "days_suffix": "days",
+      "place_remote": "Remotely, for bands anywhere",
       "media_url": "YouTube or Vimeo link",
       "works_media_url": "YouTube or Vimeo video",
       "units": {
@@ -1204,6 +1262,7 @@
     "watch": "See {name}'s work",
     "works_gallery": "Work",
     "works_credits": "They worked with {name}",
+    "works_sites": "Websites built",
     "delivery": "Delivery",
     "delivery_within": "{what} within {count} day | {what} within {count} days",
     "delivery_days_only": "Within {count} day | Within {count} days"
@@ -1241,6 +1300,7 @@
     "play": "Listen",
     "report": "Report \"{title}\"",
     "open_gallery": "See the image of \"{title}\" | See the {count} images of \"{title}\"",
+    "open_screenshots": "See the screenshot of \"{title}\" | See the {count} screenshots of \"{title}\"",
     "watch": "Watch",
     "position": "{current} of {total}"
   },

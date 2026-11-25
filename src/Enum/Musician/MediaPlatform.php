@@ -12,7 +12,7 @@ enum MediaPlatform: string implements TranslatableInterface
     case YOUTUBE = 'youtube';
     case SOUNDCLOUD = 'soundcloud';
     case SPOTIFY = 'spotify';
-    /** Photography and video services only (#1411), see READ_BY_APP. */
+    /** Photography, video, graphic design and web services only (#1411, #1412), see READ_BY_APP. */
     case VIMEO = 'vimeo';
 
     /**

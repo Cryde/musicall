@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-/** The photographer and videographer searches (#1411). */
+/** The photographer and videographer searches (#1411), the graphic designer and webmaster searches (#1412). */
 #[ResetDatabase]
 class VisualSearchTest extends ApiTestCase
 {
@@ -182,8 +182,184 @@ class VisualSearchTest extends ApiTestCase
         ]);
     }
 
+    /** A graphic designer's card says they work remotely: their search is the photographer's, given remotely (#1412). */
+    public function test_a_published_graphic_designer_is_found_with_what_their_card_shows(): void
+    {
+        $rock = StyleFactory::new()->asRock()->create();
+        $nina = $this->provider(ServiceKind::GraphicDesign, 'nina', [
+            'headline' => 'Ta pochette, du croquis au fichier imprimeur',
+            'specialities' => ['cover', 'logo'],
+            'deliveryDays' => 10,
+        ], styles: [$rock]);
+        $nina->user->profile->displayName = 'Nina Roy';
+        ServicePlaceFactory::new()->remote()->create(['service' => $nina]);
+        ServiceOfferFactory::new()->create(['service' => $nina, 'unit' => OfferUnit::Flat, 'quantity' => null, 'price' => 35000, 'title' => 'Une pochette']);
+        $this->flush();
+
+        $this->client->request('GET', '/api/services/graphic-design');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/GraphicDesignerSearchResult',
+            '@id' => '/api/services/graphic-design',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/graphic_designer_search_results/nina',
+                    '@type' => 'GraphicDesignerSearchResult',
+                    'username' => 'nina',
+                    'name' => 'Nina Roy',
+                    'headline' => 'Ta pochette, du croquis au fichier imprimeur',
+                    'specialities' => ['cover', 'logo'],
+                    'price' => 35000,
+                    'price_unit' => 'flat',
+                    'delivery_days' => 10,
+                    'online' => true,
+                    'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $rock->id, 'name' => 'Rock']],
+                ],
+            ],
+        ]);
+    }
+
+    /** Around a city, online adds the webmasters who work remotely, wherever they are, after the ones in reach. */
+    public function test_online_adds_the_webmasters_working_remotely_to_a_radius(): void
+    {
+        ServicePlaceFactory::new()->atMyPlace(self::VILLEURBANNE)->create(['service' => $this->provider(ServiceKind::Web, 'villeurbanne')]);
+        $remote = $this->provider(ServiceKind::Web, 'remote');
+        ServicePlaceFactory::new()->atMyPlace(self::SAINT_ETIENNE)->create(['service' => $remote]);
+        ServicePlaceFactory::new()->remote()->create(['service' => $remote]);
+        ServicePlaceFactory::new()->atMyPlace(self::SAINT_ETIENNE)->create(['service' => $this->provider(ServiceKind::Web, 'stays')]);
+
+        $this->client->request('GET', '/api/services/web', ['radius' => '10', 'online' => '1'] + self::LYON);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/WebmasterSearchResult',
+            '@id' => '/api/services/web',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                $this->card(ServiceKind::Web, 'villeurbanne', ['distance' => 4.3]),
+                // Found remotely, so no distance.
+                $this->card(ServiceKind::Web, 'remote', ['online' => true]),
+            ],
+            'view' => ['@id' => '/api/services/web?lat=45.764&lng=4.8357&online=1&radius=10', '@type' => 'PartialCollectionView'],
+        ]);
+    }
+
+    public function test_a_speciality_keeps_its_webmasters(): void
+    {
+        $this->provider(ServiceKind::Web, 'sites', ['specialities' => ['band_site']]);
+        $this->provider(ServiceKind::Web, 'shops', ['specialities' => ['band_site', 'online_store']], created: '2024-01-02');
+
+        $this->client->request('GET', '/api/services/web', ['speciality' => 'online_store']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/WebmasterSearchResult',
+            '@id' => '/api/services/web',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$this->card(ServiceKind::Web, 'shops', ['specialities' => ['online_store', 'band_site']])],
+            'view' => ['@id' => '/api/services/web?speciality=online_store', '@type' => 'PartialCollectionView'],
+        ]);
+    }
+
+    /** Around a city, online adds the graphic designers who work remotely, wherever they are, after the ones in reach. */
+    public function test_online_adds_the_graphic_designers_working_remotely_to_a_radius(): void
+    {
+        ServicePlaceFactory::new()->atMyPlace(self::VILLEURBANNE)->create(['service' => $this->provider(ServiceKind::GraphicDesign, 'villeurbanne')]);
+        $remote = $this->provider(ServiceKind::GraphicDesign, 'remote');
+        ServicePlaceFactory::new()->atMyPlace(self::SAINT_ETIENNE)->create(['service' => $remote]);
+        ServicePlaceFactory::new()->remote()->create(['service' => $remote]);
+        ServicePlaceFactory::new()->atMyPlace(self::SAINT_ETIENNE)->create(['service' => $this->provider(ServiceKind::GraphicDesign, 'stays')]);
+
+        $this->client->request('GET', '/api/services/graphic-design', ['radius' => '10', 'online' => '1'] + self::LYON);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/GraphicDesignerSearchResult',
+            '@id' => '/api/services/graphic-design',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => '/api/graphic_designer_search_results/villeurbanne',
+                    '@type' => 'GraphicDesignerSearchResult',
+                    'username' => 'villeurbanne',
+                    'name' => 'villeurbanne',
+                    'specialities' => [],
+                    'distance' => 4.3,
+                    'online' => false,
+                    'styles' => [],
+                ],
+                // Found remotely, so no distance.
+                [
+                    '@id' => '/api/graphic_designer_search_results/remote',
+                    '@type' => 'GraphicDesignerSearchResult',
+                    'username' => 'remote',
+                    'name' => 'remote',
+                    'specialities' => [],
+                    'online' => true,
+                    'styles' => [],
+                ],
+            ],
+            'view' => ['@id' => '/api/services/graphic-design?lat=45.764&lng=4.8357&online=1&radius=10', '@type' => 'PartialCollectionView'],
+        ]);
+    }
+
+    public function test_a_speciality_keeps_its_graphic_designers_and_comes_first_on_their_card(): void
+    {
+        $this->provider(ServiceKind::GraphicDesign, 'covers', ['specialities' => ['cover']]);
+        $this->provider(ServiceKind::GraphicDesign, 'logos', ['specialities' => ['cover', 'logo']], created: '2024-01-02');
+
+        $this->client->request('GET', '/api/services/graphic-design', ['speciality' => 'logo']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/GraphicDesignerSearchResult',
+            '@id' => '/api/services/graphic-design',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/graphic_designer_search_results/logos',
+                    '@type' => 'GraphicDesignerSearchResult',
+                    'username' => 'logos',
+                    'name' => 'logos',
+                    'specialities' => ['logo', 'cover'],
+                    'online' => false,
+                    'styles' => [],
+                ],
+            ],
+            'view' => ['@id' => '/api/services/graphic-design?speciality=logo', '@type' => 'PartialCollectionView'],
+        ]);
+    }
+
+    /** A photographer's « Pochette » is a graphic designer's too, but a concert is not. */
+    public function test_a_photographers_speciality_is_refused_by_the_graphic_designer_search(): void
+    {
+        $this->client->request('GET', '/api/services/graphic-design', ['speciality' => 'concert']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'speciality', 'message' => "Cette spécialité n'existe pas", 'code' => Choice::NO_SUCH_CHOICE_ERROR],
+            ],
+            'detail' => "speciality: Cette spécialité n'existe pas",
+            'description' => "speciality: Cette spécialité n'existe pas",
+            'type' => '/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            'title' => 'An error occurred',
+        ]);
+    }
+
     /**
-     * A published photography or video service, its details given as DeliveryDetails' own fields.
+     * A published service of a kind shown by its works, its details given as DeliveryDetails' own fields.
      *
      * @param array<string, mixed> $details
      * @param list<Style>          $styles
@@ -209,7 +385,8 @@ class VisualSearchTest extends ApiTestCase
     }
 
     /**
-     * One result as the search answers it: a member with nothing filled in, but what is given.
+     * One result as the search answers it: a member with nothing filled in, but what is given. Only a kind given
+     * remotely says whether the member works that way.
      *
      * @param array<string, mixed> $filled
      *
@@ -217,15 +394,22 @@ class VisualSearchTest extends ApiTestCase
      */
     private function card(ServiceKind $kind, string $username, array $filled = []): array
     {
-        $resource = $kind === ServiceKind::Photography ? 'photographer' : 'videographer';
+        [$resource, $type, $remote] = match ($kind) {
+            ServiceKind::Photography => ['photographer', 'PhotographerSearchResult', []],
+            ServiceKind::Video => ['videographer', 'VideographerSearchResult', []],
+            ServiceKind::GraphicDesign => ['graphic_designer', 'GraphicDesignerSearchResult', ['online' => false]],
+            ServiceKind::Web => ['webmaster', 'WebmasterSearchResult', ['online' => false]],
+            default => throw new \LogicException('Not a kind shown by its works'),
+        };
 
         return [
             '@id' => '/api/' . $resource . '_search_results/' . $username,
-            '@type' => ucfirst($resource) . 'SearchResult',
+            '@type' => $type,
             'username' => $username,
             'name' => $username,
             'specialities' => [],
             'styles' => [],
+            ...$remote,
             ...$filled,
         ];
     }

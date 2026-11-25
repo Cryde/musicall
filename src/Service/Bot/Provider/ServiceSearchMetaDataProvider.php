@@ -8,8 +8,9 @@ use App\Service\Bot\PageMetaDataProviderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The searches by speciality: sound engineers (#1410), photographers and videographers (#1411). The pages per
- * speciality and city come with the annuaire (#1414), so a filtered address says what the page itself says.
+ * The searches by speciality: sound engineers (#1410), photographers and videographers (#1411), graphic designers and
+ * webmasters (#1412). The pages per speciality and city come with the annuaire (#1414), so a filtered address says
+ * what the page itself says.
  */
 readonly class ServiceSearchMetaDataProvider implements PageMetaDataProviderInterface
 {
@@ -18,6 +19,8 @@ readonly class ServiceSearchMetaDataProvider implements PageMetaDataProviderInte
         '/rechercher-un-ingenieur-du-son' => ['meta.sound_engineer_search.title', 'meta.sound_engineer_search.description'],
         '/rechercher-un-photographe' => ['meta.photographer_search.title', 'meta.photographer_search.description'],
         '/rechercher-un-videaste' => ['meta.videographer_search.title', 'meta.videographer_search.description'],
+        '/rechercher-un-graphiste' => ['meta.graphic_designer_search.title', 'meta.graphic_designer_search.description'],
+        '/rechercher-un-webmaster' => ['meta.webmaster_search.title', 'meta.webmaster_search.description'],
     ];
 
     public function __construct(private TranslatorInterface $translator)

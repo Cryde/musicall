@@ -203,6 +203,59 @@ class MessageServiceOriginTest extends ApiTestCase
         $this->assertNoMessage();
     }
 
+    /** A graphic designer or a webmaster is asked what, a link to the music and when, never where (#1412). */
+    public function test_a_graphic_design_quote_request_carries_a_link_and_a_deadline(): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $service = ServiceFactory::new(['user' => $recipient])->graphicDesign()->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour, il nous faut une pochette pour notre EP.',
+            'serviceId' => $service->id,
+            'quote' => ['budget' => '300_to_1000', 'deadline' => '2027-02-01', 'link' => 'https://soundcloud.com/demo', 'need' => 'cover'],
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = $this->onlyMessage();
+        $this->assertJsonEquals($this->sentMessage($message, $sender, 'Bonjour, il nous faut une pochette pour notre EP.', $this->serviceOrigin($service, [
+            'need' => 'cover',
+            'link' => 'https://soundcloud.com/demo',
+            'deadline' => '2027-02-01',
+            'budget' => '300_to_1000',
+        ])));
+    }
+
+    /** @return iterable<string, array{ServiceKind, array<mixed>, string, string, string}> */
+    public static function invalidProjectQuoteProvider(): iterable
+    {
+        yield 'a graphic designer\'s need asked of a webmaster' => [ServiceKind::Web, ['need' => 'logo'], 'quote[need]', 'Cette valeur doit être l\'un des choix proposés.', '8e179f1b-97aa-4560-a02f-2a8b42e49df7'];
+        yield 'a place asked of a webmaster' => [ServiceKind::Web, ['need' => 'band_site', 'city' => 'Lyon'], 'quote[city]', 'Ce champ n\'a pas été prévu.', '7703c766-b5d5-4cef-ace7-ae0dd82304e9'];
+        yield 'a javascript link' => [ServiceKind::GraphicDesign, ['need' => 'poster', 'link' => 'javascript:alert(1)'], 'quote[link]', 'Cette valeur n\'est pas une URL valide.', '57c2f299-1154-4870-89bb-ef3b1f5ad229'];
+        yield 'a deadline that does not exist' => [ServiceKind::GraphicDesign, ['need' => 'merch', 'deadline' => '2027-02-30'], 'quote[deadline]', 'Cette valeur n\'est pas une date valide.', '3c184ce5-b31d-4de7-8b76-326da7b2be93'];
+    }
+
+    /** @param array<mixed> $quote */
+    #[DataProvider('invalidProjectQuoteProvider')]
+    public function test_an_invalid_graphic_design_or_web_answer_is_refused(ServiceKind $kind, array $quote, string $path, string $message, string $code): void
+    {
+        [$sender, $recipient] = $this->pair();
+        $service = ServiceFactory::new(['user' => $recipient])->ofKind($kind)->create();
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'Bonjour',
+            'serviceId' => $service->id,
+            'quote' => $quote,
+        ], self::JSON);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals($this->violation($path, $message, $code));
+        $this->assertNoMessage();
+    }
+
     public function test_a_quote_without_a_service_is_refused(): void
     {
         [$sender, $recipient] = $this->pair();

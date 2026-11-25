@@ -12,7 +12,7 @@ use App\Entity\Service\Service;
 use App\Service\Builder\Service\VisualSearchResultBuilder;
 
 /**
- * The photographer or videographer search (#1411), the kind named by the operation's resource.
+ * The search of a kind shown by its works (#1411, #1412), the kind named by the operation's resource.
  *
  * @implements ProviderInterface<VisualSearchResult>
  */

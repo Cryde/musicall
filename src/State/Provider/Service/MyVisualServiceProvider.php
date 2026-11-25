@@ -13,7 +13,7 @@ use App\Service\Builder\Service\MyVisualServiceBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
- * A photography or video service's form (#1411), the kind named by the operation's resource.
+ * The form of a kind shown by its works (#1411, #1412), the kind named by the operation's resource.
  *
  * @implements ProviderInterface<MyVisualService>
  */

@@ -12,7 +12,7 @@ use App\Service\Builder\Service\VisualServicePageBuilder;
 use App\Service\Profile\ProfileViewTracker;
 
 /**
- * A photographer's or a videographer's page (#1411), the kind named by the operation's resource.
+ * The page of a kind shown by its works (#1411, #1412), the kind named by the operation's resource.
  *
  * @implements ProviderInterface<VisualServicePage>
  */

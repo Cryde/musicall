@@ -20,6 +20,8 @@ const LOCALIZED_FORUM_AND_USER_PAGES = new Set([
   'app_user_sound_engineer',
   'app_user_photographer',
   'app_user_videographer',
+  'app_user_graphic_designer',
+  'app_user_webmaster',
   'app_contact',
   'app_privacy',
   'app_terms',

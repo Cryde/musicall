@@ -55,6 +55,18 @@ final class ServiceFactory extends PersistentObjectFactory
         return $this->ofKind(ServiceKind::Video);
     }
 
+    /** A graphic design service (#1412), its details given as DeliveryDetails' own fields, like teaching(). */
+    public function graphicDesign(): self
+    {
+        return $this->ofKind(ServiceKind::GraphicDesign);
+    }
+
+    /** A web service (#1412), its details given as DeliveryDetails' own fields, like teaching(). */
+    public function web(): self
+    {
+        return $this->ofKind(ServiceKind::Web);
+    }
+
     public function withTrial(int $priceInCents): self
     {
         return $this->with([
@@ -71,7 +83,7 @@ final class ServiceFactory extends PersistentObjectFactory
                 $details = match ($kind) {
                     ServiceKind::Teaching => new TeachingDetails(),
                     ServiceKind::SoundEngineering => new SoundEngineeringDetails(),
-                    ServiceKind::Photography, ServiceKind::Video => new DeliveryDetails(),
+                    ServiceKind::Photography, ServiceKind::Video, ServiceKind::GraphicDesign, ServiceKind::Web => new DeliveryDetails(),
                 };
                 foreach (array_keys(get_object_vars($details)) as $field) {
                     if (array_key_exists($field, $attributes)) {

@@ -49,6 +49,21 @@ describe('quoteQuestions', () => {
     }
   })
 
+  it('asks a graphic designer and a webmaster what, a link, when and the budget, never where (#1412)', () => {
+    for (const [kind, needs] of [
+      ['graphic_design', ['cover', 'logo', 'poster', 'merch', 'visual_identity', 'social_media']],
+      ['web', ['band_site', 'epk', 'online_store', 'redesign_maintenance']]
+    ]) {
+      const asked = quoteQuestions(kind)
+      assert.deepEqual(
+        asked.map((question) => question.key),
+        ['need', 'link', 'deadline', 'budget'],
+        kind
+      )
+      assert.deepEqual(asked[0].options, needs, kind)
+    }
+  })
+
   it('asks nothing of a kind that takes no quote request', () => {
     assert.deepEqual(quoteQuestions('teaching'), [])
     assert.deepEqual(quoteQuestions('unknown'), [])

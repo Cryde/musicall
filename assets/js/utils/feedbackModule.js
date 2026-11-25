@@ -78,6 +78,8 @@ const ROUTE_TO_MODULE = Object.freeze({
   app_search_sound_engineer: FEEDBACK_MODULES.DIRECTORY,
   app_search_photographer: FEEDBACK_MODULES.DIRECTORY,
   app_search_videographer: FEEDBACK_MODULES.DIRECTORY,
+  app_search_graphic_designer: FEEDBACK_MODULES.DIRECTORY,
+  app_search_webmaster: FEEDBACK_MODULES.DIRECTORY,
   app_user_announces: FEEDBACK_MODULES.DIRECTORY,
   app_user_services: FEEDBACK_MODULES.DIRECTORY,
   app_user_public_profile: FEEDBACK_MODULES.DIRECTORY,
@@ -85,6 +87,8 @@ const ROUTE_TO_MODULE = Object.freeze({
   app_user_sound_engineer: FEEDBACK_MODULES.DIRECTORY,
   app_user_photographer: FEEDBACK_MODULES.DIRECTORY,
   app_user_videographer: FEEDBACK_MODULES.DIRECTORY,
+  app_user_graphic_designer: FEEDBACK_MODULES.DIRECTORY,
+  app_user_webmaster: FEEDBACK_MODULES.DIRECTORY,
 
   app_course: FEEDBACK_MODULES.COURSE,
   app_course_by_category: FEEDBACK_MODULES.COURSE,

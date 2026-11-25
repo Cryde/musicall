@@ -185,11 +185,9 @@
     "heading": "Find a sound engineer",
     "intro": "Mixing, mastering, recording or live sound, near you or remotely.",
     "engineer_cta": "Are you a sound engineer?",
-    "online": "Remote too",
     "count": "No sound engineer | {count} sound engineer | {count} sound engineers",
     "load_more": "More sound engineers",
     "empty_title": "No sound engineer matches your search",
-    "empty_text": "Widen the distance, add those who work remotely or remove a filter.",
     "title": "Find a sound engineer - MusicAll"
   },
   "photographer": {
@@ -210,6 +208,24 @@
     "empty_title": "No videographer matches your search",
     "title": "Find a videographer - MusicAll"
   },
+  "graphic_designer": {
+    "heading": "Find a graphic designer",
+    "intro": "Record covers, logos, posters or merch, near you or remotely.",
+    "cta": "Are you a graphic designer?",
+    "count": "No graphic designer | {count} graphic designer | {count} graphic designers",
+    "load_more": "More graphic designers",
+    "empty_title": "No graphic designer matches your search",
+    "title": "Find a graphic designer - MusicAll"
+  },
+  "webmaster": {
+    "heading": "Find a webmaster",
+    "intro": "Band websites, online press kits or online stores, near you or remotely.",
+    "cta": "Are you a webmaster?",
+    "count": "No webmaster | {count} webmaster | {count} webmasters",
+    "load_more": "More webmasters",
+    "empty_title": "No webmaster matches your search",
+    "title": "Find a webmaster - MusicAll"
+  },
   "service": {
     "cta_link": "Create your page",
     "filters_label": "Search filters",
@@ -226,7 +242,9 @@
     "clear_filters": "Clear the filters",
     "price_from": "from {price}",
     "remote_place": "Remotely",
+    "online": "Remote too",
     "days": "{count}-day turnaround | {count}-day turnaround",
-    "empty_text": "Widen the distance or remove a filter."
+    "empty_text": "Widen the distance or remove a filter.",
+    "empty_text_online": "Widen the distance, add those who work remotely or remove a filter."
   }
 }

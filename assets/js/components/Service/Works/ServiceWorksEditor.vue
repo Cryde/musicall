@@ -8,6 +8,7 @@
           v-if="editingId === work.id"
           :service-id="serviceId"
           :media-label-key="mediaLabelKey"
+          :link-label-key="linkLabelKey"
           :work="work"
           @saved="saved"
           @changed="replace"
@@ -33,7 +34,7 @@
     </ul>
 
     <div v-if="editingId === NEW" class="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
-      <ServiceWorkForm :service-id="serviceId" :media-label-key="mediaLabelKey" @saved="added" @cancel="editingId = null" />
+      <ServiceWorkForm :service-id="serviceId" :media-label-key="mediaLabelKey" :link-label-key="linkLabelKey" @saved="added" @cancel="editingId = null" />
     </div>
     <Button
       v-else-if="works.length < MAX_WORKS"
@@ -67,7 +68,9 @@ const props = defineProps({
   /** What the kind's works are, with `{max}`: records and projects unless said otherwise (#1411). */
   helpKey: { type: String, default: 'profile.service_works.help' },
   /** The platforms a work's embed takes, as the kind names them. */
-  mediaLabelKey: { type: String, default: 'profile.service_works.media_url' }
+  mediaLabelKey: { type: String, default: 'profile.service_works.media_url' },
+  /** What a work's link is, as the kind names it: a site's address for a webmaster (#1412). */
+  linkLabelKey: { type: String, default: 'profile.service_works.link' }
 })
 /** `changed` whenever a work or an image was written, for the page to refresh once the form closes. */
 const emit = defineEmits(['changed'])

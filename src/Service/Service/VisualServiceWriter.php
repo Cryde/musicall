@@ -8,7 +8,7 @@ use App\ApiResource\Service\Visual\MyVisualService;
 use App\Entity\Service\DeliveryDetails;
 use App\Entity\Service\Service;
 
-/** Writes a photography or video service from its form (#1411), every field as merged by the PATCH. */
+/** Writes a service of a kind shown by its works from its form (#1411, #1412), every field as merged by the PATCH. */
 readonly class VisualServiceWriter
 {
     public function __construct(private ServiceWriter $serviceWriter)
