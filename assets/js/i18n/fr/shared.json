@@ -223,6 +223,9 @@
   },
   "how_to": {
     "link": "Comment ça marche",
-    "band_space_overview": "Le Band Space en 1 minute"
+    "band_space_overview": "Le Band Space en 1 minute",
+    "band_space_agenda": "L'agenda en 1 minute",
+    "band_space_tasks": "Les tâches en 1 minute",
+    "band_space_settings": "Les paramètres en 1 minute"
   }
 }

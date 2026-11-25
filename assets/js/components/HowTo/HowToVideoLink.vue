@@ -3,6 +3,8 @@
     <Button
       v-bind="$attrs"
       :label="t('shared.how_to.link')"
+      :aria-label="t('shared.how_to.link')"
+      :pt="compact ? { label: { class: 'hidden min-[1320px]:inline' } } : undefined"
       icon="pi pi-play-circle"
       size="small"
       text
@@ -45,7 +47,10 @@ const props = defineProps({
   /** A key of the catalogue in utils/howToVideo.js. */
   name: { type: String, required: true },
   /** Where the link sits, so the analytics tell which spot gets used. */
-  placement: { type: String, required: true }
+  placement: { type: String, required: true },
+  /** Icon only on a narrower window, for a toolbar that would otherwise wrap its other buttons: the
+   * Tâches toolbar fits the label on one line from 1311px with the sidebar open. */
+  compact: { type: Boolean, default: false }
 })
 
 // Two roots (the link and its dialog): a class from the page goes on the link.

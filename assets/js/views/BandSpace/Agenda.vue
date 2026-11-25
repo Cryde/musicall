@@ -13,6 +13,8 @@
         </span>
       </div>
       <div class="flex items-center gap-2">
+        <!-- The video films the desktop agenda; a phone's agenda is laid out differently. -->
+        <HowToVideoLink v-if="!isBelowMd" name="band_space_agenda" placement="agenda" compact />
         <Button
           as="router-link"
           :to="{
@@ -443,6 +445,7 @@ import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDraw
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import AgendaPhoneItem from '../../components/BandSpace/Agenda/AgendaPhoneItem.vue'
 import PeriodSheet from '../../components/BandSpace/PeriodSheet.vue'
+import HowToVideoLink from '../../components/HowTo/HowToVideoLink.vue'
 import Avatar from '../../components/User/Avatar.vue'
 import { useBandSpaceLiveRefresh } from '../../composables/useBandSpaceLiveRefresh.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
