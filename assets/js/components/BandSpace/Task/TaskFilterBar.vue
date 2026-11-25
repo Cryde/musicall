@@ -21,6 +21,7 @@
 
       <div class="flex-1"></div>
 
+      <HowToVideoLink name="band_space_tasks" placement="tasks" compact />
       <Button
         :label="
           tasksStore.isSelectionMode
@@ -68,6 +69,7 @@ import InputText from 'primevue/inputtext'
 import { useI18n } from 'vue-i18n'
 import { useTaskSearchInput } from '../../../composables/useTaskSearchInput.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import HowToVideoLink from '../../HowTo/HowToVideoLink.vue'
 import TaskDueRangePicker from './TaskDueRangePicker.vue'
 import TaskFilterChips from './TaskFilterChips.vue'
 

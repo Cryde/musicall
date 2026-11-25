@@ -32,6 +32,7 @@
                 </button>
               </nav>
             </div>
+            <HowToVideoLink name="band_space_settings" placement="settings" class="mt-2" />
           </div>
 
           <!-- Content area -->
@@ -64,6 +65,7 @@ import DangerZoneSection from '../../components/BandSpace/Settings/DangerZoneSec
 import GeneralSection from '../../components/BandSpace/Settings/GeneralSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
 import SettingsPhoneTabs from '../../components/BandSpace/Settings/SettingsPhoneTabs.vue'
+import HowToVideoLink from '../../components/HowTo/HowToVideoLink.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { useIsBelowMd } from '../../composables/useIsPhone.js'
 import {
