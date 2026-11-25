@@ -16,11 +16,11 @@ export default {
     return axios.post(Routing.generate('api_token_invalidate')).then((resp) => resp.data)
   },
   // `attribution`: the campaign of the visit (#1369), see useLandingAttribution()
-  register({ username, email, password, attribution }) {
+  register({ username, email, password, attribution, emailChoices }) {
     return axios
       .post(
         Routing.generate('api_users_register'),
-        { username, email, password, ...attribution },
+        { username, email, password, ...attribution, ...emailChoices },
         {
           headers: {
             'Content-Type': 'application/ld+json',

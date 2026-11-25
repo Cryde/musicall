@@ -448,18 +448,135 @@ password: Le mot de passe doit au moins contenir 8 caractères',
         $this->assertEmailCount(0);
     }
 
+    /** The web sends every email switch of its sign-up box (#1445). */
+    public function test_the_emails_chosen_at_sign_up_are_stored(): void
+    {
+        $this->register([], [
+            'marketing' => true,
+            'site_news' => false,
+            'activity_reminder' => false,
+            'weekly_recap' => true,
+            'message_received' => false,
+            'publication_comment' => true,
+            'forum_reply' => false,
+            'band_agenda_reminder' => false,
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame([
+            'marketing' => true,
+            'siteNews' => false,
+            'activityReminder' => false,
+            'weeklyRecap' => true,
+            'messageReceived' => false,
+            'publicationComment' => true,
+            'forumReply' => false,
+            'bandAgendaReminder' => false,
+            'pushMessageReceived' => true,
+        ], $this->emailPreferencesOf('super_username'));
+    }
+
+    public function test_an_email_left_out_at_sign_up_keeps_its_default(): void
+    {
+        $this->register([], ['marketing' => true, 'message_received' => null]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertSame([
+            'marketing' => true,
+            'siteNews' => true,
+            'activityReminder' => true,
+            'weeklyRecap' => true,
+            'messageReceived' => true,
+            'publicationComment' => true,
+            'forumReply' => true,
+            'bandAgendaReminder' => true,
+            'pushMessageReceived' => true,
+        ], $this->emailPreferencesOf('super_username'));
+    }
+
+    /** The app sends no choice: no row, so the defaults apply as before. */
+    public function test_a_sign_up_without_email_choices_stores_no_preference(): void
+    {
+        $this->register([]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertNull($this->emailPreferencesOf('super_username'));
+    }
+
+    public function test_email_choices_sent_as_null_store_no_preference(): void
+    {
+        $this->register([], ['marketing' => null, 'site_news' => null, 'message_received' => null]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame('null', $this->client->getResponse()->getContent());
+        $this->assertNull($this->emailPreferencesOf('super_username'));
+    }
+
+    public function test_an_email_choice_that_is_not_a_boolean_is_refused(): void
+    {
+        $this->register([], ['site_news' => 'yes']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'site_news',
+                    'message' => 'Cette valeur doit être de type bool|null.',
+                    'code' => 'ba785a8c-82cb-4283-967c-3cf342181b40',
+                ],
+            ],
+            'detail' => 'site_news: Cette valeur doit être de type bool|null.',
+            'description' => 'site_news: Cette valeur doit être de type bool|null.',
+            'type' => '/validation_errors/ba785a8c-82cb-4283-967c-3cf342181b40',
+            'title' => 'An error occurred',
+        ]);
+        $this->assertNull(static::getContainer()->get(UserRepository::class)->findOneBy(['username' => 'super_username']));
+    }
+
     /**
      * @param array<string, string> $headers
-     * @param array<string, mixed> $campaign
+     * @param array<string, mixed> $fields added to the body
      */
-    private function register(array $headers, array $campaign = []): void
+    private function register(array $headers, array $fields = []): void
     {
         $this->client->jsonRequest('POST', '/api/users/register', [
             'username' => 'super_username',
             'password' => 'password',
             'email' => 'super_email@mail.com',
-            ...$campaign,
+            ...$fields,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json', ...$headers]);
+    }
+
+    /** @return array<string, bool>|null the email switches stored for the account, and one push switch left alone; null without a row */
+    private function emailPreferencesOf(string $username): ?array
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $username]);
+        $this->assertInstanceOf(User::class, $user);
+        $preference = $user->notificationPreference;
+        if ($preference === null) {
+            return null;
+        }
+
+        return [
+            'marketing' => $preference->marketing,
+            'siteNews' => $preference->siteNews,
+            'activityReminder' => $preference->activityReminder,
+            'weeklyRecap' => $preference->weeklyRecap,
+            'messageReceived' => $preference->messageReceived,
+            'publicationComment' => $preference->publicationComment,
+            'forumReply' => $preference->forumReply,
+            'bandAgendaReminder' => $preference->bandAgendaReminder,
+            'pushMessageReceived' => $preference->pushMessageReceived,
+        ];
     }
 
     /** @return array{?string, ?string, ?string, ?string} the utm_source, utm_medium, utm_campaign and referrer host stored for the account */

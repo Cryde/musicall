@@ -183,6 +183,8 @@
             <small v-if="errors.confirmPassword" id="confirmPassword-error" role="alert" class="text-red-500">{{ errors.confirmPassword }}</small>
           </div>
 
+          <SignupEmailChoices v-model="emailChoices" />
+
           <!-- Terms -->
           <div class="flex items-start gap-3">
             <Checkbox
@@ -249,8 +251,10 @@ import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import emailVerificationApi from '../../api/user/emailVerification.js'
 import securityApi from '../../api/user/security.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
+import SignupEmailChoices from '../../components/Auth/SignupEmailChoices.vue'
 import SocialSignInButtons from '../../components/Auth/SocialSignInButtons.vue'
 import { useLandingAttribution } from '../../composables/useLandingAttribution.js'
+import { defaultEmailChoices, emailChoicesSummary } from '../../utils/signupEmailChoices.js'
 import { returnPathOf } from '../../utils/unauthenticatedRedirect.js'
 
 const { t } = useI18n()
@@ -272,6 +276,7 @@ const form = reactive({
   confirmPassword: '',
   acceptTerms: false
 })
+const emailChoices = ref(defaultEmailChoices())
 
 const errors = reactive({
   username: '',
@@ -499,9 +504,10 @@ async function handleSubmit() {
       username: form.username.trim(),
       email: form.email.trim(),
       password: form.password,
-      attribution: useLandingAttribution()
+      attribution: useLandingAttribution(),
+      emailChoices: emailChoices.value
     })
-    trackUmamiEvent('user-register')
+    trackUmamiEvent('user-register', { emails: emailChoicesSummary(emailChoices.value).kind })
 
     registeredEmail.value = form.email.trim()
     isRegistrationComplete.value = true

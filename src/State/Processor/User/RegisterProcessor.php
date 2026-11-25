@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\ValidatorInterface;
 use App\ApiResource\User\Register;
 use App\Entity\User;
+use App\Entity\User\UserNotificationPreference;
 use App\Entity\User\UserProfile;
 use App\Enum\User\RegistrationMethod;
 use App\Event\UserRegisteredEvent;
@@ -27,6 +28,18 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 readonly class RegisterProcessor implements ProcessorInterface
 {
+    /** The email switches of the web sign-up box (#1445), named alike on Register and on the preference. */
+    private const array EMAIL_SWITCHES = [
+        'marketing',
+        'siteNews',
+        'activityReminder',
+        'weeklyRecap',
+        'messageReceived',
+        'publicationComment',
+        'forumReply',
+        'bandAgendaReminder',
+    ];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $userPasswordHasher,
@@ -80,9 +93,24 @@ readonly class RegisterProcessor implements ProcessorInterface
 
         $profile = new UserProfile();
         $user->profile = $profile;
+        $user->notificationPreference = $this->chosenEmailPreference($data);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
         $this->eventDispatcher->dispatch(new UserRegisteredEvent($user));
+    }
+
+    /** Null when no email was chosen: without a row the defaults apply. */
+    private function chosenEmailPreference(Register $data): ?UserNotificationPreference
+    {
+        $preference = null;
+        foreach (self::EMAIL_SWITCHES as $switch) {
+            if ($data->{$switch} !== null) {
+                $preference ??= new UserNotificationPreference();
+                $preference->{$switch} = $data->{$switch};
+            }
+        }
+
+        return $preference;
     }
 }

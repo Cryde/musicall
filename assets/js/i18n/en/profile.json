@@ -211,7 +211,7 @@
           "description": "Your articles and galleries being published or rejected"
         },
         "site_news": {
-          "label": "Site news",
+          "label": "What's new on MusicAll",
           "description": "New features and important announcements"
         },
         "weekly_recap": {

@@ -17,6 +17,7 @@ const MIGRATED_PATHS = [
   'components/AppNavbarUserCluster.vue',
   'components/Auth/AuthRequiredModal.vue',
   'components/Auth/OtpInput.vue',
+  'components/Auth/SignupEmailChoices.vue',
   'components/Auth/SignupOptions.vue',
   'components/BandSpace/Agenda/',
   'components/BandSpace/BandSidebar.vue',
