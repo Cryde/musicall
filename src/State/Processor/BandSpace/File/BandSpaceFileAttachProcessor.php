@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\File\BandSpaceFileAttachInput;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFileAttachment;
+use App\Entity\BandSpace\Song;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
@@ -24,6 +25,7 @@ use App\Security\BandSpace\SetlistWriteGuard;
 use App\Security\BandSpace\SongWriteGuard;
 use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\SongFileFolderResolver;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -49,6 +51,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         private BandSpaceNoteRepository $noteRepository,
         private SongRepository $songRepository,
         private SetlistRepository $setlistRepository,
+        private SongFileFolderResolver $songFolderResolver,
         private BandSpaceActivityRecorder $activityRecorder,
         private BandSpaceFileBuilder $fileBuilder,
         private Security $security,
@@ -76,11 +79,13 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         // Stored lower case, as every generated id is: the file card matches it with ===.
         $sourceId = mb_strtolower($data->sourceId);
 
+        $song = $data->sourceType === 'song' ? $this->resolveSong($sourceId, $bandSpace) : null;
+
         $sourceLabel = match ($data->sourceType) {
             'task' => $this->resolveTask($sourceId, $bandSpace),
             'finance' => $this->resolveFinanceEntry($sourceId, $bandSpace, $user),
             'note' => $this->resolveNote($sourceId, $bandSpace),
-            'song' => $this->resolveSong($sourceId, $bandSpace),
+            'song' => $song?->title,
             'setlist' => $this->resolveSetlist($sourceId, $bandSpace),
             default => throw new UnprocessableEntityHttpException('band_space.file.source_type_invalid'),
         };
@@ -98,6 +103,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         $attachment->bandSpaceFile = $file;
         $attachment->sourceType = (string) $data->sourceType;
         $attachment->sourceId = $sourceId;
+        $attachment->songFolder = $song instanceof Song ? $this->songFolderResolver->resolve($data->songFolderId, $song) : null;
         $attachment->attachedBy = $user;
         $this->entityManager->persist($attachment);
 
@@ -157,16 +163,16 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         return $note->title;
     }
 
-    private function resolveSong(string $songId, BandSpace $bandSpace): string
+    private function resolveSong(string $songId, BandSpace $bandSpace): Song
     {
         $song = $this->songRepository->findOneByIdAndBandSpace($songId, $bandSpace);
-        if (!$song instanceof \App\Entity\BandSpace\Song) {
+        if (!$song instanceof Song) {
             throw new NotFoundHttpException('band_space.song.not_found');
         }
 
         $this->songWriteGuard->assertWritable($song);
 
-        return $song->title;
+        return $song;
     }
 
     private function resolveSetlist(string $setlistId, BandSpace $bandSpace): string

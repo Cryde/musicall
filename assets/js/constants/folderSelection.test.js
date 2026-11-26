@@ -8,6 +8,7 @@ import {
   songFolderId,
   TRASH_FOLDER_ID,
   virtualFolderId,
+  virtualFolderSongFileFolderId,
   virtualFolderSongId,
   virtualFolderSource
 } from './folderSelection.js'
@@ -106,6 +107,27 @@ describe('virtualFolderId', () => {
 describe('songFolderId', () => {
   it('builds the node of one song under the « Titres » virtual folder', () => {
     assert.equal(songFolderId(SONG_ID), `virtual:song:${SONG_ID}`)
+  })
+
+  it("builds the node of one of that song's folders", () => {
+    assert.equal(songFolderId(SONG_ID, 'stems'), `virtual:song:${SONG_ID}:stems`)
+  })
+})
+
+describe('virtualFolderSongFileFolderId', () => {
+  it('round trips with songFolderId, and still names the song', () => {
+    const selection = songFolderId(SONG_ID, 'stems')
+    assert.equal(virtualFolderSongFileFolderId(selection), 'stems')
+    assert.equal(virtualFolderSongId(selection), SONG_ID)
+    assert.equal(virtualFolderSource(selection), 'song')
+    assert.equal(isVirtualFolderId(selection), true)
+  })
+
+  it('has no folder for the song itself or any other selection', () => {
+    assert.equal(virtualFolderSongFileFolderId(songFolderId(SONG_ID)), null)
+    assert.equal(virtualFolderSongFileFolderId(virtualFolderId('song')), null)
+    assert.equal(virtualFolderSongFileFolderId(ROOT_FOLDER_ID), null)
+    assert.equal(virtualFolderSongFileFolderId(null), null)
   })
 })
 

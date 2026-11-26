@@ -98,6 +98,8 @@
           :folders="folders"
           :virtual-folders="virtualFolders"
           :song-folders="songFolders"
+          :song-file-folders="songFileFolders"
+          :song-folder-counts="songFolderCounts"
           :active-folder-id="activeFolderId"
           :band-space-id="bandSpaceId"
           :is-admin="isAdmin"
@@ -197,6 +199,9 @@ const props = defineProps({
   virtualFolders: { type: Array, default: () => [] },
   /** The songs « Titres » unfolds into, as the sidebar shows them on a computer. */
   songFolders: { type: Array, default: () => [] },
+  /** Every song's own folders (#1451), and the files sitting directly in each. */
+  songFileFolders: { type: Array, default: () => [] },
+  songFolderCounts: { type: Map, default: () => new Map() },
   activeFolderId: { type: String, default: null },
   archivedCount: { type: Number, default: 0 },
   filters: { type: Object, required: true },
@@ -220,7 +225,13 @@ const folderEdit = ref(null)
 const folderToDelete = ref(null)
 
 const locationLabel = computed(() =>
-  activeLocationLabel(props.activeFolderId, props.folders, props.virtualFolders, props.songFolders)
+  activeLocationLabel(
+    props.activeFolderId,
+    props.folders,
+    props.virtualFolders,
+    props.songFolders,
+    props.songFileFolders
+  )
 )
 
 const songPage = computed(() => {

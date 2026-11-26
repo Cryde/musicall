@@ -11,6 +11,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
+use App\Tests\Factory\BandSpace\File\SongFileFolderFactory;
 use App\Tests\Factory\BandSpace\SetlistFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -382,5 +383,88 @@ class BandSpaceSongFileAttachTest extends ApiTestCase
             0,
             self::getContainer()->get(BandSpaceFileRepository::class)->findBy(['bandSpace' => $bandSpace->id]),
         );
+    }
+
+    public function test_upload_straight_into_a_folder_of_the_song(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'guitariste', 'email' => 'guitariste@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'My song'])->create();
+        $tabs = SongFileFolderFactory::createOne(['song' => $song, 'createdBy' => $user, 'name' => 'Tablatures']);
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/tab.gp5', 'tab.gp5', null, null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $song->id . '/files',
+            ['songFolderId' => $tabs->id],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $file = self::getContainer()->get(BandSpaceFileRepository::class)->findOneBy(['bandSpace' => $bandSpace]);
+        $this->assertInstanceOf(BandSpaceFile::class, $file);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => 'tab.gp5',
+            'size' => 1463,
+            'mime_type' => 'application/octet-stream',
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [
+                ['source_type' => 'song', 'source_id' => $song->id, 'source_label' => 'My song', 'song_folder_id' => $tabs->id],
+            ],
+            'current_version_id' => $file->currentVersion?->id,
+            'current_version_number' => 1,
+            'version_count' => 1,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'guitariste',
+                'display_name' => 'guitariste',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => $file->creationDatetime->format('c'),
+        ]);
+    }
+
+    public function test_upload_into_a_folder_of_another_song_is_refused_and_stores_nothing(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace])->create();
+        $elsewhere = SongFileFolderFactory::createOne(['song' => SongFactory::new(['bandSpace' => $bandSpace]), 'createdBy' => $user]);
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $song->id . '/files',
+            ['songFolderId' => $elsewhere->id],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Ce dossier n\'appartient pas à ce titre',
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => 'Ce dossier n\'appartient pas à ce titre',
+        ]);
+        $this->assertCount(0, self::getContainer()->get(BandSpaceFileRepository::class)->findBy(['bandSpace' => $bandSpace->id]));
     }
 }

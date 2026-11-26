@@ -34,6 +34,7 @@ export default {
       taskId,
       financeEntryId,
       sourceId,
+      songFolderId,
       query,
       mime,
       format,
@@ -52,6 +53,7 @@ export default {
     if (taskId) params.task_id = taskId
     if (financeEntryId) params.finance_entry_id = financeEntryId
     if (sourceId) params.source_id = sourceId
+    if (songFolderId) params.song_folder_id = songFolderId
     if (query) params.query = query
     if (mime) params.mime = mime
     if (format) params.format = format
@@ -315,10 +317,20 @@ export default {
       .catch(handleApiError)
   },
 
-  // `signal`, as for uploadFile: a batch closed halfway drops the file still going up.
-  attachFileUpload(bandSpaceId, sourceType, sourceId, file, onProgress, signal) {
+  // `signal`, as for uploadFile: a batch closed halfway drops the file still going up. A song's file
+  // can go straight into one of the song's folders (#1451).
+  attachFileUpload(
+    bandSpaceId,
+    sourceType,
+    sourceId,
+    file,
+    onProgress,
+    signal,
+    { songFolderId = null } = {}
+  ) {
     const formData = new FormData()
     formData.append('uploadedFile', file)
+    if (songFolderId) formData.append('songFolderId', songFolderId)
 
     return axios
       .post(sourceRoute(sourceType, 'attach', bandSpaceId, sourceId), formData, {
@@ -338,11 +350,11 @@ export default {
       .catch(handleApiError)
   },
 
-  attachExistingFile(bandSpaceId, fileId, sourceType, sourceId) {
+  attachExistingFile(bandSpaceId, fileId, sourceType, sourceId, { songFolderId = null } = {}) {
     return axios
       .post(
         Routing.generate('api_band_space_files_attach_existing', { bandSpaceId, fileId }),
-        { sourceType, sourceId },
+        { sourceType, sourceId, songFolderId },
         { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
       )
       .then((resp) => resp.data)

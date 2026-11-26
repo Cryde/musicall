@@ -6,6 +6,7 @@ import {
   ROOT_FOLDER_ID,
   TRASH_FOLDER_ID,
   virtualFolderId,
+  virtualFolderSongFileFolderId,
   virtualFolderSongId,
   virtualFolderSource
 } from '../constants/folderSelection.js'
@@ -13,6 +14,7 @@ import { intlLocale, treeIndent } from '../i18n/formatLocale.js'
 import { i18n } from '../i18n/index.js'
 import { FILES_PAGE_SIZE } from './filePagination.js'
 import { fileSongs } from './songFileCounts.js'
+import { songFolderPath } from './songFileFolders.js'
 
 /**
  * What the Files panel asks the collection for, and what the rows it gets back have in common.
@@ -85,6 +87,8 @@ export function fileListingParams(activeFolderId, filters, page) {
     params.source = virtualSource
     const songId = virtualFolderSongId(activeFolderId)
     if (songId !== null) params.sourceId = songId
+    const songFileFolderId = virtualFolderSongFileFolderId(activeFolderId)
+    if (songFileFolderId !== null) params.songFolderId = songFileFolderId
   } else if (activeFolderId && !isSearchActive(filters)) {
     // ROOT_FOLDER_ID rides along as a folder id, since the collection reads that reserved value as the
     // root of the tree. No folder_id at all is the whole space, which is what a search wants and what
@@ -125,7 +129,13 @@ const LOCATION_SEPARATOR = ' › '
  * @param {Array<{id: string, title: string}>} songFolders the songs « Titres » unfolds into
  * @returns {string}
  */
-export function activeLocationLabel(activeFolderId, tree, virtualFolders = [], songFolders = []) {
+export function activeLocationLabel(
+  activeFolderId,
+  tree,
+  virtualFolders = [],
+  songFolders = [],
+  songFileFolders = []
+) {
   const t = i18n.global.t
   if (activeFolderId === null) return t('band_space_files.page.all_files')
   if (activeFolderId === TRASH_FOLDER_ID) return t('band_space_files.page.trash')
@@ -136,8 +146,12 @@ export function activeLocationLabel(activeFolderId, tree, virtualFolders = [], s
     const songId = virtualFolderSongId(activeFolderId)
     // A song whose last file went while the panel stood in it is no longer a node: the source says it.
     const song = songFolders.find((node) => node.id === songId)
+    if (!song) return sourceName
 
-    return song ? [sourceName, song.title].join(LOCATION_SEPARATOR) : sourceName
+    return [
+      sourceName,
+      songFolderLabel(song.title, songFileFolders, virtualFolderSongFileFolderId(activeFolderId))
+    ].join(LOCATION_SEPARATOR)
   }
 
   const folderId = listedFolderId(activeFolderId)
@@ -146,6 +160,21 @@ export function activeLocationLabel(activeFolderId, tree, virtualFolders = [], s
   return [t('band_space_files.folder.root'), ...path.map((segment) => segment.name)].join(
     LOCATION_SEPARATOR
   )
+}
+
+/**
+ * « New 45 › Stems › Batterie »: a song, then the way down to one of its folders (#1451).
+ *
+ * @param {string} songTitle
+ * @param {ReadonlyArray<{id: string, parent_id: string|null, name: string}>} songFileFolders
+ * @param {string|null} folderId null names the song alone
+ * @returns {string}
+ */
+export function songFolderLabel(songTitle, songFileFolders, folderId) {
+  return [
+    songTitle,
+    ...songFolderPath(songFileFolders, folderId).map((folder) => folder.name)
+  ].join(LOCATION_SEPARATOR)
 }
 
 /**

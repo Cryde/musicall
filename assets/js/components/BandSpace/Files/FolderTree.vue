@@ -109,6 +109,16 @@
                 <span class="flex-1 truncate">{{ song.title }}</span>
                 <span class="shrink-0 text-xs text-surface-500 tabular-nums">{{ song.fileCount }}</span>
               </button>
+              <!-- The song the panel stands in unfolds into its own folders (#1451). -->
+              <SongFolderTreeNodes
+                v-if="song.id === activeSongId && songFolderNodes.length > 0"
+                :song-id="song.id"
+                :nodes="songFolderNodes"
+                :counts="songFolderCounts"
+                :active-folder-id="activeFolderId"
+                :row-classes="virtualButtonClasses"
+                @select="emit('select', $event)"
+              />
             </div>
           </li>
         </ul>
@@ -148,16 +158,22 @@ import {
   virtualFolderSongId
 } from '../../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { buildSongFileTree } from '../../../utils/songFileFolders.js'
 import FolderDeleteDialog from './FolderDeleteDialog.vue'
 import FolderEditDialog from './FolderEditDialog.vue'
 import FolderTreeNode from './FolderTreeNode.vue'
 import FolderTreeRail from './FolderTreeRail.vue'
+import SongFolderTreeNodes from './SongFolderTreeNodes.vue'
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
   virtualFolders: { type: Array, default: () => [] },
   /** The songs that have files, by title: the nodes « Titres » unfolds into. */
   songFolders: { type: Array, default: () => [] },
+  /** The own folders (#1451) of the song the panel stands in. */
+  songFileFolders: { type: Array, default: () => [] },
+  /** Folder id to the files sitting directly in it. */
+  songFolderCounts: { type: Map, default: () => new Map() },
   activeFolderId: { type: String, default: null },
   bandSpaceId: { type: String, default: null },
   isAdmin: { type: Boolean, default: false }
@@ -170,6 +186,9 @@ const songListId = useId()
 // Folded by default, unless the panel already stands in one of the songs: the phone's sheet builds the
 // tree afresh every time it opens, and the selected song has to be in sight there.
 const areSongsUnfolded = ref(virtualFolderSongId(props.activeFolderId) !== null)
+
+const activeSongId = computed(() => virtualFolderSongId(props.activeFolderId))
+const songFolderNodes = computed(() => buildSongFileTree(props.songFileFolders, [], '').folders)
 
 function hasSongNodes(virtual) {
   return virtual.source === 'song' && props.songFolders.length > 0

@@ -80,6 +80,7 @@ readonly class BandSpaceFileCollectionProvider implements ProviderInterface
             tagId: $query?->getString('tag_id') ?: null,
             source: $query?->getString('source') ?: null,
             sourceId: $query?->getString('source_id') ?: $query?->getString('task_id') ?: $query?->getString('finance_entry_id') ?: null,
+            songFolderId: $query?->getString('song_folder_id') ?: null,
             query: $query?->getString('query') ?: null,
             mime: $query?->getString('mime') ?: null,
             uploaderId: $query?->getString('uploader_id') ?: null,

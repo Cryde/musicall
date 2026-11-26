@@ -309,15 +309,20 @@ class BandSpaceFileRepository extends ServiceEntityRepository
             if ($filter->source === 'manual') {
                 $qb->andWhere(self::standaloneExpression('attMan'));
             } else {
+                $bySongFolder = $filter->sourceId !== null && $filter->songFolderId !== null;
                 $qb->andWhere(
                     'EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attSrc '
                     . 'WHERE attSrc.bandSpaceFile = bsf AND attSrc.sourceType = :source'
                     . ($filter->sourceId !== null ? ' AND attSrc.sourceId = :sourceId' : '')
+                    . ($bySongFolder ? ' AND attSrc.songFolder = :songFolderId' : '')
                     . ')'
                 )->setParameter('source', $filter->source);
 
                 if ($filter->sourceId !== null) {
                     $qb->setParameter('sourceId', $filter->sourceId);
+                }
+                if ($bySongFolder) {
+                    $qb->setParameter('songFolderId', $filter->songFolderId);
                 }
             }
         } elseif ($filter->sourceId !== null) {

@@ -115,10 +115,12 @@ const props = defineProps({
   /** What the reader's way back says: the song, the task... */
   backLabel: { type: String, default: '' },
   /** The song page's tab card: « Lire la tablature », as the main button. */
-  featured: { type: Boolean, default: false }
+  featured: { type: Boolean, default: false },
+  /** A song's file can be put in one of the song's folders (#1451). */
+  canMove: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['detach'])
+const emit = defineEmits(['detach', 'move'])
 
 const { t } = useI18n()
 const router = useRouter()
@@ -180,6 +182,13 @@ const menuItems = computed(() => {
       label: t('band_space_files.attached_section.download'),
       icon: 'pi pi-download',
       command: () => window.open(fileUrl.value, '_blank', 'noopener')
+    })
+  }
+  if (props.canMove) {
+    items.push({
+      label: t('band_space_files.song_folders.move'),
+      icon: 'pi pi-folder',
+      command: () => emit('move', props.file)
     })
   }
   if (props.canDetach) {

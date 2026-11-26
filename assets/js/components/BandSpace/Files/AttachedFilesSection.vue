@@ -5,6 +5,7 @@
     @dragenter.prevent="handleDragEnter"
     @dragover.prevent
     @dragleave="handleDragLeave"
+    @drop.capture="endDrag"
     @drop.prevent="handleDrop"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -14,7 +15,7 @@
       </component>
       <div v-if="canAttach && attachedFiles.length > 0" class="flex flex-wrap gap-2">
         <Button :label="t('band_space_files.attached_section.import')" icon="pi pi-cloud-upload" size="small" severity="secondary" @click="openUpload()" />
-        <Button :label="t('band_space_files.attached_section.choose')" icon="pi pi-link" size="small" severity="secondary" @click="linkVisible = true" />
+        <Button :label="t('band_space_files.attached_section.choose')" icon="pi pi-link" size="small" severity="secondary" @click="openLink()" />
       </div>
     </div>
 
@@ -32,12 +33,14 @@
             :can-read-tabs="canReadTabs"
             :can-detach="mayDetach"
             :back-label="sourceLabel"
+            :can-move="withFolders && canAttach"
             featured
             @detach="confirmDetach"
+            @move="songTree?.openMove($event)"
           />
         </div>
       </div>
-      <ul v-if="rows.length > 0" class="m-0 flex list-none flex-col gap-1.5 p-0">
+      <ul v-if="!withFolders && rows.length > 0" class="m-0 flex list-none flex-col gap-1.5 p-0">
         <li
           v-for="file in rows"
           :key="file.id"
@@ -53,7 +56,6 @@
           />
         </li>
       </ul>
-      <p v-if="canAttach" class="m-0 text-xs text-surface-600 dark:text-surface-300">{{ t('band_space_files.attached_section.drop_hint') }}</p>
     </template>
 
     <div
@@ -69,7 +71,7 @@
       </p>
       <div class="flex flex-wrap justify-center gap-2">
         <Button :label="t('band_space_files.attached_section.import')" icon="pi pi-cloud-upload" size="small" @click="openUpload()" />
-        <Button :label="t('band_space_files.attached_section.choose')" icon="pi pi-link" size="small" severity="secondary" @click="linkVisible = true" />
+        <Button :label="t('band_space_files.attached_section.choose')" icon="pi pi-link" size="small" severity="secondary" @click="openLink()" />
       </div>
     </div>
 
@@ -77,19 +79,47 @@
       {{ t('band_space_files.attached_section.empty') }}
     </p>
 
-    <!-- Shown while files are dragged over the section: dropping them opens the import with them queued. -->
+    <!-- A song's files sorted into its folders (#1451), under the tab card. -->
+    <SongFilesTree
+      v-if="withFolders"
+      v-show="!(isLoading && attachedFiles.length === 0)"
+      ref="songTree"
+      :band-space-id="bandSpaceId"
+      :song-id="sourceId"
+      :song-title="sourceLabel"
+      :files="attachedFiles"
+      :featured="tab"
+      :can-edit="canAttach"
+      :can-detach="mayDetach"
+      :can-read-tabs="canReadTabs"
+      @upload="uploadIntoFolder"
+      @link="openLink"
+      @detach="confirmDetach"
+      @file-updated="replaceFile"
+      @files-changed="loadFiles"
+    />
+
+    <p v-if="canAttach && attachedFiles.length > 0" class="m-0 text-xs text-surface-600 dark:text-surface-300">{{ t('band_space_files.attached_section.drop_hint') }}</p>
+
+    <!-- Shown while files are dragged over the section: dropping them opens the import with them queued.
+         See-through over a song's folders, so a folder can still be aimed at. -->
     <div
       v-if="isDragging"
-      class="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-primary-50/90 text-sm font-semibold text-primary-800 dark:bg-primary-950/90 dark:text-primary-200"
+      :class="[
+        'pointer-events-none absolute inset-0 flex justify-center rounded-xl border-2 border-dashed border-primary text-sm font-semibold text-primary-800 dark:text-primary-200',
+        aimsAtFolders ? 'items-start bg-primary-50/30 pt-2 dark:bg-primary-950/30' : 'items-center bg-primary-50/90 dark:bg-primary-950/90'
+      ]"
     >
-      {{ t('band_space_files.attached_section.drop_here') }}
+      <span :class="aimsAtFolders ? 'rounded-lg bg-primary-50 px-3 py-1 dark:bg-primary-950' : ''">
+        {{ aimsAtFolders ? t('band_space_files.song_folders.drop_on_folder') : t('band_space_files.attached_section.drop_here') }}
+      </span>
     </div>
 
     <template v-if="canAttach">
       <FileUploadDialog
         v-model:visible="uploadVisible"
         :band-space-id="bandSpaceId"
-        :attach-to="{ type: sourceType, id: sourceId, label: sourceLabel || heading }"
+        :attach-to="uploadTarget"
         :initial-files="droppedFiles"
         :auto-start="startsAtOnce"
         @saved="handleUploaded"
@@ -99,6 +129,7 @@
         :band-space-id="bandSpaceId"
         :source-type="sourceType"
         :source-id="sourceId"
+        :song-folder-id="linkFolderId"
         @attached="handleLinked"
       />
     </template>
@@ -111,12 +142,13 @@
 import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useFileUploadToasts } from '../../../composables/useFileUploadToasts.js'
 import { TABS_TESTER_ONLY } from '../../../constants/bandSpace.js'
+import { SONG_FILE_DRAG_TYPE } from '../../../constants/songFileDrag.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { featuredTab } from '../../../utils/attachedFileAction.js'
 import { tabReaderRoute } from '../../../utils/tabReaderBack.js'
@@ -125,6 +157,9 @@ import AttachFileDialog from './AttachFileDialog.vue'
 import FileDetachConfirmDialog from './FileDetachConfirmDialog.vue'
 import FileUploadDialog from './FileUploadDialog.vue'
 import TabScorePreview from './TabScorePreview.vue'
+
+// Only a song's page sorts its files into folders: the drawers of tasks, finances and setlists never load it.
+const SongFilesTree = defineAsyncComponent(() => import('./SongFilesTree.vue'))
 
 /**
  * The files attached to a song, a setlist, a task or a finance entry (#1431): one list for the four, each
@@ -158,7 +193,9 @@ const props = defineProps({
   /** A song's page draws its latest tab first, its first bars showing. */
   featureTab: { type: Boolean, default: false },
   /** Files to send as the section opens, picked before it existed (« Nouveau titre »). */
-  uploadOnMount: { type: Array, default: () => [] }
+  uploadOnMount: { type: Array, default: () => [] },
+  /** A song's page sorts its files into the song's folders (#1451). */
+  withFolders: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['attached', 'detached', 'count', 'tab'])
@@ -169,6 +206,7 @@ const toast = useToast()
 const userSecurityStore = useUserSecurityStore()
 const { announceUpload } = useFileUploadToasts()
 const detachDialog = useTemplateRef('detachDialog')
+const songTree = useTemplateRef('songTree')
 
 const attachedFiles = ref([])
 const isLoading = ref(false)
@@ -177,6 +215,9 @@ const linkVisible = ref(false)
 const droppedFiles = ref([])
 const startsAtOnce = ref(false)
 const isDragging = ref(false)
+/** The song folder the import and « Choisir dans Fichiers » file into, null for the song's root. */
+const uploadFolder = ref(null)
+const linkFolderId = ref(null)
 // dragenter and dragleave fire for every child crossed: the count says when the pointer really left.
 let dragDepth = 0
 
@@ -194,6 +235,13 @@ const tab = computed(() =>
   props.featureTab && canReadTabs.value ? featuredTab(attachedFiles.value) : null
 )
 const rows = computed(() => attachedFiles.value.filter((file) => file !== tab.value))
+const aimsAtFolders = computed(() => props.withFolders && !!songTree.value?.hasFolders)
+const uploadTarget = computed(() => ({
+  type: props.sourceType,
+  id: props.sourceId,
+  label: uploadFolder.value?.label || props.sourceLabel || heading.value,
+  songFolderId: uploadFolder.value?.id ?? null
+}))
 
 watch(
   () => [props.bandSpaceId, props.sourceType, props.sourceId],
@@ -229,10 +277,31 @@ async function loadFiles() {
   }
 }
 
-function openUpload(files = [], { autoStart = false } = {}) {
+function openUpload(files = [], { autoStart = false, folder = null } = {}) {
   droppedFiles.value = files
   startsAtOnce.value = autoStart
+  uploadFolder.value = folder
   uploadVisible.value = true
+}
+
+// Caught on the way down: a drop on one of the song's rows stops there, and the overlay has to go anyway.
+function endDrag() {
+  dragDepth = 0
+  isDragging.value = false
+}
+
+/** Files dropped on one of the song's rows, or « Importer ici » in a folder's ⋮. */
+function uploadIntoFolder(folderId, files, label) {
+  openUpload(files, { folder: folderId ? { id: folderId, label } : null })
+}
+
+function openLink(folderId = null) {
+  linkFolderId.value = folderId
+  linkVisible.value = true
+}
+
+function replaceFile(updated) {
+  attachedFiles.value = attachedFiles.value.map((file) => (file.id === updated.id ? updated : file))
 }
 
 onMounted(() => {
@@ -253,8 +322,12 @@ function handleDragLeave() {
 }
 
 function handleDrop(event) {
-  dragDepth = 0
-  isDragging.value = false
+  // A song's file dragged out of its folder, onto the section rather than another folder: back to the root.
+  const movedFileId = event.dataTransfer?.getData(SONG_FILE_DRAG_TYPE)
+  if (movedFileId) {
+    songTree.value?.moveFile(movedFileId, null)
+    return
+  }
   const files = [...(event.dataTransfer?.files ?? [])]
   if (props.canAttach && files.length > 0) openUpload(files)
 }
@@ -313,5 +386,10 @@ function confirmDetach(file) {
   })
 }
 
-defineExpose({ reload: loadFiles })
+function reload() {
+  loadFiles()
+  songTree.value?.reload()
+}
+
+defineExpose({ reload })
 </script>

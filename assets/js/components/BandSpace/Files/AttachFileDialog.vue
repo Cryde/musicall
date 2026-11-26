@@ -67,7 +67,9 @@ import { formatBytes } from '../../../utils/formatBytes.js'
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   sourceType: { type: String, required: true },
-  sourceId: { type: String, required: true }
+  sourceId: { type: String, required: true },
+  /** One of the song's folders to put the file in (#1451); null leaves it at the song's root. */
+  songFolderId: { type: String, default: null }
 })
 
 const emit = defineEmits(['attached'])
@@ -115,7 +117,8 @@ async function attachExisting(file) {
       props.bandSpaceId,
       file.id,
       props.sourceType,
-      props.sourceId
+      props.sourceId,
+      { songFolderId: props.songFolderId }
     )
     emit('attached', updated)
     toast.add({

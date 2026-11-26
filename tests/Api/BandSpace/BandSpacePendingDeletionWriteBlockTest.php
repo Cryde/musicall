@@ -16,6 +16,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,6 +59,26 @@ class BandSpacePendingDeletionWriteBlockTest extends ApiTestCase
             'POST',
             '/api/band_spaces/' . $bandSpace->id . '/tasks',
             ['title' => 'Répéter le nouveau morceau'],
+            self::HEADERS,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals(self::EXPECTED_CONFLICT);
+    }
+
+    /**
+     * Representative of the processors on SongWriteChecker (#1451), which go through checkMemberForWrite().
+     */
+    public function test_a_member_cannot_create_a_song_folder(): void
+    {
+        [$admin, $bandSpace] = $this->pendingDeletionSpace();
+        $song = SongFactory::new(['bandSpace' => $bandSpace])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $song->id . '/file_folders',
+            ['name' => 'Stems'],
             self::HEADERS,
         );
 

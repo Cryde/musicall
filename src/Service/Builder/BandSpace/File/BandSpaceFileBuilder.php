@@ -6,6 +6,7 @@ use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileTag;
+use App\Entity\BandSpace\SongFileFolder;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
@@ -147,7 +148,7 @@ readonly class BandSpaceFileBuilder
     }
 
     /**
-     * @return array<int, array{source_type: string, source_id: string, source_label: string}>
+     * @return array<int, array{source_type: string, source_id: string, source_label: string, song_folder_id?: string}>
      */
     private function buildAttachments(BandSpaceFile $file): array
     {
@@ -228,11 +229,18 @@ readonly class BandSpaceFileBuilder
                 default => '—',
             };
 
-            return [
+            $attachment = [
                 'source_type' => $a->sourceType,
                 'source_id' => $sourceId,
                 'source_label' => $label,
             ];
+            // Where the file sits inside its song (#1451). Left out rather than null at the song's root:
+            // installed app builds read an attachment as a map of strings.
+            if ($a->songFolder instanceof SongFileFolder) {
+                $attachment['song_folder_id'] = (string) $a->songFolder->id;
+            }
+
+            return $attachment;
         }, $attachments);
     }
 

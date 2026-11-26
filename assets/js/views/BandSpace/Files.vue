@@ -31,6 +31,8 @@
           :folders="filesStore.folders"
           :virtual-folders="filesStore.virtualFolders"
           :song-folders="songFolders"
+          :song-file-folders="activeSongFileFolders"
+          :song-folder-counts="songFolderCounts"
           :active-folder-id="filesStore.activeFolderId"
           :band-space-id="bandSpaceId"
           :is-admin="isAdmin"
@@ -63,6 +65,8 @@
           :folders="filesStore.folders"
           :virtual-folders="filesStore.virtualFolders"
           :song-folders="songFolders"
+          :song-file-folders="activeSongFileFolders"
+          :song-folder-counts="songFolderCounts"
           :active-folder-id="filesStore.activeFolderId"
           :archived-count="filesStore.archivedCount"
           :filters="filesStore.filters"
@@ -94,6 +98,7 @@
             :song-id="activeSongId"
             :title="activeSong?.title ?? null"
             :source-name="songSourceName"
+            :folder-path="activeSongFolderPath"
             @select="handleFolderSelect"
           />
         </div>
@@ -293,6 +298,7 @@ import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import songFileFoldersApi from '../../api/bandSpace/song-file-folders.js'
 import FileBulkActionBar from '../../components/BandSpace/Files/FileBulkActionBar.vue'
 import FileDetailDrawer from '../../components/BandSpace/Files/FileDetailDrawer.vue'
 import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
@@ -319,12 +325,14 @@ import {
   listedFolderId,
   NO_FOLDER_LISTED,
   TRASH_FOLDER_ID,
+  virtualFolderSongFileFolderId,
   virtualFolderSongId,
   virtualFolderSource
 } from '../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
-import { listedFolderOfRows, virtualFolderName } from '../../utils/fileListing.js'
+import { listedFolderOfRows, songFolderLabel, virtualFolderName } from '../../utils/fileListing.js'
 import { recordOpenedItem } from '../../utils/openedItemRecorder.js'
+import { songFolderPath } from '../../utils/songFileFolders.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -412,14 +420,43 @@ const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.active
  * The songs « Titres » unfolds into (#1431), read from the listing of the files attached to songs, as
  * the répertoire reads its counts.
  */
-const { songs: songFolders, load: loadSongFolders } = useSongFileCounts(() => bandSpaceId.value)
+const {
+  songs: songFolders,
+  folderCounts: songFolderCounts,
+  load: loadSongFolders
+} = useSongFileCounts(() => bandSpaceId.value)
 
 /** The song whose node the panel stands in, or null anywhere else. */
 const activeSongId = computed(() => virtualFolderSongId(filesStore.activeFolderId))
+
+/** That song's own folders (#1451): its node unfolds into them. Only the open song's are read. */
+const activeSongFileFolders = ref([])
+
+async function loadActiveSongFolders() {
+  const songId = activeSongId.value
+  if (!songId) {
+    activeSongFileFolders.value = []
+    return
+  }
+  try {
+    const folders = await songFileFoldersApi.getSongFolders(bandSpaceId.value, songId)
+    if (songId === activeSongId.value) activeSongFileFolders.value = folders
+  } catch {
+    // The song still shows, unfolded into nothing.
+  }
+}
+
+watch(activeSongId, loadActiveSongFolders, { immediate: true })
 const activeSong = computed(
   () => songFolders.value.find((song) => song.id === activeSongId.value) ?? null
 )
 const songSourceName = computed(() => virtualFolderName('song', filesStore.virtualFolders))
+const activeSongFileFolderId = computed(() =>
+  virtualFolderSongFileFolderId(filesStore.activeFolderId)
+)
+const activeSongFolderPath = computed(() =>
+  songFolderPath(activeSongFileFolders.value, activeSongFileFolderId.value)
+)
 
 /**
  * Where the toolbar's « Importer » is enabled: a source is filled by attachments, the trash by deletes.
@@ -435,7 +472,13 @@ const uploadAttachTo = computed(() =>
     : {
         type: 'song',
         id: activeSongId.value,
-        label: activeSong.value?.title ?? songSourceName.value
+        label: songFolderLabel(
+          activeSong.value?.title ?? songSourceName.value,
+          activeSongFileFolders.value,
+          activeSongFileFolderId.value
+        ),
+        // A song folder's node files the upload into that folder (#1451).
+        songFolderId: activeSongFileFolderId.value
       }
 )
 
@@ -465,6 +508,10 @@ const emptyMessage = computed(() => {
     return t('band_space_files.page.empty.filters')
   }
 
+  // A song folder is a folder (#1451): empty, it says so like one.
+  if (activeSongFileFolderId.value !== null) {
+    return t('band_space_files.file_list.empty')
+  }
   const virtualSource = virtualFolderSource(filesStore.activeFolderId)
   if (virtualSource !== null) {
     return t(VIRTUAL_EMPTY_MESSAGE_KEYS[virtualSource] ?? 'band_space_files.page.empty.virtual')
@@ -512,6 +559,7 @@ useBandSpaceLiveRefresh({
   refresh: () => {
     filesStore.refreshFromLiveSignal(bandSpaceId.value)
     loadSongFolders()
+    loadActiveSongFolders()
   }
 })
 

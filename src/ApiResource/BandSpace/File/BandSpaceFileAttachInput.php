@@ -43,4 +43,7 @@ class BandSpaceFileAttachInput
     #[Assert\NotBlank(message: 'band_space.file.source_id_required')]
     #[Assert\Uuid(message: 'band_space.file.source_id_invalid')]
     public ?string $sourceId = null;
+
+    /** A song only (#1451): the folder of that song the file goes in. Null leaves it at the song's root. */
+    public ?string $songFolderId = null;
 }

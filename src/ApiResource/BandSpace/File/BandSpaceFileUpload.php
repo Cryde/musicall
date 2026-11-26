@@ -132,6 +132,7 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
                                 'properties' => [
                                     'uploadedFile' => ['type' => 'string', 'format' => 'binary'],
                                     'folderId' => ['type' => 'string', 'nullable' => true],
+                                    'songFolderId' => ['type' => 'string', 'nullable' => true],
                                     'tagIds' => ['type' => 'array', 'items' => ['type' => 'string']],
                                 ],
                             ],
@@ -185,6 +186,9 @@ class BandSpaceFileUpload
     public ?string $attachedSourceType = null;
 
     public ?string $attachedSourceId = null;
+
+    /** A song upload only (#1451): the folder of that song the file goes in. */
+    public ?string $songFolderId = null;
 
     /** @var string[] */
     public array $tagIds = [];

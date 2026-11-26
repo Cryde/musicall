@@ -12,6 +12,8 @@ final readonly class BandSpaceFileFilter
         public ?string $tagId = null,
         public ?string $source = null,
         public ?string $sourceId = null,
+        /** One folder of the song `sourceId` names (#1451); ignored without a source and its id. */
+        public ?string $songFolderId = null,
         public ?string $query = null,
         public ?string $mime = null,
         public ?string $uploaderId = null,

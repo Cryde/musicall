@@ -51,6 +51,8 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'finance_entry_id' => new QueryParameter(key: 'finance_entry_id'),
                 // The one source a `source=` listing is narrowed to; task_id and finance_entry_id stay for app builds.
                 'source_id' => new QueryParameter(key: 'source_id'),
+                // One folder of that song (#1451), with source=song and its source_id.
+                'song_folder_id' => new QueryParameter(key: 'song_folder_id'),
                 'query' => new QueryParameter(key: 'query'),
                 'mime' => new QueryParameter(key: 'mime'),
                 'uploader_id' => new QueryParameter(key: 'uploader_id'),
@@ -269,7 +271,7 @@ class BandSpaceFileResource
     /** @var array<int, array{id: string, name: string, color_hex: string|null}> */
     public array $tags = [];
 
-    /** @var array<int, array{source_type: string, source_id: string, source_label: string}> */
+    /** @var array<int, array{source_type: string, source_id: string, source_label: string, song_folder_id?: string}> */
     public array $attachments = [];
 
     public ?string $currentVersionId = null;

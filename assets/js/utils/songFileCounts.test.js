@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { fileSongs, songFileCounts, songsWithFiles } from './songFileCounts.js'
+import {
+  fileSongs,
+  songFileCounts,
+  songFolderFileCounts,
+  songsWithFiles
+} from './songFileCounts.js'
 
 const song = (id, title) => ({ source_type: 'song', source_id: id, source_label: title })
 
@@ -15,8 +20,8 @@ describe('fileSongs', () => {
     }
 
     assert.deepEqual(fileSongs(file), [
-      { id: 'ember', title: 'Ember Road' },
-      { id: 'new45', title: 'New 45' }
+      { id: 'ember', title: 'Ember Road', folderId: null },
+      { id: 'new45', title: 'New 45', folderId: null }
     ])
   })
 
@@ -83,5 +88,42 @@ describe('songsWithFiles', () => {
   it('is empty when no file is attached to a song', () => {
     assert.deepEqual(songsWithFiles([]), [])
     assert.deepEqual(songsWithFiles([{ attachments: [] }]), [])
+  })
+})
+
+describe('fileSongs and song folders', () => {
+  it('tells the folder the file sits in inside each song', () => {
+    const file = {
+      attachments: [
+        { source_type: 'song', source_id: 'new45', source_label: 'New 45', song_folder_id: 'stems' }
+      ]
+    }
+
+    assert.deepEqual(fileSongs(file), [{ id: 'new45', title: 'New 45', folderId: 'stems' }])
+  })
+})
+
+describe('songFolderFileCounts', () => {
+  it('counts the files sitting directly in each song folder, whatever song it belongs to', () => {
+    const counts = songFolderFileCounts([
+      { attachments: [{ source_type: 'song', source_id: 'new45', song_folder_id: 'stems' }] },
+      {
+        attachments: [
+          { source_type: 'song', source_id: 'new45', song_folder_id: 'stems' },
+          { source_type: 'song', source_id: 'ember', song_folder_id: 'demos' }
+        ]
+      },
+      { attachments: [{ source_type: 'song', source_id: 'new45', song_folder_id: null }] },
+      { attachments: [{ source_type: 'task', source_id: 't1', song_folder_id: null }] },
+      {}
+    ])
+
+    assert.deepEqual(
+      [...counts],
+      [
+        ['stems', 2],
+        ['demos', 1]
+      ]
+    )
   })
 })

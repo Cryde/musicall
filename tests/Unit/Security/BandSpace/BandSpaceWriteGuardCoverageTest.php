@@ -17,13 +17,16 @@ class BandSpaceWriteGuardCoverageTest extends TestCase
     private const string PROCESSOR_DIR = 'src/State/Processor/BandSpace';
 
     /**
-     * Either of these means the processor is covered: the two guarded checker variants, or the entity
-     * predicate for BandSpaceInvitationAcceptProcessor, which has no checker to hang the guard on because
-     * its space comes from the invitation rather than from a URI variable.
+     * Either of these means the processor is covered: the two guarded checker variants, SongWriteChecker's
+     * two methods (both go through checkMemberForWrite()), or the entity predicate for
+     * BandSpaceInvitationAcceptProcessor, which has no checker to hang the guard on because its space comes
+     * from the invitation rather than from a URI variable.
      */
     private const array GUARD_MARKERS = [
         'checkMemberForWrite(',
         'checkAdminForWrite(',
+        'checkSongForWrite(',
+        'checkFolderForWrite(',
         'isPendingDeletion(',
     ];
 
