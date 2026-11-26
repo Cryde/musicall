@@ -159,6 +159,7 @@
             :empty-title="t('band_space_setlist.song_page.files_empty_title')"
             :empty-hint="t('band_space_setlist.song_page.files_empty_hint')"
             feature-tab
+            with-folders
             heading-tag="h2"
             heading-class="text-xs uppercase text-surface-500"
             :upload-on-mount="heldFiles"

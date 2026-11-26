@@ -21,6 +21,7 @@ import {
   isSearchActive,
   listedFolderOfRows,
   rootDestinationRefusal,
+  songFolderLabel,
   treeHoldsFolder,
   uploadBelongsInListing,
   virtualFolderName
@@ -122,6 +123,18 @@ describe('fileListingParams', () => {
       order: 'desc',
       source: 'song',
       sourceId: SONG_ID
+    })
+  })
+
+  it('narrows the node of a song to one of its folders', () => {
+    assert.deepEqual(fileListingParams(songFolderId(SONG_ID, 'stems'), filters(), 1), {
+      page: 1,
+      itemsPerPage: 50,
+      sort: 'date',
+      order: 'desc',
+      source: 'song',
+      sourceId: SONG_ID,
+      songFolderId: 'stems'
     })
   })
 
@@ -270,7 +283,7 @@ describe('fileLocation', () => {
     assert.deepEqual(fileLocation(file, virtualFolders), {
       label: 'Compo',
       folderId: 'compo',
-      songs: [{ id: SONG_ID, title: 'New 45' }]
+      songs: [{ id: SONG_ID, title: 'New 45', folderId: null }]
     })
   })
 
@@ -282,7 +295,7 @@ describe('fileLocation', () => {
     assert.deepEqual(fileLocation(file, [{ id: 'virtual:song', source: 'song', name: 'Titres' }]), {
       label: 'Titres',
       folderId: 'virtual:song',
-      songs: [{ id: SONG_ID, title: 'New 45' }]
+      songs: [{ id: SONG_ID, title: 'New 45', folderId: null }]
     })
   })
 
@@ -296,8 +309,8 @@ describe('fileLocation', () => {
       ]
     }
     assert.deepEqual(fileLocation(file, virtualFolders).songs, [
-      { id: 'ember', title: 'Ember Road' },
-      { id: SONG_ID, title: 'New 45' }
+      { id: 'ember', title: 'Ember Road', folderId: null },
+      { id: SONG_ID, title: 'New 45', folderId: null }
     ])
   })
 })
@@ -483,6 +496,19 @@ describe('activeLocationLabel', () => {
     assert.equal(activeLocationLabel('virtual:song', tree, sources, songs), 'Titres')
   })
 
+  it('names a song folder by its path inside the song', () => {
+    const sources = [{ source: 'song', name: 'Titres', file_count: 4 }]
+    const songs = [{ id: SONG_ID, title: 'New 45', fileCount: 3 }]
+    const songFileFolders = [
+      { id: 'stems', parent_id: null, name: 'Stems' },
+      { id: 'drums', parent_id: 'stems', name: 'Batterie' }
+    ]
+    assert.equal(
+      activeLocationLabel(songFolderId(SONG_ID, 'drums'), tree, sources, songs, songFileFolders),
+      'Titres › New 45 › Stems › Batterie'
+    )
+  })
+
   it('names only the source for a song that has no node any more', () => {
     const sources = [{ source: 'song', name: 'Titres', file_count: 0 }]
     assert.equal(activeLocationLabel(songFolderId(SONG_ID), tree, sources, []), 'Titres')
@@ -510,5 +536,20 @@ describe('canHoldSubfolder', () => {
     assert.equal(canHoldSubfolder({ depth: 4 }), true)
     assert.equal(canHoldSubfolder({ depth: 5 }), false)
     assert.equal(canHoldSubfolder({}), true)
+  })
+})
+
+describe('songFolderLabel', () => {
+  const folders = [
+    { id: 'stems', parent_id: null, name: 'Stems' },
+    { id: 'drums', parent_id: 'stems', name: 'Batterie' }
+  ]
+
+  it('names a song, then the way down to one of its folders', () => {
+    assert.equal(songFolderLabel('New 45', folders, 'drums'), 'New 45 › Stems › Batterie')
+  })
+
+  it('names the song alone at its root', () => {
+    assert.equal(songFolderLabel('New 45', folders, null), 'New 45')
   })
 })

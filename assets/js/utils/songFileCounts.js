@@ -1,15 +1,20 @@
 import { intlLocale } from '../i18n/formatLocale.js'
 
 /**
- * The songs a file is attached to, in the order they were attached, named as the listing names them.
+ * The songs a file is attached to, in the order they were attached, named as the listing names them,
+ * with the song folder it sits in there (#1451), null at the song's root.
  *
- * @param {{attachments?: ReadonlyArray<{source_type: string, source_id: string, source_label?: string}>}} file
- * @returns {Array<{id: string, title: string}>}
+ * @param {{attachments?: ReadonlyArray<{source_type: string, source_id: string, source_label?: string, song_folder_id?: string|null}>}} file
+ * @returns {Array<{id: string, title: string, folderId: string|null}>}
  */
 export function fileSongs(file) {
   return (file.attachments ?? [])
     .filter((attachment) => attachment.source_type === 'song' && attachment.source_id)
-    .map((attachment) => ({ id: attachment.source_id, title: attachment.source_label }))
+    .map((attachment) => ({
+      id: attachment.source_id,
+      title: attachment.source_label,
+      folderId: attachment.song_folder_id ?? null
+    }))
 }
 
 /**
@@ -41,4 +46,19 @@ export function songsWithFiles(files) {
   return [...titles]
     .map(([id, title]) => ({ id, title, fileCount: counts.get(id) }))
     .sort((a, b) => a.title.localeCompare(b.title, intlLocale()))
+}
+
+/**
+ * How many files sit directly in each song folder (#1451), from the same listing: the counts the Files
+ * tree shows beside a song's folders, as it shows a real folder's.
+ *
+ * @param {ReadonlyArray<{attachments?: ReadonlyArray<{source_type: string, song_folder_id?: string|null}>}>} files
+ * @returns {Map<string, number>} folder id to file count; an empty folder is absent
+ */
+export function songFolderFileCounts(files) {
+  const counts = new Map()
+  for (const { folderId } of files.flatMap(fileSongs)) {
+    if (folderId) counts.set(folderId, (counts.get(folderId) ?? 0) + 1)
+  }
+  return counts
 }

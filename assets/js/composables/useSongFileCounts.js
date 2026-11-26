@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import bandSpaceFilesApi from '../api/bandSpace/band-space-files.js'
-import { songsWithFiles } from '../utils/songFileCounts.js'
+import { songFolderFileCounts, songsWithFiles } from '../utils/songFileCounts.js'
 
 /**
  * The paperclip next to a song, for a whole list at once, and the songs « Titres » unfolds into in
@@ -9,6 +9,8 @@ import { songsWithFiles } from '../utils/songFileCounts.js'
  */
 export function useSongFileCounts(bandSpaceId) {
   const songs = ref([])
+  /** The files sitting directly in each song folder (#1451), from the same listing. */
+  const folderCounts = ref(new Map())
   const counts = computed(() => new Map(songs.value.map((song) => [song.id, song.fileCount])))
 
   async function load() {
@@ -18,10 +20,11 @@ export function useSongFileCounts(bandSpaceId) {
         itemsPerPage: 200
       })
       songs.value = songsWithFiles(data.member ?? [])
+      folderCounts.value = songFolderFileCounts(data.member ?? [])
     } catch {
       // The indicator is not worth an error.
     }
   }
 
-  return { counts, songs, load }
+  return { counts, songs, folderCounts, load }
 }

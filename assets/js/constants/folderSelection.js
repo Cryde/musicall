@@ -89,26 +89,45 @@ export function virtualFolderId(source) {
 }
 
 /**
- * The selection that opens one song's node under « Titres » (#1431). Still a virtual folder: it holds
- * attachments, so nothing can be created in it and its rows come from anywhere in the tree.
+ * The selection that opens one song's node under « Titres » (#1431), or one of that song's folders
+ * (#1451). Still a virtual folder: it holds attachments, so nothing can be created in it and its rows
+ * come from anywhere in the tree.
  *
  * @param {string} songId
+ * @param {string|null} songFileFolderId
  * @returns {string}
  */
-export function songFolderId(songId) {
-  return `${virtualFolderId(SONG_SOURCE)}${SOURCE_ID_SEPARATOR}${songId}`
+export function songFolderId(songId, songFileFolderId = null) {
+  const songNode = `${virtualFolderId(SONG_SOURCE)}${SOURCE_ID_SEPARATOR}${songId}`
+
+  return songFileFolderId ? `${songNode}${SOURCE_ID_SEPARATOR}${songFileFolderId}` : songNode
+}
+
+/** What a song's node or one of its folders carries after `virtual:song:`, split in two. */
+function songSelectionParts(folderId) {
+  const prefix = songFolderId('')
+  if (typeof folderId !== 'string' || !folderId.startsWith(prefix)) return []
+
+  return folderId.slice(prefix.length).split(SOURCE_ID_SEPARATOR)
 }
 
 /**
- * The song a song's node lists, or null for any other selection, « Titres » itself included. The
- * inverse of songFolderId().
+ * The song a song's node, or one of its folders, lists; null for any other selection, « Titres »
+ * itself included. The inverse of songFolderId().
  *
  * @param {string|null} folderId
  * @returns {string|null}
  */
 export function virtualFolderSongId(folderId) {
-  const prefix = songFolderId('')
-  if (typeof folderId !== 'string' || !folderId.startsWith(prefix)) return null
+  return songSelectionParts(folderId)[0] || null
+}
 
-  return folderId.slice(prefix.length) || null
+/**
+ * The song folder a selection opens (#1451), or null for the song's node and anything else.
+ *
+ * @param {string|null} folderId
+ * @returns {string|null}
+ */
+export function virtualFolderSongFileFolderId(folderId) {
+  return songSelectionParts(folderId)[1] || null
 }

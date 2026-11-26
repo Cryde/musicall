@@ -238,7 +238,10 @@ const props = defineProps({
   bandSpaceId: { type: String, required: true },
   /** Files the caller already has (Tablatures, a drop on a song), queued as the dialog opens. */
   initialFiles: { type: Array, default: () => [] },
-  /** { type, id, label }: each file is uploaded as an attachment of that source, in no folder (#1431). */
+  /**
+   * { type, id, label, songFolderId? }: each file is uploaded as an attachment of that source, in no
+   * folder (#1431); a song's file can go straight into one of the song's folders (#1451).
+   */
   attachTo: { type: Object, default: null },
   /** Sends `initialFiles` as soon as the dialog opens: they were picked before a song existed to take them. */
   autoStart: { type: Boolean, default: false },
@@ -502,7 +505,8 @@ function uploadOne(item, batch) {
       props.attachTo.id,
       item.file,
       onProgress,
-      abortController?.signal
+      abortController?.signal,
+      { songFolderId: props.attachTo.songFolderId ?? null }
     )
   }
   return filesStore.uploadFile(

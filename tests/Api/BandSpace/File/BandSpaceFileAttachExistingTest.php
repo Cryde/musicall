@@ -14,6 +14,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
+use App\Tests\Factory\BandSpace\File\SongFileFolderFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\BandSpace\SetlistFactory;
@@ -153,6 +154,86 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
         $this->assertNotNull($attachmentRepo->findOneByFileAndSource($file, 'song', (string) $song->id));
+    }
+
+    public function test_attach_existing_into_a_folder_of_the_song(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'New 45'])->create();
+        $stems = SongFileFolderFactory::createOne(['song' => $song, 'createdBy' => $user, 'name' => 'Stems']);
+        $file = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'kick.wav',
+            'creationDatetime' => new \DateTime('2026-09-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'song', 'sourceId' => (string) $song->id, 'songFolderId' => $stems->id],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $reloaded = self::getContainer()->get(BandSpaceFileRepository::class)->find($file->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            '@type' => 'BandSpaceFile',
+            'id' => $file->id,
+            'band_space_id' => $bandSpace->id,
+            'original_name' => 'kick.wav',
+            'folder_path' => [],
+            'tags' => [],
+            'attachments' => [
+                ['source_type' => 'song', 'source_id' => $song->id, 'source_label' => 'New 45', 'song_folder_id' => $stems->id],
+            ],
+            'version_count' => 0,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => 'batteur',
+                'display_name' => 'batteur',
+                'profile_picture_url' => null,
+            ],
+            'download_url' => '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+            'creation_datetime' => '2026-09-01T10:00:00+00:00',
+            'update_datetime' => $reloaded?->updateDatetime?->format('c'),
+        ]);
+    }
+
+    public function test_attach_existing_into_a_folder_of_another_song_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace])->create();
+        $elsewhere = SongFileFolderFactory::createOne(['song' => SongFactory::new(['bandSpace' => $bandSpace]), 'createdBy' => $user]);
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'song', 'sourceId' => (string) $song->id, 'songFolderId' => $elsewhere->id],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Ce dossier n\'appartient pas à ce titre',
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => 'Ce dossier n\'appartient pas à ce titre',
+        ]);
+        $this->assertNull(self::getContainer()->get(BandSpaceFileAttachmentRepository::class)->findOneByFileAndSource($file, 'song', (string) $song->id));
     }
 
     public function test_attach_existing_song_in_other_band_returns_404(): void

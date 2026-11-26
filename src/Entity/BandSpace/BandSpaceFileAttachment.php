@@ -32,6 +32,11 @@ class BandSpaceFileAttachment
     #[ORM\Column(type: Types::GUID)]
     public string $sourceId;
 
+    /** Where the file sits inside its song (#1451); only ever set on a `song` attachment. */
+    #[ORM\ManyToOne(targetEntity: SongFileFolder::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?SongFileFolder $songFolder = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $attachedDatetime;
 

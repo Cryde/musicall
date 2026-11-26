@@ -16,12 +16,11 @@ use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
-use App\Repository\BandSpace\SongRepository;
-use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Security\BandSpace\SongWriteGuard;
+use App\Security\BandSpace\SongWriteChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\BandSpace\File\BandSpaceUploadTypeGuard;
+use App\Service\BandSpace\File\SongFileFolderResolver;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -29,7 +28,6 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @implements ProcessorInterface<BandSpaceFileUpload, BandSpaceFileResource>
@@ -39,11 +37,10 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
     public function __construct(
         private BandSpaceUploadTypeGuard $uploadTypeGuard,
         private EntityManagerInterface $entityManager,
-        private BandSpaceMemberChecker $memberChecker,
-        private SongWriteGuard $songWriteGuard,
-        private SongRepository $songRepository,
+        private SongWriteChecker $songWriteChecker,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFileTagRepository $tagRepository,
+        private SongFileFolderResolver $songFolderResolver,
         private BandSpaceFileQuotaService $quotaService,
         private BandSpaceActivityRecorder $activityRecorder,
         private BandSpaceFileBuilder $fileBuilder,
@@ -60,14 +57,11 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
-
-        $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['songId'], $bandSpace);
-        if (!$song instanceof \App\Entity\BandSpace\Song) {
-            throw new NotFoundHttpException('band_space.song.not_found');
-        }
-
-        $this->songWriteGuard->assertWritable($song);
+        [$bandSpace, $song] = $this->songWriteChecker->checkSongForWrite(
+            (string) $uriVariables['bandSpaceId'],
+            (string) $uriVariables['songId'],
+            $user,
+        );
 
         $upload = $data->uploadedFile;
         if ($upload === null) {
@@ -92,6 +86,8 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
                 throw new BadRequestHttpException('band_space.folder.not_found_in_space');
             }
         }
+
+        $songFolder = $this->songFolderResolver->resolve($data->songFolderId, $song);
 
         $tags = [];
         if (count($data->tagIds) > 0) {
@@ -122,6 +118,7 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
         $attachment->bandSpaceFile = $file;
         $attachment->sourceType = 'song';
         $attachment->sourceId = (string) $song->id;
+        $attachment->songFolder = $songFolder;
         $attachment->attachedBy = $user;
 
         $this->entityManager->persist($file);

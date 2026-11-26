@@ -17,6 +17,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
+use App\Tests\Factory\BandSpace\File\SongFileFolderFactory;
 use App\Tests\Factory\BandSpace\SongFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -360,6 +361,76 @@ class BandSpaceFileCollectionTest extends ApiTestCase
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?source=song&source_id=' . $new45->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    /**
+     * One folder of a song (#1451): its own files only, not those of its sub-folders, of the song's root,
+     * or of the folder of the same name in another song.
+     */
+    public function test_list_narrowed_to_one_folder_of_a_song(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $new45 = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'New 45'])->create();
+        $emberRoad = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Ember Road'])->create();
+        $stems = SongFileFolderFactory::createOne(['song' => $new45, 'createdBy' => $user, 'name' => 'Stems']);
+        $drums = SongFileFolderFactory::createOne(['song' => $new45, 'createdBy' => $user, 'name' => 'Batterie', 'parent' => $stems]);
+        $otherStems = SongFileFolderFactory::createOne(['song' => $emberRoad, 'createdBy' => $user, 'name' => 'Stems']);
+
+        $bass = BandSpaceFileFactory::createOne(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'basse.wav', 'creationDatetime' => new \DateTime('2026-11-20 10:00:00')]);
+        BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $bass, 'sourceType' => 'song', 'sourceId' => (string) $new45->id, 'songFolder' => $stems, 'attachedBy' => $user]);
+        foreach ([['kick.wav', $new45, $drums], ['demo.mp3', $new45, null], ['ember-basse.wav', $emberRoad, $otherStems]] as [$name, $song, $folder]) {
+            $file = BandSpaceFileFactory::createOne(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => $name]);
+            BandSpaceFileAttachmentFactory::createOne(['bandSpaceFile' => $file, 'sourceType' => 'song', 'sourceId' => (string) $song->id, 'songFolder' => $folder, 'attachedBy' => $user]);
+        }
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/files?source=song&source_id=' . $new45->id . '&song_folder_id=' . $stems->id,
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $filesUrl = '/api/band_spaces/' . $bandSpace->id . '/files/';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFile',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/files',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => $filesUrl . $bass->id,
+                    '@type' => 'BandSpaceFile',
+                    'id' => $bass->id,
+                    'band_space_id' => $bandSpace->id,
+                    'original_name' => 'basse.wav',
+                    'size' => null,
+                    'mime_type' => null,
+                    'folder_id' => null,
+                    'folder_path' => [],
+                    'tags' => [],
+                    'attachments' => [
+                        ['source_type' => 'song', 'source_id' => $new45->id, 'source_label' => 'New 45', 'song_folder_id' => $stems->id],
+                    ],
+                    'current_version_id' => null,
+                    'current_version_number' => null,
+                    'version_count' => 0,
+                    'created_by' => ['id' => $user->id, 'username' => 'alice', 'display_name' => 'alice', 'profile_picture_url' => null],
+                    'download_url' => $filesUrl . $bass->id . '/download',
+                    'creation_datetime' => '2026-11-20T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'archive_datetime' => null,
+                    'purge_datetime' => null,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/files?song_folder_id=' . $stems->id . '&source=song&source_id=' . $new45->id,
                 '@type' => 'PartialCollectionView',
             ],
         ]);
