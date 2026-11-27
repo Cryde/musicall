@@ -185,11 +185,9 @@
     "heading": "Trouver un ingé son",
     "intro": "Mixage, mastering, enregistrement ou son en concert, près de chez toi ou à distance.",
     "engineer_cta": "Tu es ingénieur du son ?",
-    "online": "À distance aussi",
     "count": "Aucun ingé son | {count} ingé son | {count} ingés son",
     "load_more": "Voir plus d'ingés son",
     "empty_title": "Aucun ingé son ne correspond à ta recherche",
-    "empty_text": "Élargis la distance, ajoute ceux qui travaillent à distance ou retire un filtre.",
     "title": "Trouver un ingénieur du son - MusicAll"
   },
   "photographer": {
@@ -210,6 +208,24 @@
     "empty_title": "Aucun vidéaste ne correspond à ta recherche",
     "title": "Trouver un vidéaste - MusicAll"
   },
+  "graphic_designer": {
+    "heading": "Trouver un graphiste",
+    "intro": "Pochette, logo, affiche ou merch, près de chez toi ou à distance.",
+    "cta": "Tu es graphiste ?",
+    "count": "Aucun graphiste | {count} graphiste | {count} graphistes",
+    "load_more": "Voir plus de graphistes",
+    "empty_title": "Aucun graphiste ne correspond à ta recherche",
+    "title": "Trouver un graphiste - MusicAll"
+  },
+  "webmaster": {
+    "heading": "Trouver un webmaster",
+    "intro": "Site de groupe, dossier de presse en ligne ou boutique, près de chez toi ou à distance.",
+    "cta": "Tu es webmaster ?",
+    "count": "Aucun webmaster | {count} webmaster | {count} webmasters",
+    "load_more": "Voir plus de webmasters",
+    "empty_title": "Aucun webmaster ne correspond à ta recherche",
+    "title": "Trouver un webmaster - MusicAll"
+  },
   "service": {
     "cta_link": "Crée ta page",
     "filters_label": "Filtres de la recherche",
@@ -226,7 +242,9 @@
     "clear_filters": "Effacer les filtres",
     "price_from": "dès {price}",
     "remote_place": "À distance",
+    "online": "À distance aussi",
     "days": "{count} jour de délai | {count} jours de délai",
-    "empty_text": "Élargis la distance ou retire un filtre."
+    "empty_text": "Élargis la distance ou retire un filtre.",
+    "empty_text_online": "Élargis la distance, ajoute ceux qui travaillent à distance ou retire un filtre."
   }
 }

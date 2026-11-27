@@ -161,7 +161,33 @@ describe('a message from a service page (#1408)', () => {
   it('shows the icon of the kind', () => {
     assert.equal(contactOriginIcon(service()), 'pi pi-sliders-v')
     assert.equal(contactOriginIcon(service({ service_kind: 'video' })), 'pi pi-video')
+    assert.equal(contactOriginIcon(service({ service_kind: 'graphic_design' })), 'pi pi-palette')
+    assert.equal(contactOriginIcon(service({ service_kind: 'web' })), 'pi pi-desktop')
     assert.equal(contactOriginIcon(service({ service_kind: 'production' })), 'pi pi-briefcase')
+  })
+
+  it('names what a graphic designer or a webmaster is asked, and when (#1412)', () => {
+    assert.equal(
+      contactOriginLabel(
+        service({ service_kind: 'graphic_design', quote: { need: 'visual_identity' } })
+      ),
+      'Devis : identité visuelle'
+    )
+    assert.equal(contactOriginLabel(service({ service_kind: 'web' })), 'Question : webmaster')
+    assert.equal(
+      contactOriginDetails(
+        service({
+          service_kind: 'web',
+          quote: {
+            need: 'epk',
+            link: 'https://x.test',
+            deadline: '2027-02-01',
+            budget: '300_to_1000'
+          }
+        })
+      ),
+      'pour le 1 févr. 2027 · 300 à 1 000 €'
+    )
   })
 
   it('names what a photographer is asked, when and where (#1411)', () => {

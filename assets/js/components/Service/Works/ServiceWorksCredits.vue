@@ -53,7 +53,7 @@ import ServiceWorkCaption from './ServiceWorkCaption.vue'
 
 /**
  * « Réalisations » as credits (#1407): who the work was for and when, with its embed when there is one. The kinds
- * whose works are records or films show them this way; galleries are ServiceWorksGallery, sites come with #1412.
+ * whose works are records or films show them this way; galleries are ServiceWorksGallery, sites ServiceWorksSites.
  */
 const props = defineProps({
   title: { type: String, required: true },

@@ -6,9 +6,7 @@ namespace App\Service\Builder\Service;
 
 use App\ApiResource\Service\Search\SoundEngineerSearchResult;
 use App\Entity\Service\Service;
-use App\Entity\Service\ServicePlace;
 use App\Entity\Service\SoundEngineeringDetails;
-use App\Enum\Service\ServicePlaceType;
 
 readonly class SoundEngineerSearchResultBuilder
 {
@@ -21,7 +19,7 @@ readonly class SoundEngineerSearchResultBuilder
     {
         $result = new SoundEngineerSearchResult();
         $this->cardBuilder->fill($result, $service, $distance, $searchedSpeciality);
-        $result->online = $service->places->exists(static fn (int $key, ServicePlace $place): bool => $place->type === ServicePlaceType::Remote);
+        $result->online = $service->isOfferedRemotely();
         $result->turnaroundDays = SoundEngineeringDetails::of($service)->turnaroundDays;
 
         return $result;

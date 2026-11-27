@@ -46,6 +46,20 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_user_graphic_designer',
+    path: '/u/:username/graphic-designer',
+    component: () => import('../views/User/Profile/VisualServiceProfile.vue'),
+    props: { kind: 'graphic_design' },
+    meta: { isAuthRequired: false }
+  },
+  {
+    name: 'app_user_webmaster',
+    path: '/u/:username/webmaster',
+    component: () => import('../views/User/Profile/VisualServiceProfile.vue'),
+    props: { kind: 'web' },
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_contact',
     path: '/contact',
     component: () => import('../views/Contact/Index.vue'),

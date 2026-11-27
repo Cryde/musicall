@@ -49,6 +49,30 @@ export const SERVICE_KINDS = {
       menuKey: 'menu.search_videographers',
       testerOnly: true
     }
+  },
+  graphic_design: {
+    icon: 'pi pi-palette',
+    iconClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+    labelKey: 'profile.services.kinds.graphic_design.label',
+    descriptionKey: 'profile.services.kinds.graphic_design.description',
+    pageRoute: 'app_user_graphic_designer',
+    search: {
+      route: 'app_search_graphic_designer',
+      menuKey: 'menu.search_graphic_designers',
+      testerOnly: true
+    }
+  },
+  web: {
+    icon: 'pi pi-desktop',
+    iconClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+    labelKey: 'profile.services.kinds.web.label',
+    descriptionKey: 'profile.services.kinds.web.description',
+    pageRoute: 'app_user_webmaster',
+    search: {
+      route: 'app_search_webmaster',
+      menuKey: 'menu.search_webmasters',
+      testerOnly: true
+    }
   }
 }
 

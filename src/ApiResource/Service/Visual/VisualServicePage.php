@@ -8,8 +8,9 @@ use App\ApiResource\Service\ServicePage;
 use App\Enum\Service\ServiceKind;
 
 /**
- * A photographer's or a videographer's page (#1411): what every kind's page shows, and what it delivers and when. Its
- * works are a gallery for a photographer, videos and credits for a videographer.
+ * The page of a kind shown by its works (#1411, #1412): what every kind's page shows, and what it delivers and when. Its
+ * works are a gallery for a photographer or a graphic designer, videos and credits for a videographer, sites for a
+ * webmaster.
  */
 abstract class VisualServicePage extends ServicePage
 {

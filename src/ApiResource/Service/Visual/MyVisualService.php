@@ -8,7 +8,10 @@ use App\ApiResource\Service\Edit\MyServiceForm;
 use App\Entity\Service\DeliveryDetails;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** A photography or video service's form (#1411): what every kind's form edits, and what it delivers and when. */
+/**
+ * The form of a kind shown by its works (#1411, #1412): photography, video, graphic design and web. What every kind's
+ * form edits, and what it delivers and when.
+ */
 abstract class MyVisualService extends MyServiceForm
 {
     /** « sous 7 jours ». */

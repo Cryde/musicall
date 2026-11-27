@@ -42,6 +42,20 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    path: '/rechercher-un-graphiste',
+    name: 'app_search_graphic_designer',
+    component: () => import('../views/Search/SpecialitySearch.vue'),
+    props: { kind: 'graphic_design' },
+    meta: { isAuthRequired: false }
+  },
+  {
+    path: '/rechercher-un-webmaster',
+    name: 'app_search_webmaster',
+    component: () => import('../views/Search/SpecialitySearch.vue'),
+    props: { kind: 'web' },
+    meta: { isAuthRequired: false }
+  },
+  {
     path: '/rechercher-un-guitariste',
     name: 'app_search_guitarist',
     component: () => import('../views/Search/Index.vue'),

@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use App\ApiResource\Teacher\Public\TeacherProfileStyle;
 
 /**
- * What every card of a search by speciality shows (#1410, #1411): sound engineers, photographers and videographers.
- * Each kind's result adds its details and declares its search.
+ * What every card of a search by speciality shows (#1410, #1411, #1412): every kind but teaching. Each kind's result
+ * adds its details and declares its search.
  */
 abstract class SpecialitySearchResult
 {

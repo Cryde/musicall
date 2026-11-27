@@ -525,6 +525,33 @@ class MyServiceTest extends ApiTestCase
         ]);
     }
 
+    /** A webmaster needs what a photographer needs (#1412). */
+    public function test_add_a_web_service_starts_an_empty_draft(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/services', ['kind' => 'web'], [
+            'CONTENT_TYPE' => 'application/ld+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $service = self::getContainer()->get(ServiceRepository::class)->findOneBy(['user' => $user]);
+        $this->assertInstanceOf(Service::class, $service);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MyService',
+            '@id' => '/api/my_services/' . $service->id,
+            '@type' => 'MyService',
+            'id' => $service->id,
+            'kind' => 'web',
+            'headline' => null,
+            'status' => 'draft',
+            'completeness' => 0,
+            'missing_to_publish' => ['headline', 'description', 'specialities', 'places', 'offers'],
+        ]);
+    }
+
     /** What it delivers counts towards complete, not towards publishing (#1411). */
     public function test_publish_a_video_draft_that_has_what_its_kind_needs(): void
     {

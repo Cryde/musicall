@@ -9,10 +9,8 @@ use App\ApiResource\Service\Search\TeacherSearchResult;
 use App\Entity\Attribute\Instrument;
 use App\Entity\Service\Service;
 use App\Entity\Service\ServiceInstrument;
-use App\Entity\Service\ServicePlace;
 use App\Entity\Service\TeachingDetails;
 use App\Enum\Service\OfferUnit;
-use App\Enum\Service\ServicePlaceType;
 use App\Enum\Teacher\StudentLevel;
 use App\Service\Builder\Teacher\TeacherProfileBuilder;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
@@ -38,7 +36,7 @@ readonly class TeacherSearchResultBuilder
         $result->profilePictureUrl = $this->pictureUrlBuilder->build($user);
         $result->instruments = $this->instruments($service, $searched);
         $result->distance = $distance !== null ? round($distance / 1000, 1) : null;
-        $result->online = $service->places->exists(static fn (int $key, ServicePlace $place): bool => $place->type === ServicePlaceType::Remote);
+        $result->online = $service->isOfferedRemotely();
 
         // A lesson as entered, never a package: a package's price covers several lessons.
         $cheapest = $service->cheapestIn(OfferUnit::Lesson);

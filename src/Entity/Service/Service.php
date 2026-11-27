@@ -337,6 +337,12 @@ class Service implements ViewableInterface
         return $any ? $any->city : ($this->user->profile->location ?: null);
     }
 
+    /** Whether one of its places is remote work, which a search card says. */
+    public function isOfferedRemotely(): bool
+    {
+        return $this->places->exists(static fn (int $key, ServicePlace $place): bool => $place->type === ServicePlaceType::Remote);
+    }
+
     public function isPublished(): bool
     {
         return $this->status === ServiceStatus::Published;

@@ -18,6 +18,20 @@ describe('the specialities of a kind', () => {
       'teaser',
       'editing'
     ])
+    assert.deepEqual(kindSpecialities('graphic_design'), [
+      'cover',
+      'logo',
+      'poster',
+      'merch',
+      'visual_identity',
+      'social_media'
+    ])
+    assert.deepEqual(kindSpecialities('web'), [
+      'band_site',
+      'epk',
+      'online_store',
+      'redesign_maintenance'
+    ])
     assert.deepEqual(kindSpecialities('teaching'), [])
   })
 })

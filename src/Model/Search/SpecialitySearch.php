@@ -8,8 +8,8 @@ use App\Entity\Attribute\Style;
 use App\Enum\Service\ServiceKind;
 
 /**
- * The search of a kind filtered by a speciality: sound engineers (#1410), photographers and videographers (#1411). The
- * shared service search, a speciality of the kind and a style.
+ * The search of a kind filtered by a speciality: sound engineers (#1410), photographers and videographers (#1411),
+ * graphic designers and webmasters (#1412). The shared service search, a speciality of the kind and a style.
  */
 class SpecialitySearch
 {

@@ -26,6 +26,8 @@ readonly class VisualSearchResultBuilder
     {
         $this->cardBuilder->fill($result, $service, $distance, $searchedSpeciality);
         $result->deliveryDays = DeliveryDetails::of($service)->deliveryDays;
+        // Its places are only loaded for a kind given remotely (ServiceRepository::findForSearchCards()).
+        $result->online = $service->kind->worksRemotely() ? $service->isOfferedRemotely() : null;
 
         return $result;
     }

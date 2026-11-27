@@ -15,7 +15,7 @@
         <InputNumber v-model="form.year" fluid :input-id="`${idPrefix}-year`" :use-grouping="false" :min="1900" :max="2100" :disabled="isSaving" />
       </div>
       <div class="flex flex-col gap-2">
-        <label :for="`${idPrefix}-link`" :class="LABEL_CLASS">{{ t('profile.service_works.link') }}</label>
+        <label :for="`${idPrefix}-link`" :class="LABEL_CLASS">{{ t(linkLabelKey) }}</label>
         <InputText :id="`${idPrefix}-link`" v-model="form.link_url" type="url" :maxlength="500" placeholder="https://" :disabled="isSaving" />
       </div>
     </div>
@@ -77,7 +77,9 @@ const props = defineProps({
   /** Null for a new work. */
   work: { type: Object, default: null },
   /** The platforms the embed takes, as the kind names them (ServiceWorksEditor's default). */
-  mediaLabelKey: { type: String, required: true }
+  mediaLabelKey: { type: String, required: true },
+  /** What the link is, as the kind names it (ServiceWorksEditor's default). */
+  linkLabelKey: { type: String, required: true }
 })
 /** `saved` with the work as stored, `changed` with it once an image was added, moved or removed. */
 const emit = defineEmits(['saved', 'changed', 'cancel'])

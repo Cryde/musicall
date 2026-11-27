@@ -40,11 +40,19 @@
 
         <div class="grid gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
           <div class="flex flex-col gap-5 md:gap-6 min-w-0">
-            <!-- « Réalisations » first (#1411): a gallery of pictures, or films with their credits -->
+            <!-- « Réalisations » first (#1411): a gallery of pictures, sites (#1412), or films with their credits -->
             <template v-if="page.works.length">
               <ServiceWorksGallery
                 v-if="config.worksLayout === 'gallery'"
                 :title="t('profile.visual_service_page.works_gallery')"
+                :works="page.works"
+                :username="page.username"
+                :reportable="!isOwnPage"
+                @play="openMedia"
+              />
+              <ServiceWorksSites
+                v-else-if="config.worksLayout === 'sites'"
+                :title="t('profile.visual_service_page.works_sites')"
                 :works="page.works"
                 :username="page.username"
                 :reportable="!isOwnPage"
@@ -134,6 +142,7 @@ import QuoteRequestDialog from '../../../components/Service/QuoteRequestDialog.v
 import EditVisualServiceDialog from '../../../components/Service/Visual/EditVisualServiceDialog.vue'
 import ServiceWorksCredits from '../../../components/Service/Works/ServiceWorksCredits.vue'
 import ServiceWorksGallery from '../../../components/Service/Works/ServiceWorksGallery.vue'
+import ServiceWorksSites from '../../../components/Service/Works/ServiceWorksSites.vue'
 import ProfileDraftBar from '../../../components/User/Profile/ProfileDraftBar.vue'
 import ProfilePrivateBar from '../../../components/User/Profile/ProfilePrivateBar.vue'
 import { useServicePage } from '../../../composables/useServicePage.js'
@@ -149,9 +158,9 @@ import { placeLines, placesSummary } from '../../../utils/servicePlaces.js'
 import { cheapestPricing, formatLessonPrice } from '../../../utils/teacherPage.js'
 import { deliveryLine, kindSpecialities } from '../../../utils/visualServicePage.js'
 
-/** A photographer's or a videographer's page (#1411), on the template the other service pages share. */
+/** The page of a kind shown by its works (#1411, #1412), on the template the other service pages share. */
 const props = defineProps({
-  /** `photography` or `video`, from the route. */
+  /** A ServiceKind value of VISUAL_SERVICE_KINDS, from the route. */
   kind: { type: String, required: true }
 })
 
@@ -200,7 +209,7 @@ const crumbs = computed(() => [
   ...(places.value.city ? [{ label: places.value.city, current: true }] : [])
 ])
 
-/** « Studio à Lyon », « Jusqu'à 100 km », « 10 ans d'expérience ». */
+/** « Studio à Lyon », « À distance », « Jusqu'à 100 km », « 10 ans d'expérience ». */
 const facts = computed(() => {
   const items = []
   if (places.value.studioCity) {
@@ -208,6 +217,13 @@ const facts = computed(() => {
       key: 'studio',
       icon: 'pi pi-map-marker',
       text: t('profile.service_page.studio_in', { city: places.value.studioCity })
+    })
+  }
+  if (places.value.remote) {
+    items.push({
+      key: 'remote',
+      icon: 'pi pi-globe',
+      text: t(VISUAL_PLACE_KEYS.remote)
     })
   }
   if (places.value.travels) {

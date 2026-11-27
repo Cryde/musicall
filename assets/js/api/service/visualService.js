@@ -14,12 +14,22 @@ const ROUTES = {
     page: 'api_videographer_page_get',
     form: 'api_user_services_video_get',
     save: 'api_user_services_video_patch'
+  },
+  graphic_design: {
+    page: 'api_graphic_designer_page_get',
+    form: 'api_user_services_graphic_design_get',
+    save: 'api_user_services_graphic_design_patch'
+  },
+  web: {
+    page: 'api_webmaster_page_get',
+    form: 'api_user_services_web_get',
+    save: 'api_user_services_web_patch'
   }
 }
 
 /**
- * The photographer and videographer kinds of service (#1411): a page and its owner's form each, the same shape for
- * both. Their search, media and works are shared with the other kinds.
+ * The kinds shown by their works (#1411, #1412): a page and its owner's form each, the same shape for all of them.
+ * Their search, media and works are shared with the other kinds.
  */
 export default {
   getPage(kind, username) {
