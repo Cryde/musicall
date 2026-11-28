@@ -15,6 +15,7 @@ use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceOfferFactory;
 use App\Tests\Factory\Service\ServicePlaceFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -23,6 +24,7 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 class MySoundEngineeringTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     private const array PATCH_HEADERS = ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'];
 
@@ -54,7 +56,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'status' => 'draft',
             'headline' => 'Ta démo mixée',
             'description' => null,
-            'years_of_experience' => null,
+            'experience_start_year' => null,
             'specialities' => ['mastering'],
             'style_ids' => [$rock->id],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $rock->id, 'name' => 'Rock']],
@@ -90,7 +92,7 @@ class MySoundEngineeringTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/services/' . $service->id . '/sound-engineering', [
             'headline' => '  Ta démo mixée comme un disque  ',
             'description' => 'Huit ans de studio.',
-            'years_of_experience' => 8,
+            'experience_start_year' => 2018,
             'specialities' => ['mixing', 'mastering'],
             'style_ids' => [$rock->id, '00000000-0000-0000-0000-000000000000'],
             'places' => [
@@ -119,7 +121,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'status' => 'draft',
             'headline' => 'Ta démo mixée comme un disque',
             'description' => 'Huit ans de studio.',
-            'years_of_experience' => 8,
+            'experience_start_year' => 2018,
             'specialities' => ['mixing', 'mastering'],
             'style_ids' => [$rock->id],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $rock->id, 'name' => 'Rock']],
@@ -150,7 +152,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'user' => $user,
             'headline' => 'Ta démo mixée',
             'description' => 'Huit ans de studio.',
-            'yearsOfExperience' => 8,
+            'experienceStartYear' => 2018,
             'specialities' => ['mixing'],
             'styles' => [$rock],
             'turnaroundDays' => 5,
@@ -163,7 +165,7 @@ class MySoundEngineeringTest extends ApiTestCase
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/services/' . $service->id . '/sound-engineering', [
-            'years_of_experience' => 9,
+            'experience_start_year' => 2017,
         ], self::PATCH_HEADERS);
 
         $this->assertResponseIsSuccessful();
@@ -175,7 +177,7 @@ class MySoundEngineeringTest extends ApiTestCase
             'status' => 'published',
             'headline' => 'Ta démo mixée',
             'description' => 'Huit ans de studio.',
-            'years_of_experience' => 9,
+            'experience_start_year' => 2017,
             'specialities' => ['mixing'],
             'style_ids' => [$rock->id],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $rock->id, 'name' => 'Rock']],
@@ -249,6 +251,34 @@ class MySoundEngineeringTest extends ApiTestCase
             'type' => '/validation_errors/0=8e179f1b-97aa-4560-a02f-2a8b42e49df7;1=music_all_eb832ebf-bf8b-4899-be88-eb5b80608707;2=04b91c99-a946-4221-afc5-e65ebac401eb;3=8e179f1b-97aa-4560-a02f-2a8b42e49df7;4=756b1212-697c-468d-a9ad-50dd783bb169;5=8e179f1b-97aa-4560-a02f-2a8b42e49df7;6=04b91c99-a946-4221-afc5-e65ebac401eb;7=c1051bb4-d103-4f74-8988-acbcafc7fdc3;8=04b91c99-a946-4221-afc5-e65ebac401eb',
             'title' => 'An error occurred',
             'description' => $detail,
+        ]);
+    }
+
+    /** Never a future year, never more than 70 years back (#1453). */
+    public function test_a_start_year_outside_the_last_70_years_is_refused(): void
+    {
+        self::mockTime('2026-06-15T10:00:00+00:00');
+        $user = UserFactory::new()->asBaseUser()->create();
+        $service = ServiceFactory::new()->soundEngineering()->create(['user' => $user]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/services/' . $service->id . '/sound-engineering', [
+            'experience_start_year' => 2027,
+        ], self::PATCH_HEADERS);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                ['propertyPath' => 'experience_start_year', 'message' => 'Indique une année entre 1956 et 2026', 'code' => '04b91c99-a946-4221-afc5-e65ebac401eb'],
+            ],
+            'detail' => 'experience_start_year: Indique une année entre 1956 et 2026',
+            'type' => '/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
+            'title' => 'An error occurred',
+            'description' => 'experience_start_year: Indique une année entre 1956 et 2026',
         ]);
     }
 

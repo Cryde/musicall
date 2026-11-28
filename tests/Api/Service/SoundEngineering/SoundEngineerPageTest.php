@@ -19,6 +19,7 @@ use App\Tests\Factory\Service\ServicePlaceFactory;
 use App\Tests\Factory\Service\ServiceWorkFactory;
 use App\Tests\Factory\Service\ServiceWorkImageFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -29,11 +30,13 @@ use function Zenstruck\Foundry\Persistence\save;
 class SoundEngineerPageTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     private const array BRUSSELS = ['city' => 'Bruxelles', 'latitude' => '50.8503', 'longitude' => '4.3517'];
 
     public function test_a_visitor_reads_the_whole_page(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'julien']);
         $user->profile->bio = 'Je mixe des démos le soir.';
         save($user);
@@ -42,7 +45,7 @@ class SoundEngineerPageTest extends ApiTestCase
             'user' => $user,
             'headline' => 'Ta démo mixée comme un disque',
             'description' => 'Huit ans de studio.',
-            'yearsOfExperience' => 8,
+            'experienceStartYear' => 2018,
             'specialities' => ['mixing', 'recording'],
             'styles' => [$rock],
             'turnaroundDays' => 5,
@@ -94,6 +97,7 @@ class SoundEngineerPageTest extends ApiTestCase
             'headline' => 'Ta démo mixée comme un disque',
             'description' => 'Huit ans de studio.',
             'years_of_experience' => 8,
+            'experience_start_year' => 2018,
             'specialities' => ['mixing', 'recording'],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $rock->id, 'name' => 'Rock']],
             // The address the owner entered is never shown.
@@ -200,6 +204,7 @@ class SoundEngineerPageTest extends ApiTestCase
             'headline' => null,
             'description' => null,
             'years_of_experience' => null,
+            'experience_start_year' => null,
             'specialities' => [],
             'styles' => [],
             'places' => [],

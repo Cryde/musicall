@@ -26,6 +26,7 @@ use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Service\Builder\Musician\MusicianBandResourceBuilder;
 use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
+use App\Service\Service\YearsOfExperience;
 use App\Translation\ReferenceNameTranslator;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -39,6 +40,7 @@ readonly class TeacherProfileBuilder
         private ReferenceNameTranslator $referenceNames,
         private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
         private MusicianBandResourceBuilder $musicianBandResourceBuilder,
+        private YearsOfExperience $yearsOfExperience,
     ) {
     }
 
@@ -71,7 +73,8 @@ readonly class TeacherProfileBuilder
         }
 
         $dto->description = $profile->description;
-        $dto->yearsOfExperience = $profile->yearsOfExperience;
+        $dto->yearsOfExperience = $this->yearsOfExperience->since($profile->experienceStartYear);
+        $dto->experienceStartYear = $profile->experienceStartYear;
 
         $details = TeachingDetails::of($profile);
         $dto->studentLevels = $details->studentLevels;

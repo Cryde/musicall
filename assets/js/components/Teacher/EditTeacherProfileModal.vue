@@ -76,17 +76,18 @@
           />
         </div>
 
-        <!-- Years of experience (required) -->
+        <!-- The year teaching started (required) -->
         <div class="flex flex-col gap-2">
-          <label for="yearsOfExperience" class="font-medium text-surface-900 dark:text-surface-0">
-            {{ t('profile.teacher.edit.years_of_experience') }}
+          <label for="experienceStartYear" class="font-medium text-surface-900 dark:text-surface-0">
+            {{ t('profile.teacher.edit.experience_start_year') }}
           </label>
           <InputNumber
-            id="yearsOfExperience"
-            v-model="yearsOfExperience"
-            :min="0"
-            :max="70"
-            :placeholder="t('profile.teacher.edit.years_of_experience_placeholder')"
+            id="experienceStartYear"
+            v-model="experienceStartYear"
+            :use-grouping="false"
+            :min="startYearRange.min"
+            :max="startYearRange.max"
+            :placeholder="t('profile.teacher.edit.experience_start_year_placeholder')"
             :disabled="isSaving"
             class="w-48"
           />
@@ -645,6 +646,7 @@ import { getStudentLevelLabel } from '../../constants/teacherProfile.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useTeacherProfileStore } from '../../store/user/teacherProfile.js'
+import { experienceStartYearRange } from '../../utils/experienceStartYear.js'
 import {
   lessonContentForm,
   lessonContentPayload,
@@ -671,7 +673,8 @@ const instrumentStore = useInstrumentStore()
 const styleStore = useStyleStore()
 
 const description = ref('')
-const yearsOfExperience = ref(null)
+const experienceStartYear = ref(null)
+const startYearRange = experienceStartYearRange()
 const studentLevels = ref([])
 const ageGroups = ref([])
 const courseTitle = ref('')
@@ -765,7 +768,7 @@ function initForm() {
 
   if (props.teacherProfile) {
     description.value = props.teacherProfile.description || ''
-    yearsOfExperience.value = props.teacherProfile.years_of_experience || null
+    experienceStartYear.value = props.teacherProfile.experience_start_year ?? null
     studentLevels.value = props.teacherProfile.student_levels || []
     ageGroups.value = props.teacherProfile.age_groups || []
     courseTitle.value = props.teacherProfile.course_title || ''
@@ -825,7 +828,7 @@ function initForm() {
     selectedStyleIds.value = (props.teacherProfile.styles || []).map((s) => s.id)
   } else {
     description.value = ''
-    yearsOfExperience.value = null
+    experienceStartYear.value = null
     studentLevels.value = []
     ageGroups.value = []
     courseTitle.value = ''
@@ -997,7 +1000,7 @@ async function handleSave() {
     // Empty, not null: null keeps the stored text on an edit (#1327). A cleared description is refused, a
     // cleared course title is stored empty.
     description: description.value,
-    years_of_experience: yearsOfExperience.value,
+    experience_start_year: experienceStartYear.value,
     student_levels: studentLevels.value,
     age_groups: ageGroups.value,
     course_title: courseTitle.value,

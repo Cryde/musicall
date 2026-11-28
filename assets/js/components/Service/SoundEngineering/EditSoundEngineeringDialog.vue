@@ -18,7 +18,7 @@
         :specialities="specialityOptions"
         :headline-placeholder="t('profile.sound_engineer.form.headline_placeholder')"
         :description-placeholder="t('profile.sound_engineer.form.description_placeholder')"
-        :years-label="t('profile.sound_engineer.form.years')"
+        :start-year-label="t('profile.sound_engineer.form.start_year')"
         :disabled="isSaving"
       />
 
@@ -179,7 +179,7 @@ function save() {
   return soundEngineerApi.saveForm(props.serviceId, {
     headline: form.value.headline,
     description: form.value.description,
-    years_of_experience: form.value.years_of_experience,
+    experience_start_year: form.value.experience_start_year,
     specialities: form.value.specialities,
     style_ids: form.value.style_ids,
     places: placesPayload(places.value),

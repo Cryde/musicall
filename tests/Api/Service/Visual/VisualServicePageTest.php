@@ -17,6 +17,7 @@ use App\Tests\Factory\Service\ServicePlaceFactory;
 use App\Tests\Factory\Service\ServiceWorkFactory;
 use App\Tests\Factory\Service\ServiceWorkImageFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -30,11 +31,13 @@ use function Zenstruck\Foundry\Persistence\save;
 class VisualServicePageTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     private const array LYON = ['city' => 'Lyon', 'latitude' => '45.764', 'longitude' => '4.8357'];
 
     public function test_a_visitor_reads_the_whole_photographer_page(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'lea']);
         $user->profile->bio = 'Je photographie les concerts depuis dix ans.';
         save($user);
@@ -43,7 +46,7 @@ class VisualServicePageTest extends ApiTestCase
             'user' => $user,
             'headline' => 'Tes concerts en images',
             'description' => 'Fosse photo, backstage, pochettes.',
-            'yearsOfExperience' => 10,
+            'experienceStartYear' => 2016,
             'specialities' => ['concert', 'cover'],
             'styles' => [$rock],
             'deliveryDays' => 7,
@@ -90,6 +93,7 @@ class VisualServicePageTest extends ApiTestCase
             'headline' => 'Tes concerts en images',
             'description' => 'Fosse photo, backstage, pochettes.',
             'years_of_experience' => 10,
+            'experience_start_year' => 2016,
             'specialities' => ['concert', 'cover'],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $rock->id, 'name' => 'Rock']],
             // The address the owner entered is never shown.
@@ -171,6 +175,7 @@ class VisualServicePageTest extends ApiTestCase
             'headline' => "Ton clip, de l'idée au montage",
             'description' => null,
             'years_of_experience' => null,
+            'experience_start_year' => null,
             'specialities' => ['clip'],
             'styles' => [],
             'places' => [],
@@ -200,11 +205,12 @@ class VisualServicePageTest extends ApiTestCase
     /** A graphic designer's works are a gallery too, and remote work is one of their places (#1412). */
     public function test_a_visitor_reads_a_graphic_designer_page_with_remote_work(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'nina']);
         $service = ServiceFactory::new()->graphicDesign()->create([
             'user' => $user,
             'headline' => 'Ta pochette, du croquis au fichier imprimeur',
-            'yearsOfExperience' => 8,
+            'experienceStartYear' => 2018,
             'specialities' => ['cover', 'logo'],
             'deliveryDays' => 10,
             'deliverable' => '3 propositions, fichiers HD',
@@ -242,6 +248,7 @@ class VisualServicePageTest extends ApiTestCase
             'headline' => 'Ta pochette, du croquis au fichier imprimeur',
             'description' => null,
             'years_of_experience' => 8,
+            'experience_start_year' => 2018,
             'specialities' => ['cover', 'logo'],
             'styles' => [],
             'places' => [
@@ -318,6 +325,7 @@ class VisualServicePageTest extends ApiTestCase
             'headline' => 'Le site de ton groupe, prêt pour la tournée',
             'description' => null,
             'years_of_experience' => null,
+            'experience_start_year' => null,
             'specialities' => ['band_site', 'epk'],
             'styles' => [],
             'places' => [
@@ -423,6 +431,7 @@ class VisualServicePageTest extends ApiTestCase
             'headline' => null,
             'description' => null,
             'years_of_experience' => null,
+            'experience_start_year' => null,
             'specialities' => [],
             'styles' => [],
             'places' => [],

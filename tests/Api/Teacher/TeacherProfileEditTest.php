@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Teacher;
 
+use App\Entity\Attribute\Instrument;
+use App\Entity\Service\Service;
 use App\Entity\Service\ServiceAvailability;
 use App\Entity\Service\ServiceLink;
 use App\Entity\Service\ServiceOffer;
 use App\Entity\Service\ServicePlace;
 use App\Entity\Service\TeachingDetails;
+use App\Entity\User;
 use App\Enum\Service\OfferUnit;
+use App\Enum\Service\ServiceKind;
 use App\Enum\Service\ServicePlaceType;
 use App\Enum\SocialPlatform;
 use App\Enum\Teacher\DayOfWeek;
@@ -24,6 +28,7 @@ use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -32,9 +37,11 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 class TeacherProfileEditTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     public function test_create_teacher_profile(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $teacherProfileRepository = self::getContainer()->get(ServiceRepository::class);
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => 'new_teacher',
@@ -91,6 +98,7 @@ class TeacherProfileEditTest extends ApiTestCase
             'id' => $profile->id,
             'description' => 'Nouveau profil de professeur de guitare',
             'years_of_experience' => 8,
+            'experience_start_year' => 2018,
             'student_levels' => ['beginner', 'intermediate'],
             'age_groups' => ['children', 'teenagers'],
             'course_title' => 'Cours de guitare rock',
@@ -339,6 +347,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_teacher_profile(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         self::getContainer()->get(ServiceRepository::class);
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
 
@@ -358,7 +367,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Ancien profil de professeur',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [StudentLevel::BEGINNER->value],
             'ageGroups' => ['children'],
             'headline' => 'Cours de guitare',
@@ -457,6 +466,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $profileId,
             'description' => 'Nouveau profil mis à jour complètement',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['intermediate', 'advanced'],
             'age_groups' => ['teenagers', 'adults', 'seniors'],
             'course_title' => 'Cours de batterie et piano jazz',
@@ -509,6 +519,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_keeps_every_field_left_out(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
@@ -516,7 +527,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [StudentLevel::BEGINNER->value],
             'ageGroups' => ['children'],
             'headline' => 'Guitare rock',
@@ -573,6 +584,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 4,
+            'experience_start_year' => 2022,
             'student_levels' => ['beginner'],
             'age_groups' => ['children'],
             'course_title' => 'Guitare rock',
@@ -619,12 +631,13 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_trial_switch_sent_without_a_price_clears_the_price(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'headline' => null,
@@ -648,6 +661,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => true,
@@ -667,12 +681,13 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_trial_price_sent_alone_writes_the_price(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'headline' => null,
@@ -693,6 +708,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => true,
@@ -713,12 +729,13 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_trial_switched_off_without_a_price_clears_the_price(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'headline' => null,
@@ -738,6 +755,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => false,
@@ -758,12 +776,13 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_empty_course_title_clears_it(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'headline' => 'Guitare rock',
@@ -784,6 +803,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'course_title' => '',
@@ -805,12 +825,13 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_keeps_one_price_per_lesson_length(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'offersTrial' => false,
@@ -837,6 +858,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => false,
@@ -889,13 +911,14 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_replaces_the_social_links(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'headline' => null,
@@ -927,6 +950,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => false,
@@ -949,13 +973,14 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
 
     public function test_update_skips_an_instrument_id_that_does_not_exist(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         $drum = InstrumentFactory::new()->asDrum()->create();
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 3,
+            'experienceStartYear' => 2023,
             'studentLevels' => [],
             'ageGroups' => [],
             'headline' => null,
@@ -977,6 +1002,7 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'id' => $teacherProfile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 3,
+            'experience_start_year' => 2023,
             'student_levels' => [],
             'age_groups' => [],
             'offers_trial' => false,
@@ -1000,5 +1026,233 @@ instrument_ids: Tu dois sélectionner au moins un instrument',
             'description' => 'Test',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    /** The app knows only the years (#1453): what it sends is stored as the start year it stands for. */
+    public function test_a_patch_from_the_app_with_only_the_years_stores_the_matching_start_year(): void
+    {
+        self::mockTime('2026-06-15T10:00:00+00:00');
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = $this->teachingStartedIn(2020, $user, $guitar);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['years_of_experience' => 10], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 10,
+            'experience_start_year' => 2016,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    /** The years count on from the stored start year, a year later as well (#1453). */
+    public function test_a_patch_that_leaves_both_out_keeps_the_start_year(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = $this->teachingStartedIn(2020, $user, $guitar);
+        self::mockTime('2027-02-01T10:00:00+00:00');
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['description' => 'Cours de basse'], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de basse',
+            'years_of_experience' => 7,
+            'experience_start_year' => 2020,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    public function test_the_start_year_wins_when_both_are_sent(): void
+    {
+        self::mockTime('2026-06-15T10:00:00+00:00');
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $teacherProfile = $this->teachingStartedIn(2020, $user, $guitar);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
+            'years_of_experience' => 10,
+            'experience_start_year' => 2012,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $teacherProfile->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 14,
+            'experience_start_year' => 2012,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    /** What the web sends (#1453): the start year alone is enough to create a profile. */
+    public function test_create_with_the_start_year_only(): void
+    {
+        self::mockTime('2026-06-15T10:00:00+00:00');
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
+            'description' => 'Cours de guitare',
+            'experience_start_year' => 2015,
+            'instrument_ids' => [$guitar->id],
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $profile = self::getContainer()->get(ServiceRepository::class)->findOneByUserAndKind($user, ServiceKind::Teaching);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfileOutput',
+            '@id' => '/api/user/teacher-profile',
+            '@type' => 'TeacherProfileOutput',
+            'id' => $profile?->id,
+            'description' => 'Cours de guitare',
+            'years_of_experience' => 11,
+            'experience_start_year' => 2015,
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+            ],
+            'styles' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [],
+            'level_goals' => [],
+            'songs' => [],
+        ]);
+    }
+
+    public function test_a_future_start_year_is_refused(): void
+    {
+        self::mockTime('2026-06-15T10:00:00+00:00');
+        $user = UserFactory::new()->asBaseUser()->create();
+        $this->teachingStartedIn(2020, $user, InstrumentFactory::new()->asGuitar()->create());
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', ['experience_start_year' => 2027], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@type' => 'ConstraintViolation',
+            '@id' => '/api/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'experience_start_year',
+                    'message' => 'Indique une année entre 1956 et 2026',
+                    'code' => '04b91c99-a946-4221-afc5-e65ebac401eb',
+                ],
+            ],
+            'title' => 'An error occurred',
+            'detail' => 'experience_start_year: Indique une année entre 1956 et 2026',
+            'type' => '/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
+            'description' => 'experience_start_year: Indique une année entre 1956 et 2026',
+        ]);
+    }
+
+    public function test_a_start_year_more_than_70_years_back_is_refused(): void
+    {
+        self::mockTime('2026-06-15T10:00:00+00:00');
+        $user = UserFactory::new()->asBaseUser()->create();
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
+            'description' => 'Cours de guitare',
+            'experience_start_year' => 1955,
+            'instrument_ids' => [$guitar->id],
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@type' => 'ConstraintViolation',
+            '@id' => '/api/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'experience_start_year',
+                    'message' => 'Indique une année entre 1956 et 2026',
+                    'code' => '04b91c99-a946-4221-afc5-e65ebac401eb',
+                ],
+            ],
+            'title' => 'An error occurred',
+            'detail' => 'experience_start_year: Indique une année entre 1956 et 2026',
+            'type' => '/validation_errors/04b91c99-a946-4221-afc5-e65ebac401eb',
+            'description' => 'experience_start_year: Indique une année entre 1956 et 2026',
+        ]);
+    }
+
+    private function teachingStartedIn(int $year, User $user, Instrument $guitar): Service
+    {
+        $teacherProfile = ServiceFactory::new()->teaching()->create([
+            'user' => $user,
+            'description' => 'Cours de guitare',
+            'experienceStartYear' => $year,
+        ]);
+        ServiceInstrumentFactory::new()->create(['service' => $teacherProfile, 'instrument' => $guitar]);
+
+        return $teacherProfile;
     }
 }

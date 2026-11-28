@@ -33,7 +33,7 @@ readonly class MyServiceFormBuilder
         $form->status = $service->status->value;
         $form->headline = $service->headline;
         $form->description = $service->description;
-        $form->yearsOfExperience = $service->yearsOfExperience;
+        $form->experienceStartYear = $service->experienceStartYear;
         $form->specialities = $service->specialities;
         $form->styleIds = array_values(array_map(static fn (Style $style): string => (string) $style->id, $service->styles->toArray()));
         $form->styles = $this->teacherProfileBuilder->buildStyles($service->styles->toArray());

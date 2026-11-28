@@ -28,6 +28,7 @@ use App\Enum\Service\ServiceKind;
 use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Repository\Service\ServiceRepository;
+use App\Service\Service\YearsOfExperience;
 use App\Translation\ReferenceNameTranslator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -41,6 +42,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
         private Security $security,
         private ReferenceNameTranslator $referenceNames,
         private ServiceRepository $serviceRepository,
+        private YearsOfExperience $yearsOfExperience,
     ) {
     }
 
@@ -61,7 +63,8 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
         $dto = new TeacherProfileOutput();
         $dto->id = $profile->id;
         $dto->description = $profile->description;
-        $dto->yearsOfExperience = $profile->yearsOfExperience;
+        $dto->yearsOfExperience = $this->yearsOfExperience->since($profile->experienceStartYear);
+        $dto->experienceStartYear = $profile->experienceStartYear;
 
         $dto->studentLevels = $details->studentLevels;
         $dto->ageGroups = $details->ageGroups;

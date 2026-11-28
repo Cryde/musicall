@@ -20,6 +20,7 @@ use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -28,9 +29,11 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 class TeacherProfilePrivateGetTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     public function test_get_my_teacher_profile(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => 'my_teacher',
             'email' => 'my_teacher@test.com',
@@ -42,7 +45,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
         $teacherProfile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Mon profil de professeur complet',
-            'yearsOfExperience' => 15,
+            'experienceStartYear' => 2011,
             'studentLevels' => [StudentLevel::BEGINNER->value, StudentLevel::INTERMEDIATE->value, StudentLevel::ADVANCED->value],
             'ageGroups' => [AgeGroup::CHILDREN->value, AgeGroup::TEENAGERS->value, AgeGroup::ADULTS->value],
             'headline' => 'Cours de guitare',
@@ -110,6 +113,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'id' => $profileId,
             'description' => 'Mon profil de professeur complet',
             'years_of_experience' => 15,
+            'experience_start_year' => 2011,
             'student_levels' => ['beginner', 'intermediate', 'advanced'],
             'age_groups' => ['children', 'teenagers', 'adults'],
             'course_title' => 'Cours de guitare',

@@ -51,7 +51,10 @@ abstract class ServicePage
 
     public ?string $description = null;
 
+    /** Counted from `experienceStartYear` on every read (#1453). */
     public ?int $yearsOfExperience = null;
+
+    public ?int $experienceStartYear = null;
 
     /** @var list<string> the kind's speciality values */
     public array $specialities = [];

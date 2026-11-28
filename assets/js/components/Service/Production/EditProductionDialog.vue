@@ -18,7 +18,7 @@
         :specialities="specialityOptions"
         :headline-placeholder="t('profile.producer.form.headline_placeholder')"
         :description-placeholder="t('profile.producer.form.description_placeholder')"
-        :years-label="t('profile.producer.form.years')"
+        :start-year-label="t('profile.producer.form.start_year')"
         :disabled="isSaving"
       />
 
@@ -100,7 +100,7 @@ function save() {
   return producerApi.saveForm(props.serviceId, {
     headline: form.value.headline,
     description: form.value.description,
-    years_of_experience: form.value.years_of_experience,
+    experience_start_year: form.value.experience_start_year,
     specialities: form.value.specialities,
     style_ids: form.value.style_ids,
     places: placesPayload(places.value),

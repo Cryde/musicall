@@ -19,8 +19,16 @@
     </div>
     <div class="grid gap-5 md:grid-cols-2">
       <div class="flex flex-col gap-2">
-        <label :for="`${idPrefix}-years`" :class="LABEL_CLASS">{{ yearsLabel }}</label>
-        <InputNumber fluid v-model="form.years_of_experience" :input-id="`${idPrefix}-years`" :min="0" :max="70" :disabled="disabled" />
+        <label :for="`${idPrefix}-start-year`" :class="LABEL_CLASS">{{ startYearLabel }}</label>
+        <InputNumber
+          fluid
+          v-model="form.experience_start_year"
+          :input-id="`${idPrefix}-start-year`"
+          :use-grouping="false"
+          :min="startYearRange.min"
+          :max="startYearRange.max"
+          :disabled="disabled"
+        />
       </div>
       <div class="flex flex-col gap-2">
         <label :for="`${idPrefix}-styles`" :class="LABEL_CLASS">{{ t('profile.service_form.styles') }}</label>
@@ -49,9 +57,10 @@ import MultiSelect from 'primevue/multiselect'
 import Textarea from 'primevue/textarea'
 import { useI18n } from 'vue-i18n'
 import { useStyleStore } from '../../../store/attribute/style.js'
+import { experienceStartYearRange } from '../../../utils/experienceStartYear.js'
 import ServiceFormSection from './ServiceFormSection.vue'
 
-/** « Le service » in a service's form (#1410, #1411): its title, specialities, presentation, experience and styles. */
+/** « Le service » in a service's form (#1410, #1411): its title, specialities, presentation, start year and styles. */
 defineProps({
   /** The kind's icon. */
   icon: { type: String, required: true },
@@ -61,15 +70,16 @@ defineProps({
   specialities: { type: Array, required: true },
   headlinePlaceholder: { type: String, required: true },
   descriptionPlaceholder: { type: String, required: true },
-  /** « Années de studio », « Années d'expérience ». */
-  yearsLabel: { type: String, required: true },
+  /** « En studio depuis », « Tu exerces depuis ». */
+  startYearLabel: { type: String, required: true },
   disabled: { type: Boolean, default: false }
 })
-/** The form as the API gave it: `headline`, `specialities`, `description`, `years_of_experience`, `style_ids`. */
+/** The form as the API gave it: `headline`, `specialities`, `description`, `experience_start_year`, `style_ids`. */
 const form = defineModel('form', { type: Object, required: true })
 
 const LABEL_CLASS = 'font-medium text-surface-900 dark:text-surface-0'
 
 const { t } = useI18n()
 const styleStore = useStyleStore()
+const startYearRange = experienceStartYearRange()
 </script>

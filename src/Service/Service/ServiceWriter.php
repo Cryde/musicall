@@ -35,7 +35,7 @@ readonly class ServiceWriter
     {
         $service->headline = self::blankToNull($form->headline);
         $service->description = self::blankToNull($form->description);
-        $service->yearsOfExperience = $form->yearsOfExperience;
+        $service->experienceStartYear = $form->experienceStartYear;
         $service->specialities = array_values($form->specialities);
         $this->writeStyles($service, $form->styleIds);
         $this->writePlaces($service, $form->places);
