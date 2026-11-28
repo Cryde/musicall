@@ -9,13 +9,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * The searches by speciality: sound engineers (#1410), photographers and videographers (#1411), graphic designers and
- * webmasters (#1412), producers (#1413). The pages per speciality and city come with the annuaire (#1414), so a
- * filtered address says what the page itself says.
+ * webmasters (#1412), producers (#1413), and the annuaire leading to every search (#1414). There are no pages per
+ * speciality and city yet, so a filtered address says what the page itself says.
  */
 readonly class ServiceSearchMetaDataProvider implements PageMetaDataProviderInterface
 {
     /** Each search's path, and its title and description. */
     private const array PATHS = [
+        '/annuaire' => ['meta.directory.title', 'meta.directory.description'],
         '/rechercher-un-ingenieur-du-son' => ['meta.sound_engineer_search.title', 'meta.sound_engineer_search.description'],
         '/rechercher-un-photographe' => ['meta.photographer_search.title', 'meta.photographer_search.description'],
         '/rechercher-un-videaste' => ['meta.videographer_search.title', 'meta.videographer_search.description'],

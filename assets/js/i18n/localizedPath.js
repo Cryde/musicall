@@ -21,6 +21,7 @@ export const LOCALE_PARAM_PATH = `:locale(${PREFIXED_LOCALES.join('|')})?`
 const TRANSLATED_SEGMENTS = {
   en: {
     cours: 'lessons',
+    annuaire: 'directory',
     decouvrir: 'discover',
     'mentions-legales': 'legal-notice',
     'supprimer-mon-compte': 'delete-my-account',

@@ -164,9 +164,9 @@ watch(
 )
 
 function resetForm() {
-  type.value = 'bug'
+  type.value = feedbackStore.prefill?.type ?? 'bug'
   module.value = resolveFeedbackModule(route.name)
-  message.value = ''
+  message.value = feedbackStore.prefill?.message ?? ''
   email.value = ''
   submitted.value = false
   isSent.value = false

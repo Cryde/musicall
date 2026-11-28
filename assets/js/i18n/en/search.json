@@ -255,5 +255,23 @@
     "days": "{count}-day turnaround | {count}-day turnaround",
     "empty_text": "Widen the distance or remove a filter.",
     "empty_text_online": "Widen the distance, add those who work remotely or remove a filter."
+  },
+  "directory": {
+    "title": "Directory of music professionals - MusicAll",
+    "heading": "Directory",
+    "intro": "Music professionals near you: pick a trade, then search around your city.",
+    "pros": "Professionals",
+    "nobody_yet": "Nobody yet",
+    "be_first": "Be the first",
+    "places": "Places",
+    "places_title": "Studios, rehearsal rooms and music shops",
+    "places_text": "They join the directory soon.",
+    "soon": "Soon",
+    "trade_title": "Is your trade missing?",
+    "trade_text": "Tell us which one, we will look into adding it.",
+    "trade_cta": "Suggest your trade",
+    "trade_message": "My trade:",
+    "cta": "Do you offer a service?",
+    "error": "The directory could not be loaded. Try again in a moment."
   }
 }

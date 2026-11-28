@@ -9,6 +9,12 @@ export const instrumentRouteMapping = {
 
 export default [
   {
+    path: '/annuaire',
+    name: 'app_directory',
+    component: () => import('../views/Search/Directory.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     path: '/rechercher-un-musicien',
     name: 'app_search_musician',
     component: () => import('../views/Search/Index.vue'),

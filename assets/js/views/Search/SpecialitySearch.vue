@@ -5,7 +5,7 @@
         <h1 class="text-2xl md:text-3xl font-bold text-surface-900 dark:text-surface-0">
           {{ t(config.text.heading) }}
         </h1>
-        <p class="mt-1 text-surface-600 dark:text-surface-400">{{ t(config.text.intro) }}</p>
+        <p class="mt-1 text-surface-600 dark:text-surface-400">{{ t(SERVICE_KINDS[kind].search.introKey) }}</p>
       </div>
       <p class="text-sm text-surface-600 dark:text-surface-400">
         {{ t(config.text.cta) }}
@@ -105,7 +105,7 @@
     </section>
 
     <h2 class="font-semibold text-surface-900 dark:text-surface-0" aria-live="polite">
-      {{ t(config.text.count, { count: totalItems }, totalItems) }}
+      {{ t(SERVICE_KINDS[kind].search.countKey, { count: totalItems }, totalItems) }}
     </h2>
 
     <Message v-if="hasError" severity="error" :closable="false">{{ t('search.service.error') }}</Message>

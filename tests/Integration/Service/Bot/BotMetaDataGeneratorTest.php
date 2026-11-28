@@ -743,6 +743,23 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame('Find a videographer - MusicAll', $result['title'] ?? null);
     }
 
+    public function test_the_directory_is_described_in_both_locales(): void
+    {
+        $this->assertSame([
+            'title' => 'Annuaire des pros de la musique - MusicAll',
+            'description' => 'Profs, ingés son, photographes, vidéastes, graphistes, webmasters et producteurs : trouve les pros de la musique près de chez toi sur MusicAll.',
+        ], $this->botMetaDataGenerator->getPageMetaData('/annuaire'));
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/directory'),
+        );
+        $this->assertSame([
+            'title' => 'Directory of music professionals - MusicAll',
+            'description' => 'Teachers, sound engineers, photographers, videographers, graphic designers, webmasters and producers: find music professionals near you on MusicAll.',
+        ], $result);
+    }
+
     /** Remote work only: no city in its title, « À distance » where it serves (#1412). */
     public function test_get_metadata_for_a_graphic_designer_working_remotely(): void
     {
