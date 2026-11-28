@@ -29,7 +29,7 @@ final class ServiceFactory extends PersistentObjectFactory
             // Published as it was created, as the migration dates the services already online (#1415).
             'firstPublicationDatetime' => $created,
             'description' => self::faker()->paragraphs(2, true),
-            'yearsOfExperience' => self::faker()->numberBetween(1, 30),
+            'experienceStartYear' => (int) date('Y') - self::faker()->numberBetween(1, 30),
         ];
     }
 

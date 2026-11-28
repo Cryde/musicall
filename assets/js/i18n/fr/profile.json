@@ -303,8 +303,8 @@
       "styles_placeholder": "Sélectionne tes styles",
       "description": "Présentation",
       "description_placeholder": "Présente-toi, ta méthode d'enseignement, ton parcours...",
-      "years_of_experience": "Années d'expérience",
-      "years_of_experience_placeholder": "Ex: 5",
+      "experience_start_year": "Tu enseignes depuis",
+      "experience_start_year_placeholder": "Ex: 2015",
       "course_title": "Titre du cours / Spécialisation",
       "course_title_placeholder": "Ex: Cours de guitare jazz pour débutants",
       "section_audience": "Public cible",
@@ -1103,7 +1103,7 @@
       "title": "Mon service d'ingénieur du son",
       "headline_placeholder": "Ta démo mixée comme un disque",
       "description_placeholder": "Comment tu travailles, ce que les groupes t'envoient, ce qu'ils reçoivent",
-      "years": "Années de studio",
+      "start_year": "En studio depuis",
       "place_remote": "À distance, les groupes m'envoient leurs pistes",
       "units": {
         "track": "Par titre",
@@ -1247,7 +1247,7 @@
       "title": "Mon service de producteur",
       "headline_placeholder": "Ton son, de la maquette au master",
       "description_placeholder": "Comment tu travailles, ce que les artistes t'envoient, ce qu'ils reçoivent",
-      "years": "Années d'expérience",
+      "start_year": "Tu produis depuis",
       "place_remote": "À distance, tout se passe en ligne",
       "media_url": "Lien YouTube, SoundCloud ou Spotify"
     }
@@ -1279,7 +1279,7 @@
     },
     "form": {
       "description_placeholder": "Comment tu travailles, ce que tu livres et à qui",
-      "years": "Années d'expérience",
+      "start_year": "Tu exerces depuis",
       "section_delivery": "Livraison",
       "deliverable": "Ce que tu livres",
       "delivery_days": "Délai de livraison",

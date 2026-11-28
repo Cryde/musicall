@@ -18,7 +18,7 @@
         :specialities="specialityOptions"
         :headline-placeholder="t(config.text.headlinePlaceholder)"
         :description-placeholder="t('profile.visual_service.form.description_placeholder')"
-        :years-label="t('profile.visual_service.form.years')"
+        :start-year-label="t('profile.visual_service.form.start_year')"
         :disabled="isSaving"
       />
 
@@ -138,7 +138,7 @@ function save() {
   return visualServiceApi.saveForm(props.kind, props.serviceId, {
     headline: form.value.headline,
     description: form.value.description,
-    years_of_experience: form.value.years_of_experience,
+    experience_start_year: form.value.experience_start_year,
     specialities: form.value.specialities,
     style_ids: form.value.style_ids,
     places: placesPayload(places.value),

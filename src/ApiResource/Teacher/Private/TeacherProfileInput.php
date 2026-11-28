@@ -11,6 +11,8 @@ use App\ApiResource\Teacher\Private\Input\Package;
 use App\ApiResource\Teacher\Private\Input\Pricing;
 use App\ApiResource\Teacher\Private\Input\SocialLink;
 use App\ApiResource\Teacher\Private\Input\Song;
+use App\Service\Service\YearsOfExperience;
+use App\Validator\Service\ExperienceStartYear;
 use App\Validator\Teacher\ValidLevelGoals;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -25,10 +27,19 @@ class TeacherProfileInput
     #[Assert\NotBlank(message: 'profile.teacher.description_required', allowNull: true, groups: ['teacher_profile_edit'])]
     public ?string $description = null;
 
-    #[Assert\NotNull(message: 'profile.teacher.years_of_experience_required', groups: ['teacher_profile_create'])]
+    /** What the app sends, stored as the start year it stands for (#1453). A create needs it or the start year. */
+    #[Assert\When(
+        expression: 'this.experienceStartYear === null',
+        constraints: [new Assert\NotNull(message: 'profile.teacher.years_of_experience_required')],
+        groups: ['teacher_profile_create'],
+    )]
     #[Assert\PositiveOrZero(message: 'profile.teacher.years_of_experience_positive', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
-    #[Assert\LessThanOrEqual(value: 70, message: 'profile.teacher.years_of_experience_too_high', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
+    #[Assert\LessThanOrEqual(value: YearsOfExperience::MAX, message: 'profile.teacher.years_of_experience_too_high', groups: ['teacher_profile_create', 'teacher_profile_edit'])]
     public ?int $yearsOfExperience = null;
+
+    /** What the web sends (#1453): wins over `yearsOfExperience` when both are. */
+    #[ExperienceStartYear]
+    public ?int $experienceStartYear = null;
 
     /** @var string[]|null */
     #[Assert\All([

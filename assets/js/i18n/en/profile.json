@@ -303,8 +303,8 @@
       "styles_placeholder": "Select your genres",
       "description": "About",
       "description_placeholder": "Introduce yourself, your teaching method, your background...",
-      "years_of_experience": "Years of experience",
-      "years_of_experience_placeholder": "e.g. 5",
+      "experience_start_year": "Teaching since",
+      "experience_start_year_placeholder": "e.g. 2015",
       "course_title": "Lesson title / Speciality",
       "course_title_placeholder": "e.g. Jazz guitar lessons for beginners",
       "section_audience": "Target audience",
@@ -1103,7 +1103,7 @@
       "title": "My sound engineering service",
       "headline_placeholder": "Your demo mixed like a record",
       "description_placeholder": "How you work, what bands send you, what they get back",
-      "years": "Years in the studio",
+      "start_year": "In the studio since",
       "place_remote": "Remotely, bands send me their tracks",
       "units": {
         "track": "Per track",
@@ -1247,7 +1247,7 @@
       "title": "My production service",
       "headline_placeholder": "Your sound, from the demo to the master",
       "description_placeholder": "How you work, what artists send you, what they get back",
-      "years": "Years of experience",
+      "start_year": "Producing since",
       "place_remote": "Remotely, everything happens online",
       "media_url": "YouTube, SoundCloud or Spotify link"
     }
@@ -1279,7 +1279,7 @@
     },
     "form": {
       "description_placeholder": "How you work, what you deliver and who for",
-      "years": "Years of experience",
+      "start_year": "Working since",
       "section_delivery": "Delivery",
       "deliverable": "What you deliver",
       "delivery_days": "Delivery time",

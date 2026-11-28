@@ -12,6 +12,7 @@ use App\Enum\Service\OfferUnit;
 use App\Enum\Service\ServiceKind;
 use App\Enum\Service\ServicePlaceType;
 use App\Enum\Service\ServiceSpeciality;
+use App\Validator\Service\ExperienceStartYear;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -41,8 +42,9 @@ abstract class MyServiceForm
     #[Assert\Length(max: 5000)]
     public ?string $description = null;
 
-    #[Assert\Range(notInRangeMessage: 'service.years_of_experience_invalid', min: 0, max: 70)]
-    public ?int $yearsOfExperience = null;
+    /** « Depuis 2015 »: its page counts the years from it (#1453). */
+    #[ExperienceStartYear]
+    public ?int $experienceStartYear = null;
 
     /** @var array<string> the kind's speciality values, checked by validateKindValues() */
     #[Assert\Unique]

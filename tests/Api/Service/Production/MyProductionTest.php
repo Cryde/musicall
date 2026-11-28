@@ -62,7 +62,7 @@ class MyProductionTest extends ApiTestCase
             'status' => 'draft',
             'headline' => 'Ton son, de la maquette au master',
             'description' => null,
-            'years_of_experience' => null,
+            'experience_start_year' => null,
             'specialities' => ['beatmaking', 'topline'],
             'style_ids' => [$pop->id],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $pop->id, 'name' => 'Pop']],
@@ -111,7 +111,7 @@ class MyProductionTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/services/' . $service->id . '/production', [
             'headline' => '  Ton son, de la maquette au master  ',
             'description' => 'Dix ans de prods.',
-            'years_of_experience' => 10,
+            'experience_start_year' => 2016,
             'specialities' => ['arrangement', 'record_production', 'composition'],
             'style_ids' => [$pop->id],
             'places' => [
@@ -134,7 +134,7 @@ class MyProductionTest extends ApiTestCase
             'status' => 'draft',
             'headline' => 'Ton son, de la maquette au master',
             'description' => 'Dix ans de prods.',
-            'years_of_experience' => 10,
+            'experience_start_year' => 2016,
             'specialities' => ['arrangement', 'record_production', 'composition'],
             'style_ids' => [$pop->id],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $pop->id, 'name' => 'Pop']],
@@ -161,7 +161,7 @@ class MyProductionTest extends ApiTestCase
             'user' => $user,
             'headline' => 'Ton son, de la maquette au master',
             'description' => 'Dix ans de prods.',
-            'yearsOfExperience' => 10,
+            'experienceStartYear' => 2016,
             'specialities' => ['beatmaking'],
             'styles' => [$pop],
         ]);
@@ -189,7 +189,7 @@ class MyProductionTest extends ApiTestCase
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/services/' . $service->id . '/production', [
-            'years_of_experience' => 11,
+            'experience_start_year' => 2015,
         ], self::PATCH_HEADERS);
 
         $this->assertResponseIsSuccessful();
@@ -201,7 +201,7 @@ class MyProductionTest extends ApiTestCase
             'status' => 'published',
             'headline' => 'Ton son, de la maquette au master',
             'description' => 'Dix ans de prods.',
-            'years_of_experience' => 11,
+            'experience_start_year' => 2015,
             'specialities' => ['beatmaking'],
             'style_ids' => [$pop->id],
             'styles' => [['@type' => 'TeacherProfileStyle', 'id' => $pop->id, 'name' => 'Pop']],

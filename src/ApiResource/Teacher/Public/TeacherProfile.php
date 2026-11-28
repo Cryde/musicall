@@ -56,7 +56,10 @@ class TeacherProfile
 
     public ?string $description = null;
 
+    /** Counted from `experienceStartYear` on every read (#1453). */
     public ?int $yearsOfExperience = null;
+
+    public ?int $experienceStartYear = null;
 
     /** @var string[] */
     public array $studentLevels = [];

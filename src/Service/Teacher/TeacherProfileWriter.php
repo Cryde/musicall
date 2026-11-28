@@ -25,6 +25,7 @@ use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
 use App\Repository\Attribute\InstrumentRepository;
 use App\Service\Service\ServiceWriter;
+use App\Service\Service\YearsOfExperience;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -39,6 +40,7 @@ readonly class TeacherProfileWriter
         private InstrumentRepository $instrumentRepository,
         private TeacherLessonContentWriter $lessonContentWriter,
         private ServiceWriter $serviceWriter,
+        private YearsOfExperience $yearsOfExperience,
     ) {
     }
 
@@ -47,8 +49,10 @@ readonly class TeacherProfileWriter
         if ($data->description !== null) {
             $profile->description = $data->description;
         }
-        if ($data->yearsOfExperience !== null) {
-            $profile->yearsOfExperience = $data->yearsOfExperience;
+        if ($data->experienceStartYear !== null) {
+            $profile->experienceStartYear = $data->experienceStartYear;
+        } elseif ($data->yearsOfExperience !== null) {
+            $profile->experienceStartYear = $this->yearsOfExperience->startYear($data->yearsOfExperience);
         }
         if ($data->courseTitle !== null) {
             $profile->headline = $data->courseTitle;

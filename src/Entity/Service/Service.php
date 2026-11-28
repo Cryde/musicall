@@ -64,8 +64,9 @@ class Service implements ViewableInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $description = null;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    public ?int $yearsOfExperience = null;
+    /** The year its member started: the years its pages show are counted from it (#1453). */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    public ?int $experienceStartYear = null;
 
     /**
      * The kind's main search filter, read with JSON_CONTAINS.

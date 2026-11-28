@@ -13,6 +13,7 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -21,9 +22,11 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 class TeacherProfileLessonContentTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     public function test_create_with_goals_and_songs(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
@@ -52,6 +55,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'id' => $profile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['beginner', 'advanced'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -80,6 +84,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_create_checks_goals_sent_without_levels_against_no_level(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
@@ -116,6 +121,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_an_update_that_leaves_them_out_keeps_them(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar, $profile] = $this->teacherWithContent();
 
         // What the Android app sends: the whole profile, without the two new fields.
@@ -135,6 +141,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'id' => $profile->id,
             'description' => 'Cours de guitare, mis à jour',
             'years_of_experience' => 13,
+            'experience_start_year' => 2013,
             'student_levels' => ['beginner', 'advanced'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -159,6 +166,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_an_update_replaces_them_and_an_empty_list_clears_them(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar, $profile] = $this->teacherWithContent();
 
         $this->client->loginUser($user);
@@ -182,6 +190,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'id' => $profile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['beginner', 'intermediate', 'advanced'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -204,6 +213,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_a_level_no_longer_accepted_hides_its_goal_and_keeps_its_text(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar, $profile] = $this->teacherWithContent();
 
         $this->client->loginUser($user);
@@ -222,6 +232,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'id' => $profile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['beginner'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -247,6 +258,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_a_goal_must_name_an_accepted_level_once(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar] = $this->teacherWithContent();
 
         $this->client->loginUser($user);
@@ -289,6 +301,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_goals_sent_without_the_levels_are_checked_against_the_stored_levels(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar, $profile] = $this->teacherWithContent();
 
         $this->client->loginUser($user);
@@ -306,6 +319,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'id' => $profile->id,
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['beginner', 'advanced'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -360,6 +374,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_the_lists_are_bounded(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar] = $this->teacherWithContent();
 
         $this->client->loginUser($user);
@@ -409,6 +424,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_create_refuses_over_long_text(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
@@ -464,6 +480,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_a_point_must_be_text(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar] = $this->teacherWithContent();
 
         $this->client->loginUser($user);
@@ -499,6 +516,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
 
     public function test_the_public_page_shows_them(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         [$user, $guitar] = $this->teacherWithContent();
 
         $this->client->request('GET', '/api/user/profile/' . $user->username . '/teacher');
@@ -518,6 +536,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
             'musician_bands' => [],
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['beginner', 'advanced'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -550,7 +569,7 @@ class TeacherProfileLessonContentTest extends ApiTestCase
         $profile = ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 12,
+            'experienceStartYear' => 2014,
             'studentLevels' => ['beginner', 'advanced'],
             'ageGroups' => [],
             'headline' => null,

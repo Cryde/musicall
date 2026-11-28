@@ -16,6 +16,7 @@ use App\Tests\Factory\Service\ServiceFactory;
 use App\Tests\Factory\Service\ServiceInstrumentFactory;
 use App\Tests\Factory\Service\ServiceLinkFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -24,9 +25,11 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 class TeacherProfilePublicTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+    use ClockSensitiveTrait;
 
     public function test_get_teacher_profile_success(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => 'teacher_user',
             'email' => 'teacher@test.com',
@@ -35,7 +38,7 @@ class TeacherProfilePublicTest extends ApiTestCase
         ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Professeur de guitare expérimenté',
-            'yearsOfExperience' => 10,
+            'experienceStartYear' => 2016,
             'studentLevels' => [StudentLevel::BEGINNER->value, StudentLevel::INTERMEDIATE->value],
             'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
         ]);
@@ -56,6 +59,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'musician_bands' => [],
             'description' => 'Professeur de guitare expérimenté',
             'years_of_experience' => 10,
+            'experience_start_year' => 2016,
             'student_levels' => ['beginner', 'intermediate'],
             'age_groups' => [],
             'offers_trial' => false,
@@ -257,6 +261,7 @@ class TeacherProfilePublicTest extends ApiTestCase
 
     public function test_get_teacher_profile_names_the_musician_behind_the_teacher(): void
     {
+        self::mockTime('2026-06-15T10:00:00+00:00');
         $user = UserFactory::new()->asBaseUser()->create([
             'username' => 'teacher_musician',
             'email' => 'teacher_musician@test.com',
@@ -283,7 +288,7 @@ class TeacherProfilePublicTest extends ApiTestCase
         ServiceFactory::new()->teaching()->create([
             'user' => $user,
             'description' => 'Cours de guitare',
-            'yearsOfExperience' => 12,
+            'experienceStartYear' => 2014,
             'studentLevels' => [StudentLevel::BEGINNER->value],
             'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
         ]);
@@ -322,6 +327,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             ],
             'description' => 'Cours de guitare',
             'years_of_experience' => 12,
+            'experience_start_year' => 2014,
             'student_levels' => ['beginner'],
             'age_groups' => [],
             'offers_trial' => false,

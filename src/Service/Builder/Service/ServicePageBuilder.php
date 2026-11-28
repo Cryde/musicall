@@ -11,6 +11,7 @@ use App\Service\Builder\Musician\MusicianInstrumentResourceBuilder;
 use App\Service\Builder\Teacher\TeacherProfileBuilder;
 use App\Service\Builder\Teacher\TeacherProfileMediaResourceBuilder;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Service\Service\YearsOfExperience;
 
 /** What every kind's page shows (#1410, #1411): each kind's builder adds its details. */
 readonly class ServicePageBuilder
@@ -21,6 +22,7 @@ readonly class ServicePageBuilder
         private MusicianInstrumentResourceBuilder $musicianInstrumentResourceBuilder,
         private TeacherProfileBuilder $teacherProfileBuilder,
         private TeacherProfileMediaResourceBuilder $mediaResourceBuilder,
+        private YearsOfExperience $yearsOfExperience,
     ) {
     }
 
@@ -42,7 +44,8 @@ readonly class ServicePageBuilder
 
         $page->headline = $service->headline;
         $page->description = $service->description;
-        $page->yearsOfExperience = $service->yearsOfExperience;
+        $page->yearsOfExperience = $this->yearsOfExperience->since($service->experienceStartYear);
+        $page->experienceStartYear = $service->experienceStartYear;
         $page->specialities = $service->specialities;
         $page->styles = $this->teacherProfileBuilder->buildStyles($service->styles->toArray());
         $page->places = $this->serviceViewBuilder->places($service);
