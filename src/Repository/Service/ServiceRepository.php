@@ -436,21 +436,36 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * What every kind's search filters on: its kind, published, by a member anyone may see and who has not blocked
-     * the viewer nor been blocked by them, and, with a point and a radius, a place in reach (or online, when asked).
+     * How many services each kind's search lists without a city (#1414), by kind value. A kind with none is left out.
+     *
+     * @return array<string, int>
+     */
+    public function countListedByKind(?User $viewer): array
+    {
+        /** @var list<array{kind: ServiceKind, total: int|string}> $rows */
+        $rows = $this->listedTo($viewer)
+            ->select('service.kind AS kind', 'COUNT(service.id) AS total')
+            ->groupBy('service.kind')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[$row['kind']->value] = (int) $row['total'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * What every kind's search filters on: its kind, what listedTo() lists, and, with a point and a radius, a place
+     * in reach (or online, when asked).
      */
     private function serviceSearch(ServiceKind $kind, ServiceSearch $search, ?User $viewer): QueryBuilder
     {
-        $queryBuilder = $this->createQueryBuilder('service')
-            ->innerJoin('service.user', 'u')
-            ->innerJoin('u.profile', 'profile')
-            ->where('service.kind = :kind')
+        $queryBuilder = $this->listedTo($viewer)
+            ->andWhere('service.kind = :kind')
             ->setParameter('kind', $kind);
-        $this->listed($queryBuilder);
-        if ($viewer instanceof User) {
-            $queryBuilder->andWhere(UserBlockRepository::notBlockedEitherWay('u', 'viewer'))
-                ->setParameter('viewer', $viewer);
-        }
 
         if ($search->hasPoint() && $search->radius !== null) {
             $queryBuilder->setParameter('point', $search->point())
@@ -476,6 +491,24 @@ class ServiceRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('service')
             ->addSelect('offer')
             ->leftJoin('service.offers', 'offer');
+    }
+
+    /**
+     * The services listed to the viewer: listed(), by a member who has not blocked the viewer nor been blocked by them.
+     * The searches and the annuaire's counts start here, so a count is what its search shows.
+     */
+    private function listedTo(?User $viewer): QueryBuilder
+    {
+        $queryBuilder = $this->createQueryBuilder('service')
+            ->innerJoin('service.user', 'u')
+            ->innerJoin('u.profile', 'profile');
+        $this->listed($queryBuilder);
+        if ($viewer instanceof User) {
+            $queryBuilder->andWhere(UserBlockRepository::notBlockedEitherWay('u', 'viewer'))
+                ->setParameter('viewer', $viewer);
+        }
+
+        return $queryBuilder;
     }
 
     /**

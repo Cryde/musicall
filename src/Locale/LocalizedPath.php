@@ -19,6 +19,7 @@ readonly class LocalizedPath
     private const array TRANSLATED_SEGMENTS = [
         'en' => [
             'cours' => 'lessons',
+            'annuaire' => 'directory',
             'decouvrir' => 'discover',
             'mentions-legales' => 'legal-notice',
             'supprimer-mon-compte' => 'delete-my-account',

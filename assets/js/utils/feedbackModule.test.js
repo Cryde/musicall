@@ -43,6 +43,7 @@ describe('resolveFeedbackModule', () => {
     assert.equal(resolveFeedbackModule('app_publication_show'), FEEDBACK_MODULES.PUBLICATION)
     assert.equal(resolveFeedbackModule('app_gallery_show'), FEEDBACK_MODULES.GALLERY)
     assert.equal(resolveFeedbackModule('app_search_drummer'), FEEDBACK_MODULES.DIRECTORY)
+    assert.equal(resolveFeedbackModule('app_directory'), FEEDBACK_MODULES.DIRECTORY)
     assert.equal(resolveFeedbackModule('app_course_show'), FEEDBACK_MODULES.COURSE)
     assert.equal(resolveFeedbackModule('app_messages'), FEEDBACK_MODULES.MESSAGE)
   })

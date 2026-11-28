@@ -3,7 +3,7 @@
  * its icon, its colours, its name and what it is (as full keys for the i18n check), its public page and its search.
  *
  * A search with `testerOnly` is merged but not yet announced: its menu entries show to ROLE_TESTER accounts only.
- * Announcing it is setting it to false.
+ * Announcing it is setting it to false. `introKey` and `countKey` are what its card in the annuaire says (#1414).
  */
 export const SERVICE_KINDS = {
   teaching: {
@@ -12,7 +12,13 @@ export const SERVICE_KINDS = {
     labelKey: 'profile.services.kinds.teaching.label',
     descriptionKey: 'profile.services.kinds.teaching.description',
     pageRoute: 'app_user_teacher_profile',
-    search: { route: 'app_search_teacher', menuKey: 'menu.search_teachers', testerOnly: false }
+    search: {
+      route: 'app_search_teacher',
+      menuKey: 'menu.search_teachers',
+      introKey: 'search.teacher.intro',
+      countKey: 'search.teacher.count',
+      testerOnly: false
+    }
   },
   sound_engineering: {
     icon: 'pi pi-sliders-v',
@@ -23,6 +29,8 @@ export const SERVICE_KINDS = {
     search: {
       route: 'app_search_sound_engineer',
       menuKey: 'menu.search_sound_engineers',
+      introKey: 'search.sound_engineer.intro',
+      countKey: 'search.sound_engineer.count',
       testerOnly: true
     }
   },
@@ -35,6 +43,8 @@ export const SERVICE_KINDS = {
     search: {
       route: 'app_search_photographer',
       menuKey: 'menu.search_photographers',
+      introKey: 'search.photographer.intro',
+      countKey: 'search.photographer.count',
       testerOnly: true
     }
   },
@@ -47,6 +57,8 @@ export const SERVICE_KINDS = {
     search: {
       route: 'app_search_videographer',
       menuKey: 'menu.search_videographers',
+      introKey: 'search.videographer.intro',
+      countKey: 'search.videographer.count',
       testerOnly: true
     }
   },
@@ -59,6 +71,8 @@ export const SERVICE_KINDS = {
     search: {
       route: 'app_search_graphic_designer',
       menuKey: 'menu.search_graphic_designers',
+      introKey: 'search.graphic_designer.intro',
+      countKey: 'search.graphic_designer.count',
       testerOnly: true
     }
   },
@@ -71,6 +85,8 @@ export const SERVICE_KINDS = {
     search: {
       route: 'app_search_webmaster',
       menuKey: 'menu.search_webmasters',
+      introKey: 'search.webmaster.intro',
+      countKey: 'search.webmaster.count',
       testerOnly: true
     }
   },
@@ -83,9 +99,22 @@ export const SERVICE_KINDS = {
     search: {
       route: 'app_search_producer',
       menuKey: 'menu.search_producers',
+      introKey: 'search.producer.intro',
+      countKey: 'search.producer.count',
       testerOnly: true
     }
   }
+}
+
+/**
+ * The « Annuaire » (#1414), the page leading to every kind's search. While `testerOnly`, only a ROLE_TESTER account
+ * finds it in the menu, which keeps the announced searches for everyone else; the page itself stays open.
+ */
+export const DIRECTORY = {
+  route: 'app_directory',
+  menuKey: 'menu.directory',
+  icon: 'pi pi-id-card',
+  testerOnly: true
 }
 
 /** How « Mes services » says what a service still needs before it can be published. */

@@ -9,8 +9,11 @@ import feedbackApi from '../api/feedback/feedback.js'
 export const useFeedbackStore = defineStore('feedback', () => {
   const isDrawerOpen = ref(false)
   const isSending = ref(false)
+  // What a page asks the form to start with, `{ type, message }`, read by the drawer as it opens.
+  const prefill = ref(null)
 
-  function openDrawer() {
+  function openDrawer(startWith = null) {
+    prefill.value = startWith
     isDrawerOpen.value = true
   }
 
@@ -30,6 +33,7 @@ export const useFeedbackStore = defineStore('feedback', () => {
   return {
     isDrawerOpen,
     isSending: readonly(isSending),
+    prefill: readonly(prefill),
     openDrawer,
     closeDrawer,
     send

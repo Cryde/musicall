@@ -123,7 +123,7 @@ import MobileNavDrawer from '../../components/Global/MobileNavDrawer.vue'
 import NavbarInbox from '../../components/Global/NavbarInbox.vue'
 import { useCompactMenu } from '../../composables/useCompactMenu.js'
 import { useServiceSearchLinks } from '../../composables/useServiceSearchLinks.js'
-import { SERVICE_KINDS } from '../../constants/serviceKinds.js'
+import { DIRECTORY, SERVICE_KINDS } from '../../constants/serviceKinds.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const MENU_ID = 'mobile-menu'
@@ -160,6 +160,7 @@ const isSearchActive = computed(() => {
   const currentRoute = router.currentRoute.value.name
   return (
     currentRoute === 'app_search_musician' ||
+    currentRoute === DIRECTORY.route ||
     Object.values(SERVICE_KINDS).some((kind) => kind.search.route === currentRoute)
   )
 })

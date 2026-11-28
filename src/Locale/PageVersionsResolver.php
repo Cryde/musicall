@@ -23,7 +23,7 @@ readonly class PageVersionsResolver
 {
     // Matched on the page's path in the default locale.
     private const array IN_EVERY_LOCALE = [
-        '#^/(decouvrir|band-space|contact|privacy|terms|mentions-legales|supprimer-mon-compte)?$#',
+        '#^/(decouvrir|band-space|contact|privacy|terms|mentions-legales|supprimer-mon-compte|annuaire)?$#',
         '#^/(publications|cours|forums)$#',
         '#^/(publications|cours)/category/[^/]+$#',
         '#^/publications/tag/[^/]+$#',

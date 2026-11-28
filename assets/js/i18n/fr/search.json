@@ -255,5 +255,23 @@
     "days": "{count} jour de délai | {count} jours de délai",
     "empty_text": "Élargis la distance ou retire un filtre.",
     "empty_text_online": "Élargis la distance, ajoute ceux qui travaillent à distance ou retire un filtre."
+  },
+  "directory": {
+    "title": "Annuaire des pros de la musique - MusicAll",
+    "heading": "Annuaire",
+    "intro": "Les pros de la musique près de chez toi : choisis un métier, puis cherche autour de ta ville.",
+    "pros": "Pros",
+    "nobody_yet": "Personne pour l'instant",
+    "be_first": "Sois le premier",
+    "places": "Lieux",
+    "places_title": "Studios, salles de répétition et magasins de musique",
+    "places_text": "Ils rejoignent l'annuaire bientôt.",
+    "soon": "Bientôt",
+    "trade_title": "Ton métier n'est pas dans la liste ?",
+    "trade_text": "Dis-nous lequel, on regarde pour l'ajouter.",
+    "trade_cta": "Propose ton métier",
+    "trade_message": "Mon métier :",
+    "cta": "Tu proposes un service ?",
+    "error": "L'annuaire n'a pas pu être chargé. Réessaie dans un instant."
   }
 }

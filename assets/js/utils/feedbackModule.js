@@ -68,6 +68,7 @@ const ROUTE_TO_MODULE = Object.freeze({
   app_user_gallery_edit: FEEDBACK_MODULES.GALLERY,
   app_user_gallery_preview: FEEDBACK_MODULES.GALLERY,
 
+  app_directory: FEEDBACK_MODULES.DIRECTORY,
   app_search_musician: FEEDBACK_MODULES.DIRECTORY,
   app_search_guitarist: FEEDBACK_MODULES.DIRECTORY,
   app_search_bassist: FEEDBACK_MODULES.DIRECTORY,
