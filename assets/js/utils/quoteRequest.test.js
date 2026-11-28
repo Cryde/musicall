@@ -64,6 +64,22 @@ describe('quoteQuestions', () => {
     }
   })
 
+  // Mixing stays a sound engineer's: a producer is asked about what they do (#1413).
+  it('asks a producer what a sound engineer is asked, about any of what they do', () => {
+    const asked = quoteQuestions('production')
+    assert.deepEqual(
+      asked.map((question) => question.key),
+      ['need', 'tracks', 'link', 'deadline', 'budget']
+    )
+    assert.deepEqual(asked[0].options, [
+      'beatmaking',
+      'arrangement',
+      'record_production',
+      'composition',
+      'topline'
+    ])
+  })
+
   it('asks nothing of a kind that takes no quote request', () => {
     assert.deepEqual(quoteQuestions('teaching'), [])
     assert.deepEqual(quoteQuestions('unknown'), [])
@@ -196,5 +212,26 @@ describe('the quote of a photographer (#1411)', () => {
         'message.city(value=Lyon)'
       ].join('\n')
     )
+  })
+})
+
+describe('the quote of a producer (#1413)', () => {
+  const production = quoteQuestions('production')
+
+  it('names what is asked of them in its message, and drops a sound engineer need', () => {
+    assert.equal(
+      buildQuoteMessage(
+        { need: 'topline', tracks: 1, link: 'https://x.test/instru' },
+        { name: 'Sam', questions: production, formatDate: (day) => `day(${day})` },
+        t
+      ),
+      [
+        'message.greeting(name=Sam)',
+        'message.need(value=need.topline)',
+        'message.tracks(value=1)',
+        'message.link(value=https://x.test/instru)'
+      ].join('\n')
+    )
+    assert.deepEqual(quoteAnswers({ need: 'mixing', tracks: 2 }, production), { tracks: 2 })
   })
 })

@@ -226,6 +226,15 @@
     "empty_title": "No webmaster matches your search",
     "title": "Find a webmaster - MusicAll"
   },
+  "producer": {
+    "heading": "Find a producer",
+    "intro": "Beatmaking, arrangement, record production or toplines, near you or remotely.",
+    "cta": "Are you a producer?",
+    "count": "No producer | {count} producer | {count} producers",
+    "load_more": "More producers",
+    "empty_title": "No producer matches your search",
+    "title": "Find a producer - MusicAll"
+  },
   "service": {
     "cta_link": "Create your page",
     "filters_label": "Search filters",

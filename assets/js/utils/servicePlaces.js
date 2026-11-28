@@ -55,8 +55,11 @@ const EMPTY_PLACE = {
   radius: null
 }
 
-/** The form's places from the stored ones: the studio, the travel to the client, and remote work. */
-export function placesForm(places) {
+/**
+ * The form's places from the stored ones: the studio, the travel to the client, and remote work. A kind that works
+ * remotely by default (a producer, #1413) opens a service with no place yet with remote work ticked.
+ */
+export function placesForm(places, { remoteByDefault = false } = {}) {
   const list = Array.isArray(places) ? places : []
   const fill = (type) => {
     const place = list.find((item) => item.type === type)
@@ -75,7 +78,7 @@ export function placesForm(places) {
   return {
     studio: fill('at_my_place'),
     client: fill('at_client_place'),
-    remote: list.some((item) => item.type === 'remote')
+    remote: list.length === 0 ? remoteByDefault : list.some((item) => item.type === 'remote')
   }
 }
 

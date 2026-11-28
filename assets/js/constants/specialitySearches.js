@@ -1,9 +1,10 @@
+import { PRODUCTION_SPECIALITY_KEYS } from './production.js'
 import { SPECIALITY_KEYS, UNIT_KEYS } from './soundEngineering.js'
 import { VISUAL_SERVICE_KINDS, VISUAL_UNIT_KEYS } from './visualServices.js'
 
 /**
- * The searches by speciality (#1410, #1411, #1412), one page for all of them, by ServiceKind value: what each one asks
- * the API, offers as filters and says. The words every one of them shares are under `search.service`.
+ * The searches by speciality (#1410, #1411, #1412, #1413), one page for all of them, by ServiceKind value: what each
+ * one asks the API, offers as filters and says. The words every one of them shares are under `search.service`.
  */
 export const SPECIALITY_SEARCHES = {
   sound_engineering: {
@@ -94,6 +95,25 @@ export const SPECIALITY_SEARCHES = {
       emptyTitle: 'search.webmaster.empty_title',
       emptyText: 'search.service.empty_text_online',
       title: 'search.webmaster.title'
+    }
+  },
+  production: {
+    apiRoute: 'api_services_production_search',
+    specialityKeys: PRODUCTION_SPECIALITY_KEYS,
+    unitKeys: UNIT_KEYS,
+    hasOnline: true,
+    /** No delay on a producer's card. */
+    daysField: null,
+    text: {
+      heading: 'search.producer.heading',
+      intro: 'search.producer.intro',
+      cta: 'search.producer.cta',
+      online: 'search.service.online',
+      count: 'search.producer.count',
+      loadMore: 'search.producer.load_more',
+      emptyTitle: 'search.producer.empty_title',
+      emptyText: 'search.service.empty_text_online',
+      title: 'search.producer.title'
     }
   }
 }

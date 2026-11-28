@@ -865,6 +865,77 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame(['Find a graphic designer - MusicAll', 'Find a webmaster - MusicAll'], $result);
     }
 
+    /** A producer who works remotely only (#1413): no city to name, remote work as the area served. */
+    public function test_get_metadata_for_a_producer(): void
+    {
+        $user = UserFactory::new(['username' => 'sam_prod'])->create();
+        $user->profile->displayName = 'Sam Diallo';
+        $user->profile->location = null;
+        \Zenstruck\Foundry\Persistence\save($user);
+        $service = ServiceFactory::new()->production()->create([
+            'user'         => $user,
+            'headline'     => 'Ton son, de la maquette au master',
+            'specialities' => ['beatmaking', 'record_production'],
+        ]);
+        $place = new ServicePlace();
+        $place->type = ServicePlaceType::Remote;
+        $service->addPlace($place);
+        foreach ([[OfferUnit::Day, 20000, 'Une journée de studio'], [OfferUnit::Track, 30000, 'Une instru']] as [$unit, $price, $title]) {
+            $offer = new ServiceOffer();
+            $offer->unit = $unit;
+            $offer->price = $price;
+            $offer->title = $title;
+            $service->addOffer($offer);
+        }
+        \Zenstruck\Foundry\Persistence\save($service);
+
+        $this->assertSame([
+            'title'       => 'Sam Diallo, producteur : beatmaking, réalisation artistique - MusicAll',
+            'description' => "Ton son, de la maquette au master. À partir de 300\u{a0}€ le titre.",
+            'cover'       => null,
+            'json_ld'     => [
+                '@context'    => 'https://schema.org',
+                '@type'       => 'Service',
+                'serviceType' => 'Producteur : beatmaking, réalisation artistique',
+                'url'         => 'http://localhost/u/sam_prod/producer',
+                'description' => 'Ton son, de la maquette au master',
+                'provider'    => [
+                    '@type'         => 'Person',
+                    'name'          => 'Sam Diallo',
+                    'alternateName' => '@sam_prod',
+                    'url'           => 'http://localhost/u/sam_prod',
+                ],
+                'areaServed'  => ['À distance'],
+                'offers'      => [
+                    ['@type' => 'Offer', 'name' => 'Une journée de studio', 'price' => '200.00', 'priceCurrency' => 'EUR'],
+                    ['@type' => 'Offer', 'name' => 'Une instru', 'price' => '300.00', 'priceCurrency' => 'EUR'],
+                ],
+            ],
+        ], $this->botMetaDataGenerator->getMetaData('/u/sam_prod/producer'));
+    }
+
+    /** Two services, never one (#1413): a sound engineer has no producer page to describe. */
+    public function test_get_metadata_for_a_sound_engineer_as_a_producer_is_noindex_and_nothing_else(): void
+    {
+        ServiceFactory::new()->soundEngineering()->create(['user' => UserFactory::new(['username' => 'julien_only_son'])->create()]);
+
+        $this->assertSame(['robots' => 'noindex, follow'], $this->botMetaDataGenerator->getMetaData('/u/julien_only_son/producer'));
+    }
+
+    public function test_the_producer_search_is_described_in_both_locales(): void
+    {
+        $this->assertSame([
+            'title' => 'Trouver un producteur - MusicAll',
+            'description' => 'Beatmaking, arrangement, réalisation artistique ou topline : trouve un producteur près de chez toi ou à distance, compare ses formules et écoute ses réalisations sur MusicAll.',
+        ], $this->botMetaDataGenerator->getPageMetaData('/rechercher-un-producteur?speciality=topline'));
+
+        $result = static::getContainer()->get(LocaleSwitcher::class)->runWithLocale(
+            'en',
+            fn (): array => $this->botMetaDataGenerator->getPageMetaData('/en/find-a-producer'),
+        );
+        $this->assertSame('Find a producer - MusicAll', $result['title'] ?? null);
+    }
+
     public function test_page_metadata_only_asks_the_providers_ready_for_the_page(): void
     {
         $this->assertNotSame([], $this->botMetaDataGenerator->getMetaData('/cours'));

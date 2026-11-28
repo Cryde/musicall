@@ -73,6 +73,18 @@ export const SERVICE_KINDS = {
       menuKey: 'menu.search_webmasters',
       testerOnly: true
     }
+  },
+  production: {
+    icon: 'pi pi-wave-pulse',
+    iconClass: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300',
+    labelKey: 'profile.services.kinds.production.label',
+    descriptionKey: 'profile.services.kinds.production.description',
+    pageRoute: 'app_user_producer',
+    search: {
+      route: 'app_search_producer',
+      menuKey: 'menu.search_producers',
+      testerOnly: true
+    }
   }
 }
 

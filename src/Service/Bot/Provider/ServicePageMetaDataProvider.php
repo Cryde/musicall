@@ -14,13 +14,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * « Julien Roche, ingénieur du son à Bruxelles » (#1410), « Léa Martin, photographe à Lyon » (#1411), « Nina Roy,
- * graphiste » (#1412): a service page with its schema.org Service. The teacher page has its own
- * (TeacherProfileMetaDataProvider).
+ * graphiste » (#1412), « Sam Diallo, producteur » (#1413): a service page with its schema.org Service. The teacher
+ * page has its own (TeacherProfileMetaDataProvider).
  */
 readonly class ServicePageMetaDataProvider implements PageMetaDataProviderInterface
 {
     // Its query (`?from=search`) changes nothing.
-    private const string PATTERN = '#^/u/([^/?]+)/(sound-engineer|photographer|videographer|graphic-designer|webmaster)(?:\?.*)?$#';
+    private const string PATTERN = '#^/u/([^/?]+)/(sound-engineer|photographer|videographer|graphic-designer|webmaster|producer)(?:\?.*)?$#';
 
     /** Each kind's page, by the last segment of its path, and its words. */
     private const array PAGES = [
@@ -58,6 +58,13 @@ readonly class ServicePageMetaDataProvider implements PageMetaDataProviderInterf
             'title_city' => 'meta.webmaster.title_city',
             'description' => 'meta.webmaster.description',
             'service' => 'meta.webmaster.service',
+        ],
+        'producer' => [
+            'kind' => ServiceKind::Production,
+            'title' => 'meta.producer.title',
+            'title_city' => 'meta.producer.title_city',
+            'description' => 'meta.producer.description',
+            'service' => 'meta.producer.service',
         ],
     ];
 

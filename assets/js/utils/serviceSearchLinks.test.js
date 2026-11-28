@@ -19,8 +19,8 @@ describe('visibleServiceSearches', () => {
     assert.deepEqual(kindsOf(visibleServiceSearches(kinds, false)), ['announced'])
   })
 
-  // The teacher search is announced; sound engineers, photographers, videographers, graphic designers and webmasters
-  // not yet (#1410, #1411, #1412).
+  // The teacher search is announced; sound engineers, photographers, videographers, graphic designers, webmasters and
+  // producers not yet (#1410, #1411, #1412, #1413).
   it('shows only the teacher search to a member who is not a tester today', () => {
     assert.deepEqual(kindsOf(visibleServiceSearches(SERVICE_KINDS, false)), ['teaching'])
     assert.deepEqual(kindsOf(visibleServiceSearches(SERVICE_KINDS, true)), [
@@ -29,7 +29,8 @@ describe('visibleServiceSearches', () => {
       'photography',
       'video',
       'graphic_design',
-      'web'
+      'web',
+      'production'
     ])
   })
 })
